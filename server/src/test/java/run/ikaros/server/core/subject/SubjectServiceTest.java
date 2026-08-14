@@ -29,6 +29,7 @@ import run.ikaros.server.core.subject.service.SubjectService;
 @SpringBootTest
 @Testcontainers
 @Import(IkarosTestcontainersConfiguration.class)
+@org.jspecify.annotations.NullUnmarked
 class SubjectServiceTest {
 
     @Autowired

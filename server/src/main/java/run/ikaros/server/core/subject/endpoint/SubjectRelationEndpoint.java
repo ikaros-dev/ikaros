@@ -106,6 +106,9 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> findAllBySubjectId(ServerRequest request) {
         final UUID subjectId = UuidV7Utils.fromString(request.pathVariable("subjectId"));
+        if (subjectId == null) {
+            return ServerResponse.badRequest().bodyValue("subjectId must be a valid UUID.");
+        }
         return subjectRelationService.findAllBySubjectId(subjectId)
             .collectList()
             .filter(subjectRelations -> !subjectRelations.isEmpty())
@@ -118,6 +121,9 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
     private Mono<ServerResponse> findBySubjectIdAndType(ServerRequest request) {
         String relationType = request.pathVariable("relationType");
         final UUID subjectId = UuidV7Utils.fromString(request.pathVariable("subjectId"));
+        if (subjectId == null) {
+            return ServerResponse.badRequest().bodyValue("subjectId must be a valid UUID.");
+        }
         return subjectRelationService.findBySubjectIdAndType(subjectId,
                 StringUtils.isNumeric(relationType)
                     ? SubjectRelationType.codeOf(Integer.valueOf(relationType))
@@ -146,6 +152,9 @@ public class SubjectRelationEndpoint implements CoreEndpoint {
         Optional<String> relationSubjects = request.queryParam("relation_subjects");
         Assert.isTrue(relationSubjects.isPresent(), "'relation_subjects' must not be empty");
         UUID subjectId = UuidV7Utils.fromString(request.pathVariable("subjectId"));
+        if (subjectId == null) {
+            return ServerResponse.badRequest().bodyValue("subjectId must be a valid UUID.");
+        }
         SubjectRelation subjectRelation = SubjectRelation.builder()
             .subject(subjectId)
             .relationType(

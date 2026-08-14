@@ -161,6 +161,9 @@ public class MusicEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> getAlbum(ServerRequest request) {
         UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
+        if (id == null) {
+            return ServerResponse.badRequest().bodyValue("id must be a valid UUID.");
+        }
         return musicService.findAlbumById(id)
             .flatMap(music -> ServerResponse.ok().bodyValue(music));
     }
@@ -179,12 +182,18 @@ public class MusicEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> deleteAlbum(ServerRequest request) {
         UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
+        if (id == null) {
+            return ServerResponse.badRequest().bodyValue("id must be a valid UUID.");
+        }
         return musicService.deleteAlbum(id)
             .then(ServerResponse.ok().build());
     }
 
     private Mono<ServerResponse> listSongs(ServerRequest request) {
         UUID subjectId = UuidV7Utils.fromString(request.pathVariable("id"));
+        if (subjectId == null) {
+            return ServerResponse.badRequest().bodyValue("id must be a valid UUID.");
+        }
         return musicService.listSongs(subjectId)
             .collectList()
             .flatMap(songs -> ServerResponse.ok().bodyValue(songs));
@@ -204,6 +213,9 @@ public class MusicEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> deleteSong(ServerRequest request) {
         UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
+        if (id == null) {
+            return ServerResponse.badRequest().bodyValue("id must be a valid UUID.");
+        }
         return musicService.deleteSong(id)
             .then(ServerResponse.ok().build());
     }

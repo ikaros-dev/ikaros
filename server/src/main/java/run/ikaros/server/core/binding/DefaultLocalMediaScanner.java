@@ -11,6 +11,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -54,26 +55,41 @@ public class DefaultLocalMediaScanner implements LocalMediaScanner {
 
     @Override
     public Mono<LocalScanPreview> scan(LocalScanPreviewRequest request) {
-        if (request == null || request.getDirectoryId() == null || request.getMode() == null) {
+        if (request == null) {
             return Mono.error(new IllegalArgumentException("目录附件和扫描模式不能为空"));
         }
-        return attachmentRepository.findById(request.getDirectoryId())
+        UUID directoryId = request.getDirectoryId();
+        LocalMediaMode mode = request.getMode();
+        if (directoryId == null || mode == null) {
+            return Mono.error(new IllegalArgumentException("目录附件和扫描模式不能为空"));
+        }
+        return attachmentRepository.findById(directoryId)
             .switchIfEmpty(Mono.error(new IllegalArgumentException("待扫描目录附件不存在")))
             .filter(this::isDirectory)
             .switchIfEmpty(Mono.error(new IllegalArgumentException("待扫描附件不是目录")))
-            .flatMap(directory -> pathValidator.validate(
-                directory.getDriverId(), directory.getFsPath())
-                .flatMap(rootPath -> scanDirectory(directory, rootPath, request.getMode())))
+            .flatMap(directory -> {
+                UUID driverId = directory.getDriverId();
+                String fsPath = directory.getFsPath();
+                if (driverId == null || fsPath == null) {
+                    return Mono.error(new IllegalArgumentException("目录附件缺少驱动或文件路径"));
+                }
+                return pathValidator.validate(driverId, fsPath)
+                    .flatMap(rootPath -> scanDirectory(directory, rootPath, mode));
+            })
             .map(items -> LocalScanPreview.builder()
-                .directoryId(request.getDirectoryId())
-                .mode(request.getMode())
+                .directoryId(directoryId)
+                .mode(mode)
                 .items(items)
                 .build());
     }
 
     private Mono<List<LocalScanItem>> scanDirectory(AttachmentEntity directory, Path rootPath,
                                                      LocalMediaMode mode) {
-        return descendants(directory.getId())
+        UUID directoryId = directory.getId();
+        if (directoryId == null) {
+            return Mono.error(new IllegalArgumentException("目录附件缺少标识"));
+        }
+        return descendants(directoryId)
             .filter(attachment -> !isDirectory(attachment))
             .concatMap(attachment -> validateAttachment(rootPath, attachment))
             .collectList()
@@ -90,12 +106,24 @@ public class DefaultLocalMediaScanner implements LocalMediaScanner {
     private Flux<AttachmentEntity> descendants(UUID directoryId) {
         return attachmentRepository.findAllByParentId(directoryId)
             .concatMap(attachment -> isDirectory(attachment)
-                ? descendants(attachment.getId())
+                ? descendantsOrError(attachment)
                 : Mono.just(attachment));
     }
 
+    private Flux<AttachmentEntity> descendantsOrError(AttachmentEntity attachment) {
+        UUID attachmentId = attachment.getId();
+        return attachmentId == null
+            ? Flux.error(new IllegalArgumentException("目录附件缺少标识"))
+            : descendants(attachmentId);
+    }
+
     private Mono<ScannedAttachment> validateAttachment(Path rootPath, AttachmentEntity attachment) {
-        return pathValidator.validate(attachment.getDriverId(), attachment.getFsPath())
+        UUID driverId = attachment.getDriverId();
+        String fsPath = attachment.getFsPath();
+        if (driverId == null || fsPath == null) {
+            return Mono.empty();
+        }
+        return pathValidator.validate(driverId, fsPath)
             .filter(path -> path.startsWith(rootPath))
             .switchIfEmpty(Mono.error(new IllegalArgumentException("附件路径不属于扫描目录")))
             .map(path -> new ScannedAttachment(attachment, path, relativePath(rootPath, path)))
@@ -223,8 +251,11 @@ public class DefaultLocalMediaScanner implements LocalMediaScanner {
             : filename.substring(extensionStart).toLowerCase(Locale.ROOT);
     }
 
-    private static String filenameWithoutExtension(String filename) {
-        int extensionStart = filename == null ? -1 : filename.lastIndexOf('.');
+    private static String filenameWithoutExtension(@Nullable String filename) {
+        if (filename == null) {
+            return "";
+        }
+        int extensionStart = filename.lastIndexOf('.');
         return extensionStart < 0 ? filename : filename.substring(0, extensionStart);
     }
 
@@ -298,7 +329,7 @@ public class DefaultLocalMediaScanner implements LocalMediaScanner {
 
     private record ScanDraft(ScannedAttachment scannedAttachment, String extension,
                              MediaPhysicalType physicalType, MediaRole role,
-                             UUID candidatePrimaryAttachmentId) {
+                             @Nullable UUID candidatePrimaryAttachmentId) {
 
         private AttachmentEntity attachment() {
             return scannedAttachment.attachment();

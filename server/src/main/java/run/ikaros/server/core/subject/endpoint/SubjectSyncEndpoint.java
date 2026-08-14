@@ -102,6 +102,9 @@ public class SubjectSyncEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> sync(ServerRequest request) {
         UUID subjectId = UuidV7Utils.fromString(request.queryParam("subjectId").orElse(""));
+        if (subjectId == null) {
+            return ServerResponse.badRequest().bodyValue("subjectId must be a valid UUID.");
+        }
 
         Optional<String> platformOp = request.queryParam("platform");
         Assert.isTrue(platformOp.isPresent() && StringUtils.hasText(platformOp.get()),
@@ -126,6 +129,9 @@ public class SubjectSyncEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> findSubjectSyncsBySubjectId(ServerRequest request) {
         UUID subjectId = UuidV7Utils.fromString(request.pathVariable("id"));
+        if (subjectId == null) {
+            return ServerResponse.badRequest().bodyValue("id must be a valid UUID.");
+        }
         return service.findSubjectSyncsBySubjectId(subjectId)
             .collectList()
             .flatMap(list -> ServerResponse.ok().bodyValue(list));

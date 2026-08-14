@@ -78,6 +78,9 @@ public class BindEpisodesStep implements DirectoryBindingStep {
     @Override
     public Mono<DirectoryBindingContext> execute(DirectoryBindingContext context) {
         UUID subjectId = context.getSubjectId();
+        if (subjectId == null) {
+            return Mono.error(new IllegalStateException("条目标识不能为空"));
+        }
         return Flux.fromIterable(context.getChildAttachments())
             .concatMap(attachment -> bindFileToEpisode(attachment, subjectId, context))
             .last();
@@ -85,7 +88,11 @@ public class BindEpisodesStep implements DirectoryBindingStep {
 
     private Mono<DirectoryBindingContext> bindFileToEpisode(Attachment attachment, UUID subjectId,
                                                             DirectoryBindingContext context) {
-        return episodeSequenceRegularService.match(attachment.getName())
+        String attachmentName = attachment.getName();
+        if (attachmentName == null) {
+            return Mono.just(context);
+        }
+        return episodeSequenceRegularService.match(attachmentName)
             .flatMap(result -> {
                 if (!result.isMatched() || result.getSequence() == null) {
                     log.warn("Cannot parse episode sequence from file: {}",
@@ -146,10 +153,15 @@ public class BindEpisodesStep implements DirectoryBindingStep {
 
     private Mono<AttachmentReferenceEntity> createRefAndRecord(
         Attachment attachment, Episode episode, DirectoryBindingContext context) {
+        UUID attachmentId = attachment.getId();
+        UUID episodeId = episode.getId();
+        if (attachmentId == null || episodeId == null) {
+            return Mono.error(new IllegalStateException("附件和剧集标识不能为空"));
+        }
         return attachmentReferenceRepository
             .findByTypeAndAttachmentIdAndReferenceId(
                 AttachmentReferenceType.EPISODE,
-                attachment.getId(), episode.getId())
+                attachmentId, episodeId)
             .flatMap(existing -> {
                 log.info("File [{}] already bound to episode seq [{}], skip",
                     attachment.getName(), episode.getSequence());
@@ -158,8 +170,8 @@ public class BindEpisodesStep implements DirectoryBindingStep {
             .switchIfEmpty(Mono.just(AttachmentReferenceEntity.builder()
                     .id(UuidV7Utils.generateUuid())
                     .type(AttachmentReferenceType.EPISODE)
-                    .attachmentId(attachment.getId())
-                    .referenceId(episode.getId())
+                    .attachmentId(attachmentId)
+                    .referenceId(episodeId)
                     .build())
                 .flatMap(attachmentReferenceRepository::insert)
                 .doOnNext(saved -> {
@@ -175,7 +187,7 @@ public class BindEpisodesStep implements DirectoryBindingStep {
                         attachment.getName(), episode.getSequence());
 
                     eventPublisher.publishEvent(new EpisodeAttachmentUpdateEvent(
-                        this, episode.getId(), attachment.getId(), false));
+                        this, episodeId, attachmentId, false));
                     log.debug("Published EpisodeAttachmentUpdateEvent "
                             + "for episodeId={}, attachmentId={}",
                         episode.getId(), attachment.getId());
@@ -187,7 +199,8 @@ public class BindEpisodesStep implements DirectoryBindingStep {
     @Override
     public Mono<Void> rollback(DirectoryBindingContext context) {
         Mono<Void> removeRefs = Flux.fromIterable(context.getCreatedAttachmentRefs())
-            .concatMap(ref -> attachmentReferenceRepository.deleteById(ref.getId())
+            .concatMap(ref -> ref.getId() == null ? Mono.empty()
+                : attachmentReferenceRepository.deleteById(ref.getId())
                 .onErrorResume(e -> {
                     log.warn("Failed to remove attachment ref during rollback", e);
                     return Mono.empty();
@@ -195,7 +208,8 @@ public class BindEpisodesStep implements DirectoryBindingStep {
             .then();
 
         Mono<Void> removeEpisodes = Flux.fromIterable(context.getCreatedEpisodes())
-            .concatMap(ep -> episodeService.deleteById(ep.getId())
+            .concatMap(ep -> ep.getId() == null ? Mono.empty()
+                : episodeService.deleteById(ep.getId())
                 .onErrorResume(e -> {
                     log.warn("Failed to remove episode during rollback", e);
                     return Mono.empty();

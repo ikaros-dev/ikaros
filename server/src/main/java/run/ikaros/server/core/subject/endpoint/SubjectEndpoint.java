@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.http.HttpStatus;
@@ -220,7 +221,7 @@ public class SubjectEndpoint implements CoreEndpoint {
             .build();
     }
 
-    private String decodeBase64QueryParam(ServerRequest request, String parameterName) {
+    private @Nullable String decodeBase64QueryParam(ServerRequest request, String parameterName) {
         return request.queryParam(parameterName)
             .filter(StringUtils::hasText)
             .map(value -> new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8))
@@ -258,6 +259,9 @@ public class SubjectEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> getById(ServerRequest request) {
         final UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
+        if (id == null) {
+            return ServerResponse.badRequest().bodyValue("id must be a valid UUID.");
+        }
         return subjectService.findById(id)
             .flatMap(subject -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -265,7 +269,8 @@ public class SubjectEndpoint implements CoreEndpoint {
             .onErrorResume(NotFoundException.class,
                 e -> ServerResponse.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(e.getMessage()))
+                    .bodyValue(e.getMessage() == null
+                        ? e.getClass().getSimpleName() : e.getMessage()))
             .switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("Not found for id: " + id));
@@ -287,6 +292,9 @@ public class SubjectEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> deleteById(ServerRequest request) {
         final UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
+        if (id == null) {
+            return ServerResponse.badRequest().bodyValue("id must be a valid UUID.");
+        }
         return subjectService.deleteById(id)
             .then(ServerResponse.ok().build());
     }

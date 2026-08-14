@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import run.ikaros.api.store.enums.AttachmentRelationType;
 
+@org.jspecify.annotations.NullUnmarked
 class PostAttachmentRelationsParamTest {
 
     @Test

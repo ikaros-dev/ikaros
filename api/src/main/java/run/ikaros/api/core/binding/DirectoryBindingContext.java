@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
@@ -32,7 +33,8 @@ public class DirectoryBindingContext {
     private @Nullable String directoryName;
     private @Nullable String cleanName;
     private @Nullable String keyword;
-    private @Nullable List<String> bracketTags;
+    @Default
+    private List<String> bracketTags = new ArrayList<>();
 
     private @Nullable SubjectSyncPlatform platform;
     private @Nullable String platformId;
@@ -41,16 +43,24 @@ public class DirectoryBindingContext {
     private @Nullable Subject subject;
     private @Nullable SubjectSync subjectSync;
 
-    private @Nullable List<Attachment> childAttachments;
-    private @Nullable List<Attachment> spSubdirectoryAttachments;
+    @Default
+    private List<Attachment> childAttachments = new ArrayList<>();
+    @Default
+    private List<Attachment> spSubdirectoryAttachments = new ArrayList<>();
 
-    private @Nullable List<Episode> createdEpisodes;
-    private @Nullable List<Tag> createdTags;
-    private @Nullable List<AttachmentReference> createdAttachmentRefs;
+    @Default
+    private List<Episode> createdEpisodes = new ArrayList<>();
+    @Default
+    private List<Tag> createdTags = new ArrayList<>();
+    @Default
+    private List<AttachmentReference> createdAttachmentRefs = new ArrayList<>();
 
-    private @Nullable Map<String, DirectoryBindingStepStatus> stepResults;
-    private @Nullable Map<String, String> stepErrors;
-    private @Nullable Map<String, Object> parameters;
+    @Default
+    private Map<String, DirectoryBindingStepStatus> stepResults = new HashMap<>();
+    @Default
+    private Map<String, String> stepErrors = new HashMap<>();
+    @Default
+    private Map<String, Object> parameters = new HashMap<>();
 
     /**
      * Create a new context with initialized collections.

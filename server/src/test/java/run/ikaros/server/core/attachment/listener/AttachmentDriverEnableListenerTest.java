@@ -30,6 +30,7 @@ import run.ikaros.server.store.repository.AttachmentDriverRepository;
 /**
  * 本地附件驱动启用监听器测试.
  */
+@org.jspecify.annotations.NullUnmarked
 class AttachmentDriverEnableListenerTest {
     /** 附件服务. */
     @Mock

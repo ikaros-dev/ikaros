@@ -180,6 +180,9 @@ public class AttachmentRelationEndpoint implements CoreEndpoint {
     Mono<ServerResponse> findAttachmentVideoSubtitles(ServerRequest request) {
         UUID attachmentId =
             UuidV7Utils.fromString(request.pathVariable("attachmentId"));
+        if (attachmentId == null) {
+            return ServerResponse.badRequest().bodyValue("attachmentId must be a valid UUID.");
+        }
         return attachmentRelationService.findAttachmentVideoSubtitles(attachmentId)
             .collectList()
             .flatMap(videoSubtitles -> ServerResponse.ok().bodyValue(videoSubtitles));

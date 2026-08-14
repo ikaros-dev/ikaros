@@ -276,7 +276,8 @@ public class DirectoryBindingEndpoint implements CoreEndpoint {
         return errorResponse(HttpStatus.BAD_REQUEST, message);
     }
 
-    private Mono<ServerResponse> errorResponse(HttpStatus status, String message) {
+    private Mono<ServerResponse> errorResponse(HttpStatus status,
+                                               @org.jspecify.annotations.Nullable String message) {
         String readableMessage = message == null || message.isBlank()
             ? status.getReasonPhrase() : message;
         return ServerResponse.status(status).bodyValue(readableMessage);

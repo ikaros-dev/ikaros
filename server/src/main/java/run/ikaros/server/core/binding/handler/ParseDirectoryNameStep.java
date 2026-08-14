@@ -27,6 +27,9 @@ public class ParseDirectoryNameStep implements DirectoryBindingStep {
     @Override
     public Mono<DirectoryBindingContext> execute(DirectoryBindingContext context) {
         String dirName = context.getDirectoryName();
+        if (dirName == null) {
+            return Mono.error(new IllegalStateException("目录名不能为空"));
+        }
         List<String> tags = RegexUtils.getFileTag(dirName);
         String cleanName = dirName.replaceAll("\\[[^\\[\\]]+\\]", "").trim();
 

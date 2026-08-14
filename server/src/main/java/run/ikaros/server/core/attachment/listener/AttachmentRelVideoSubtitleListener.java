@@ -90,8 +90,12 @@ public class AttachmentRelVideoSubtitleListener {
                         attachment.getId(), exception.getClass().getSimpleName());
                     return Flux.empty();
                 }))
-            .map(VideoSubtitle::getAttachmentId)
-            .flatMap(relationAttId -> attachmentRelationRepository
+            .flatMap(videoSubtitle -> {
+                UUID relationAttId = videoSubtitle.getAttachmentId();
+                if (relationAttId == null) {
+                    return Mono.empty();
+                }
+                return attachmentRelationRepository
                 .existsByTypeAndAttachmentIdAndRelationAttachmentId(
                     AttachmentRelationType.VIDEO_SUBTITLE, attachmentId, relationAttId)
                 .filter(exists -> !exists)
@@ -106,7 +110,8 @@ public class AttachmentRelVideoSubtitleListener {
                     .doOnSuccess(entity -> log.debug("Save new attachment relation record"
                             + " for type={} attId={} relAttId={}",
                         AttachmentRelationType.VIDEO_SUBTITLE,
-                        attachmentId, relationAttId))))
+                        attachmentId, relationAttId)));
+            })
             .then();
     }
 

@@ -24,6 +24,7 @@ import run.ikaros.server.store.entity.TagEntity;
 import run.ikaros.server.store.repository.SubjectRepository;
 import run.ikaros.server.store.repository.TagRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class TagEventListenerTest {
 
     private IndicesProperties indicesProperties;

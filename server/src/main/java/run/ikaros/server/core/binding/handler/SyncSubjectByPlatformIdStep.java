@@ -42,6 +42,9 @@ public class SyncSubjectByPlatformIdStep implements DirectoryBindingStep {
     public Mono<DirectoryBindingContext> execute(DirectoryBindingContext context) {
         SubjectSyncPlatform platform = context.getPlatform();
         String platformId = context.getPlatformId();
+        if (platform == null || platformId == null) {
+            return Mono.error(new IllegalStateException("同步平台和平台标识不能为空"));
+        }
 
         return subjectSyncService
             .findSubjectSyncsByPlatformAndPlatformId(platform, platformId)

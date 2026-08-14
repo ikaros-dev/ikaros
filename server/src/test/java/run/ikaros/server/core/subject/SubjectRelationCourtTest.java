@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import run.ikaros.api.store.enums.SubjectRelationType;
 import run.ikaros.api.store.enums.SubjectType;
 
+@org.jspecify.annotations.NullUnmarked
 class SubjectRelationCourtTest {
 
     @Test

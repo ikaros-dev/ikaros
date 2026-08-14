@@ -18,6 +18,7 @@ import reactor.test.StepVerifier;
 /**
  * 本地附件驱动路径校验器测试.
  */
+@org.jspecify.annotations.NullUnmarked
 class LocalAttachmentPathValidatorTest {
     /** 被测试的路径校验器. */
     private final LocalAttachmentPathValidator validator = new LocalAttachmentPathValidator();

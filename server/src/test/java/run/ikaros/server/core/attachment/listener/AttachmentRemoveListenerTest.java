@@ -15,6 +15,7 @@ import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.AttachmentRelationRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class AttachmentRemoveListenerTest {
 
     @Mock

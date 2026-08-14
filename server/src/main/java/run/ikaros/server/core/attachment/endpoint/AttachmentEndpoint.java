@@ -362,7 +362,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         mediaValidationService.validateFilename(file.filename());
                     } catch (IllegalArgumentException exception) {
                         return releasePartEvents(partEvents)
-                            .then(Mono.error(new ServerWebInputException(exception.getMessage(),
+                            .then(Mono.error(new ServerWebInputException(errorMessage(exception),
                                 null, exception)));
                     }
                     Flux<DataBuffer> content = partEvents
@@ -386,7 +386,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                 .bodyValue(file))
             .onErrorResume(NotFoundException.class, e -> ServerResponse.from(
                 ErrorResponse
-                    .builder(e, HttpStatusCode.valueOf(404), e.getMessage())
+                    .builder(e, HttpStatusCode.valueOf(404), errorMessage(e))
                     .type(URI.create(e
                         .getClass()
                         .getSimpleName()))
@@ -438,9 +438,9 @@ public class AttachmentEndpoint implements CoreEndpoint {
             .decode(nameOp.get()), StandardCharsets.UTF_8)
             : "";
 
-        UUID parentId = UuidV7Utils.fromString(request
-            .queryParam("parentId")
-            .orElse(null));
+        Optional<String> parentIdValue = request.queryParam("parentId");
+        UUID parentId = parentIdValue.isPresent()
+            ? UuidV7Utils.fromString(parentIdValue.get()) : null;
 
         Optional<String> typeOp = request.queryParam("type");
         AttachmentType type = typeOp
@@ -515,7 +515,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
             .onErrorResume(AttachmentParentNotFoundException.class,
                 e -> ServerResponse
                     .status(HttpStatus.NOT_FOUND)
-                    .bodyValue(e.getMessage()))
+                    .bodyValue(errorMessage(e)))
             .onErrorResume(DuplicateKeyException.class, e ->
                 ServerResponse
                     .status(HttpStatus.BAD_REQUEST)
@@ -542,7 +542,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
             .onErrorResume(AttachmentParentNotFoundException.class,
                 e -> ServerResponse
                     .status(HttpStatus.NOT_FOUND)
-                    .bodyValue(e.getMessage()))
+                    .bodyValue(errorMessage(e)))
             .onErrorResume(DuplicateKeyException.class, e ->
                 ServerResponse
                     .status(HttpStatus.BAD_REQUEST)
@@ -601,7 +601,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
         } catch (IllegalArgumentException exception) {
             return ServerResponse
                 .badRequest()
-                .bodyValue(exception.getMessage());
+                .bodyValue(errorMessage(exception));
         }
 
         final String unique = request.pathVariable("unique");
@@ -678,14 +678,19 @@ public class AttachmentEndpoint implements CoreEndpoint {
         return attachmentService
             .findById(id)
             .flatMap(attachment -> {
+                Long fileSize = attachment.getSize();
+                String fileName = attachment.getName();
+                if (fileSize == null || fileName == null) {
+                    return Mono.error(new AttachmentUploadException(
+                        "附件流缺少文件名或大小", null));
+                }
                 String rangeHeader = request
                     .headers()
                     .firstHeader(HttpHeaders.RANGE);
                 if (rangeHeader != null) {
-                    return doGetPartialContentRsp(id, attachment.getSize(),
-                        attachment.getName(), rangeHeader);
+                    return doGetPartialContentRsp(id, fileSize, fileName, rangeHeader);
                 }
-                return doGetFullContentRsp(id, attachment.getName());
+                return doGetFullContentRsp(id, fileName);
             })
             .switchIfEmpty(ServerResponse
                 .notFound()
@@ -704,20 +709,25 @@ public class AttachmentEndpoint implements CoreEndpoint {
             .flatMap(attachment -> attachmentService
                 .getStreamById(id)
                 .flatMap(stream -> {
-                    if (!"image/svg+xml".equals(stream.getContextType())) {
+                    String contextType = stream.getContextType();
+                    String fileName = attachment.getName();
+                    Flux<DataBuffer> content = stream.getDataBufferFlux();
+                    if (contextType == null || !"image/svg+xml".equals(contextType)
+                        || fileName == null
+                        || content == null) {
                         return ServerResponse
                             .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
                             .build();
                     }
                     return ServerResponse
                         .ok()
-                        .header(HttpHeaders.CONTENT_TYPE, stream.getContextType())
+                        .header(HttpHeaders.CONTENT_TYPE, contextType)
                         .header("Content-Security-Policy",
                             "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data:")
                         .header("X-Content-Type-Options", "nosniff")
                         .header(HttpHeaders.CONTENT_DISPOSITION,
-                            buildContentDisposition(attachment.getName(), stream.getContextType()))
-                        .body(stream.getDataBufferFlux(), DataBuffer.class);
+                            buildContentDisposition(fileName, contextType))
+                        .body(content, DataBuffer.class);
                 }))
             .switchIfEmpty(ServerResponse
                 .notFound()
@@ -743,18 +753,26 @@ public class AttachmentEndpoint implements CoreEndpoint {
             long end = range[1];
             long contentLength = end - start + 1;
             return attachmentService
-                .getStreamByIdWithRange(aid, start, end)
-                .flatMap(stream -> ServerResponse
+            .getStreamByIdWithRange(aid, start, end)
+                .flatMap(stream -> {
+                    String contextType = stream.getContextType();
+                    Flux<DataBuffer> content = stream.getDataBufferFlux();
+                    if (contextType == null || content == null) {
+                        return Mono.error(new AttachmentUploadException(
+                            "附件流缺少内容或媒体类型", null));
+                    }
+                    return ServerResponse
                     .status(HttpStatus.PARTIAL_CONTENT)
-                    .header(HttpHeaders.CONTENT_TYPE, stream.getContextType())
+                    .header(HttpHeaders.CONTENT_TYPE, contextType)
                     .header("X-Content-Type-Options", "nosniff")
                     .header(HttpHeaders.ACCEPT_RANGES, "bytes")
                     .header(HttpHeaders.CONTENT_RANGE,
                         String.format("bytes %d-%d/%d", start, end, fileSize))
                     .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(contentLength))
                     .header(HttpHeaders.CONTENT_DISPOSITION,
-                        buildContentDisposition(fileName, stream.getContextType()))
-                    .body(stream.getDataBufferFlux(), DataBuffer.class));
+                        buildContentDisposition(fileName, contextType))
+                    .body(content, DataBuffer.class);
+                });
         } catch (IllegalArgumentException exception) {
             return rangeNotSatisfiable(fileSize);
         }
@@ -763,15 +781,28 @@ public class AttachmentEndpoint implements CoreEndpoint {
     private Mono<ServerResponse> doGetFullContentRsp(UUID aid, String fileName) {
         return attachmentService
             .getStreamById(aid)
-            .flatMap(stream -> ServerResponse
+            .flatMap(stream -> {
+                String contextType = stream.getContextType();
+                Flux<DataBuffer> content = stream.getDataBufferFlux();
+                if (contextType == null || content == null) {
+                    return Mono.error(new AttachmentUploadException(
+                        "附件流缺少内容或媒体类型", null));
+                }
+                return ServerResponse
                 .ok()
-                .header(HttpHeaders.CONTENT_TYPE, stream.getContextType())
+                .header(HttpHeaders.CONTENT_TYPE, contextType)
                 .header("X-Content-Type-Options", "nosniff")
                 .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(stream.getContextLength()))
                 .header(HttpHeaders.ACCEPT_RANGES, "bytes")
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                    buildContentDisposition(fileName, stream.getContextType()))
-                .body(stream.getDataBufferFlux(), DataBuffer.class));
+                    buildContentDisposition(fileName, contextType))
+                .body(content, DataBuffer.class);
+            });
+    }
+
+    private static String errorMessage(Throwable throwable) {
+        String message = throwable.getMessage();
+        return message == null ? throwable.getClass().getSimpleName() : message;
     }
 
     private long[] parseRange(String rangeHeader, long fileSize) {

@@ -44,6 +44,9 @@ public class CreateSubjectTagsStep implements DirectoryBindingStep {
     @Override
     public Mono<DirectoryBindingContext> execute(DirectoryBindingContext context) {
         UUID subjectId = context.getSubjectId();
+        if (subjectId == null) {
+            return Mono.error(new IllegalStateException("条目标识不能为空"));
+        }
         return Flux.fromIterable(context.getBracketTags())
             .concatMap(tagName ->
                 tagService.findAll(TagType.SUBJECT, subjectId, null, tagName)
@@ -75,7 +78,8 @@ public class CreateSubjectTagsStep implements DirectoryBindingStep {
     @Override
     public Mono<Void> rollback(DirectoryBindingContext context) {
         return Flux.fromIterable(context.getCreatedTags())
-            .concatMap(tag -> tagService.removeById(tag.getId())
+            .concatMap(tag -> tag.getId() == null ? Mono.empty()
+                : tagService.removeById(tag.getId())
                 .onErrorResume(e -> {
                     log.warn("Failed to remove tag during rollback: {}", tag.getName(), e);
                     return Mono.empty();

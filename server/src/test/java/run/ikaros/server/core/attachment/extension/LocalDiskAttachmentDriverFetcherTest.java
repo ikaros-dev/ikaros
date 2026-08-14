@@ -20,6 +20,7 @@ import run.ikaros.server.core.attachment.service.AttachmentMediaValidationServic
 import run.ikaros.server.core.attachment.service.impl.DefaultAttachmentMediaValidationService;
 
 /** 本地磁盘附件驱动测试. */
+@org.jspecify.annotations.NullUnmarked
 class LocalDiskAttachmentDriverFetcherTest {
     @Test
     void getChildrenReturnsOnlyValidatedFileWithoutCalculatingSha1(@TempDir Path tempDir)

@@ -18,6 +18,7 @@ import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.service.SubjectSyncService;
 
+@org.jspecify.annotations.NullUnmarked
 class FetchAndCreateSubjectStepTest {
 
     @Mock

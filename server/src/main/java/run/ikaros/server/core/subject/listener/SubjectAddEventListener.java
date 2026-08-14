@@ -26,11 +26,15 @@ public class SubjectAddEventListener {
     @EventListener(SubjectAddEvent.class)
     public Mono<Void> onSubjectAdd(SubjectAddEvent event) {
         SubjectEntity subjectEntity = event.getEntity();
+        var subjectId = subjectEntity.getId();
+        if (subjectId == null) {
+            return Mono.empty();
+        }
         if (SubjectType.GAME.equals(subjectEntity.getType())) {
-            return episodeRepository.findAllBySubjectId(subjectEntity.getId())
+            return episodeRepository.findAllBySubjectId(subjectId)
                 .switchIfEmpty(episodeRepository.insert(EpisodeEntity.builder()
                     .airTime(subjectEntity.getAirTime())
-                    .subjectId(subjectEntity.getId())
+                    .subjectId(subjectId)
                     .group(EpisodeGroup.MAIN)
                     .sequence(0F)
                     .name("Game archive package")

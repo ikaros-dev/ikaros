@@ -29,6 +29,7 @@ import run.ikaros.server.store.entity.AttachmentReferenceEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class ProcessSpSubdirectoriesStepTest {
 
     @Mock

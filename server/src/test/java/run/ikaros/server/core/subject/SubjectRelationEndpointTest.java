@@ -43,6 +43,7 @@ import run.ikaros.server.store.repository.SubjectRelationRepository;
 @AutoConfigureWebTestClient
 @Testcontainers
 @Import(IkarosTestcontainersConfiguration.class)
+@org.jspecify.annotations.NullUnmarked
 class SubjectRelationEndpointTest {
 
     @Autowired

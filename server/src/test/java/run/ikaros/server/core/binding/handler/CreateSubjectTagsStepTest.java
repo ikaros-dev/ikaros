@@ -21,6 +21,7 @@ import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.api.store.enums.TagType;
 import run.ikaros.server.core.tag.TagService;
 
+@org.jspecify.annotations.NullUnmarked
 class CreateSubjectTagsStepTest {
 
     @Mock

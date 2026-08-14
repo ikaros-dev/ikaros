@@ -39,9 +39,13 @@ public class FindSubjectInfoStep implements DirectoryBindingStep {
     @Override
     public Mono<DirectoryBindingContext> execute(DirectoryBindingContext context) {
         log.info("Find subject info for keyword: {}", context.getCleanName());
+        var platform = context.getPlatform();
         String searchKeyword = context.getKeyword() != null && !context.getKeyword().isBlank()
             ? context.getKeyword() : context.getCleanName();
-        return metaInfoService.searchSubjects(context.getPlatform(), searchKeyword)
+        if (platform == null || searchKeyword == null) {
+            return Mono.error(new IllegalStateException("元数据平台和搜索词不能为空"));
+        }
+        return metaInfoService.searchSubjects(platform, searchKeyword)
             .collectList()
             .filter(list -> !list.isEmpty())
             .map(list -> list.get(0))

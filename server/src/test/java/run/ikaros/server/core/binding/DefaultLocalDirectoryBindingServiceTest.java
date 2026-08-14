@@ -41,6 +41,7 @@ import run.ikaros.server.store.repository.DirectoryBindingWorkflowRepository;
 import run.ikaros.server.store.repository.TaskRepository;
 
 /** 本地目录绑定确认与重扫的幂等性测试. */
+@org.jspecify.annotations.NullUnmarked
 class DefaultLocalDirectoryBindingServiceTest {
     @Mock
     private LocalMediaScanner localMediaScanner;

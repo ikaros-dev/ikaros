@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Column;
@@ -30,7 +31,7 @@ public class DirectoryBindingWorkflowEntity {
     private Long version;
     /** 当前提交任务的标识. */
     @Column("task_id")
-    private UUID taskId;
+    private @Nullable UUID taskId;
     /** 被绑定目录的附件标识. */
     @Column("directory_id")
     private UUID directoryId;
@@ -64,8 +65,8 @@ public class DirectoryBindingWorkflowEntity {
     private LocalDateTime createTime;
     /** 工作流结束时间. */
     @Column("end_time")
-    private LocalDateTime endTime;
+    private @Nullable LocalDateTime endTime;
     /** 工作流失败原因. */
     @Column("fail_message")
-    private String failMessage;
+    private @Nullable String failMessage;
 }

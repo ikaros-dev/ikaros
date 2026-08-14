@@ -28,6 +28,7 @@ import run.ikaros.server.core.attachment.service.AttachmentRelationService;
 import run.ikaros.server.core.attachment.service.AttachmentService;
 
 @ExtendWith(MockitoExtension.class)
+@org.jspecify.annotations.NullUnmarked
 class AttachmentOperatorTest {
 
     @Mock

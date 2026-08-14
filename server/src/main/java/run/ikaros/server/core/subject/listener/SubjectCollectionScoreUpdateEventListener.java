@@ -6,7 +6,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.server.core.collection.event.SubjectCollectionScoreUpdateEvent;
-import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.SubjectCollectionEntity;
 import run.ikaros.server.store.repository.SubjectCollectionRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
@@ -41,7 +40,7 @@ public class SubjectCollectionScoreUpdateEventListener {
         }
         log.debug("Receive event with subjectId={}.", subjectId);
         return userRepository.findAll()
-            .map(BaseEntity::getId)
+            .flatMap(user -> user.getId() == null ? Mono.empty() : Mono.just(user.getId()))
             .flatMap(uid ->
                 subjectCollectionRepository.findByUserIdAndSubjectId(uid, subjectId))
             .map(SubjectCollectionEntity::getScore)

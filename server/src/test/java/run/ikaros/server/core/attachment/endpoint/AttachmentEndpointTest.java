@@ -28,6 +28,7 @@ import run.ikaros.server.core.attachment.service.AttachmentService;
 /**
  * 验证附件流和隔离 SVG 预览接口的响应行为.
  */
+@org.jspecify.annotations.NullUnmarked
 class AttachmentEndpointTest {
 
     /**

@@ -104,7 +104,10 @@ public class AttachmentRelationServiceImpl implements AttachmentRelationService 
         final AttachmentRelationType type = postAttachmentRelationsParam.getType();
         final List<UUID> relationIds = postAttachmentRelationsParam.getRelationIds();
 
-        Assert.notNull(type, "'type' must not null.");
+        if (masterId == null || type == null || relationIds == null) {
+            throw new IllegalArgumentException(
+                "'masterId', 'type' and 'relationIds' must not be null.");
+        }
         Assert.isTrue(!relationIds.isEmpty(),
             "'relationIds' must not empty.");
 

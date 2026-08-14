@@ -21,6 +21,7 @@ import run.ikaros.server.store.repository.PersonRepository;
 import run.ikaros.server.store.repository.SubjectCollectionRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class IkarosAppInfoContributorTest {
 
     private AttachmentRepository attachmentRepository;

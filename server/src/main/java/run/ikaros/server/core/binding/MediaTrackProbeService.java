@@ -2,6 +2,7 @@ package run.ikaros.server.core.binding;
 
 import java.nio.file.Path;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.binding.MediaTrack;
 
@@ -17,7 +18,7 @@ public interface MediaTrackProbeService {
     Mono<ProbeResult> probe(Path mediaPath);
 
     /** 单个媒体文件的轨道探测结果. */
-    record ProbeResult(List<MediaTrack> tracks, String failureReason) {
+    record ProbeResult(List<MediaTrack> tracks, @Nullable String failureReason) {
 
         /**
          * 创建成功探测结果.

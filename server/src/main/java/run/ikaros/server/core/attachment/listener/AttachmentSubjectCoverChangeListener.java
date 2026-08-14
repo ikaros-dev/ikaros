@@ -109,15 +109,24 @@ public class AttachmentSubjectCoverChangeListener {
             return Mono.empty();
         }
 
+        UUID oldSubjectId = oldEntity.getId();
+        if (oldSubjectId == null) {
+            return Mono.empty();
+        }
         return attachmentRepository.findByUrl(oldCover)
-            .map(AttachmentEntity::getId)
-            .flatMap(oldCoverAttId -> attachmentReferenceRepository
+            .flatMap(oldCoverAttachment -> {
+                UUID oldCoverAttId = oldCoverAttachment.getId();
+                if (oldCoverAttId == null) {
+                    return Mono.empty();
+                }
+                return attachmentReferenceRepository
                 .deleteByTypeAndAttachmentIdAndReferenceId(
                     AttachmentReferenceType.SUBJECT,
-                    oldEntity.getId(),
+                    oldSubjectId,
                     oldCoverAttId
                 ).doOnSuccess(unused ->
-                    log.debug("Delete attachment Reference by type and att id and sub id.")))
+                    log.debug("Delete attachment Reference by type and att id and sub id."));
+            })
 
             // 当是网络url的时候，附件是找不到的，此时为空走这里的逻辑
             // 条目三方同步会发布更新事件
@@ -141,25 +150,34 @@ public class AttachmentSubjectCoverChangeListener {
                     .dataBufferFlux(Mono.just(dataBufferFactory.wrap(bytes)).flux())
                     .build());
             })
-            .flatMap(attachment ->
-                subjectRepository.findByNsfwAndTypeAndNameAndSummary(
+            .flatMap(attachment -> {
+                String attachmentUrl = attachment.getUrl();
+                UUID attachmentId = attachment.getId();
+                if (attachmentUrl == null || attachmentId == null) {
+                    return Mono.empty();
+                }
+                return subjectRepository.findByNsfwAndTypeAndNameAndSummary(
                         newEntity.getNsfw(), newEntity.getType(),
                         newEntity.getName(), newEntity.getSummary())
-                    .map(entity -> entity.setCover(attachment.getUrl()))
+                    .map(entity -> entity.setCover(attachmentUrl))
                     .flatMap(subjectRepository::update)
-                    .flatMap(entity ->
+                    .flatMap(entity -> {
+                        UUID subjectId = entity.getId();
+                        if (subjectId == null) {
+                            return Mono.empty();
+                        }
+                        return
                         attachmentReferenceRepository.findByTypeAndAttachmentIdAndReferenceId(
-                                AttachmentReferenceType.SUBJECT, attachment.getId(), entity.getId())
+                                AttachmentReferenceType.SUBJECT, attachmentId, subjectId)
                             .flatMap(attachmentReferenceRepository::update)
                             .switchIfEmpty(attachmentReferenceRepository.insert(
                                 AttachmentReferenceEntity.builder()
                                 .type(AttachmentReferenceType.SUBJECT)
-                                .attachmentId(attachment.getId())
-                                .referenceId(entity.getId())
-                                .build()))
-                    )
-
-            )
+                                .attachmentId(attachmentId)
+                                .referenceId(subjectId)
+                                .build()));
+                    });
+            })
 
             .then(moveCover2CoverDir(newEntity))
 
@@ -181,7 +199,7 @@ public class AttachmentSubjectCoverChangeListener {
      */
     private Mono<AttachmentEntity> moveCover2CoverDir(SubjectEntity newEntity) {
         return attachmentRepository.findByUrl(newEntity.getCover())
-            .filter(entity -> !entity.getParentId().equals(COVER_DIRECTORY_ID))
+            .filter(entity -> !COVER_DIRECTORY_ID.equals(entity.getParentId()))
             .map(entity -> entity.setParentId(COVER_DIRECTORY_ID)
                 .setName(getCoverName(newEntity)))
             .flatMap(attachmentRepository::update);

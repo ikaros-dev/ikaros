@@ -17,6 +17,7 @@ import run.ikaros.api.core.binding.DirectoryBindingStep;
 import run.ikaros.api.core.binding.DirectoryBindingStepStatus;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 
+@org.jspecify.annotations.NullUnmarked
 class DirectoryBindingChainTest {
 
     @Mock
