@@ -42,7 +42,8 @@
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        客户端层 (Clients)                        │
-│  Web Console (Vue3 SPA) │ Windows/Android App │ Subsonic 客户端  │
+│  Web Console (Vue3 SPA) │ App (Flutter 六端) │ Subsonic 客户端    │
+│  App：Windows/Android/iOS/macOS/Linux/Web，含视频/音乐/阅读      │
 └───────────────────────────────┬─────────────────────────────────┘
                                 │ HTTPS / HTTP
 ┌───────────────────────────────┴─────────────────────────────────┐
@@ -233,6 +234,58 @@ IkarosPluginManager (PF4J PluginManager)
 
 插件可实现的扩展点（`IkarosExtensionPoint` 子接口）：详见 [PRD 4.10.2 插件扩展点](./Product-Requirements-Document.md#4.10.2-插件扩展点fr-plugin-02)。
 
+### 3.8 客户端 App 架构
+
+> 客户端 App 为独立仓库（[ikaros-app](https://github.com/ikaros-dev/app)），通过服务端开放接口接入，本文档仅描述其架构要点。
+
+#### 3.8.1 形态与技术选型
+
+| 项 | 选型 | 说明 |
+|----|------|------|
+| 框架 | Flutter（Dart 3.12） | 单代码库多端：Windows/Android/iOS/macOS/Linux/Web |
+| 状态管理 | provider | 轻量响应式状态 |
+| 网络 | dio + 拦截器 | 认证注入、Token 过期自动刷新 |
+| 视频内核 | VLC（dart_vlc / flutter_vlc_player） | 桌面端与移动端各一套封装 |
+| 音频内核 | just_audio + Subsonic 流 | 音频流经 `/rest/stream` 获取 |
+| 弹幕渲染 | ns_danmaku（自研/本地依赖） | 弹弹play 弹幕源 |
+| 本地存储 | shared_preferences | 登录态、设置、阅读进度 |
+| 深链 | app_links | `ikaros://app/subject/{id}` |
+
+#### 3.8.2 客户端-服务端通信
+
+- **接口协议**：HTTP REST（dio 客户端，与 OpenAPI 契约保持一致）。
+- **认证**：登录换取凭据后由拦截器自动附加；凭据过期时通过刷新接口自动续期。
+- **音频流**：Subsonic `/rest/stream`、`/rest/getCoverArt`（携带用户凭据），与 3.x 服务端 Subsonic 路由（`/rest/**`）对接。
+- **弹幕数据**：弹弹play 弹幕源按「番组计划 ID + 剧集序号」匹配查询，仅正片请求；服务端不做代理，由客户端直连弹幕源。
+
+#### 3.8.3 视频播放链路
+
+```
+剧集页 → 选择附件 → 获取文件流 URL / 条件 URL（按清晰度）
+    → VLC 播放（桌面 dart_vlc / 移动 flutter_vlc_player）
+    → 叠加字幕轨道 + 音轨选择 + 字幕延迟(±60s) + 弹幕层(ns_danmaku)
+    → 进度上报（剧集收藏）→ 自动连播下一集
+```
+
+- 清晰度：文件流始终保留为首选，其余清晰度通过附件条件 URL 接口按需获取；切换清晰度时保留字幕轨道。
+- 字幕延迟：VIP/转码流默认 6s，seek/reload 后重新应用。
+- 进度：播放中定时保存到服务端剧集收藏，恢复时跳转上次进度。
+
+#### 3.8.4 音乐播放链路
+
+```
+音乐库(专辑列表) → 专辑详情(歌曲列表) → Subsonic 流播放
+    → 正在播放页(封面/歌词 LRC/播放队列) → 底部迷你条
+```
+
+- 歌词：按附件资源或固定 lrc 文件名匹配加载，支持横排/竖排展示。
+
+#### 3.8.5 阅读器与布局自适应
+
+- **布局自适应**：以屏幕宽度（>600px）切换桌面/移动布局——移动端底部导航、桌面端侧边栏（NavigationRail）。
+- **漫画阅读器**：章节数据来自附件（支持压缩包自动下载解压）；阅读模式含单页/条漫/列表；支持章节悬浮切换。
+- **小说阅读器**：章节正文来自附件；支持字体调节、阅读主题、沉浸模式，本地持久化阅读进度与「继续阅读」入口。
+
 ---
 
 ## 4. 数据架构
@@ -295,6 +348,7 @@ custom + custom_metadata                 (自定义Scheme实体, GVK唯一)
 | Docker | `ikarosrun/ikaros` 镜像 + PG/Redis 容器 | 主流推荐 |
 | Fast Jar | `java -jar ikaros-server.jar`（含 Console 静态资源） | 单机快速部署 |
 | 源码构建 | Gradle `buildFrontend` + `bootJar` | 开发/定制 |
+| 客户端 App | Flutter 构建（Windows/Android/iOS/macOS/Linux/Web 安装包或应用商店分发） | 日常消费场景（看番/听歌/阅读） |
 
 ### 5.2 运行时拓扑
 
@@ -399,8 +453,8 @@ spring.r2dbc: { url: r2dbc:pool:postgresql://localhost:5432/ikaros, ... }
 | 阶段 | 架构重点 |
 |------|----------|
 | 已完成 | 响应式核心、附件驱动抽象、Lucene 搜索、插件体系（PF4J）、RBAC、缓存抽象、目录绑定工作流、Subsonic、音乐模块、2FA |
-| 进行中 | 测试覆盖率提升、构建链简化（bootJar 自动打包前端）、国际化文本统一 |
-| 规划 | 客户端（App）完善、插件生态丰富、更多协议兼容、多用户协作场景评估 |
+| 进行中 | 测试覆盖率提升、构建链简化（bootJar 自动打包前端）、国际化文本统一、客户端 App 打磨（播放器/阅读器体验、平台适配） |
+| 规划 | 插件生态丰富、更多协议兼容、多用户协作场景评估 |
 
 ---
 
@@ -410,5 +464,6 @@ spring.r2dbc: { url: r2dbc:pool:postgresql://localhost:5432/ikaros, ... }
 
 - [Product-Requirements-Document.md](./Product-Requirements-Document.md) — 产品需求文档（需求编号 FR-XXX / NFR-XXX 与本文档对应）
 - [Low-Level-Design.md](./Low-Level-Design.md) — 详细设计文档（类图、接口签名、时序、表结构 DDL）
+- [ikaros-app](https://github.com/ikaros-dev/app) — 客户端 App 仓库（Flutter，与本文档 3.8 客户端 App 架构对应）
 - [BUILD.md](../BUILD.md) — 编译与本地开发
 - 架构图：`diagrams/plugin-architecture.drawio`、`diagrams/plugin-loading-flowchart.drawio`

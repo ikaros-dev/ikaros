@@ -717,7 +717,96 @@ Client ──POST /security/auth/token/jwt/apply {u,p}──▶ JwtAuthenticatio
 
 ---
 
-## 15. 测试设计
+## 15. 客户端 App 详细设计
+
+> 客户端 App 为独立仓库（[ikaros-app](https://github.com/ikaros-dev/app)，Flutter），本文档基于其 `main` 分支（v1.8.0）编写，描述页面结构、播放器与阅读器的关键设计。
+
+### 15.1 模块结构（lib/）
+
+```
+lib/
+├── main.dart                    # 入口：按屏幕宽度选择 Desktop/Mobile 布局
+├── layout.dart                  # MobileLayout（底部导航）/ DesktopLayout（侧边栏）
+├── api/                         # API 客户端层（dio）
+│   ├── dio_client.dart          #   Dio 单例、BaseUrl、超时（连接/接收 5s）
+│   ├── dio_interceptors.dart    #   认证注入（AuthInterceptor）/ 凭据过期自动刷新
+│   ├── auth/                    #   登录、认证参数（含 baseUrl 持久化）
+│   ├── subject/ episode/        #   条目、剧集、关系、同步
+│   ├── attachment/              #   附件、附件关系、字幕下载器
+│   ├── collection/              #   条目收藏、剧集收藏
+│   ├── search/                  #   全局索引搜索（IndicesApi、SubjectHint）
+│   ├── music/                   #   音乐（MusicApi）、Subsonic（SubsonicApi）
+│   ├── user/ actuator/          #   用户信息、服务端状态/版本
+│   └── dandanplay/              #   弹弹play 弹幕源（搜索/番组/评论 API）
+├── collection/                  # 收藏页、剧集收藏页、历史记录
+├── subject/                     # 条目列表（高级筛选）、条目详情、剧集页、搜索页
+├── player/                      # 播放器：player_video/mobile|desktop、player_audio/mobile|desktop
+├── music/                       # 音乐库（专辑）、正在播放页（歌词/队列）
+├── reader/                      # 漫画阅读器、小说阅读器
+├── user/                        # 登录、我的（设置/版本/更新）
+├── component/                   # 公共组件（歌词组件、全屏图片、设置项等）
+└── utils/                       # 时间/字符串/屏幕/偏好/节流等工具
+```
+
+### 15.2 页面与导航
+
+- **入口路由**：`main.dart` 通过 `ScreenUtils.screenWidthGt600(context)` 选择 `DesktopLayout` 或 `MobileLayout`。
+- **主导航**：四个一级页面「收藏 / 条目 / 音乐 / 我的」——移动端 `NavigationBar`（底部），桌面端 `NavigationRail`（侧边栏）。
+- **页面跳转**：`Navigator.push(MaterialPageRoute)`；深链 `ikaros://app/subject/{id}` 由 `app_links` 监听 `uriLinkStream` 后跳转 `SubjectPage`。
+
+### 15.3 API 客户端层设计
+
+| 类 | 职责 |
+|----|------|
+| `DioClient` | Dio 单例；`rebuild(baseUrl)` 重建实例；超时 5s |
+| `AuthInterceptor` | 请求附加认证凭据 |
+| `AuthExpireInterceptor` | 凭据失效时自动调用刷新接口重试 |
+| `SubsonicApi` | 拼接 `/rest/stream`、`/rest/getCoverArt`、播放列表 URL（`enc:token` 加密凭据） |
+| `DandanplaySearchApi` 等 | 弹幕源搜索与番组信息 |
+
+### 15.4 视频播放器详细设计
+
+- **双实现**：桌面端 `DesktopVideoPlayer`（dart_vlc）、移动端 `MobileVideoPlayer`（flutter_vlc_player），二者能力对齐。
+- **核心状态**：附件 ID、文件流 URL、条件 URL（清晰度）、字幕延迟（毫秒）、当前弹幕样式。
+- **清晰度切换**：文件流始终保留为首选；其余清晰度通过附件条件 URL 接口获取；切换时保留字幕轨道。
+- **字幕**：轨道选择；延迟滑块（-60s ~ +60s）；VIP/转码流默认 +6s，seek/reload 后重新应用。
+- **弹幕**：仅正片且有第三方同步平台 ID 的条目才请求；弹幕样式可调（字体大小/显示区域/透明度/隐藏顶部/底部弹幕）。
+- **进度**：播放中定时上报剧集收藏；恢复播放时跳转上次进度；播放完成自动切换下一集。
+
+### 15.5 音频播放器详细设计
+
+- **双实现**：桌面端 `DesktopAudioPlayer`、移动端 `MobileAudioPlayer`（just_audio）。
+- **音乐库**：`MusicLibraryPage` 专辑列表（搜索 + 分页加载）、`MusicAlbumDetailPage` 歌曲列表（播放全部/随机）。
+- **正在播放**：`NowPlayingPage` 展示封面、LRC 歌词（横排/竖排切换）、播放队列；底部迷你「正在播放」条。
+- **音频流**：经 `SubsonicApi` 获取 `/rest/stream` URL（与服务端 11.3 Subsonic 对接）。
+- **歌词**：按附件资源或固定 lrc 文件名匹配加载（`lyrics_parser` 解析）。
+
+### 15.6 阅读器详细设计
+
+- **漫画**：`ComicReaderPage`（章节列表）→ `ComicChapterPage`（单页/条漫/列表三种模式，章节悬浮切换）；压缩包章节经 `archive` 下载解压为图片列表。
+- **小说**：`NovelReaderPage`（章节列表、继续阅读）→ `NovelChapterPage`（字体大小/阅读主题/沉浸模式）；阅读位置持久化于 `shared_preferences`，恢复上次进度。
+
+### 15.7 深链与更新机制
+
+- **深链**：`app_links` 监听，`ikaros://app/subject/{id}` → 解析 ID → 跳转条目详情。
+- **更新**：`ActuatorInfoApi` 获取服务端最新版本；比对后提示更新；下载安装包（`archive` 解压）+ `open_file` 打开安装（仅 Windows/Android 支持，桌面端校验平台）。
+
+### 15.8 与服务端契约映射
+
+| App 页面/能力 | 服务端端点（对应 LLD 章节） |
+|--------------|------------------------------|
+| 登录/会话 | 2 安全与认证（Login/Refresh） |
+| 条目列表/详情/关系/同步 | 4 条目模块 |
+| 剧集/选集/附件播放 | 5 剧集、6 附件（流式读取） |
+| 收藏/进度/历史 | 7 收藏模块 |
+| 全局搜索 | 9 搜索模块 |
+| 音乐库/音频流 | 11 音乐模块（Subsonic） |
+| 弹幕（弹弹play） | 客户端直连弹幕源，不经服务端 |
+| 版本/健康信息 | Actuator 端点 |
+
+---
+
+## 16. 测试设计
 
 | 层级 | 覆盖点 | 示例 |
 |------|--------|------|
@@ -731,9 +820,9 @@ Client ──POST /security/auth/token/jwt/apply {u,p}──▶ JwtAuthenticatio
 
 ---
 
-## 16. 附录
+## 17. 附录
 
-### 16.1 文档地图
+### 17.1 文档地图
 
 ```
 docs/
@@ -743,10 +832,13 @@ docs/
 └── diagrams/   # drawio 架构图（plugin-architecture / plugin-loading-flowchart）
 ```
 
-### 16.2 待完善项（TODO）
+### 17.2 待完善项（TODO）
 
 - [ ] 控制台前端组件级设计（Vue 组件树、状态管理 Pinia store 划分）
 - [ ] API 客户端生成规范（packages/api-client 与 OpenAPI 契约同步机制）
 - [ ] 主题系统渲染引擎设计（默认主题模板结构、插件主题约定）
 - [ ] WebClient 三方平台适配器规范（重试/限流/缓存策略）
 - [ ] 性能基准（附件刷新、搜索 P99 的压测方案）
+- [ ] 客户端 App 播放器细节设计（弹幕缓存策略、清晰度自适应、小窗模式行为）
+- [ ] 客户端 App 阅读器细节设计（翻页动画、字体排版、章节预加载）
+- [ ] 客户端 App 与 Web 控制台的接口复用约定（api-client 与 App API 层对齐）
