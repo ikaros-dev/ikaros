@@ -98,10 +98,6 @@ const mediaFileCategory = (fileName?: string) =>
 let attachmentRequestId = 0;
 
 type AttachmentSortProperty = 'name' | 'updateTime' | 'size';
-type AttachmentSortOrder = 'ascending' | 'descending';
-
-const attachmentSortProperty = ref<AttachmentSortProperty>('updateTime');
-const attachmentSortOrder = ref<AttachmentSortOrder>('descending');
 const englishNameCollator = new Intl.Collator('en', {
 	numeric: true,
 	sensitivity: 'base',
@@ -144,59 +140,15 @@ const compareAttachmentName = (firstName: string, secondName: string) => {
 	);
 };
 
-const sortedAttachments = computed(() =>
-	!canSortAttachmentColumn(attachmentSortProperty.value)
-		? attachments.value
-		: attachments.value
-				.map((attachment, index) => ({ attachment, index }))
-				.sort((first, second) => {
-					let comparison = 0;
-					if (attachmentSortProperty.value === 'name') {
-						comparison = compareAttachmentName(
-							first.attachment.name || '',
-							second.attachment.name || ''
-						);
-					} else if (attachmentSortProperty.value === 'updateTime') {
-						comparison =
-							new Date(first.attachment.updateTime || 0).getTime() -
-							new Date(second.attachment.updateTime || 0).getTime();
-					} else {
-						comparison =
-							Number(first.attachment.size || 0) -
-							Number(second.attachment.size || 0);
-					}
-					if (comparison === 0) {
-						return first.index - second.index;
-					}
-					return attachmentSortOrder.value === 'ascending'
-						? comparison
-						: -comparison;
-				})
-				.map(({ attachment }) => attachment)
-);
+const compareAttachmentByName = (first: Attachment, second: Attachment) =>
+	compareAttachmentName(first.name || '', second.name || '');
 
-const toggleAttachmentSort = (property: AttachmentSortProperty) => {
-	if (!canSortAttachmentColumn(property)) {
-		return;
-	}
-	if (attachmentSortProperty.value === property) {
-		attachmentSortOrder.value =
-			attachmentSortOrder.value === 'ascending' ? 'descending' : 'ascending';
-		return;
-	}
-	attachmentSortProperty.value = property;
-	attachmentSortOrder.value = property === 'name' ? 'ascending' : 'descending';
-};
+const compareAttachmentByUpdateTime = (first: Attachment, second: Attachment) =>
+	new Date(first.updateTime || 0).getTime() -
+	new Date(second.updateTime || 0).getTime();
 
-const attachmentSortSymbol = (property: AttachmentSortProperty) => {
-	if (
-		attachmentSortProperty.value !== property ||
-		!canSortAttachmentColumn(property)
-	) {
-		return '';
-	}
-	return attachmentSortOrder.value === 'descending' ? '▼' : '▲';
-};
+const compareAttachmentBySize = (first: Attachment, second: Attachment) =>
+	Number(first.size || 0) - Number(second.size || 0);
 
 const applyAttachmentPage = async (
 	data,
@@ -1106,7 +1058,8 @@ const onAttachmentDetailDrawerClose = () => {
 		</template>
 
 		<el-table
-			:data="sortedAttachments"
+			:data="attachments"
+			:default-sort="{ prop: 'updateTime', order: 'descending' }"
 			style="width: 100%"
 			row-key="id"
 			@current-change="onCurrentChange"
@@ -1116,20 +1069,12 @@ const onAttachmentDetailDrawerClose = () => {
 		>
 			<el-table-column type="selection" width="60" />
 			<!-- <el-table-column prop="id" label="ID" width="60" /> -->
-			<el-table-column prop="name">
-				<template #header>
-					<button
-						type="button"
-						class="attachment-sort-header"
-						:disabled="!canSortAttachmentColumn('name')"
-						@click.stop="toggleAttachmentSort('name')"
-					>
-						{{ t('module.attachment.table.colum.label.name') }}
-						<span class="attachment-sort-symbol">{{
-							attachmentSortSymbol('name')
-						}}</span>
-					</button>
-				</template>
+			<el-table-column
+				prop="name"
+				:label="t('module.attachment.table.colum.label.name')"
+				:sortable="canSortAttachmentColumn('name')"
+				:sort-method="compareAttachmentByName"
+			>
 				<template #default="scoped">
 					<el-icon
 						size="25"
@@ -1177,35 +1122,21 @@ const onAttachmentDetailDrawerClose = () => {
 					</span>
 				</template>
 			</el-table-column>
-			<el-table-column prop="updateTime" width="160" :formatter="dateFormat">
-				<template #header>
-					<button
-						type="button"
-						class="attachment-sort-header"
-						:disabled="!canSortAttachmentColumn('updateTime')"
-						@click.stop="toggleAttachmentSort('updateTime')"
-					>
-						{{ t('module.attachment.table.colum.label.update_time') }}
-						<span class="attachment-sort-symbol">{{
-							attachmentSortSymbol('updateTime')
-						}}</span>
-					</button>
-				</template>
-			</el-table-column>
-			<el-table-column prop="size" width="130">
-				<template #header>
-					<button
-						type="button"
-						class="attachment-sort-header"
-						:disabled="!canSortAttachmentColumn('size')"
-						@click.stop="toggleAttachmentSort('size')"
-					>
-						{{ t('module.attachment.table.colum.label.size') }}
-						<span class="attachment-sort-symbol">{{
-							attachmentSortSymbol('size')
-						}}</span>
-					</button>
-				</template>
+			<el-table-column
+				prop="updateTime"
+				width="160"
+				:label="t('module.attachment.table.colum.label.update_time')"
+				:formatter="dateFormat"
+				:sortable="canSortAttachmentColumn('updateTime')"
+				:sort-method="compareAttachmentByUpdateTime"
+			/>
+			<el-table-column
+				prop="size"
+				width="130"
+				:label="t('module.attachment.table.colum.label.size')"
+				:sortable="canSortAttachmentColumn('size')"
+				:sort-method="compareAttachmentBySize"
+			>
 				<template #default="scoped">
 					<span
 						v-if="
@@ -1307,23 +1238,5 @@ const onAttachmentDetailDrawerClose = () => {
 .ik-attachment-breadcrumb-item {
 	width: 20px;
 	cursor: pointer;
-}
-
-.attachment-sort-header {
-	padding: 0;
-	border: 0;
-	color: inherit;
-	font: inherit;
-	background: transparent;
-	cursor: pointer;
-
-	&:disabled {
-		cursor: default;
-	}
-}
-
-.attachment-sort-symbol {
-	margin-left: 0.25em;
-	font-size: 0.875em;
 }
 </style>
