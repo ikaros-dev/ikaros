@@ -8,9 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.parameter.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -128,8 +126,8 @@ public class TotpEndpoint implements CoreEndpoint {
                 return userRepository.findByUsernameAndEnableAndDeleteStatus(username, true, false)
                     .switchIfEmpty(Mono.error(new NotFoundException(
                         "User not found: " + username)))
-                    .flatMap(userEntity ->
-                        userTotpRepository.findByUserId(userEntity.getId()))
+                    .flatMap(userEntity -> Mono.justOrEmpty(userEntity.getId())
+                        .flatMap(userTotpRepository::findByUserId))
                     .switchIfEmpty(Mono.error(new InvalidTokenException(
                         "TOTP not configured")))
                     .filter(UserTotpEntity::getEnabled)
@@ -209,8 +207,9 @@ public class TotpEndpoint implements CoreEndpoint {
             .flatMap(userId -> userTotpRepository.findByUserId(userId)
                 .switchIfEmpty(Mono.error(new NotFoundException(
                     "TOTP not configured"))))
-            .flatMap(totpEntity -> userTotpRepository.deleteById(totpEntity.getId())
-                .then(Mono.just(totpEntity)))
+            .flatMap(totpEntity -> Mono.justOrEmpty(totpEntity.getId())
+                .flatMap(userTotpRepository::deleteById)
+                .thenReturn(totpEntity))
             .then(ServerResponse.ok().bodyValue("TOTP disabled"));
     }
 
@@ -233,8 +232,8 @@ public class TotpEndpoint implements CoreEndpoint {
         return ReactiveSecurityContextHolder.getContext()
             .switchIfEmpty(Mono.error(
                 new AuthenticationCredentialsNotFoundException("Not authenticated")))
-            .map(SecurityContext::getAuthentication)
-            .map(Authentication::getPrincipal)
+            .flatMap(context -> Mono.justOrEmpty(context.getAuthentication()))
+            .flatMap(authentication -> Mono.justOrEmpty(authentication.getPrincipal()))
             .cast(UserDetails.class)
             .map(UserDetails::getUsername);
     }
@@ -243,6 +242,6 @@ public class TotpEndpoint implements CoreEndpoint {
         return getCurrentUsername()
             .flatMap(username -> userRepository
                 .findByUsernameAndEnableAndDeleteStatus(username, true, false))
-            .map(run.ikaros.server.store.entity.BaseEntity::getId);
+            .flatMap(entity -> Mono.justOrEmpty(entity.getId()));
     }
 }

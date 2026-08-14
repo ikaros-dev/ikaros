@@ -32,6 +32,9 @@ public class FormLoginSuccessHandler implements ServerAuthenticationSuccessHandl
     public Mono<Void> onAuthenticationSuccess(WebFilterExchange webFilterExchange,
                                               Authentication authentication) {
         User principal = (User) authentication.getPrincipal();
+        if (principal == null) {
+            throw new NullPointerException();
+        }
         String username = principal.getUsername();
         ServerHttpResponse response = webFilterExchange.getExchange().getResponse();
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);

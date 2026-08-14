@@ -1,6 +1,7 @@
 package run.ikaros.server.security;
 
 import lombok.Data;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -29,7 +30,7 @@ public class SecurityProperties {
          */
         private String masterUsername = "tomoki";
         private String masterNickname = "桜井智樹";
-        private String masterPassword;
+        private @Nullable String masterPassword;
     }
 
 }

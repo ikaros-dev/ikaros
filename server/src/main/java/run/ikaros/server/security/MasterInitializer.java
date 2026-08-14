@@ -15,7 +15,6 @@ import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.server.core.role.RoleService;
 import run.ikaros.server.core.user.User;
 import run.ikaros.server.core.user.UserService;
-import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.UserEntity;
 import run.ikaros.server.store.entity.UserRoleEntity;
 import run.ikaros.server.store.repository.UserRoleRepository;
@@ -71,7 +70,7 @@ public class MasterInitializer {
                 .name(SecurityConst.ROLE_MASTER)
                 .description("Default admin role, unable delete")
                 .build())
-            .map(Role::getId)
+            .flatMap(role -> Mono.justOrEmpty(role.getId()))
             .zipWith(Mono.just(UserEntity.builder()
                     .username(initializer.getMasterUsername())
                     .password(getPassword())
@@ -87,7 +86,7 @@ public class MasterInitializer {
                 .map(User::new)
                 .flatMap(userService::insert)
                 .map(User::entity)
-                .map(BaseEntity::getId))
+                .flatMap(entity -> Mono.justOrEmpty(entity.getId())))
             .flatMap(tuple2 ->
                 userRoleRepository.findByUserIdAndRoleId(tuple2.getT2(), tuple2.getT1())
                     .switchIfEmpty(userRoleRepository.insert(UserRoleEntity.builder()

@@ -1,6 +1,7 @@
 package run.ikaros.server.cache;
 
 import lombok.Data;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -9,7 +10,7 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "ikaros.cache")
 public class CacheProperties {
     private boolean enable = false;
-    private CacheType type;
+    private @Nullable CacheType type;
     private Redis redis = new Redis();
 
     @Data
