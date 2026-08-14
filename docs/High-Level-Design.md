@@ -4,8 +4,8 @@
 |------|------|
 | 产品名称 | Ikaros（Ίκαρος） |
 | 文档类型 | 概要设计（High-Level Design） |
-| 文档版本 | v1.0 |
-| 编写日期 | 2026-08-08 |
+| 文档版本 | v1.1 |
+| 编写日期 | 2026-08-08（v1.1 修订于 2026-08-14） |
 | 代码版本基线 | 1.2.1（`bbccbf32`） |
 | 关联文档 | [Product-Requirements-Document.md](./Product-Requirements-Document.md)、[Low-Level-Design.md](./Low-Level-Design.md) |
 
@@ -42,7 +42,8 @@
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        客户端层 (Clients)                        │
-│  Web Console (Vue3 SPA) │ Windows/Android App │ Subsonic 客户端  │
+│  Web Console (Vue3 SPA) │ App (Flutter 六端) │ Subsonic 客户端    │
+│  App：Windows/Android/iOS/macOS/Linux/Web，含视频/音乐/阅读      │
 └───────────────────────────────┬─────────────────────────────────┘
                                 │ HTTPS / HTTP
 ┌───────────────────────────────┴─────────────────────────────────┐
@@ -214,6 +215,7 @@ Mono<PagingWrap<AttachmentEntity>> listEntitiesByCondition(...)
 ```
 
 - 双令牌：Access Token（默认 3 天）+ Refresh Token（默认 3 个月），`/security/auth/token/jwt/apply|refresh`。
+- TOTP 分步认证：`POST /security/auth/totp/setup`（生成密钥与 otpauth URI）→ `enable`（验证并启用）→ 登录时 `apply` 返回 `totpRequired=true` 与临时 Token → `POST /security/auth/totp/validate`（临时 Token + 6 位验证码）换取正式 Token；`status` 查询、`disable`（需当前密码）关闭。
 - 密码存储：`PasswordEncoderFactories.createDelegatingPasswordEncoder()`（BCrypt 等前缀可扩展）；`password` 字段 `@JsonIgnore`。
 - 路径安全（附件）：可信根目录校验 + 符号链接防护 + 动态目录解析白名单 + fsPath 校验。
 - 数据安全：SSRF 防护（封面下载 SsrfUtils）、SQL 注入防护（迁移导出）、Zip Slip 防护（CSV 导入解压）。
@@ -232,6 +234,65 @@ IkarosPluginManager (PF4J PluginManager)
 ```
 
 插件可实现的扩展点（`IkarosExtensionPoint` 子接口）：详见 [PRD 4.10.2 插件扩展点](./Product-Requirements-Document.md#4.10.2-插件扩展点fr-plugin-02)。
+
+插件补充机制：
+
+- **分发与适配**：插件汇总于 [Awesome Ikaros](https://github.com/ikaros-dev/awesome)，以 jar 包分发；版本适配规则为「大版本 + 小版本与核心一致」（1.x.x 需核心 ≥ 1.0.7）。
+- **插件描述**：`plugin.yml` 声明（name/clazz/version/requires/author/logo/homepage/displayName 等），入口类继承 `BasePlugin`（`start()/stop()`）。
+- **配置表单**：插件目录下 `configMapSchemas` 文件以 FormKit Schema（JSON）描述配置表单，控制台自动渲染。
+- **加载流程**：启动扫描 `~/.ikaros/plugins/` → 解析 `plugin.yml` → `IkarosJarPluginLoader` 加载 → 创建插件专属 Spring 上下文 → 调用 `start()`；开发模式可指定开发插件目录免打包。
+
+### 3.8 客户端 App 架构
+
+> 客户端 App 为独立仓库（[ikaros-app](https://github.com/ikaros-dev/app)），通过服务端开放接口接入，本文档仅描述其架构要点。
+
+#### 3.8.1 形态与技术选型
+
+| 项 | 选型 | 说明 |
+|----|------|------|
+| 框架 | Flutter（Dart 3.12） | 单代码库多端：Windows/Android/iOS/macOS/Linux/Web |
+| 状态管理 | provider | 轻量响应式状态 |
+| 网络 | dio + 拦截器 | 认证注入、Token 过期自动刷新 |
+| 视频内核 | VLC（dart_vlc / flutter_vlc_player） | 桌面端与移动端各一套封装 |
+| 音频内核 | just_audio + Subsonic 流 | 音频流经 `/rest/stream` 获取 |
+| 弹幕渲染 | ns_danmaku（自研/本地依赖） | 弹弹play 弹幕源 |
+| 本地存储 | shared_preferences | 登录态、设置、阅读进度 |
+| 深链 | app_links | `ikaros://app/subject/{id}` |
+
+#### 3.8.2 客户端-服务端通信
+
+- **接口协议**：HTTP REST（dio 客户端，与 OpenAPI 契约保持一致）。
+- **认证**：登录换取凭据后由拦截器自动附加；凭据过期时通过刷新接口自动续期。
+- **音频流**：Subsonic `/rest/stream`、`/rest/getCoverArt`（携带用户凭据），与 3.x 服务端 Subsonic 路由（`/rest/**`）对接。
+- **弹幕数据**：弹弹play 弹幕源按「番组计划 ID + 剧集序号」匹配查询，仅正片请求；服务端不做代理，由客户端直连弹幕源。
+
+#### 3.8.3 视频播放链路
+
+```
+剧集页 → 选择附件 → 获取文件流 URL / 条件 URL（按清晰度）
+    → VLC 播放（桌面 dart_vlc / 移动 flutter_vlc_player）
+    → 叠加字幕轨道 + 音轨选择 + 字幕延迟(±60s) + 弹幕层(ns_danmaku)
+    → 进度上报（剧集收藏）→ 自动连播下一集
+```
+
+- 清晰度：文件流始终保留为首选，其余清晰度通过附件条件 URL 接口按需获取；切换清晰度时保留字幕轨道。
+- 字幕延迟：VIP/转码流默认 6s，seek/reload 后重新应用。
+- 进度：播放中定时保存到服务端剧集收藏，恢复时跳转上次进度。
+
+#### 3.8.4 音乐播放链路
+
+```
+音乐库(专辑列表) → 专辑详情(歌曲列表) → Subsonic 流播放
+    → 正在播放页(封面/歌词 LRC/播放队列) → 底部迷你条
+```
+
+- 歌词：按附件资源或固定 lrc 文件名匹配加载，支持横排/竖排展示。
+
+#### 3.8.5 阅读器与布局自适应
+
+- **布局自适应**：以屏幕宽度（>600px）切换桌面/移动布局——移动端底部导航、桌面端侧边栏（NavigationRail）。
+- **漫画阅读器**：章节数据来自附件（支持压缩包自动下载解压）；阅读模式含单页/条漫/列表；支持章节悬浮切换。
+- **小说阅读器**：章节正文来自附件；支持字体调节、阅读主题、沉浸模式，本地持久化阅读进度与「继续阅读」入口。
 
 ---
 
@@ -292,17 +353,26 @@ custom + custom_metadata                 (自定义Scheme实体, GVK唯一)
 
 | 形态 | 方式 | 适用 |
 |------|------|------|
-| Docker | `ikarosrun/ikaros` 镜像 + PG/Redis 容器 | 主流推荐 |
-| Fast Jar | `java -jar ikaros-server.jar`（含 Console 静态资源） | 单机快速部署 |
+| Docker Compose | `ikarosrun/ikaros` 镜像 + `postgres:18.3-alpine` 容器组（含健康检查/时区/UTF-8） | 主流推荐 |
+| 1Panel | 应用商店安装 / 容器编排创建（可复用面板托管的 PG） | Linux 面板用户 |
+| Fast Jar | `java -jar ikaros-server.jar`（Windows 需加 `--spring.profiles.active=win`） | 单机快速部署 |
 | 源码构建 | Gradle `buildFrontend` + `bootJar` | 开发/定制 |
+| 客户端 App | Flutter 构建（GitHub Actions 四平台并行 CI/CD，push tag 自动构建，产物经 GitHub Releases 与 Cloudflare R2 双渠道分发） | 日常消费场景（看番/听歌/阅读） |
+
+镜像标签：`ikarosrun/ikaros:latest`（最新发布）/ `:dev`（每次 PR 合并构建，不推荐）。
 
 ### 5.2 运行时拓扑
 
 ```
 [客户端] ──HTTPS──▶ [Ikaros :9999] ──R2DBC──▶ [PostgreSQL 18]
                         │  ──(可选)Redis──▶ [Redis]
-                        │  ──FS──▶ {work-dir}: plugins/themes/indices/statics
-                        │  ──FS──▶ 附件驱动目录(本地) / WebDAV(网络)
+                        │  ──FS──▶ {work-dir ~/.ikaros}:
+                        │          database/（数据库文件，H2 已弃用）
+                        │          indices/（Lucene 索引）
+                        │          plugins/（插件 jar 与数据）
+                        │          files/（附件文件）
+                        │          logs/（运行日志）
+                        │  ──FS──▶ 附件驱动目录(本地挂载) / 插件驱动(如 115 网盘)
                         └  ──HTTP──▶ 三方平台(元数据/同步, 经WebClient)
 ```
 
@@ -315,11 +385,23 @@ ikaros:
   show-theme: true                      # 是否启用主题
   cache: { enable: false, type: memory, redis: {...} }
   security.expiry: { access-token-day: 3, refresh-token-month: 3 }
+  security.initializer:                 # 初始管理员（未指定时默认用户名 tomoki，密码仅首次运行打印在日志）
+    master-username: tomoki
+    master-password: <首次运行打印>
   plugin: { runtime-mode: deployment, plugins-root: ..., system-version: 1.2.1 }
   task: { core-pool-size: 4, maximum-pool-size: 40, queue-count: 10000 }
 server.port: 9999
 spring.r2dbc: { url: r2dbc:pool:postgresql://localhost:5432/ikaros, ... }
+spring.sql.init.platform: postgresql   # 数据库平台（postgresql/h2，h2 仅历史兼容）
+spring.flyway: { url: jdbc:postgresql://localhost:5432/ikaros, ... }  # 迁移库必须与 r2dbc 指向同一库
 ```
+
+### 5.4 初始化与升级
+
+- **首次启动**：Flyway 自动执行建表迁移；未指定 `master-username/password` 时创建默认管理员 `tomoki`，初始密码打印在启动日志（仅首次）。
+- **访问入口**：`http://{host}:9999/console`；全局搜索快捷键 `Ctrl + /`。
+- **升级流程**：停止容器 → 备份数据目录（如 `cp -r ~/ikaros ~/ikaros.archive`）→ 拉取新镜像/新 jar → 启动（Flyway 自动迁移）。
+- **部署约束**：`spring.r2dbc` 与 `spring.flyway` 必须指向同一个数据库（地址/账号/密码一致）。
 
 ---
 
@@ -343,6 +425,9 @@ spring.r2dbc: { url: r2dbc:pool:postgresql://localhost:5432/ikaros, ... }
 |------|------|------|
 | 认证 | POST `/security/auth/token/jwt/apply` | 申请 JWT（含TOTP校验） |
 | 认证 | PUT `/security/auth/token/jwt/refresh` | 刷新令牌 |
+| 认证 | POST/GET `/security/auth/totp/setup|enable|validate|status|disable` | TOTP 二步验证全流程 |
+| 标签 | GET/POST/PUT/DELETE `/api/v1/tag*`、`/tags/condition`、`/tags/subject/*`、`/tags/attachment/*` | 标签管理（SUBJECT/ATTACHMENT） |
+| 自定义 | `/apis/{group}/{version}/{plural|singular}` | 自定义资源 RESTful API（@Custom，自动生成） |
 | 用户 | GET/POST/PUT/DELETE `/api/v1/users*`、`/api/v1/user/me*` | 用户管理/个人信息 |
 | 角色 | `/api/v1/role*`、`/api/v1/user/roles*` | 角色与授权 |
 | 条目 | GET `/api/v1/subjects/{page}/{size}`、`/subjects/condition` | 分页/条件查询 |
@@ -399,8 +484,8 @@ spring.r2dbc: { url: r2dbc:pool:postgresql://localhost:5432/ikaros, ... }
 | 阶段 | 架构重点 |
 |------|----------|
 | 已完成 | 响应式核心、附件驱动抽象、Lucene 搜索、插件体系（PF4J）、RBAC、缓存抽象、目录绑定工作流、Subsonic、音乐模块、2FA |
-| 进行中 | 测试覆盖率提升、构建链简化（bootJar 自动打包前端）、国际化文本统一 |
-| 规划 | 客户端（App）完善、插件生态丰富、更多协议兼容、多用户协作场景评估 |
+| 进行中 | 测试覆盖率提升、构建链简化（bootJar 自动打包前端）、国际化文本统一、客户端 App 打磨（播放器/阅读器体验、平台适配） |
+| 规划 | 插件生态丰富、更多协议兼容、多用户协作场景评估 |
 
 ---
 
@@ -410,5 +495,6 @@ spring.r2dbc: { url: r2dbc:pool:postgresql://localhost:5432/ikaros, ... }
 
 - [Product-Requirements-Document.md](./Product-Requirements-Document.md) — 产品需求文档（需求编号 FR-XXX / NFR-XXX 与本文档对应）
 - [Low-Level-Design.md](./Low-Level-Design.md) — 详细设计文档（类图、接口签名、时序、表结构 DDL）
+- [ikaros-app](https://github.com/ikaros-dev/app) — 客户端 App 仓库（Flutter，与本文档 3.8 客户端 App 架构对应）
 - [BUILD.md](../BUILD.md) — 编译与本地开发
 - 架构图：`diagrams/plugin-architecture.drawio`、`diagrams/plugin-loading-flowchart.drawio`
