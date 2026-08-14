@@ -5,8 +5,10 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.AppConst;
@@ -66,8 +68,8 @@ public class DirectoryBindingServiceImpl implements DirectoryBindingService {
     @Override
     public Mono<DirectoryBindingWorkflowEntity> bindDirectory(UUID directoryId,
                                                               SubjectSyncPlatform platform,
-                                                              String keyword,
-                                                              String platformId) {
+                                                              @Nullable String keyword,
+                                                              @Nullable String platformId) {
         return attachmentRepository.findById(directoryId)
             .switchIfEmpty(Mono.error(new IllegalArgumentException(
                 "Directory not found for id: " + directoryId)))
@@ -79,10 +81,12 @@ public class DirectoryBindingServiceImpl implements DirectoryBindingService {
                     .directoryId(directoryId)
                     .directoryName(dirName)
                     .platform(platform)
-                    .platformId(platformId)
                     .status(TaskStatus.CREATE)
                     .createTime(LocalDateTime.now())
                     .build();
+                if (platformId != null) {
+                    workflow.setPlatformId(platformId);
+                }
 
                 return workflowRepository.insert(workflow)
                     .flatMap(savedWorkflow -> {
@@ -145,16 +149,16 @@ public class DirectoryBindingServiceImpl implements DirectoryBindingService {
         private final String directoryName;
         private final UUID directoryId;
         private final SubjectSyncPlatform platform;
-        private final String platformId;
-        private final String keyword;
+        private final @Nullable String platformId;
+        private final @Nullable String keyword;
         private final List<DirectoryBindingStep> steps;
 
         DirectoryBindingTask(TaskEntity entity, TaskRepository repository,
                              DirectoryBindingWorkflowEntity workflow,
                              DirectoryBindingWorkflowRepository workflowRepository,
                              String directoryName, UUID directoryId,
-                             SubjectSyncPlatform platform, String platformId,
-                             String keyword, List<DirectoryBindingStep> steps) {
+                             SubjectSyncPlatform platform, @Nullable String platformId,
+                             @Nullable String keyword, List<DirectoryBindingStep> steps) {
             super(entity, repository);
             this.workflow = workflow;
             this.workflowRepository = workflowRepository;
@@ -193,7 +197,8 @@ public class DirectoryBindingServiceImpl implements DirectoryBindingService {
             try {
                 chain.execute(context).block(Duration.ofSeconds(240L));
 
-                long completedCount = context.getStepResults().values().stream()
+                long completedCount = Objects.requireNonNull(context.getStepResults())
+                    .values().stream()
                     .filter(s -> s == DirectoryBindingStepStatus.SUCCESS)
                     .count();
                 getEntity().setIndex(completedCount);
@@ -207,7 +212,10 @@ public class DirectoryBindingServiceImpl implements DirectoryBindingService {
             } catch (Exception e) {
                 workflow.setStatus(TaskStatus.FAIL);
                 workflow.setEndTime(LocalDateTime.now());
-                workflow.setFailMessage(e.getMessage());
+                String failMessage = e.getMessage();
+                if (failMessage != null) {
+                    workflow.setFailMessage(failMessage);
+                }
                 throw e;
             } finally {
                 workflowRepository.update(workflow).block(AppConst.BLOCK_TIMEOUT);
