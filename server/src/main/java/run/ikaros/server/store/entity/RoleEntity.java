@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -21,5 +22,5 @@ public class RoleEntity extends BaseEntity {
     private String name;
     @Column("parent_id")
     private UUID parentId;
-    private String description;
+    private @Nullable String description;
 }

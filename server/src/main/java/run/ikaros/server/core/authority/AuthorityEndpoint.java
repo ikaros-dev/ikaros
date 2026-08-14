@@ -6,6 +6,7 @@ import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springdoc.core.fn.builders.requestbody.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.stereotype.Component;
@@ -115,7 +116,10 @@ public class AuthorityEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> deleteAuthorityById(ServerRequest serverRequest) {
-        UUID id = UuidV7Utils.fromString((serverRequest.pathVariable("id")));
+        @Nullable UUID id = UuidV7Utils.fromString((serverRequest.pathVariable("id")));
+        if (id == null) {
+            throw new IllegalArgumentException("id must not null.");
+        }
         return authorityService.deleteById(id)
             .then(ServerResponse.ok().bodyValue(id));
     }

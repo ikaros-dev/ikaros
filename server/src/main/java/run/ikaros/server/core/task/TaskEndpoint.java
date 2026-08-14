@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -104,7 +105,7 @@ public class TaskEndpoint implements CoreEndpoint {
             : "";
 
         Optional<String> typeOp = request.queryParam("status");
-        final TaskStatus status = typeOp.isPresent() && StringUtils.hasText(typeOp.get())
+        final @Nullable TaskStatus status = typeOp.isPresent() && StringUtils.hasText(typeOp.get())
             ? TaskStatus.valueOf(typeOp.get())
             : null;
 
@@ -117,7 +118,7 @@ public class TaskEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> getProcess(ServerRequest request) {
         return Mono.justOrEmpty(request.pathVariable("id"))
-            .map(UuidV7Utils::fromString)
+            .flatMap(id -> Mono.justOrEmpty(UuidV7Utils.fromString(id)))
             .flatMap(taskService::getProcess)
             .flatMap(process -> ServerResponse.ok().bodyValue(process))
             .switchIfEmpty(ServerResponse.notFound().build());
@@ -125,7 +126,7 @@ public class TaskEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> findById(ServerRequest request) {
         return Mono.justOrEmpty(request.pathVariable("id"))
-            .map(UuidV7Utils::fromString)
+            .flatMap(id -> Mono.justOrEmpty(UuidV7Utils.fromString(id)))
             .flatMap(taskService::findById)
             .flatMap(taskEntity -> ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)

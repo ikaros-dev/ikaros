@@ -45,9 +45,13 @@ public class DefaultRoleService implements RoleService {
     }
 
     private RoleEntity vo2Entity(Role role) {
+        String name = role.getName();
+        if (name == null) {
+            throw new IllegalArgumentException("role name must not be null");
+        }
         RoleEntity entity = new RoleEntity();
         entity.setId(role.getId());
-        entity.setName(role.getName());
+        entity.setName(name);
         entity.setDescription(role.getDescription());
         entity.setParentId(
             Objects.isNull(role.getParentId()) ? RoleConst.ROLE_ROOT_ID : role.getParentId());
@@ -58,7 +62,7 @@ public class DefaultRoleService implements RoleService {
     public Mono<String> findNameById(UUID roleId) {
         Assert.notNull(roleId, "'roleId' must not null.");
         return findById(roleId)
-            .flatMap(role -> Mono.just(role.getName()));
+            .flatMap(role -> Mono.justOrEmpty(role.getName()));
     }
 
     @Override
@@ -95,10 +99,14 @@ public class DefaultRoleService implements RoleService {
     @Override
     public Mono<Role> save(Role role) {
         Assert.notNull(role, "role must not be null");
+        String name = role.getName();
+        if (name == null) {
+            throw new IllegalArgumentException("role name must not be null");
+        }
         return Mono.just(role)
-            .mapNotNull(Role::getId)
+            .flatMap(roleToSave -> Mono.justOrEmpty(roleToSave.getId()))
             .flatMap(roleRepository::findById)
-            .map(entity -> entity.setName(role.getName())
+            .map(entity -> entity.setName(name)
                 .setParentId(Objects.isNull(role.getParentId())
                     ? RoleConst.ROLE_ROOT_ID
                     : role.getParentId())

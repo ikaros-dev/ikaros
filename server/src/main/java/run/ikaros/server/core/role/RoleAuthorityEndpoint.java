@@ -60,27 +60,36 @@ public class RoleAuthorityEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> addAuthoritiesForRole(ServerRequest serverRequest) {
         return serverRequest.bodyToMono(RoleAuthorityReqParams.class)
-            .flatMapMany(roleAuthorityReqParams ->
-                roleAuthorityService.addAuthoritiesForRole(
-                    roleAuthorityReqParams.getRoleId(),
-                    roleAuthorityReqParams.getAuthorityIds()
-                ))
+            .flatMapMany(roleAuthorityReqParams -> {
+                var roleId = roleAuthorityReqParams.getRoleId();
+                var authorityIds = roleAuthorityReqParams.getAuthorityIds();
+                if (roleId == null || authorityIds == null) {
+                    throw new IllegalArgumentException("roleId and authorityIds must not be null");
+                }
+                return roleAuthorityService.addAuthoritiesForRole(roleId, authorityIds);
+            })
             .collectList()
             .flatMap(authorities -> ServerResponse.ok().bodyValue(authorities));
     }
 
     private Mono<ServerResponse> deleteAuthoritiesForRole(ServerRequest serverRequest) {
         return serverRequest.bodyToMono(RoleAuthorityReqParams.class)
-            .flatMapMany(roleAuthorityReqParams ->
-                roleAuthorityService.deleteAuthoritiesForRole(
-                    roleAuthorityReqParams.getRoleId(),
-                    roleAuthorityReqParams.getAuthorityIds()
-                ))
+            .flatMapMany(roleAuthorityReqParams -> {
+                var roleId = roleAuthorityReqParams.getRoleId();
+                var authorityIds = roleAuthorityReqParams.getAuthorityIds();
+                if (roleId == null || authorityIds == null) {
+                    throw new IllegalArgumentException("roleId and authorityIds must not be null");
+                }
+                return roleAuthorityService.deleteAuthoritiesForRole(roleId, authorityIds);
+            })
             .then(ServerResponse.ok().build());
     }
 
     private Mono<ServerResponse> getAuthoritiesForRole(ServerRequest serverRequest) {
         UUID roleId = UuidV7Utils.fromString(serverRequest.pathVariable("roleId"));
+        if (roleId == null) {
+            throw new IllegalArgumentException("roleId must not null.");
+        }
         return roleAuthorityService.getAuthoritiesForRole(roleId)
             .collectList()
             .flatMap(authorities -> ServerResponse.ok().bodyValue(authorities));

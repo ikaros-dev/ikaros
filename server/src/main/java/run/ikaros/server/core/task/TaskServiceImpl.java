@@ -143,6 +143,9 @@ public class TaskServiceImpl implements TaskService {
     public Mono<Void> cancel(String name) {
         Assert.hasText(name, "'name' must has text.");
         Future<?> future = futureMap.get(name);
+        if (future == null) {
+            throw new NullPointerException();
+        }
         future.cancel(true);
         return Mono.empty();
     }

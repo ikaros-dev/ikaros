@@ -7,6 +7,7 @@ import static run.ikaros.api.constant.AppConst.BLOCK_TIMEOUT;
 import static run.ikaros.server.core.user.UserService.DEFAULT_PASSWORD_ENCODING_ID_PREFIX;
 import static run.ikaros.server.test.TestConst.PROCESS_SHOULD_NOT_RUN_TO_THIS;
 
+import org.jspecify.annotations.NullUnmarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ import run.ikaros.server.store.entity.UserEntity;
 @AutoConfigureWebTestClient
 @Testcontainers
 @Import(IkarosTestcontainersConfiguration.class)
+@NullUnmarked
 class UserServiceTest {
 
     @Autowired

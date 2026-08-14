@@ -5,6 +5,7 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
+import org.jspecify.annotations.Nullable;
 import run.ikaros.api.store.enums.TaskStatus;
 
 @Data
@@ -17,5 +18,5 @@ public class FindTaskCondition {
     @Schema(description = "经过Basic64编码的任务名称，模糊匹配.")
     private String name;
     @Schema(implementation = TaskStatus.class, description = "任务状态，精准匹配.")
-    private TaskStatus status;
+    private @Nullable TaskStatus status;
 }

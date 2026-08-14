@@ -2,7 +2,7 @@ package run.ikaros.server.core.user;
 
 import jakarta.validation.constraints.NotBlank;
 import java.util.UUID;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -24,7 +24,7 @@ public interface UserService {
             DEFAULT_PASSWORD_ENCODING_ID_PREFIX + rawPassword;
     }
 
-    Mono<User> insert(User user);
+    Mono<User> insert(@Nullable User user);
 
     Mono<Long> count();
 
@@ -41,23 +41,23 @@ public interface UserService {
     Mono<Void> updatePassword(@NotBlank String username, @NotBlank String oldRawPassword,
                               @NotBlank String rawPassword);
 
-    Mono<User> update(@NonNull UpdateUserRequest updateUserRequest);
+    Mono<User> update(UpdateUserRequest updateUserRequest);
 
-    Mono<Void> bindEmail(@NotBlank String username, @NotBlank String email,
-                         @NotBlank String verificationCode);
+    @Nullable Mono<Void> bindEmail(@NotBlank String username, @NotBlank String email,
+                                   @NotBlank String verificationCode);
 
-    Mono<Void> bindTelephone(@NotBlank String username, @NotBlank String telephone,
-                             @NotBlank String verificationCode);
+    @Nullable Mono<Void> bindTelephone(@NotBlank String username, @NotBlank String telephone,
+                                       @NotBlank String verificationCode);
 
-    Mono<Void> changeRole(@NotBlank String username, UUID roleId);
+    Mono<Void> changeRole(@Nullable @NotBlank String username, UUID roleId);
 
-    Mono<Void> sendVerificationCode(UUID userId, VerificationCodeType type);
+    Mono<Void> sendVerificationCode(@Nullable UUID userId, VerificationCodeType type);
 
-    Mono<User> create(CreateUserReqParams createUserReqParams);
+    Mono<User> create(@Nullable CreateUserReqParams createUserReqParams);
 
     Flux<User> findAll();
 
-    Mono<Void> deleteById(UUID id);
+    Mono<Void> deleteById(@Nullable UUID id);
 
     Mono<User> getUserFromSecurityContext();
 

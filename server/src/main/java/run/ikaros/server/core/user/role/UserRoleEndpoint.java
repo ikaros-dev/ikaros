@@ -60,27 +60,36 @@ public class UserRoleEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> addUserRoles(ServerRequest serverRequest) {
         return serverRequest.bodyToMono(UserRoleReqParams.class)
-            .flatMapMany(userRoleReqParams ->
-                userRoleService.addUserRoles(
-                    userRoleReqParams.getUserId(),
-                    userRoleReqParams.getRoleIds()
-                ))
+            .flatMapMany(userRoleReqParams -> {
+                var userId = userRoleReqParams.getUserId();
+                var roleIds = userRoleReqParams.getRoleIds();
+                if (userId == null || roleIds == null) {
+                    throw new IllegalArgumentException("userId and roleIds must not be null");
+                }
+                return userRoleService.addUserRoles(userId, roleIds);
+            })
             .collectList()
             .flatMap(authorities -> ServerResponse.ok().bodyValue(authorities));
     }
 
     private Mono<ServerResponse> deleteUserRoles(ServerRequest serverRequest) {
         return serverRequest.bodyToMono(UserRoleReqParams.class)
-            .flatMapMany(userRoleReqParams ->
-                userRoleService.deleteUserRoles(
-                    userRoleReqParams.getUserId(),
-                    userRoleReqParams.getRoleIds()
-                ))
+            .flatMapMany(userRoleReqParams -> {
+                var userId = userRoleReqParams.getUserId();
+                var roleIds = userRoleReqParams.getRoleIds();
+                if (userId == null || roleIds == null) {
+                    throw new IllegalArgumentException("userId and roleIds must not be null");
+                }
+                return userRoleService.deleteUserRoles(userId, roleIds);
+            })
             .then(ServerResponse.ok().build());
     }
 
     private Mono<ServerResponse> getRolesForUser(ServerRequest serverRequest) {
         UUID userId = UuidV7Utils.fromString(serverRequest.pathVariable("userId"));
+        if (userId == null) {
+            throw new IllegalArgumentException("userId must not null.");
+        }
         return userRoleService.getRolesForUser(userId)
             .collectList()
             .flatMap(roles -> ServerResponse.ok().bodyValue(roles));

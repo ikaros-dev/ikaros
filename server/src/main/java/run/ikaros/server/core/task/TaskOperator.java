@@ -3,6 +3,7 @@ package run.ikaros.server.core.task;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
@@ -23,8 +24,11 @@ public class TaskOperator implements TaskOperate {
     }
 
     @Override
-    public Mono<Void> submit(String name, Runnable runnable) {
+    public Mono<Void> submit(String name, @Nullable Runnable runnable) {
         Assert.hasText(name, "name must not be empty");
+        if (runnable == null) {
+            throw new IllegalArgumentException("runnable must not be null");
+        }
         Assert.notNull(runnable, "runnable must not be null");
 
         TaskEntity taskEntity = new TaskEntity();
@@ -47,8 +51,11 @@ public class TaskOperator implements TaskOperate {
     }
 
     @Override
-    public Mono<Void> submit(String name, Runnable runnable, Duration delay) {
+    public Mono<Void> submit(String name, @Nullable Runnable runnable, Duration delay) {
         Assert.hasText(name, "name must not be empty");
+        if (runnable == null) {
+            throw new IllegalArgumentException("runnable must not be null");
+        }
         Assert.notNull(runnable, "runnable must not be null");
 
         TaskEntity taskEntity = new TaskEntity();
@@ -72,7 +79,10 @@ public class TaskOperator implements TaskOperate {
     }
 
     @Override
-    public Mono<Void> cancel(String name) {
+    public Mono<Void> cancel(@Nullable String name) {
+        if (name == null) {
+            throw new IllegalArgumentException("name must not be empty");
+        }
         Assert.hasText(name, "name must not be empty");
         return taskService.cancel(name);
     }
