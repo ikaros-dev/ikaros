@@ -204,6 +204,7 @@ onMounted(() => {
 
 				<div ref="totpContainerRef" class="m3-totp">
 					<div class="m3-totp__inputs">
+						<!-- eslint-disable-next-line vue/no-restricted-html-elements -- 原生输入框用于逐位验证码焦点控制 -->
 						<input
 							v-for="(digit, index) in totpCode"
 							:key="index"

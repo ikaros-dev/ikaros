@@ -31,7 +31,9 @@ describe('异常页面', () => {
 	it('404 页面使用已存在的国际化文案', () => {
 		const wrapper = shallowMount(NotFound);
 
-		expect(wrapper.findComponent(Exception).props('message')).toBe('404 没有找到');
+		expect(wrapper.findComponent(Exception).props('message')).toBe(
+			'404 没有找到'
+		);
 		expect(mocks.t).toHaveBeenCalledWith('view.exception.notfound.message');
 	});
 
@@ -46,6 +48,8 @@ describe('异常页面', () => {
 		expect(wrapper.text()).toContain('Title: 应用异常');
 		expect(wrapper.text()).toContain('返回');
 		expect(wrapper.text()).toContain('仪表盘');
-		expect(mocks.t.mock.calls.flat().join(' ')).not.toContain('views.exception');
+		expect(mocks.t.mock.calls.flat().join(' ')).not.toContain(
+			'views.exception'
+		);
 	});
 });

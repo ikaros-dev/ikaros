@@ -248,6 +248,7 @@ watch(
 			class="refresh-hint"
 		/>
 		<el-scrollbar v-loading="loading" height="360px" class="directory-list">
+			<!-- eslint-disable-next-line vue/no-restricted-html-elements -- 原生按钮承载整行目录选择语义和布局 -->
 			<button
 				v-for="directory in directories"
 				:key="directory.id"

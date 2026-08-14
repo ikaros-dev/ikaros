@@ -35,7 +35,8 @@ const directorySelectVisible = ref(false);
 const fileSourceManagerVisible = ref(false);
 const selectedDirectoryId = ref('');
 const selectedDirectoryPath = ref('');
-const bindingDialogRef = ref<InstanceType<typeof LocalDirectoryBindingDialog>>();
+const bindingDialogRef =
+	ref<InstanceType<typeof LocalDirectoryBindingDialog>>();
 const pageSizes = [12, 24, 48, 96];
 
 const extractErrorMessage = (requestError: unknown) => {
@@ -137,7 +138,10 @@ onMounted(fetchSubjects);
 	>
 		<template #actions>
 			<el-button :icon="FolderOpened" @click="directorySelectVisible = true">
-				{{ selectedDirectoryPath || $t('module.attachment.bind.local.directory.select') }}
+				{{
+					selectedDirectoryPath ||
+					$t('module.attachment.bind.local.directory.select')
+				}}
 			</el-button>
 			<el-button
 				type="primary"

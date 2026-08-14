@@ -93,7 +93,9 @@ describe('共享内容浏览外壳', () => {
 		expect(wrapper.findComponent({ name: 'ElResult' }).exists()).toBe(false);
 		expect(wrapper.findComponent({ name: 'ElEmpty' }).exists()).toBe(false);
 		expect(wrapper.find('.content-slot').exists()).toBe(false);
-		expect(wrapper.findComponent({ name: 'ElPagination' }).exists()).toBe(false);
+		expect(wrapper.findComponent({ name: 'ElPagination' }).exists()).toBe(
+			false
+		);
 	});
 
 	it('错误状态优先于空状态和内容并可重试', async () => {
@@ -124,11 +126,13 @@ describe('共享内容浏览外壳', () => {
 		expect(wrapper.find('.content-browser__empty-title').text()).toBe(
 			'暂无视频'
 		);
-		expect(wrapper.findComponent({ name: 'ElEmpty' }).props('description')).toBe(
-			'扫描并导入视频后会显示在这里'
-		);
+		expect(
+			wrapper.findComponent({ name: 'ElEmpty' }).props('description')
+		).toBe('扫描并导入视频后会显示在这里');
 		expect(wrapper.find('.empty-action').exists()).toBe(true);
-		expect(wrapper.findComponent({ name: 'ElPagination' }).exists()).toBe(false);
+		expect(wrapper.findComponent({ name: 'ElPagination' }).exists()).toBe(
+			false
+		);
 	});
 
 	it('有内容时渲染默认插槽和分页', () => {

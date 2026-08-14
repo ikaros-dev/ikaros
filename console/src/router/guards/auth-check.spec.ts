@@ -98,7 +98,9 @@ describe('身份认证路由守卫', () => {
 	it('非同源或非控制台 Hash 地址回退到仪表板', () => {
 		const router = { resolve: guardMocks.resolve } as unknown as Router;
 
-		expect(resolvePostLoginRoute(router, 'https://example.com/#/subjects')).toEqual({
+		expect(
+			resolvePostLoginRoute(router, 'https://example.com/#/subjects')
+		).toEqual({
 			name: 'Dashboard',
 		});
 		expect(resolvePostLoginRoute(router, '/console/subjects')).toEqual({

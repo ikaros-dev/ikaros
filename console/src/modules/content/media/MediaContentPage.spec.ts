@@ -170,7 +170,9 @@ describe('共享媒体列表页面', () => {
 		expect(stateOf(wrapper).importVisible).toBe(true);
 		expect(mocks.scan).toHaveBeenCalledTimes(1);
 		expect(
-			wrapper.findComponent({ name: 'LocalDirectoryBindingDialog' }).props('directoryId')
+			wrapper
+				.findComponent({ name: 'LocalDirectoryBindingDialog' })
+				.props('directoryId')
 		).toBe('directory-id');
 	});
 

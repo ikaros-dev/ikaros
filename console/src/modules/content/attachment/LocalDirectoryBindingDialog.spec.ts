@@ -13,7 +13,9 @@ vi.mock('@/utils/api-client', () => ({
 	},
 }));
 
-vi.mock('@/utils/string-util', () => ({ base64Encode: (value: string) => value }));
+vi.mock('@/utils/string-util', () => ({
+	base64Encode: (value: string) => value,
+}));
 vi.mock('vue-i18n', () => ({ useI18n: () => ({ t: (key: string) => key }) }));
 
 import LocalDirectoryBindingDialog from './LocalDirectoryBindingDialog.vue';
@@ -91,8 +93,12 @@ describe('统一显式扫描导入对话框', () => {
 		const video = stateOf(mountDialog({ mode: 'EPISODE' }));
 		expect(video.newSubject.type).toBe('VIDEO');
 		expect(video.subjectTypes).toEqual(['VIDEO', 'ANIME', 'REAL']);
-		expect(stateOf(mountDialog({ mode: 'AUDIO' })).subjectTypes).toEqual(['MUSIC']);
-		expect(stateOf(mountDialog({ mode: 'IMAGE' })).subjectTypes).toEqual(['COMIC']);
+		expect(stateOf(mountDialog({ mode: 'AUDIO' })).subjectTypes).toEqual([
+			'MUSIC',
+		]);
+		expect(stateOf(mountDialog({ mode: 'IMAGE' })).subjectTypes).toEqual([
+			'COMIC',
+		]);
 	});
 
 	it('预览接口失败时保留可见错误状态', async () => {
