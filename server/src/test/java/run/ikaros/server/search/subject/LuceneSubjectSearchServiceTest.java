@@ -21,6 +21,7 @@ import run.ikaros.api.search.subject.SubjectDoc;
 import run.ikaros.api.search.subject.SubjectHint;
 import run.ikaros.api.store.enums.SubjectType;
 
+@org.jspecify.annotations.NullUnmarked
 class LuceneSubjectSearchServiceTest {
     private LuceneSubjectSearchService searchService;
     private Path tempWorkDir;

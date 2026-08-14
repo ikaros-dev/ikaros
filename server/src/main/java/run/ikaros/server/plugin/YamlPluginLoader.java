@@ -1,8 +1,8 @@
 package run.ikaros.server.plugin;
 
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.beans.factory.config.YamlProcessor;
 import org.springframework.core.io.Resource;
 import run.ikaros.api.plugin.custom.Plugin;

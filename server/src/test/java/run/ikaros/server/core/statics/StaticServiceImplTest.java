@@ -17,6 +17,7 @@ import run.ikaros.api.constant.AppConst;
 import run.ikaros.api.infra.properties.IkarosProperties;
 
 @ExtendWith(MockitoExtension.class)
+@org.jspecify.annotations.NullUnmarked
 class StaticServiceImplTest {
 
     @Mock

@@ -18,6 +18,7 @@ import reactor.test.StepVerifier;
 import run.ikaros.api.infra.exception.security.UserAuthenticationException;
 import run.ikaros.api.infra.exception.user.UserNotFoundException;
 
+@org.jspecify.annotations.NullUnmarked
 class JwtReactiveAuthenticationManagerTest {
 
     @Mock

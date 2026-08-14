@@ -1,8 +1,8 @@
 package run.ikaros.server.plugin;
 
 import java.util.Optional;
-import org.jspecify.annotations.Nullable;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.pf4j.Plugin;
 import org.pf4j.PluginFactory;
 import org.pf4j.PluginWrapper;

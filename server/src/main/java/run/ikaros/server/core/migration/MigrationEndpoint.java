@@ -75,7 +75,7 @@ public class MigrationEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> exportDatabaseTable(ServerRequest request) {
-        String name = request.queryParam("name").orElse(null);
+        String name = request.queryParam("name").orElseThrow();
         Flux<DefaultDataBuffer> csvStream = service.exportDatabaseTable(name);
         return ServerResponse.ok()
             .header("Content-Type", "text/csv; charset=UTF-8")

@@ -183,8 +183,8 @@ public class IkarosPluginManager extends DefaultPluginManager
                 try {
                     log.info("Start plugin '{}'", getPluginLabel(pluginWrapper.getDescriptor()));
                     // inject bean
-                Objects.requireNonNull(pluginApplicationInitializer)
-                    .onStartUp(pluginWrapper.getPluginId());
+                    Objects.requireNonNull(pluginApplicationInitializer)
+                        .onStartUp(pluginWrapper.getPluginId());
 
                     pluginWrapper.getPlugin().start();
 

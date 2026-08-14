@@ -1,6 +1,7 @@
 package run.ikaros.server.core.setting;
 
 import java.util.Map;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -23,7 +24,7 @@ public class DefaultSettingService implements SettingService {
     public Mono<GlobalSetting> getGlobalSetting() {
         return reactiveCustomClient.findOne(ConfigMap.class, configMapName)
             .map(configMap -> {
-                Map<String, String> data = configMap.getData();
+                Map<String, String> data = Objects.requireNonNull(configMap.getData());
                 GlobalSetting globalSetting = new GlobalSetting();
                 globalSetting.setHeader(data.get("GLOBAL_HEADER"));
                 globalSetting.setFooter(data.get("GLOBAL_FOOTER"));

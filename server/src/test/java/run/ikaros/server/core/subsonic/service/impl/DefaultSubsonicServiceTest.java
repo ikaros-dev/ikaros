@@ -38,6 +38,7 @@ import run.ikaros.server.store.repository.EpisodeListRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
 
 /** Subsonic 歌单写入和歌曲标识语义测试. */
+@org.jspecify.annotations.NullUnmarked
 class DefaultSubsonicServiceTest {
 
     @Test

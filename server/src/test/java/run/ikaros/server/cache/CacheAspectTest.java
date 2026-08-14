@@ -18,6 +18,7 @@ import run.ikaros.server.cache.annotation.MonoCacheable;
  * CacheAspect 缓存一致性测试.
  * 验证修复后的缓存执行时序和 key 一致性问题.
  */
+@org.jspecify.annotations.NullUnmarked
 class CacheAspectTest {
 
     private MemoryReactiveCacheManager cacheManager;

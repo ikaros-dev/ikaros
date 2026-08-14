@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.subject.Subject;
 
+@org.jspecify.annotations.NullUnmarked
 class MetaOperatorTest {
 
     @Mock

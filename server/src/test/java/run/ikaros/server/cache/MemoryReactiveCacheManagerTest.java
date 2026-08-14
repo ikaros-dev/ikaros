@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 
+@org.jspecify.annotations.NullUnmarked
 class MemoryReactiveCacheManagerTest {
 
     private MemoryReactiveCacheManager cacheManager;

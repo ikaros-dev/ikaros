@@ -53,7 +53,7 @@ public class MailServiceImpl implements MailService {
         return reactiveCustomClient.findOne(ConfigMap.class,
                 SystemSettingInitListener.getConfigMapName())
             .onErrorResume(NotFoundException.class, e -> Mono.empty())
-            .map(ConfigMap::getData)
+            .map(configMap -> Objects.requireNonNull(configMap.getData()))
             .map(map -> {
                 Object mailEnable = map.get("MAIL_ENABLE");
                 if (Objects.nonNull(mailEnable)) {

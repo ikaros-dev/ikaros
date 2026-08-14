@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
+@org.jspecify.annotations.NullUnmarked
 class PropertyPluginStatusProviderTest {
 
     @Test

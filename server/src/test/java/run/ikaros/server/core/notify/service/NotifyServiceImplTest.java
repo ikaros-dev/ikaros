@@ -17,6 +17,7 @@ import run.ikaros.server.core.notify.MailService;
 import run.ikaros.server.core.notify.model.MailConfig;
 import run.ikaros.server.core.notify.model.MailRequest;
 
+@org.jspecify.annotations.NullUnmarked
 class NotifyServiceImplTest {
     private MailService mailService;
     private NotifyServiceImpl notifyService;

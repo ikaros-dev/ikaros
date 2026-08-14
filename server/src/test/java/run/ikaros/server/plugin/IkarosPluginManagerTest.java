@@ -32,6 +32,7 @@ import run.ikaros.server.test.reflect.MemberMatcher;
 @SpringBootTest
 @Testcontainers
 @Import(IkarosTestcontainersConfiguration.class)
+@org.jspecify.annotations.NullUnmarked
 class IkarosPluginManagerTest {
 
     @Autowired

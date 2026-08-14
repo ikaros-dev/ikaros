@@ -132,18 +132,21 @@ public class DefaultSubsonicService implements SubsonicService {
                 List<ArtistChild> artists = subjects.stream().map(sub -> {
                     // 取名称首字符作为索引分组
                     String name = sub.getNameCn() != null ? sub.getNameCn() : sub.getName();
+                    UUID subjectId = Objects.requireNonNull(sub.getId());
                     return ArtistChild.builder()
-                        .id(sub.getId().toString())
+                        .id(subjectId.toString())
                         .name(name)
                         .albumCount(1)
-                        .coverArt("al-" + sub.getId())
+                        .coverArt("al-" + subjectId)
                         .build();
                 }).toList();
 
                 // 按首字母分组
                 var groups = new java.util.LinkedHashMap<String, List<ArtistChild>>();
                 for (ArtistChild a : artists) {
-                    String key = a.getName().substring(0, 1).toUpperCase();
+                    String artistName = a.getName();
+                    String key = StringUtils.hasText(artistName)
+                        ? artistName.substring(0, 1).toUpperCase() : "#";
                     if (!key.matches("[A-Z]")) {
                         key = "#";
                     }
@@ -160,7 +163,7 @@ public class DefaultSubsonicService implements SubsonicService {
 
     @Override
     public Mono<SubsonicResponseBody> getArtist(String artistId) {
-        UUID id = UuidV7Utils.fromString(artistId);
+        UUID id = Objects.requireNonNull(UuidV7Utils.fromString(artistId));
         return subjectService.findById(id)
             .flatMap(subject -> {
                 String name = subject.getNameCn() != null ? subject.getNameCn() : subject.getName();
@@ -193,7 +196,7 @@ public class DefaultSubsonicService implements SubsonicService {
 
     @Override
     public Mono<SubsonicResponseBody> getAlbum(String albumId) {
-        UUID id = UuidV7Utils.fromString(albumId);
+        UUID id = Objects.requireNonNull(UuidV7Utils.fromString(albumId));
         Mono<Music> albumMono = musicService.findAlbumById(id);
         Mono<List<Song>> songsMono = musicService.listSongs(id).collectList();
 
@@ -209,7 +212,7 @@ public class DefaultSubsonicService implements SubsonicService {
 
                 return Mono.just(ok().toBuilder()
                     .album(AlbumWithSongs.builder()
-                        .id(album.getId().toString())
+                        .id(Objects.requireNonNull(album.getId()).toString())
                         .name(name)
                         .artist(artist)
                         .coverArt("al-" + album.getId())
@@ -230,7 +233,7 @@ public class DefaultSubsonicService implements SubsonicService {
 
     @Override
     public Mono<SubsonicResponseBody> getSong(String songId) {
-        UUID id = UuidV7Utils.fromString(songId);
+        UUID id = Objects.requireNonNull(UuidV7Utils.fromString(songId));
         return episodeService.findById(id)
             .flatMap(episode -> {
                 SongChild song = toSongChild(episode);
@@ -260,7 +263,7 @@ public class DefaultSubsonicService implements SubsonicService {
             .flatMap(wrap -> {
                 List<AlbumChild> albums = wrap.getItems().stream()
                     .map(music -> AlbumChild.builder()
-                        .id(music.getId().toString())
+                        .id(Objects.requireNonNull(music.getId()).toString())
                         .name(music.getNameCn() != null ? music.getNameCn() : music.getName())
                         .artist(music.getName())
                         .coverArt("al-" + music.getId())
@@ -269,7 +272,7 @@ public class DefaultSubsonicService implements SubsonicService {
                         .created(music.getAirTime() != null
                             ? music.getAirTime().format(DateTimeFormatter.ISO_LOCAL_DATE)
                             : null)
-                        .parent(music.getId().toString())
+                        .parent(Objects.requireNonNull(music.getId()).toString())
                         .build())
                     .toList();
                 return Mono.just(ok().toBuilder()
@@ -287,13 +290,13 @@ public class DefaultSubsonicService implements SubsonicService {
             .flatMap(wrap -> {
                 List<AlbumChild> albums = wrap.getItems().stream()
                     .map(music -> AlbumChild.builder()
-                        .id(music.getId().toString())
+                        .id(Objects.requireNonNull(music.getId()).toString())
                         .name(music.getNameCn() != null ? music.getNameCn() : music.getName())
                         .artist(music.getName())
                         .coverArt("al-" + music.getId())
                         .songCount(music.getSongCount() != null
                             ? music.getSongCount().intValue() : 0)
-                        .parent(music.getId().toString())
+                        .parent(Objects.requireNonNull(music.getId()).toString())
                         .build())
                     .toList();
                 return Mono.just(ok().toBuilder()
@@ -310,11 +313,11 @@ public class DefaultSubsonicService implements SubsonicService {
 
     @Override
     public Mono<Resource> stream(String songId) {
-        UUID id = UuidV7Utils.fromString(songId);
+        UUID id = Objects.requireNonNull(UuidV7Utils.fromString(songId));
         return episodeService.findResourcesById(id)
             .next()
             .flatMap(res -> attachmentService.getStreamById(res.getAttachmentId()))
-            .flatMap(streamVo -> streamVo.getDataBufferFlux()
+            .flatMap(streamVo -> Objects.requireNonNull(streamVo.getDataBufferFlux())
                 .collectList()
                 .map(bufs -> {
                     var os = new java.io.ByteArrayOutputStream();
@@ -336,7 +339,7 @@ public class DefaultSubsonicService implements SubsonicService {
     public Mono<Resource> getCoverArt(String albumId, int size) {
         // albumId 格式: "al-{uuid}" 或直接 uuid
         String rawId = albumId.startsWith("al-") ? albumId.substring(3) : albumId;
-        UUID id = UuidV7Utils.fromString(rawId);
+        UUID id = Objects.requireNonNull(UuidV7Utils.fromString(rawId));
         return subjectService.findById(id)
             .flatMap(subject -> {
                 if (!StringUtils.hasText(subject.getCover())) {
@@ -361,7 +364,7 @@ public class DefaultSubsonicService implements SubsonicService {
             .flatMap(lists -> {
                 List<PlaylistChild> playlists = lists.stream()
                     .map(epList -> PlaylistChild.builder()
-                        .id(epList.getId().toString())
+                        .id(Objects.requireNonNull(epList.getId()).toString())
                         .name(epList.getName())
                         .comment(epList.getDescription())
                         .songCount(0)
@@ -378,7 +381,7 @@ public class DefaultSubsonicService implements SubsonicService {
 
     @Override
     public Mono<SubsonicResponseBody> getPlaylist(String playlistId) {
-        UUID id = UuidV7Utils.fromString(playlistId);
+        UUID id = Objects.requireNonNull(UuidV7Utils.fromString(playlistId));
         return episodeListRepository.findById(id)
             .flatMap(epList ->
                 episodeListEpisodeRepository.findAllByEpisodeListId(id)
@@ -400,7 +403,7 @@ public class DefaultSubsonicService implements SubsonicService {
                                     .mapToLong(SongChild::getDuration).sum();
                                 return Mono.just(ok().toBuilder()
                                     .playlist(PlaylistWithSongs.builder()
-                                        .id(epList.getId().toString())
+                                        .id(Objects.requireNonNull(epList.getId()).toString())
                                         .name(epList.getName())
                                         .comment(epList.getDescription())
                                         .songCount(songs.size())
@@ -420,7 +423,7 @@ public class DefaultSubsonicService implements SubsonicService {
                                                      List<String> songIds) {
         if (StringUtils.hasText(playlistId)) {
             // 更新已有歌单
-            UUID id = UuidV7Utils.fromString(playlistId);
+            UUID id = Objects.requireNonNull(UuidV7Utils.fromString(playlistId));
             return episodeListRepository.findById(id)
                 .flatMap(existing -> {
                     existing.setName(name);
@@ -437,13 +440,14 @@ public class DefaultSubsonicService implements SubsonicService {
             .build();
         newList.setId(UuidV7Utils.generateUuid());
         return episodeListRepository.insert(newList)
-            .flatMap(saved -> updatePlaylistSongs(saved.getId(), songIds))
+            .flatMap(saved ->
+                updatePlaylistSongs(Objects.requireNonNull(saved.getId()), songIds))
             .then(Mono.just(ok()));
     }
 
     @Override
     public Mono<SubsonicResponseBody> deletePlaylist(String playlistId) {
-        UUID id = UuidV7Utils.fromString(playlistId);
+        UUID id = Objects.requireNonNull(UuidV7Utils.fromString(playlistId));
         return episodeListRepository.deleteById(id)
             .then(Mono.just(ok()));
     }
@@ -479,7 +483,7 @@ public class DefaultSubsonicService implements SubsonicService {
 
     private SongChild toSongChild(Song song) {
         return SongChild.builder()
-            .id(song.getId().toString())
+            .id(Objects.requireNonNull(song.getId()).toString())
             .parent(song.getSubjectId() != null ? song.getSubjectId().toString() : "")
             .title(song.getNameCn() != null ? song.getNameCn() : song.getName())
             .album("")

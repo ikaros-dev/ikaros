@@ -15,6 +15,7 @@ import run.ikaros.api.core.meta.DelegateMetaService;
 import run.ikaros.api.core.subject.Subject;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 
+@org.jspecify.annotations.NullUnmarked
 class DefaultMetaServiceTest {
 
     @Mock

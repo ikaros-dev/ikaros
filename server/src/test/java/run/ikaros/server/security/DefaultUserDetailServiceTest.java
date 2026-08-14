@@ -22,6 +22,7 @@ import run.ikaros.server.store.repository.RoleAuthorityRepository;
 import run.ikaros.server.store.repository.UserRepository;
 import run.ikaros.server.store.repository.UserRoleRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class DefaultUserDetailServiceTest {
 
     @Mock

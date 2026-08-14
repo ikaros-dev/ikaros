@@ -9,6 +9,7 @@ import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 import run.ikaros.api.plugin.IkarosExtensionPoint;
 
+@org.jspecify.annotations.NullUnmarked
 class ExtensionComponentsFinderTest {
 
     static class NotExtensionPoint {

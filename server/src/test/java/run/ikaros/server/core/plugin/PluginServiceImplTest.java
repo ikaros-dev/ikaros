@@ -16,6 +16,7 @@ import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.server.plugin.IkarosPluginManager;
 
+@org.jspecify.annotations.NullUnmarked
 class PluginServiceImplTest {
 
     private IkarosPluginManager pluginManager;

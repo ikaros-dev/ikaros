@@ -2,6 +2,7 @@ package run.ikaros.server.store.repository;
 
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.r2dbc.repository.Query;
 import reactor.core.publisher.Flux;
@@ -25,7 +26,7 @@ public interface SubjectRepository extends BaseRepository<SubjectEntity> {
 
     Mono<Long> countAllByNsfw(Boolean nsfw);
 
-    Flux<SubjectEntity> findAllByType(SubjectType type, Pageable pageable);
+    Flux<SubjectEntity> findAllByType(SubjectType type, @Nullable Pageable pageable);
 
     Mono<Long> countAllByType(SubjectType type);
 

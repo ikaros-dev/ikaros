@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginRuntimeException;
 import org.pf4j.PluginState;
@@ -93,7 +94,7 @@ public class PluginServiceImpl implements PluginService {
             return Mono.error(new NotFoundException("Not found plugin for id: " + pluginId));
         }
         PluginState pluginState = pluginManager.reloadPlugin(pluginId);
-        return Mono.just(pluginState);
+        return Mono.just(Objects.requireNonNull(pluginState));
     }
 
     @Override
