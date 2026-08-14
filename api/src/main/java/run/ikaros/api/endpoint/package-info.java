@@ -1,5 +1,5 @@
 /**
- * 定义响应式端点扩展契约。
+ * 定义响应式端点扩展契约.
  */
 @NullMarked
 package run.ikaros.api.endpoint;

@@ -83,7 +83,7 @@ public class PathUtils {
      * @return A new String if suffix was appended, the same string otherwise.
      */
     public static @Nullable String appendPathSeparatorIfMissing(@Nullable String path) {
-        return StringUtils.appendIfMissing(path, "/", "/");
+        return path == null || path.endsWith("/") ? path : path + "/";
     }
 
     /**

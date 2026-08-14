@@ -25,6 +25,11 @@ def forbiddenNullnessAnnotations = [
 ]
 
 def mainJavaSources = sourceSets.main.java
+def projectDirectoryPath = projectDir.canonicalFile.toPath()
+def currentProjectPath = path
+def relativeProjectPath = { file ->
+    projectDirectoryPath.relativize(file.toPath()).toString()
+}
 
 tasks.register('checkNullMarkedPackages') {
     group = 'verification'
@@ -76,13 +81,13 @@ tasks.register('checkNullMarkedPackages') {
                 def qualifiedUsagePattern = ~/@${quotedAnnotation}\b/
                 if (importPattern.matcher(sourceText).find()
                         || qualifiedUsagePattern.matcher(sourceText).find()) {
-                    errors << "禁止的空值注解 ${annotationName}: ${project.relativePath(javaFile)}"
+                    errors << "禁止的空值注解 ${annotationName}: ${relativeProjectPath(javaFile)}"
                 }
             }
         }
 
         packageInfos.each { packageInfo ->
-            def relativePath = project.relativePath(packageInfo.file)
+            def relativePath = relativeProjectPath(packageInfo.file)
             if (packageInfo.declaredPackage == null) {
                 errors << "package-info.java 缺少 package 声明: ${relativePath}"
             } else if (packageInfo.declaredPackage != packageInfo.expectedPackage) {
@@ -99,7 +104,7 @@ tasks.register('checkNullMarkedPackages') {
             if (matchingPackageInfos.empty) {
                 errors << "生产包缺少 package-info.java: ${packageName}"
             } else if (matchingPackageInfos.size() > 1) {
-                def paths = matchingPackageInfos.collect { project.relativePath(it.file) }.sort().join(', ')
+                def paths = matchingPackageInfos.collect { relativeProjectPath(it.file) }.sort().join(', ')
                 errors << "生产包存在重复 package-info.java: ${packageName}（${paths}）"
             }
 
@@ -113,7 +118,7 @@ tasks.register('checkNullMarkedPackages') {
                 def usesQualifiedNullMarked = packageInfo.text.contains(
                         '@org.jspecify.annotations.NullMarked')
                 if (annotationCount != 1 || (!usesJSpecifyNullMarked && !usesQualifiedNullMarked)) {
-                    errors << "package-info.java 必须恰有一个 JSpecify @NullMarked: ${project.relativePath(packageInfo.file)}"
+                    errors << "package-info.java 必须恰有一个 JSpecify @NullMarked: ${relativeProjectPath(packageInfo.file)}"
                 }
             }
         }
@@ -123,7 +128,7 @@ tasks.register('checkNullMarkedPackages') {
                     "生产包默认非空覆盖检查失败：\n - ${errors.sort().join('\n - ')}")
         }
 
-        logger.lifecycle("${project.path} 已验证 ${productionPackages.size()} 个生产 Java 包的 @NullMarked 覆盖")
+        logger.lifecycle("${currentProjectPath} 已验证 ${productionPackages.size()} 个生产 Java 包的 @NullMarked 覆盖")
     }
 }
 

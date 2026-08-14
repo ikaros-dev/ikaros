@@ -1,5 +1,5 @@
 /**
- * 定义用户处理异常。
+ * 定义用户处理异常.
  */
 @NullMarked
 package run.ikaros.api.infra.exception.user;

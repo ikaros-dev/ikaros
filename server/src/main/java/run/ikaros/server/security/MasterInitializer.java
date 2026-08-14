@@ -103,7 +103,7 @@ public class MasterInitializer {
         var password = this.initializer.getMasterPassword();
         if (!StringUtils.hasText(password)) {
             // generate password
-            password = RandomStringUtils.randomAlphanumeric(16);
+            password = RandomStringUtils.secure().nextAlphanumeric(16);
             log.info("=== Generated random password: {} for super master: {} ===",
                 password, this.initializer.getMasterUsername());
         }

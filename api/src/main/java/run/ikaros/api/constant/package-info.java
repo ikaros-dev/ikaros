@@ -1,5 +1,5 @@
 /**
- * 提供应用通用常量。
+ * 提供应用通用常量.
  */
 @NullMarked
 package run.ikaros.api.constant;

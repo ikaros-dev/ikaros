@@ -1,5 +1,5 @@
 /**
- * 定义内容主题处理异常。
+ * 定义内容主题处理异常.
  */
 @NullMarked
 package run.ikaros.api.infra.exception.subject;

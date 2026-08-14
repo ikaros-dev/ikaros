@@ -1,5 +1,5 @@
 /**
- * 定义任务操作契约。
+ * 定义任务操作契约.
  */
 @NullMarked
 package run.ikaros.api.core.task;

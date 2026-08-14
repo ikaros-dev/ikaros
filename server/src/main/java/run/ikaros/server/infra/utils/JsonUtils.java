@@ -27,7 +27,7 @@ public class JsonUtils {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     static {
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         objectMapper.registerModule(new JavaTimeModule());
     }

@@ -21,6 +21,8 @@ checkstyle {
 
 def baselineApiVersion = '1.2.2'
 def baselineApiJar = layout.projectDirectory.file("abi/ikaros-api-${baselineApiVersion}.jar")
+def apiCompileClasspath = configurations.compileClasspath
+def apiAbiClasspathDirectory = layout.buildDirectory.dir('abi-classpath')
 
 
 repositories {
@@ -102,15 +104,27 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+def prepareApiAbiClasspath = tasks.register('prepareApiAbiClasspath', Sync) {
+    from {
+        apiCompileClasspath.collect { classpathEntry ->
+            classpathEntry.isDirectory() ? classpathEntry : zipTree(classpathEntry)
+        }
+    }
+    include '**/*.class'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    into apiAbiClasspathDirectory
+}
+
 tasks.register('checkApiAbi', JavaExec) {
     group = 'verification'
     description = "检查 API 与 ${baselineApiVersion} 版本的二进制兼容性"
-    dependsOn tasks.named('jar')
+    dependsOn tasks.named('jar'), prepareApiAbiClasspath
 
     classpath = configurations.japicmp
     mainClass = 'japicmp.JApiCmp'
     inputs.file(baselineApiJar)
     inputs.file(tasks.named('jar').flatMap { it.archiveFile })
+    inputs.files(apiCompileClasspath)
     outputs.file(layout.buildDirectory.file('reports/japicmp/report.html'))
 
     doFirst {
@@ -121,13 +135,15 @@ tasks.register('checkApiAbi', JavaExec) {
 
         def currentJar = tasks.named('jar').get().archiveFile.get().asFile
         def reportFile = layout.buildDirectory.file('reports/japicmp/report.html').get().asFile
+        def dependencyClasspath = apiAbiClasspathDirectory.get().asFile.absolutePath
         reportFile.parentFile.mkdirs()
         args = [
                 '--old', baselineFile.absolutePath,
                 '--new', currentJar.absolutePath,
+                '--old-classpath', dependencyClasspath,
+                '--new-classpath', dependencyClasspath,
                 '--only-modified',
                 '--error-on-binary-incompatibility',
-                '--ignore-missing-classes',
                 '--exclude', 'run.ikaros.api.store.enums.AttachmentDriverType',
                 '--html-file', reportFile.absolutePath
         ]
