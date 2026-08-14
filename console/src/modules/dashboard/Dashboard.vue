@@ -133,12 +133,17 @@ onMounted(fetchActuatorInfo);
 		<div v-if="loading" class="dashboard-state">
 			{{ t('module.dashboard.loading') }}
 		</div>
-		<div v-else-if="error" class="dashboard-state dashboard-error">
-			<span>{{ t('module.dashboard.error') }}</span>
-			<el-button type="primary" @click="fetchActuatorInfo">{{
-				t('module.dashboard.retry')
-			}}</el-button>
-		</div>
+		<el-result
+			v-else-if="error"
+			icon="error"
+			:title="t('module.dashboard.error')"
+		>
+			<template #extra>
+				<el-button type="primary" @click="fetchActuatorInfo">
+					{{ t('module.dashboard.retry') }}
+				</el-button>
+			</template>
+		</el-result>
 		<template v-else-if="actuatorInfo">
 			<el-row :gutter="10" class="dashboard-cards">
 				<el-col
@@ -224,13 +229,6 @@ onMounted(fetchActuatorInfo);
 .dashboard-guide {
 	padding: 28px;
 	text-align: center;
-}
-.dashboard-error {
-	color: var(--el-color-danger);
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	gap: 12px;
 }
 .dashboard-guide p {
 	color: var(--el-text-color-secondary);

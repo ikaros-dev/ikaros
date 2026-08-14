@@ -11,6 +11,10 @@ const { info, push, preview, confirm, rescan } = vi.hoisted(() => ({
 const ButtonStub = { template: '<button><slot /></button>' };
 const CardStub = { template: '<div><slot /></div>' };
 const PassthroughStub = { template: '<div><slot /></div>' };
+const ResultStub = {
+	props: ['title'],
+	template: '<div>{{ title }}<slot name="extra" /></div>',
+};
 
 vi.mock('@/utils/api-client', () => ({
 	apiClient: {
@@ -43,6 +47,7 @@ const mountDashboard = () =>
 				ElCol: PassthroughStub,
 				ElRow: PassthroughStub,
 				ElButton: ButtonStub,
+				ElResult: ResultStub,
 			},
 		},
 	});
