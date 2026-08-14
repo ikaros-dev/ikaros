@@ -115,6 +115,7 @@ type(scope): message
 - `style` — 代码格式（非语义变更）
 - `perf` — 性能优化
 - `test` — 测试
+- `ci` — 持续集成
 
 `scope`（可选）: 模块名，如 `db`, `web`, `mobile`, `api`, `config` 等
 
