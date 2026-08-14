@@ -4,8 +4,8 @@
 |------|------|
 | 产品名称 | Ikaros（Ίκαρος） |
 | 文档类型 | 详细设计（Low-Level Design） |
-| 文档版本 | v1.0 |
-| 编写日期 | 2026-08-08 |
+| 文档版本 | v1.1 |
+| 编写日期 | 2026-08-08（v1.1 修订于 2026-08-14） |
 | 代码版本基线 | 1.2.1（`bbccbf32`） |
 | 关联文档 | [Product-Requirements-Document.md](./Product-Requirements-Document.md)、[High-Level-Design.md](./High-Level-Design.md) |
 
@@ -88,6 +88,18 @@ POST /api/v1/security/auth/token/jwt/apply {username, password, totpCode?}
       └─ 签发 JWT Access Token + Refresh Token（有效期来自 SecurityProperties）
 PUT  /api/v1/security/auth/token/jwt/refresh {refreshToken} → 新 Token 对
 ```
+
+**端点与临时 Token 机制**（TotpEndpoint）：
+
+| 端点 | 说明 |
+|------|------|
+| POST `/api/v1/security/auth/totp/setup` | 生成密钥与 otpauth URI（二维码），返回 `{secret, otpAuthUri}` |
+| POST `/api/v1/security/auth/totp/enable?code=` | 用验证码验证后启用 |
+| POST `/api/v1/security/auth/totp/validate` | 临时 Token + 验证码 → 换取正式 Token（分步认证二阶段） |
+| GET `/api/v1/security/auth/totp/status` | 查询是否已启用 |
+| POST `/api/v1/security/auth/totp/disable?password=` | 凭当前登录密码关闭 |
+
+同一密钥可同时在多个认证器 App 上配置；密钥仅存服务端，建议生成后立即备份。
 
 ### 2.3 授权模型
 
@@ -283,6 +295,12 @@ server/core/attachment/
 ```
 
 ### 6.2 驱动生命周期
+
+**驱动类型**：`LOCAL`（本地磁盘，`LocalDiskAttachmentDriverFetcher` 实现）、`CUSTOM`（插件实现的自定义驱动，如 115 网盘 `PAN115`）；新建驱动默认「就绪/禁用」，需手动启用。
+
+**附件分类**：附件分「目录」与「文件」两类（目录本身也是附件）；文件按内容类型分为图片/视频/文档/音声/未知。
+
+**主动刷新原则**：系统不后台扫描磁盘/网盘；驱动启用后需在附件页主动点击「刷新」拉取目录与文件，增量处理新增/变更/删除，重复刷新请求合并。
 
 ```
 创建驱动(PUT /attachment/driver) → 保存实体
@@ -511,7 +529,27 @@ api/plugin/
 配置：ConfigMap（每插件一个），变更发布 PluginConfigMapChangeEvent
 ```
 
-### 10.4 插件端点聚合
+### 10.4 插件描述与配置表单
+
+**plugin.yml 字段**（插件 jar 根目录）：
+
+| 字段 | 说明 |
+|------|------|
+| `name` | 插件唯一名称 |
+| `clazz` | 入口类（继承 `BasePlugin`） |
+| `version` | 插件版本（semver） |
+| `requires` | 兼容的核心版本范围（如 `*` 或具体版本） |
+| `author / logo / homepage / displayName / description / license` | 展示与归属信息 |
+
+**版本适配规则**：插件大版本 + 小版本与核心保持一致——1.x.x 需核心 ≥ 1.0.7；0.3.z 只能在核心 0.3.x 上运行（z 取最新）。
+
+**配置表单**：插件目录下 `configMapSchemas` 文件（FormKit Schema JSON）声明配置表单，控制台自动渲染；配置以 ConfigMap 存储，变更事件驱动插件感知。
+
+**插件事件**：`PluginAwareEvent`（生命周期）、`PluginConfigMapCreateEvent / UpdateEvent / ChangeEvent`（配置），插件通过 `@EventListener` 订阅。
+
+**分发**：插件汇总于 [Awesome Ikaros](https://github.com/ikaros-dev/awesome)，从各插件仓库 Release 下载 jar 后在控制台安装。
+
+### 10.5 插件端点聚合
 
 ```
 插件实现 CustomEndpoint → PluginCompositeRouterFunction 收集
@@ -818,6 +856,13 @@ lib/
 | 工作流测试 | 绑定链/回滚/正则链 | SubjectOperatorsTest、EpisodeSequenceRegular 相关 |
 | 集成测试 | Testcontainers PG | 端点级集成 |
 
+**测试规范**（对应官方 [测试指南](https://docs.ikaros.run)）：
+
+- **技术栈**：JUnit 5 + Mockito（单测）、AssertJ 断言、Reactor `StepVerifier`（响应式验证）、Testcontainers（数据库集成测试，类级容器自动销毁）。
+- **命名**：测试类 `{被测类名}Test` 同包路径；方法 `{方法名}_{场景}`（如 `getCurrentTheme_whenThemeSet`）。
+- **规范**：AAA 模式（Arrange/Act/Assert）；每个测试只验证一个行为；不依赖测试顺序；时间相关用固定时间或 Mock。
+- **覆盖率**：JaCoCo 报告（`./gradlew test jacocoTestReport`），CI 自动运行测试，未通过不合并。
+
 ---
 
 ## 17. 附录
@@ -842,3 +887,5 @@ docs/
 - [ ] 客户端 App 播放器细节设计（弹幕缓存策略、清晰度自适应、小窗模式行为）
 - [ ] 客户端 App 阅读器细节设计（翻页动画、字体排版、章节预加载）
 - [ ] 客户端 App 与 Web 控制台的接口复用约定（api-client 与 App API 层对齐）
+- [ ] 官方插件矩阵文档（各插件扩展点、配置项、与核心版本适配矩阵）
+- [ ] 部署形态补充（1Panel 应用商店打包规范、Docker 镜像分层与体积优化）
