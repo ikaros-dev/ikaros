@@ -2,12 +2,9 @@
 import {
 	ElButton,
 	ElForm,
-	ElFormItem,
-	ElInput,
 	ElMessage,
 	ElRadio,
 	ElRadioGroup,
-	type InputInstance,
 } from 'element-plus';
 import { AxiosError } from 'axios';
 import { useI18n } from 'vue-i18n';
@@ -15,6 +12,7 @@ import { useUserStore } from '@/stores/user';
 import { useLayoutStore } from '@/stores/layout';
 import { changeI18nLocal, locales } from '@/locales';
 import { randomUUID } from '@/utils/id';
+import FilledTextField from '@/components/common/FilledTextField.vue';
 import { onMounted, ref, computed } from 'vue';
 
 const { t, locale } = useI18n();
@@ -125,7 +123,7 @@ const handleBackToLogin = () => {
 	totpCode.value = ['', '', '', '', '', ''];
 };
 
-const usernameRef = ref<InputInstance | null>(null);
+const usernameRef = ref<InstanceType<typeof FilledTextField> | null>(null);
 const totpContainerRef = ref<HTMLDivElement | null>(null);
 
 onMounted(() => {
@@ -151,26 +149,23 @@ onMounted(() => {
 					class="m3-login__form"
 					@submit.prevent="handleLogin"
 				>
-					<el-form-item>
-						<el-input
-							ref="usernameRef"
-							v-model="form.username"
-							:placeholder="t('module.user.login.field.username.placeholder')"
-							autocomplete="username"
-							size="large"
-						/>
-					</el-form-item>
+					<filled-text-field
+						id="username"
+						ref="usernameRef"
+						v-model="form.username"
+						:label="t('module.user.login.field.username.placeholder')"
+						autocomplete="username"
+						required
+					/>
 
-					<el-form-item>
-						<el-input
-							v-model="form.password"
-							type="password"
-							:placeholder="t('module.user.login.field.password.placeholder')"
-							autocomplete="current-password"
-							show-password
-							size="large"
-						/>
-					</el-form-item>
+					<filled-text-field
+						id="password"
+						v-model="form.password"
+						type="password"
+						:label="t('module.user.login.field.password.placeholder')"
+						autocomplete="current-password"
+						required
+					/>
 
 					<div class="m3-login__actions">
 						<el-radio-group
