@@ -46,7 +46,6 @@ type SupportedDriverType =
 	| typeof AttachmentDriverTypeEnum.Local
 	| typeof AttachmentDriverTypeEnum.Custom;
 interface FileSourceForm {
-	type: SupportedDriverType;
 	name: string;
 	mount_name: string;
 	remote_path: string;
@@ -54,15 +53,26 @@ interface FileSourceForm {
 	refresh_token: string;
 	comment: string;
 }
-const form = reactive<FileSourceForm>({
-	type: AttachmentDriverTypeEnum.Local,
-	name: 'DISK',
+const createForm = (type: SupportedDriverType): FileSourceForm => ({
+	name: type === AttachmentDriverTypeEnum.Local ? 'DISK' : '',
 	mount_name: '',
 	remote_path: '',
 	access_token: '',
 	refresh_token: '',
 	comment: '',
 });
+const selectedType = ref<SupportedDriverType>(AttachmentDriverTypeEnum.Local);
+const localForm = reactive<FileSourceForm>(
+	createForm(AttachmentDriverTypeEnum.Local)
+);
+const customForm = reactive<FileSourceForm>(
+	createForm(AttachmentDriverTypeEnum.Custom)
+);
+const form = computed(() =>
+	selectedType.value === AttachmentDriverTypeEnum.Custom
+		? customForm
+		: localForm
+);
 
 const customFetchers = computed(() =>
 	driverFetchers.value.filter(
@@ -72,7 +82,7 @@ const customFetchers = computed(() =>
 );
 const customAvailable = computed(() => customFetchers.value.length > 0);
 const customSelected = computed(
-	() => form.type === AttachmentDriverTypeEnum.Custom
+	() => selectedType.value === AttachmentDriverTypeEnum.Custom
 );
 const formTitle = computed(() =>
 	editingDriver.value
@@ -134,39 +144,38 @@ const loadData = async () => {
 
 const resetForm = () => {
 	editingDriver.value = undefined;
-	form.type = AttachmentDriverTypeEnum.Local;
-	form.name = 'DISK';
-	form.mount_name = '';
-	form.remote_path = '';
-	form.access_token = '';
-	form.refresh_token = '';
-	form.comment = '';
+	selectedType.value = AttachmentDriverTypeEnum.Local;
+	Object.assign(localForm, createForm(AttachmentDriverTypeEnum.Local));
+	Object.assign(customForm, createForm(AttachmentDriverTypeEnum.Custom));
 	formRef.value?.clearValidate();
 };
 
 const openEdit = (driver: AttachmentDriver) => {
+	Object.assign(localForm, createForm(AttachmentDriverTypeEnum.Local));
+	Object.assign(customForm, createForm(AttachmentDriverTypeEnum.Custom));
 	editingDriver.value = driver;
-	form.type =
+	selectedType.value =
 		driver.type === AttachmentDriverTypeEnum.Custom
 			? AttachmentDriverTypeEnum.Custom
 			: AttachmentDriverTypeEnum.Local;
-	form.name = driver.name ?? '';
-	form.mount_name = driver.mount_name ?? '';
-	form.remote_path = driver.remote_path ?? '';
-	form.access_token = driver.access_token ?? '';
-	form.refresh_token = driver.refresh_token ?? '';
-	form.comment = driver.comment ?? '';
+	Object.assign(form.value, {
+		name: driver.name ?? '',
+		mount_name: driver.mount_name ?? '',
+		remote_path: driver.remote_path ?? '',
+		access_token: driver.access_token ?? '',
+		refresh_token: driver.refresh_token ?? '',
+		comment: driver.comment ?? '',
+	});
 	formRef.value?.clearValidate();
 };
 
 const changeType = () => {
-	if (form.type === AttachmentDriverTypeEnum.Local) {
-		form.name = 'DISK';
-		form.access_token = '';
-		form.refresh_token = '';
-	} else {
-		form.name =
-			customFetchers.value.length === 1 ? customFetchers.value[0].name! : '';
+	if (
+		customSelected.value &&
+		!customForm.name &&
+		customFetchers.value.length === 1
+	) {
+		customForm.name = customFetchers.value[0].name!;
 	}
 	formRef.value?.clearValidate();
 };
@@ -180,13 +189,15 @@ const saveForm = async () => {
 	try {
 		const driver: AttachmentDriver = {
 			...(editingDriver.value ?? {}),
-			type: form.type,
-			name: customSelected.value ? form.name : 'DISK',
-			mount_name: form.mount_name,
-			remote_path: form.remote_path,
-			access_token: customSelected.value ? form.access_token : undefined,
-			refresh_token: customSelected.value ? form.refresh_token : undefined,
-			comment: form.comment,
+			type: selectedType.value,
+			name: customSelected.value ? form.value.name : 'DISK',
+			mount_name: form.value.mount_name,
+			remote_path: form.value.remote_path,
+			access_token: customSelected.value ? form.value.access_token : undefined,
+			refresh_token: customSelected.value
+				? form.value.refresh_token
+				: undefined,
+			comment: form.value.comment,
 		};
 		const { data } = await apiClient.attachmentDriver.saveAttachmentDriver({
 			attachmentDriver: driver,
@@ -312,9 +323,10 @@ watch(
 				>
 					<el-form-item
 						v-if="customAvailable"
+						class="type-form-item"
 						:label="t('module.attachment.file-source.fields.type')"
 					>
-						<el-radio-group v-model="form.type" @change="changeType">
+						<el-radio-group v-model="selectedType" @change="changeType">
 							<el-radio-button :value="AttachmentDriverTypeEnum.Local">
 								LOCAL
 							</el-radio-button>
@@ -482,6 +494,10 @@ watch(
 .panel-title {
 	margin: 0 0 20px;
 	font-size: 16px;
+}
+
+.type-form-item :deep(.el-form-item__content) {
+	justify-content: center;
 }
 
 .form-actions {

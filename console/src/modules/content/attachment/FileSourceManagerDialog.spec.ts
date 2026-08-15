@@ -167,7 +167,7 @@ describe('文件源管理对话框', () => {
 		const state = stateOf(wrapper);
 
 		expect(state.customAvailable).toBe(false);
-		expect(state.form.type).toBe('LOCAL');
+		expect(state.selectedType).toBe('LOCAL');
 		expect(state.form.name).toBe('DISK');
 		expect(wrapper.findComponent({ name: 'ElRadioGroup' }).exists()).toBe(
 			false
@@ -187,7 +187,7 @@ describe('文件源管理对话框', () => {
 		const state = stateOf(wrapper);
 
 		expect(state.customAvailable).toBe(true);
-		state.form.type = 'CUSTOM';
+		state.selectedType = 'CUSTOM';
 		state.changeType();
 		state.form.mount_name = '云盘';
 		state.form.remote_path = 'root';
@@ -208,6 +208,65 @@ describe('文件源管理对话框', () => {
 				comment: '远端媒体',
 			},
 		});
+	});
+
+	it('切换类型时分别保留本地和自定义表单数据', async () => {
+		mocks.listFetchers.mockResolvedValue({
+			data: [
+				{ type: 'LOCAL', name: 'DISK' },
+				{ type: 'CUSTOM', name: 'ALIYUN' },
+			],
+		});
+		const wrapper = mountDialog(true);
+		await flushPromises();
+		const state = stateOf(wrapper);
+
+		state.form.mount_name = '本地目录';
+		state.form.remote_path = '/media/local';
+		state.form.comment = '本地备注';
+		state.selectedType = 'CUSTOM';
+		state.changeType();
+		await nextTick();
+
+		expect(state.form.mount_name).toBe('');
+		expect(state.form.name).toBe('ALIYUN');
+		state.form.mount_name = '自定义目录';
+		state.form.remote_path = 'custom-root';
+		state.form.access_token = 'custom-access';
+		state.form.refresh_token = 'custom-refresh';
+		state.form.comment = '自定义备注';
+
+		state.selectedType = 'LOCAL';
+		state.changeType();
+		await nextTick();
+		expect(state.form).toMatchObject({
+			name: 'DISK',
+			mount_name: '本地目录',
+			remote_path: '/media/local',
+			comment: '本地备注',
+		});
+
+		state.selectedType = 'CUSTOM';
+		state.changeType();
+		await nextTick();
+		expect(state.form).toMatchObject({
+			name: 'ALIYUN',
+			mount_name: '自定义目录',
+			remote_path: 'custom-root',
+			access_token: 'custom-access',
+			refresh_token: 'custom-refresh',
+			comment: '自定义备注',
+		});
+	});
+
+	it('类型选择项使用独立的居中样式类', async () => {
+		mocks.listFetchers.mockResolvedValue({
+			data: [{ type: 'CUSTOM', name: 'ALIYUN' }],
+		});
+		const wrapper = mountDialog(true);
+		await flushPromises();
+
+		expect(wrapper.find('.type-form-item').exists()).toBe(true);
 	});
 
 	it('本地驱动保存时不提交自定义驱动字段', async () => {
