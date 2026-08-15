@@ -216,9 +216,15 @@ onMounted(() => {
 
 			<!-- 未启用：引导开启 -->
 			<template v-else-if="!totpEnabled && step === 'idle'">
-				<div class="m3-totp-page__status">
-					<div
-						class="m3-totp-page__status-icon m3-totp-page__status-icon--disabled"
+				<div class="m3-totp-page__status m3-totp-page__status--setup-entry">
+					<el-button
+						class="m3-totp-page__status-icon m3-totp-page__status-icon--disabled m3-totp-page__status-icon--action"
+						circle
+						:disabled="isLoading"
+						:loading="isLoading"
+						aria-label="开启二步验证"
+						title="开启二步验证"
+						@click="handleSetup"
 					>
 						<svg width="48" height="48" viewBox="0 0 24 24" fill="none">
 							<path
@@ -226,18 +232,8 @@ onMounted(() => {
 								fill="currentColor"
 							/>
 						</svg>
-					</div>
-					<p class="m3-totp-page__status-text">开启二步验证以增强账户安全性</p>
-				</div>
-				<div class="m3-totp-page__actions">
-					<el-button
-						type="primary"
-						:disabled="isLoading"
-						:loading="isLoading"
-						@click="handleSetup"
-					>
-						开启二步验证
 					</el-button>
+					<p class="m3-totp-page__status-text">开启二步验证以增强账户安全性</p>
 				</div>
 			</template>
 
@@ -369,6 +365,15 @@ onMounted(() => {
 	margin-bottom: 32px;
 }
 
+.m3-totp-page__status--setup-entry {
+	display: flex;
+	min-height: 174px;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 0;
+}
+
 .m3-totp-page__status-icon {
 	display: inline-flex;
 	align-items: center;
@@ -387,6 +392,42 @@ onMounted(() => {
 .m3-totp-page__status-icon--disabled {
 	background: var(--m3-surface-container-highest);
 	color: var(--m3-on-surface-variant);
+}
+
+.m3-totp-page__status-icon--action {
+	padding: 0;
+	border: 1px solid transparent;
+	font: inherit;
+	cursor: pointer;
+	transition:
+		background-color 0.2s ease,
+		border-color 0.2s ease,
+		box-shadow 0.2s ease,
+		color 0.2s ease,
+		transform 0.2s ease;
+}
+
+.m3-totp-page__status-icon--action:hover:not(:disabled) {
+	background: var(--m3-primary-container);
+	border-color: var(--m3-primary);
+	box-shadow: 0 6px 18px rgb(64 158 255 / 24%);
+	color: var(--m3-primary);
+	transform: translateY(-2px);
+}
+
+.m3-totp-page__status-icon--action:active:not(:disabled) {
+	box-shadow: 0 2px 8px rgb(64 158 255 / 20%);
+	transform: translateY(0);
+}
+
+.m3-totp-page__status-icon--action:focus-visible {
+	outline: 3px solid var(--m3-primary-container);
+	outline-offset: 3px;
+}
+
+.m3-totp-page__status-icon--action:disabled {
+	cursor: wait;
+	opacity: 0.65;
 }
 
 .m3-totp-page__status-text {
