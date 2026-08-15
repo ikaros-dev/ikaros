@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginRuntimeException;
@@ -20,6 +21,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.exception.plugin.PluginInstallException;
+import run.ikaros.api.infra.exception.plugin.PluginUpgradeException;
 import run.ikaros.api.infra.utils.StringUtils;
 import run.ikaros.server.plugin.IkarosPluginManager;
 
@@ -131,9 +133,20 @@ public class PluginServiceImpl implements PluginService {
                 .then(Mono.fromCallable(() -> pluginManager.loadPlugin(destPath)))
                 .doOnSuccess(pluginId ->
                     log.debug("Load plugin by path success, pluginId: [{}].", pluginId))
+                .doOnError(error -> deleteFailedPluginFile(destPath))
                 .then();
         } catch (Exception e) {
             throw new PluginInstallException(e);
+        }
+    }
+
+    private void deleteFailedPluginFile(Path pluginPath) {
+        try {
+            if (Files.deleteIfExists(pluginPath)) {
+                log.debug("Delete invalid plugin file for path: {}", pluginPath);
+            }
+        } catch (IOException e) {
+            log.warn("Delete invalid plugin file failed for path: {}", pluginPath, e);
         }
     }
 
@@ -142,19 +155,89 @@ public class PluginServiceImpl implements PluginService {
         Assert.hasText(pluginId, "'pluginId' must has text.");
         Assert.notNull(filePart, "'filePart' must not null.");
 
-        Path oldPath = pluginManager.getPlugin(pluginId).getPluginPath();
-        pluginManager.unloadPlugin(pluginId);
+        PluginWrapper oldPlugin = pluginManager.getPlugin(pluginId);
+        if (oldPlugin == null) {
+            return Mono.error(new NotFoundException("Not found plugin for id: " + pluginId));
+        }
+        pluginManager.validatePlugin(pluginId);
+        Path oldPath = oldPlugin.getPluginPath();
+        PluginState oldState = oldPlugin.getPluginState();
+        Path backupPath = backupPlugin(oldPath);
         try {
+            if (!pluginManager.unloadPlugin(pluginId)) {
+                throw new PluginUpgradeException("Unload old plugin [%s] failed.", pluginId);
+            }
             Files.delete(oldPath);
             log.debug("delete old plugin for path: {}", oldPath);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (RuntimeException | IOException e) {
+            try {
+                restorePlugin(pluginId, oldPath, backupPath, oldState);
+            } finally {
+                deleteUpgradeBackup(backupPath);
+            }
+            throw e instanceof PluginUpgradeException pluginUpgradeException
+                ? pluginUpgradeException : new PluginUpgradeException(e);
         }
         return install(filePart)
             .then(Mono.just(pluginManager))
             .map(ikarosPluginManager -> ikarosPluginManager.getPlugin(pluginId))
             .map(pluginWrapper -> getPluginByDescriptor(pluginId, pluginManager, pluginWrapper))
             .flatMap(customClient::update)
-            .then();
+            .then()
+            .onErrorResume(error -> restorePluginAfterUpgradeFailure(pluginId, oldPath,
+                backupPath, oldState).then(Mono.error(error)))
+            .doFinally(signalType -> deleteUpgradeBackup(backupPath));
+    }
+
+    private Mono<Void> restorePluginAfterUpgradeFailure(String pluginId, Path oldPath,
+                                                        Path backupPath,
+                                                        PluginState oldState) {
+        return Mono.fromRunnable(() -> restorePlugin(pluginId, oldPath, backupPath, oldState));
+    }
+
+    private Path backupPlugin(Path oldPath) {
+        Path backupPath = null;
+        try {
+            backupPath = Files.createTempFile(oldPath.getParent(),
+                oldPath.getFileName().toString() + ".", ".upgrade-backup");
+            Files.copy(oldPath, backupPath, StandardCopyOption.REPLACE_EXISTING);
+            return backupPath;
+        } catch (IOException e) {
+            if (backupPath != null) {
+                deleteUpgradeBackup(backupPath);
+            }
+            throw new PluginUpgradeException(e);
+        }
+    }
+
+    private void restorePlugin(String pluginId, Path oldPath, Path backupPath,
+                               PluginState oldState) {
+        PluginWrapper newPlugin = pluginManager.getPlugin(pluginId);
+        if (newPlugin != null) {
+            Path newPath = newPlugin.getPluginPath();
+            pluginManager.unloadPlugin(pluginId);
+            if (!newPath.equals(oldPath)) {
+                deleteFailedPluginFile(newPath);
+            }
+        }
+        try {
+            Files.copy(backupPath, oldPath, StandardCopyOption.REPLACE_EXISTING);
+            pluginManager.loadPlugin(oldPath);
+            if (PluginState.STARTED == oldState) {
+                pluginManager.startPlugin(pluginId);
+            }
+            log.info("Restore plugin [{}] after upgrade failure.", pluginId);
+        } catch (IOException e) {
+            throw new PluginUpgradeException(e,
+                "Restore plugin [%s] after upgrade failure failed.", pluginId);
+        }
+    }
+
+    private void deleteUpgradeBackup(Path backupPath) {
+        try {
+            Files.deleteIfExists(backupPath);
+        } catch (IOException e) {
+            log.warn("Delete plugin upgrade backup failed for path: {}", backupPath, e);
+        }
     }
 }

@@ -40,6 +40,9 @@ import run.ikaros.server.plugin.event.IkarosPluginDeleteEvent;
 public class IkarosPluginManager extends DefaultPluginManager
     implements ApplicationContextAware, InitializingBean, DisposableBean {
     private final Map<String, PluginStartingError> startingErrors = new HashMap<>();
+    /** 插件附件驱动类型校验器. */
+    private final AttachmentDriverFetcherTypeValidator attachmentDriverFetcherTypeValidator =
+        new AttachmentDriverFetcherTypeValidator();
 
     private @Nullable ApplicationContext rootApplicationContext;
     private @Nullable PluginApplicationInitializer pluginApplicationInitializer;
@@ -170,6 +173,7 @@ public class IkarosPluginManager extends DefaultPluginManager
 
         for (PluginWrapper pluginWrapper : resolvedPlugins) {
             // checkExtensionFinderReady(pluginWrapper);
+            validatePlugin(pluginWrapper.getPluginId());
             PluginState pluginState = pluginWrapper.getPluginState();
 
             if (PluginState.DISABLED == pluginState) {
@@ -225,6 +229,7 @@ public class IkarosPluginManager extends DefaultPluginManager
         checkPluginId(pluginId);
 
         PluginWrapper pluginWrapper = getPlugin(pluginId);
+        validatePlugin(pluginId);
         PluginDescriptor pluginDescriptor = pluginWrapper.getDescriptor();
         PluginState pluginState = pluginWrapper.getPluginState();
         if (PluginState.STARTED == pluginState) {
@@ -339,10 +344,13 @@ public class IkarosPluginManager extends DefaultPluginManager
      */
     public @Nullable PluginState reloadPlugin(String pluginId) {
         PluginWrapper plugin = getPlugin(pluginId);
+        validatePlugin(pluginId);
         stopPlugin(pluginId, false);
         unloadPlugin(pluginId, false);
         try {
             loadPlugin(plugin.getPluginPath());
+        } catch (PluginValidationException e) {
+            throw e;
         } catch (Exception ex) {
             return null;
         }
@@ -370,13 +378,41 @@ public class IkarosPluginManager extends DefaultPluginManager
     public PluginState loadPlugin(String pluginId) {
         Assert.hasText(pluginId, "'pluginId' must has text.");
         Path pluginPath = getPlugin(pluginId).getPluginPath();
+        validatePlugin(pluginId);
         loadPlugin(pluginPath);
         return getPlugin(pluginId).getPluginState();
     }
 
     @Override
     protected PluginWrapper loadPluginFromPath(Path pluginPath) {
-        return super.loadPluginFromPath(pluginPath);
+        PluginWrapper pluginWrapper = super.loadPluginFromPath(pluginPath);
+        try {
+            attachmentDriverFetcherTypeValidator.validate(pluginWrapper);
+            return pluginWrapper;
+        } catch (RuntimeException | LinkageError e) {
+            super.unloadPlugin(pluginWrapper.getPluginId(), false);
+            throw e;
+        }
+    }
+
+    /**
+     * 校验插件声明的附件驱动类型.
+     *
+     * @param pluginId 插件标识
+     */
+    public void validatePlugin(String pluginId) {
+        Assert.hasText(pluginId, "'pluginId' must has text.");
+        PluginWrapper pluginWrapper = getPlugin(pluginId);
+        if (pluginWrapper == null) {
+            throw new PluginValidationException("未找到待校验插件 [%s]", pluginId);
+        }
+        attachmentDriverFetcherTypeValidator.validate(pluginWrapper);
+    }
+
+    @Override
+    public boolean enablePlugin(String pluginId) {
+        validatePlugin(pluginId);
+        return super.enablePlugin(pluginId);
     }
 
     @Override

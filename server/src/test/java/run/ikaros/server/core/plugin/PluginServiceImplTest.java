@@ -2,22 +2,36 @@ package run.ikaros.server.core.plugin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
+import org.springframework.http.codec.multipart.FilePart;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.api.custom.ReactiveCustomClient;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.server.plugin.IkarosPluginManager;
+import run.ikaros.server.plugin.PluginValidationException;
 
 @org.jspecify.annotations.NullUnmarked
 class PluginServiceImplTest {
+
+    /** 测试临时目录. */
+    @TempDir
+    Path tempDir;
 
     private IkarosPluginManager pluginManager;
     private ReactiveCustomClient customClient;
@@ -274,5 +288,44 @@ class PluginServiceImplTest {
             .verifyComplete();
 
         verify(pluginManager).reloadStartedPlugins();
+    }
+
+    @Test
+    void upgradeRestoresOldPluginWhenNewPluginValidationFails() throws IOException {
+        String pluginId = "test-plugin";
+        Path oldPath = tempDir.resolve("test-plugin.jar");
+        Files.writeString(oldPath, "old-plugin", StandardCharsets.UTF_8);
+        PluginWrapper oldPlugin = mock(PluginWrapper.class);
+        FilePart filePart = mock(FilePart.class);
+        when(pluginManager.getPlugin(pluginId)).thenReturn(oldPlugin).thenReturn(null);
+        when(oldPlugin.getPluginPath()).thenReturn(oldPath);
+        when(oldPlugin.getPluginState()).thenReturn(PluginState.STARTED);
+        when(pluginManager.unloadPlugin(pluginId)).thenReturn(true);
+        when(pluginManager.loadPlugin(oldPath)).thenReturn(pluginId);
+        when(filePart.filename()).thenReturn("test-plugin.jar");
+        when(filePart.transferTo(any(File.class)))
+            .thenReturn(Mono.error(new PluginValidationException("invalid plugin")));
+
+        String originalPluginsDir = System.getProperty("pf4j.pluginsDir");
+        System.setProperty("pf4j.pluginsDir", tempDir.toString());
+        try {
+            StepVerifier.create(pluginService.upgrade(pluginId, filePart))
+                .expectError(PluginValidationException.class)
+                .verify();
+        } finally {
+            if (originalPluginsDir == null) {
+                System.clearProperty("pf4j.pluginsDir");
+            } else {
+                System.setProperty("pf4j.pluginsDir", originalPluginsDir);
+            }
+        }
+
+        assertThat(Files.readString(oldPath, StandardCharsets.UTF_8)).isEqualTo("old-plugin");
+        try (var paths = Files.list(tempDir)) {
+            assertThat(paths.map(Path::getFileName).map(Path::toString).toList())
+                .containsExactly("test-plugin.jar");
+        }
+        verify(pluginManager).validatePlugin(pluginId);
+        verify(pluginManager).startPlugin(pluginId);
     }
 }
