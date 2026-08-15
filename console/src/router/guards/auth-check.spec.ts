@@ -65,6 +65,19 @@ describe('身份认证路由守卫', () => {
 		});
 	});
 
+	it('匿名用户访问不存在的路由时仍跳转登录页', () => {
+		guardMocks.useUserStore.mockReturnValue({ isAnonymous: true });
+		const guard = installGuard();
+		const next = vi.fn();
+
+		guard({ name: 'router.title.notfound' } as never, {} as never, next);
+
+		expect(next).toHaveBeenCalledWith({
+			name: 'Login',
+			query: { redirect_uri: window.location.href },
+		});
+	});
+
 	it('已登录用户访问登录页时恢复合法的控制台目标', () => {
 		guardMocks.useUserStore.mockReturnValue({ isAnonymous: false });
 		const guard = installGuard();

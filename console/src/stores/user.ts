@@ -9,6 +9,8 @@ import axios from 'axios';
 export const useUserStore = defineStore(
 	'user',
 	() => {
+		localStorage.removeItem('ikaros-store-user');
+
 		const authType = ref<JwtApplyParamAuthTypeEnum>(
 			JwtApplyParamAuthTypeEnum.UsernamePassword
 		);
@@ -162,7 +164,7 @@ export const useUserStore = defineStore(
 	{
 		persist: {
 			key: 'ikaros-store-user',
-			storage: localStorage,
+			storage: sessionStorage,
 		},
 	}
 );

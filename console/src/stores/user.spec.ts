@@ -29,13 +29,14 @@ import { useUserStore } from './user';
 describe('用户状态管理', () => {
 	beforeEach(() => {
 		localStorage.clear();
+		sessionStorage.clear();
 		const app = createApp({});
 		const pinia = createPinia().use(piniaPluginPersistedstate);
 		app.use(pinia);
 		setActivePinia(pinia);
 	});
 
-	it('从原有本地存储 key 恢复用户状态', () => {
+	it('初始化时清除本地长期认证状态', () => {
 		localStorage.setItem(
 			'ikaros-store-user',
 			JSON.stringify({
@@ -47,12 +48,30 @@ describe('用户状态管理', () => {
 
 		const store = useUserStore();
 
-		expect(store.isAnonymous).toBe(false);
-		expect(store.jwtToken).toBe('persisted-token');
-		expect(store.refreshToken).toBe('persisted-refresh-token');
+		expect(localStorage.getItem('ikaros-store-user')).toBeNull();
+		expect(store.isAnonymous).toBe(true);
+		expect(store.jwtToken).toBeUndefined();
+		expect(store.refreshToken).toBeUndefined();
 	});
 
-	it('将用户状态写入原有本地存储 key', async () => {
+	it('从当前标签页的会话存储恢复认证状态', () => {
+		sessionStorage.setItem(
+			'ikaros-store-user',
+			JSON.stringify({
+				isAnonymous: false,
+				jwtToken: 'session-token',
+				refreshToken: 'session-refresh-token',
+			})
+		);
+
+		const store = useUserStore();
+
+		expect(store.isAnonymous).toBe(false);
+		expect(store.jwtToken).toBe('session-token');
+		expect(store.refreshToken).toBe('session-refresh-token');
+	});
+
+	it('登录后仅将认证状态写入当前标签页会话', async () => {
 		const store = useUserStore();
 
 		store.isAnonymous = false;
@@ -60,8 +79,9 @@ describe('用户状态管理', () => {
 		store.refreshToken = 'refresh-token';
 		await nextTick();
 
+		expect(localStorage.getItem('ikaros-store-user')).toBeNull();
 		expect(
-			JSON.parse(localStorage.getItem('ikaros-store-user') ?? '{}')
+			JSON.parse(sessionStorage.getItem('ikaros-store-user') ?? '{}')
 		).toMatchObject({
 			isAnonymous: false,
 			jwtToken: 'jwt-token',
