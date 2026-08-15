@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ElMessage } from 'element-plus';
+import { ElButton, ElInput, ElMessage } from 'element-plus';
+import { CopyDocument } from '@element-plus/icons-vue';
 import { onMounted, ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useUserStore } from '@/stores/user';
+import { copyValue2Clipboard } from '@/utils/string-util';
 import axios from 'axios';
 import QRCode from 'qrcode';
 
@@ -151,11 +153,13 @@ function handleVerifyKeydown(index: number, e: KeyboardEvent) {
 	}
 }
 
-function copySecret() {
-	navigator.clipboard
-		.writeText(secret.value)
-		.then(() => ElMessage.success('密钥已复制'))
-		.catch(() => ElMessage.error('复制失败'));
+async function copySecret() {
+	try {
+		await copyValue2Clipboard(secret.value);
+		ElMessage.success('密钥已复制');
+	} catch {
+		ElMessage.error('复制失败');
+	}
 }
 
 onMounted(() => {
@@ -241,7 +245,7 @@ onMounted(() => {
 			<template v-else-if="step === 'verify'">
 				<div class="m3-totp-page__setup">
 					<p class="m3-totp-page__setup-title">
-						使用 Authenticator 应用扫描此二维码或手动输入密钥
+						使用 Authenticator 应用扫描二维码或手动输入下方密钥
 					</p>
 
 					<!-- QR 码 -->
@@ -250,11 +254,16 @@ onMounted(() => {
 					</div>
 
 					<div class="m3-totp-page__secret">
-						<span class="m3-totp-page__secret-label">密钥:</span>
 						<code class="m3-totp-page__secret-value">{{ secret }}</code>
-						<el-button link type="primary" @click="copySecret">
-							复制
-						</el-button>
+						<el-button
+							class="m3-totp-page__copy-button"
+							:icon="CopyDocument"
+							text
+							circle
+							aria-label="复制密钥"
+							title="复制密钥"
+							@click="copySecret"
+						/>
 					</div>
 
 					<p class="m3-totp-page__setup-title" style="margin-top: 24px">
@@ -283,12 +292,18 @@ onMounted(() => {
 						/>
 					</div>
 
-					<div class="m3-totp-page__actions" style="margin-top: 24px">
-						<el-button :disabled="isLoading" @click="step = 'idle'">
+					<div
+						class="m3-totp-page__actions m3-totp-page__actions--verify"
+						style="margin-top: 24px"
+					>
+						<el-button
+							type="primary"
+							:disabled="isLoading"
+							@click="step = 'idle'"
+						>
 							取消
 						</el-button>
 						<el-button
-							type="primary"
 							:disabled="!isVerifyCodeComplete || isLoading"
 							:loading="isLoading"
 							@click="handleEnable"
@@ -395,8 +410,27 @@ onMounted(() => {
 }
 
 .m3-totp-page__status-icon--action {
+	--el-button-bg-color: var(--m3-surface-container-highest);
+	--el-button-border-color: transparent;
+	--el-button-text-color: var(--m3-on-surface-variant);
+	--el-button-hover-bg-color: var(--m3-primary-container);
+	--el-button-hover-border-color: var(--m3-primary);
+	--el-button-hover-text-color: var(--m3-primary);
+	--el-button-active-bg-color: var(--m3-primary-container);
+	--el-button-active-border-color: var(--m3-primary);
+	--el-button-active-text-color: var(--m3-primary);
+
+	flex: 0 0 72px;
+	width: 72px;
+	min-width: 72px;
+	max-width: 72px;
+	height: 72px;
+	min-height: 72px;
+	max-height: 72px;
 	padding: 0;
 	border: 1px solid transparent;
+	border-radius: 50%;
+	box-sizing: border-box;
 	font: inherit;
 	cursor: pointer;
 	transition:
@@ -447,6 +481,11 @@ onMounted(() => {
 	align-items: center;
 }
 
+.m3-totp-page__actions--verify {
+	flex-direction: row;
+	justify-content: center;
+}
+
 .m3-totp-page__disable {
 	width: 100%;
 	display: flex;
@@ -486,31 +525,33 @@ onMounted(() => {
 }
 
 .m3-totp-page__secret {
-	display: flex;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 32px;
 	align-items: center;
-	justify-content: center;
-	gap: 8px;
+	gap: 16px;
+	min-width: 0;
 	background: var(--m3-surface-container-highest);
 	border-radius: 12px;
 	padding: 12px 16px;
 	margin: 8px 0;
 }
 
-.m3-totp-page__secret-label {
-	font-family: 'Roboto', system-ui, sans-serif;
-	font-size: 13px;
+.m3-totp-page__secret-value {
+	min-width: 0;
+	font-family: 'Roboto Mono', 'Cascadia Code', monospace;
+	font-size: 12px;
 	font-weight: 500;
-	color: var(--m3-on-surface-variant);
+	letter-spacing: 1px;
+	color: var(--m3-on-surface);
+	text-align: center;
 	white-space: nowrap;
 }
 
-.m3-totp-page__secret-value {
-	font-family: 'Roboto Mono', 'Cascadia Code', monospace;
-	font-size: 13px;
-	font-weight: 500;
-	letter-spacing: 2px;
-	color: var(--m3-on-surface);
-	word-break: break-all;
+.m3-totp-page__copy-button {
+	width: 32px;
+	height: 32px;
+	margin: 0;
+	color: var(--m3-primary);
 }
 
 /* ========== TOTP Input ========== */
@@ -559,6 +600,22 @@ onMounted(() => {
 
 	.m3-totp__inputs {
 		gap: 8px;
+	}
+
+	.m3-totp-page__secret {
+		padding: 12px;
+		gap: 12px;
+		align-items: flex-start;
+	}
+
+	.m3-totp-page__secret-value {
+		text-align: left;
+		white-space: normal;
+		overflow-wrap: anywhere;
+	}
+
+	.m3-totp-page__actions--verify {
+		gap: 12px;
 	}
 }
 </style>
