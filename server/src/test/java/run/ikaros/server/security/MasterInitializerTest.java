@@ -1,8 +1,6 @@
 package run.ikaros.server.security;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -87,7 +85,8 @@ class MasterInitializerTest {
         String password = (String) getPasswordMethod.invoke(masterInitializer);
 
         // Then
-        assertEquals("secret123", password);
+        assertThat(password).isEqualTo("secret123");
+        assertThat(masterInitializer.getInitialPassword()).contains("secret123");
     }
 
     @Test
@@ -101,8 +100,9 @@ class MasterInitializerTest {
         String password = (String) getPasswordMethod.invoke(masterInitializer);
 
         // Then
-        assertNotNull(password);
-        assertEquals(16, password.length());
-        assertTrue(password.chars().allMatch(Character::isLetterOrDigit));
+        assertThat(password)
+            .hasSize(16)
+            .matches("[A-Za-z0-9]+");
+        assertThat(masterInitializer.getInitialPassword()).contains(password);
     }
 }

@@ -3,8 +3,6 @@ package run.ikaros.server.plugin.listener;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.setting.ConfigMap;
@@ -34,9 +32,8 @@ public class PluginPropertiesEnablesInitListener {
     }
 
     /**
-     * init start enable plugin after construct.
+     * 加载插件并同步插件状态.
      */
-    @EventListener(ApplicationReadyEvent.class)
     public Mono<Void> initialize() {
         // Load all plugins after application ready.
         ikarosPluginManager.loadPlugins();

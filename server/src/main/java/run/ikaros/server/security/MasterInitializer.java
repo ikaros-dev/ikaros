@@ -1,10 +1,9 @@
 package run.ikaros.server.security;
 
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -19,18 +18,27 @@ import run.ikaros.server.store.entity.UserEntity;
 import run.ikaros.server.store.entity.UserRoleEntity;
 import run.ikaros.server.store.repository.UserRoleRepository;
 
+/**
+ * 负责初始化系统默认管理员账户.
+ */
 @Slf4j
 @Component
-@ConditionalOnProperty(name = "ikaros.security.initializer.disabled",
-    havingValue = "false",
-    matchIfMissing = true)
 public class MasterInitializer {
 
-    private final SecurityProperties securityProperties;
+    /** 初始账户配置. */
     private final SecurityProperties.Initializer initializer;
+
+    /** 用户服务. */
     private final UserService userService;
+
+    /** 角色服务. */
     private final RoleService roleService;
+
+    /** 用户角色关系仓库. */
     private final UserRoleRepository userRoleRepository;
+
+    /** 本次启动首次创建账户时使用的明文密码. */
+    private @Nullable String initialPassword;
 
     /**
      * default master tomoki init.
@@ -38,18 +46,17 @@ public class MasterInitializer {
     public MasterInitializer(SecurityProperties securityProperties,
                              UserService userService, RoleService roleService,
                              UserRoleRepository userRoleRepository) {
-        this.securityProperties = securityProperties;
-        this.initializer = this.securityProperties.getInitializer();
+        this.initializer = securityProperties.getInitializer();
         this.userService = userService;
         this.roleService = roleService;
         this.userRoleRepository = userRoleRepository;
     }
 
     /**
-     * init master user after application ready.
+     * 初始化默认管理员账户.
      */
-    @EventListener(ApplicationReadyEvent.class)
     public Mono<Void> initialize() {
+        initialPassword = null;
         if (initializer.isDisabled()) {
             log.warn("Skip init master user when ikaros.security.initializer.disabled=true");
             return Mono.empty();
@@ -107,6 +114,16 @@ public class MasterInitializer {
             log.info("=== Generated random password: {} for super master: {} ===",
                 password, this.initializer.getMasterUsername());
         }
+        this.initialPassword = password;
         return password;
+    }
+
+    /**
+     * 获取本次启动首次创建账户时使用的明文密码.
+     *
+     * @return 仅当本次启动创建了初始账户时返回密码
+     */
+    public Optional<String> getInitialPassword() {
+        return Optional.ofNullable(initialPassword);
     }
 }
