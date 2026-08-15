@@ -1181,6 +1181,8 @@ module:
     sidebar: Plugins
     details:
       title: Plugin Details
+      button:
+        back: Back to plugins
       message:
         operate:
           update-config-map: Update config map success
@@ -1310,8 +1312,14 @@ module:
         name: Name
         author: Author
         description: Description
-        state: State
-        operate: Operate
+        runtime: Runtime
+        availability: Enabled
+      state:
+        started: Started
+        stopped: Stopped
+        failed: Start failed
+        enabled: Enabled
+        disabled: Disabled
       operate:
         details: Details
         start: Start

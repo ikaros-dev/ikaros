@@ -1151,6 +1151,8 @@ module:
     sidebar: 插件
     details:
       title: 插件详情
+      button:
+        back: 返回插件页
       label:
         id: ID
         version: 版本
@@ -1273,8 +1275,14 @@ module:
         name: 名称
         author: 作者
         description: 描述
-        state: 状态
-        operate: 操作
+        runtime: 运行
+        availability: 启用
+      state:
+        started: 已启动
+        stopped: 已停止
+        failed: 启动失败
+        enabled: 已启用
+        disabled: 已禁用
       operate:
         details: 详情
         start: 启动
