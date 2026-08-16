@@ -3,11 +3,11 @@ package run.ikaros.server.core.user;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static run.ikaros.server.core.user.UserService.addEncodingIdPrefixIfNotExists;
 
-import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Example;
@@ -25,7 +25,6 @@ import run.ikaros.api.core.user.enums.VerificationCodeType;
 import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.infra.exception.security.PasswordNotMatchingException;
 import run.ikaros.api.infra.exception.user.UserExistsException;
-import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.UserEntity;
 import run.ikaros.server.store.repository.RoleRepository;
 import run.ikaros.server.store.repository.UserRepository;
@@ -53,12 +52,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<User> insert(User user) {
+    public Mono<User> insert(@Nullable User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("'user' must not null.");
+        }
         Assert.notNull(user, "'user' must not null.");
         Assert.notNull(user.entity(), "'user.entity' must not null.");
         Assert.notNull(user.entity().getId(), "'user.entity.id' must not null.");
         UserEntity userEntity = user.entity();
-        userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
+        userEntity.setPassword(encodePassword(userEntity.getPassword()));
         return repository.insert(user.entity())
             .map(User::new);
     }
@@ -125,15 +127,18 @@ public class UserServiceImpl implements UserService {
             .filter(userEntity -> !StringUtils.hasText(userEntity.getPassword())
                 || !passwordEncoder.matches(rawPassword,
                 addEncodingIdPrefixIfNotExists(userEntity.getPassword())))
-            .map(userEntity -> userEntity.setPassword(passwordEncoder.encode(rawPassword)))
+            .map(userEntity -> userEntity.setPassword(encodePassword(rawPassword)))
             .flatMap(repository::update)
             .then();
     }
 
     @Override
-    public Mono<User> update(@Nonnull UpdateUserRequest updateUserRequest) {
+    public Mono<User> update(UpdateUserRequest updateUserRequest) {
         Assert.notNull(updateUserRequest, "'updateUserRequest' must not be null.");
         String username = updateUserRequest.getUsername();
+        if (username == null) {
+            throw new IllegalArgumentException("'username' must has text.");
+        }
         Assert.hasText(username, "'username' must has text.");
         return repository.findByUsernameAndDeleteStatus(username, false)
             .switchIfEmpty(
@@ -143,8 +148,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<Void> bindEmail(@NotBlank String username, @NotBlank String email,
-                                @NotBlank String verificationCode) {
+    public @Nullable Mono<Void> bindEmail(@NotBlank String username, @NotBlank String email,
+                                         @NotBlank String verificationCode) {
         Assert.hasText(username, "'username' must not blank.");
         Assert.hasText(email, "'email' must not blank.");
         Assert.hasText(verificationCode, "'verificationCode' must not blank.");
@@ -153,8 +158,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<Void> bindTelephone(@NotBlank String username, @NotBlank String telephone,
-                                    @NotBlank String verificationCode) {
+    public @Nullable Mono<Void> bindTelephone(@NotBlank String username, @NotBlank String telephone,
+                                              @NotBlank String verificationCode) {
         Assert.hasText(username, "'username' must not blank.");
         Assert.hasText(telephone, "'telephone' must not blank.");
         Assert.hasText(verificationCode, "'verificationCode' must not blank.");
@@ -163,7 +168,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<Void> changeRole(String username, UUID roleId) {
+    public Mono<Void> changeRole(@Nullable String username, UUID roleId) {
         Assert.hasText(username, "'username' must not blank.");
         Assert.notNull(roleId, "'roleId' must not null.");
         // todo impl change role.
@@ -180,7 +185,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<Void> sendVerificationCode(UUID userId, VerificationCodeType type) {
+    public Mono<Void> sendVerificationCode(@Nullable UUID userId, VerificationCodeType type) {
+        if (userId == null) {
+            throw new IllegalArgumentException("'userId' must not null");
+        }
         Assert.notNull(userId, "'userId' must not null");
         Assert.notNull(type, "'type' must not null");
         if (type == VerificationCodeType.EMAIL) {
@@ -194,11 +202,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<User> create(CreateUserReqParams createUserReqParams) {
+    public Mono<User> create(@Nullable CreateUserReqParams createUserReqParams) {
+        if (createUserReqParams == null) {
+            throw new IllegalArgumentException("'createUserReqParams' must not be null.");
+        }
         Assert.notNull(createUserReqParams, "'createUserReqParams' must not be null.");
         String username = createUserReqParams.getUsername();
+        if (username == null) {
+            throw new IllegalArgumentException("'username' must has text.");
+        }
         Assert.hasText(username, "'username' must has text.");
         String password = createUserReqParams.getPassword();
+        if (password == null) {
+            throw new IllegalArgumentException("'password' must has text.");
+        }
         Assert.hasText(password, "'password' must has text.");
         Boolean enabled = createUserReqParams.getEnabled();
         if (enabled == null) {
@@ -208,7 +225,7 @@ public class UserServiceImpl implements UserService {
         return repository.insert(UserEntity.builder()
                 .enable(enabled)
                 .username(username)
-                .password(passwordEncoder.encode(password))
+                .password(encodePassword(password))
                 .build())
             .map(User::new)
             .onErrorResume(DuplicateKeyException.class, e ->
@@ -222,7 +239,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<Void> deleteById(UUID id) {
+    public Mono<Void> deleteById(@Nullable UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException("'id' must not null.");
+        }
         Assert.notNull(id, "'id' must not null.");
         return repository.deleteById(id);
     }
@@ -236,6 +256,9 @@ public class UserServiceImpl implements UserService {
         org.springframework.security.core.userdetails.User
             principal =
             (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+        if (principal == null) {
+            throw new NullPointerException();
+        }
         String username = principal.getUsername();
         return getUserByUsername(username);
     }
@@ -244,7 +267,7 @@ public class UserServiceImpl implements UserService {
     public Mono<UUID> getUserIdFromSecurityContext() {
         return getUserFromSecurityContext()
             .map(run.ikaros.server.core.user.User::entity)
-            .map(BaseEntity::getId);
+            .flatMap(entity -> Mono.justOrEmpty(entity.getId()));
     }
 
     private Mono<Void> sendVerificationCodeWithPhoneMsg(UUID userId, VerificationCodeType type) {
@@ -258,8 +281,15 @@ public class UserServiceImpl implements UserService {
             "Unsupported verification code type=" + type));
     }
 
+    private String encodePassword(String rawPassword) {
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+        if (encodedPassword == null) {
+            throw new IllegalStateException("Password encoder returned null");
+        }
+        return encodedPassword;
+    }
 
-    @Nonnull
+
     private Mono<UserEntity> updateEntity(UserEntity userEntity,
                                           UpdateUserRequest updateUserRequest) {
         Assert.notNull(userEntity, "'userEntity' must not null.");

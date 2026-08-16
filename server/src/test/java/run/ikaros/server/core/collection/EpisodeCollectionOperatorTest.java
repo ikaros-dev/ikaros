@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.api.core.collection.EpisodeCollection;
 
+@org.jspecify.annotations.NullUnmarked
 class EpisodeCollectionOperatorTest {
 
     @Mock

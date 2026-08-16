@@ -6,7 +6,7 @@ import { i18n } from '@/locales';
 <template>
 	<Exception
 		code="404"
-		:message="i18n.global.t('views.exception.notfound.message')"
+		:message="i18n.global.t('view.exception.notfound.message')"
 	/>
 </template>
 

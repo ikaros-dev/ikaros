@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.data.relational.core.query.Criteria.where;
 
 import java.util.Random;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeanUtils;
@@ -39,12 +40,13 @@ class SubjectRepositoryTest {
     @Test
     void findById() {
         final String name = "test" + new Random(100).nextInt();
+        UUID subjectId = UuidV7Utils.generateUuid();
         SubjectEntity subject = SubjectEntity.builder()
             .name(name)
             .type(SubjectType.ANIME)
             .nsfw(false)
             .build();
-        subject.setId(UuidV7Utils.generateUuid());
+        subject.setId(subjectId);
         StepVerifier.create(subjectRepository.insert(subject))
             .expectNextMatches(subjectEntity -> {
                 subject.setId(subjectEntity.getId());
@@ -53,7 +55,7 @@ class SubjectRepositoryTest {
             .verifyComplete();
 
 
-        StepVerifier.create(subjectRepository.findById(subject.getId()))
+        StepVerifier.create(subjectRepository.findById(subjectId))
             .expectNextMatches(subjectEntity -> name.equalsIgnoreCase(subjectEntity.getName()))
             .verifyComplete();
     }
@@ -126,5 +128,32 @@ class SubjectRepositoryTest {
             .expectNext(subjectEntity)
             .verifyComplete();
 
+    }
+
+    @Test
+    void countActiveExcludesLogicallyDeletedSubjects() {
+        SubjectEntity activeSubject = subject(SubjectType.ANIME, false);
+        SubjectEntity deletedSubject = subject(SubjectType.ANIME, true);
+
+        StepVerifier.create(subjectRepository.insert(activeSubject)
+                .then(subjectRepository.insert(deletedSubject))
+                .then(subjectRepository.countActive())
+                .zipWith(subjectRepository.countActiveByType(SubjectType.ANIME)))
+            .assertNext(counts -> {
+                assertThat(counts.getT1()).isEqualTo(1L);
+                assertThat(counts.getT2()).isEqualTo(1L);
+            })
+            .verifyComplete();
+    }
+
+    private SubjectEntity subject(SubjectType type, boolean deleted) {
+        SubjectEntity subject = SubjectEntity.builder()
+            .name(UuidV7Utils.generate())
+            .type(type)
+            .nsfw(false)
+            .build();
+        subject.setId(UuidV7Utils.generateUuid());
+        subject.setDeleteStatus(deleted);
+        return subject;
     }
 }

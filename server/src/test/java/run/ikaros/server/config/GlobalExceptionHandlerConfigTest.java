@@ -1,13 +1,11 @@
 package run.ikaros.server.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
@@ -15,18 +13,10 @@ import reactor.test.StepVerifier;
 
 class GlobalExceptionHandlerConfigTest {
 
-    @Mock
-    private ServerWebExchange exchange;
-    @Mock
-    private WebFilterChain chain;
+    private final ServerWebExchange exchange = mock(ServerWebExchange.class);
+    private final WebFilterChain chain = mock(WebFilterChain.class);
 
-    private GlobalExceptionHandlerConfig filter;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        filter = new GlobalExceptionHandlerConfig();
-    }
+    private final GlobalExceptionHandlerConfig filter = new GlobalExceptionHandlerConfig();
 
     @Test
     void constructor_noArg_createsInstance() {

@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import run.ikaros.server.store.entity.EpisodeEntity;
 
+@org.jspecify.annotations.NullUnmarked
 class EpisodeRemoveEventTest {
 
     private EpisodeEntity buildEpisodeEntity() {

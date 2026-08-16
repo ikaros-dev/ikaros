@@ -8,7 +8,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.authority.Authority;
-import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.RoleAuthorityEntity;
 import run.ikaros.server.store.entity.UserEntity;
 import run.ikaros.server.store.entity.UserRoleEntity;
@@ -46,7 +45,7 @@ public class DefaultUserDetailService implements ReactiveUserDetailsService {
     public Mono<UserDetails> findByUsername(String username) {
         return userRepository
             .findByUsernameAndEnableAndDeleteStatus(username, true, false)
-            .map(BaseEntity::getId)
+            .flatMap(entity -> Mono.justOrEmpty(entity.getId()))
             .flatMapMany(userRoleRepository::findByUserId)
             .map(UserRoleEntity::getRoleId)
             .flatMap(roleId -> roleAuthorityRepository.findByRoleId(roleId).collectList())

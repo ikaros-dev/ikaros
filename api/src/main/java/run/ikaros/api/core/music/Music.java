@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jspecify.annotations.Nullable;
 
 /**
  * 音乐专辑 DTO.
@@ -24,44 +25,44 @@ public class Music {
     /**
      * 专辑ID.
      */
-    private UUID id;
+    private @Nullable UUID id;
     /**
      * 原始名称.
      */
-    private String name;
+    private @Nullable String name;
     /**
      * 中文名称.
      */
     @JsonProperty("name_cn")
-    private String nameCn;
+    private @Nullable String nameCn;
     /**
      * 封面URL.
      */
-    private String cover;
+    private @Nullable String cover;
     /**
      * 专辑描述.
      */
-    private String description;
+    private @Nullable String description;
     /**
      * 发行时间.
      */
     @JsonProperty("air_time")
-    private LocalDateTime airTime;
+    private @Nullable LocalDateTime airTime;
     /**
      * 评分.
      */
-    private Float score;
+    private @Nullable Float score;
     /**
      * 排名.
      */
-    private Integer rank;
+    private @Nullable Integer rank;
     /**
      * 是否 NSFW.
      */
-    private Boolean nsfw;
+    private @Nullable Boolean nsfw;
     /**
      * 歌曲数量.
      */
     @JsonProperty("song_count")
-    private Long songCount;
+    private @Nullable Long songCount;
 }

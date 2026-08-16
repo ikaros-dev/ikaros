@@ -2,6 +2,7 @@ package run.ikaros.server.config;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Objects;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
@@ -28,7 +29,7 @@ public class ThemeConfig {
     @EventListener(ApplicationReadyEvent.class)
     public void thymeleafExtension() {
         if (!templateEngine.isInitialized()) {
-            Path workDir = ikarosProperties.getWorkDir();
+            Path workDir = Objects.requireNonNull(ikarosProperties.getWorkDir());
             Path themesDir = workDir.resolve(AppConst.THEME_DIR_NAME);
             FileTemplateResolver resolver = new FileTemplateResolver();
             resolver.setCheckExistence(true);

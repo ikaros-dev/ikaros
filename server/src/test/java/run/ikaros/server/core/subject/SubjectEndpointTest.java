@@ -6,6 +6,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
@@ -13,6 +15,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +33,11 @@ import reactor.test.StepVerifier;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.subject.Episode;
 import run.ikaros.api.core.subject.Subject;
+import run.ikaros.api.core.subject.vo.FindSubjectCondition;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.store.enums.SubjectType;
+import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.infra.utils.JsonUtils;
@@ -43,6 +48,7 @@ import run.ikaros.server.security.SecurityProperties;
 @AutoConfigureWebTestClient
 @Testcontainers
 @Import(IkarosTestcontainersConfiguration.class)
+@org.jspecify.annotations.NullUnmarked
 class SubjectEndpointTest {
 
     @Autowired
@@ -95,6 +101,78 @@ class SubjectEndpointTest {
             .exchange()
             .expectStatus().isOk()
             .expectBody(Subject.class);
+    }
+
+    @Test
+    void listByConditionParsesKeywordAndDeduplicatesTypes() {
+        PagingWrap<Subject> response = new PagingWrap<>(1, 10, 0L, List.of());
+        Mockito.doReturn(Mono.just(response))
+            .when(subjectService).listEntitiesByCondition(Mockito.any());
+        String keyword = Base64.getEncoder()
+            .encodeToString("统一搜索".getBytes(StandardCharsets.UTF_8));
+
+        webTestClient.get()
+            .uri(uriBuilder -> uriBuilder
+                .path("/api/" + OpenApiConst.CORE_VERSION + "/subjects/condition")
+                .queryParam("keyword", keyword)
+                .queryParam("types", " VIDEO,ANIME,VIDEO,REAL ")
+                .queryParam("nsfw", "false")
+                .build())
+            .header(HttpHeaders.AUTHORIZATION, basicAuthorization())
+            .exchange()
+            .expectStatus().isOk();
+
+        ArgumentCaptor<FindSubjectCondition> conditionCaptor =
+            ArgumentCaptor.forClass(FindSubjectCondition.class);
+        Mockito.verify(subjectService).listEntitiesByCondition(conditionCaptor.capture());
+        FindSubjectCondition condition = conditionCaptor.getValue();
+        Assertions.assertThat(condition.getKeyword()).isEqualTo("统一搜索");
+        Assertions.assertThat(condition.getTypes())
+            .containsExactly(SubjectType.VIDEO, SubjectType.ANIME, SubjectType.REAL);
+        Assertions.assertThat(condition.getNsfw()).isFalse();
+    }
+
+    @Test
+    void listByConditionKeepsTypeWhenTypesIsEmpty() {
+        PagingWrap<Subject> response = new PagingWrap<>(1, 10, 0L, List.of());
+        Mockito.doReturn(Mono.just(response))
+            .when(subjectService).listEntitiesByCondition(Mockito.any());
+
+        webTestClient.get()
+            .uri(uriBuilder -> uriBuilder
+                .path("/api/" + OpenApiConst.CORE_VERSION + "/subjects/condition")
+                .queryParam("type", "MUSIC")
+                .queryParam("types", " ,  ")
+                .build())
+            .header(HttpHeaders.AUTHORIZATION, basicAuthorization())
+            .exchange()
+            .expectStatus().isOk();
+
+        ArgumentCaptor<FindSubjectCondition> conditionCaptor =
+            ArgumentCaptor.forClass(FindSubjectCondition.class);
+        Mockito.verify(subjectService).listEntitiesByCondition(conditionCaptor.capture());
+        Assertions.assertThat(conditionCaptor.getValue().getType()).isEqualTo(SubjectType.MUSIC);
+        Assertions.assertThat(conditionCaptor.getValue().getTypes()).isEmpty();
+    }
+
+    @Test
+    void listByConditionReturnsBadRequestForInvalidTypes() {
+        webTestClient.get()
+            .uri(uriBuilder -> uriBuilder
+                .path("/api/" + OpenApiConst.CORE_VERSION + "/subjects/condition")
+                .queryParam("types", "VIDEO,INVALID")
+                .build())
+            .header(HttpHeaders.AUTHORIZATION, basicAuthorization())
+            .exchange()
+            .expectStatus().isBadRequest();
+
+        Mockito.verify(subjectService, Mockito.never())
+            .listEntitiesByCondition(Mockito.any());
+    }
+
+    private String basicAuthorization() {
+        return "Basic " + HttpHeaders.encodeBasicAuth(
+            username, password, StandardCharsets.UTF_8);
     }
 
 

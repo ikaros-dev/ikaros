@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jspecify.annotations.Nullable;
 
 @Data
 @Builder
@@ -13,8 +14,8 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class Character {
-    private UUID id;
-    private String name;
-    private String infobox;
-    private String summary;
+    private @Nullable UUID id;
+    private @Nullable String name;
+    private @Nullable String infobox;
+    private @Nullable String summary;
 }

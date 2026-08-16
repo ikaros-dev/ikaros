@@ -2,10 +2,10 @@ package run.ikaros.server.security.authentication.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Date;
+import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,7 @@ import run.ikaros.server.security.SecurityProperties;
 @Component
 public class JwtAuthenticationProvider {
     private final SecurityProperties securityProperties;
-    private final String secretKey;
+    private final SecretKey secretKey;
     private Long accessTokenExpiry = 0L;
     private Long refreshTokenExpiry = 0L;
 
@@ -27,7 +27,7 @@ public class JwtAuthenticationProvider {
      */
     public JwtAuthenticationProvider(SecurityProperties securityProperties) {
         this.securityProperties = securityProperties;
-        secretKey = Base64.getEncoder().encodeToString(
+        secretKey = Keys.hmacShaKeyFor(
             StringUtils.generateRandomStr(512).getBytes(StandardCharsets.UTF_8));
     }
 
@@ -105,9 +105,9 @@ public class JwtAuthenticationProvider {
      */
     private String generateToken(String username, long milliseconds) {
         return Jwts.builder()
-            .setSubject(username)
-            .setExpiration(new Date(System.currentTimeMillis() + milliseconds))
-            .signWith(SignatureAlgorithm.HS512, secretKey)
+            .subject(username)
+            .expiration(new Date(System.currentTimeMillis() + milliseconds))
+            .signWith(secretKey, Jwts.SIG.HS512)
             .compact();
     }
 
@@ -116,9 +116,9 @@ public class JwtAuthenticationProvider {
      */
     public Claims extractClaims(String token) {
         return Jwts.parser()
-            .setSigningKey(secretKey)
+            .verifyWith(secretKey)
             .build()
-            .parseClaimsJws(token)
-            .getBody();
+            .parseSignedClaims(token)
+            .getPayload();
     }
 }

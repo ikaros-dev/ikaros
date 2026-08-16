@@ -1,13 +1,15 @@
 package run.ikaros.server.infra.utils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+import org.jspecify.annotations.Nullable;
 
 public class ByteArrUtils {
     /**
      * 判断字节数组为二进制数据.
      */
-    public static boolean isBinaryData(byte[] data) {
-        for (byte b : data) {
+    public static boolean isBinaryData(byte @Nullable [] data) {
+        for (byte b : Objects.requireNonNull(data)) {
             if (b < 32 && b != 9 && b != 10 && b != 13) {
                 return true; // 存在控制字符，可能是二进制数据
             }
@@ -18,7 +20,10 @@ public class ByteArrUtils {
     /**
      * 判断字节数组为字符串数据.
      */
-    public static boolean isStringData(byte[] data) {
+    public static boolean isStringData(byte @Nullable [] data) {
+        if (data == null) {
+            return false;
+        }
         try {
             String str = new String(data, StandardCharsets.UTF_8);
             // 检查解码后的字符串是否包含非可打印字符

@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Http path manipulation tool class.
@@ -33,7 +34,7 @@ public class PathUtils {
      * @return true if the linkBase is absolute, otherwise false
      * @see <a href="https://en.wikipedia.org/wiki/URL">URL</a>
      */
-    public static boolean isAbsoluteUri(final String uriString) {
+    public static boolean isAbsoluteUri(final @Nullable String uriString) {
         if (StringUtils.isBlank(uriString)) {
             return false;
         }
@@ -55,7 +56,7 @@ public class PathUtils {
      * @param pathSegments Path segments to be combined
      * @return the combined path
      */
-    public static String combinePath(String... pathSegments) {
+    public static String combinePath(@Nullable String... pathSegments) {
         StringBuilder sb = new StringBuilder();
         for (String path : pathSegments) {
             if (path == null) {
@@ -81,8 +82,8 @@ public class PathUtils {
      * @param path a path
      * @return A new String if suffix was appended, the same string otherwise.
      */
-    public static String appendPathSeparatorIfMissing(String path) {
-        return StringUtils.appendIfMissing(path, "/", "/");
+    public static @Nullable String appendPathSeparatorIfMissing(@Nullable String path) {
+        return path == null || path.endsWith("/") ? path : path + "/";
     }
 
     /**

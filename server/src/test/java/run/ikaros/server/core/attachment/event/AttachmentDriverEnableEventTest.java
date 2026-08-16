@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 import run.ikaros.server.store.entity.AttachmentDriverEntity;
 
+@org.jspecify.annotations.NullUnmarked
 class AttachmentDriverEnableEventTest {
 
     @Test

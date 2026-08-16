@@ -24,6 +24,7 @@ class DefaultCustomSchemeWatcherManagerTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void registerNullThrows() {
         assertThatThrownBy(() -> watcherManager.register(null))
             .isInstanceOf(IllegalArgumentException.class);
@@ -38,6 +39,7 @@ class DefaultCustomSchemeWatcherManagerTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void unregisterNullThrows() {
         assertThatThrownBy(() -> watcherManager.unregister(null))
             .isInstanceOf(IllegalArgumentException.class);

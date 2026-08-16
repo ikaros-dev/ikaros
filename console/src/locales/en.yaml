@@ -1,4 +1,4 @@
-Root: Root
+Root: Dashboard
 common:
   greeting: Hello,
   exception:
@@ -102,11 +102,32 @@ module:
   dashboard:
     title: Dashboard
     sidebar: Dashboard
+    loading: Loading dashboard data
+    error: Failed to load dashboard data
+    retry: Retry
     label:
-      attachment: Attachments
+      folder: Known folders
+      file: Known files
       subject: Subjects
+      video: Videos
+      music: Music
+      image: Images
       collection: Collections
       doing: Doings
+    guide:
+      empty:
+        title: Start managing your content
+        description: Add a file source before importing media
+      addSource: Add file source
+      import:
+        title: File source ready
+        description: Choose a content type to start importing
+      content:
+        description: Recent actions
+        sources: File sources
+        videos: Videos
+        music: Music
+        images: Images
   user:
     title: User
     sidebar: User
@@ -165,8 +186,8 @@ module:
           shelve: Shelve
           discard: Discard
   attachment:
-    title: Attachments
-    sidebar: Attachments
+    title: File Sources
+    sidebar: File Sources
     message:
       directory: Directory
       file: File
@@ -209,6 +230,17 @@ module:
           default, the system deletes all contents in the directory. Are you
           sure you want to delete it?
     dialog:
+      scan-directory:
+        title: Select Directory
+        system-root: Root
+        source-root: '{id} Root'
+        load-error: Failed to load directories
+        refresh-error: Failed to refresh directory
+        refresh-hint: Directory contents are not updated automatically. Refresh to get the latest folders.
+        no-sources: No file sources available
+        empty: No folders in this directory
+        manage-sources: Manage File Sources
+        select-current: Select Current Directory
       mkdir:
         title: Crate new directory
         placeholder: >-
@@ -234,7 +266,7 @@ module:
           colum:
             label:
               name: Name
-              path: Path
+              path: "Path:"
               update-time: UpdateTime
               size: Size
       select:
@@ -248,7 +280,7 @@ module:
           colum:
             label:
               name: Name
-              path: Path
+              path: "Path:"
               update-time: UpdateTime
               size: Size
       relation:
@@ -269,12 +301,16 @@ module:
           add: Add
           cancel: Cancel
     btn:
-      upload: Upload
+      upload: Upload Files
       mkdir: Create
       move_atts: Batch move
       refresh: Refresh
       driver: Driver
       bind: Bind Directory
+      more: More
+      add-source: Add File Source
+      manage-sources: Add/Manage File Sources
+      scan: Scan Current Directory
     bind:
       confirm:
         content: Are you sure you want to auto-create subjects and bind episodes for the current directory?
@@ -314,6 +350,9 @@ module:
           EPISODE: Episode video
           AUDIO: Audio
           IMAGE: Image sequence
+        directory:
+          label: Scan directory
+          select: Select directory
         preview:
           title: Scan preview
           action: Scan directory
@@ -350,6 +389,7 @@ module:
           type: Subject type
           nsfw: Mark as NSFW
           typeValue:
+            VIDEO: Unclassified video
             ANIME: Anime
             COMIC: Comic
             GAME: Game
@@ -370,11 +410,22 @@ module:
       btn: Batch delete
       system_internal_forbidden: System internal directories cannot be deleted
     search_input:
-      placeholder: >-
-        Search all attachments in the current directory, fuzzy match, space
-        multiple keywords, enter search.
+      placeholder: Search files and directories in the current directory, then press Enter
     breadcrumb:
       label: Path
+    browser:
+      error: Failed to load the current directory. Please retry.
+      source-error: Failed to load file sources. Please retry.
+      no-sources:
+        title: No file sources
+        description: Add a local file source to browse and scan media files
+      no-results:
+        title: No matching content
+        description: Adjust the keyword and search the current directory again
+      empty:
+        title: This directory is empty
+        directory-description: Upload files or create a subdirectory
+        driver-description: Refresh the file source or explicitly scan this directory
     table:
       colum:
         label:
@@ -408,7 +459,7 @@ module:
         type: Type
         size: Size
         updateTime: Update Time
-        path: Path
+        path: "Path:"
         fsPath: File System Path
       descItemValue:
         sha1Calculating: Calculating
@@ -482,6 +533,48 @@ module:
           button:
             subject:
               update: Update
+    file-source:
+      title: File sources
+      create: Add file source
+      create-title: Add file source
+      edit-title: Edit file source
+      columns:
+        name: Name
+        path: Server path
+        enabled: Enabled
+        operations: Operations
+      fields:
+        type: Type
+        driver-name: Driver implementation
+        name: Name
+        path: Server path
+        access-token: Access token
+        refresh-token: Refresh token
+        comment: Notes
+      actions:
+        retry: Retry
+        save: Save
+      validation:
+        driver-name: Select a driver implementation
+        mount-name: Enter a file source name
+        remote-path: Enter a server path
+      delete-title: Delete file source
+      delete-confirm:
+        Delete file source "{name}"? Files on the server will not be deleted.
+      messages:
+        save-success: File source saved
+        delete-success: File source deleted
+      errors:
+        load: Failed to load file sources. Please try again.
+        save: Failed to save the file source
+        missing-id:
+          The file source was saved, but the server did not return an ID, so it
+          could not be enabled
+        enable-after-save:
+          The file source was saved but could not be enabled. Check its status
+          and try again.
+        toggle: Failed to update the file source status
+        delete: Failed to delete the file source
   regular:
     title: Episode Regex Rules
     sidebar: Regex
@@ -1088,6 +1181,8 @@ module:
     sidebar: Plugins
     details:
       title: Plugin Details
+      button:
+        back: Back to plugins
       message:
         operate:
           update-config-map: Update config map success
@@ -1217,8 +1312,14 @@ module:
         name: Name
         author: Author
         description: Description
-        state: State
-        operate: Operate
+        runtime: Runtime
+        availability: Enabled
+      state:
+        started: Started
+        stopped: Stopped
+        failed: Start failed
+        enabled: Enabled
+        disabled: Disabled
       operate:
         details: Details
         start: Start
@@ -1377,6 +1478,26 @@ module:
     album:
       detail:
         title: Album Details
+  media:
+    import: Scan and Import
+    video:
+      title: Videos
+      sidebar: Videos
+      searchPlaceholder: Search video names
+      emptyTitle: No videos
+      emptyDescription: Scan and import videos to show them here
+    music:
+      title: Music
+      sidebar: Music
+      searchPlaceholder: Search music names
+      emptyTitle: No music
+      emptyDescription: Scan and import music to show it here
+    image:
+      title: Images
+      sidebar: Images
+      searchPlaceholder: Search image names
+      emptyTitle: No images
+      emptyDescription: Scan and import images to show them here
 login:
   operations:
     submit:

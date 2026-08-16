@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.server.store.entity.AttachmentEntity;
 
+@org.jspecify.annotations.NullUnmarked
 class AttachmentRemoveEventTest {
 
     private AttachmentEntity buildAttachmentEntity() {

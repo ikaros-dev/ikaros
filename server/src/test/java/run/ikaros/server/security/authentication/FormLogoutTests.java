@@ -23,6 +23,7 @@ import run.ikaros.server.security.SecurityProperties;
 @AutoConfigureWebTestClient
 @Testcontainers
 @Import(IkarosTestcontainersConfiguration.class)
+@org.jspecify.annotations.NullUnmarked
 public class FormLogoutTests {
     @Autowired
     WebTestClient webClient;

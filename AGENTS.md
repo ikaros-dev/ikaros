@@ -12,6 +12,14 @@
 - 项目所有涉及编码的地方统一使用 **UTF-8**（无 BOM）
 - 项目中涉及 npm 操作（安装依赖、运行脚本等）统一使用 **pnpm**，不得使用 npm 或 yarn
 
+## Java 空值注解规范
+
+- JSpecify 是 Java 空值注解的唯一标准
+- 禁止使用 Spring、Jakarta 或 Javax 的旧空值注解
+- 新增包必须使用 `package-info.java` 和 `@NullMarked` 声明默认非空
+- `@NullMarked` 标记的包内不得重复使用 `@NonNull`
+- 仅在允许为空的位置使用 `@Nullable`
+
 ---
 
 # 单元测试规范
@@ -28,6 +36,9 @@
 
 ## 基本原则
 
+- 服务端数据库仅支持 PostgreSQL，不设计 H2 或其他数据库兼容层
+- SQL、R2DBC 查询和数据库迁移允许使用 PostgreSQL 专有能力
+- 涉及数据库的测试统一使用 PostgreSQL Testcontainers
 - **已存在的 SQL 严禁修改**——只允许新增 SQL 文件
 - **所有方案以服务端逻辑优先，非必要不修改数据库字段**——能通过代码解决的问题，不应通过改表结构解决
 - **禁止使用数据库层面的外键引用，全部使用服务端逻辑层面的外键引用**——外键约束应在应用程序代码中维护，不在数据库中定义
@@ -104,6 +115,7 @@ type(scope): message
 - `style` — 代码格式（非语义变更）
 - `perf` — 性能优化
 - `test` — 测试
+- `ci` — 持续集成
 
 `scope`（可选）: 模块名，如 `db`, `web`, `mobile`, `api`, `config` 等
 

@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -126,7 +127,7 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
 
     @Override
     public Mono<Void> updateEpisodeCollection(UUID userId, UUID episodeId, Long progress,
-                                              Long duration) {
+                                              @Nullable Long duration) {
         Assert.isTrue(progress > 0, "progress must > 0");
 
         if (Objects.isNull(duration) || duration <= 0) {
@@ -155,31 +156,33 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
             .then();
     }
 
-    private Mono<EpisodeCollectionEntity> createNewEpisodeCollectionEntity(UUID userId,
-                                                                           UUID episodeId,
-                                                                           Long progress,
-                                                                           Long duration) {
+    private Mono<EpisodeCollectionEntity> createNewEpisodeCollectionEntity(
+        UUID userId, UUID episodeId, Long progress, @Nullable Long duration) {
         return episodeRepository
             .findById(episodeId)
             .switchIfEmpty(
                 Mono.error(new EpisodeNotFoundException("Episode not found for id: " + episodeId)))
             .map(EpisodeEntity::getSubjectId)
-            .flatMap(subjectId ->
-                episodeCollectionRepository
-                    .insert(EpisodeCollectionEntity
-                        .builder()
-                        .userId(userId)
-                        .subjectId(subjectId)
-                        .episodeId(episodeId)
-                        .progress(progress)
-                        .duration(duration)
-                        .finish(((double) progress / duration) >= AppConst.EPISODE_FINISH)
-                        .updateTime(LocalDateTime.now())
-                        .build())
-                    .doOnSuccess(entity ->
+            .flatMap(subjectId -> {
+                EpisodeCollectionEntity entity = EpisodeCollectionEntity.builder()
+                    .userId(userId)
+                    .subjectId(subjectId)
+                    .episodeId(episodeId)
+                    .progress(progress)
+                    .finish(duration != null
+                        && ((double) progress / duration) >= AppConst.EPISODE_FINISH)
+                    .updateTime(LocalDateTime.now())
+                    .build();
+                if (duration != null) {
+                    entity.setDuration(duration);
+                }
+                return episodeCollectionRepository
+                    .insert(entity)
+                    .doOnSuccess(savedEntity ->
                         log.info(
                             "Create new episode collection for episodeId=[{}] and userId=[{}]",
-                            episodeId, userId)));
+                            episodeId, userId));
+            });
     }
 
     private Mono<EpisodeCollectionEntity> updateSubjectId(

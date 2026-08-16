@@ -32,7 +32,7 @@ public class CustomListPagingHandler implements CustomRouterFunctionFactory.List
             .onErrorResume(NotFoundException.class,
                 e -> ServerResponse.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(e.getMessage()));
+                    .bodyValue(java.util.Objects.toString(e.getMessage(), e.toString())));
     }
 
     @Override

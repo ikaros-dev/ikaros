@@ -32,14 +32,19 @@ import {
 } from 'element-plus';
 import { apiClient } from '@/utils/api-client';
 import { base64Encode } from '@/utils/string-util';
+import FileSourceManagerDialog from './FileSourceManagerDialog.vue';
+import ScanDirectorySelectDialog from './ScanDirectorySelectDialog.vue';
 
 type ScanMode = NonNullable<LocalScanPreview['mode']>;
 type SubjectSource = 'existing' | 'new';
+const videoSubjectType = 'VIDEO' as Subject['type'];
 
 interface Props {
 	visible: boolean;
-	directoryId: string;
+	directoryId?: string;
+	mode?: ScanMode;
 	workflow?: DirectoryBindingWorkflowEntity;
+	hideSetupControls?: boolean;
 }
 
 interface RescanDetails {
@@ -57,7 +62,10 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const unassociatedValue = '__UNASSOCIATED__';
-const mode = ref<ScanMode>(LocalScanPreviewRequestModeEnum.Episode);
+const selectedDirectoryId = ref('');
+const directorySelectVisible = ref(false);
+const fileSourceManagerVisible = ref(false);
+const selectedMode = ref<ScanMode>(LocalScanPreviewRequestModeEnum.Episode);
 const preview = ref<LocalScanPreview>();
 const previewLoading = ref(false);
 const confirmLoading = ref(false);
@@ -72,7 +80,7 @@ const rescanResult = ref<DirectoryBindingWorkflowEntity>();
 const rescanDetails = ref<RescanDetails>();
 const newSubject = reactive<Subject>({
 	name: '',
-	type: SubjectTypeEnum.Anime,
+	type: videoSubjectType,
 	nsfw: false,
 	name_cn: '',
 });
@@ -90,7 +98,18 @@ const scanModes: ScanMode[] = [
 const subjectTypes = computed(() =>
 	mode.value === LocalScanPreviewRequestModeEnum.Audio
 		? [SubjectTypeEnum.Music]
-		: Object.values(SubjectTypeEnum)
+		: mode.value === LocalScanPreviewRequestModeEnum.Image
+			? [SubjectTypeEnum.Comic]
+			: [videoSubjectType, SubjectTypeEnum.Anime, SubjectTypeEnum.Real]
+);
+const mode = computed<ScanMode>({
+	get: () => props.mode || selectedMode.value,
+	set: (value) => {
+		if (!props.mode) selectedMode.value = value;
+	},
+});
+const effectiveDirectoryId = computed(
+	() => props.directoryId || selectedDirectoryId.value
 );
 const roles = [
 	'PRIMARY',
@@ -129,11 +148,14 @@ const hasValidSubject = computed(() => {
 		subjectSource.value === 'existing' && Boolean(selectedSubjectId.value);
 	const newCompleted =
 		subjectSource.value === 'new' &&
-		Boolean(newSubject.name.trim() && newSubject.type);
+		Boolean(newSubject.name.trim() && newSubject.type) &&
+		subjectTypes.value.includes(newSubject.type);
 	return Number(existingSelected) + Number(newCompleted) === 1;
 });
 const canConfirm = computed(
 	() =>
+		Boolean(effectiveDirectoryId.value) &&
+		Boolean(mode.value) &&
 		Boolean(preview.value) &&
 		hasPrimary.value &&
 		allPendingHandled.value &&
@@ -152,7 +174,7 @@ const defaultSubjectType = (value: ScanMode) => {
 	if (value === LocalScanPreviewRequestModeEnum.Image) {
 		return SubjectTypeEnum.Comic;
 	}
-	return SubjectTypeEnum.Anime;
+	return videoSubjectType;
 };
 
 const extractErrorMessage = (error: unknown) => {
@@ -171,6 +193,9 @@ const extractErrorMessage = (error: unknown) => {
 };
 
 const scan = async () => {
+	if (!effectiveDirectoryId.value) {
+		return;
+	}
 	previewLoading.value = true;
 	errorMessage.value = '';
 	rescanResult.value = undefined;
@@ -178,7 +203,7 @@ const scan = async () => {
 	try {
 		const { data } = await apiClient.binding.previewLocalDirectoryBinding({
 			localScanPreviewRequest: {
-				directory_id: props.directoryId,
+				directory_id: effectiveDirectoryId.value,
 				mode: mode.value,
 			},
 		});
@@ -191,17 +216,26 @@ const scan = async () => {
 	}
 };
 
+defineExpose({ scan });
+
 const searchSubjects = async (keyword: string) => {
 	subjectSearchLoading.value = true;
 	try {
-		const { data } = await apiClient.subject.listSubjectsByCondition({
-			page: 1,
-			size: 20,
-			name: base64Encode(keyword),
-			type:
-				mode.value === LocalScanPreviewRequestModeEnum.Audio
-					? SubjectTypeEnum.Music
-					: undefined,
+		const types =
+			mode.value === LocalScanPreviewRequestModeEnum.Episode
+				? [videoSubjectType, SubjectTypeEnum.Anime, SubjectTypeEnum.Real]
+				: [
+						mode.value === LocalScanPreviewRequestModeEnum.Audio
+							? SubjectTypeEnum.Music
+							: SubjectTypeEnum.Comic,
+					];
+		const { data } = await apiClient.get('/api/v1/subjects/condition', {
+			params: {
+				page: 1,
+				size: 20,
+				keyword: base64Encode(keyword),
+				types: types.join(','),
+			},
 		});
 		subjectOptions.value = ((data.items || []) as Subject[]).filter((subject) =>
 			Boolean(subject.id)
@@ -227,7 +261,7 @@ const confirm = async () => {
 	confirmLoading.value = true;
 	errorMessage.value = '';
 	const request: LocalScanConfirmRequest = {
-		directory_id: props.directoryId,
+		directory_id: effectiveDirectoryId.value,
 		mode: mode.value,
 		assignments: pendingItems.value.map((item) => ({
 			attachment_id: item.attachment_id,
@@ -330,7 +364,6 @@ watch(mode, (value) => {
 	errorMessage.value = '';
 	clearAssignments();
 	newSubject.type = defaultSubjectType(value);
-	void searchSubjects('');
 });
 
 watch(
@@ -342,17 +375,26 @@ watch(
 		rescanResult.value = undefined;
 		rescanDetails.value = undefined;
 		clearAssignments();
+		selectedDirectoryId.value = props.directoryId || '';
 	}
 );
 
-watch(
-	() => props.visible,
-	(value) => {
-		if (value && subjectOptions.value.length === 0) {
-			void searchSubjects('');
-		}
-	}
-);
+const chooseDirectory = (directoryId: string) => {
+	selectedDirectoryId.value = directoryId;
+	directorySelectVisible.value = false;
+	preview.value = undefined;
+	clearAssignments();
+};
+
+const manageSources = () => {
+	directorySelectVisible.value = false;
+	fileSourceManagerVisible.value = true;
+};
+
+const onFileSourcesChanged = () => {
+	fileSourceManagerVisible.value = false;
+	directorySelectVisible.value = true;
+};
 </script>
 
 <template>
@@ -425,15 +467,34 @@ watch(
 
 		<el-divider v-if="workflow?.id" />
 
-		<section class="local-binding-section">
+		<section v-if="!props.hideSetupControls" class="local-binding-section">
 			<div class="local-binding-section-header">
 				<h3>{{ t('module.attachment.bind.local.preview.title') }}</h3>
-				<el-button type="primary" :loading="previewLoading" @click="scan">
+				<el-button
+					type="primary"
+					:loading="previewLoading"
+					:disabled="!effectiveDirectoryId || !mode"
+					@click="scan"
+				>
 					{{ t('module.attachment.bind.local.preview.action') }}
 				</el-button>
 			</div>
 			<el-form label-position="top">
-				<el-form-item :label="t('module.attachment.bind.local.mode.label')">
+				<el-form-item
+					v-if="!props.directoryId"
+					:label="t('module.attachment.bind.local.directory.label')"
+				>
+					<el-button @click="directorySelectVisible = true">
+						{{
+							effectiveDirectoryId ||
+							t('module.attachment.bind.local.directory.select')
+						}}
+					</el-button>
+				</el-form-item>
+				<el-form-item
+					v-if="!props.mode"
+					:label="t('module.attachment.bind.local.mode.label')"
+				>
 					<el-radio-group v-model="mode">
 						<el-radio
 							v-for="value in scanModes"
@@ -646,6 +707,16 @@ watch(
 				</el-form>
 			</section>
 		</template>
+
+		<ScanDirectorySelectDialog
+			v-model:visible="directorySelectVisible"
+			@selected="chooseDirectory"
+			@manage-sources="manageSources"
+		/>
+		<FileSourceManagerDialog
+			v-model:visible="fileSourceManagerVisible"
+			@changed="onFileSourcesChanged"
+		/>
 
 		<template #footer>
 			<el-button @click="dialogVisible = false">

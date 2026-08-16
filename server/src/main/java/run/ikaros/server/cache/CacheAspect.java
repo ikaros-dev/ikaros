@@ -11,6 +11,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -82,7 +83,8 @@ public class CacheAspect {
     }
 
 
-    private String parseSpelExpression(String expression, ProceedingJoinPoint joinPoint) {
+    private @Nullable String parseSpelExpression(
+        String expression, ProceedingJoinPoint joinPoint) {
         final EvaluationContext context = new StandardEvaluationContext();
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         String[] paramNames = methodSignature.getParameterNames();

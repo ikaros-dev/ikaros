@@ -37,12 +37,13 @@ class SubjectRelationRepositoryTest {
             .relationType(SubjectRelationType.COMIC)
             .relationSubjectId(relationSubjectId)
             .build();
-        entity.setId(UuidV7Utils.generateUuid());
+        UUID entityId = UuidV7Utils.generateUuid();
+        entity.setId(entityId);
 
         StepVerifier.create(repository.insert(entity))
             .expectNext(entity).verifyComplete();
 
-        StepVerifier.create(repository.findById(entity.getId()))
+        StepVerifier.create(repository.findById(entityId))
             .expectNext(entity).verifyComplete();
     }
 
@@ -109,7 +110,8 @@ class SubjectRelationRepositoryTest {
             .relationType(SubjectRelationType.COMIC)
             .relationSubjectId(relationSubjectId)
             .build();
-        entity.setId(UuidV7Utils.generateUuid());
+        UUID entityId = UuidV7Utils.generateUuid();
+        entity.setId(entityId);
 
         StepVerifier.create(repository.insert(entity)).expectNext(entity).verifyComplete();
 
@@ -117,7 +119,7 @@ class SubjectRelationRepositoryTest {
                 subjectId, SubjectRelationType.COMIC, relationSubjectId))
             .verifyComplete();
 
-        StepVerifier.create(repository.findById(entity.getId()))
+        StepVerifier.create(repository.findById(entityId))
             .expectNextCount(0).verifyComplete();
     }
 }

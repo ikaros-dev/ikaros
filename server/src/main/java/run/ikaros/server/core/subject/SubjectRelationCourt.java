@@ -17,6 +17,7 @@ public class SubjectRelationCourt {
         subjectRelationTypeMap.put(SubjectType.MUSIC, SubjectRelationType.MUSIC);
         subjectRelationTypeMap.put(SubjectType.NOVEL, SubjectRelationType.NOVEL);
         subjectRelationTypeMap.put(SubjectType.REAL, SubjectRelationType.REAL);
+        subjectRelationTypeMap.put(SubjectType.VIDEO, SubjectRelationType.VIDEO);
         subjectRelationTypeMap.put(SubjectType.OTHER, SubjectRelationType.OTHER);
     }
 
@@ -36,7 +37,16 @@ public class SubjectRelationCourt {
                 return SubjectRelationType.SAME_WORLDVIEW;
             }
             default -> {
-                return subjectRelationTypeMap.get(masterType);
+                return switch (masterType) {
+                    case ANIME -> SubjectRelationType.ANIME;
+                    case COMIC -> SubjectRelationType.COMIC;
+                    case GAME -> SubjectRelationType.GAME;
+                    case MUSIC -> SubjectRelationType.MUSIC;
+                    case NOVEL -> SubjectRelationType.NOVEL;
+                    case REAL -> SubjectRelationType.REAL;
+                    case VIDEO -> SubjectRelationType.VIDEO;
+                    case OTHER -> SubjectRelationType.OTHER;
+                };
             }
         }
     }

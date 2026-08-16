@@ -2,7 +2,9 @@ package run.ikaros.server.store.repository;
 
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.r2dbc.repository.Query;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.store.enums.SubjectType;
@@ -24,7 +26,7 @@ public interface SubjectRepository extends BaseRepository<SubjectEntity> {
 
     Mono<Long> countAllByNsfw(Boolean nsfw);
 
-    Flux<SubjectEntity> findAllByType(SubjectType type, Pageable pageable);
+    Flux<SubjectEntity> findAllByType(SubjectType type, @Nullable Pageable pageable);
 
     Mono<Long> countAllByType(SubjectType type);
 
@@ -99,4 +101,14 @@ public interface SubjectRepository extends BaseRepository<SubjectEntity> {
                                                              String nameCn, SubjectType type);
 
     Mono<Long> countByType(SubjectType type);
+
+    @Query("select count(*) from subject where delete_status = false or delete_status is null")
+    Mono<Long> countActive();
+
+    @Query("""
+        select count(*) from subject
+        where type = $1
+          and (delete_status = false or delete_status is null)
+        """)
+    Mono<Long> countActiveByType(SubjectType type);
 }

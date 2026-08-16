@@ -32,6 +32,7 @@ import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class DefaultEpisodeServiceTest {
     private EpisodeRepository episodeRepository;
     private AttachmentReferenceRepository attachmentReferenceRepository;

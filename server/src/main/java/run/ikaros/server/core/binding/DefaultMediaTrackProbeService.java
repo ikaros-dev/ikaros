@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.mp4parser.IsoFile;
 import org.mp4parser.boxes.iso14496.part12.HandlerBox;
 import org.mp4parser.boxes.iso14496.part12.TrackBox;
@@ -115,7 +116,7 @@ public class DefaultMediaTrackProbeService implements MediaTrackProbeService {
             .build());
     }
 
-    private String normalizeLanguage(String language) {
+    private @Nullable String normalizeLanguage(@Nullable String language) {
         return language == null || language.isBlank() || language.equalsIgnoreCase("und")
             ? null : language;
     }

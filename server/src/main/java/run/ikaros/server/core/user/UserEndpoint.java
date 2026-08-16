@@ -4,6 +4,7 @@ import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder
 import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.parameter.Builder;
@@ -132,7 +133,7 @@ public class UserEndpoint implements CoreEndpoint {
             .onErrorResume(NotFoundException.class,
                 e -> ServerResponse.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(e.getMessage()))
+                    .bodyValue(Objects.toString(e.getMessage(), e.toString())))
             .onErrorResume(IllegalArgumentException.class,
                 e -> ServerResponse.badRequest()
                     .bodyValue("No user id. exception msg:" + e.getMessage()));
@@ -147,7 +148,7 @@ public class UserEndpoint implements CoreEndpoint {
     private Mono<ServerResponse> changeRole(ServerRequest request) {
         String username = request.pathVariable("username");
         return Mono.justOrEmpty(request.queryParam("roleId"))
-            .map(UuidV7Utils::fromString)
+            .flatMap(roleId -> Mono.justOrEmpty(UuidV7Utils.fromString(roleId)))
             .flatMap(roleId -> userService.changeRole(username, roleId))
             .then(ServerResponse.ok().build());
     }
@@ -155,6 +156,9 @@ public class UserEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> deleteById(ServerRequest request) {
         UUID userId = UuidV7Utils.fromString(request.pathVariable("id"));
+        if (userId == null) {
+            throw new IllegalArgumentException("userId must not null.");
+        }
         return userService.deleteById(userId)
             .then(ServerResponse.ok().build());
     }

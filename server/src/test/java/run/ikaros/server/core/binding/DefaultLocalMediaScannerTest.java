@@ -27,6 +27,7 @@ import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
 /** 本地媒体扫描器分类与自动关联测试. */
+@org.jspecify.annotations.NullUnmarked
 class DefaultLocalMediaScannerTest {
 
     /** 附件树查询仓储. */

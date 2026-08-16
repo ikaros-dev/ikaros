@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.core.util.Json;
 import java.util.Map;
-import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import run.ikaros.api.custom.Custom;
 import run.ikaros.api.custom.GroupVersionKind;
@@ -70,8 +69,7 @@ public record CustomScheme(Class<?> type,
      * @return {@link Custom} annotation
      * @throws CustomException when the type has not annotated {@link Custom}
      */
-    @NonNull
-    public static Custom getCustomAnnotationFromType(@NonNull Class<?> type) {
+    public static Custom getCustomAnnotationFromType(Class<?> type) {
         var gvk = type.getAnnotation(Custom.class);
         Assert.notNull(gvk,
             "Missing annotation " + Custom.class.getName() + " on type " + type.getName());

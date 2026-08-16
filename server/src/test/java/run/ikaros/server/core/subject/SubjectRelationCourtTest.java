@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import run.ikaros.api.store.enums.SubjectRelationType;
 import run.ikaros.api.store.enums.SubjectType;
 
+@org.jspecify.annotations.NullUnmarked
 class SubjectRelationCourtTest {
 
     @Test
@@ -61,6 +62,12 @@ class SubjectRelationCourtTest {
     void judgeRealReturnsReal() {
         assertThat(SubjectRelationCourt.judge(SubjectType.REAL, SubjectRelationType.REAL))
             .isEqualTo(SubjectRelationType.REAL);
+    }
+
+    @Test
+    void judgeVideoReturnsVideo() {
+        assertThat(SubjectRelationCourt.judge(SubjectType.VIDEO, SubjectRelationType.VIDEO))
+            .isEqualTo(SubjectRelationType.VIDEO);
     }
 
     @Test

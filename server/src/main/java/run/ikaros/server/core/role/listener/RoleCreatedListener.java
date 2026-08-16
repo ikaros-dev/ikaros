@@ -10,7 +10,6 @@ import run.ikaros.api.constant.SecurityConst;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AuthorityType;
 import run.ikaros.server.core.role.event.RoleCreatedEvent;
-import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.RoleAuthorityEntity;
 import run.ikaros.server.store.entity.RoleEntity;
 import run.ikaros.server.store.repository.AuthorityRepository;
@@ -38,6 +37,9 @@ public class RoleCreatedListener {
     public Mono<Void> onRoleCreated(RoleCreatedEvent event) {
         log.debug("RoleCreatedEvent: {}", event);
         final RoleEntity roleEntity = event.getRoleEntity();
+        if (roleEntity == null) {
+            throw new NullPointerException();
+        }
         String name = roleEntity.getName();
         return configRoleAuthorities(name, roleEntity);
 
@@ -45,7 +47,11 @@ public class RoleCreatedListener {
 
     private Mono<Void> configRoleAuthorities(String name, RoleEntity roleEntity) {
         if (SecurityConst.ROLE_MASTER.equals(name)) {
-            return addMasterAuthority(roleEntity.getId());
+            UUID roleId = roleEntity.getId();
+            if (roleId == null) {
+                throw new IllegalArgumentException("roleId must not null.");
+            }
+            return addMasterAuthority(roleId);
         }
         return Mono.empty();
     }
@@ -54,7 +60,7 @@ public class RoleCreatedListener {
         return authorityRepository.findByTypeAndTargetAndAuthority(
                 AuthorityType.ALL, SecurityConst.Authorization.Target.ALL,
                 SecurityConst.Authorization.Authority.ALL)
-            .map(BaseEntity::getId)
+            .flatMap(entity -> Mono.justOrEmpty(entity.getId()))
             .map(authorityId -> RoleAuthorityEntity.builder()
                 .id(UuidV7Utils.generateUuid())
                 .authorityId(authorityId)

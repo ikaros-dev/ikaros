@@ -20,6 +20,7 @@ import run.ikaros.server.core.attachment.service.AttachmentContentInspectionServ
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class ListFilesStepTest {
 
     @Mock

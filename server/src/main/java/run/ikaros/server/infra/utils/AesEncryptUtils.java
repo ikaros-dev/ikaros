@@ -10,6 +10,7 @@ import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Objects;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -19,6 +20,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
 public class AesEncryptUtils {
@@ -56,7 +58,7 @@ public class AesEncryptUtils {
         }
 
         // 初始化生成器 AES算法要求密钥长度位 128 192 256 默认192
-        keyGenerator.init(aesKeyLength);
+        Objects.requireNonNull(keyGenerator).init(aesKeyLength);
 
         // 生成密钥
         SecretKey secretKey = keyGenerator.generateKey();
@@ -185,7 +187,7 @@ public class AesEncryptUtils {
      * @param dataBytes 待加密的字节数组
      * @return 经过Base64编码的 加密后的 字节数组
      */
-    public static byte[] encryptByteArray(byte[] keyBytes, byte[] dataBytes) {
+    public static byte @Nullable [] encryptByteArray(byte[] keyBytes, byte[] dataBytes) {
         // 获取密钥对象
         Key key = new SecretKeySpec(keyBytes, KEY_ALGORITHM);
 
@@ -213,7 +215,7 @@ public class AesEncryptUtils {
      * @return 经过Base64编码的 加密后的 字节数组
      * @see #encryptByteArray(byte[], byte[])
      */
-    public static byte[] encryptByteArray(String keyStrBase64, byte[] dataBytes) {
+    public static byte @Nullable [] encryptByteArray(String keyStrBase64, byte[] dataBytes) {
         // 对key字符串 进行Base64解密
         byte[] keyBytes = Base64.getDecoder().decode(keyStrBase64);
 
@@ -230,7 +232,8 @@ public class AesEncryptUtils {
      * @throws IOException 文件IO操作异常
      * @see #encryptByteArray(byte[], byte[])
      */
-    public static byte[] encryptByteArray(File keyFile, byte[] dataBytes) throws IOException {
+    public static byte @Nullable [] encryptByteArray(File keyFile, byte[] dataBytes)
+        throws IOException {
 
         // 获取key字节数组-Base64编码格式
         byte[] keyBytesBase64 = Files.readAllBytes(keyFile.toPath());
@@ -251,7 +254,7 @@ public class AesEncryptUtils {
      * @throws IOException 文件IO操作异常
      * @see #encryptByteArray(byte[], byte[])
      */
-    public static byte[] encryptFile(byte[] keyBytes, File dataFile) throws IOException {
+    public static byte @Nullable [] encryptFile(byte[] keyBytes, File dataFile) throws IOException {
         // 获取待加密文件字节数组
         byte[] dataFileBytes = Files.readAllBytes(dataFile.toPath());
 
@@ -268,7 +271,7 @@ public class AesEncryptUtils {
      * @throws IOException 文件IO操作异常
      * @see #encryptFile(byte[], File)
      */
-    public static byte[] encryptFile(File keyFile, File dataFile) throws IOException {
+    public static byte @Nullable [] encryptFile(File keyFile, File dataFile) throws IOException {
         // 获取key字节数组-Base64编码格式
         byte[] keyBytesBase64 = Files.readAllBytes(keyFile.toPath());
 
@@ -297,7 +300,7 @@ public class AesEncryptUtils {
         }
 
         // 加密文件获取加密后字节数组
-        byte[] encryptedFileBytes = encryptFile(keyFile, dataFile);
+        byte[] encryptedFileBytes = Objects.requireNonNull(encryptFile(keyFile, dataFile));
 
         // 构建流输出到目标文件
         FileOutputStream fileOutputStream = new FileOutputStream(encrptedFile);
@@ -315,7 +318,7 @@ public class AesEncryptUtils {
      * @param dataBytesBase64 待解密数据字节数组 Base64加密格式
      * @return 解密后的字节数组
      */
-    public static byte[] decryptByteArray(byte[] keyBytes, byte[] dataBytesBase64) {
+    public static byte @Nullable [] decryptByteArray(byte[] keyBytes, byte[] dataBytesBase64) {
         // 获取密钥对象
         Key key = new SecretKeySpec(keyBytes, KEY_ALGORITHM);
 
@@ -346,7 +349,8 @@ public class AesEncryptUtils {
      * @return 解密后的字节数组
      * @see #decryptByteArray(byte[], byte[])
      */
-    public static byte[] decryptByteArray(String keyStrBase64, byte[] dataBytesBase64) {
+    public static byte @Nullable [] decryptByteArray(String keyStrBase64,
+                                                     byte[] dataBytesBase64) {
         // 对key字符串 进行Base64解密
         byte[] keyBytes = Base64.getDecoder().decode(keyStrBase64);
         return decryptByteArray(keyBytes, dataBytesBase64);
@@ -361,7 +365,7 @@ public class AesEncryptUtils {
      * @throws IOException 文件IO操作异常
      * @see #decryptByteArray(byte[], byte[])
      */
-    public static byte[] decryptFile(byte[] keyBytes, File dataFile) throws IOException {
+    public static byte @Nullable [] decryptFile(byte[] keyBytes, File dataFile) throws IOException {
         // 获取文件内容字节数组 Base64加密格式
         byte[] dataBytesBase64 = Files.readAllBytes(dataFile.toPath());
 
@@ -378,7 +382,7 @@ public class AesEncryptUtils {
      * @throws IOException 文件IO操作异常
      * @see #decryptFile(byte[], File)
      */
-    public static byte[] decryptFile(File keyFile, File dataFile) throws IOException {
+    public static byte @Nullable [] decryptFile(File keyFile, File dataFile) throws IOException {
         // 获取密钥文件内容 Base64加密格式
         byte[] keyBytesBase64 = Files.readAllBytes(keyFile.toPath());
 
@@ -406,7 +410,7 @@ public class AesEncryptUtils {
         }
 
         // 解密文件获取解密后字节数组
-        byte[] decryptBytes = decryptFile(keyFile, dataFile);
+        byte[] decryptBytes = Objects.requireNonNull(decryptFile(keyFile, dataFile));
 
         // 构建流输入到文件
         FileOutputStream fileOutputStream = new FileOutputStream(decrptedFile);

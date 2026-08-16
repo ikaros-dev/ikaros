@@ -300,7 +300,7 @@ const closePlayer = () => {
 };
 
 const goBack = () => {
-	router.push('/music/albums');
+	router.push('/music');
 };
 
 onMounted(() => {

@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -22,7 +23,7 @@ public class AttachmentEntity {
     @Id
     private UUID id;
     @Column("parent_id")
-    private UUID parentId;
+    private @Nullable UUID parentId;
     private AttachmentType type;
     /**
      * HTTP path, format: driver_id://remote_path
@@ -50,6 +51,6 @@ public class AttachmentEntity {
     private LocalDateTime modifiedTime;
     private Boolean deleted;
     @Column("driver_id")
-    private UUID driverId;
+    private @Nullable UUID driverId;
     private String sha1;
 }

@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import reactor.test.StepVerifier;
 import run.ikaros.server.security.SecurityProperties;
 
+@org.jspecify.annotations.NullUnmarked
 class JwtAuthenticationProviderTest {
 
     private JwtAuthenticationProvider jwtAuthenticationProvider;

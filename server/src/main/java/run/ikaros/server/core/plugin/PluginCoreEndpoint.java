@@ -8,6 +8,7 @@ import static org.springframework.web.reactive.function.BodyExtractors.toMultipa
 import static org.springframework.web.reactive.function.server.RequestPredicates.contentType;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import java.util.Objects;
 import org.pf4j.PluginState;
 import org.springdoc.core.fn.builders.parameter.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -210,7 +211,7 @@ public class PluginCoreEndpoint implements CoreEndpoint {
             .onErrorResume(NotFoundException.class,
                 e -> ServerResponse.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(e.getMessage()));
+                    .bodyValue(Objects.requireNonNull(e.getMessage())));
     }
 
 
@@ -223,7 +224,7 @@ public class PluginCoreEndpoint implements CoreEndpoint {
             .onErrorResume(NotFoundException.class,
                 e -> ServerResponse.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(e.getMessage()));
+                    .bodyValue(Objects.requireNonNull(e.getMessage())));
     }
 
     Mono<ServerResponse> stopPluginById(ServerRequest request) {
@@ -235,7 +236,7 @@ public class PluginCoreEndpoint implements CoreEndpoint {
             .onErrorResume(NotFoundException.class,
                 e -> ServerResponse.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(e.getMessage()));
+                    .bodyValue(Objects.requireNonNull(e.getMessage())));
     }
 
     Mono<ServerResponse> reloadPluginById(ServerRequest request) {
@@ -247,6 +248,6 @@ public class PluginCoreEndpoint implements CoreEndpoint {
             .onErrorResume(NotFoundException.class,
                 e -> ServerResponse.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(e.getMessage()));
+                    .bodyValue(Objects.requireNonNull(e.getMessage())));
     }
 }

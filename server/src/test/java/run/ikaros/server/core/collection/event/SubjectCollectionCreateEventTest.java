@@ -10,6 +10,7 @@ import java.time.ZoneId;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
+@org.jspecify.annotations.NullUnmarked
 class SubjectCollectionCreateEventTest {
 
     @Test

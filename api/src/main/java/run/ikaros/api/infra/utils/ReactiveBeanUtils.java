@@ -1,6 +1,7 @@
 package run.ikaros.api.infra.utils;
 
 import java.util.Objects;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import reactor.core.publisher.Mono;
 
@@ -8,7 +9,8 @@ public class ReactiveBeanUtils {
     /**
      * Copy properties by reactive.
      */
-    public static <T> Mono<T> copyProperties(Object source, T target) throws BeansException {
+    public static <T> Mono<T> copyProperties(@Nullable Object source, T target)
+        throws BeansException {
         if (Objects.isNull(source)) {
             return Mono.empty();
         }
@@ -19,8 +21,8 @@ public class ReactiveBeanUtils {
     /**
      * Copy properties by reactive.
      */
-    public static <T> Mono<T> copyProperties(Object source, T target, String... ignoreProperties)
-        throws BeansException {
+    public static <T> Mono<T> copyProperties(@Nullable Object source, T target,
+                                            String... ignoreProperties) throws BeansException {
         if (Objects.isNull(source)) {
             return Mono.empty();
         }

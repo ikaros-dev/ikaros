@@ -52,10 +52,12 @@ class DirectoryBindingWorkflowRepositoryTest {
         DirectoryBindingWorkflowEntity found = repository.findLocalWorkflow(directoryId, subjectId,
             "EPISODE").block();
         assertThat(found).isNotNull();
-        assertThat(found.getId()).isEqualTo(entity.getId());
-        assertThat(found.getPlatform()).isNull();
-        assertThat(found.getLocalScanState()).isEqualTo("{\"items\":[]}");
-        assertThat(found.getVersion()).isZero();
+        assertThat(found).extracting(DirectoryBindingWorkflowEntity::getId)
+            .isEqualTo(entity.getId());
+        assertThat(found).extracting(DirectoryBindingWorkflowEntity::getPlatform).isNull();
+        assertThat(found).extracting(DirectoryBindingWorkflowEntity::getLocalScanState)
+            .isEqualTo("{\"items\":[]}");
+        assertThat(found).extracting(DirectoryBindingWorkflowEntity::getVersion).isEqualTo(0L);
 
         entity.setCurrentStep("已确认");
         StepVerifier.create(repository.update(entity))

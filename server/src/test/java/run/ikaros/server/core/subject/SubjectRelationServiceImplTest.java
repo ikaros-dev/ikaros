@@ -20,6 +20,7 @@ import run.ikaros.server.store.entity.SubjectRelationEntity;
 import run.ikaros.server.store.repository.SubjectRelationRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class SubjectRelationServiceImplTest {
 
     @Mock

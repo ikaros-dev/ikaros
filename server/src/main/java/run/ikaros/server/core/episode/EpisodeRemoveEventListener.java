@@ -25,6 +25,9 @@ public class EpisodeRemoveEventListener {
     public Mono<Void> onEpisodeRemoveEvent(EpisodeRemoveEvent event) {
         EpisodeEntity entity = event.getEntity();
         final UUID episodeId = entity.getId();
+        if (episodeId == null) {
+            return Mono.empty();
+        }
         return attachmentReferenceRepository.deleteAllByTypeAndReferenceId(
             AttachmentReferenceType.EPISODE,
             episodeId

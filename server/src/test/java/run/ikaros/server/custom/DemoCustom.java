@@ -1,9 +1,11 @@
 package run.ikaros.server.custom;
 
 import java.time.LocalDateTime;
+import org.jspecify.annotations.NullUnmarked;
 import run.ikaros.api.custom.Custom;
 import run.ikaros.api.custom.Name;
 
+@NullUnmarked
 @Custom(group = DemoCustom.GROUP, version = DemoCustom.VERSION, kind = DemoCustom.KIND,
     singular = "demo", plural = "demos")
 public class DemoCustom {

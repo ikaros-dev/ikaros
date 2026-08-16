@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jspecify.annotations.Nullable;
 import run.ikaros.api.store.enums.EpisodeGroup;
 
 @Data
@@ -31,7 +32,7 @@ public class Episode {
     /**
      * Create a default episode instance.
      */
-    public static Episode defaultEpisode(UUID subjectId) {
+    public static Episode defaultEpisode(@Nullable UUID subjectId) {
         Episode episode = new Episode();
         episode.setAirTime(LocalDateTime.now());
         episode.setSequence(1F);

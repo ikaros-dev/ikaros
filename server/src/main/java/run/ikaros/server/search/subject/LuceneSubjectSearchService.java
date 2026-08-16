@@ -65,7 +65,7 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
      */
     public LuceneSubjectSearchService(IkarosProperties ikarosProperties) throws IOException {
         analyzer = new IKAnalyzer(true);
-        var subjectIdxPath = ikarosProperties.getWorkDir()
+        var subjectIdxPath = java.util.Objects.requireNonNull(ikarosProperties.getWorkDir())
             .resolve("indices").resolve("subjects");
         subjectIndexDir = FSDirectory.open(subjectIdxPath);
     }
@@ -208,8 +208,9 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
         }
         doc.add(new StringField("nsfw", String.valueOf(subjectDoc.getNsfw()), YES));
         doc.add(new StringField("type", String.valueOf(subjectDoc.getType()), YES));
-        doc.add(new StringField("airTime", formatTimestamp(subjectDoc.getAirTime()), YES));
-        doc.add(new StringField("airtime", formatTimestamp(subjectDoc.getAirTime()), YES));
+        var airTime = java.util.Objects.requireNonNull(subjectDoc.getAirTime());
+        doc.add(new StringField("airTime", formatTimestamp(airTime), YES));
+        doc.add(new StringField("airtime", formatTimestamp(airTime), YES));
         var content = Jsoup.clean(
             stripToEmpty(String.valueOf(subjectDoc.getId())) + SPACE
                 + stripToEmpty(subjectDoc.getName()) + SPACE
@@ -218,7 +219,7 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
                 + stripToEmpty(subjectDoc.getSummary()) + SPACE
                 + subjectDoc.getNsfw() + SPACE
                 + subjectDoc.getType() + SPACE
-                + formatTimestamp(subjectDoc.getAirTime()) + SPACE
+                + formatTimestamp(airTime) + SPACE
                 + tags + SPACE,
             Safelist.none());
         doc.add(new StoredField("content", content));

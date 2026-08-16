@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -69,7 +70,7 @@ public class DynamicDirectoryResolver implements ResourceResolver {
      */
     @Override
     public Mono<Resource> resolveResource(
-        ServerWebExchange exchange,
+        @Nullable ServerWebExchange exchange,
         String requestPath,
         List<? extends Resource> locations,
         ResourceResolverChain chain) {

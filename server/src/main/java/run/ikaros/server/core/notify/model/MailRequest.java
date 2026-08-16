@@ -1,10 +1,11 @@
 package run.ikaros.server.core.notify.model;
 
 import lombok.Data;
+import org.jspecify.annotations.Nullable;
 
 @Data
 public class MailRequest {
-    private String address;
-    private String title;
-    private String content;
+    private @Nullable String address;
+    private @Nullable String title;
+    private @Nullable String content;
 }

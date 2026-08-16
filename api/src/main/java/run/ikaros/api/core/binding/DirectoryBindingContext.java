@@ -7,9 +7,11 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jspecify.annotations.Nullable;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.attachment.AttachmentReference;
 import run.ikaros.api.core.subject.Episode;
@@ -27,29 +29,38 @@ import run.ikaros.api.store.enums.SubjectSyncPlatform;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class DirectoryBindingContext {
-    private UUID directoryId;
-    private String directoryName;
-    private String cleanName;
-    private String keyword;
-    private List<String> bracketTags;
+    private @Nullable UUID directoryId;
+    private @Nullable String directoryName;
+    private @Nullable String cleanName;
+    private @Nullable String keyword;
+    @Default
+    private List<String> bracketTags = new ArrayList<>();
 
-    private SubjectSyncPlatform platform;
-    private String platformId;
+    private @Nullable SubjectSyncPlatform platform;
+    private @Nullable String platformId;
 
-    private UUID subjectId;
-    private Subject subject;
-    private SubjectSync subjectSync;
+    private @Nullable UUID subjectId;
+    private @Nullable Subject subject;
+    private @Nullable SubjectSync subjectSync;
 
-    private List<Attachment> childAttachments;
-    private List<Attachment> spSubdirectoryAttachments;
+    @Default
+    private List<Attachment> childAttachments = new ArrayList<>();
+    @Default
+    private List<Attachment> spSubdirectoryAttachments = new ArrayList<>();
 
-    private List<Episode> createdEpisodes;
-    private List<Tag> createdTags;
-    private List<AttachmentReference> createdAttachmentRefs;
+    @Default
+    private List<Episode> createdEpisodes = new ArrayList<>();
+    @Default
+    private List<Tag> createdTags = new ArrayList<>();
+    @Default
+    private List<AttachmentReference> createdAttachmentRefs = new ArrayList<>();
 
-    private Map<String, DirectoryBindingStepStatus> stepResults;
-    private Map<String, String> stepErrors;
-    private Map<String, Object> parameters;
+    @Default
+    private Map<String, DirectoryBindingStepStatus> stepResults = new HashMap<>();
+    @Default
+    private Map<String, String> stepErrors = new HashMap<>();
+    @Default
+    private Map<String, Object> parameters = new HashMap<>();
 
     /**
      * Create a new context with initialized collections.

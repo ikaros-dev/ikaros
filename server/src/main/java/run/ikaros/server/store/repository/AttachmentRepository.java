@@ -1,6 +1,7 @@
 package run.ikaros.server.store.repository;
 
 import java.util.UUID;
+import org.springframework.data.r2dbc.repository.Query;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.store.enums.AttachmentType;
@@ -26,4 +27,21 @@ public interface AttachmentRepository extends BaseRepository<AttachmentEntity> {
     Mono<AttachmentEntity> findByUrl(String url);
 
     Mono<Long> countByType(AttachmentType type);
+
+    @Query("""
+        select count(*) from attachment
+        where type in ('File', 'Driver_File')
+          and (deleted = false or deleted is null)
+        """)
+    Mono<Long> countKnownFiles();
+
+    @Query("""
+        select count(*) from attachment
+        where type in ('Directory', 'Driver_Directory')
+          and (deleted = false or deleted is null)
+          and id not in ($1, $2, $3)
+          and not (type = 'Driver_Directory' and parent_id = $1)
+        """)
+    Mono<Long> countKnownFolders(UUID rootDirectoryId, UUID coverDirectoryId,
+                                 UUID downloadDirectoryId);
 }

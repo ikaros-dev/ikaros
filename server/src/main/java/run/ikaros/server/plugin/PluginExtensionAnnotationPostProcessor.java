@@ -1,6 +1,5 @@
 package run.ikaros.server.plugin;
 
-import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.Extension;
 import org.springframework.beans.BeansException;
@@ -28,7 +27,7 @@ public class PluginExtensionAnnotationPostProcessor implements BeanDefinitionReg
     }
 
     @Override
-    public void postProcessBeanFactory(@Nonnull ConfigurableListableBeanFactory beanFactory)
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
         throws BeansException {
     }
 }

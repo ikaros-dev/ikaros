@@ -1,5 +1,7 @@
 package run.ikaros.api.infra.utils;
 
+import org.jspecify.annotations.Nullable;
+
 
 public class AssertUtils {
 
@@ -34,7 +36,7 @@ public class AssertUtils {
     /**
      * Construct.
      */
-    public static void isTrue(boolean condition, String varName) {
+    public static void isTrue(boolean condition, @Nullable String varName) {
         if (!condition) {
             throw new IllegalArgumentException("'" + varName + "' must be true");
         }

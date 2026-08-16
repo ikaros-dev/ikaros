@@ -9,6 +9,7 @@ import reactor.test.StepVerifier;
 import run.ikaros.api.core.binding.DirectoryBindingContext;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 
+@org.jspecify.annotations.NullUnmarked
 class CleanDirectoryNameStepTest {
 
     private CleanDirectoryNameStep step;

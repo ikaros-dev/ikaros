@@ -49,16 +49,23 @@ public class TagChangeEventListener {
             return Mono.empty();
         }
         UUID subjectId = tagEntity.getMasterId();
+        if (subjectId == null) {
+            return Mono.empty();
+        }
         return subjectRepository.findById(subjectId)
             .flatMap(ReactiveSubjectDocConverter::fromEntity)
-            .flatMap(subjectDoc ->
-                tagRepository.findAllByTypeAndMasterId(TagType.SUBJECT, subjectDoc.getId())
+            .flatMap(subjectDoc -> {
+                UUID subjectDocId = subjectDoc.getId();
+                if (subjectDocId == null) {
+                    return Mono.empty();
+                }
+                return tagRepository.findAllByTypeAndMasterId(TagType.SUBJECT, subjectDocId)
                     .map(TagEntity::getName).collectList()
                     .map(tags -> {
                         subjectDoc.setTags(tags);
                         return subjectDoc;
-                    })
-            ).doOnSuccess(subjectDoc -> {
+                    });
+            }).doOnSuccess(subjectDoc -> {
                 if (subjectDoc == null) {
                     return;
                 }

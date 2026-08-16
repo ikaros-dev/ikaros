@@ -129,14 +129,11 @@ onUnmounted(() => {
 		<div ref="headerDom"></div>
 	</div>
 	<el-container class="app-wrapper">
-		<el-aside :width="asideWidth" class="sidebar-container">
-			<Aside />
-		</el-aside>
-		<el-container
-			class="container"
-			:class="{ hidderContainer: !layoutStore.asideIsExtend }"
-		>
-			<el-header><Header /></el-header>
+		<el-header class="header-container"><Header /></el-header>
+		<el-container class="body-container">
+			<el-aside :width="asideWidth" class="sidebar-container">
+				<Aside />
+			</el-aside>
 			<el-main class="ik-blc-main">
 				<el-card shadow="never">
 					<RouterView />
@@ -151,32 +148,26 @@ onUnmounted(() => {
 </template>
 
 <style lang="scss" scoped>
-@use '@/styles/variables.module.scss' as variables;
 .ik-blc-main {
 	// background-color: rgb(245, 245, 245);
 	background-color: rgba(212, 226, 248, 0.244);
 }
-.el-header {
+.header-container {
 	padding: 0;
 	margin: 0;
+	z-index: 10;
 }
 
-.app-container {
-	position: relative;
-	width: 100%;
+.app-wrapper {
 	height: 100%;
 }
-.container {
-	width: calc(100% - variables.$sideBarWidth);
-	height: 100%;
 
-	position: fixed;
-	top: 0;
-	right: 0;
-	z-index: 9;
-	transition: all 0.28s;
-	&.hidderContainer {
-		width: calc(100% - variables.$hideSideBarWidth);
-	}
+.body-container {
+	height: calc(100% - 60px);
+	overflow: hidden;
+}
+
+.sidebar-container {
+	transition: width 0.28s;
 }
 </style>

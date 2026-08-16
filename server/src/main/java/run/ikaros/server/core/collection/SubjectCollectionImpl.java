@@ -5,6 +5,7 @@ import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -28,7 +29,6 @@ import run.ikaros.api.store.enums.EpisodeGroup;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.collection.event.SubjectCollectionCreateEvent;
 import run.ikaros.server.core.collection.event.SubjectCollectionScoreUpdateEvent;
-import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.EpisodeCollectionEntity;
 import run.ikaros.server.store.entity.SubjectCollectionEntity;
 import run.ikaros.server.store.repository.EpisodeCollectionRepository;
@@ -176,7 +176,7 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
 
             .map(SubjectCollectionEntity::getSubjectId)
             .flatMapMany(episodeRepository::findAllBySubjectId)
-            .map(BaseEntity::getId)
+            .flatMap(entity -> Mono.justOrEmpty(entity.getId()))
             .flatMap(episodeId ->
                 episodeCollectionRepository.findByUserIdAndEpisodeId(userId, episodeId)
                     .switchIfEmpty(
@@ -239,7 +239,8 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
     }
 
     @Override
-    public Mono<SubjectCollection> findCollection(UUID userId, UUID subjectId) {
+    public Mono<SubjectCollection> findCollection(@Nullable UUID userId,
+                                                  @Nullable UUID subjectId) {
         if (userId == null || subjectId == null) {
             return Mono.empty();
         }
@@ -263,8 +264,8 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
     @Override
     public Mono<PagingWrap<SubjectCollection>> findCollections(UUID userId, Integer page,
                                                                Integer size,
-                                                               CollectionType type,
-                                                               Boolean isPrivate) {
+                                                               @Nullable CollectionType type,
+                                                               @Nullable Boolean isPrivate) {
         Assert.isTrue(page > 0, "'page' must > 0");
         Assert.isTrue(size > 0, "'size' must > 0");
 
@@ -333,7 +334,7 @@ public class SubjectCollectionImpl implements SubjectCollectionService {
             .flatMapMany(entity -> episodeRepository.findAllBySubjectId(subjectId))
             .filter(episodeEntity -> episodeEntity.getGroup() == EpisodeGroup.MAIN)
             .filter(episodeEntity -> progress >= episodeEntity.getSequence())
-            .map(BaseEntity::getId)
+            .flatMap(entity -> Mono.justOrEmpty(entity.getId()))
             .flatMap(episodeId -> episodeCollectionRepository.findByUserIdAndEpisodeId(userId,
                 episodeId))
             .map(entity -> entity.setFinish(true))

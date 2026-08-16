@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBuffer;
@@ -142,20 +143,9 @@ public class DefaultMigrationService implements MigrationService {
 
     @Override
     public Flux<DataBuffer> exportDatabaseTables() {
-        String name = template.getDatabaseClient().getConnectionFactory()
-            .getMetadata()
-            .getName();
         String sql = "SELECT tablename FROM pg_tables WHERE schemaname = 'public';";
-        String tableNameKey;
-        if (name.toLowerCase().contains("h2")) {
-            sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES "
-                + "WHERE TABLE_SCHEMA = 'PUBLIC'";
-            tableNameKey = "TABLE_NAME";
-        } else {
-            tableNameKey = "tablename";
-        }
 
-        final Path workDir = ikarosProperties.getWorkDir();
+        final Path workDir = Objects.requireNonNull(ikarosProperties.getWorkDir());
         final Path currentDir =
             workDir.resolve(FileConst.DEFAULT_CACHE_DIR_NAME).resolve(UuidV7Utils.generate());
         if (Files.notExists(currentDir)) {
@@ -173,7 +163,7 @@ public class DefaultMigrationService implements MigrationService {
             .index()
             .map(t -> {
                 Long index = t.getT1();
-                Object o = t.getT2().get(tableNameKey);
+                Object o = t.getT2().get("tablename");
                 return String.valueOf(o);
             })
             .flatMap(tableName -> {
@@ -200,7 +190,7 @@ public class DefaultMigrationService implements MigrationService {
     public Mono<String> importDatabaseTablesCsv410x(Flux<DataBuffer> dataBuffers) {
         Assert.notNull(dataBuffers, "'dataBuffers' must not null.");
         // 将压缩包写到临时目录
-        final Path workDir = ikarosProperties.getWorkDir();
+        final Path workDir = Objects.requireNonNull(ikarosProperties.getWorkDir());
         final Path cacheDir = workDir.resolve(FileConst.DEFAULT_CACHE_DIR_NAME);
         if (Files.notExists(cacheDir)) {
             try {
@@ -383,8 +373,8 @@ public class DefaultMigrationService implements MigrationService {
                     String key = "reference_id@type@" + entityJsonMap.get("type");
                     String replaceTableName = rkTableNameMap.get(key);
                     String referenceId = entityJsonMap.get("reference_id");
-                    UUID uuid = tableNameIdUuidMap.get(replaceTableName)
-                        .getOrDefault(referenceId, null);
+                    Map<String, UUID> idUuidMap = tableNameIdUuidMap.get(replaceTableName);
+                    @Nullable UUID uuid = idUuidMap == null ? null : idUuidMap.get(referenceId);
                     entityJsonMap.put("reference_id", uuid == null ? null : uuid.toString());
                 }
 
@@ -397,8 +387,9 @@ public class DefaultMigrationService implements MigrationService {
                     }
                     String replaceTableName = rkTableNameMap.get(key);
                     String replaceTableId = e2.getValue();
-                    UUID uuid = tableNameIdUuidMap.get(replaceTableName)
-                        .getOrDefault(replaceTableId, null);
+                    Map<String, UUID> idUuidMap = tableNameIdUuidMap.get(replaceTableName);
+                    @Nullable UUID uuid =
+                        idUuidMap == null ? null : idUuidMap.get(replaceTableId);
                     entityJsonMap.put(key, uuid == null ? null : uuid.toString());
                 }
 
@@ -428,7 +419,8 @@ public class DefaultMigrationService implements MigrationService {
 
             // 附件的父辈ID转化成对应的UUID
             if ("attachment".equalsIgnoreCase(tabName)) {
-                List<String> attRecordJsons = clsEntityJsonMap.get(AttachmentEntity.class);
+                List<String> attRecordJsons =
+                    clsEntityJsonMap.getOrDefault(AttachmentEntity.class, List.of());
                 List<String> newAttRecordJsons = new ArrayList<>(attRecordJsons.size());
                 for (String attRecordJson : attRecordJsons) {
                     Map<String, String> attRecord =
@@ -454,7 +446,8 @@ public class DefaultMigrationService implements MigrationService {
             // 角色表的 parent_id => 对应的 UUID
             if ("role".equalsIgnoreCase(tabName)) {
                 // roleIdUuidMap.put(entityJsonMap.get("id"), entityJsonMap.get("uuid"));
-                List<String> oldRoleJsons = clsEntityJsonMap.get(RoleEntity.class);
+                List<String> oldRoleJsons =
+                    clsEntityJsonMap.getOrDefault(RoleEntity.class, List.of());
                 List<String> newRoleJsons = new ArrayList<>(oldRoleJsons.size());
                 for (String oldRoleJson : oldRoleJsons) {
                     Map<String, String> roleJsonMap =

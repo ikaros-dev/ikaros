@@ -2,6 +2,7 @@ package run.ikaros.server.plugin;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginDependency;
 import org.pf4j.PluginDescriptor;
@@ -35,13 +36,13 @@ public class YamlPluginDescriptorFinder implements PluginDescriptorFinder {
 
     private IkarosPluginDescriptor convert(Plugin plugin) {
         IkarosPluginDescriptor pluginDescriptor =
-            new IkarosPluginDescriptor(plugin.getName(),
-                plugin.getDescription(),
-                plugin.getClazz(),
-                plugin.getVersion(),
-                plugin.getRequires(),
-                plugin.getAuthor().getName(),
-                plugin.getLicense());
+            new IkarosPluginDescriptor(Objects.requireNonNull(plugin.getName()),
+                Objects.requireNonNull(plugin.getDescription()),
+                Objects.requireNonNull(plugin.getClazz()),
+                Objects.requireNonNull(plugin.getVersion()),
+                Objects.requireNonNull(plugin.getRequires()),
+                Objects.requireNonNull(Objects.requireNonNull(plugin.getAuthor()).getName()),
+                Objects.requireNonNull(plugin.getLicense()));
         pluginDescriptor.setAuthor(plugin.getAuthor());
         pluginDescriptor.setLogo(plugin.getLogo());
         pluginDescriptor.setHomepage(plugin.getHomepage());

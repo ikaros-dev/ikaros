@@ -3,7 +3,6 @@ package run.ikaros.server.infra.utils;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -57,8 +56,6 @@ public class DataBufferFileWriter {
                 .concatMap(tuple -> {
                     long index = tuple.getT1();
                     DataBuffer buffer = tuple.getT2();
-                    ByteBuffer byteBuffer = buffer.asByteBuffer();
-
                     // 计算写入位置
                     long position = index * 4096; // 假设每个buffer大小为4KB
 

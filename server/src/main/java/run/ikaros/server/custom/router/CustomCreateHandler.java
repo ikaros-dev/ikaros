@@ -41,7 +41,9 @@ public class CustomCreateHandler implements CustomRouterFunctionFactory.CreateHa
             .flatMap(customClient::create)
             .doOnSuccess(
                 custom -> applicationEventPublisher.publishEvent(
-                    new CustomCreateEvent(this, scheme, CustomConverter.getNameFieldValue(custom))))
+                    new CustomCreateEvent(this, scheme,
+                        java.util.Objects.requireNonNull(
+                            CustomConverter.getNameFieldValue(custom)))))
             .flatMap(custom -> ServerResponse
                 .created(URI.create(pathPattern() + "/" + getNameFieldValue(custom)))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -49,7 +51,7 @@ public class CustomCreateHandler implements CustomRouterFunctionFactory.CreateHa
             .onErrorResume(NotFoundException.class,
                 e -> ServerResponse.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(e.getMessage()));
+                    .bodyValue(java.util.Objects.toString(e.getMessage(), e.toString())));
     }
 
     @Override

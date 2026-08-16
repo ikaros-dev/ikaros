@@ -19,6 +19,7 @@ import run.ikaros.api.core.subject.SubjectSync;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 
+@org.jspecify.annotations.NullUnmarked
 class DefaultMetaInfoServiceTest {
 
     @Mock

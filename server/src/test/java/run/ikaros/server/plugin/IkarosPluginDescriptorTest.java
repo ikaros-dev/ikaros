@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import org.junit.jupiter.api.Test;
 import run.ikaros.api.plugin.custom.Plugin;
 
+@org.jspecify.annotations.NullUnmarked
 class IkarosPluginDescriptorTest {
 
     @Test

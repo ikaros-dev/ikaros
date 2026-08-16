@@ -1,6 +1,5 @@
 package run.ikaros.api.infra.utils;
 
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.xml.bind.DatatypeConverter;
 import java.io.BufferedInputStream;
@@ -22,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
@@ -34,18 +34,18 @@ import run.ikaros.api.core.media.MediaFileCategory;
 import run.ikaros.api.core.media.MediaFilePolicy;
 
 /**
- * 文件路径、散列、分片及媒体扩展名处理工具。
+ * 文件路径、散列、分片及媒体扩展名处理工具.
  */
 @Slf4j
 public class FileUtils {
 
     /**
-     * 应用上传文件的基础目录名称。
+     * 应用上传文件的基础目录名称.
      */
     private static final String BASE_UPLOAD_DIR_NAME = FileConst.DEFAULT_DIR_NAME;
 
     /**
-     * 应用上传文件的基础目录路径。
+     * 应用上传文件的基础目录路径.
      */
     private static final String BASE_UPLOAD_DIR_PATH
         = SystemVarUtils.getCurrentAppDirPath() + File.separator + BASE_UPLOAD_DIR_NAME;
@@ -56,7 +56,8 @@ public class FileUtils {
      * @param uploadedTime 条目数据上传的时间
      * @return 基础的上传目录路径，格式：[files/yyyy/MM/dd/HH]
      */
-    public static String buildAppUploadFileBasePath(String basePath, LocalDateTime uploadedTime) {
+    public static String buildAppUploadFileBasePath(@Nullable String basePath,
+                                                    LocalDateTime uploadedTime) {
         Assert.notNull(uploadedTime, "'uploadedTime' must not be null");
         String locationDirPath =
             (StringUtils.hasText(basePath) ? basePath + File.separator + BASE_UPLOAD_DIR_NAME
@@ -105,6 +106,12 @@ public class FileUtils {
             MediaFileCategory.VIDEO);
     }
 
+    /**
+     * 判断路径或扩展名是否属于文档类媒体文件.
+     *
+     * @param url 文件路径或扩展名
+     * @return 属于字幕或歌词文件时返回 true
+     */
     public static boolean isDocument(String url) {
         String extension = extensionArgument(url);
         return MediaFilePolicy.extensionHasCategory(extension, MediaFileCategory.SUBTITLE)
@@ -128,7 +135,7 @@ public class FileUtils {
         SHA512("SHA-512");
 
         /**
-         * 散列算法名称。
+         * 散列算法名称.
          */
         private final String name;
 

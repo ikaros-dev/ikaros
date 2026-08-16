@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 /** ISO BMFF 内嵌轨道探测服务测试. */
+@org.jspecify.annotations.NullUnmarked
 class DefaultMediaTrackProbeServiceTest {
 
     /** 待测试的轨道探测服务. */

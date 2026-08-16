@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -48,7 +49,6 @@ import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.service.SubjectSyncService;
 import run.ikaros.server.plugin.ExtensionComponentsFinder;
 import run.ikaros.server.store.entity.AttachmentReferenceEntity;
-import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.CharacterEntity;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.entity.PersonEntity;
@@ -82,7 +82,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
     private final PersonRepository personRepository;
     private final SubjectPersonRepository subjectPersonRepository;
     private final AttachmentRepository attachmentRepository;
-    private ApplicationContext applicationContext;
+    private @Nullable ApplicationContext applicationContext;
     private final SubjectSyncRepository subjectSyncRepository;
     private final AttachmentReferenceRepository attachmentReferenceRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -138,7 +138,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
 
     @Override
     @MonoCacheEvict
-    public Mono<Void> sync(UUID subjectId, SubjectSyncPlatform platform,
+    public Mono<Void> sync(@Nullable UUID subjectId, SubjectSyncPlatform platform,
                            String platformId) {
         Assert.notNull(platform, "'platform' must not null.");
         Assert.hasText(platformId, "'platformId' must has text.");
@@ -167,7 +167,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
         });
 
         // 保存条目信息获取ID
-        final AtomicReference<UUID> subjectIdA = new AtomicReference<>(subjectId);
+        final AtomicReference<@Nullable UUID> subjectIdA = new AtomicReference<>(subjectId);
         Mono<SubjectEntity> subjectEntityMono =
             existsMono.then(Mono.just(synchronizer))
                 .map(synchronizer1 -> synchronizer1.fetchSubjectWithPlatformId(platformId))
@@ -208,7 +208,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
 
         // 保存三方同步信息
         Mono<SubjectSyncEntity> syncEntityMono =
-            subjectEntityMono.map(BaseEntity::getId)
+            subjectEntityMono.flatMap(entity -> Mono.justOrEmpty(entity.getId()))
                 .flatMap(sid -> subjectSyncRepository.findBySubjectIdAndPlatformAndPlatformId(
                         sid, platform, platformId)
                     .switchIfEmpty(Mono.just(SubjectSyncEntity.builder()
@@ -235,7 +235,8 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                 })
                 .flatMapMany(Flux::fromIterable)
                 .flatMap(episode -> episodeRepository.findBySubjectIdAndGroupAndSequence(
-                        subjectIdA.get(), episode.getGroup(), episode.getSequence())
+                        Objects.requireNonNull(subjectIdA.get()), episode.getGroup(),
+                        episode.getSequence())
                     .collectList()
                     .filter(es -> !es.isEmpty())
                     .map(es -> es.get(0))
@@ -245,7 +246,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                     if (entity.getCreateTime() == null) {
                         entity.setCreateTime(LocalDateTime.now());
                     }
-                    entity.setSubjectId(subjectIdA.get())
+                    entity.setSubjectId(Objects.requireNonNull(subjectIdA.get()))
                         .setUpdateTime(LocalDateTime.now());
                     return entity;
                 })
@@ -268,14 +269,14 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                 })
                 .flatMapMany(Flux::fromIterable)
                 .flatMap(tag -> tagRepository.findByTypeAndMasterIdAndName(
-                        TagType.SUBJECT, subjectIdA.get(), tag.getName())
+                        TagType.SUBJECT, Objects.requireNonNull(subjectIdA.get()), tag.getName())
                     .switchIfEmpty(Mono.just(new TagEntity()))
                     .flatMap(entity -> copyProperties(tag, entity, "id")))
                 .map(entity -> entity
                     // .setUserId(-1L)
                     .setCreateTime(LocalDateTime.now())
                     .setType(TagType.SUBJECT)
-                    .setMasterId(subjectIdA.get()))
+                    .setMasterId(Objects.requireNonNull(subjectIdA.get())))
                 .flatMap(entity -> entity.getId() == null
                     ? tagRepository.insert(entity)
                     : tagRepository.update(entity))
@@ -293,18 +294,19 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                 })
                 .filter(Objects::nonNull)
                 .flatMapMany(Flux::fromIterable)
-                .flatMap(character -> characterRepository.findByName(character.getName())
+                .flatMap(character -> characterRepository.findByName(
+                        Objects.requireNonNull(character.getName()))
                     .switchIfEmpty(Mono.just(new CharacterEntity()))
                     .flatMap(entity -> copyProperties(character, entity, "id")))
                 .flatMap(entity -> entity.getId() == null
                     ? characterRepository.insert(entity)
                     : characterRepository.update(entity))
-                .map(BaseEntity::getId)
+                .flatMap(entity -> Mono.justOrEmpty(entity.getId()))
                 .flatMap(cid -> subjectCharacterRepository.findBySubjectIdAndCharacterId(
-                        subjectIdA.get(), cid)
+                        Objects.requireNonNull(subjectIdA.get()), cid)
                     .switchIfEmpty(Mono.just(SubjectCharacterEntity.builder()
                         .characterId(cid)
-                        .subjectId(subjectIdA.get())
+                        .subjectId(Objects.requireNonNull(subjectIdA.get()))
                         .build())))
                 .flatMap(entity -> entity.getId() == null
                     ? subjectCharacterRepository.insert(entity)
@@ -322,25 +324,26 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                 })
                 .filter(Objects::nonNull)
                 .flatMapMany(Flux::fromIterable)
-                .flatMap(person -> personRepository.findByName(person.getName())
+                .flatMap(person -> personRepository.findByName(
+                        Objects.requireNonNull(person.getName()))
                     .switchIfEmpty(Mono.just(new PersonEntity()))
                     .flatMap(entity -> copyProperties(person, entity, "id")))
                 .flatMap(entity -> entity.getId() == null
                     ? personRepository.insert(entity)
                     : personRepository.update(entity))
-                .map(BaseEntity::getId)
+                .flatMap(entity -> Mono.justOrEmpty(entity.getId()))
                 .flatMap(pid -> subjectPersonRepository.findBySubjectIdAndPersonId(
-                    subjectIdA.get(), pid
+                    Objects.requireNonNull(subjectIdA.get()), pid
                 ).switchIfEmpty(Mono.just(SubjectPersonEntity.builder()
                     .personId(pid)
-                    .subjectId(subjectIdA.get())
+                    .subjectId(Objects.requireNonNull(subjectIdA.get()))
                     .build())))
                 .flatMap(entity -> entity.getId() == null
                     ? subjectPersonRepository.insert(entity)
                     : subjectPersonRepository.update(entity))
                 .collectList();
 
-        return spMono.map(subjectPersonEntities -> subjectIdA.get())
+        return spMono.map(subjectPersonEntities -> Objects.requireNonNull(subjectIdA.get()))
             .flatMap(subjectRepository::findById)
             .flatMap(this::downloadCoverAndSaveRef)
             .then()
@@ -355,7 +358,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
         }
         byte[] bytes;
         try {
-            bytes = restTemplate.getForObject(url, byte[].class);
+            bytes = Objects.requireNonNull(restTemplate.getForObject(url, byte[].class));
         } catch (Exception e) {
             log.warn("down cover fail for subject:{}", entity);
             return Mono.just(entity);
@@ -378,14 +381,16 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
     }
 
     private Mono<SubjectEntity> saveCoverAndAttRef(Attachment attachment, SubjectEntity entity) {
-        entity.setCover(attachment.getUrl());
+        entity.setCover(Objects.requireNonNull(attachment.getUrl()));
         return attachmentReferenceRepository.findByTypeAndAttachmentIdAndReferenceId(
-                AttachmentReferenceType.SUBJECT, attachment.getId(), entity.getId())
+                AttachmentReferenceType.SUBJECT,
+                Objects.requireNonNull(attachment.getId()),
+                Objects.requireNonNull(entity.getId()))
             .flatMap(attachmentReferenceRepository::update)
             .switchIfEmpty(attachmentReferenceRepository.insert(AttachmentReferenceEntity.builder()
                 .type(AttachmentReferenceType.SUBJECT)
-                .attachmentId(attachment.getId())
-                .referenceId(entity.getId())
+                .attachmentId(Objects.requireNonNull(attachment.getId()))
+                .referenceId(Objects.requireNonNull(entity.getId()))
                 .build()))
             .flatMap(attRefEn -> subjectRepository.update(entity));
     }

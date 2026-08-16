@@ -55,6 +55,29 @@ export default defineConfigWithVueTs(
 			},
 		},
 		rules: {
+			'vue/no-restricted-html-elements': [
+				'error',
+				{
+					element: 'button',
+					message: '请使用 Element Plus 的 ElButton。',
+				},
+				{
+					element: 'input',
+					message: '请使用 Element Plus 的 ElInput。',
+				},
+				{
+					element: 'select',
+					message: '请使用 Element Plus 的 ElSelect。',
+				},
+				{
+					element: 'textarea',
+					message: '请使用 Element Plus 的 ElInput。',
+				},
+				{
+					element: 'form',
+					message: '请使用 Element Plus 的 ElForm。',
+				},
+			],
 			'vue/multi-word-component-names': 'off',
 			'vue/attribute-hyphenation': 'off',
 			'vue/v-on-event-hyphenation': 'off',

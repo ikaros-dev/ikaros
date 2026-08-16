@@ -17,6 +17,7 @@ import run.ikaros.server.core.subject.event.SubjectRemoveEvent;
 import run.ikaros.server.store.entity.SubjectEntity;
 import run.ikaros.server.store.repository.SubjectCollectionRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class CollectionSubjectRemoveEventListenerTest {
 
     @Mock

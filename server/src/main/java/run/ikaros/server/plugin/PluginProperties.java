@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
+import org.jspecify.annotations.Nullable;
 import org.pf4j.PluginLoader;
 import org.pf4j.RuntimeMode;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -66,12 +67,12 @@ public class PluginProperties {
      * Plugin root directory: default “plugins”; when non-jar mode plugin, the value should be an
      * absolute directory address.
      */
-    private String pluginsRoot;
+    private @Nullable String pluginsRoot;
 
     /**
      * Allows providing custom plugin loaders.
      */
-    private Class<PluginLoader> customPluginLoader;
+    private @Nullable Class<PluginLoader> customPluginLoader;
 
     /**
      * The system version used for comparisons to the plugin requires attribute.

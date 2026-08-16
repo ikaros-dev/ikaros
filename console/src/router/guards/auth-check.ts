@@ -1,8 +1,31 @@
 import { useUserStore } from '@/stores/user';
 import { setApiClientJwtToken } from '@/utils/api-client';
-import type { Router } from 'vue-router';
+import type { RouteLocationRaw, Router } from 'vue-router';
 
 const whiteList = ['Setup', 'Login', 'Binding'];
+const notFoundRouteName = 'router.title.notfound';
+
+const dashboardRoute: RouteLocationRaw = { name: 'Dashboard' };
+
+export function resolvePostLoginRoute(
+	router: Router,
+	redirectUri: unknown
+): RouteLocationRaw {
+	if (typeof redirectUri !== 'string') return dashboardRoute;
+
+	try {
+		const url = new URL(redirectUri, window.location.origin);
+		if (url.origin !== window.location.origin || !url.hash.startsWith('#/')) {
+			return dashboardRoute;
+		}
+
+		const target = url.hash.slice(1);
+		const resolved = router.resolve(target);
+		return resolved.name === notFoundRouteName ? dashboardRoute : target;
+	} catch {
+		return dashboardRoute;
+	}
+}
 
 export function setupAuthCheckGuard(router: Router) {
 	router.beforeEach((to, from, next) => {
@@ -31,12 +54,7 @@ export function setupAuthCheckGuard(router: Router) {
 			// console.log('Not anonymous redirect to: ', to)
 			if (to.name === 'Login') {
 				if (to.query.redirect_uri) {
-					next({
-						name: 'Redirect',
-						query: {
-							redirect_uri: to.query.redirect_uri,
-						},
-					});
+					next(resolvePostLoginRoute(router, to.query.redirect_uri));
 					return;
 				} else {
 					next({

@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import run.ikaros.server.store.entity.SubjectEntity;
 
+@org.jspecify.annotations.NullUnmarked
 class SubjectRemoveEventTest {
 
     @Test

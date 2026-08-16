@@ -30,6 +30,7 @@ import run.ikaros.server.store.entity.AttachmentReferenceEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class BindEpisodesStepTest {
 
     @Mock

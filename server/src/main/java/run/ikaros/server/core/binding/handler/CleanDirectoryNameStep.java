@@ -37,6 +37,9 @@ public class CleanDirectoryNameStep implements DirectoryBindingStep {
     @Override
     public Mono<DirectoryBindingContext> execute(DirectoryBindingContext context) {
         String cleanName = context.getCleanName();
+        if (cleanName == null) {
+            return Mono.error(new IllegalStateException("清理后的目录名不能为空"));
+        }
 
         // Remove words containing apostrophe
         cleanName = Arrays.stream(cleanName.split("\\s+"))

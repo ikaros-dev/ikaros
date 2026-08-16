@@ -4,6 +4,7 @@ import static run.ikaros.server.plugin.listener.PluginDatabaseUtils.savePluginTo
 
 import java.nio.file.Files;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.pf4j.PluginState;
 import org.pf4j.PluginStateEvent;
 import org.pf4j.PluginStateListener;
@@ -18,7 +19,7 @@ import run.ikaros.server.plugin.IkarosPluginManager;
 @Slf4j
 public class PluginStateChangedListener implements PluginStateListener {
     private final ReactiveCustomClient reactiveCustomClient;
-    private IkarosPluginManager ikarosPluginManager;
+    private @Nullable IkarosPluginManager ikarosPluginManager;
 
     public PluginStateChangedListener(ReactiveCustomClient reactiveCustomClient) {
         this.reactiveCustomClient = reactiveCustomClient;
@@ -41,7 +42,8 @@ public class PluginStateChangedListener implements PluginStateListener {
         Mono.just(Files.exists(pluginWrapper.getPluginPath()))
             .filter(exists -> exists)
             .filter(ex -> PluginState.RESOLVED.equals(state))
-            .flatMap(eq -> savePluginToDatabase(pluginId, ikarosPluginManager, reactiveCustomClient)
+            .flatMap(eq -> savePluginToDatabase(pluginId,
+                java.util.Objects.requireNonNull(ikarosPluginManager), reactiveCustomClient)
                 .doOnSuccess(plugin ->
                     log.debug("Save plugin info to database for id: [{}], plugin: [{}]", pluginId,
                         plugin))

@@ -23,6 +23,7 @@ import run.ikaros.server.store.repository.TagRepository;
 /**
  * Test for IndicesServiceImpl.
  */
+@org.jspecify.annotations.NullUnmarked
 public class IndicesServiceImplTestNew {
     
     private SubjectRepository subjectRepository;

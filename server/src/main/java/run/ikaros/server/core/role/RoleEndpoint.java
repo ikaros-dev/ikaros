@@ -89,6 +89,9 @@ public class RoleEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> deleteRoleById(ServerRequest serverRequest) {
         final UUID roleId = UuidV7Utils.fromString(serverRequest.pathVariable("id"));
+        if (roleId == null) {
+            throw new IllegalArgumentException("roleId must not null.");
+        }
         return roleService.deleteById(roleId)
             .then(ServerResponse.ok().build());
     }

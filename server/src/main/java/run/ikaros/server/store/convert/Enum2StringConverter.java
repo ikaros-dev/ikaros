@@ -1,9 +1,12 @@
 package run.ikaros.server.store.convert;
 
+import org.jspecify.annotations.NullUnmarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.WritingConverter;
 
 @WritingConverter
+@NullUnmarked
 public class Enum2StringConverter<E extends Enum<E>>
     implements Converter<E, String> {
     private final Class<E> cls;
@@ -21,7 +24,7 @@ public class Enum2StringConverter<E extends Enum<E>>
     }
 
     @Override
-    public String convert(E source) {
+    public @Nullable String convert(@Nullable E source) {
         if (source == null) {
             return null;
         }

@@ -16,6 +16,7 @@ import run.ikaros.api.core.collection.SubjectCollection;
 import run.ikaros.api.store.enums.CollectionType;
 import run.ikaros.api.wrap.PagingWrap;
 
+@org.jspecify.annotations.NullUnmarked
 class SubjectCollectionOperatorTest {
 
     @Mock

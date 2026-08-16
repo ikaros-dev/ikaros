@@ -1,6 +1,7 @@
 package run.ikaros.server.core.setting;
 
 import java.util.Map;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -68,8 +69,10 @@ public class SystemSettingInitListener {
                 reactiveCustomClient.create(settingConfigMap)
                     .doOnSuccess(cm -> log.debug("Create init setting config map: {}", cm)))
             .flatMap(configMap -> {
-                Map<String, String> map = configMap.getData();
-                for (Map.Entry<String, String> entry : settingConfigMap.getData().entrySet()) {
+                Map<String, String> map = Objects.requireNonNull(configMap.getData());
+                Map<String, String> defaultMap =
+                    Objects.requireNonNull(settingConfigMap.getData());
+                for (Map.Entry<String, String> entry : defaultMap.entrySet()) {
                     if (!map.containsKey(entry.getKey())) {
                         map.put(entry.getKey(), entry.getValue());
                         log.info("add new item for setting config map, key={}, value={}",

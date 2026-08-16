@@ -46,6 +46,9 @@ public class FetchAndCreateSubjectStep implements DirectoryBindingStep {
     public Mono<DirectoryBindingContext> execute(DirectoryBindingContext context) {
         SubjectSyncPlatform platform = context.getPlatform();
         String platformId = context.getPlatformId();
+        if (platform == null || platformId == null) {
+            return Mono.error(new IllegalStateException("同步平台和平台标识不能为空"));
+        }
 
         return subjectSyncService.sync(null, platform, platformId)
             .then(subjectSyncService.findSubjectSyncsByPlatformAndPlatformId(platform, platformId)

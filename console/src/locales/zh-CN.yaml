@@ -1,4 +1,4 @@
-Root: 首页
+Root: 仪表板
 common:
   greeting: 你好，
   exception:
@@ -102,11 +102,32 @@ module:
   dashboard:
     title: 仪表板
     sidebar: 仪表板
+    loading: 正在加载仪表板数据
+    error: 仪表板数据加载失败
+    retry: 重试
     label:
-      attachment: 附件
+      folder: 已知文件夹
+      file: 已知文件
       subject: 条目
+      video: 视频
+      music: 音乐
+      image: 图片
       collection: 收藏
       doing: 在看
+    guide:
+      empty:
+        title: 开始管理你的内容
+        description: 先添加一个文件源，再导入媒体内容
+      addSource: 添加文件源
+      import:
+        title: 文件源已就绪
+        description: 选择内容类型开始导入
+      content:
+        description: 最近操作
+        sources: 文件源
+        videos: 视频
+        music: 音乐
+        images: 图片
   user:
     title: 用户
     sidebar: 用户
@@ -165,8 +186,8 @@ module:
           shelve: 搁置
           discard: 抛弃
   attachment:
-    title: 附件
-    sidebar: 附件
+    title: 文件源
+    sidebar: 文件源
     message:
       directory: 目录
       file: 附件
@@ -203,6 +224,17 @@ module:
         value: 删除
         confirm: 您当前删除的附件 [{name}] 为目录类型，系统默认会删除目录里的所有内容，您确定要删除吗？
     dialog:
+      scan-directory:
+        title: 选择目录
+        system-root: 根目录
+        source-root: '{id} 根目录'
+        load-error: 目录加载失败
+        refresh-error: 目录刷新失败
+        refresh-hint: 目录内容不会自动更新，请点击刷新获取最新文件夹
+        no-sources: 暂无可用文件源
+        empty: 当前目录没有文件夹
+        manage-sources: 管理文件源
+        select-current: 选择当前目录
       mkdir:
         title: 新建目录
         placeholder: 请输入目录名称，提交后会在当前目录创造子目录。
@@ -261,12 +293,16 @@ module:
           add: 添加
           cancel: 返回
     btn:
-      upload: 上传附件
+      upload: 上传文件
       mkdir: 新建目录
       move_atts: 批量移动
       refresh: 刷新
       driver: 驱动
       bind: 绑定目录
+      more: 更多
+      add-source: 添加文件源
+      manage-sources: 添加/管理文件源
+      scan: 扫描当前目录
     bind:
       confirm:
         content: 确定要根据当前目录自动创建条目并绑定剧集吗？
@@ -306,6 +342,9 @@ module:
           EPISODE: 剧集视频
           AUDIO: 音频
           IMAGE: 图片序列
+        directory:
+          label: 扫描目录
+          select: 选择目录
         preview:
           title: 扫描预览
           action: 开始扫描
@@ -342,6 +381,7 @@ module:
           type: 条目类型
           nsfw: 标记为 NSFW
           typeValue:
+            VIDEO: 暂不分类
             ANIME: 动画
             COMIC: 漫画
             GAME: 游戏
@@ -362,9 +402,23 @@ module:
       btn: 批量删除
       system_internal_forbidden: 不允许删除系统内置目录
     search_input:
-      placeholder: 搜索当前目录下的所有附件，模糊匹配，空格多个关键词，回车搜查
+      placeholder: 搜索当前目录中的文件和目录，按回车开始搜索
     breadcrumb:
-      label: 路径
+      label: 路径：
+    browser:
+      error: 加载当前目录失败，请重试
+      source-error: 加载文件源失败，请重试
+      refresh-hint: 目录内容不会自动更新，请点击刷新获取最新文件夹
+      no-sources:
+        title: 暂无文件源
+        description: 添加本地文件源后即可浏览和扫描媒体文件
+      no-results:
+        title: 未找到匹配内容
+        description: 请调整关键词后重新搜索当前目录
+      empty:
+        title: 当前目录为空
+        directory-description: 可以上传文件或新建子目录
+        driver-description: 可以刷新文件源，或显式扫描当前目录
     table:
       colum:
         label:
@@ -469,6 +523,43 @@ module:
           button:
             subject:
               update: 更新
+    file-source:
+      title: 文件源管理
+      create: 添加文件源
+      create-title: 添加文件源
+      edit-title: 编辑文件源
+      columns:
+        name: 名称
+        path: 服务器路径
+        enabled: 已启用
+        operations: 操作
+      fields:
+        type: 类型
+        driver-name: 驱动实现
+        name: 名称
+        path: 服务器路径
+        access-token: 访问令牌
+        refresh-token: 刷新令牌
+        comment: 备注
+      actions:
+        retry: 重试
+        save: 保存
+      validation:
+        driver-name: 请选择驱动实现
+        mount-name: 请输入文件源名称
+        remote-path: 请输入服务器路径
+      delete-title: 删除文件源
+      delete-confirm: 确定要删除文件源“{name}”吗？此操作不会删除服务器上的文件。
+      messages:
+        save-success: 文件源已保存
+        delete-success: 文件源已删除
+      errors:
+        load: 加载文件源失败，请重试
+        save: 保存文件源失败
+        missing-id: 文件源已保存，但服务端未返回标识，无法启用
+        enable-after-save: 文件源已保存，但启用失败；请检查列表状态后重试
+        toggle: 更新文件源启用状态失败
+        delete: 删除文件源失败
   regular:
     title: 剧集序号正则
     sidebar: 正则
@@ -1060,6 +1151,8 @@ module:
     sidebar: 插件
     details:
       title: 插件详情
+      button:
+        back: 返回插件页
       label:
         id: ID
         version: 版本
@@ -1182,8 +1275,14 @@ module:
         name: 名称
         author: 作者
         description: 描述
-        state: 状态
-        operate: 操作
+        runtime: 运行
+        availability: 启用
+      state:
+        started: 已启动
+        stopped: 已停止
+        failed: 启动失败
+        enabled: 已启用
+        disabled: 已禁用
       operate:
         details: 详情
         start: 启动
@@ -1342,6 +1441,26 @@ module:
     album:
       detail:
         title: 专辑详情
+  media:
+    import: 扫描并导入
+    video:
+      title: 视频
+      sidebar: 视频
+      searchPlaceholder: 搜索视频名称
+      emptyTitle: 暂无视频
+      emptyDescription: 扫描并导入视频后会显示在这里
+    music:
+      title: 音乐
+      sidebar: 音乐
+      searchPlaceholder: 搜索音乐名称
+      emptyTitle: 暂无音乐
+      emptyDescription: 扫描并导入音乐后会显示在这里
+    image:
+      title: 图片
+      sidebar: 图片
+      searchPlaceholder: 搜索图片名称
+      emptyTitle: 暂无图片
+      emptyDescription: 扫描并导入图片后会显示在这里
 login:
   operations:
     submit:

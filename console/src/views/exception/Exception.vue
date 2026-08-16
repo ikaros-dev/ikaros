@@ -10,7 +10,7 @@ withDefaults(
 		message?: string;
 	}>(),
 	{
-		title: i18n.global.t('views.exception.exception.title'),
+		title: i18n.global.t('view.exception.exception.title'),
 		message: undefined,
 	}
 );
@@ -34,10 +34,10 @@ const toDashboard = () => {
 
 		<div>
 			<ElButton @click="router.back()">
-				{{ i18n.global.t('views.exception.exception.back') }}
+				{{ i18n.global.t('view.exception.exception.back') }}
 			</ElButton>
 			<ElButton @click="toDashboard">
-				{{ i18n.global.t('views.exception.exception.dashboard') }}
+				{{ i18n.global.t('view.exception.exception.dashboard') }}
 			</ElButton>
 		</div>
 	</div>

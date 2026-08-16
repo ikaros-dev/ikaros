@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jspecify.annotations.Nullable;
 import run.ikaros.api.store.enums.AuthorityType;
 
 @Data
@@ -14,9 +15,9 @@ import run.ikaros.api.store.enums.AuthorityType;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class Authority {
-    private UUID id;
-    private Boolean allow;
-    private AuthorityType type;
-    private String target;
-    private String authority;
+    private @Nullable UUID id;
+    private @Nullable Boolean allow;
+    private @Nullable AuthorityType type;
+    private @Nullable String target;
+    private @Nullable String authority;
 }

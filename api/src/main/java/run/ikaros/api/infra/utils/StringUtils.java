@@ -1,6 +1,7 @@
 package run.ikaros.api.infra.utils;
 
 import java.security.SecureRandom;
+import org.jspecify.annotations.Nullable;
 
 public class StringUtils {
     private static final String CHARACTERS
@@ -22,7 +23,7 @@ public class StringUtils {
      * @param s 待校验的字符串
      * @return 是否为空或者空串
      */
-    public static boolean isBlank(final String s) {
+    public static boolean isBlank(final @Nullable String s) {
         if (s == null || s.isEmpty()) {
             return true;
         }
@@ -39,7 +40,7 @@ public class StringUtils {
         return cs == null || cs.length() == 0;
     }
 
-    public static boolean isNotBlank(final String s) {
+    public static boolean isNotBlank(final @Nullable String s) {
         return !isBlank(s);
     }
 

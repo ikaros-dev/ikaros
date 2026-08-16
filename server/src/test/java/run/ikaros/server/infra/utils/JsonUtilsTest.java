@@ -3,6 +3,8 @@ package run.ikaros.server.infra.utils;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import java.util.Objects;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 class JsonUtilsTest {
@@ -26,7 +28,7 @@ class JsonUtilsTest {
     @Test
     void json2obj_validJson_returnsObject() {
         String json = "{\"name\":\"test\",\"value\":123}";
-        TestObj obj = JsonUtils.json2obj(json, TestObj.class);
+        TestObj obj = Objects.requireNonNull(JsonUtils.json2obj(json, TestObj.class));
         assertThat(obj).isNotNull();
         assertThat(obj.getName()).isEqualTo("test");
         assertThat(obj.getValue()).isEqualTo(123);
@@ -41,8 +43,9 @@ class JsonUtilsTest {
     @Test
     void json2ObjArr_validJson_returnsArray() {
         String json = "[{\"name\":\"a\",\"value\":1},{\"name\":\"b\",\"value\":2}]";
-        TestObj[] arr = JsonUtils.json2ObjArr(json, new TypeReference<TestObj[]>() {
-        });
+        TestObj[] arr = Objects.requireNonNull(
+            JsonUtils.json2ObjArr(json, new TypeReference<TestObj[]>() {
+            }));
         assertThat(arr).hasSize(2);
         assertThat(arr[0].getName()).isEqualTo("a");
         assertThat(arr[1].getName()).isEqualTo("b");
@@ -59,30 +62,30 @@ class JsonUtilsTest {
     @Test
     void obj2JsonAndBack_roundTrip() {
         TestObj original = new TestObj("roundtrip", 999);
-        String json = JsonUtils.obj2Json(original);
-        TestObj restored = JsonUtils.json2obj(json, TestObj.class);
+        String json = Objects.requireNonNull(JsonUtils.obj2Json(original));
+        TestObj restored = Objects.requireNonNull(JsonUtils.json2obj(json, TestObj.class));
         assertThat(restored).isNotNull();
         assertThat(restored.getName()).isEqualTo("roundtrip");
         assertThat(restored.getValue()).isEqualTo(999);
     }
 
     static class TestObj {
-        private String name;
+        private @Nullable String name;
         private int value;
 
         public TestObj() {
         }
 
-        public TestObj(String name, int value) {
+        public TestObj(@Nullable String name, int value) {
             this.name = name;
             this.value = value;
         }
 
-        public String getName() {
+        public @Nullable String getName() {
             return name;
         }
 
-        public void setName(String name) {
+        public void setName(@Nullable String name) {
             this.name = name;
         }
 

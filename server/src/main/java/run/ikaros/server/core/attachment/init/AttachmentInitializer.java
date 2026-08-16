@@ -65,10 +65,10 @@ public class AttachmentInitializer {
             Map.of(rootAttEntity.getId(), rootAttEntity,
                 coverAttEntity.getId(), coverAttEntity,
                 downloadsAttEntity.getId(), downloadsAttEntity);
-        return Flux.fromStream(idEntityMap.keySet().stream())
-            .flatMap(uuid -> repository.existsById(uuid)
+        return Flux.fromStream(idEntityMap.entrySet().stream())
+            .flatMap(entry -> repository.existsById(entry.getKey())
                 .filter(exists -> !exists)
-                .flatMap(e -> Mono.just(idEntityMap.get(uuid))))
+                .map(exists -> entry.getValue()))
             .flatMap(repository::insert)
             .doOnEach(attachmentEntitySignal -> {
                 if (attachmentEntitySignal.isOnComplete() && attachmentEntitySignal.get() != null) {

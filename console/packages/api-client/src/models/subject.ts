@@ -81,6 +81,7 @@ export interface Subject {
 }
 
 export const SubjectTypeEnum = {
+  Video: "VIDEO",
   Anime: "ANIME",
   Comic: "COMIC",
   Game: "GAME",

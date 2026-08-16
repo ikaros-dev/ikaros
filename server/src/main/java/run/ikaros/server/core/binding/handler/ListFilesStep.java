@@ -26,7 +26,7 @@ import run.ikaros.server.store.repository.AttachmentRepository;
 public class ListFilesStep implements DirectoryBindingStep {
 
     private final AttachmentRepository attachmentRepository;
-    /** 对候选附件执行有限前缀真实格式检查。 */
+    /** 对候选附件执行有限前缀真实格式检查. */
     private final AttachmentContentInspectionService contentInspectionService;
 
     public ListFilesStep(AttachmentRepository attachmentRepository,
@@ -47,7 +47,11 @@ public class ListFilesStep implements DirectoryBindingStep {
 
     @Override
     public Mono<DirectoryBindingContext> execute(DirectoryBindingContext context) {
-        return attachmentRepository.findAllByParentId(context.getDirectoryId())
+        var directoryId = context.getDirectoryId();
+        if (directoryId == null) {
+            return Mono.error(new IllegalStateException("目录标识不能为空"));
+        }
+        return attachmentRepository.findAllByParentId(directoryId)
             .collectList()
             .flatMap(children -> {
                 List<AttachmentEntity> spDirEntityList = children.stream()

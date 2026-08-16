@@ -44,7 +44,7 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
      */
     private final LocalAttachmentPathValidator pathValidator;
     /**
-     * 本地文件名称门禁和真实格式检测服务。
+     * 本地文件名称门禁和真实格式检测服务.
      */
     private final AttachmentMediaValidationService mediaValidationService;
 
@@ -162,8 +162,14 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
 
     @Override
     public Flux<DataBuffer> getSteam(Attachment att) {
+        UUID driverId = att.getDriverId();
+        String fsPath = att.getFsPath();
+        if (driverId == null || fsPath == null) {
+            return Flux.error(new IllegalArgumentException(
+                "Attachment driverId and fsPath must not be null."));
+        }
         return pathValidator
-            .validate(att.getDriverId(), att.getFsPath())
+            .validate(driverId, fsPath)
             .flatMapMany(path -> org.springframework.core.io.buffer.DataBufferUtils
                 .readAsynchronousFileChannel(
                     () -> AsynchronousFileChannel.open(path, StandardOpenOption.READ),
@@ -174,8 +180,14 @@ public class LocalDiskAttachmentDriverFetcher implements AttachmentDriverFetcher
 
     @Override
     public Flux<DataBuffer> getSteam(Attachment att, long start, long end) {
+        UUID driverId = att.getDriverId();
+        String fsPath = att.getFsPath();
+        if (driverId == null || fsPath == null) {
+            return Flux.error(new IllegalArgumentException(
+                "Attachment driverId and fsPath must not be null."));
+        }
         return pathValidator
-            .validate(att.getDriverId(), att.getFsPath())
+            .validate(driverId, fsPath)
             .flatMapMany(path -> Flux.create(sink -> {
                 try {
                     AsynchronousFileChannel channel = AsynchronousFileChannel.open(

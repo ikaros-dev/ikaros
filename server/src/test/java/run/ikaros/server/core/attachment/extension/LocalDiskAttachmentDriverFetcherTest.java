@@ -20,6 +20,7 @@ import run.ikaros.server.core.attachment.service.AttachmentMediaValidationServic
 import run.ikaros.server.core.attachment.service.impl.DefaultAttachmentMediaValidationService;
 
 /** 本地磁盘附件驱动测试. */
+@org.jspecify.annotations.NullUnmarked
 class LocalDiskAttachmentDriverFetcherTest {
     @Test
     void getChildrenReturnsOnlyValidatedFileWithoutCalculatingSha1(@TempDir Path tempDir)
@@ -70,7 +71,7 @@ class LocalDiskAttachmentDriverFetcherTest {
     @Test
     void getChildrenSkipsUnsupportedNameBeforeValidation(@TempDir Path tempDir)
         throws IOException {
-        UUID driverId = UUID.randomUUID();
+        final UUID driverId = UUID.randomUUID();
         Files.writeString(tempDir.resolve("payload.exe"), "not-media");
         Files.writeString(tempDir.resolve("README"), "not-media");
         Files.writeString(tempDir.resolve("archive.zip"), "not-media");

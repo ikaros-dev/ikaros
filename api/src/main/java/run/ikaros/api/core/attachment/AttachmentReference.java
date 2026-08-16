@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jspecify.annotations.Nullable;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 
 @Data
@@ -14,8 +15,8 @@ import run.ikaros.api.store.enums.AttachmentReferenceType;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class AttachmentReference {
-    private UUID id;
-    private AttachmentReferenceType type;
-    private UUID attachmentId;
-    private UUID referenceId;
+    private @Nullable UUID id;
+    private @Nullable AttachmentReferenceType type;
+    private @Nullable UUID attachmentId;
+    private @Nullable UUID referenceId;
 }

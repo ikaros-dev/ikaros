@@ -1,9 +1,8 @@
 package run.ikaros.server.core.subject;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -57,8 +56,8 @@ public class SubjectOperator implements SubjectOperate {
     }
 
     @Override
-    public Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@Nonnull UUID subjectId,
-                                                                 @Nonnull SubjectSyncPlatform
+    public Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(UUID subjectId,
+                                                                 SubjectSyncPlatform
                                                                      subjectSyncPlatform,
                                                                  String platformId) {
         return subjectService.findBySubjectIdAndPlatformAndPlatformId(
@@ -67,13 +66,13 @@ public class SubjectOperator implements SubjectOperate {
 
     @Override
     public Flux<Subject> findByPlatformAndPlatformId(
-        @Nonnull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
+        SubjectSyncPlatform subjectSyncPlatform, String platformId) {
         return subjectService.findByPlatformAndPlatformId(subjectSyncPlatform, platformId);
     }
 
     @Override
     public Mono<Boolean> existsByPlatformAndPlatformId(
-        @Nonnull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
+        SubjectSyncPlatform subjectSyncPlatform, String platformId) {
         return subjectService.existsByPlatformAndPlatformId(subjectSyncPlatform, platformId);
     }
 

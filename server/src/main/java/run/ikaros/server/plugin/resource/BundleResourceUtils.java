@@ -1,9 +1,9 @@
 package run.ikaros.server.plugin.resource;
 
+import org.jspecify.annotations.Nullable;
 import org.pf4j.PluginWrapper;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import run.ikaros.api.plugin.PluginConst;
 import run.ikaros.server.infra.utils.PathUtils;

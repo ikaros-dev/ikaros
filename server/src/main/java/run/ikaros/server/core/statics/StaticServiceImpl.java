@@ -24,7 +24,8 @@ public class StaticServiceImpl implements StaticService {
     @Override
     public Flux<String> listStaticsFonts() {
         final String fontBaseUrl = "/static/" + AppConst.STATIC_FONT_DIR_NAME + '/';
-        Path staticsDirPath = ikarosProperties.getWorkDir().resolve(AppConst.STATIC_DIR_NAME);
+        Path staticsDirPath = Objects.requireNonNull(ikarosProperties.getWorkDir())
+            .resolve(AppConst.STATIC_DIR_NAME);
         if (Files.notExists(staticsDirPath)) {
             try {
                 Files.createDirectory(staticsDirPath);

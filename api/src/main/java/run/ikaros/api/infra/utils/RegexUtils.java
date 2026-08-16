@@ -1,6 +1,5 @@
 package run.ikaros.api.infra.utils;
 
-import jakarta.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -9,6 +8,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import run.ikaros.api.infra.exception.RegexMatchingException;
@@ -19,8 +19,7 @@ public class RegexUtils {
     /**
      * Get file Postfix.
      */
-    @Nonnull
-    public static String getFilePostfix(@Nonnull String fileName) {
+    public static String getFilePostfix(String fileName) {
         AssertUtils.notBlank(fileName, "fileName");
         Set<String> strSet = new HashSet<>();
         Matcher tagMatcher = Pattern.compile(RegexConst.FILE_POSTFIX).matcher(fileName);
@@ -35,8 +34,7 @@ public class RegexUtils {
     /**
      * Get file tag.
      */
-    @Nonnull
-    public static List<String> getFileTag(@Nonnull String fileName) {
+    public static List<String> getFileTag(String fileName) {
         AssertUtils.notBlank(fileName, "fileName");
         if ("[]".equalsIgnoreCase(fileName)) {
             return List.of();
@@ -62,8 +60,7 @@ public class RegexUtils {
      * Get file name tag episode seq, such as: xxxxxxx[02]xxxxxx.mp4 => 02
      * .
      */
-    @Nonnull
-    public static Double getFileNameTagEpSeq(@Nonnull final String fileName) {
+    public static @Nullable Double getFileNameTagEpSeq(final String fileName) {
         AssertUtils.notBlank(fileName, "fileName");
         Set<String> strSet = new HashSet<>();
         if ("[]".equalsIgnoreCase(fileName)) {
@@ -97,8 +94,7 @@ public class RegexUtils {
     /**
      * Get episode seq by file name, such as: xxxx 04 xxxx.mp4 => 04 .
      */
-    @Nonnull
-    public static Double getFileNameBlankEpSeq(@Nonnull final String fileName) {
+    public static @Nullable Double getFileNameBlankEpSeq(final String fileName) {
         AssertUtils.notBlank(fileName, "fileName");
         Set<String> strSet = new HashSet<>();
 
@@ -124,8 +120,7 @@ public class RegexUtils {
     /**
      * Get episode seq by file name, such as: xxxx-04-xxxx.mp4 => 04 .
      */
-    @Nonnull
-    public static Double getFileNameHorizontalEpSeq(@Nonnull final String fileName) {
+    public static @Nullable Double getFileNameHorizontalEpSeq(final String fileName) {
         AssertUtils.notBlank(fileName, "fileName");
         Set<String> strSet = new HashSet<>();
 
@@ -151,8 +146,7 @@ public class RegexUtils {
     /**
      * Get episode seq by file name, such as: xxxx_04_xxxx.mp4 => 04 .
      */
-    @Nonnull
-    public static Double getFileNameUnderlineEpSeq(@Nonnull final String fileName) {
+    public static @Nullable Double getFileNameUnderlineEpSeq(final String fileName) {
         AssertUtils.notBlank(fileName, "fileName");
         Set<String> strSet = new HashSet<>();
 
@@ -178,8 +172,7 @@ public class RegexUtils {
     /**
      * Get episode seq by file name and ep integrally, such as: xxxx EP04 xxxx.mp4 => 04 .
      */
-    @Nonnull
-    public static Double getEpFileNameIntegrallySeq(@Nonnull final String fileName) {
+    public static @Nullable Double getEpFileNameIntegrallySeq(final String fileName) {
         AssertUtils.notBlank(fileName, "fileName");
         Set<String> strSet = new HashSet<>();
 
@@ -206,8 +199,7 @@ public class RegexUtils {
     /**
      * Get matching str by regex.
      */
-    @Nonnull
-    public static String getMatchingStr(@Nonnull String originalStr, @Nonnull String regex) {
+    public static String getMatchingStr(String originalStr, String regex) {
         AssertUtils.notBlank(originalStr, "originalStr");
         AssertUtils.notBlank(regex, "regex");
         List<String> strList = new ArrayList<>();
@@ -231,7 +223,6 @@ public class RegexUtils {
     /**
      * Get matching english str.
      */
-    @Nonnull
     public static String getMatchingEnglishStr(String str) {
         AssertUtils.notBlank(str, "str");
         final String regex = "[A-Za-z\\s]";
@@ -241,7 +232,6 @@ public class RegexUtils {
     /**
      * Get matching english str without tag.
      */
-    @Nonnull
     public static String getMatchingEnglishStrWithoutTag(String str) {
         AssertUtils.notBlank(str, "str");
         final String originalStr = str;
@@ -263,7 +253,6 @@ public class RegexUtils {
     /**
      * Get matching chinese str.
      */
-    @Nonnull
     public static String getMatchingChineseStr(String str) {
         AssertUtils.notBlank(str, "str");
         final String regex = "[\\u2E80-\\u9FFF]";
@@ -273,7 +262,6 @@ public class RegexUtils {
     /**
      * Get matching chinese str without tag.
      */
-    @Nonnull
     public static String getMatchingChineseStrWithoutTag(String str) {
         AssertUtils.notBlank(str, "str");
         final String originalStr = str;
@@ -298,10 +286,9 @@ public class RegexUtils {
      *     <li>getFileNameUnderlineEpSeq: xxxx_04_xxxx. mp4 => 04 .</li>
      * </ul>
      */
-    @Nonnull
-    public static Double parseEpisodeSeqByFileName(String fileName) {
+    public static @Nullable Double parseEpisodeSeqByFileName(String fileName) {
         AssertUtils.notBlank(fileName, "fileName");
-        Double seq = -1D;
+        @Nullable Double seq = -1D;
         try {
             seq = getFileNameBlankEpSeq(fileName);
         } catch (RegexMatchingException e) {

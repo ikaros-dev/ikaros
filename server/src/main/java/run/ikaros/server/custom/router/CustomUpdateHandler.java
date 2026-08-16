@@ -39,14 +39,15 @@ public class CustomUpdateHandler implements CustomRouterFunctionFactory.UpdateHa
                 "Can not read body to:" + scheme.type())))
             .flatMap(customClient::update)
             .doOnSuccess(custom -> applicationEventPublisher.publishEvent(
-                new CustomUpdateEvent(this, scheme, CustomConverter.getNameFieldValue(custom))))
+                new CustomUpdateEvent(this, scheme,
+                    java.util.Objects.requireNonNull(CustomConverter.getNameFieldValue(custom)))))
             .flatMap(updated -> ServerResponse
                 .ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updated))
             .onErrorResume(NotFoundException.class, e -> ServerResponse.status(HttpStatus.NOT_FOUND)
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(e.getMessage()));
+                    .bodyValue(java.util.Objects.toString(e.getMessage(), e.toString())));
     }
 
     @Override

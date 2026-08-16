@@ -26,7 +26,11 @@ public class JwtReactiveAuthenticationManager implements ReactiveAuthenticationM
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
         final String username = authentication.getName();
-        final String password = authentication.getCredentials().toString();
+        final Object credentials = authentication.getCredentials();
+        if (credentials == null) {
+            throw new NullPointerException();
+        }
+        final String password = credentials.toString();
         return userDetailsService.findByUsername(username)
             .switchIfEmpty(Mono.error(
                 new UserNotFoundException("User for username[" + username + "] not found, "

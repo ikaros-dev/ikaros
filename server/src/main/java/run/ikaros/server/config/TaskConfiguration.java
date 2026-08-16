@@ -1,5 +1,6 @@
 package run.ikaros.server.config;
 
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -24,11 +25,12 @@ public class TaskConfiguration {
     public ExecutorService threadPoolExecutor(IkarosTaskProperties ikarosTaskProperties) {
         ThreadFactory namedThreadFactory = new CustomizableThreadFactory("task-thread-");
         return new ThreadPoolExecutor(
-            ikarosTaskProperties.getCorePoolSize(),
-            ikarosTaskProperties.getMaximumPoolSize(),
-            ikarosTaskProperties.getKeepAliveTime(),
+            Objects.requireNonNull(ikarosTaskProperties.getCorePoolSize()),
+            Objects.requireNonNull(ikarosTaskProperties.getMaximumPoolSize()),
+            Objects.requireNonNull(ikarosTaskProperties.getKeepAliveTime()),
             TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(ikarosTaskProperties.getQueueCount()),
+            new LinkedBlockingQueue<>(Objects.requireNonNull(
+                ikarosTaskProperties.getQueueCount())),
             namedThreadFactory,
             new ThreadPoolExecutor.AbortPolicy()
         );

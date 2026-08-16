@@ -1,6 +1,7 @@
 package run.ikaros.server.core.collection;
 
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.collection.EpisodeCollection;
@@ -19,7 +20,7 @@ public interface EpisodeCollectionService {
                                                Long progress);
 
     Mono<Void> updateEpisodeCollection(UUID userId, UUID episodeId,
-                                       Long progress, Long duration);
+                                       Long progress, @Nullable Long duration);
 
     Mono<Void> updateEpisodeCollectionFinish(UUID userId, UUID episodeId,
                                              Boolean finish);

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jspecify.annotations.Nullable;
 
 @Data
 @Builder
@@ -15,8 +16,8 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class Role {
-    private UUID id;
-    private String name;
-    private UUID parentId;
-    private String description;
+    private @Nullable UUID id;
+    private @Nullable String name;
+    private @Nullable UUID parentId;
+    private @Nullable String description;
 }

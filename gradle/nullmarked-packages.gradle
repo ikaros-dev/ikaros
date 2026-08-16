@@ -1,0 +1,137 @@
+def packageDeclarationPattern = ~/(?m)^\s*package\s+([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)\s*;/
+def nullMarkedAnnotationPattern = ~/@(?:org\.jspecify\.annotations\.)?NullMarked\b/
+def jspecifyNullMarkedImportPattern = ~/(?m)^\s*import\s+org\.jspecify\.annotations\.NullMarked\s*;/
+def forbiddenNullnessAnnotations = [
+        'org.jspecify.annotations.NonNull',
+        'org.springframework.lang.NonNull',
+        'org.springframework.lang.Nullable',
+        'org.jetbrains.annotations.NotNull',
+        'org.jetbrains.annotations.Nullable',
+        'edu.umd.cs.findbugs.annotations.NonNull',
+        'edu.umd.cs.findbugs.annotations.Nullable',
+        'edu.umd.cs.findbugs.annotations.CheckForNull',
+        'org.checkerframework.checker.nullness.qual.NonNull',
+        'org.checkerframework.checker.nullness.qual.Nullable',
+        'reactor.util.annotation.NonNull',
+        'reactor.util.annotation.Nullable',
+        'io.micrometer.common.lang.NonNull',
+        'io.micrometer.common.lang.Nullable',
+        'jakarta.annotation.Nonnull',
+        'jakarta.annotation.Nullable',
+        'jakarta.annotation.CheckForNull',
+        'javax.annotation.Nonnull',
+        'javax.annotation.Nullable',
+        'javax.annotation.CheckForNull'
+]
+
+def mainJavaSources = sourceSets.main.java
+def projectDirectoryPath = projectDir.canonicalFile.toPath()
+def currentProjectPath = path
+def relativeProjectPath = { file ->
+    projectDirectoryPath.relativize(file.toPath()).toString()
+}
+
+tasks.register('checkNullMarkedPackages') {
+    group = 'verification'
+    description = '检查所有生产 Java 包均且仅由一个 JSpecify @NullMarked package-info.java 标记'
+    inputs.files(mainJavaSources)
+
+    doLast {
+        def sourceDirectories = mainJavaSources.srcDirs
+                .findAll { it.isDirectory() }
+                .collect { it.canonicalFile }
+        def javaFiles = mainJavaSources.asFileTree
+                .matching { include '**/*.java' }
+                .files
+                .collect { it.canonicalFile }
+                .sort { it.absolutePath }
+        def sourceTexts = javaFiles.collectEntries { [(it): it.getText('UTF-8')] }
+        def packageInfos = []
+        def productionPackages = [] as Set
+        def errors = []
+
+        javaFiles.each { javaFile ->
+            def sourceText = sourceTexts[javaFile]
+            def packageMatcher = packageDeclarationPattern.matcher(sourceText)
+            def declaredPackage = packageMatcher.find() ? packageMatcher.group(1) : null
+
+            if (javaFile.name == 'package-info.java') {
+                def sourceDirectory = sourceDirectories.find { sourceDirectory ->
+                    javaFile.toPath().startsWith(sourceDirectory.toPath())
+                }
+                def relativeDirectory = sourceDirectory == null
+                        ? null
+                        : sourceDirectory.toPath().relativize(javaFile.parentFile.toPath()).toString()
+                def expectedPackage = relativeDirectory == null
+                        ? null
+                        : relativeDirectory.replace('\\', '.').replace('/', '.')
+                packageInfos << [
+                        file: javaFile,
+                        text: sourceText,
+                        declaredPackage: declaredPackage,
+                        expectedPackage: expectedPackage
+                ]
+            } else if (declaredPackage != null) {
+                productionPackages << declaredPackage
+            }
+
+            forbiddenNullnessAnnotations.each { annotationName ->
+                def quotedAnnotation = java.util.regex.Pattern.quote(annotationName)
+                def importPattern = ~/(?m)^\s*import\s+(?:static\s+)?${quotedAnnotation}\s*;/
+                def qualifiedUsagePattern = ~/@${quotedAnnotation}\b/
+                if (importPattern.matcher(sourceText).find()
+                        || qualifiedUsagePattern.matcher(sourceText).find()) {
+                    errors << "禁止的空值注解 ${annotationName}: ${relativeProjectPath(javaFile)}"
+                }
+            }
+        }
+
+        packageInfos.each { packageInfo ->
+            def relativePath = relativeProjectPath(packageInfo.file)
+            if (packageInfo.declaredPackage == null) {
+                errors << "package-info.java 缺少 package 声明: ${relativePath}"
+            } else if (packageInfo.declaredPackage != packageInfo.expectedPackage) {
+                errors << "package-info.java 包声明与路径不匹配: ${relativePath}（声明 ${packageInfo.declaredPackage}，路径 ${packageInfo.expectedPackage}）"
+            } else if (!productionPackages.contains(packageInfo.declaredPackage)) {
+                errors << "package-info.java 未对应实际生产包: ${relativePath}（${packageInfo.declaredPackage}）"
+            }
+        }
+
+        productionPackages.sort().each { packageName ->
+            def matchingPackageInfos = packageInfos.findAll {
+                it.declaredPackage == packageName && it.expectedPackage == packageName
+            }
+            if (matchingPackageInfos.empty) {
+                errors << "生产包缺少 package-info.java: ${packageName}"
+            } else if (matchingPackageInfos.size() > 1) {
+                def paths = matchingPackageInfos.collect { relativeProjectPath(it.file) }.sort().join(', ')
+                errors << "生产包存在重复 package-info.java: ${packageName}（${paths}）"
+            }
+
+            matchingPackageInfos.each { packageInfo ->
+                def annotationMatcher = nullMarkedAnnotationPattern.matcher(packageInfo.text)
+                def annotationCount = 0
+                while (annotationMatcher.find()) {
+                    annotationCount++
+                }
+                def usesJSpecifyNullMarked = packageInfo.text =~ jspecifyNullMarkedImportPattern
+                def usesQualifiedNullMarked = packageInfo.text.contains(
+                        '@org.jspecify.annotations.NullMarked')
+                if (annotationCount != 1 || (!usesJSpecifyNullMarked && !usesQualifiedNullMarked)) {
+                    errors << "package-info.java 必须恰有一个 JSpecify @NullMarked: ${relativeProjectPath(packageInfo.file)}"
+                }
+            }
+        }
+
+        if (!errors.empty) {
+            throw new GradleException(
+                    "生产包默认非空覆盖检查失败：\n - ${errors.sort().join('\n - ')}")
+        }
+
+        logger.lifecycle("${currentProjectPath} 已验证 ${productionPackages.size()} 个生产 Java 包的 @NullMarked 覆盖")
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('checkNullMarkedPackages')
+}

@@ -33,6 +33,9 @@ public class AttachmentRefUserAvatarUpdateListener {
         final UUID userId = event.getUserId();
         final String oldAvatar = event.getOldAvatar();
         final String avatar = event.getAvatar();
+        if (userId == null) {
+            return Mono.error(new IllegalArgumentException("userId must not be null."));
+        }
         if (StringUtils.isBlank(avatar)) {
             if (StringUtils.isBlank(oldAvatar)) {
                 return Mono.empty();

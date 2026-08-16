@@ -1,11 +1,10 @@
 package run.ikaros.server.core.attachment.service;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.buffer.DataBuffer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -24,7 +23,7 @@ public interface AttachmentService {
     Mono<Attachment> save(Attachment attachment);
 
     /**
-     * 验证并上传普通附件，验证失败时不创建附件记录。
+     * 验证并上传普通附件，验证失败时不创建附件记录.
      *
      * @param uploadCondition 上传名称、父目录和数据流
      * @return 已保存的附件
@@ -58,7 +57,7 @@ public interface AttachmentService {
         AttachmentType type, @Nullable UUID parentId, String name);
 
     /**
-     * 接收分片数据流，并在会话完成后验证、合并和保存附件。
+     * 接收分片数据流，并在会话完成后验证、合并和保存附件.
      *
      * @param unique 分片上传会话标识
      * @param uploadLength 完整文件长度
@@ -69,14 +68,14 @@ public interface AttachmentService {
      * @return 分片处理完成信号
      */
     Mono<Void> receiveAndHandleFragmentUploadChunkFile(@NotBlank String unique,
-                                                       @Nonnull Long uploadLength,
-                                                       @Nonnull Long uploadOffset,
+                                                       Long uploadLength,
+                                                       Long uploadOffset,
                                                        @NotBlank String uploadName,
                                                        Flux<DataBuffer> content,
                                                        @Nullable UUID parentId);
 
     /**
-     * 清理指定分片上传会话的临时资源。
+     * 清理指定分片上传会话的临时资源.
      *
      * @param unique 分片上传会话标识
      * @return 清理完成信号
@@ -97,7 +96,7 @@ public interface AttachmentService {
     Mono<String> getReadUrl(UUID aid);
 
     /**
-     * 验证附件真实格式并获取完整内容流。
+     * 验证附件真实格式并获取完整内容流.
      *
      * @param aid 附件 ID
      * @return 包含真实 MIME、内容长度和完整内容的附件流
@@ -105,7 +104,7 @@ public interface AttachmentService {
     Mono<AttachmentStreamVo> getStreamById(UUID aid);
 
     /**
-     * 先从文件头验证附件真实格式，再获取指定范围内容流。
+     * 先从文件头验证附件真实格式，再获取指定范围内容流.
      *
      * @param aid 附件 ID
      * @param start 范围起始位置，包含该位置
@@ -115,7 +114,7 @@ public interface AttachmentService {
     Mono<AttachmentStreamVo> getStreamByIdWithRange(UUID aid, long start, long end);
 
     /**
-     * 验证附件真实格式并获取完整内容数据流。
+     * 验证附件真实格式并获取完整内容数据流.
      *
      * @param aid 附件 ID
      * @return 完整内容数据流

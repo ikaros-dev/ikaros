@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jspecify.annotations.Nullable;
 
 /**
  * 歌曲 DTO.
@@ -24,50 +25,50 @@ public class Song {
     /**
      * 歌曲ID.
      */
-    private UUID id;
+    private @Nullable UUID id;
     /**
      * 所属专辑ID.
      */
     @JsonProperty("subject_id")
-    private UUID subjectId;
+    private @Nullable UUID subjectId;
     /**
      * 歌曲原始名称.
      */
-    private String name;
+    private @Nullable String name;
     /**
      * 歌曲中文名称.
      */
     @JsonProperty("name_cn")
-    private String nameCn;
+    private @Nullable String nameCn;
     /**
      * 歌曲描述.
      */
-    private String description;
+    private @Nullable String description;
     /**
      * 发行时间.
      */
     @JsonProperty("air_time")
-    private LocalDateTime airTime;
+    private @Nullable LocalDateTime airTime;
     /**
      * 曲目号（排序用）.
      */
-    private Float sequence;
+    private @Nullable Float sequence;
     /**
      * 分组类型，如 MAIN / OPENING_SONG / ORIGINAL_SOUND_TRACK 等.
      */
-    private String group;
+    private @Nullable String group;
     /**
      * 关联的附件ID（音频文件）.
      */
     @JsonProperty("attachment_id")
-    private UUID attachmentId;
+    private @Nullable UUID attachmentId;
     /**
      * 附件访问URL.
      */
     @JsonProperty("attachment_url")
-    private String attachmentUrl;
+    private @Nullable String attachmentUrl;
     /**
      * 音频时长（秒）.
      */
-    private Long duration;
+    private @Nullable Long duration;
 }

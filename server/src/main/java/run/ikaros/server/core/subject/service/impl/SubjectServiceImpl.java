@@ -3,7 +3,6 @@ package run.ikaros.server.core.subject.service.impl;
 import static org.springframework.data.relational.core.query.Criteria.where;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
-import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -11,8 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -46,7 +47,6 @@ import run.ikaros.server.core.subject.event.SubjectUpdateEvent;
 import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.entity.AttachmentReferenceEntity;
-import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.entity.SubjectCollectionEntity;
 import run.ikaros.server.store.entity.SubjectEntity;
@@ -68,7 +68,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     private final AttachmentReferenceRepository attachmentReferenceRepository;
     private final SubjectSyncRepository subjectSyncRepository;
     private final R2dbcEntityTemplate template;
-    private ApplicationContext applicationContext;
+    private @Nullable ApplicationContext applicationContext;
 
     /**
      * Construct a {@link SubjectService} instance.
@@ -115,7 +115,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
 
     @Override
     @MonoCacheable(value = "subject:", key = "#bgmtvId")
-    public Mono<Subject> findByBgmId(@Nonnull UUID subjectId, String bgmtvId) {
+    public Mono<Subject> findByBgmId(UUID subjectId, String bgmtvId) {
         Assert.notNull(subjectId, "'subjectId' must not null.");
         Assert.hasText(bgmtvId, "'bgmtvId' must has text.");
         return Mono.just(bgmtvId)
@@ -131,8 +131,8 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     @Override
     @MonoCacheable(value = "subject:",
         key = "#subjectId + ' ' + #platform.toString() + ' ' + #platformId")
-    public Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(@Nonnull UUID subjectId,
-                                                                 @Nonnull SubjectSyncPlatform
+    public Mono<Subject> findBySubjectIdAndPlatformAndPlatformId(UUID subjectId,
+                                                                 SubjectSyncPlatform
                                                                      platform,
                                                                  @NotBlank String platformId) {
         Assert.notNull(subjectId, "'subjectId' must not null.");
@@ -148,7 +148,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     @FluxCacheable(value = "subject:platform:",
         key = "#subjectSyncPlatform.toString() + ' ' + #platformId")
     public Flux<Subject> findByPlatformAndPlatformId(
-        @Nonnull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
+        SubjectSyncPlatform subjectSyncPlatform, String platformId) {
         Assert.notNull(subjectSyncPlatform, "'subjectSyncPlatform' must not null.");
         Assert.hasText(platformId, "'platformId' must has text.");
         return subjectSyncRepository.findByPlatformAndPlatformId(subjectSyncPlatform, platformId)
@@ -160,7 +160,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     @MonoCacheable(value = "subject:",
         key = "#subjectSyncPlatform.toString() + ' ' + #platformId.toString()")
     public Mono<Boolean> existsByPlatformAndPlatformId(
-        @Nonnull SubjectSyncPlatform subjectSyncPlatform, String platformId) {
+        SubjectSyncPlatform subjectSyncPlatform, String platformId) {
         Assert.notNull(subjectSyncPlatform, "'subjectSyncPlatform' must not null.");
         Assert.hasText(platformId, "'platformId' must has text.");
         return subjectSyncRepository.existsByPlatformAndPlatformId(subjectSyncPlatform, platformId);
@@ -180,16 +180,17 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                 return subjectEntity;
             })
             .flatMap(subjectRepository::insert)
-            .doOnNext(entity -> applicationContext.publishEvent(new SubjectAddEvent(this, entity)))
+            .doOnNext(entity -> Objects.requireNonNull(applicationContext)
+                .publishEvent(new SubjectAddEvent(this, entity)))
             .flatMap(subjectEntity -> copyProperties(subjectEntity, subject));
     }
 
     private Mono<SubjectEntity> publishSubjectUpdateEvent(SubjectEntity subjectEntity) {
-        UUID subjectId = subjectEntity.getId();
+        UUID subjectId = Objects.requireNonNull(subjectEntity.getId());
         return subjectRepository.findById(subjectId)
             .doOnSuccess(oldEntity -> {
                 SubjectUpdateEvent event = new SubjectUpdateEvent(this, oldEntity, subjectEntity);
-                applicationContext.publishEvent(event);
+                Objects.requireNonNull(applicationContext).publishEvent(event);
                 log.debug("publish SubjectUpdateEvent: [{}]", event);
             })
             .then(Mono.just(subjectEntity));
@@ -216,7 +217,8 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                 map.put(SqlIdentifier.unquoted("air_time"), entity.getAirTime());
                 return Mono.just(map)
                     .flatMap(columnsToUpdate -> template
-                        .update(Query.query(where("id").is(entity.getId())),
+                        .update(Query.query(where("id").is(
+                                Objects.requireNonNull(entity.getId()))),
                             Update.from(columnsToUpdate),
                             SubjectEntity.class))
                     .filter(count -> count > 0)
@@ -253,15 +255,16 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         return subjectRepository.existsById(id)
             .filter(flag -> flag)
             .flatMap(flag -> subjectRepository.findById(id))
-            .doOnNext(entity -> applicationContext.publishEvent(
-                new SubjectRemoveEvent(this, entity)))
+            .doOnNext(entity -> Objects.requireNonNull(applicationContext)
+                .publishEvent(new SubjectRemoveEvent(this, entity)))
             // Delete subject entity
             .flatMap(entity -> subjectRepository.deleteById(id))
             // Delete all episode entities and episode refs
             .thenMany(episodeRepository.findAllBySubjectId(id))
             .flatMap(episodeEntity ->
                 attachmentReferenceRepository.deleteAllByTypeAndReferenceId(
-                        AttachmentReferenceType.EPISODE, episodeEntity.getId())
+                        AttachmentReferenceType.EPISODE,
+                        Objects.requireNonNull(episodeEntity.getId()))
                     .then(episodeRepository.delete(episodeEntity)))
             // Delete subject sync entities
             .then(subjectSyncRepository.deleteAllBySubjectId(id))
@@ -272,7 +275,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     private Mono<Long> findMatchingEpisodeCount(UUID subjectId) {
         Assert.notNull(subjectId, "'subjectId' must not null.");
         return episodeRepository.findAllBySubjectId(subjectId)
-            .map(EpisodeEntity::getId)
+            .flatMap(entity -> Mono.justOrEmpty(entity.getId()))
             .filterWhen(epId -> attachmentReferenceRepository.existsByTypeAndReferenceId(
                 AttachmentReferenceType.EPISODE, epId
             ))
@@ -302,16 +305,19 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     public Mono<PagingWrap<Subject>> listEntitiesByCondition(FindSubjectCondition condition) {
         Assert.notNull(condition, "'condition' must not null.");
         condition.initDefaultIfNull();
-        Integer page = condition.getPage();
-        Integer size = condition.getSize();
+        Integer page = Objects.requireNonNull(condition.getPage());
+        Integer size = Objects.requireNonNull(condition.getSize());
         String name = condition.getName();
         String nameLike = "%" + name + "%";
         String nameCn = condition.getNameCn();
         String nameCnLike = "%" + nameCn + "%";
+        String keyword = condition.getKeyword();
+        String keywordLike = "%" + keyword + "%";
         Boolean nsfw = condition.getNsfw();
         final SubjectType type = condition.getType();
-        final String time = condition.getTime();
-        final Boolean airTimeDesc = condition.getAirTimeDesc();
+        final Set<SubjectType> types = condition.getTypes();
+        final @Nullable String time = condition.getTime();
+        final boolean airTimeDesc = Objects.requireNonNull(condition.getAirTimeDesc());
         final Boolean updateTimeDesc = condition.getUpdateTimeDesc();
         final Boolean scoreDesc = condition.getScoreDesc();
 
@@ -330,14 +336,22 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
         if (StringUtils.isNotBlank(nameCn)) {
             criteria = criteria.and("name_cn").like(nameCnLike);
         }
-        if (!Objects.isNull(type)) {
+        if (StringUtils.isNotBlank(keyword)) {
+            Criteria keywordCriteria = Criteria.where("name").like(keywordLike)
+                .or(Criteria.where("name_cn").like(keywordLike));
+            criteria = criteria.and(keywordCriteria);
+        }
+        if (Objects.nonNull(types) && !types.isEmpty()) {
+            criteria = criteria.and("type").in(types);
+        } else if (Objects.nonNull(type)) {
             criteria = criteria.and("type").is(type);
         }
 
         if (StringUtils.isNotBlank(time)) {
-            if (time.indexOf('-') > 0) {
+            String validTime = Objects.requireNonNull(time);
+            if (validTime.indexOf('-') > 0) {
                 // 日期范围，例如；2000.9-2010.8
-                String[] split = time.split("-");
+                String[] split = validTime.split("-");
                 String first = split[0];
                 String second = split[1];
                 LocalDateTime startTime;
@@ -361,21 +375,23 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
                 criteria = criteria.and(Criteria.where("air_time").between(startTime, endTime));
             } else {
                 // 单个类型，例如：2020.8
-                if (time.indexOf('.') > 0) {
-                    String[] split = time.split("\\.");
+                if (validTime.indexOf('.') > 0) {
+                    String[] split = validTime.split("\\.");
                     LocalDateTime startTime =
                         Year.parse(split[0]).atMonth(Integer.parseInt(split[1])).atDay(1)
                             .atStartOfDay();
                     criteria = criteria.and(
                         Criteria.where("air_time").between(startTime, startTime.plusMonths(1)));
                 } else {
-                    LocalDateTime startTime = Year.parse(time).atMonth(1).atDay(1).atStartOfDay();
+                    LocalDateTime startTime =
+                        Year.parse(validTime).atMonth(1).atDay(1).atStartOfDay();
                     criteria = criteria.and(
                         Criteria.where("air_time").between(startTime, startTime.plusYears(1)));
                 }
             }
         }
 
+        final Query countQuery = Query.query(criteria);
         Query query = Query.query(criteria);
 
         if (Objects.nonNull(updateTimeDesc) && updateTimeDesc) {
@@ -396,9 +412,9 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .with(pageRequest);
 
         Flux<SubjectEntity> subjectEntityFlux = template.select(query, SubjectEntity.class);
-        Mono<Long> countMono = template.count(query, SubjectEntity.class);
+        Mono<Long> countMono = template.count(countQuery, SubjectEntity.class);
 
-        return subjectEntityFlux.map(BaseEntity::getId)
+        return subjectEntityFlux.flatMap(entity -> Mono.justOrEmpty(entity.getId()))
             .flatMap(subjectRepository::findById)
             .flatMap(entity -> copyProperties(entity, new Subject()))
             .collectList()
@@ -410,7 +426,7 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
     @MonoCacheEvict
     public Mono<Void> deleteAll() {
         return subjectRepository.findAll()
-            .map(BaseEntity::getId)
+            .flatMap(entity -> Mono.justOrEmpty(entity.getId()))
             .flatMap(this::deleteById)
             .checkpoint("DeleteAllSubject")
             .then();

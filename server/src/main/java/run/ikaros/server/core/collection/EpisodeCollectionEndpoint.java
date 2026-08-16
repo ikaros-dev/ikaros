@@ -164,7 +164,7 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
                     progress, duration))
             .then(ServerResponse.ok().build())
             .onErrorResume(IllegalArgumentException.class,
-                e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
+                e -> ServerResponse.badRequest().bodyValue(errorMessage(e)));
     }
 
     private Mono<ServerResponse> updateEpisodeCollectionFinish(ServerRequest serverRequest) {
@@ -193,5 +193,9 @@ public class EpisodeCollectionEndpoint implements CoreEndpoint {
             .flatMap(episodeCollection -> ServerResponse.ok().bodyValue(episodeCollection));
     }
 
+    private String errorMessage(Throwable error) {
+        String message = error.getMessage();
+        return message == null ? "" : message;
+    }
 
 }

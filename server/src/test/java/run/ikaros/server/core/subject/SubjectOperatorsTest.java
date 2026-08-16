@@ -24,6 +24,7 @@ import run.ikaros.server.core.subject.service.SubjectService;
 import run.ikaros.server.core.subject.service.SubjectSyncService;
 
 @ExtendWith(MockitoExtension.class)
+@org.jspecify.annotations.NullUnmarked
 class SubjectOperatorsTest {
 
     private SubjectService subjectService;

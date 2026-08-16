@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 
+@org.jspecify.annotations.NullUnmarked
 class AttachmentDriverFetcherVoTest {
 
     @Test

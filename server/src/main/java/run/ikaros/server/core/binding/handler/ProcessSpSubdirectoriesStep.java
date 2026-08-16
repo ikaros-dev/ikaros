@@ -77,6 +77,9 @@ public class ProcessSpSubdirectoriesStep implements DirectoryBindingStep {
     @Override
     public Mono<DirectoryBindingContext> execute(DirectoryBindingContext context) {
         UUID subjectId = context.getSubjectId();
+        if (subjectId == null) {
+            return Mono.error(new IllegalStateException("条目标识不能为空"));
+        }
         return Flux.fromIterable(context.getSpSubdirectoryAttachments())
             .concatMap(spDir -> processSpDirectory(spDir, subjectId, context))
             .then(Mono.just(context));
@@ -84,7 +87,11 @@ public class ProcessSpSubdirectoriesStep implements DirectoryBindingStep {
 
     private Mono<Void> processSpDirectory(Attachment spDir, UUID subjectId,
                                           DirectoryBindingContext context) {
-        return attachmentRepository.findAllByParentId(spDir.getId())
+        UUID directoryId = spDir.getId();
+        if (directoryId == null) {
+            return Mono.error(new IllegalStateException("特殊子目录标识不能为空"));
+        }
+        return attachmentRepository.findAllByParentId(directoryId)
             .filter(att -> att.getType() == AttachmentType.File
                 || att.getType() == AttachmentType.Driver_File)
             .concatMap(entity -> copyProperties(entity, Attachment.builder().build()))
@@ -94,7 +101,11 @@ public class ProcessSpSubdirectoriesStep implements DirectoryBindingStep {
 
     private Mono<Void> createSpEpisodeAndBind(Attachment file, UUID subjectId,
                                               DirectoryBindingContext context) {
-        return episodeSequenceRegularService.match(file.getName())
+        String fileName = file.getName();
+        if (fileName == null) {
+            return Mono.empty();
+        }
+        return episodeSequenceRegularService.match(fileName)
             .filter(obj -> true)
             .filter(EpisodeSequenceRegularResult::isMatched)
             .flatMap(res ->
@@ -105,9 +116,14 @@ public class ProcessSpSubdirectoriesStep implements DirectoryBindingStep {
                                          EpisodeGroup group,
                                          float seq,
                                          DirectoryBindingContext context) {
+        String fileName = file.getName();
+        UUID attachmentId = file.getId();
+        if (fileName == null || attachmentId == null) {
+            return Mono.error(new IllegalStateException("特殊附件名称和标识不能为空"));
+        }
         Episode newEpisode = Episode.builder()
             .subjectId(subjectId)
-            .name(cleanFileName(file.getName()))
+            .name(cleanFileName(fileName))
             .sequence(seq)
             .group(group)
             .build();
@@ -122,7 +138,7 @@ public class ProcessSpSubdirectoriesStep implements DirectoryBindingStep {
                 AttachmentReferenceEntity ref = AttachmentReferenceEntity.builder()
                     .id(UuidV7Utils.generateUuid())
                     .type(AttachmentReferenceType.EPISODE)
-                    .attachmentId(file.getId())
+                    .attachmentId(attachmentId)
                     .referenceId(saved.getId())
                     .build();
                 return attachmentReferenceRepository.insert(ref)
@@ -157,7 +173,8 @@ public class ProcessSpSubdirectoriesStep implements DirectoryBindingStep {
     @Override
     public Mono<Void> rollback(DirectoryBindingContext context) {
         Mono<Void> removeRefs = Flux.fromIterable(context.getCreatedAttachmentRefs())
-            .concatMap(ref -> attachmentReferenceRepository.deleteById(ref.getId())
+            .concatMap(ref -> ref.getId() == null ? Mono.empty()
+                : attachmentReferenceRepository.deleteById(ref.getId())
                 .onErrorResume(e -> {
                     log.warn("Failed to remove attachment ref during rollback", e);
                     return Mono.empty();
@@ -165,7 +182,8 @@ public class ProcessSpSubdirectoriesStep implements DirectoryBindingStep {
             .then();
 
         Mono<Void> removeEpisodes = Flux.fromIterable(context.getCreatedEpisodes())
-            .concatMap(ep -> episodeService.deleteById(ep.getId())
+            .concatMap(ep -> ep.getId() == null ? Mono.empty()
+                : episodeService.deleteById(ep.getId())
                 .onErrorResume(e -> {
                     log.warn("Failed to remove episode during rollback", e);
                     return Mono.empty();

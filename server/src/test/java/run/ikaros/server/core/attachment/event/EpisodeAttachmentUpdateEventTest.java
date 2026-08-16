@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
+@org.jspecify.annotations.NullUnmarked
 class EpisodeAttachmentUpdateEventTest {
 
     @Test

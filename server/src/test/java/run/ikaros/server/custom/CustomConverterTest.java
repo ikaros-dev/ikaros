@@ -6,11 +6,13 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.jspecify.annotations.NullUnmarked;
 import org.junit.jupiter.api.Test;
 import run.ikaros.api.custom.GroupVersionKind;
 import run.ikaros.server.store.entity.CustomEntity;
 import run.ikaros.server.store.entity.CustomMetadataEntity;
 
+@NullUnmarked
 class CustomConverterTest {
 
     @Test

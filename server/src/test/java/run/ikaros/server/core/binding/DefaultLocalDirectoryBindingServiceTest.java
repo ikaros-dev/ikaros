@@ -8,6 +8,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -40,6 +41,7 @@ import run.ikaros.server.store.repository.DirectoryBindingWorkflowRepository;
 import run.ikaros.server.store.repository.TaskRepository;
 
 /** 本地目录绑定确认与重扫的幂等性测试. */
+@org.jspecify.annotations.NullUnmarked
 class DefaultLocalDirectoryBindingServiceTest {
     @Mock
     private LocalMediaScanner localMediaScanner;
@@ -101,6 +103,8 @@ class DefaultLocalDirectoryBindingServiceTest {
 
         when(localMediaScanner.scan(any())).thenReturn(Mono.just(preview), Mono.just(preview),
             Mono.just(emptyPreview));
+        when(subjectService.findById(subjectId)).thenReturn(Mono.just(
+            new Subject().setId(subjectId).setType(SubjectType.VIDEO)));
         when(workflowRepository.findLocalWorkflow(
             directoryId, subjectId, LocalMediaMode.EPISODE.name()))
             .thenAnswer(invocation -> Mono.justOrEmpty(storedWorkflow.get()));
@@ -151,6 +155,8 @@ class DefaultLocalDirectoryBindingServiceTest {
 
         when(localMediaScanner.scan(any())).thenReturn(
             Mono.just(preview(directoryId, videoId, null)));
+        when(subjectService.findById(subjectId)).thenReturn(Mono.just(
+            new Subject().setId(subjectId).setType(SubjectType.VIDEO)));
         when(workflowRepository.findLocalWorkflow(
             directoryId, subjectId, LocalMediaMode.EPISODE.name()))
             .thenReturn(Mono.just(workflow));
@@ -175,7 +181,7 @@ class DefaultLocalDirectoryBindingServiceTest {
         UUID subjectId = UUID.randomUUID();
         UUID videoId = UUID.randomUUID();
         UUID episodeId = UUID.randomUUID();
-        Subject requestedSubject = new Subject();
+        Subject requestedSubject = new Subject().setType(SubjectType.VIDEO);
         Subject createdSubject = new Subject().setId(subjectId);
         AttachmentReference reference = AttachmentReference.builder()
             .type(AttachmentReferenceType.EPISODE).attachmentId(videoId)
@@ -250,32 +256,185 @@ class DefaultLocalDirectoryBindingServiceTest {
     }
 
     @Test
-    void confirmAudioShouldRequireMusicSubject() {
-        UUID directoryId = UUID.randomUUID();
-        UUID audioId = UUID.randomUUID();
-        LocalScanPreview preview = LocalScanPreview.builder().directoryId(directoryId)
-            .mode(LocalMediaMode.AUDIO)
-            .items(List.of(LocalScanItem.builder().attachmentId(audioId)
-                .relativePath("Track 1.flac").physicalType(MediaPhysicalType.AUDIO)
-                .role(MediaRole.PRIMARY).build()))
-            .build();
-        when(localMediaScanner.scan(any())).thenReturn(Mono.just(preview));
+    void confirmShouldAcceptExistingSubjectTypeMatrix() {
+        stubSuccessfulConfirmation();
 
-        Subject anime = new Subject().setType(SubjectType.ANIME);
-        assertThatThrownBy(() -> service.confirm(LocalScanConfirmRequest.builder()
-            .directoryId(directoryId).mode(LocalMediaMode.AUDIO).subject(anime).build()).block())
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("只能创建音乐条目");
+        for (LocalMediaMode mode : LocalMediaMode.values()) {
+            for (SubjectType subjectType : SubjectType.values()) {
+                if (!isAllowed(mode, subjectType)) {
+                    continue;
+                }
+                UUID subjectId = UUID.randomUUID();
+                when(subjectService.findById(subjectId)).thenReturn(Mono.just(
+                    new Subject().setId(subjectId).setType(subjectType)));
 
-        UUID subjectId = UUID.randomUUID();
-        when(subjectService.findById(subjectId)).thenReturn(Mono.just(anime.setId(subjectId)));
-        assertThatThrownBy(() -> service.confirm(LocalScanConfirmRequest.builder()
-            .directoryId(directoryId).mode(LocalMediaMode.AUDIO).subjectId(subjectId)
-            .build()).block())
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("只能绑定音乐条目");
+                DirectoryBindingWorkflowEntity workflow = service.confirm(
+                    LocalScanConfirmRequest.builder().directoryId(UUID.randomUUID()).mode(mode)
+                        .subjectId(subjectId).build()).block();
+
+                assertThat(workflow.getSubjectId()).isEqualTo(subjectId);
+            }
+        }
+
         verify(subjectService, never()).create(any());
+        verify(taskService, times(5)).submit(any());
+    }
+
+    @Test
+    void confirmShouldAcceptNewSubjectTypeMatrix() {
+        stubSuccessfulConfirmation();
+        when(subjectService.create(any())).thenAnswer(invocation -> Mono.just(
+            invocation.<Subject>getArgument(0).setId(UUID.randomUUID())));
+
+        for (LocalMediaMode mode : LocalMediaMode.values()) {
+            for (SubjectType subjectType : SubjectType.values()) {
+                if (!isAllowed(mode, subjectType)) {
+                    continue;
+                }
+                Subject subject = new Subject().setType(subjectType);
+
+                DirectoryBindingWorkflowEntity workflow = service.confirm(
+                    LocalScanConfirmRequest.builder().directoryId(UUID.randomUUID()).mode(mode)
+                        .subject(subject).build()).block();
+
+                assertThat(workflow.getSubjectId()).isEqualTo(subject.getId());
+            }
+        }
+
+        verify(subjectService, times(5)).create(any());
+        verify(taskService, times(5)).submit(any());
+    }
+
+    @Test
+    void confirmShouldRejectExistingSubjectTypeMatrixWithoutSideEffects() {
+        stubModePreview();
+
+        for (LocalMediaMode mode : LocalMediaMode.values()) {
+            for (SubjectType subjectType : subjectTypesIncludingNull()) {
+                if (isAllowed(mode, subjectType)) {
+                    continue;
+                }
+                UUID subjectId = UUID.randomUUID();
+                when(subjectService.findById(subjectId)).thenReturn(Mono.just(
+                    new Subject().setId(subjectId).setType(subjectType)));
+
+                assertThatThrownBy(() -> service.confirm(LocalScanConfirmRequest.builder()
+                    .directoryId(UUID.randomUUID()).mode(mode).subjectId(subjectId)
+                    .build()).block())
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("扫描模式 " + mode)
+                    .hasMessageContaining("只允许条目类型 " + allowedTypeNames(mode))
+                    .hasMessageContaining("实际类型为 "
+                        + (subjectType == null ? "null" : subjectType.name()));
+            }
+        }
+
+        verifyNoImportSideEffects();
+    }
+
+    @Test
+    void confirmShouldRejectNewSubjectTypeMatrixWithoutSideEffects() {
+        stubModePreview();
+
+        for (LocalMediaMode mode : LocalMediaMode.values()) {
+            for (SubjectType subjectType : subjectTypesIncludingNull()) {
+                if (isAllowed(mode, subjectType)) {
+                    continue;
+                }
+
+                assertThatThrownBy(() -> service.confirm(LocalScanConfirmRequest.builder()
+                    .directoryId(UUID.randomUUID()).mode(mode)
+                    .subject(new Subject().setType(subjectType)).build()).block())
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("扫描模式 " + mode)
+                    .hasMessageContaining("只允许条目类型 " + allowedTypeNames(mode))
+                    .hasMessageContaining("实际类型为 "
+                        + (subjectType == null ? "null" : subjectType.name()));
+            }
+        }
+
+        verifyNoImportSideEffects();
+    }
+
+    @Test
+    void confirmShouldRejectMissingExistingSubjectWithoutSideEffects() {
+        stubModePreview();
+
+        for (LocalMediaMode mode : LocalMediaMode.values()) {
+            UUID subjectId = UUID.randomUUID();
+            when(subjectService.findById(subjectId)).thenReturn(Mono.empty());
+
+            assertThatThrownBy(() -> service.confirm(LocalScanConfirmRequest.builder()
+                .directoryId(UUID.randomUUID()).mode(mode).subjectId(subjectId)
+                .build()).block())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("未找到条目")
+                .hasMessageContaining(subjectId.toString());
+        }
+
+        verifyNoImportSideEffects();
+    }
+
+    private void stubSuccessfulConfirmation() {
+        stubModePreview();
+        when(workflowRepository.findLocalWorkflow(any(), any(), any())).thenReturn(Mono.empty());
+        when(workflowRepository.insert(any()))
+            .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(workflowRepository.update(any()))
+            .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(attachmentReferenceService.findAllByTypeAndAttachmentId(any(), any()))
+            .thenReturn(Flux.empty());
+        when(episodeService.save(any())).thenAnswer(invocation -> Mono.just(
+            invocation.<Episode>getArgument(0).setId(UUID.randomUUID())));
+        when(attachmentReferenceService.save(any()))
+            .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(taskService.submit(any())).thenReturn(Mono.empty());
+    }
+
+    private void stubModePreview() {
+        when(localMediaScanner.scan(any())).thenAnswer(invocation -> {
+            LocalScanPreviewRequest request = invocation.getArgument(0);
+            MediaPhysicalType physicalType = switch (request.getMode()) {
+                case EPISODE -> MediaPhysicalType.VIDEO;
+                case AUDIO -> MediaPhysicalType.AUDIO;
+                case IMAGE -> MediaPhysicalType.IMAGE;
+            };
+            LocalScanItem item = LocalScanItem.builder().attachmentId(UUID.randomUUID())
+                .relativePath("media-file").physicalType(physicalType)
+                .role(MediaRole.PRIMARY).build();
+            return Mono.just(LocalScanPreview.builder().directoryId(request.getDirectoryId())
+                .mode(request.getMode()).items(List.of(item)).build());
+        });
+    }
+
+    private void verifyNoImportSideEffects() {
+        verify(subjectService, never()).create(any());
+        verify(episodeService, never()).save(any());
+        verify(attachmentReferenceService, never()).save(any());
+        verify(workflowRepository, never()).insert(any());
+        verify(workflowRepository, never()).update(any());
         verify(taskService, never()).submit(any());
+    }
+
+    private SubjectType[] subjectTypesIncludingNull() {
+        return Arrays.copyOf(SubjectType.values(), SubjectType.values().length + 1);
+    }
+
+    private boolean isAllowed(LocalMediaMode mode, SubjectType subjectType) {
+        return switch (mode) {
+            case EPISODE -> subjectType == SubjectType.VIDEO
+                || subjectType == SubjectType.ANIME || subjectType == SubjectType.REAL;
+            case AUDIO -> subjectType == SubjectType.MUSIC;
+            case IMAGE -> subjectType == SubjectType.COMIC;
+        };
+    }
+
+    private String allowedTypeNames(LocalMediaMode mode) {
+        return switch (mode) {
+            case EPISODE -> "VIDEO、ANIME、REAL";
+            case AUDIO -> "MUSIC";
+            case IMAGE -> "COMIC";
+        };
     }
 
     private LocalScanPreview preview(UUID directoryId, UUID videoId, UUID subtitleId) {

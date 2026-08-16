@@ -21,6 +21,7 @@ import run.ikaros.server.store.repository.EpisodeRepository;
 @SpringBootTest
 @Testcontainers
 @Import(IkarosTestcontainersConfiguration.class)
+@org.jspecify.annotations.NullUnmarked
 class EpisodeCollectionServiceTest {
 
     @Autowired

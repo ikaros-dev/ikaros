@@ -20,6 +20,7 @@ import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.repository.EpisodeCollectionRepository;
 import run.ikaros.server.store.repository.EpisodeRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class EpisodeCollectionServiceImplTest {
 
     @Mock

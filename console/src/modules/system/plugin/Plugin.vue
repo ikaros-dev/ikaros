@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { apiClient } from '@/utils/api-client';
-import { ArrowDown, More, Search } from '@element-plus/icons-vue';
+import {
+	Delete,
+	Document,
+	Refresh,
+	RefreshLeft,
+	Top,
+	Search,
+} from '@element-plus/icons-vue';
 import {
 	Plugin,
 	V1PluginApiOperatePluginStateByIdRequest,
@@ -8,22 +15,21 @@ import {
 
 import PluginUploadDrawer from './PluginUploadDrawer.vue';
 import type { AxiosResponse } from 'axios';
-import { onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import {
 	ElAvatar,
 	ElButton,
+	ElButtonGroup,
 	ElCol,
-	ElDropdown,
-	ElDropdownItem,
-	ElDropdownMenu,
-	ElIcon,
 	ElInput,
 	ElMessage,
 	ElMessageBox,
 	ElPagination,
 	ElRow,
+	ElSegmented,
 	ElTable,
 	ElTableColumn,
+	ElTag,
 } from 'element-plus';
 import router from '@/router';
 import { useI18n } from 'vue-i18n';
@@ -39,7 +45,6 @@ interface PluginSearch {
 	hasPrevious?: boolean;
 	hasNext?: boolean;
 	name: string;
-	state: string;
 }
 
 const defaultPluginLogoUrl = 'https://ikaros.run/logo.png';
@@ -49,7 +54,6 @@ const pluginSearch = ref<PluginSearch>({
 	size: 10,
 	total: 1,
 	name: '',
-	state: 'ALL',
 });
 
 const onCurrentPageChange = (val: number) => {
@@ -57,32 +61,65 @@ const onCurrentPageChange = (val: number) => {
 	getPluginsFromServer();
 };
 
-const stateStrMap: Map<string, string> = new Map([
-	['ALL', t('module.plugin.label.state.all')],
-	['STARTED', t('module.plugin.label.state.started')],
-	['STOPPED', t('module.plugin.label.state.stopped')],
-	['CREATED', t('module.plugin.label.state.created')],
-	['DISABLED', t('module.plugin.label.state.disabled')],
-	['RESOLVED', t('module.plugin.label.state.resolved')],
-	['FAILED', t('module.plugin.label.state.failed')],
-]);
-
-const onPluginSearchStateChange = (command: string | number | object) => {
-	pluginSearch.value.state = command as string;
-};
-
-const filterPluginSearchState = (): string | undefined => {
-	const state: string = pluginSearch.value.state as string;
-	return stateStrMap.get(state);
-};
-
 const plugins = ref<Plugin[]>();
+const pluginTableRef = ref<InstanceType<typeof ElTable>>();
+const selectedPluginName = ref<string>();
+const expandedPluginNames = computed(() =>
+	selectedPluginName.value ? [selectedPluginName.value] : []
+);
+
+const runtimeOptions = [
+	{ label: t('module.plugin.table.operate.start'), value: 'START' },
+	{ label: t('module.plugin.table.operate.stop'), value: 'STOP' },
+];
+const availabilityOptions = [
+	{ label: t('module.plugin.table.operate.enable'), value: 'ENABLE' },
+	{ label: t('module.plugin.table.operate.disable'), value: 'DISABLE' },
+];
+
+const onCurrentPluginChange = (plugin?: Plugin) => {
+	selectedPluginName.value = plugin?.name as string | undefined;
+};
+
+const runtimeValue = (plugin: Plugin) =>
+	plugin.state === 'STARTED' ? 'START' : 'STOP';
+
+const availabilityValue = (plugin: Plugin) =>
+	plugin.state === 'DISABLED' ? 'DISABLE' : 'ENABLE';
+
+const runtimeLabel = (plugin: Plugin) => {
+	if (plugin.state === 'DISABLED') {
+		return '';
+	}
+	if (plugin.state === 'STARTED') {
+		return t('module.plugin.table.state.started');
+	}
+	if (plugin.state === 'FAILED') {
+		return t('module.plugin.table.state.failed');
+	}
+	return t('module.plugin.table.state.stopped');
+};
+
+const runtimeTagType = (plugin: Plugin) => {
+	if (plugin.state === 'STARTED') {
+		return 'success';
+	}
+	if (plugin.state === 'FAILED') {
+		return 'danger';
+	}
+	return 'info';
+};
+
 const getPluginsFromServer = async () => {
 	const { data } = await apiClient.plugin.getPluginsByPaging({
 		page: pluginSearch.value.page + '',
 		size: pluginSearch.value.size + '',
 	});
 	plugins.value = data.items as Plugin[];
+	const firstPlugin = plugins.value[0];
+	selectedPluginName.value = firstPlugin?.name as string | undefined;
+	await nextTick();
+	pluginTableRef.value?.setCurrentRow(firstPlugin);
 	pluginSearch.value.page = data.page;
 	pluginSearch.value.size = data.size;
 	pluginSearch.value.total = data.total;
@@ -399,6 +436,28 @@ const toPluginDetails = (pluginName: string) => {
 	router.push('/plugin/' + pluginName + '/details');
 };
 
+const changeRuntimeState = (
+	value: string | number | boolean,
+	plugin: Plugin
+) => {
+	if (value === 'START') {
+		startPlugin(plugin.name);
+	} else {
+		stopPlugin(plugin.name);
+	}
+};
+
+const changeAvailabilityState = (
+	value: string | number | boolean,
+	plugin: Plugin
+) => {
+	if (value === 'ENABLE') {
+		enablePlugin(plugin.name);
+	} else {
+		disablePlugin(plugin.name);
+	}
+};
+
 onMounted(getPluginsFromServer);
 </script>
 
@@ -449,56 +508,73 @@ onMounted(getPluginsFromServer);
 			<el-button plain @click="pluginUploadDrawerVisible = true">
 				{{ t('module.plugin.search.button.install-plugin') }}
 			</el-button>
-
-			&nbsp;&nbsp;
-			<el-dropdown
-				disabled
-				size="large"
-				trigger="click"
-				style="
-					cursor: not-allowed;
-					vertical-align: middle;
-					line-height: 40px;
-					display: inline-block;
-				"
-				@command="onPluginSearchStateChange"
-			>
-				<span>
-					{{ filterPluginSearchState() }}
-					<el-icon>
-						<arrow-down />
-					</el-icon>
-				</span>
-				<template #dropdown>
-					<el-dropdown-menu>
-						<el-dropdown-item command="ALL" disabled>
-							{{ t('module.plugin.search.dropdown.all') }}
-						</el-dropdown-item>
-						<el-dropdown-item command="STARTED" disabled>
-							{{ t('module.plugin.search.dropdown.started') }}
-						</el-dropdown-item>
-						<el-dropdown-item command="STOPPED" disabled>
-							{{ t('module.plugin.search.dropdown.stoppedd') }}
-						</el-dropdown-item>
-						<el-dropdown-item command="RESOLVED" disabled>
-							{{ t('module.plugin.search.dropdown.resolved') }}
-						</el-dropdown-item>
-						<el-dropdown-item command="DISABLED" disabled>
-							{{ t('module.plugin.search.dropdown.disabled') }}
-						</el-dropdown-item>
-						<el-dropdown-item command="CREATED" disabled>
-							{{ t('module.plugin.search.dropdown.created') }}
-						</el-dropdown-item>
-						<el-dropdown-item command="FAILED" disabled>
-							{{ t('module.plugin.search.dropdown.failed') }}
-						</el-dropdown-item>
-					</el-dropdown-menu>
-				</template>
-			</el-dropdown>
 		</el-col>
 	</el-row>
 
-	<el-table :data="plugins" style="width: 100%">
+	<el-table
+		ref="pluginTableRef"
+		:data="plugins"
+		row-key="name"
+		highlight-current-row
+		:expand-row-keys="expandedPluginNames"
+		style="width: 100%"
+		@current-change="onCurrentPluginChange"
+	>
+		<el-table-column
+			type="expand"
+			width="1"
+			class-name="plugin-expand-column"
+			label-class-name="plugin-expand-column"
+		>
+			<template #default="scope">
+				<div class="plugin-actions">
+					<el-button
+						plain
+						:icon="Document"
+						@click="toPluginDetails(scope.row.name)"
+					>
+						{{ t('module.plugin.table.operate.details') }}
+					</el-button>
+
+					<el-segmented
+						:model-value="runtimeValue(scope.row)"
+						:options="runtimeOptions"
+						:disabled="scope.row.state === 'DISABLED'"
+						@change="changeRuntimeState($event, scope.row)"
+					/>
+
+					<el-segmented
+						:model-value="availabilityValue(scope.row)"
+						:options="availabilityOptions"
+						@change="changeAvailabilityState($event, scope.row)"
+					/>
+
+					<el-button-group>
+						<el-button :icon="Refresh" @click="reloadPlugin(scope.row.name)">
+							{{ t('module.plugin.table.operate.reload') }}
+						</el-button>
+						<el-button :icon="Top" @click="upgradePlugin(scope.row)">
+							{{ t('module.plugin.table.operate.upgrade') }}
+						</el-button>
+					</el-button-group>
+
+					<el-button-group>
+						<el-button
+							plain
+							type="danger"
+							:icon="Delete"
+							@click="deletePlugin(scope.row.name)"
+						>
+							{{ t('module.plugin.table.operate.delete') }}
+						</el-button>
+						<el-button disabled :icon="RefreshLeft">
+							{{ t('module.plugin.table.operate.reset') }}
+						</el-button>
+					</el-button-group>
+				</div>
+			</template>
+		</el-table-column>
+
 		<el-table-column
 			prop="logo"
 			:label="t('module.plugin.table.label.icon')"
@@ -541,81 +617,62 @@ onMounted(getPluginsFromServer);
 		/>
 		<el-table-column
 			prop="state"
-			:label="t('module.plugin.table.label.state')"
-			align="right"
-			width="100"
+			:label="t('module.plugin.table.label.runtime')"
+			align="center"
+			width="110"
 		>
 			<template #default="scope">
-				{{ stateStrMap.get(scope.row.state) }}
+				<el-tag
+					v-if="scope.row.state !== 'DISABLED'"
+					:type="runtimeTagType(scope.row)"
+					effect="plain"
+				>
+					{{ runtimeLabel(scope.row) }}
+				</el-tag>
 			</template>
 		</el-table-column>
 		<el-table-column
-			align="right"
-			:label="t('module.plugin.table.label.operate')"
-			width="80"
+			align="center"
+			:label="t('module.plugin.table.label.availability')"
+			width="110"
 		>
 			<template #default="scope">
-				<el-dropdown style="cursor: pointer" trigger="click">
-					<el-icon size="30">
-						<More />
-					</el-icon>
-					<template #dropdown>
-						<el-dropdown-menu>
-							<el-dropdown-item @click="toPluginDetails(scope.row.name)">
-								{{ t('module.plugin.table.operate.details') }}
-							</el-dropdown-item>
-							<el-dropdown-item
-								divided
-								:disabled="scope.row.state === 'STARTED'"
-								@click="startPlugin(scope.row.name)"
-							>
-								{{ t('module.plugin.table.operate.start') }}
-							</el-dropdown-item>
-
-							<el-dropdown-item
-								:disabled="scope.row.state === 'STOPPED'"
-								@click="stopPlugin(scope.row.name)"
-							>
-								{{ t('module.plugin.table.operate.stop') }}
-							</el-dropdown-item>
-
-							<el-dropdown-item
-								divided
-								:disabled="scope.row.state !== 'DISABLED'"
-								@click="enablePlugin(scope.row.name)"
-							>
-								{{ t('module.plugin.table.operate.enable') }}
-							</el-dropdown-item>
-
-							<el-dropdown-item
-								:disabled="scope.row.state === 'DISABLED'"
-								@click="disablePlugin(scope.row.name)"
-							>
-								{{ t('module.plugin.table.operate.disable') }}
-							</el-dropdown-item>
-
-							<el-dropdown-item divided @click="reloadPlugin(scope.row.name)">
-								{{ t('module.plugin.table.operate.reload') }}
-							</el-dropdown-item>
-							<el-dropdown-item @click="upgradePlugin(scope.row)">
-								{{ t('module.plugin.table.operate.upgrade') }}
-							</el-dropdown-item>
-							<el-dropdown-item
-								style="width: 170; color: red"
-								divided
-								@click="deletePlugin(scope.row.name)"
-							>
-								{{ t('module.plugin.table.operate.delete') }}
-							</el-dropdown-item>
-							<el-dropdown-item style="width: 170; color: red" disabled>
-								{{ t('module.plugin.table.operate.reset') }}
-							</el-dropdown-item>
-						</el-dropdown-menu>
-					</template>
-				</el-dropdown>
+				<el-tag
+					:type="scope.row.state === 'DISABLED' ? 'info' : 'success'"
+					effect="plain"
+				>
+					{{
+						t(
+							scope.row.state === 'DISABLED'
+								? 'module.plugin.table.state.disabled'
+								: 'module.plugin.table.state.enabled'
+						)
+					}}
+				</el-tag>
 			</template>
 		</el-table-column>
 	</el-table>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.plugin-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 16px;
+}
+
+:deep(.plugin-expand-column) {
+	padding: 0 !important;
+}
+
+:deep(.plugin-expand-column .cell) {
+	width: 0;
+	padding: 0;
+	overflow: hidden;
+}
+
+:deep(.el-table__expanded-cell) {
+	padding: 12px;
+}
+</style>

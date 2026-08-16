@@ -13,6 +13,7 @@ import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.server.store.entity.EpisodeEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class EpisodeRemoveEventListenerTest {
 
     private AttachmentReferenceRepository attachmentReferenceRepository;

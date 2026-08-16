@@ -1,5 +1,8 @@
 package run.ikaros.server.core.actuator;
 
+import static run.ikaros.api.core.attachment.AttachmentConst.COVER_DIRECTORY_ID;
+import static run.ikaros.api.core.attachment.AttachmentConst.DOWNLOAD_DIRECTORY_ID;
+import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
 import static run.ikaros.api.store.enums.CollectionType.DISCARD;
 import static run.ikaros.api.store.enums.CollectionType.DOING;
 import static run.ikaros.api.store.enums.CollectionType.DONE;
@@ -12,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
-import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.server.store.repository.AttachmentRepository;
 import run.ikaros.server.store.repository.CharacterRepository;
@@ -47,35 +49,39 @@ public class IkarosAppInfoContributor implements InfoContributor {
     @Override
     public void contribute(Info.Builder builder) {
         Map<String, Object> attachmentMap = new HashMap<>();
-        attachmentMap.put("total", attachmentRepository.count().block());
-        attachmentMap.put("file", attachmentRepository.countByType(AttachmentType.File).block());
-        attachmentMap.put("folder",
-            attachmentRepository.countByType(AttachmentType.Directory).block());
+        attachmentMap.put("file", attachmentRepository.countKnownFiles().block());
+        attachmentMap.put("folder", attachmentRepository.countKnownFolders(
+            ROOT_DIRECTORY_ID, COVER_DIRECTORY_ID, DOWNLOAD_DIRECTORY_ID).block());
 
         Map<String, Object> subjectMap = new HashMap<>();
-        subjectMap.put("total", subjectRepository.count().block());
-        subjectMap.put("anime", subjectRepository.countByType(SubjectType.ANIME).block());
-        subjectMap.put("comic", subjectRepository.countByType(SubjectType.COMIC).block());
-        subjectMap.put("game", subjectRepository.countByType(SubjectType.GAME).block());
-        subjectMap.put("music", subjectRepository.countByType(SubjectType.MUSIC).block());
-        subjectMap.put("novel", subjectRepository.countByType(SubjectType.NOVEL).block());
-        subjectMap.put("real", subjectRepository.countByType(SubjectType.REAL).block());
-        subjectMap.put("other", subjectRepository.countByType(SubjectType.OTHER).block());
+        subjectMap.put("total", subjectRepository.countActive().block());
+        subjectMap.put("anime", subjectRepository.countActiveByType(SubjectType.ANIME).block());
+        subjectMap.put("comic", subjectRepository.countActiveByType(SubjectType.COMIC).block());
+        subjectMap.put("game", subjectRepository.countActiveByType(SubjectType.GAME).block());
+        subjectMap.put("music", subjectRepository.countActiveByType(SubjectType.MUSIC).block());
+        subjectMap.put("novel", subjectRepository.countActiveByType(SubjectType.NOVEL).block());
+        subjectMap.put("real", subjectRepository.countActiveByType(SubjectType.REAL).block());
+        subjectMap.put("video", subjectRepository.countActiveByType(SubjectType.VIDEO).block());
+        subjectMap.put("other", subjectRepository.countActiveByType(SubjectType.OTHER).block());
 
         Map<String, Object> subjectCollectionMap = new HashMap<>();
-        subjectCollectionMap.put("total", subjectCollectionRepository.count().block());
-        subjectCollectionMap.put("wish", subjectCollectionRepository.countByType(WISH).block());
-        subjectCollectionMap.put("doing", subjectCollectionRepository.countByType(DOING).block());
-        subjectCollectionMap.put("done", subjectCollectionRepository.countByType(DONE).block());
-        subjectCollectionMap.put("shelve", subjectCollectionRepository.countByType(SHELVE).block());
+        subjectCollectionMap.put("total", subjectCollectionRepository.countActive().block());
+        subjectCollectionMap.put("wish",
+            subjectCollectionRepository.countActiveByType(WISH).block());
+        subjectCollectionMap.put("doing",
+            subjectCollectionRepository.countActiveByType(DOING).block());
+        subjectCollectionMap.put("done",
+            subjectCollectionRepository.countActiveByType(DONE).block());
+        subjectCollectionMap.put("shelve",
+            subjectCollectionRepository.countActiveByType(SHELVE).block());
         subjectCollectionMap.put("discard",
-            subjectCollectionRepository.countByType(DISCARD).block());
+            subjectCollectionRepository.countActiveByType(DISCARD).block());
 
         Map<String, Object> characterMap = new HashMap<>();
-        characterMap.put("total", characterRepository.count().block());
+        characterMap.put("total", characterRepository.countActive().block());
 
         Map<String, Object> personMap = new HashMap<>();
-        personMap.put("total", personRepository.count().block());
+        personMap.put("total", personRepository.countActive().block());
 
         Map<String, Object> detailsMap = new HashMap<>();
         detailsMap.put("attachment", attachmentMap);

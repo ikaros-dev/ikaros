@@ -8,7 +8,10 @@ plugins {
     id "io.freefair.lombok" version "8.14.3"
     id "com.github.node-gradle.node" version "7.1.0"
     id 'org.jetbrains.kotlin.jvm'
+    id 'net.ltgt.errorprone'
 }
+
+apply from: rootProject.file('gradle/nullmarked-packages.gradle')
 
 group = "run.ikaros.server"
 
@@ -72,6 +75,8 @@ ext {
 }
 
 dependencies {
+    errorprone 'com.google.errorprone:error_prone_core:2.36.0'
+    errorprone 'com.uber.nullaway:nullaway:0.12.7'
     implementation project(':api')
     implementation 'org.mp4parser:isoparser:1.9.41'
 
@@ -178,6 +183,13 @@ build {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    options.errorprone {
+        disableWarningsInGeneratedCode = true
+        disableAllChecks = true
+        check('NullAway', net.ltgt.gradle.errorprone.CheckSeverity.ERROR)
+        option('NullAway:JSpecifyMode', 'true')
+        option('NullAway:OnlyNullMarked', 'true')
+    }
 }
 
 tasks.named('test') {
@@ -204,4 +216,3 @@ tasks.named('jacocoTestReport') {
 kotlin {
     jvmToolchain(21)
 }
-

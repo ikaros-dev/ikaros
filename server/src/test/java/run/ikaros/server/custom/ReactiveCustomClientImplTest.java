@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.UUID;
+import org.jspecify.annotations.NullUnmarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -18,6 +19,7 @@ import run.ikaros.server.store.entity.CustomMetadataEntity;
 import run.ikaros.server.store.repository.CustomMetadataRepository;
 import run.ikaros.server.store.repository.CustomRepository;
 
+@NullUnmarked
 class ReactiveCustomClientImplTest {
 
     @Mock

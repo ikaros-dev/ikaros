@@ -1,5 +1,6 @@
 package run.ikaros.server.core.episode.sequence;
 
+import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.core.episode.EpisodeSequenceRegular;
@@ -16,7 +17,8 @@ public interface EpisodeSequenceRegularService {
 
     Flux<EpisodeSequenceRegular> findAll();
 
-    Mono<PagingWrap<EpisodeSequenceRegular>> findAll(Integer page, Integer size);
+    Mono<PagingWrap<EpisodeSequenceRegular>> findAll(@Nullable Integer page,
+                                                     @Nullable Integer size);
 
     Mono<EpisodeSequenceRegularResult> match(String attachmentName);
 }

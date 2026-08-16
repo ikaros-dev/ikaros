@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.server.store.entity.SubjectEntity;
 
+@org.jspecify.annotations.NullUnmarked
 class SubjectAddEventTest {
 
     private SubjectEntity buildSubjectEntity() {

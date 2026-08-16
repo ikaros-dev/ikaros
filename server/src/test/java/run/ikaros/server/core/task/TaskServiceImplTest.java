@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
+import org.jspecify.annotations.NullUnmarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -19,6 +20,7 @@ import run.ikaros.api.store.enums.TaskStatus;
 import run.ikaros.server.store.entity.TaskEntity;
 import run.ikaros.server.store.repository.TaskRepository;
 
+@NullUnmarked
 class TaskServiceImplTest {
 
     @Mock

@@ -17,6 +17,7 @@ import run.ikaros.api.core.subject.SubjectRecord;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.server.core.meta.MetaInfoService;
 
+@org.jspecify.annotations.NullUnmarked
 class MetaInfoEndpointTest {
 
     @Mock

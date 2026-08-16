@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jspecify.annotations.Nullable;
 import run.ikaros.api.store.enums.AttachmentDriverType;
 
 @Data
@@ -21,7 +22,7 @@ import run.ikaros.api.store.enums.AttachmentDriverType;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class AttachmentDriver {
-    private UUID id;
+    private @Nullable UUID id;
     /**
      * enable current attachment driver.
      */
@@ -29,40 +30,40 @@ public class AttachmentDriver {
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     private boolean enable;
     @Schema(requiredMode = REQUIRED, defaultValue = "LOCAL")
-    private AttachmentDriverType type;
-    private String name;
+    private @Nullable AttachmentDriverType type;
+    private @Nullable String name;
     @JsonProperty("mount_name")
-    private String mountName;
+    private @Nullable String mountName;
     /**
      * driver remote relative path or sub dir id, null or empty is root dir.
      */
     @JsonProperty("remote_path")
-    private String remotePath;
-    private Long order;
-    private String comment;
+    private @Nullable String remotePath;
+    private @Nullable Long order;
+    private @Nullable String comment;
     @JsonProperty("refresh_token")
-    private String refreshToken;
+    private @Nullable String refreshToken;
     @JsonProperty("access_token")
-    private String accessToken;
+    private @Nullable String accessToken;
     @JsonProperty("expire_time")
-    private LocalDateTime expireTime;
+    private @Nullable LocalDateTime expireTime;
     @JsonProperty("list_page_size")
-    private Long listPageSize;
+    private @Nullable Long listPageSize;
     @JsonProperty("root_dir_id")
-    private String rootDirId;
+    private @Nullable String rootDirId;
     /**
      * api request limit r/1s, default 0.1 r/1s.
      */
     @JsonProperty("request_limit")
-    private Double requestLimit;
+    private @Nullable Double requestLimit;
 
     @JsonProperty("user_id")
-    private UUID userId;
+    private @Nullable UUID userId;
     @JsonProperty("user_name")
-    private String username;
-    private String avatar;
+    private @Nullable String username;
+    private @Nullable String avatar;
     @JsonProperty("space_total")
-    private Long spaceTotal;
+    private @Nullable Long spaceTotal;
     @JsonProperty("space_use")
-    private Long spaceUse;
+    private @Nullable Long spaceUse;
 }

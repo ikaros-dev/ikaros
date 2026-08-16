@@ -49,8 +49,8 @@ export function getBrowserLanguage(): string {
 	return language in messages ? language : 'zh-CN';
 }
 
-export function changeI18nLocal(val) {
-	i18n.global.locale = val;
+export function changeI18nLocal(locale: string): void {
+	i18n.global.locale.value = locale;
 }
 
 export function setupI18n(app: App) {

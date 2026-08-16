@@ -3,6 +3,7 @@ package run.ikaros.server.custom;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Predicate;
+import org.jspecify.annotations.NullUnmarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import run.ikaros.api.infra.exception.NotFoundException;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 
+@NullUnmarked
 @SpringBootTest
 @Testcontainers
 @Import(IkarosTestcontainersConfiguration.class)

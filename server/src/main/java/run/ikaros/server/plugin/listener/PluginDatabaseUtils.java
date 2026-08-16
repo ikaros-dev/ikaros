@@ -49,7 +49,8 @@ public class PluginDatabaseUtils {
         Plugin plugin = getPluginByDescriptor(pluginId, pluginManager, pluginWrapper);
 
         if (StringUtils.isNotBlank(plugin.getConfigMapSchemas())) {
-            savePluginConfigMap(plugin.getConfigMapSchemas(), customClient, pluginId)
+            savePluginConfigMap(java.util.Objects.requireNonNull(plugin.getConfigMapSchemas()),
+                    customClient, pluginId)
                 .subscribeOn(Schedulers.boundedElastic()).subscribe();
         }
 
@@ -153,7 +154,8 @@ public class PluginDatabaseUtils {
         plugin.setEntry(jsBundlePath);
         // Console bundle style css.
         String cssBundlePath =
-            BundleResourceUtils.getCssBundlePath(pluginManager, plugin.getName());
+            BundleResourceUtils.getCssBundlePath(pluginManager,
+                java.util.Objects.requireNonNull(plugin.getName()));
         plugin.setStylesheet(cssBundlePath);
     }
 

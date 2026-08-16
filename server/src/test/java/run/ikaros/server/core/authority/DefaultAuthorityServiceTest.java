@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.UUID;
+import org.jspecify.annotations.NullUnmarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -21,6 +22,7 @@ import run.ikaros.api.store.enums.AuthorityType;
 import run.ikaros.server.store.entity.AuthorityEntity;
 import run.ikaros.server.store.repository.AuthorityRepository;
 
+@NullUnmarked
 class DefaultAuthorityServiceTest {
 
     private AuthorityRepository authorityRepository;

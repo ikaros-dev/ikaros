@@ -4,6 +4,7 @@ import static org.springdoc.core.fn.builders.apiresponse.Builder.responseBuilder
 import static org.springdoc.core.fn.builders.requestbody.Builder.requestBodyBuilder;
 
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.parameter.Builder;
@@ -11,9 +12,7 @@ import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -28,7 +27,6 @@ import run.ikaros.server.core.user.UpdateUserRequest;
 import run.ikaros.server.core.user.User;
 import run.ikaros.server.core.user.UserService;
 import run.ikaros.server.endpoint.CoreEndpoint;
-import run.ikaros.server.store.entity.BaseEntity;
 import run.ikaros.server.store.entity.UserEntity;
 
 @Slf4j
@@ -142,8 +140,8 @@ public class UserMeEndpoint implements CoreEndpoint {
         return ReactiveSecurityContextHolder.getContext()
             .switchIfEmpty(Mono.error(
                 new AuthenticationCredentialsNotFoundException("Not found, please login")))
-            .map(SecurityContext::getAuthentication)
-            .map(Authentication::getPrincipal)
+            .flatMap(context -> Mono.justOrEmpty(context.getAuthentication()))
+            .flatMap(authentication -> Mono.justOrEmpty(authentication.getPrincipal()))
             .map(principal -> (UserDetails) principal)
             .map(UserDetails::getUsername)
             .flatMap(userService::getUserByUsername)
@@ -179,7 +177,7 @@ public class UserMeEndpoint implements CoreEndpoint {
             .onErrorResume(NotFoundException.class,
                 e -> ServerResponse.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(e.getMessage()))
+                    .bodyValue(Objects.toString(e.getMessage(), e.toString())))
             .onErrorResume(IllegalArgumentException.class,
                 e -> ServerResponse.badRequest()
                     .bodyValue("No user id. exception msg:" + e.getMessage()));
@@ -192,7 +190,7 @@ public class UserMeEndpoint implements CoreEndpoint {
             .map(UserEntity::getUsername)
             .flatMap(userService::getUserByUsername)
             .map(User::entity)
-            .map(BaseEntity::getId)
+            .flatMap(entity -> Mono.justOrEmpty(entity.getId()))
             .flatMap(userId -> userService.updateUsername(userId, newUsername))
             .then(ServerResponse.ok().build());
     }
@@ -218,9 +216,14 @@ public class UserMeEndpoint implements CoreEndpoint {
         return userService.getUserFromSecurityContext()
             .map(User::entity)
             .map(UserEntity::getUsername)
-            .flatMap(username ->
-                userService.bindEmail(username,
-                    emailOptional.get(), verificationCodeOptional.get()))
+            .flatMap(username -> {
+                var binding = userService.bindEmail(username,
+                    emailOptional.get(), verificationCodeOptional.get());
+                if (binding == null) {
+                    throw new NullPointerException();
+                }
+                return binding;
+            })
             .then(ServerResponse.ok().build());
     }
 
@@ -232,8 +235,14 @@ public class UserMeEndpoint implements CoreEndpoint {
         return userService.getUserFromSecurityContext()
             .map(User::entity)
             .map(UserEntity::getUsername)
-            .flatMap(username -> userService.bindTelephone(username, telephoneOp.get(),
-                verificationCodeOptional.get()))
+            .flatMap(username -> {
+                var binding = userService.bindTelephone(username, telephoneOp.get(),
+                    verificationCodeOptional.get());
+                if (binding == null) {
+                    throw new NullPointerException();
+                }
+                return binding;
+            })
             .then(ServerResponse.ok().build());
     }
 
@@ -244,7 +253,7 @@ public class UserMeEndpoint implements CoreEndpoint {
             .map(UserEntity::getUsername)
             .flatMap(userService::getUserByUsername)
             .map(User::entity)
-            .map(BaseEntity::getId)
+            .flatMap(entity -> Mono.justOrEmpty(entity.getId()))
             .flatMap(userId -> userService.sendVerificationCode(userId, type))
             .then(ServerResponse.ok().build());
     }

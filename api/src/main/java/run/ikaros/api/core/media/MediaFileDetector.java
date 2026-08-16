@@ -12,73 +12,74 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
- * 仅使用固定大小字节前缀确认媒体文件真实格式的无状态检测器。
+ * 仅使用固定大小字节前缀确认媒体文件真实格式的无状态检测器.
  */
 public final class MediaFileDetector {
 
     /**
-     * 检测器允许消费的最大前缀长度。
+     * 检测器允许消费的最大前缀长度.
      */
     public static final int MAX_PREFIX_SIZE = 64 * 1024;
 
     /**
-     * SRT 序号、时间轴和正文结构。
+     * SRT 序号、时间轴和正文结构.
      */
     private static final Pattern SRT_PATTERN = Pattern.compile(
         "(?ms)^\\s*\\d+\\s*\\R\\d{2}:\\d{2}:\\d{2},\\d{3}\\s+-->\\s+"
             + "\\d{2}:\\d{2}:\\d{2},\\d{3}[^\\r\\n]*\\R\\S.*");
 
     /**
-     * WebVTT 点号毫秒时间轴。
+     * WebVTT 点号毫秒时间轴.
      */
     private static final Pattern VTT_TIMELINE = Pattern.compile(
         "(?m)^(?:\\S+\\R)?(?:\\d{2}:)?\\d{2}:\\d{2}\\.\\d{3}\\s+-->\\s+"
             + "(?:\\d{2}:)?\\d{2}:\\d{2}\\.\\d{3}(?:\\s+.*)?$");
 
     /**
-     * LRC 时间标签。
+     * LRC 时间标签.
      */
     private static final Pattern LRC_TIMELINE = Pattern.compile(
         "(?m)^.*\\[\\d{1,3}:\\d{2}\\.\\d{2,3}].+$");
 
     /**
-     * MicroDVD 帧时间轴。
+     * MicroDVD 帧时间轴.
      */
     private static final Pattern MICRODVD_TIMELINE = Pattern.compile(
         "(?m)^\\{\\d+}\\{\\d+}.+$");
 
     /**
-     * VobSub IDX 时间戳和文件位置。
+     * VobSub IDX 时间戳和文件位置.
      */
     private static final Pattern IDX_TIMELINE = Pattern.compile(
         "(?im)^timestamp:\\s*\\d{2}:\\d{2}:\\d{2}:\\d{3},\\s*filepos:\\s*[0-9a-f]{8,16}\\s*$");
 
     /**
-     * ASF Header Object GUID。
+     * ASF Header Object GUID.
      */
     private static final byte[] ASF_HEADER_GUID = hex(
         "3026b2758e66cf11a6d900aa0062ce6c");
 
     /**
-     * ASF Stream Properties Object GUID。
+     * ASF Stream Properties Object GUID.
      */
     private static final byte[] ASF_STREAM_PROPERTIES_GUID = hex(
         "9107dcb7b7a9cf118ee600c00c205365");
 
     /**
-     * ASF Audio Media GUID。
+     * ASF Audio Media GUID.
      */
     private static final byte[] ASF_AUDIO_GUID = hex(
         "409e69f84d5bcf11a8fd00805f5c442b");
 
     /**
-     * ASF Video Media GUID。
+     * ASF Video Media GUID.
      */
     private static final byte[] ASF_VIDEO_GUID = hex(
         "c0ef19bc4d5bcf11a8fd00805f5c442b");
@@ -86,8 +87,17 @@ public final class MediaFileDetector {
     private MediaFileDetector() {
     }
 
-    public static Optional<MediaFileDetectionResult> detect(byte[] prefix, String extension) {
-        if (prefix == null || prefix.length == 0 || prefix.length > MAX_PREFIX_SIZE
+    /**
+     * 根据文件前缀和扩展名检测真实媒体格式.
+     *
+     * @param prefix 文件前缀字节
+     * @param extension 文件扩展名
+     * @return 检测成功时返回媒体格式结果，否则返回空
+     */
+    public static Optional<MediaFileDetectionResult> detect(byte @Nullable [] prefix,
+                                                            @Nullable String extension) {
+        if (prefix == null || extension == null || prefix.length == 0
+            || prefix.length > MAX_PREFIX_SIZE
             || MediaFilePolicy
             .formatsForExtension(extension)
             .isEmpty()) {
@@ -201,10 +211,10 @@ public final class MediaFileDetector {
     private static boolean isPng(byte[] data) {
         return data.length >= 33
             && startsWith(data, hex("89504e470d0a1a0a"))
-            && readUInt32Be(data, 8) == 13
+            && readUint32Be(data, 8) == 13
             && asciiEquals(data, 12, "IHDR")
-            && readUInt32Be(data, 16) > 0
-            && readUInt32Be(data, 20) > 0;
+            && readUint32Be(data, 16) > 0
+            && readUint32Be(data, 20) > 0;
     }
 
     private static boolean isJpeg(byte[] data) {
@@ -235,12 +245,12 @@ public final class MediaFileDetector {
             if (offset + 2 > data.length) {
                 return false;
             }
-            int length = readUInt16Be(data, offset);
+            int length = readUint16Be(data, offset);
             if (length < 2 || offset + length > data.length) {
                 return false;
             }
             if (isStartOfFrame(marker) && length >= 8) {
-                return readUInt16Be(data, offset + 3) > 0 && readUInt16Be(data, offset + 5) > 0;
+                return readUint16Be(data, offset + 3) > 0 && readUint16Be(data, offset + 5) > 0;
             }
             offset += length;
         }
@@ -255,15 +265,15 @@ public final class MediaFileDetector {
     private static boolean isGif(byte[] data) {
         return data.length >= 13
             && (asciiEquals(data, 0, "GIF87a") || asciiEquals(data, 0, "GIF89a"))
-            && readUInt16Le(data, 6) > 0 && readUInt16Le(data, 8) > 0;
+            && readUint16Le(data, 6) > 0 && readUint16Le(data, 8) > 0;
     }
 
     private static boolean isWebp(byte[] data) {
         if (data.length < 20 || !asciiEquals(data, 0, "RIFF") || !asciiEquals(data, 8, "WEBP")) {
             return false;
         }
-        long riffSize = readUInt32Le(data, 4);
-        long chunkSize = readUInt32Le(data, 16);
+        long riffSize = readUint32Le(data, 4);
+        long chunkSize = readUint32Le(data, 16);
         String chunk = ascii(data, 12, 4);
         long minimumChunkSize = switch (chunk) {
             case "VP8 ", "VP8X" -> 10;
@@ -278,25 +288,25 @@ public final class MediaFileDetector {
         if (data.length < 26 || !asciiEquals(data, 0, "BM")) {
             return false;
         }
-        long fileSize = readUInt32Le(data, 2);
-        long pixelOffset = readUInt32Le(data, 10);
-        long dibSize = readUInt32Le(data, 14);
+        long fileSize = readUint32Le(data, 2);
+        long pixelOffset = readUint32Le(data, 10);
+        long dibSize = readUint32Le(data, 14);
         if (fileSize < pixelOffset || pixelOffset < 26) {
             return false;
         }
         if (dibSize == 12) {
-            return readUInt16Le(data, 18) > 0 && readUInt16Le(data, 20) > 0
-                && readUInt16Le(data, 22) == 1 && readUInt16Le(data, 24) > 0;
+            return readUint16Le(data, 18) > 0 && readUint16Le(data, 20) > 0
+                && readUint16Le(data, 22) == 1 && readUint16Le(data, 24) > 0;
         }
-        return dibSize >= 40 && data.length >= 54 && readUInt32Le(data, 18) > 0
-            && readUInt32Le(data, 22) != 0 && readUInt16Le(data, 26) == 1;
+        return dibSize >= 40 && data.length >= 54 && readUint32Le(data, 18) > 0
+            && readUint32Le(data, 22) != 0 && readUint16Le(data, 26) == 1;
     }
 
     private static Optional<MediaFileFormat> detectIsoBmff(byte[] data) {
         if (data.length < 16) {
             return Optional.empty();
         }
-        long boxSize = readUInt32Be(data, 0);
+        long boxSize = readUint32Be(data, 0);
         if (boxSize < 16 || boxSize > data.length || !asciiEquals(data, 4, "ftyp")
             || (boxSize - 16) % 4 != 0) {
             return Optional.empty();
@@ -359,30 +369,30 @@ public final class MediaFileDetector {
     }
 
     private static Optional<MediaFileFormat> detectRiff(byte[] data) {
-        if (data.length < 20 || !asciiEquals(data, 0, "RIFF") || readUInt32Le(data, 4) < 12) {
+        if (data.length < 20 || !asciiEquals(data, 0, "RIFF") || readUint32Le(data, 4) < 12) {
             return Optional.empty();
         }
         if (data.length >= 24 && asciiEquals(data, 8, "AVI ") && asciiEquals(data, 12, "LIST")
-            && readUInt32Le(data, 16) >= 4 && asciiEquals(data, 20, "hdrl")) {
+            && readUint32Le(data, 16) >= 4 && asciiEquals(data, 20, "hdrl")) {
             return Optional.of(MediaFileFormat.AVI);
         }
         if (!asciiEquals(data, 8, "WAVE") || !asciiEquals(data, 12, "fmt ")) {
             return Optional.empty();
         }
-        long fmtSize = readUInt32Le(data, 16);
-        return fmtSize >= 16 && data.length >= 20 + fmtSize && readUInt16Le(data, 20) != 0
+        long fmtSize = readUint32Le(data, 16);
+        return fmtSize >= 16 && data.length >= 20 + fmtSize && readUint16Le(data, 20) != 0
             ? Optional.of(MediaFileFormat.WAV) : Optional.empty();
     }
 
     private static boolean isFlac(byte[] data) {
         return data.length >= 42 && asciiEquals(data, 0, "fLaC")
             && (unsigned(data[4]) & 0x7f) == 0
-            && readUInt24Be(data, 5) == 34;
+            && readUint24Be(data, 5) == 34;
     }
 
     private static Optional<MediaFileFormat> detectOgg(byte[] data) {
         if (data.length < 28 || !asciiEquals(data, 0, "OggS") || data[4] != 0
-            || (unsigned(data[5]) & 0x02) == 0 || readUInt32Le(data, 18) != 0) {
+            || (unsigned(data[5]) & 0x02) == 0 || readUint32Le(data, 18) != 0) {
             return Optional.empty();
         }
         int segmentCount = unsigned(data[26]);
@@ -403,14 +413,14 @@ public final class MediaFileDetector {
         if (packetLength >= 19 && asciiEquals(data, packetOffset, "OpusHead")
             && unsigned(data[packetOffset + 8]) == 1
             && unsigned(data[packetOffset + 9]) > 0
-            && readUInt32Le(data, packetOffset + 12) > 0) {
+            && readUint32Le(data, packetOffset + 12) > 0) {
             return Optional.of(MediaFileFormat.OPUS);
         }
         if (packetLength >= 30 && unsigned(data[packetOffset]) == 1
             && asciiEquals(data, packetOffset + 1, "vorbis")
-            && readUInt32Le(data, packetOffset + 7) == 0
+            && readUint32Le(data, packetOffset + 7) == 0
             && unsigned(data[packetOffset + 11]) > 0
-            && readUInt32Le(data, packetOffset + 12) > 0
+            && readUint32Le(data, packetOffset + 12) > 0
             && (unsigned(data[packetOffset + 29]) & 1) == 1) {
             return Optional.of(MediaFileFormat.OGG);
         }
@@ -499,14 +509,14 @@ public final class MediaFileDetector {
         if (data.length < 30 || !startsWith(data, ASF_HEADER_GUID)) {
             return Optional.empty();
         }
-        long headerSize = readUInt64Le(data, 16);
-        long objectCount = readUInt32Le(data, 24);
+        long headerSize = readUint64Le(data, 16);
+        long objectCount = readUint32Le(data, 24);
         if (headerSize < 30 || headerSize > data.length || objectCount == 0 || objectCount > 1024) {
             return Optional.empty();
         }
         int offset = 30;
         for (long i = 0; i < objectCount && offset + 24 <= headerSize; i++) {
-            long objectSize = readUInt64Le(data, offset + 16);
+            long objectSize = readUint64Le(data, offset + 16);
             if (objectSize < 24 || objectSize > headerSize - offset) {
                 return Optional.empty();
             }
@@ -530,13 +540,13 @@ public final class MediaFileDetector {
             || (unsigned(data[4]) & 0xfa) != 0 || (unsigned(data[4]) & 0x05) == 0) {
             return false;
         }
-        long dataOffset = readUInt32Be(data, 5);
+        long dataOffset = readUint32Be(data, 5);
         if (dataOffset < 9 || dataOffset + 15 > data.length
-            || readUInt32Be(data, (int) dataOffset) != 0) {
+            || readUint32Be(data, (int) dataOffset) != 0) {
             return false;
         }
         int tagType = unsigned(data[(int) dataOffset + 4]);
-        int tagSize = readUInt24Be(data, (int) dataOffset + 5);
+        int tagSize = readUint24Be(data, (int) dataOffset + 5);
         return (tagType == 8 || tagType == 9 || tagType == 18)
             && dataOffset + 15L + tagSize <= data.length;
     }
@@ -726,7 +736,7 @@ public final class MediaFileDetector {
         if (data.length < 64 || data[0] != 'M' || data[1] != 'Z') {
             return false;
         }
-        long peOffset = readUInt32Le(data, 0x3c);
+        long peOffset = readUint32Le(data, 0x3c);
         return peOffset <= data.length - 4L && asciiEquals(data, (int) peOffset, "PE\0\0");
     }
 
@@ -736,7 +746,7 @@ public final class MediaFileDetector {
             || (data[2] == 7 && data[3] == 8));
     }
 
-    private static VarInt readEbmlVarInt(byte[] data, int offset) {
+    private static @Nullable VarInt readEbmlVarInt(byte[] data, int offset) {
         if (offset >= data.length || data[offset] == 0) {
             return null;
         }
@@ -793,33 +803,33 @@ public final class MediaFileDetector {
         return Byte.toUnsignedInt(value);
     }
 
-    private static int readUInt16Be(byte[] data, int offset) {
+    private static int readUint16Be(byte[] data, int offset) {
         return unsigned(data[offset]) << 8 | unsigned(data[offset + 1]);
     }
 
-    private static int readUInt16Le(byte[] data, int offset) {
+    private static int readUint16Le(byte[] data, int offset) {
         return unsigned(data[offset]) | unsigned(data[offset + 1]) << 8;
     }
 
-    private static int readUInt24Be(byte[] data, int offset) {
+    private static int readUint24Be(byte[] data, int offset) {
         return unsigned(data[offset]) << 16 | unsigned(data[offset + 1]) << 8
             | unsigned(data[offset + 2]);
     }
 
-    private static long readUInt32Be(byte[] data, int offset) {
+    private static long readUint32Be(byte[] data, int offset) {
         return Integer.toUnsignedLong(ByteBuffer
             .wrap(data, offset, 4)
             .getInt());
     }
 
-    private static long readUInt32Le(byte[] data, int offset) {
+    private static long readUint32Le(byte[] data, int offset) {
         return Integer.toUnsignedLong(ByteBuffer
             .wrap(data, offset, 4)
             .order(ByteOrder.LITTLE_ENDIAN)
             .getInt());
     }
 
-    private static long readUInt64Le(byte[] data, int offset) {
+    private static long readUint64Le(byte[] data, int offset) {
         long value = ByteBuffer
             .wrap(data, offset, 8)
             .order(ByteOrder.LITTLE_ENDIAN)
@@ -834,7 +844,7 @@ public final class MediaFileDetector {
     }
 
     /**
-     * EBML 可变长整数的长度和值。
+     * EBML 可变长整数的长度和值.
      */
     private record VarInt(int length, long value) {
     }

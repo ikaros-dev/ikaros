@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import run.ikaros.api.store.enums.EpisodeGroup;
 
+@org.jspecify.annotations.NullUnmarked
 class BatchMatchingSubjectEpisodesAttachmentTest {
 
     @Test

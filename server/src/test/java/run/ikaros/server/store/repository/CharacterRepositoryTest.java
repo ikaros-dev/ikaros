@@ -1,6 +1,6 @@
 package run.ikaros.server.store.repository;
 
-
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,12 +32,13 @@ class CharacterRepositoryTest {
             .infobox("infobox content")
             .summary("summary content")
             .build();
-        entity.setId(UuidV7Utils.generateUuid());
+        UUID entityId = UuidV7Utils.generateUuid();
+        entity.setId(entityId);
 
         StepVerifier.create(repository.insert(entity))
             .expectNext(entity).verifyComplete();
 
-        StepVerifier.create(repository.findById(entity.getId()))
+        StepVerifier.create(repository.findById(entityId))
             .expectNext(entity).verifyComplete();
     }
 
@@ -57,5 +58,21 @@ class CharacterRepositoryTest {
 
         StepVerifier.create(repository.findByName(name))
             .expectNext(entity).verifyComplete();
+    }
+
+    @Test
+    void countActiveExcludesLogicallyDeletedCharacters() {
+        CharacterEntity active = CharacterEntity.builder().name("active").build();
+        CharacterEntity deleted = CharacterEntity.builder().name("deleted").build();
+        active.setId(UuidV7Utils.generateUuid());
+        active.setDeleteStatus(false);
+        deleted.setId(UuidV7Utils.generateUuid());
+        deleted.setDeleteStatus(true);
+
+        StepVerifier.create(repository.insert(active)
+                .then(repository.insert(deleted))
+                .then(repository.countActive()))
+            .expectNext(1L)
+            .verifyComplete();
     }
 }

@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.UUID;
+import org.jspecify.annotations.NullUnmarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -20,6 +21,7 @@ import run.ikaros.server.store.entity.UserRoleEntity;
 import run.ikaros.server.store.repository.RoleRepository;
 import run.ikaros.server.store.repository.UserRoleRepository;
 
+@NullUnmarked
 class DefaultUserRoleServiceTest {
 
     @Mock

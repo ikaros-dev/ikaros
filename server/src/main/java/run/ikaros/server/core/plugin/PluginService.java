@@ -1,6 +1,5 @@
 package run.ikaros.server.core.plugin;
 
-import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.pf4j.PluginState;
@@ -17,7 +16,7 @@ public interface PluginService {
 
     Mono<PluginState> reload(@NotBlank String pluginId);
 
-    Mono<Void> install(@Nonnull FilePart filePart);
+    Mono<Void> install(FilePart filePart);
 
     Mono<Void> upgrade(String pluginId, FilePart filePart);
 

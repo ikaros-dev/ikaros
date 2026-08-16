@@ -38,6 +38,7 @@ import run.ikaros.server.store.repository.AttachmentReferenceRepository;
 import run.ikaros.server.store.repository.AttachmentRelationRepository;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class AttachmentServiceImplTest {
 
     @Mock
@@ -96,6 +97,45 @@ class AttachmentServiceImplTest {
             .isInstanceOf(IllegalArgumentException.class);
         assertThat(subscriptions[0]).isZero();
         verify(repository, never()).save(any());
+    }
+
+    @Test
+    void upload_rejectsSystemRootDirectory() {
+        AttachmentUploadCondition condition = AttachmentUploadCondition
+            .builder()
+            .name("video.mp4")
+            .parentId(AttachmentConst.ROOT_DIRECTORY_ID)
+            .dataBufferFlux(Flux.empty())
+            .build();
+
+        StepVerifier.create(service.upload(condition))
+            .expectErrorSatisfies(error -> assertThat(error)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("根目录只能包含文件夹"))
+            .verify();
+    }
+
+    @Test
+    void save_rejectsMovingFileIntoDriverDirectory() {
+        UUID driverDirectoryId = UUID.randomUUID();
+        Attachment file = Attachment
+            .builder()
+            .id(UUID.randomUUID())
+            .name("video.mp4")
+            .type(AttachmentType.File)
+            .parentId(driverDirectoryId)
+            .build();
+        when(repository.findById(driverDirectoryId)).thenReturn(Mono.just(AttachmentEntity
+            .builder()
+            .id(driverDirectoryId)
+            .type(AttachmentType.Driver_Directory)
+            .build()));
+
+        StepVerifier.create(service.save(file))
+            .expectErrorSatisfies(error -> assertThat(error)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("文件源目录不允许上传或移动文件"))
+            .verify();
     }
 
     @Test

@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { ConfigMap, Plugin } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
+import { ArrowLeft } from '@element-plus/icons-vue';
 import {
+	ElButton,
 	ElDescriptions,
 	ElDescriptionsItem,
 	ElImage,
@@ -15,6 +17,7 @@ import { useI18n } from 'vue-i18n';
 import type { FormKitSchemaNode } from '@formkit/core';
 
 const route = useRoute();
+const router = useRouter();
 const { t } = useI18n();
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -177,6 +180,15 @@ onMounted(() => {
 </script>
 
 <template>
+	<el-button
+		class="back-button"
+		plain
+		:icon="ArrowLeft"
+		@click="router.push('/plugins')"
+	>
+		{{ t('module.plugin.details.button.back') }}
+	</el-button>
+
 	<el-tabs>
 		<el-tab-pane :label="t('module.plugin.details.title')">
 			<el-descriptions :column="2" size="large" border>
@@ -271,4 +283,8 @@ onMounted(() => {
 	</el-tabs>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.back-button {
+	margin-bottom: 16px;
+}
+</style>

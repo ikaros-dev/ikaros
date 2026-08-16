@@ -24,6 +24,7 @@ import run.ikaros.server.store.entity.SubjectCollectionEntity;
 import run.ikaros.server.store.repository.EpisodeCollectionRepository;
 import run.ikaros.server.store.repository.SubjectCollectionRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class DefaultCollectionServiceTest {
     private SubjectCollectionRepository subjectCollectionRepository;
     private EpisodeCollectionRepository episodeCollectionRepository;

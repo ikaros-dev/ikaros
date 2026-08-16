@@ -1,17 +1,18 @@
 package run.ikaros.server.core.actuator;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static run.ikaros.api.core.attachment.AttachmentConst.COVER_DIRECTORY_ID;
+import static run.ikaros.api.core.attachment.AttachmentConst.DOWNLOAD_DIRECTORY_ID;
+import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
 
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.info.Info;
 import reactor.core.publisher.Mono;
-import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.store.enums.CollectionType;
 import run.ikaros.api.store.enums.SubjectType;
 import run.ikaros.server.store.repository.AttachmentRepository;
@@ -20,6 +21,7 @@ import run.ikaros.server.store.repository.PersonRepository;
 import run.ikaros.server.store.repository.SubjectCollectionRepository;
 import run.ikaros.server.store.repository.SubjectRepository;
 
+@org.jspecify.annotations.NullUnmarked
 class IkarosAppInfoContributorTest {
 
     private AttachmentRepository attachmentRepository;
@@ -44,31 +46,33 @@ class IkarosAppInfoContributorTest {
     @Test
     void contribute_populatesDetails() {
         // Given - mock all attachment repository count methods
-        when(attachmentRepository.count()).thenReturn(Mono.just(100L));
-        when(attachmentRepository.countByType(AttachmentType.File)).thenReturn(Mono.just(80L));
-        when(attachmentRepository.countByType(AttachmentType.Directory)).thenReturn(Mono.just(20L));
+        when(attachmentRepository.countKnownFiles()).thenReturn(Mono.just(80L));
+        when(attachmentRepository.countKnownFolders(
+            ROOT_DIRECTORY_ID, COVER_DIRECTORY_ID, DOWNLOAD_DIRECTORY_ID))
+            .thenReturn(Mono.just(20L));
 
         // Subject repository counts
-        when(subjectRepository.count()).thenReturn(Mono.just(50L));
-        when(subjectRepository.countByType(SubjectType.ANIME)).thenReturn(Mono.just(30L));
-        when(subjectRepository.countByType(SubjectType.COMIC)).thenReturn(Mono.just(5L));
-        when(subjectRepository.countByType(SubjectType.GAME)).thenReturn(Mono.just(3L));
-        when(subjectRepository.countByType(SubjectType.MUSIC)).thenReturn(Mono.just(2L));
-        when(subjectRepository.countByType(SubjectType.NOVEL)).thenReturn(Mono.just(4L));
-        when(subjectRepository.countByType(SubjectType.REAL)).thenReturn(Mono.just(4L));
-        when(subjectRepository.countByType(SubjectType.OTHER)).thenReturn(Mono.just(2L));
+        when(subjectRepository.countActive()).thenReturn(Mono.just(50L));
+        when(subjectRepository.countActiveByType(SubjectType.ANIME)).thenReturn(Mono.just(30L));
+        when(subjectRepository.countActiveByType(SubjectType.COMIC)).thenReturn(Mono.just(5L));
+        when(subjectRepository.countActiveByType(SubjectType.GAME)).thenReturn(Mono.just(3L));
+        when(subjectRepository.countActiveByType(SubjectType.MUSIC)).thenReturn(Mono.just(2L));
+        when(subjectRepository.countActiveByType(SubjectType.NOVEL)).thenReturn(Mono.just(4L));
+        when(subjectRepository.countActiveByType(SubjectType.REAL)).thenReturn(Mono.just(4L));
+        when(subjectRepository.countActiveByType(SubjectType.VIDEO)).thenReturn(Mono.just(6L));
+        when(subjectRepository.countActiveByType(SubjectType.OTHER)).thenReturn(Mono.just(2L));
 
         // Subject collection counts
-        when(subjectCollectRep.count()).thenReturn(Mono.just(40L));
-        when(subjectCollectRep.countByType(CollectionType.WISH)).thenReturn(Mono.just(10L));
-        when(subjectCollectRep.countByType(CollectionType.DOING)).thenReturn(Mono.just(15L));
-        when(subjectCollectRep.countByType(CollectionType.DONE)).thenReturn(Mono.just(10L));
-        when(subjectCollectRep.countByType(CollectionType.SHELVE)).thenReturn(Mono.just(3L));
-        when(subjectCollectRep.countByType(CollectionType.DISCARD)).thenReturn(Mono.just(2L));
+        when(subjectCollectRep.countActive()).thenReturn(Mono.just(40L));
+        when(subjectCollectRep.countActiveByType(CollectionType.WISH)).thenReturn(Mono.just(10L));
+        when(subjectCollectRep.countActiveByType(CollectionType.DOING)).thenReturn(Mono.just(15L));
+        when(subjectCollectRep.countActiveByType(CollectionType.DONE)).thenReturn(Mono.just(10L));
+        when(subjectCollectRep.countActiveByType(CollectionType.SHELVE)).thenReturn(Mono.just(3L));
+        when(subjectCollectRep.countActiveByType(CollectionType.DISCARD)).thenReturn(Mono.just(2L));
 
         // Character and person counts
-        when(characterRepository.count()).thenReturn(Mono.just(200L));
-        when(personRepository.count()).thenReturn(Mono.just(150L));
+        when(characterRepository.countActive()).thenReturn(Mono.just(200L));
+        when(personRepository.countActive()).thenReturn(Mono.just(150L));
 
         // When
         Info.Builder builder = new Info.Builder();
@@ -76,74 +80,75 @@ class IkarosAppInfoContributorTest {
         Info info = builder.build();
 
         // Then
-        assertNotNull(info.getDetails());
+        assertThat(info.getDetails()).isNotNull();
         @SuppressWarnings("unchecked")
         Map<String, Object> detailsMap = (Map<String, Object>) info.getDetails();
 
         // Verify attachment map
         @SuppressWarnings("unchecked")
         Map<String, Object> attachmentMap = (Map<String, Object>) detailsMap.get("attachment");
-        assertNotNull(attachmentMap);
-        assertEquals(100L, attachmentMap.get("total"));
-        assertEquals(80L, attachmentMap.get("file"));
-        assertEquals(20L, attachmentMap.get("folder"));
+        assertThat(attachmentMap).isNotNull();
+        assertThat(attachmentMap.get("file")).isEqualTo(80L);
+        assertThat(attachmentMap.get("folder")).isEqualTo(20L);
 
         // Verify subject map
         @SuppressWarnings("unchecked")
         Map<String, Object> subjectMap = (Map<String, Object>) detailsMap.get("subject");
-        assertNotNull(subjectMap);
-        assertEquals(50L, subjectMap.get("total"));
-        assertEquals(30L, subjectMap.get("anime"));
-        assertEquals(5L, subjectMap.get("comic"));
-        assertEquals(3L, subjectMap.get("game"));
-        assertEquals(2L, subjectMap.get("music"));
-        assertEquals(4L, subjectMap.get("novel"));
-        assertEquals(4L, subjectMap.get("real"));
-        assertEquals(2L, subjectMap.get("other"));
+        assertThat(subjectMap).isNotNull();
+        assertThat(subjectMap.get("total")).isEqualTo(50L);
+        assertThat(subjectMap.get("anime")).isEqualTo(30L);
+        assertThat(subjectMap.get("comic")).isEqualTo(5L);
+        assertThat(subjectMap.get("game")).isEqualTo(3L);
+        assertThat(subjectMap.get("music")).isEqualTo(2L);
+        assertThat(subjectMap.get("novel")).isEqualTo(4L);
+        assertThat(subjectMap.get("real")).isEqualTo(4L);
+        assertThat(subjectMap.get("video")).isEqualTo(6L);
+        assertThat(subjectMap.get("other")).isEqualTo(2L);
 
         // Verify subject collection map
         @SuppressWarnings("unchecked")
         Map<String, Object> subjectCollectionMap =
             (Map<String, Object>) detailsMap.get("subjectCollection");
-        assertNotNull(subjectCollectionMap);
-        assertEquals(40L, subjectCollectionMap.get("total"));
-        assertEquals(10L, subjectCollectionMap.get("wish"));
-        assertEquals(15L, subjectCollectionMap.get("doing"));
-        assertEquals(10L, subjectCollectionMap.get("done"));
-        assertEquals(3L, subjectCollectionMap.get("shelve"));
-        assertEquals(2L, subjectCollectionMap.get("discard"));
+        assertThat(subjectCollectionMap).isNotNull();
+        assertThat(subjectCollectionMap.get("total")).isEqualTo(40L);
+        assertThat(subjectCollectionMap.get("wish")).isEqualTo(10L);
+        assertThat(subjectCollectionMap.get("doing")).isEqualTo(15L);
+        assertThat(subjectCollectionMap.get("done")).isEqualTo(10L);
+        assertThat(subjectCollectionMap.get("shelve")).isEqualTo(3L);
+        assertThat(subjectCollectionMap.get("discard")).isEqualTo(2L);
 
         // Verify character map
         @SuppressWarnings("unchecked")
         Map<String, Object> characterMap = (Map<String, Object>) detailsMap.get("character");
-        assertNotNull(characterMap);
-        assertEquals(200L, characterMap.get("total"));
+        assertThat(characterMap).isNotNull();
+        assertThat(characterMap.get("total")).isEqualTo(200L);
 
         // Verify person map
         @SuppressWarnings("unchecked")
         Map<String, Object> personMap = (Map<String, Object>) detailsMap.get("person");
-        assertNotNull(personMap);
-        assertEquals(150L, personMap.get("total"));
+        assertThat(personMap).isNotNull();
+        assertThat(personMap.get("total")).isEqualTo(150L);
 
         // Verify repository methods were called
-        verify(attachmentRepository).count();
-        verify(attachmentRepository).countByType(AttachmentType.File);
-        verify(attachmentRepository).countByType(AttachmentType.Directory);
-        verify(subjectRepository).count();
-        verify(subjectRepository).countByType(SubjectType.ANIME);
-        verify(subjectRepository).countByType(SubjectType.COMIC);
-        verify(subjectRepository).countByType(SubjectType.GAME);
-        verify(subjectRepository).countByType(SubjectType.MUSIC);
-        verify(subjectRepository).countByType(SubjectType.NOVEL);
-        verify(subjectRepository).countByType(SubjectType.REAL);
-        verify(subjectRepository).countByType(SubjectType.OTHER);
-        verify(subjectCollectRep).count();
-        verify(subjectCollectRep).countByType(CollectionType.WISH);
-        verify(subjectCollectRep).countByType(CollectionType.DOING);
-        verify(subjectCollectRep).countByType(CollectionType.DONE);
-        verify(subjectCollectRep).countByType(CollectionType.SHELVE);
-        verify(subjectCollectRep).countByType(CollectionType.DISCARD);
-        verify(characterRepository).count();
-        verify(personRepository).count();
+        verify(attachmentRepository).countKnownFiles();
+        verify(attachmentRepository).countKnownFolders(
+            ROOT_DIRECTORY_ID, COVER_DIRECTORY_ID, DOWNLOAD_DIRECTORY_ID);
+        verify(subjectRepository).countActive();
+        verify(subjectRepository).countActiveByType(SubjectType.ANIME);
+        verify(subjectRepository).countActiveByType(SubjectType.COMIC);
+        verify(subjectRepository).countActiveByType(SubjectType.GAME);
+        verify(subjectRepository).countActiveByType(SubjectType.MUSIC);
+        verify(subjectRepository).countActiveByType(SubjectType.NOVEL);
+        verify(subjectRepository).countActiveByType(SubjectType.REAL);
+        verify(subjectRepository).countActiveByType(SubjectType.VIDEO);
+        verify(subjectRepository).countActiveByType(SubjectType.OTHER);
+        verify(subjectCollectRep).countActive();
+        verify(subjectCollectRep).countActiveByType(CollectionType.WISH);
+        verify(subjectCollectRep).countActiveByType(CollectionType.DOING);
+        verify(subjectCollectRep).countActiveByType(CollectionType.DONE);
+        verify(subjectCollectRep).countActiveByType(CollectionType.SHELVE);
+        verify(subjectCollectRep).countActiveByType(CollectionType.DISCARD);
+        verify(characterRepository).countActive();
+        verify(personRepository).countActive();
     }
 }

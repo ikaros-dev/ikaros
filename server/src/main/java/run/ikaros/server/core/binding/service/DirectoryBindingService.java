@@ -1,6 +1,7 @@
 package run.ikaros.server.core.binding.service;
 
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.store.enums.SubjectSyncPlatform;
 import run.ikaros.server.store.entity.DirectoryBindingWorkflowEntity;
@@ -14,8 +15,8 @@ public interface DirectoryBindingService {
      */
     Mono<DirectoryBindingWorkflowEntity> bindDirectory(UUID directoryId,
                                                        SubjectSyncPlatform platform,
-                                                       String keyword,
-                                                       String platformId);
+                                                       @Nullable String keyword,
+                                                       @Nullable String platformId);
 
     /**
      * Bind a single directory to a subject without keyword.

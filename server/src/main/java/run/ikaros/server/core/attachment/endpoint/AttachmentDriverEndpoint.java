@@ -178,6 +178,9 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> deleteById(ServerRequest request) {
         UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
+        if (id == null) {
+            return ServerResponse.badRequest().bodyValue("id must be a valid UUID.");
+        }
         return service.removeById(id)
             .then(ServerResponse.ok()
                 .bodyValue("Delete success"));
@@ -185,27 +188,39 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> deleteByTypeAndName(ServerRequest request) {
         String name = request.queryParam("name").orElse("-1");
-        String type = request.queryParam("type").orElse(null);
-        return service.removeByTypeAndName(type, name)
+        Optional<String> type = request.queryParam("type");
+        if (type.isEmpty()) {
+            return ServerResponse.badRequest().bodyValue("type must has value.");
+        }
+        return service.removeByTypeAndName(type.get(), name)
             .then(ServerResponse.ok()
                 .bodyValue("Delete success"));
     }
 
     private Mono<ServerResponse> getById(ServerRequest request) {
         UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
+        if (id == null) {
+            return ServerResponse.badRequest().bodyValue("id must be a valid UUID.");
+        }
         return service.findById(id)
             .flatMap(driver -> ServerResponse.ok().bodyValue(driver));
     }
 
     private Mono<ServerResponse> getByTypeAndName(ServerRequest request) {
         String name = request.queryParam("name").orElse("-1");
-        String type = request.queryParam("type").orElse(null);
-        return service.findByTypeAndName(type, name)
+        Optional<String> type = request.queryParam("type");
+        if (type.isEmpty()) {
+            return ServerResponse.badRequest().bodyValue("type must has value.");
+        }
+        return service.findByTypeAndName(type.get(), name)
             .flatMap(driver -> ServerResponse.ok().bodyValue(driver));
     }
 
     private Mono<ServerResponse> enableDriver(ServerRequest request) {
         UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
+        if (id == null) {
+            return ServerResponse.badRequest().bodyValue("id must be a valid UUID.");
+        }
         return service.enable(id)
             .then(ServerResponse.ok()
                 .bodyValue("Enable success"));
@@ -213,6 +228,9 @@ public class AttachmentDriverEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> disableDriver(ServerRequest request) {
         UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
+        if (id == null) {
+            return ServerResponse.badRequest().bodyValue("id must be a valid UUID.");
+        }
         return service.disable(id)
             .then(ServerResponse.ok()
                 .bodyValue("Disable success"));

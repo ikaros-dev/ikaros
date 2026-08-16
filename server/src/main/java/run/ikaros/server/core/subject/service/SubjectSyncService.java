@@ -1,6 +1,7 @@
 package run.ikaros.server.core.subject.service;
 
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -16,7 +17,7 @@ public interface SubjectSyncService {
      * @param platformId 对应的平台ID
      */
     @Transactional
-    Mono<Void> sync(UUID subjectId, SubjectSyncPlatform platform, String platformId);
+    Mono<Void> sync(@Nullable UUID subjectId, SubjectSyncPlatform platform, String platformId);
 
 
     @Transactional

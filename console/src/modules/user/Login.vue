@@ -1,13 +1,33 @@
 <script setup lang="ts">
-import { ElMessage } from 'element-plus';
+import {
+	ElButton,
+	ElForm,
+	ElMessage,
+	ElRadio,
+	ElRadioGroup,
+} from 'element-plus';
 import { AxiosError } from 'axios';
 import { useI18n } from 'vue-i18n';
 import { useUserStore } from '@/stores/user';
+import { useLayoutStore } from '@/stores/layout';
+import { changeI18nLocal, locales } from '@/locales';
 import { randomUUID } from '@/utils/id';
+import FilledTextField from '@/components/common/FilledTextField.vue';
 import { onMounted, ref, computed } from 'vue';
-import LanguageSelect from '@/layouts/components/LanguageSelect.vue';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const layoutStore = useLayoutStore();
+const languages = locales.filter((language) => language.name);
+const selectedLanguage = ref(layoutStore.i18nCode || locale.value);
+changeI18nLocal(selectedLanguage.value);
+
+const changeLanguage = (
+	languageCode: string | number | boolean | undefined
+) => {
+	const i18nCode = String(languageCode);
+	changeI18nLocal(i18nCode);
+	layoutStore.setI18nCode(i18nCode);
+};
 
 const step = ref<'credentials' | 'totp'>('credentials');
 
@@ -26,7 +46,6 @@ const form = ref({
 const totpCode = ref(['', '', '', '', '', '']);
 const totpCodeRefs = ref<(HTMLInputElement | null)[]>([]);
 
-const formRef = ref<HTMLFormElement | null>(null);
 const userStore = useUserStore();
 
 const isTotpCodeComplete = computed(() => {
@@ -104,7 +123,7 @@ const handleBackToLogin = () => {
 	totpCode.value = ['', '', '', '', '', ''];
 };
 
-const usernameRef = ref<HTMLInputElement | null>(null);
+const usernameRef = ref<InstanceType<typeof FilledTextField> | null>(null);
 const totpContainerRef = ref<HTMLDivElement | null>(null);
 
 onMounted(() => {
@@ -125,56 +144,48 @@ onMounted(() => {
 					<h1 class="m3-login__title">{{ t('module.user.login.title') }}</h1>
 				</div>
 
-				<form
-					ref="formRef"
+				<el-form
+					:model="form"
 					class="m3-login__form"
 					@submit.prevent="handleLogin"
 				>
-					<div class="m3-field">
-						<div class="m3-field__container">
-							<input
-								ref="usernameRef"
-								id="username"
-								v-model="form.username"
-								type="text"
-								class="m3-field__input"
-								:placeholder="t('module.user.login.field.username.placeholder')"
-								required
-							/>
-							<label for="username" class="m3-field__label">
-								{{ t('module.user.login.field.username.placeholder') }}
-							</label>
-							<div class="m3-field__underline"></div>
-						</div>
-					</div>
+					<filled-text-field
+						id="username"
+						ref="usernameRef"
+						v-model="form.username"
+						:label="t('module.user.login.field.username.placeholder')"
+						autocomplete="username"
+						required
+					/>
 
-					<div class="m3-field">
-						<div class="m3-field__container">
-							<input
-								id="password"
-								v-model="form.password"
-								type="password"
-								class="m3-field__input"
-								:placeholder="t('module.user.login.field.password.placeholder')"
-								required
-								@keyup.enter="handleLogin"
-							/>
-							<label for="password" class="m3-field__label">
-								{{ t('module.user.login.field.password.placeholder') }}
-							</label>
-							<div class="m3-field__underline"></div>
-						</div>
-					</div>
+					<filled-text-field
+						id="password"
+						v-model="form.password"
+						type="password"
+						:label="t('module.user.login.field.password.placeholder')"
+						autocomplete="current-password"
+						required
+					/>
 
 					<div class="m3-login__actions">
-						<LanguageSelect />
-						<button type="submit" class="m3-btn m3-btn--filled">
-							<span class="m3-btn__content">{{
-								t('module.user.login.button')
-							}}</span>
-						</button>
+						<el-radio-group
+							v-model="selectedLanguage"
+							class="m3-language-select"
+							@change="changeLanguage"
+						>
+							<el-radio
+								v-for="language in languages"
+								:key="language.code"
+								:value="language.code"
+							>
+								{{ language.name }}
+							</el-radio>
+						</el-radio-group>
+						<el-button type="primary" native-type="submit" size="large">
+							{{ t('module.user.login.button') }}
+						</el-button>
 					</div>
-				</form>
+				</el-form>
 			</template>
 
 			<!-- Step 2: TOTP 验证码 -->
@@ -188,6 +199,7 @@ onMounted(() => {
 
 				<div ref="totpContainerRef" class="m3-totp">
 					<div class="m3-totp__inputs">
+						<!-- eslint-disable-next-line vue/no-restricted-html-elements -- 原生输入框用于逐位验证码焦点控制 -->
 						<input
 							v-for="(digit, index) in totpCode"
 							:key="index"
@@ -213,21 +225,17 @@ onMounted(() => {
 					</p>
 
 					<div class="m3-totp__actions">
-						<button
-							type="button"
-							class="m3-btn m3-btn--outlined"
-							@click="handleBackToLogin"
-						>
-							<span class="m3-btn__content">返回登录</span>
-						</button>
-						<button
-							type="button"
-							class="m3-btn m3-btn--filled"
+						<el-button size="large" @click="handleBackToLogin">
+							返回登录
+						</el-button>
+						<el-button
+							type="primary"
+							size="large"
 							:disabled="!isTotpCodeComplete"
 							@click="handleTotpSubmit"
 						>
-							<span class="m3-btn__content">验证</span>
-						</button>
+							验证
+						</el-button>
 					</div>
 				</div>
 			</template>
@@ -314,103 +322,6 @@ onMounted(() => {
 	gap: 16px;
 }
 
-/* ========== M3 Filled Text Field ========== */
-.m3-field {
-	width: 100%;
-}
-
-.m3-field__container {
-	position: relative;
-	display: flex;
-	align-items: center;
-	background: var(--m3-surface-container-highest);
-	border-radius: 4px 4px 0 0;
-	height: 56px;
-	cursor: text;
-	transition: background 0.15s ease;
-}
-
-.m3-field__container:hover {
-	background: var(--m3-surface-container-high);
-}
-
-.m3-field__container:focus-within {
-	background: var(--m3-surface-container-highest);
-}
-
-.m3-field__input {
-	width: 100%;
-	height: 100%;
-	padding: 24px 16px 8px;
-	border: none;
-	outline: none;
-	background: transparent;
-	color: var(--m3-on-surface);
-	font-family: 'Roboto', system-ui, sans-serif;
-	font-size: 16px;
-	font-weight: 400;
-	line-height: 24px;
-	letter-spacing: 0.5px;
-	box-sizing: border-box;
-}
-
-.m3-field__input::placeholder {
-	color: transparent;
-}
-
-.m3-field__input:-webkit-autofill,
-.m3-field__input:-webkit-autofill:hover,
-.m3-field__input:-webkit-autofill:focus {
-	-webkit-box-shadow: 0 0 0 1000px var(--m3-surface-container-highest) inset;
-	-webkit-text-fill-color: var(--m3-on-surface);
-	caret-color: var(--m3-primary);
-	border-radius: 4px 4px 0 0;
-}
-
-.m3-field__label {
-	position: absolute;
-	left: 16px;
-	top: 50%;
-	transform: translateY(-50%);
-	font-family: 'Roboto', system-ui, sans-serif;
-	font-size: 16px;
-	font-weight: 400;
-	line-height: 24px;
-	letter-spacing: 0.5px;
-	color: var(--m3-on-surface-variant);
-	pointer-events: none;
-	transition: all 0.15s ease;
-	transform-origin: left top;
-}
-
-.m3-field__input:focus + .m3-field__label,
-.m3-field__input:not(:placeholder-shown) + .m3-field__label {
-	top: 8px;
-	transform: translateY(0) scale(0.75);
-	color: var(--m3-primary);
-	font-weight: 500;
-}
-
-.m3-field__underline {
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	height: 1px;
-	background: var(--m3-outline);
-	transition: all 0.15s ease;
-}
-
-.m3-field__container:hover .m3-field__underline {
-	background: var(--m3-on-surface);
-	height: 1px;
-}
-
-.m3-field__container:focus-within .m3-field__underline {
-	background: var(--m3-primary);
-	height: 2px;
-}
-
 /* ========== Actions (step 1) ========== */
 .m3-login__actions {
 	display: flex;
@@ -420,8 +331,15 @@ onMounted(() => {
 	gap: 16px;
 }
 
-.m3-login__actions :deep(.lang-select) {
+.m3-language-select {
+	display: flex;
+	align-items: center;
+	gap: 16px;
 	flex-shrink: 0;
+}
+
+:deep(.m3-language-select .el-radio) {
+	margin-right: 0;
 }
 
 /* ========== TOTP Input ========== */
@@ -482,69 +400,6 @@ onMounted(() => {
 	justify-content: center;
 }
 
-/* ========== M3 Filled Button ========== */
-.m3-btn {
-	position: relative;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-width: 64px;
-	height: 40px;
-	padding: 0 24px;
-	border: none;
-	border-radius: 20px;
-	cursor: pointer;
-	font-family: 'Roboto', system-ui, sans-serif;
-	font-size: 14px;
-	font-weight: 500;
-	line-height: 20px;
-	letter-spacing: 0.1px;
-	text-transform: none;
-	overflow: hidden;
-	transition: background 0.15s ease;
-	-webkit-tap-highlight-color: transparent;
-}
-
-.m3-btn--filled {
-	background: var(--m3-primary);
-	color: var(--m3-on-primary);
-}
-
-.m3-btn--filled:hover {
-	background: #66b1ff;
-}
-
-.m3-btn--filled:active {
-	background: #3a8ee6;
-}
-
-.m3-btn--filled:disabled {
-	background: rgba(31, 31, 31, 0.12);
-	color: rgba(31, 31, 31, 0.38);
-	cursor: not-allowed;
-}
-
-.m3-btn--filled:focus-visible {
-	outline: 2px solid var(--m3-on-surface);
-	outline-offset: 2px;
-}
-
-/* ========== M3 Outlined Button ========== */
-.m3-btn--outlined {
-	background: transparent;
-	color: var(--m3-primary);
-	border: 1px solid var(--m3-outline);
-}
-
-.m3-btn--outlined:hover {
-	background: rgba(64, 158, 255, 0.08);
-}
-
-.m3-btn__content {
-	position: relative;
-	z-index: 1;
-}
-
 /* ========== Responsive ========== */
 @media (max-width: 480px) {
 	.m3-login__card {
@@ -557,7 +412,7 @@ onMounted(() => {
 		gap: 12px;
 	}
 
-	.m3-btn {
+	.m3-login__actions > .el-button {
 		width: 100%;
 	}
 

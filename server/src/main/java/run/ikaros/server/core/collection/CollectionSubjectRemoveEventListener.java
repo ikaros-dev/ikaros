@@ -1,5 +1,6 @@
 package run.ikaros.server.core.collection;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -27,9 +28,13 @@ public class CollectionSubjectRemoveEventListener {
         if (entity == null) {
             return Mono.empty();
         }
-        return subjectCollectionRepository.removeAllBySubjectId(entity.getId())
+        UUID subjectId = entity.getId();
+        if (subjectId == null) {
+            return Mono.empty();
+        }
+        return subjectCollectionRepository.removeAllBySubjectId(subjectId)
             .doOnSuccess(unused -> log.debug("Subject collections removed by subject id: {}",
-                entity.getId()))
+                subjectId))
             .then();
     }
 }

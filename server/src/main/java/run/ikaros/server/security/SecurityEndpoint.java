@@ -7,7 +7,6 @@ import static run.ikaros.server.security.authentication.jwt.JwtApplyParam.Type.U
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -83,14 +82,15 @@ public class SecurityEndpoint implements CoreEndpoint {
             .map(jwtApplyParam -> new UsernamePasswordAuthenticationToken(
                 jwtApplyParam.getUsername(), jwtApplyParam.getPassword()))
             .flatMap(authenticationManager::authenticate)
-            .map(Authentication::getPrincipal)
+            .flatMap(authentication -> Mono.justOrEmpty(authentication.getPrincipal()))
             .filter(principal -> (principal instanceof UserDetails))
             .map(principal -> (UserDetails) principal)
             .map(UserDetails::getUsername)
             .map(String::valueOf)
             .flatMap(username -> userRepository
                 .findByUsernameAndEnableAndDeleteStatus(username, true, false)
-                .flatMap(userEntity -> userTotpRepository.findByUserId(userEntity.getId())
+                .flatMap(userEntity -> Mono.justOrEmpty(userEntity.getId())
+                    .flatMap(userTotpRepository::findByUserId)
                     .defaultIfEmpty(new UserTotpEntity().setEnabled(false))
                     .flatMap(totpEntity -> {
                         if (Boolean.TRUE.equals(totpEntity.getEnabled())) {
@@ -104,11 +104,15 @@ public class SecurityEndpoint implements CoreEndpoint {
                         }
                         return userDetailsService.findByUsername(username)
                             .flatMap(jwtAuthenticationProvider::generateJwtResp);
-                    })
-                ))
+                    })))
             .flatMap(token -> ServerResponse.ok().bodyValue(token))
-            .onErrorResume(UserNotFoundException.class,
-                e -> Mono.error(new UserAuthenticationException(e.getLocalizedMessage(), e)));
+            .onErrorResume(UserNotFoundException.class, e -> {
+                String message = e.getLocalizedMessage();
+                if (message == null) {
+                    throw new NullPointerException();
+                }
+                return Mono.error(new UserAuthenticationException(message, e));
+            });
     }
 
     private Mono<ServerResponse> refreshToken(ServerRequest request) {

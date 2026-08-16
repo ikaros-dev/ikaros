@@ -48,7 +48,8 @@ public class IndicesServiceImpl implements IndicesService {
     }
 
     private Mono<SubjectDoc> fetchSubTags(SubjectDoc subjectDoc) {
-        return tagRepository.findAllByTypeAndMasterId(TagType.SUBJECT, subjectDoc.getId())
+        return tagRepository.findAllByTypeAndMasterId(TagType.SUBJECT,
+                java.util.Objects.requireNonNull(subjectDoc.getId()))
             .map(TagEntity::getName)
             .collectList()
             .map(tags -> {

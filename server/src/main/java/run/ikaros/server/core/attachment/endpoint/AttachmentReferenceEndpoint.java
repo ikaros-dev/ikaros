@@ -104,6 +104,9 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> deleteById(ServerRequest request) {
         UUID id = UuidV7Utils.fromString(request.queryParam("id").orElse(""));
+        if (id == null) {
+            return ServerResponse.badRequest().bodyValue("id must be a valid UUID.");
+        }
         return service.removeById(id)
             .then(ServerResponse.ok()
                 .bodyValue("Delete success"));
@@ -111,16 +114,31 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> removeByTypeAndAttachmentIdAndReferenceId(ServerRequest request) {
         return request.bodyToMono(AttachmentReference.class)
-            .flatMap(attachmentReference -> service.removeByTypeAndAttachmentIdAndReferenceId(
-                attachmentReference.getType(), attachmentReference.getAttachmentId(),
-                attachmentReference.getReferenceId()))
+            .flatMap(attachmentReference -> {
+                AttachmentReferenceType type = attachmentReference.getType();
+                UUID attachmentId = attachmentReference.getAttachmentId();
+                UUID referenceId = attachmentReference.getReferenceId();
+                if (type == null || attachmentId == null || referenceId == null) {
+                    return Mono.error(new IllegalArgumentException(
+                        "type, attachmentId and referenceId must not be null."));
+                }
+                return service.removeByTypeAndAttachmentIdAndReferenceId(
+                    type, attachmentId, referenceId);
+            })
             .then(ServerResponse.ok().bodyValue("Delete success."));
     }
 
     private Mono<ServerResponse> removeAllByTypeAndReferenceId(ServerRequest request) {
         return request.bodyToMono(AttachmentReference.class)
-            .flatMap(attachmentReference -> service.removeAllByTypeAndReferenceId(
-                attachmentReference.getType(), attachmentReference.getReferenceId()))
+            .flatMap(attachmentReference -> {
+                AttachmentReferenceType type = attachmentReference.getType();
+                UUID referenceId = attachmentReference.getReferenceId();
+                if (type == null || referenceId == null) {
+                    return Mono.error(new IllegalArgumentException(
+                        "type and referenceId must not be null."));
+                }
+                return service.removeAllByTypeAndReferenceId(type, referenceId);
+            })
             .then(ServerResponse.ok().bodyValue("Delete success."));
     }
 
@@ -132,6 +150,9 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
         AttachmentReferenceType type = AttachmentReferenceType.valueOf(typeOp.get());
 
         UUID attachmentId = UuidV7Utils.fromString(request.queryParam("attachmentId").orElse(""));
+        if (attachmentId == null) {
+            return ServerResponse.badRequest().bodyValue("attachmentId must be a valid UUID.");
+        }
 
         return service.findAllByTypeAndAttachmentId(type, attachmentId)
             .collectList()
@@ -141,22 +162,34 @@ public class AttachmentReferenceEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> matchingAttachmentsAndSubjectEpisodes(ServerRequest request) {
         return request.bodyToMono(BatchMatchingSubjectEpisodesAttachment.class)
-            .flatMap(
-                batchMatchingSubjectEpisodesAttachment ->
-                    service.matchingAttachmentsAndSubjectEpisodes(
-                        batchMatchingSubjectEpisodesAttachment.getSubjectId(),
-                        batchMatchingSubjectEpisodesAttachment.getAttachmentIds(),
-                        batchMatchingSubjectEpisodesAttachment.getEpisodeGroup()))
+            .flatMap(batchRequest -> {
+                UUID subjectId = batchRequest.getSubjectId();
+                UUID[] attachmentIds = batchRequest.getAttachmentIds();
+                if (subjectId == null || attachmentIds == null) {
+                    return Mono.error(new IllegalArgumentException(
+                        "subjectId and attachmentIds must not be null."));
+                }
+                var episodeGroup = batchRequest.getEpisodeGroup();
+                if (episodeGroup == null) {
+                    return service.matchingAttachmentsAndSubjectEpisodes(subjectId, attachmentIds);
+                }
+                return service.matchingAttachmentsAndSubjectEpisodes(
+                    subjectId, attachmentIds, episodeGroup);
+            })
             .then(ServerResponse.ok().build());
     }
 
     private Mono<ServerResponse> matchingAttachmentsForEpisode(ServerRequest request) {
         return request.bodyToMono(BatchMatchingEpisodeAttachment.class)
-            .flatMap(
-                batchMatchingEpisodeAttachment ->
-                    service.matchingAttachmentsForEpisode(
-                        batchMatchingEpisodeAttachment.getEpisodeId(),
-                        batchMatchingEpisodeAttachment.getAttachmentIds()))
+            .flatMap(batchRequest -> {
+                UUID episodeId = batchRequest.getEpisodeId();
+                UUID[] attachmentIds = batchRequest.getAttachmentIds();
+                if (episodeId == null || attachmentIds == null) {
+                    return Mono.error(new IllegalArgumentException(
+                        "episodeId and attachmentIds must not be null."));
+                }
+                return service.matchingAttachmentsForEpisode(episodeId, attachmentIds);
+            })
             .then(ServerResponse.ok().build());
     }
 }

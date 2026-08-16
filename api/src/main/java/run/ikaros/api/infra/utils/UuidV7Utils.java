@@ -1,9 +1,9 @@
 package run.ikaros.api.infra.utils;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import jakarta.annotation.Nullable;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 
 @Slf4j
 public class UuidV7Utils {

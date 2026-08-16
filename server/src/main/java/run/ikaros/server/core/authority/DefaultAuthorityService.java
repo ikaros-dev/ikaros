@@ -83,14 +83,24 @@ public class DefaultAuthorityService implements AuthorityService {
 
         Integer page = authorityCondition.getPage();
         Integer size = authorityCondition.getSize();
+        if (page == null) {
+            throw new IllegalArgumentException("page must not be null");
+        }
+        if (size == null) {
+            throw new IllegalArgumentException("size must not be null");
+        }
         Assert.isTrue(page >= 0, "page must not be negative");
         Assert.isTrue(size >= 0, "size must not be negative");
 
         final AuthorityType type = authorityCondition.getType();
-        Assert.notNull(type, "type must not be null");
+        if (type == null) {
+            throw new IllegalArgumentException("type must not be null");
+        }
 
         final Boolean allow = authorityCondition.getAllow();
-        Assert.notNull(allow, "allow must not be null");
+        if (allow == null) {
+            throw new IllegalArgumentException("allow must not be null");
+        }
 
         final String target = authorityCondition.getTarget();
         final String targetLike = '%' + target + '%';
@@ -125,12 +135,19 @@ public class DefaultAuthorityService implements AuthorityService {
     }
 
     private AuthorityEntity vo2Entity(Authority authority) {
+        Boolean allow = authority.getAllow();
+        AuthorityType type = authority.getType();
+        String target = authority.getTarget();
+        String authorityValue = authority.getAuthority();
+        if (allow == null || type == null || target == null || authorityValue == null) {
+            throw new IllegalArgumentException("authority fields must not be null");
+        }
         AuthorityEntity entity = new AuthorityEntity();
         entity.setId(authority.getId());
-        entity.setAllow(authority.getAllow());
-        entity.setType(authority.getType());
-        entity.setTarget(authority.getTarget());
-        entity.setAuthority(authority.getAuthority());
+        entity.setAllow(allow);
+        entity.setType(type);
+        entity.setTarget(target);
+        entity.setAuthority(authorityValue);
         return entity;
     }
 

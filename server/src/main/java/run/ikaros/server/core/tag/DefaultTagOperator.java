@@ -2,6 +2,7 @@ package run.ikaros.server.core.tag;
 
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -21,7 +22,7 @@ public class DefaultTagOperator implements TagOperate {
 
 
     @Override
-    public Flux<Tag> findAll(TagType type, UUID masterId, String name) {
+    public Flux<Tag> findAll(TagType type, UUID masterId, @Nullable String name) {
         return tagService.findAll(type, masterId, null, name);
     }
 

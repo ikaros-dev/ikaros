@@ -3,6 +3,8 @@ import { computed, ref, watch, onMounted, h, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
 	Attachment,
+	AttachmentDriver,
+	AttachmentDriverTypeEnum,
 	AttachmentTypeEnum,
 	DirectoryBindingWorkflowEntity,
 } from '@runikaros/api-client';
@@ -12,13 +14,13 @@ import {
 	loadMediaFileFormatLookup,
 	type MediaFileFormatLookup,
 } from '@/utils/media-file-format';
-import { usePluginModuleStore } from '@/stores/plugin';
-import { PluginModule } from '@runikaros/shared';
+import ContentBrowser from '@/components/modules/content/ContentBrowser.vue';
+import RefreshButton from '@/components/common/RefreshButton.vue';
 import AttachmentFragmentUploadDrawer from './AttachmentFragmentUploadDrawer.vue';
 import AttachmentDeatilDrawer from './AttachmentDeatilDrawer.vue';
 import AttachmentDirectorySelectDialog from './AttachmentDirectorySelectDialog.vue';
+import FileSourceManagerDialog from './FileSourceManagerDialog.vue';
 import LocalDirectoryBindingDialog from './LocalDirectoryBindingDialog.vue';
-import DialogMessage from '@/components/dialog/DialogMessage.vue';
 import { useRoute } from 'vue-router';
 
 import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css';
@@ -31,7 +33,6 @@ import {
 } from '@/utils/string-util';
 import {
 	Upload,
-	Search,
 	Folder,
 	Document,
 	FolderDelete,
@@ -44,17 +45,11 @@ import {
 	Position,
 	CopyDocument,
 	Download,
-	Refresh,
-	MostlyCloudy,
-	Link,
+	Search,
+	Setting,
 } from '@element-plus/icons-vue';
 import {
-	ElRow,
-	ElCol,
 	ElInput,
-	ElForm,
-	ElFormItem,
-	ElPagination,
 	ElButton,
 	ElIcon,
 	ElBreadcrumb,
@@ -65,8 +60,7 @@ import {
 	ElMessage,
 	ElPopconfirm,
 	ElMessageBox,
-	ElOption,
-	ElSelect,
+	ElAlert,
 } from 'element-plus';
 import router from '@/router';
 import { getCompleteFileUrl } from '@/utils/url-tuils';
@@ -93,16 +87,17 @@ const attachmentCondition = ref({
 });
 
 const attachments = ref<Attachment[]>([]);
+const attachmentsLoading = ref(false);
+const attachmentsError = ref<string | null>(null);
+const fileSourceManagerVisible = ref(false);
+const fileSourcesLoaded = ref(false);
+const fileSources = ref<AttachmentDriver[]>([]);
 const mediaFileFormatLookup = ref<MediaFileFormatLookup>();
 const mediaFileCategory = (fileName?: string) =>
 	fileName ? mediaFileFormatLookup.value?.categoryOf(fileName) : undefined;
 let attachmentRequestId = 0;
 
 type AttachmentSortProperty = 'name' | 'updateTime' | 'size';
-type AttachmentSortOrder = 'ascending' | 'descending';
-
-const attachmentSortProperty = ref<AttachmentSortProperty>('updateTime');
-const attachmentSortOrder = ref<AttachmentSortOrder>('descending');
 const englishNameCollator = new Intl.Collator('en', {
 	numeric: true,
 	sensitivity: 'base',
@@ -145,59 +140,15 @@ const compareAttachmentName = (firstName: string, secondName: string) => {
 	);
 };
 
-const sortedAttachments = computed(() =>
-	!canSortAttachmentColumn(attachmentSortProperty.value)
-		? attachments.value
-		: attachments.value
-				.map((attachment, index) => ({ attachment, index }))
-				.sort((first, second) => {
-					let comparison = 0;
-					if (attachmentSortProperty.value === 'name') {
-						comparison = compareAttachmentName(
-							first.attachment.name || '',
-							second.attachment.name || ''
-						);
-					} else if (attachmentSortProperty.value === 'updateTime') {
-						comparison =
-							new Date(first.attachment.updateTime || 0).getTime() -
-							new Date(second.attachment.updateTime || 0).getTime();
-					} else {
-						comparison =
-							Number(first.attachment.size || 0) -
-							Number(second.attachment.size || 0);
-					}
-					if (comparison === 0) {
-						return first.index - second.index;
-					}
-					return attachmentSortOrder.value === 'ascending'
-						? comparison
-						: -comparison;
-				})
-				.map(({ attachment }) => attachment)
-);
+const compareAttachmentByName = (first: Attachment, second: Attachment) =>
+	compareAttachmentName(first.name || '', second.name || '');
 
-const toggleAttachmentSort = (property: AttachmentSortProperty) => {
-	if (!canSortAttachmentColumn(property)) {
-		return;
-	}
-	if (attachmentSortProperty.value === property) {
-		attachmentSortOrder.value =
-			attachmentSortOrder.value === 'ascending' ? 'descending' : 'ascending';
-		return;
-	}
-	attachmentSortProperty.value = property;
-	attachmentSortOrder.value = property === 'name' ? 'ascending' : 'descending';
-};
+const compareAttachmentByUpdateTime = (first: Attachment, second: Attachment) =>
+	new Date(first.updateTime || 0).getTime() -
+	new Date(second.updateTime || 0).getTime();
 
-const attachmentSortSymbol = (property: AttachmentSortProperty) => {
-	if (
-		attachmentSortProperty.value !== property ||
-		!canSortAttachmentColumn(property)
-	) {
-		return '';
-	}
-	return attachmentSortOrder.value === 'descending' ? '▼' : '▲';
-};
+const compareAttachmentBySize = (first: Attachment, second: Attachment) =>
+	Number(first.size || 0) - Number(second.size || 0);
 
 const applyAttachmentPage = async (
 	data,
@@ -220,25 +171,66 @@ const applyAttachmentPage = async (
 const fetchAttachments = async () => {
 	const requestId = ++attachmentRequestId;
 	const parentId = attachmentCondition.value.parentId as any as string;
-	const { data } = await apiClient.attachment.listAttachmentsByCondition1({
-		page: attachmentCondition.value.page,
-		size: attachmentCondition.value.size,
-		name: base64Encode(attachmentCondition.value.name),
-		parentId,
-	});
-	await applyAttachmentPage(data, requestId, parentId);
+	attachmentsLoading.value = true;
+	attachmentsError.value = null;
+	try {
+		const { data } = await apiClient.attachment.listAttachmentsByCondition1({
+			page: attachmentCondition.value.page,
+			size: attachmentCondition.value.size,
+			name: base64Encode(attachmentCondition.value.name),
+			parentId,
+		});
+		await applyAttachmentPage(data, requestId, parentId);
+	} catch (error) {
+		if (requestId === attachmentRequestId) {
+			attachmentsError.value =
+				(error as Error)?.message || t('module.attachment.browser.error');
+		}
+	} finally {
+		if (requestId === attachmentRequestId) {
+			attachmentsLoading.value = false;
+		}
+	}
 };
 const fetchDriverAttachments = async () => {
 	const requestId = ++attachmentRequestId;
 	const parentId = attachmentCondition.value.parentId as any as string;
-	const { data } = await apiClient.attachmentDriver.listAttachmentsByCondition({
-		page: attachmentCondition.value.page,
-		size: attachmentCondition.value.size,
-		name: base64Encode(attachmentCondition.value.name),
-		parentId,
-		refresh: true,
-	});
-	await applyAttachmentPage(data, requestId, parentId);
+	attachmentsLoading.value = true;
+	attachmentsError.value = null;
+	try {
+		const { data } =
+			await apiClient.attachmentDriver.listAttachmentsByCondition({
+				page: attachmentCondition.value.page,
+				size: attachmentCondition.value.size,
+				name: base64Encode(attachmentCondition.value.name),
+				parentId,
+				refresh: true,
+			});
+		await applyAttachmentPage(data, requestId, parentId);
+	} catch (error) {
+		if (requestId === attachmentRequestId) {
+			attachmentsError.value =
+				(error as Error)?.message || t('module.attachment.browser.error');
+		}
+	} finally {
+		if (requestId === attachmentRequestId) {
+			attachmentsLoading.value = false;
+		}
+	}
+};
+
+const fetchFileSources = async () => {
+	try {
+		const { data } = await apiClient.attachmentDriver.listDriversByCondition({
+			page: 1,
+			size: 1000,
+		});
+		fileSources.value = (data.items || []) as AttachmentDriver[];
+	} catch {
+		attachmentsError.value = t('module.attachment.browser.source-error');
+	} finally {
+		fileSourcesLoaded.value = true;
+	}
 };
 
 async function updateBreadcrumbByParentPath(
@@ -259,8 +251,16 @@ async function updateBreadcrumbByParentPath(
 			Boolean(att.id && att.parentId)
 		)
 		.map((att) => {
+			const isSystemRoot = att.id === attachmentRootId;
+			const isFileSourceRoot =
+				att.type === AttachmentTypeEnum.DriverDirectory &&
+				att.parentId === attachmentRootId;
 			const path: Path = {
-				name: att.name as string,
+				name: isSystemRoot
+					? '根目录'
+					: isFileSourceRoot
+						? `${(att.driverId || '').slice(0, 8)} 根目录`
+						: (att.name as string),
 				id: att.id,
 				parentId: att.parentId,
 			};
@@ -278,6 +278,11 @@ const onSizeChange = async (val: number) => {
 	await fetchAttachments();
 };
 
+const searchCurrentDirectory = async () => {
+	attachmentCondition.value.page = 1;
+	await fetchAttachments();
+};
+
 const attachmentUploadDrawerVisible = ref(false);
 const onFileUploadDrawerClose = async () => {
 	await fetchAttachments();
@@ -291,7 +296,7 @@ interface Path {
 
 const paths = ref<Path[]>([
 	{
-		name: '/',
+		name: '根目录',
 		parentId: attachmentRootId,
 		id: attachmentRootId,
 	},
@@ -361,6 +366,13 @@ const selectionAttachments = ref<Attachment[]>([]);
 const hasSystemInternalAttachmentSelected = computed(() =>
 	selectionAttachments.value.some(isSystemInternalAttachment)
 );
+const hasReadOnlyAttachmentSelected = computed(() =>
+	selectionAttachments.value.some(
+		(attachment) =>
+			attachment.type === AttachmentTypeEnum.DriverDirectory ||
+			attachment.type === AttachmentTypeEnum.DriverFile
+	)
+);
 
 const onSelectionChange = (selections) => {
 	// console.log('selections', selections);
@@ -416,6 +428,7 @@ const deleteAttachments = async () => {
 const onDeleteButtonClick = async () => {
 	if (
 		hasSystemInternalAttachmentSelected.value ||
+		hasReadOnlyAttachmentSelected.value ||
 		!selectionAttachments.value ||
 		selectionAttachments.value.length === 0
 	) {
@@ -646,7 +659,11 @@ const onRowContextmenu = (row, column, event) => {
 			},
 		].filter(
 			(item) =>
-				!isSystemInternalAttachment(currentSelectionAttachment.value) ||
+				(!isSystemInternalAttachment(currentSelectionAttachment.value) &&
+					currentSelectionAttachment.value.type !==
+						AttachmentTypeEnum.DriverDirectory &&
+					currentSelectionAttachment.value.type !==
+						AttachmentTypeEnum.DriverFile) ||
 				item.label !== t('module.attachment.contextmenu.delete.value')
 		) as Parameters<typeof ContextMenu.showContextMenu>[0]['items'],
 	});
@@ -674,6 +691,56 @@ const fetchCurrentParentAttachment = async () => {
 	currentParentAttachment.value = data;
 };
 
+const isRootDirectory = computed(
+	() => attachmentCondition.value.parentId === attachmentRootId
+);
+const isDriverDirectory = computed(
+	() =>
+		currentParentAttachment.value.type === AttachmentTypeEnum.DriverDirectory
+);
+const canWriteCurrentDirectory = computed(() => !isDriverDirectory.value);
+const canUploadCurrentDirectory = computed(
+	() => canWriteCurrentDirectory.value && !isRootDirectory.value
+);
+const canScanCurrentDirectory = computed(
+	() =>
+		isDriverDirectory.value &&
+		fileSources.value.some(
+			(driver) =>
+				driver.id === currentParentAttachment.value.driverId &&
+				driver.type === AttachmentDriverTypeEnum.Local
+		)
+);
+const hasFileSources = computed(() => fileSources.value.length > 0);
+const browserTotal = computed(() =>
+	fileSourcesLoaded.value &&
+	isRootDirectory.value &&
+	!attachmentCondition.value.name &&
+	!hasFileSources.value
+		? 0
+		: attachmentCondition.value.total
+);
+const browserEmptyTitle = computed(() => {
+	if (isRootDirectory.value && !hasFileSources.value) {
+		return t('module.attachment.browser.no-sources.title');
+	}
+	if (attachmentCondition.value.name) {
+		return t('module.attachment.browser.no-results.title');
+	}
+	return t('module.attachment.browser.empty.title');
+});
+const browserEmptyDescription = computed(() => {
+	if (isRootDirectory.value && !hasFileSources.value) {
+		return t('module.attachment.browser.no-sources.description');
+	}
+	if (attachmentCondition.value.name) {
+		return t('module.attachment.browser.no-results.description');
+	}
+	return isDriverDirectory.value
+		? t('module.attachment.browser.empty.driver-description')
+		: t('module.attachment.browser.empty.directory-description');
+});
+
 const refreshButtonLoading = ref(false);
 const refreshCurrentDir = async () => {
 	try {
@@ -686,35 +753,23 @@ const refreshCurrentDir = async () => {
 			await fetchAttachments();
 		}
 	} catch (error) {
-		console.error(error);
+		attachmentsError.value =
+			(error as Error)?.message || t('module.attachment.browser.error');
 	} finally {
 		refreshButtonLoading.value = false;
 	}
 };
 
-const toAttachmentDrivers = () => {
-	router.push('/attachment/drivers');
+const onFileSourcesChanged = async () => {
+	await fetchFileSources();
+	attachmentCondition.value.parentId = attachmentRootId;
+	attachmentCondition.value.page = 1;
+	await fetchCurrentParentAttachment();
+	await fetchAttachments();
 };
 
-const bindDialogVisible = ref(false);
 const localBindingDialogVisible = ref(false);
 const localBindingWorkflow = ref<DirectoryBindingWorkflowEntity>();
-const bindPlatform = ref('');
-const bindPlatformId = ref('');
-const bindSearchKeyword = ref('');
-const bindPlatformArr = ref<string[]>([]);
-
-const { pluginModules } = usePluginModuleStore();
-const bindPlatformOptions = computed(() => [
-	{
-		value: 'local',
-		label: t('module.attachment.bind.local.option'),
-	},
-	...bindPlatformArr.value.map((platform) => ({
-		value: platform,
-		label: platform,
-	})),
-]);
 const currentLocalBindingWorkflow = computed(() =>
 	localBindingWorkflow.value?.directoryId === attachmentCondition.value.parentId
 		? localBindingWorkflow.value
@@ -729,82 +784,8 @@ onMounted(() => {
 		.catch(() => {
 			mediaFileFormatLookup.value = undefined;
 		});
-	pluginModules.forEach((pluginModule: PluginModule) => {
-		const { extensionPoints } = pluginModule;
-		if (!extensionPoints?.['subject:sync:platform']) {
-			return;
-		}
-		const subjectPlatform = extensionPoints[
-			'subject:sync:platform'
-		] as unknown as string;
-		if (subjectPlatform) {
-			bindPlatformArr.value.push(subjectPlatform);
-		}
-	});
+	fetchFileSources();
 });
-
-const onBindDirectoryClick = async () => {
-	if (bindPlatformArr.value.length === 0) {
-		bindPlatform.value = 'local';
-	} else if (bindPlatformArr.value.length == 1) {
-		bindPlatform.value = bindPlatformArr.value[0];
-	} else {
-		bindPlatform.value = '';
-	}
-	bindPlatformId.value = '';
-	bindSearchKeyword.value = '';
-	bindDialogVisible.value = true;
-};
-
-const onBindPlatformChange = (platform: string) => {
-	if (platform === 'local') {
-		bindDialogVisible.value = false;
-		localBindingDialogVisible.value = true;
-	}
-};
-
-const onBindDirectoryConfirm = async () => {
-	if (bindPlatform.value === 'local') {
-		bindDialogVisible.value = false;
-		localBindingDialogVisible.value = true;
-		return;
-	}
-
-	try {
-		await ElMessageBox.confirm(
-			h(DialogMessage, {
-				message: t('module.attachment.bind.confirm.content'),
-			}),
-			t('module.attachment.bind.confirm.title'),
-			{
-				confirmButtonText: t('module.attachment.bind.confirm.btn.confirm'),
-				cancelButtonText: t('module.attachment.bind.confirm.btn.cancel'),
-				type: 'info',
-			}
-		);
-		await apiClient.binding.bindDirectory({
-			directoryId: attachmentCondition.value.parentId,
-			platform: bindPlatform.value as
-				| 'BGM_TV'
-				| 'TMDB'
-				| 'AniDB'
-				| 'TVDB'
-				| 'VNDB'
-				| 'DOU_BAN'
-				| 'OTHER',
-			platformId: bindPlatformId.value || undefined,
-			keyword: bindSearchKeyword.value || undefined,
-		});
-		ElMessage.success(t('module.attachment.bind.success'));
-		bindDialogVisible.value = false;
-	} catch (e) {
-		if (e === 'cancel' || e === 'close') {
-			return;
-		}
-		console.error('bind directory error', e);
-		ElMessage.error(t('module.attachment.bind.error'));
-	}
-};
 
 const onLocalBindingConfirmed = (workflow: DirectoryBindingWorkflowEntity) => {
 	localBindingWorkflow.value = workflow;
@@ -820,13 +801,16 @@ const onLocalBindingRescanned = (workflow: DirectoryBindingWorkflowEntity) => {
 	localBindingWorkflow.value = workflow;
 };
 
-const onLocalRescanClick = () => {
+const openScanDialog = () => {
+	if (!canScanCurrentDirectory.value) {
+		return;
+	}
 	localBindingDialogVisible.value = true;
 };
 
 watch(
 	() => route.query,
-	(newValue) => {
+	async (newValue) => {
 		// console.log(newValue);
 		if (newValue) {
 			attachmentCondition.value.name = decodeURI(
@@ -834,9 +818,14 @@ watch(
 			);
 			if (newValue.parentId) {
 				attachmentCondition.value.parentId = newValue.parentId as string;
-				fetchCurrentParentAttachment();
 			}
-			fetchAttachments();
+			try {
+				await fetchCurrentParentAttachment();
+				await fetchAttachments();
+			} catch (error) {
+				attachmentsError.value =
+					(error as Error)?.message || t('module.attachment.browser.error');
+			}
 		}
 	},
 	{ immediate: true }
@@ -911,105 +900,75 @@ const onAttachmentDetailDrawerClose = () => {
 		@rescanned="onLocalBindingRescanned"
 	/>
 
-	<el-dialog
-		v-model="bindDialogVisible"
-		:title="t('module.attachment.bind.confirm.title')"
-		width="400px"
-	>
-		<el-form>
-			<el-form-item :label="t('module.attachment.bind.platform.title')">
-				<el-select v-model="bindPlatform" @change="onBindPlatformChange">
-					<el-option
-						v-for="platform in bindPlatformOptions"
-						:key="platform.value"
-						:label="platform.label"
-						:value="platform.value"
-					/>
-				</el-select>
-			</el-form-item>
-			<el-form-item
-				v-if="bindPlatform !== 'local'"
-				:label="t('module.attachment.bind.platformId.label')"
-			>
-				<el-input
-					v-model="bindPlatformId"
-					:placeholder="t('module.attachment.bind.platformId.placeholder')"
-				/>
-			</el-form-item>
-			<el-form-item
-				v-if="bindPlatform !== 'local'"
-				:label="t('module.attachment.bind.keyword.label')"
-			>
-				<el-input
-					v-model="bindSearchKeyword"
-					:placeholder="t('module.attachment.bind.keyword.placeholder')"
-				/>
-			</el-form-item>
-		</el-form>
-		<template #footer>
-			<span>
-				<el-button @click="bindDialogVisible = false">
-					{{ t('module.attachment.bind.confirm.btn.cancel') }}
-				</el-button>
-				<el-button
-					type="primary"
-					:disabled="!bindPlatform"
-					@click="onBindDirectoryConfirm"
-				>
-					{{ t('module.attachment.bind.confirm.btn.confirm') }}
-				</el-button>
-			</span>
-		</template>
-	</el-dialog>
+	<FileSourceManagerDialog
+		v-model:visible="fileSourceManagerVisible"
+		@changed="onFileSourcesChanged"
+	/>
 
-	<div class="attachment-toolbar">
-		<div class="attachment-toolbar-actions">
+	<ContentBrowser
+		:title="t('module.attachment.title')"
+		:search-model-value="attachmentCondition.name"
+		:search-placeholder="t('module.attachment.search_input.placeholder')"
+		:loading="attachmentsLoading"
+		:error="attachmentsError"
+		:empty-title="browserEmptyTitle"
+		:empty-description="browserEmptyDescription"
+		:page="attachmentCondition.page"
+		:size="attachmentCondition.size"
+		:total="browserTotal"
+		:page-sizes="[10, 20, 50, 100]"
+		@update:search-model-value="attachmentCondition.name = $event"
+		@search="searchCurrentDirectory"
+		@retry="refreshCurrentDir"
+		@update:page="onCurrentPageChange"
+		@update:size="onSizeChange"
+	>
+		<template #actions>
 			<el-button
-				plain
-				:disabled="
-					currentParentAttachment.type &&
-					currentParentAttachment.type === 'Driver_Directory'
-				"
+				v-if="canUploadCurrentDirectory"
+				type="primary"
+				:icon="Upload"
 				@click="attachmentUploadDrawerVisible = true"
 			>
-				<el-icon>
-					<Upload />
-				</el-icon>
 				{{ t('module.attachment.btn.upload') }}
 			</el-button>
-			<el-button :icon="FolderAdd" @click="dialogFolderVisible = true">
+			<el-button
+				v-if="canWriteCurrentDirectory"
+				:icon="FolderAdd"
+				@click="dialogFolderVisible = true"
+			>
 				{{ t('module.attachment.btn.mkdir') }}
 			</el-button>
+			<el-button :icon="Setting" @click="fileSourceManagerVisible = true">
+				{{ t('module.attachment.btn.manage-sources') }}
+			</el-button>
 			<el-button
-				:icon="Refresh"
-				:loading="refreshButtonLoading"
-				@click="refreshCurrentDir"
+				v-if="canScanCurrentDirectory"
+				:icon="Search"
+				@click="openScanDialog"
 			>
+				{{ t('module.attachment.btn.scan') }}
+			</el-button>
+			<RefreshButton :loading="refreshButtonLoading" @click="refreshCurrentDir">
 				{{ t('module.attachment.btn.refresh') }}
-			</el-button>
-			<el-button :icon="MostlyCloudy" @click="toAttachmentDrivers">
-				{{ t('module.attachment.btn.driver') }}
-			</el-button>
-			<el-button :icon="Link" @click="onBindDirectoryClick">
-				{{ t('module.attachment.btn.bind') }}
-			</el-button>
+			</RefreshButton>
 			<el-button
-				v-if="currentLocalBindingWorkflow"
-				:icon="Refresh"
-				@click="onLocalRescanClick"
-			>
-				{{ t('module.attachment.bind.local.rescan.entry') }}
-			</el-button>
-			<el-button
-				v-if="selectionAttachments && selectionAttachments.length > 0"
+				v-if="
+					selectionAttachments.length > 0 &&
+					canWriteCurrentDirectory &&
+					!hasReadOnlyAttachmentSelected
+				"
 				:icon="Position"
 				@click="directorySelectDialogVisible = true"
 			>
 				{{ t('module.attachment.btn.move_atts') }}
 			</el-button>
-
 			<el-tooltip
-				v-if="selectionAttachments && selectionAttachments.length > 0"
+				v-if="
+					selectionAttachments.length > 0 &&
+					canWriteCurrentDirectory &&
+					!hasReadOnlyAttachmentSelected
+				"
 				:disabled="!hasSystemInternalAttachmentSelected"
 				:content="t('module.attachment.popconfirm.system_internal_forbidden')"
 				placement="top"
@@ -1033,192 +992,242 @@ const onAttachmentDetailDrawerClose = () => {
 					</el-popconfirm>
 				</span>
 			</el-tooltip>
-		</div>
-		<el-input
-			v-model="attachmentCondition.name"
-			class="attachment-search-input"
-			:placeholder="t('module.attachment.search_input.placeholder')"
-			clearable
-			@change="fetchAttachments"
-		>
-			<template #append>
-				<el-button :icon="Search" @click="fetchAttachments" />
-			</template>
-		</el-input>
-	</div>
+		</template>
 
-	<br />
-
-	<el-row v-if="attachmentCondition.total > 10 || attachmentCondition.page > 1">
-		<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
-			<el-pagination
-				v-model:page-size="attachmentCondition.size"
-				v-model:current-page="attachmentCondition.page"
-				background
-				:total="attachmentCondition.total"
-				:pager-count="5"
-				layout="total, sizes, prev, pager, next, jumper"
-				@current-change="onCurrentPageChange"
-				@size-change="onSizeChange"
-			/>
-		</el-col>
-	</el-row>
-
-	<br />
-
-	<el-row>
-		<el-col :span="24">
-			<el-form :inline="true">
-				<el-form-item
-					:label="t('module.attachment.breadcrumb.label')"
-					style="width: 100%"
-				>
+		<template #breadcrumb>
+			<div class="attachment-navigation">
+				<div class="attachment-breadcrumb">
+					<span>{{ t('module.attachment.breadcrumb.label') }}</span>
 					<el-breadcrumb separator=">">
 						<el-breadcrumb-item v-for="path in paths" :key="path.id">
-							<el-button @click="onBreadcrumbClick(path)">
+							<el-button link @click="onBreadcrumbClick(path)">
 								{{ path.name }}
 							</el-button>
 						</el-breadcrumb-item>
 					</el-breadcrumb>
-				</el-form-item>
-			</el-form>
-		</el-col>
-	</el-row>
+				</div>
+				<el-alert
+					:title="t('module.attachment.browser.refresh-hint')"
+					type="info"
+					show-icon
+					:closable="false"
+					class="attachment-refresh-hint"
+				/>
+			</div>
+		</template>
 
-	<el-row>
-		<el-col :span="24">
-			<el-table
-				:data="sortedAttachments"
-				style="width: 100%"
-				row-key="id"
-				@current-change="onCurrentChange"
-				@row-dblclick="entryAttachment"
-				@row-contextmenu="onRowContextmenu"
-				@selection-change="onSelectionChange"
+		<template #empty-actions>
+			<el-button
+				v-if="isRootDirectory && !hasFileSources"
+				type="primary"
+				:icon="Setting"
+				@click="fileSourceManagerVisible = true"
 			>
-				<el-table-column type="selection" width="60" />
-				<!-- <el-table-column prop="id" label="ID" width="60" /> -->
-				<el-table-column prop="name" show-overflow-tooltip>
-					<template #header>
-						<button
-							type="button"
-							class="attachment-sort-header"
-							:disabled="!canSortAttachmentColumn('name')"
-							@click.stop="toggleAttachmentSort('name')"
-						>
-							{{ t('module.attachment.table.colum.label.name') }}
-							<span class="attachment-sort-symbol">{{
-								attachmentSortSymbol('name')
-							}}</span>
-						</button>
-					</template>
-					<template #default="scoped">
-						<el-icon
-							size="25"
-							style="position: relative; top: 7px; margin: 0 5px 0 0px"
-						>
-							<Folder
-								v-if="
-									'Directory' === scoped.row.type ||
-									'Driver_Directory' === scoped.row.type
-								"
+				{{ t('module.attachment.btn.add-source') }}
+			</el-button>
+			<template v-else-if="isDriverDirectory">
+				<RefreshButton @click="refreshCurrentDir">
+					{{ t('module.attachment.btn.refresh') }}
+				</RefreshButton>
+				<el-button
+					v-if="canScanCurrentDirectory"
+					type="primary"
+					:icon="Search"
+					@click="openScanDialog"
+				>
+					{{ t('module.attachment.btn.scan') }}
+				</el-button>
+			</template>
+			<template v-else>
+				<el-button
+					v-if="canUploadCurrentDirectory"
+					type="primary"
+					:icon="Upload"
+					@click="attachmentUploadDrawerVisible = true"
+				>
+					{{ t('module.attachment.btn.upload') }}
+				</el-button>
+				<el-button
+					v-if="canWriteCurrentDirectory"
+					:icon="FolderAdd"
+					@click="dialogFolderVisible = true"
+				>
+					{{ t('module.attachment.btn.mkdir') }}
+				</el-button>
+			</template>
+		</template>
+
+		<el-table
+			:data="attachments"
+			:default-sort="{ prop: 'updateTime', order: 'descending' }"
+			style="width: 100%"
+			row-key="id"
+			@current-change="onCurrentChange"
+			@row-dblclick="entryAttachment"
+			@row-contextmenu="onRowContextmenu"
+			@selection-change="onSelectionChange"
+		>
+			<el-table-column type="selection" width="60" />
+			<!-- <el-table-column prop="id" label="ID" width="60" /> -->
+			<el-table-column
+				prop="name"
+				:label="t('module.attachment.table.colum.label.name')"
+				:sortable="canSortAttachmentColumn('name')"
+				:sort-method="compareAttachmentByName"
+			>
+				<template #default="scoped">
+					<el-icon
+						size="25"
+						style="position: relative; top: 7px; margin: 0 5px 0 0px"
+					>
+						<Folder
+							v-if="
+								'Directory' === scoped.row.type ||
+								'Driver_Directory' === scoped.row.type
+							"
+							:color="
+								scoped.row.type === 'Driver_Directory' ? 'skyblue' : 'default'
+							"
+						/>
+						<span v-else>
+							<Picture
+								v-if="mediaFileCategory(scoped.row.name) === 'IMAGE'"
 								:color="
-									scoped.row.type === 'Driver_Directory' ? 'skyblue' : 'default'
+									scoped.row.type === 'Driver_File' ? 'skyblue' : 'default'
 								"
 							/>
-							<span v-else>
-								<Picture
-									v-if="mediaFileCategory(scoped.row.name) === 'IMAGE'"
-									:color="
-										scoped.row.type === 'Driver_File' ? 'skyblue' : 'default'
-									"
-								/>
-								<Headset
-									v-else-if="mediaFileCategory(scoped.row.name) === 'AUDIO'"
-									:color="
-										scoped.row.type === 'Driver_File' ? 'skyblue' : 'default'
-									"
-								/>
-								<Film
-									v-else-if="mediaFileCategory(scoped.row.name) === 'VIDEO'"
-									:color="
-										scoped.row.type === 'Driver_File' ? 'skyblue' : 'default'
-									"
-								/>
-								<Document
-									v-else
-									:color="
-										scoped.row.type === 'Driver_File' ? 'skyblue' : 'default'
-									"
-								/>
-							</span>
-						</el-icon>
-						<!-- &nbsp;&nbsp; -->
-						<span>
-							{{ scoped.row.name }}
+							<Headset
+								v-else-if="mediaFileCategory(scoped.row.name) === 'AUDIO'"
+								:color="
+									scoped.row.type === 'Driver_File' ? 'skyblue' : 'default'
+								"
+							/>
+							<Film
+								v-else-if="mediaFileCategory(scoped.row.name) === 'VIDEO'"
+								:color="
+									scoped.row.type === 'Driver_File' ? 'skyblue' : 'default'
+								"
+							/>
+							<Document
+								v-else
+								:color="
+									scoped.row.type === 'Driver_File' ? 'skyblue' : 'default'
+								"
+							/>
 						</span>
-					</template>
-				</el-table-column>
-				<el-table-column prop="updateTime" width="160" :formatter="dateFormat">
-					<template #header>
-						<button
-							type="button"
-							class="attachment-sort-header"
-							:disabled="!canSortAttachmentColumn('updateTime')"
-							@click.stop="toggleAttachmentSort('updateTime')"
-						>
-							{{ t('module.attachment.table.colum.label.update_time') }}
-							<span class="attachment-sort-symbol">{{
-								attachmentSortSymbol('updateTime')
-							}}</span>
-						</button>
-					</template>
-				</el-table-column>
-				<el-table-column prop="size" width="130">
-					<template #header>
-						<button
-							type="button"
-							class="attachment-sort-header"
-							:disabled="!canSortAttachmentColumn('size')"
-							@click.stop="toggleAttachmentSort('size')"
-						>
-							{{ t('module.attachment.table.colum.label.size') }}
-							<span class="attachment-sort-symbol">{{
-								attachmentSortSymbol('size')
-							}}</span>
-						</button>
-					</template>
-					<template #default="scoped">
-						<span
-							v-if="
-								scoped.row.type !== 'Directory' &&
-								scoped.row.type !== 'Driver_Directory'
-							"
-						>
-							{{ formatFileSize(scoped.row.size) }}
-						</span>
-					</template>
-				</el-table-column>
-			</el-table>
-		</el-col>
-	</el-row>
+					</el-icon>
+					<!-- &nbsp;&nbsp; -->
+					<span class="attachment-name">
+						{{ scoped.row.name }}
+					</span>
+				</template>
+			</el-table-column>
+			<el-table-column
+				prop="updateTime"
+				width="160"
+				:label="t('module.attachment.table.colum.label.update_time')"
+				:formatter="dateFormat"
+				:sortable="canSortAttachmentColumn('updateTime')"
+				:sort-method="compareAttachmentByUpdateTime"
+			/>
+			<el-table-column
+				prop="size"
+				width="130"
+				:label="t('module.attachment.table.colum.label.size')"
+				:sortable="canSortAttachmentColumn('size')"
+				:sort-method="compareAttachmentBySize"
+			>
+				<template #default="scoped">
+					<span
+						v-if="
+							scoped.row.type !== 'Directory' &&
+							scoped.row.type !== 'Driver_Directory'
+						"
+					>
+						{{ formatFileSize(scoped.row.size) }}
+					</span>
+				</template>
+			</el-table-column>
+		</el-table>
+	</ContentBrowser>
 </template>
 
 <style lang="scss" scoped>
-.attachment-toolbar {
+.attachment-navigation {
 	display: flex;
-	flex-wrap: nowrap;
+	flex-direction: column;
 	gap: 12px;
 }
 
-.attachment-toolbar-actions {
-	display: inline-flex;
-	flex-shrink: 0;
+.attachment-breadcrumb {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+	line-height: 24px;
 }
 
-.attachment-search-input {
-	flex: 1 1 auto;
+.attachment-breadcrumb > span {
+	flex: none;
+}
+
+:deep(.attachment-breadcrumb .el-breadcrumb) {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
 	min-width: 0;
+}
+
+:deep(.attachment-breadcrumb .el-breadcrumb__item) {
+	display: flex;
+	align-items: baseline;
+	min-width: 0;
+	max-width: 100%;
+}
+
+:deep(.attachment-breadcrumb .el-breadcrumb__inner) {
+	display: block;
+	min-width: 0;
+	max-width: 100%;
+	line-height: 24px;
+}
+
+:deep(.attachment-breadcrumb .el-breadcrumb__separator) {
+	display: inline-block;
+	line-height: 24px;
+}
+
+.attachment-name {
+	line-height: 24px;
+}
+
+:deep(.attachment-breadcrumb .el-button) {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	min-height: 24px;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	line-height: 24px;
+	white-space: normal;
+	text-align: left;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+}
+
+:deep(.attachment-breadcrumb .el-button > span) {
+	display: block;
+	line-height: 24px;
+}
+
+.attachment-name {
+	white-space: normal;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+}
+
+.attachment-refresh-hint {
+	border-radius: 6px;
 }
 
 .batch-delete-button-wrapper {
@@ -1229,23 +1238,5 @@ const onAttachmentDetailDrawerClose = () => {
 .ik-attachment-breadcrumb-item {
 	width: 20px;
 	cursor: pointer;
-}
-
-.attachment-sort-header {
-	padding: 0;
-	border: 0;
-	color: inherit;
-	font: inherit;
-	background: transparent;
-	cursor: pointer;
-
-	&:disabled {
-		cursor: default;
-	}
-}
-
-.attachment-sort-symbol {
-	margin-left: 0.25em;
-	font-size: 0.875em;
 }
 </style>

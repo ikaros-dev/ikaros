@@ -18,6 +18,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+@org.jspecify.annotations.NullUnmarked
 class RedisReactiveCacheManagerTest {
 
     @Mock

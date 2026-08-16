@@ -8,12 +8,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.fn.builders.parameter.Builder;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -27,14 +28,24 @@ import run.ikaros.server.store.entity.UserTotpEntity;
 import run.ikaros.server.store.repository.UserRepository;
 import run.ikaros.server.store.repository.UserTotpRepository;
 
+/**
+ * 提供 TOTP 验证、配置、启用、禁用和状态查询接口.
+ */
 @Slf4j
 @Component
 public class TotpEndpoint implements CoreEndpoint {
+    /** TOTP 密钥生成与验证码校验服务. */
     private final TotpService totpService;
+    /** 用户 TOTP 配置仓库. */
     private final UserTotpRepository userTotpRepository;
+    /** JWT 令牌生成与临时令牌解析器. */
     private final JwtAuthenticationProvider jwtAuthenticationProvider;
+    /** 当前用户认证详情查询服务. */
     private final ReactiveUserDetailsService userDetailsService;
+    /** 用户账号仓库. */
     private final UserRepository userRepository;
+    /** 当前登录密码校验器. */
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * Construct.
@@ -43,12 +54,14 @@ public class TotpEndpoint implements CoreEndpoint {
                         UserTotpRepository userTotpRepository,
                         JwtAuthenticationProvider jwtAuthenticationProvider,
                         ReactiveUserDetailsService userDetailsService,
-                        UserRepository userRepository) {
+                        UserRepository userRepository,
+                        PasswordEncoder passwordEncoder) {
         this.totpService = totpService;
         this.userTotpRepository = userTotpRepository;
         this.jwtAuthenticationProvider = jwtAuthenticationProvider;
         this.userDetailsService = userDetailsService;
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -88,10 +101,8 @@ public class TotpEndpoint implements CoreEndpoint {
                 builder -> builder.operationId("DisableTotp")
                     .tag(tag)
                     .description("禁用二步验证（需要先登录，需验证当前密码）")
-                    .parameter(Builder.parameterBuilder()
-                        .name("password")
-                        .in(io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY)
-                        .description("当前登录密码").implementation(String.class))
+                    .requestBody(requestBodyBuilder()
+                        .required(true).implementation(TotpDisableParam.class))
                     .response(responseBuilder()
                         .implementation(String.class)))
             // 查询TOTP状态
@@ -128,8 +139,8 @@ public class TotpEndpoint implements CoreEndpoint {
                 return userRepository.findByUsernameAndEnableAndDeleteStatus(username, true, false)
                     .switchIfEmpty(Mono.error(new NotFoundException(
                         "User not found: " + username)))
-                    .flatMap(userEntity ->
-                        userTotpRepository.findByUserId(userEntity.getId()))
+                    .flatMap(userEntity -> Mono.justOrEmpty(userEntity.getId())
+                        .flatMap(userTotpRepository::findByUserId))
                     .switchIfEmpty(Mono.error(new InvalidTokenException(
                         "TOTP not configured")))
                     .filter(UserTotpEntity::getEnabled)
@@ -200,18 +211,26 @@ public class TotpEndpoint implements CoreEndpoint {
     /**
      * 禁用TOTP（需要验证密码）.
      */
-    private Mono<ServerResponse> disable(ServerRequest request) {
-        String password = request.queryParam("password").orElse(null);
-        if (password == null) {
-            return Mono.error(new IllegalArgumentException("password is required"));
-        }
-        return getCurrentUserId()
-            .flatMap(userId -> userTotpRepository.findByUserId(userId)
-                .switchIfEmpty(Mono.error(new NotFoundException(
-                    "TOTP not configured"))))
-            .flatMap(totpEntity -> userTotpRepository.deleteById(totpEntity.getId())
-                .then(Mono.just(totpEntity)))
-            .then(ServerResponse.ok().bodyValue("TOTP disabled"));
+    Mono<ServerResponse> disable(ServerRequest request) {
+        return request.bodyToMono(TotpDisableParam.class)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException(
+                "password is required")))
+            .flatMap(param -> {
+                String password = param.getPassword();
+                if (!StringUtils.hasText(password)) {
+                    return Mono.error(new IllegalArgumentException(
+                        "password is required"));
+                }
+                return verifyCurrentPassword(password)
+                    .then(getCurrentUserId())
+                    .flatMap(userId -> userTotpRepository.findByUserId(userId)
+                        .switchIfEmpty(Mono.error(new NotFoundException(
+                            "TOTP not configured"))))
+                    .flatMap(totpEntity -> Mono.justOrEmpty(totpEntity.getId())
+                        .flatMap(userTotpRepository::deleteById)
+                        .thenReturn(totpEntity))
+                    .then(ServerResponse.ok().bodyValue("TOTP disabled"));
+            });
     }
 
     /**
@@ -233,16 +252,26 @@ public class TotpEndpoint implements CoreEndpoint {
         return ReactiveSecurityContextHolder.getContext()
             .switchIfEmpty(Mono.error(
                 new AuthenticationCredentialsNotFoundException("Not authenticated")))
-            .map(SecurityContext::getAuthentication)
-            .map(Authentication::getPrincipal)
+            .flatMap(context -> Mono.justOrEmpty(context.getAuthentication()))
+            .flatMap(authentication -> Mono.justOrEmpty(authentication.getPrincipal()))
             .cast(UserDetails.class)
             .map(UserDetails::getUsername);
+    }
+
+    private Mono<Void> verifyCurrentPassword(String password) {
+        return getCurrentUsername()
+            .flatMap(userDetailsService::findByUsername)
+            .filter(userDetails -> passwordEncoder.matches(
+                password, userDetails.getPassword()))
+            .switchIfEmpty(Mono.error(new BadCredentialsException(
+                "Invalid password")))
+            .then();
     }
 
     private Mono<UUID> getCurrentUserId() {
         return getCurrentUsername()
             .flatMap(username -> userRepository
                 .findByUsernameAndEnableAndDeleteStatus(username, true, false))
-            .map(run.ikaros.server.store.entity.BaseEntity::getId);
+            .flatMap(entity -> Mono.justOrEmpty(entity.getId()));
     }
 }

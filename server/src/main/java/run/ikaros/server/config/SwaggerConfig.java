@@ -9,6 +9,7 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import java.util.List;
+import java.util.Objects;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -63,7 +64,7 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI ikarosOpenApi(IkarosProperties ikarosProperties) {
         var server = new Server();
-        server.setUrl(ikarosProperties.getExternalUrl().toString());
+        server.setUrl(Objects.requireNonNull(ikarosProperties.getExternalUrl()).toString());
         server.setDescription("ExternalUrl");
         return new OpenAPI()
             .servers(List.of(server))

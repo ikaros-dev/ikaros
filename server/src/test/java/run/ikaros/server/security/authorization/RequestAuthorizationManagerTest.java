@@ -22,6 +22,7 @@ import run.ikaros.api.constant.SecurityConst;
 import run.ikaros.api.constant.SecurityConst.Authorization;
 import run.ikaros.api.store.enums.AuthorityType;
 
+@org.jspecify.annotations.NullUnmarked
 class RequestAuthorizationManagerTest {
 
     private RequestAuthorizationManager manager;

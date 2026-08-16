@@ -1,5 +1,7 @@
 package run.ikaros.api.core.attachment.exception;
 
+import org.jspecify.annotations.Nullable;
+
 public class AttachmentException extends RuntimeException {
 
 
@@ -7,7 +9,7 @@ public class AttachmentException extends RuntimeException {
         super(message);
     }
 
-    public AttachmentException(String message, Throwable cause) {
+    public AttachmentException(String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 

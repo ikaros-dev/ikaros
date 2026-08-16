@@ -21,6 +21,7 @@ import run.ikaros.server.store.repository.SubjectRelationRepository;
 @SpringBootTest
 @Testcontainers
 @Import(IkarosTestcontainersConfiguration.class)
+@org.jspecify.annotations.NullUnmarked
 class SubjectRelationServiceTest {
 
     @Autowired

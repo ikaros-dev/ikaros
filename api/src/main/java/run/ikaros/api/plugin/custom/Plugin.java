@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
+import org.jspecify.annotations.Nullable;
 import org.pf4j.PluginState;
 import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.custom.Custom;
@@ -38,8 +39,8 @@ import run.ikaros.api.custom.Name;
 public class Plugin {
 
     @Name
-    private String name;
-    private String clazz;
+    private @Nullable String name;
+    private @Nullable String clazz;
     /**
      * plugin version.
      *
@@ -51,33 +52,33 @@ public class Plugin {
             + "(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\"
             + ".[0-9a-zA-Z-]+)*))?$",
         example = "1.0.0")
-    private String version;
-    private String requires;
-    private Author author;
-    private String logo;
-    private String homepage;
-    private String displayName;
-    private String description;
-    private String license;
-    private PluginState state;
+    private @Nullable String version;
+    private @Nullable String requires;
+    private @Nullable Author author;
+    private @Nullable String logo;
+    private @Nullable String homepage;
+    private @Nullable String displayName;
+    private @Nullable String description;
+    private @Nullable String license;
+    private @Nullable PluginState state;
     /**
      * format: pluginId:pluginVersion.
      */
     private Map<String, String> dependencies = new HashMap<>(4);
-    private Path loadLocation;
+    private @Nullable Path loadLocation;
     /**
      * 插件入口，一般是编译后的JS文件.
      */
-    private String entry;
+    private @Nullable String entry;
     /**
      * 插件样式，一般是编译后的一个CSS文件.
      */
-    private String stylesheet;
+    private @Nullable String stylesheet;
 
     @Data
     public static class Author {
-        private String name;
-        private String website;
+        private @Nullable String name;
+        private @Nullable String website;
     }
 
     /**
@@ -88,5 +89,5 @@ public class Plugin {
      * @see run.ikaros.api.core.setting.ConfigMap
      * @see <a href="https://formkit.com/essentials/schema">FormKit Schema</a>
      */
-    private String configMapSchemas;
+    private @Nullable String configMapSchemas;
 }

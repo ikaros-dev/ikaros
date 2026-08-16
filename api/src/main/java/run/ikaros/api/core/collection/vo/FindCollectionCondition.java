@@ -1,8 +1,8 @@
 package run.ikaros.api.core.collection.vo;
 
-import jakarta.annotation.Nullable;
 import lombok.Builder;
 import lombok.Data;
+import org.jspecify.annotations.Nullable;
 import run.ikaros.api.store.enums.CollectionCategory;
 import run.ikaros.api.store.enums.CollectionType;
 
@@ -12,12 +12,12 @@ public class FindCollectionCondition {
     /**
      * default is 1.
      */
-    private Integer page;
+    private @Nullable Integer page;
     /**
      * default is 10.
      */
-    private Integer size;
-    private CollectionCategory category;
+    private @Nullable Integer size;
+    private @Nullable CollectionCategory category;
     @Nullable
     private CollectionType type;
     @Nullable
@@ -25,5 +25,5 @@ public class FindCollectionCondition {
     /**
      * default is false.
      */
-    private Boolean updateTimeDesc;
+    private @Nullable Boolean updateTimeDesc;
 }

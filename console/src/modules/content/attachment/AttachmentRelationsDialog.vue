@@ -160,7 +160,7 @@ const onAttRelationDelateBtnConfirm = async (
 							<router-link
 								target="_blank"
 								:to="
-									'/attachments?parentId=' +
+									'/sources?parentId=' +
 									scoped.row.relationAtt.parentId +
 									'&name=' +
 									base64Encode(encodeURI(scoped.row.relationAtt.name as string))

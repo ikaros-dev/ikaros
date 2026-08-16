@@ -3,7 +3,7 @@ package run.ikaros.api.core.media;
 import java.util.Set;
 
 /**
- * 提供给客户端展示和文件选择器使用的媒体格式提示。
+ * 提供给客户端展示和文件选择器使用的媒体格式提示.
  *
  * @param format     真实格式
  * @param category   真实类别

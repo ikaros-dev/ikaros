@@ -3,6 +3,7 @@ package run.ikaros.server.security.authentication.basicauth;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -50,7 +51,7 @@ public class BasicAuthenticationFilter implements WebFilter {
         return chain.filter(exchange);
     }
 
-    private String extractBasic64(String bearerToken) {
+    private @Nullable String extractBasic64(@Nullable String bearerToken) {
         if (bearerToken != null && bearerToken.startsWith("Basic ")) {
             return bearerToken.substring(6);
         }

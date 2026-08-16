@@ -24,7 +24,9 @@ public class JsonServerAuthenticationEntryPoint implements ServerAuthenticationE
         result.setException(ex.getClass().getName());
         result.setMessage(ex.getLocalizedMessage());
         String json = JsonUtils.obj2Json(result);
-        assert json != null;
+        if (json == null) {
+            throw new NullPointerException();
+        }
         byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
         DataBuffer dataBuffer = response.bufferFactory().wrap(bytes);
         return response.writeWith(Flux.just(dataBuffer));

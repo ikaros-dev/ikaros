@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
+@org.jspecify.annotations.NullUnmarked
 class BatchMatchingEpisodeAttachmentTest {
 
     @Test

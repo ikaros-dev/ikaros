@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import run.ikaros.api.store.enums.TagType;
 import run.ikaros.server.store.entity.TagEntity;
 
+@org.jspecify.annotations.NullUnmarked
 class TagEventTest {
 
     private TagEntity buildTagEntity() {

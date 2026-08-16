@@ -28,6 +28,7 @@ import run.ikaros.server.core.binding.service.DirectoryBindingService;
 import run.ikaros.server.store.entity.DirectoryBindingWorkflowEntity;
 
 /** 验证目录绑定接口的路由、参数委托和响应状态. */
+@org.jspecify.annotations.NullUnmarked
 class DirectoryBindingEndpointTest {
 
     /** 远程目录绑定服务. */

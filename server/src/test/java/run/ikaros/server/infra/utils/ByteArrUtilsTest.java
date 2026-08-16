@@ -3,6 +3,7 @@ package run.ikaros.server.infra.utils;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 class ByteArrUtilsTest {
@@ -44,7 +45,8 @@ class ByteArrUtilsTest {
 
     @Test
     void isBinaryData_null_throwsNpe() {
-        assertThrows(NullPointerException.class, () -> ByteArrUtils.isBinaryData(null));
+        byte @Nullable [] data = null;
+        assertThrows(NullPointerException.class, () -> ByteArrUtils.isBinaryData(data));
     }
 
     @Test

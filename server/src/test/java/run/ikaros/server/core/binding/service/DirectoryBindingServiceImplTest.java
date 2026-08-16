@@ -30,6 +30,7 @@ import run.ikaros.server.store.repository.AttachmentRepository;
 import run.ikaros.server.store.repository.DirectoryBindingWorkflowRepository;
 import run.ikaros.server.store.repository.TaskRepository;
 
+@SuppressWarnings("NullAway.Init")
 class DirectoryBindingServiceImplTest {
 
     @Mock

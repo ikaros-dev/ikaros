@@ -9,6 +9,7 @@ import java.security.Principal;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -57,7 +58,7 @@ public class TagEndpoint implements CoreEndpoint {
         return request.principal()
             .map(Principal::getName)
             .flatMap(userService::getUserByUsername)
-            .map(user -> user.entity().getId());
+            .flatMap(user -> Mono.justOrEmpty(user.entity().getId()));
     }
 
     @Override
@@ -125,13 +126,14 @@ public class TagEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> listByCondition(ServerRequest request) {
         Optional<String> typeOp = request.queryParam("type");
-        TagType type = typeOp.isPresent() && StringUtils.isNotBlank(typeOp.get())
+        @Nullable TagType type = typeOp.isPresent() && StringUtils.isNotBlank(typeOp.get())
             ? TagType.valueOf(typeOp.get()) : null;
 
-        UUID masterId = UuidV7Utils.fromString(request.queryParam("masterId").orElse(""));
+        @Nullable UUID masterId =
+            UuidV7Utils.fromString(request.queryParam("masterId").orElse(""));
 
         Optional<String> nameOp = request.queryParam("name");
-        String name = nameOp.orElse(null);
+        @Nullable String name = nameOp.orElse(null);
 
         return getCurrentUserId(request)
             .flatMapMany(currentUserId ->
@@ -141,7 +143,7 @@ public class TagEndpoint implements CoreEndpoint {
     }
 
     private Mono<ServerResponse> listSubjectTagsBySubjectId(ServerRequest request) {
-        UUID subjectId = UuidV7Utils.fromString(request.pathVariable("subjectId"));
+        @Nullable UUID subjectId = UuidV7Utils.fromString(request.pathVariable("subjectId"));
         return tagService.findSubjectTags(subjectId)
             .collectList()
             .flatMap(subjectTags -> ServerResponse.ok()
@@ -150,7 +152,8 @@ public class TagEndpoint implements CoreEndpoint {
 
 
     private Mono<ServerResponse> listAttachmentTagsByAttachmentId(ServerRequest request) {
-        UUID attachmentId = UuidV7Utils.fromString(request.pathVariable("attachmentId"));
+        @Nullable UUID attachmentId =
+            UuidV7Utils.fromString(request.pathVariable("attachmentId"));
         return tagService.findAttachmentTags(attachmentId)
             .collectList()
             .flatMap(attachmentTags -> ServerResponse.ok()
@@ -162,14 +165,17 @@ public class TagEndpoint implements CoreEndpoint {
             .flatMap(tag -> request.principal()
                 .map(Principal::getName)
                 .flatMap(userService::getUserByUsername)
-                .map(user -> user.entity().getId())
+                .flatMap(user -> Mono.justOrEmpty(user.entity().getId()))
                 .map(tag::setUserId))
             .flatMap(tagService::create)
             .flatMap(tag -> ServerResponse.ok().bodyValue(tag));
     }
 
     private Mono<ServerResponse> removeById(ServerRequest request) {
-        UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
+        @Nullable UUID id = UuidV7Utils.fromString(request.pathVariable("id"));
+        if (id == null) {
+            throw new IllegalArgumentException("id must not null.");
+        }
         return tagRepository.findById(id)
             .switchIfEmpty(Mono.error(
                 new NotFoundException("Tag not found for id = " + id)))
@@ -192,7 +198,8 @@ public class TagEndpoint implements CoreEndpoint {
         TagType type = TagType.valueOf(typeOp.get());
         String name = nameOp.get();
 
-        UUID masterId = UuidV7Utils.fromString(request.queryParam("masterId").orElse(""));
+        @Nullable UUID masterId =
+            UuidV7Utils.fromString(request.queryParam("masterId").orElse(""));
         Assert.notNull(masterId, "'masterId' must not null.");
         return getCurrentUserId(request)
             .flatMap(currentUserId ->

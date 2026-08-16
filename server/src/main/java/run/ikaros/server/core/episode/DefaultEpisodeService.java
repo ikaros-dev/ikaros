@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Service;
@@ -96,24 +98,30 @@ public class DefaultEpisodeService implements EpisodeService {
 
     @Override
     @MonoCacheable(value = "episode:id:", key = "#episodeId")
-    public Mono<Episode> findById(UUID episodeId) {
-        Assert.notNull(episodeId, "episode must not null.");
+    public Mono<Episode> findById(@Nullable UUID episodeId) {
+        if (episodeId == null) {
+            throw new IllegalArgumentException("episode must not null.");
+        }
         return episodeRepository.findById(episodeId)
             .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()));
     }
 
     @Override
     @FluxCacheable(value = "episodes:subjectId:", key = "#subjectId")
-    public Flux<Episode> findAllBySubjectId(UUID subjectId) {
-        Assert.notNull(subjectId, "subjectId must not null.");
+    public Flux<Episode> findAllBySubjectId(@Nullable UUID subjectId) {
+        if (subjectId == null) {
+            throw new IllegalArgumentException("subjectId must not null.");
+        }
         return episodeRepository.findAllBySubjectId(subjectId)
             .flatMap(episodeEntity -> copyProperties(episodeEntity, new Episode()));
     }
 
     @Override
     @FluxCacheable(value = "episodeRecords:subjectId:", key = "#subjectId")
-    public Flux<EpisodeRecord> findRecordsBySubjectId(UUID subjectId) {
-        Assert.notNull(subjectId, "subjectId must not null.");
+    public Flux<EpisodeRecord> findRecordsBySubjectId(@Nullable UUID subjectId) {
+        if (subjectId == null) {
+            throw new IllegalArgumentException("subjectId must not null.");
+        }
         return findAllBySubjectId(subjectId)
             .flatMap(episode -> findResourcesById(episode.getId())
                 .collectList()
@@ -125,8 +133,10 @@ public class DefaultEpisodeService implements EpisodeService {
     @MonoCacheable(value = "episode:subjectId_group_sequence_name",
         key = "#subjectId + #group + #sequence + #name")
     public Mono<Episode> findBySubjectIdAndGroupAndSequenceAndName(
-        UUID subjectId, EpisodeGroup group, Float sequence, String name) {
-        Assert.notNull(subjectId, "subjectId must not null.");
+        @Nullable UUID subjectId, EpisodeGroup group, Float sequence, String name) {
+        if (subjectId == null) {
+            throw new IllegalArgumentException("subjectId must not null.");
+        }
         Assert.notNull(group, "'group' must not be null");
         Assert.isTrue(sequence >= 0, "'sequence' must >= 0.");
         Assert.hasText(name, "'name' must not be empty.");
@@ -150,8 +160,10 @@ public class DefaultEpisodeService implements EpisodeService {
 
     @Override
     @MonoCacheEvict
-    public Mono<Void> deleteById(UUID episodeId) {
-        Assert.notNull(episodeId, "episodeId must not null.");
+    public Mono<Void> deleteById(@Nullable UUID episodeId) {
+        if (episodeId == null) {
+            throw new IllegalArgumentException("episodeId must not null.");
+        }
         return episodeRepository.findById(episodeId)
             .flatMap(entity -> episodeRepository.delete(entity)
                 .doOnSuccess(v -> {
@@ -163,28 +175,35 @@ public class DefaultEpisodeService implements EpisodeService {
 
     @Override
     @MonoCacheable(value = "episode:count:subjectId", key = "#subjectId")
-    public Mono<Long> countBySubjectId(UUID subjectId) {
-        Assert.notNull(subjectId, "subjectId must not null.");
+    public Mono<Long> countBySubjectId(@Nullable UUID subjectId) {
+        if (subjectId == null) {
+            throw new IllegalArgumentException("subjectId must not null.");
+        }
         return episodeRepository.countBySubjectId(subjectId);
     }
 
     @Override
     @MonoCacheable(value = "episode:countMatching:subjectId", key = "#subjectId")
-    public Mono<Long> countMatchingBySubjectId(UUID subjectId) {
-        Assert.notNull(subjectId, "'subjectId' must not null.");
+    public Mono<Long> countMatchingBySubjectId(@Nullable UUID subjectId) {
+        if (subjectId == null) {
+            throw new IllegalArgumentException("'subjectId' must not null.");
+        }
         return databaseClient.sql("select count(e.ID) from EPISODE e, ATTACHMENT_REFERENCE ar "
                 + "where ar.TYPE = 'EPISODE' and e.ID = ar.REFERENCE_ID "
                 + "and e.SUBJECT_ID = :subjectId")
             .bind("subjectId", subjectId)
-            .map(row -> row.get(0, Long.class))
-            .one();
+            .map((row, metadata) -> Optional.ofNullable(row.get(0, Long.class)))
+            .one()
+            .flatMap(Mono::justOrEmpty);
     }
 
 
     @Override
     @FluxCacheable(value = "episode_resources:episodeId", key = "#episodeId")
-    public Flux<EpisodeResource> findResourcesById(UUID episodeId) {
-        Assert.notNull(episodeId, "'episodeId' must not null.");
+    public Flux<EpisodeResource> findResourcesById(@Nullable UUID episodeId) {
+        if (episodeId == null) {
+            throw new IllegalArgumentException("'episodeId' must not null.");
+        }
         return databaseClient.sql("select att_ref.ATTACHMENT_ID as attachment_id, "
                 + "att.PARENT_ID as parent_attachment_id, "
                 + "att_ref.REFERENCE_ID as episode_id, "
@@ -241,7 +260,7 @@ public class DefaultEpisodeService implements EpisodeService {
             .bind("attachmentId", '%' + resource.getAttachmentId().toString() + '%')
             .fetch()
             .all()
-            .map(row -> row.get("local_scan_state"))
+            .flatMap(row -> Mono.justOrEmpty(row.get("local_scan_state")))
             .filter(String.class::isInstance)
             .cast(String.class)
             .flatMap(json -> Mono.justOrEmpty(parseState(json)))
@@ -254,7 +273,7 @@ public class DefaultEpisodeService implements EpisodeService {
             });
     }
 
-    private JsonNode parseState(String json) {
+    private @Nullable JsonNode parseState(String json) {
         try {
             return objectMapper.readTree(json);
         } catch (Exception exception) {
@@ -282,7 +301,7 @@ public class DefaultEpisodeService implements EpisodeService {
             });
     }
 
-    private JsonNode findPrimaryItem(JsonNode state, EpisodeResource resource) {
+    private @Nullable JsonNode findPrimaryItem(JsonNode state, EpisodeResource resource) {
         JsonNode items = state.path("items");
         if (!items.isArray()) {
             return null;
@@ -380,17 +399,17 @@ public class DefaultEpisodeService implements EpisodeService {
             });
     }
 
-    private String externalCodec(JsonNode item, String filename) {
+    private @Nullable String externalCodec(JsonNode item, @Nullable String filename) {
         String extension = metadataText(item, "extension");
-        if (extension == null) {
-            int extensionStart = filename == null ? -1 : filename.lastIndexOf('.');
+        if (extension == null && filename != null) {
+            int extensionStart = filename.lastIndexOf('.');
             extension = extensionStart < 0 ? null : filename.substring(extensionStart);
         }
         return extension == null ? null : extension.replaceFirst("^\\.", "")
             .toLowerCase(Locale.ROOT);
     }
 
-    private String metadataText(JsonNode item, String field) {
+    private @Nullable String metadataText(JsonNode item, String field) {
         return textValue(item.path("display_metadata"), field);
     }
 
@@ -406,7 +425,7 @@ public class DefaultEpisodeService implements EpisodeService {
         }
     }
 
-    private UUID uuidValue(JsonNode node, String field) {
+    private @Nullable UUID uuidValue(JsonNode node, String field) {
         String value = textValue(node, field);
         if (value == null) {
             return null;
@@ -418,7 +437,7 @@ public class DefaultEpisodeService implements EpisodeService {
         }
     }
 
-    private String textValue(JsonNode node, String field) {
+    private @Nullable String textValue(@Nullable JsonNode node, String field) {
         if (node == null || !node.hasNonNull(field)) {
             return null;
         }
@@ -426,7 +445,7 @@ public class DefaultEpisodeService implements EpisodeService {
         return value.isBlank() ? null : value;
     }
 
-    private String safeText(String value) {
+    private String safeText(@Nullable String value) {
         return value == null ? "" : value;
     }
 

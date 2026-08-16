@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.pf4j.DevelopmentPluginClasspath;
 import org.pf4j.PluginRuntimeException;
 import org.pf4j.PluginState;
@@ -90,7 +91,7 @@ public class YamlPluginFinder {
         return plugin;
     }
 
-    protected Path getManifestPath(Path pluginPath, String propertiesFileName) {
+    protected @Nullable Path getManifestPath(Path pluginPath, String propertiesFileName) {
         if (Files.isDirectory(pluginPath)) {
             for (String location : PLUGIN_CLASSPATH.getClassesDirectories()) {
                 var path = pluginPath.resolve(location).resolve(propertiesFileName);

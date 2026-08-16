@@ -53,7 +53,7 @@ public class MailServiceImpl implements MailService {
         return reactiveCustomClient.findOne(ConfigMap.class,
                 SystemSettingInitListener.getConfigMapName())
             .onErrorResume(NotFoundException.class, e -> Mono.empty())
-            .map(ConfigMap::getData)
+            .map(configMap -> Objects.requireNonNull(configMap.getData()))
             .map(map -> {
                 Object mailEnable = map.get("MAIL_ENABLE");
                 if (Objects.nonNull(mailEnable)) {
@@ -99,10 +99,15 @@ public class MailServiceImpl implements MailService {
                 log.debug("update mail config");
                 return mailConfig;
             })
-            .map(mc -> {
+            .flatMap(mc -> {
+                Integer port = mc.getPort();
+                MailProtocol protocol = mc.getProtocol();
+                if (port == null || protocol == null) {
+                    return Mono.error(new IllegalStateException("邮件端口和协议不能为空"));
+                }
                 mailSender.setHost(mc.getHost());
-                mailSender.setPort(mc.getPort());
-                mailSender.setProtocol(mc.getProtocol().name().toLowerCase());
+                mailSender.setPort(port);
+                mailSender.setProtocol(protocol.name().toLowerCase());
                 mailSender.setUsername(mc.getAccount());
                 mailSender.setPassword(mc.getPassword());
                 mailSender.setDefaultEncoding(StandardCharsets.UTF_8.name());
@@ -113,12 +118,12 @@ public class MailServiceImpl implements MailService {
                 properties.setProperty("mail.smtp.socketFactory.fallback",
                     Boolean.FALSE.toString());
                 properties.setProperty("mail.smtp.socketFactory.port",
-                    String.valueOf(mc.getPort()));
+                    String.valueOf(port));
                 properties.setProperty("mail.smtp.socketFactory.class",
                     "javax.net.ssl.SSLSocketFactory");
                 mailSender.setJavaMailProperties(properties);
                 log.debug("update mail sender.");
-                return mc;
+                return Mono.just(mc);
             })
             .then();
     }
@@ -130,6 +135,11 @@ public class MailServiceImpl implements MailService {
         Assert.hasText(request.getContent(), "context must has text.");
         String address = StringUtils.isBlank(request.getAddress())
             ? mailConfig.getReceiveAddress() : request.getAddress();
+        String title = request.getTitle();
+        String content = request.getContent();
+        if (address == null || title == null || content == null) {
+            throw new IllegalArgumentException("邮件地址、标题和内容不能为空");
+        }
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
@@ -139,8 +149,8 @@ public class MailServiceImpl implements MailService {
             + ">";
         helper.setFrom(fromSb);
         helper.setTo(address);
-        helper.setSubject(request.getTitle());
-        helper.setText(request.getContent(), true);
+        helper.setSubject(title);
+        helper.setText(content, true);
 
         mailSender.send(message);
         log.info("send mail to {} success, mail title is {}", address, request.getTitle());
@@ -155,6 +165,10 @@ public class MailServiceImpl implements MailService {
         Assert.notNull(context, "context must not null.");
         String address = StringUtils.isBlank(request.getAddress())
             ? mailConfig.getReceiveAddress() : request.getAddress();
+        String title = request.getTitle();
+        if (address == null || title == null) {
+            return Mono.error(new IllegalArgumentException("邮件地址和标题不能为空"));
+        }
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = null;
         String fromSb = mailConfig.getAccountAlias()
@@ -165,7 +179,7 @@ public class MailServiceImpl implements MailService {
             helper = new MimeMessageHelper(message, true);
             helper.setFrom(fromSb);
             helper.setTo(address);
-            helper.setSubject(request.getTitle());
+            helper.setSubject(title);
             helper.setText(templateEngine.process(template, context), true);
 
             mailSender.send(message);

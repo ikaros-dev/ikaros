@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ElMessage } from 'element-plus';
+import { ElButton, ElInput, ElMessage } from 'element-plus';
+import { CopyDocument } from '@element-plus/icons-vue';
 import { onMounted, ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useUserStore } from '@/stores/user';
+import { copyValue2Clipboard } from '@/utils/string-util';
 import axios from 'axios';
 import QRCode from 'qrcode';
 
@@ -118,8 +120,8 @@ async function handleDisable() {
 	try {
 		const token = userStore.jwtToken;
 		const { status } = await axios.post(
-			`${totpBase}/disable?password=${encodeURIComponent(disablePassword.value)}`,
-			{},
+			`${totpBase}/disable`,
+			{ password: disablePassword.value },
 			{ headers: { Authorization: `Bearer ${token}` } }
 		);
 		if (status === 200) {
@@ -151,11 +153,13 @@ function handleVerifyKeydown(index: number, e: KeyboardEvent) {
 	}
 }
 
-function copySecret() {
-	navigator.clipboard
-		.writeText(secret.value)
-		.then(() => ElMessage.success('密钥已复制'))
-		.catch(() => ElMessage.error('复制失败'));
+async function copySecret() {
+	try {
+		await copyValue2Clipboard(secret.value);
+		ElMessage.success('密钥已复制');
+	} catch {
+		ElMessage.error('复制失败');
+	}
 }
 
 onMounted(() => {
@@ -191,45 +195,40 @@ onMounted(() => {
 					</p>
 				</div>
 				<div class="m3-totp-page__actions">
-					<button
-						class="m3-btn m3-btn--outlined"
-						:disabled="isLoading"
-						@click="handleSetup"
-					>
+					<el-button :disabled="isLoading" @click="handleSetup">
 						重新绑定
-					</button>
+					</el-button>
 					<div class="m3-totp-page__disable">
-						<div class="m3-field">
-							<div class="m3-field__container">
-								<input
-									id="disable-password"
-									v-model="disablePassword"
-									type="password"
-									class="m3-field__input"
-									placeholder="请输入当前密码"
-								/>
-								<label for="disable-password" class="m3-field__label"
-									>当前密码</label
-								>
-								<div class="m3-field__underline"></div>
-							</div>
-						</div>
-						<button
-							class="m3-btn m3-btn--error"
+						<el-input
+							v-model="disablePassword"
+							type="password"
+							placeholder="请输入当前密码"
+							autocomplete="current-password"
+							show-password
+						/>
+						<el-button
+							type="danger"
 							:disabled="isLoading || !disablePassword"
+							:loading="isLoading"
 							@click="handleDisable"
 						>
 							关闭二步验证
-						</button>
+						</el-button>
 					</div>
 				</div>
 			</template>
 
 			<!-- 未启用：引导开启 -->
 			<template v-else-if="!totpEnabled && step === 'idle'">
-				<div class="m3-totp-page__status">
-					<div
-						class="m3-totp-page__status-icon m3-totp-page__status-icon--disabled"
+				<div class="m3-totp-page__status m3-totp-page__status--setup-entry">
+					<el-button
+						class="m3-totp-page__status-icon m3-totp-page__status-icon--disabled m3-totp-page__status-icon--action"
+						circle
+						:disabled="isLoading"
+						:loading="isLoading"
+						aria-label="开启二步验证"
+						title="开启二步验证"
+						@click="handleSetup"
 					>
 						<svg width="48" height="48" viewBox="0 0 24 24" fill="none">
 							<path
@@ -237,17 +236,8 @@ onMounted(() => {
 								fill="currentColor"
 							/>
 						</svg>
-					</div>
+					</el-button>
 					<p class="m3-totp-page__status-text">开启二步验证以增强账户安全性</p>
-				</div>
-				<div class="m3-totp-page__actions">
-					<button
-						class="m3-btn m3-btn--filled"
-						:disabled="isLoading"
-						@click="handleSetup"
-					>
-						{{ isLoading ? '生成中...' : '开启二步验证' }}
-					</button>
 				</div>
 			</template>
 
@@ -255,7 +245,7 @@ onMounted(() => {
 			<template v-else-if="step === 'verify'">
 				<div class="m3-totp-page__setup">
 					<p class="m3-totp-page__setup-title">
-						使用 Authenticator 应用扫描此二维码或手动输入密钥
+						使用 Authenticator 应用扫描二维码或手动输入下方密钥
 					</p>
 
 					<!-- QR 码 -->
@@ -264,11 +254,16 @@ onMounted(() => {
 					</div>
 
 					<div class="m3-totp-page__secret">
-						<span class="m3-totp-page__secret-label">密钥:</span>
 						<code class="m3-totp-page__secret-value">{{ secret }}</code>
-						<button class="m3-totp-page__secret-copy" @click="copySecret">
-							复制
-						</button>
+						<el-button
+							class="m3-totp-page__copy-button"
+							:icon="CopyDocument"
+							text
+							circle
+							aria-label="复制密钥"
+							title="复制密钥"
+							@click="copySecret"
+						/>
 					</div>
 
 					<p class="m3-totp-page__setup-title" style="margin-top: 24px">
@@ -276,6 +271,7 @@ onMounted(() => {
 					</p>
 
 					<div class="m3-totp__inputs">
+						<!-- eslint-disable-next-line vue/no-restricted-html-elements -- 原生输入框用于逐位验证码焦点控制 -->
 						<input
 							v-for="(digit, index) in verifyCode"
 							:key="index"
@@ -296,21 +292,24 @@ onMounted(() => {
 						/>
 					</div>
 
-					<div class="m3-totp-page__actions" style="margin-top: 24px">
-						<button
-							class="m3-btn m3-btn--outlined"
+					<div
+						class="m3-totp-page__actions m3-totp-page__actions--verify"
+						style="margin-top: 24px"
+					>
+						<el-button
+							type="primary"
 							:disabled="isLoading"
 							@click="step = 'idle'"
 						>
 							取消
-						</button>
-						<button
-							class="m3-btn m3-btn--filled"
+						</el-button>
+						<el-button
 							:disabled="!isVerifyCodeComplete || isLoading"
+							:loading="isLoading"
 							@click="handleEnable"
 						>
-							{{ isLoading ? '验证中...' : '验证并启用' }}
-						</button>
+							验证并启用
+						</el-button>
 					</div>
 				</div>
 			</template>
@@ -381,6 +380,15 @@ onMounted(() => {
 	margin-bottom: 32px;
 }
 
+.m3-totp-page__status--setup-entry {
+	display: flex;
+	min-height: 174px;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 0;
+}
+
 .m3-totp-page__status-icon {
 	display: inline-flex;
 	align-items: center;
@@ -401,6 +409,61 @@ onMounted(() => {
 	color: var(--m3-on-surface-variant);
 }
 
+.m3-totp-page__status-icon--action {
+	--el-button-bg-color: var(--m3-surface-container-highest);
+	--el-button-border-color: transparent;
+	--el-button-text-color: var(--m3-on-surface-variant);
+	--el-button-hover-bg-color: var(--m3-primary-container);
+	--el-button-hover-border-color: var(--m3-primary);
+	--el-button-hover-text-color: var(--m3-primary);
+	--el-button-active-bg-color: var(--m3-primary-container);
+	--el-button-active-border-color: var(--m3-primary);
+	--el-button-active-text-color: var(--m3-primary);
+
+	flex: 0 0 72px;
+	width: 72px;
+	min-width: 72px;
+	max-width: 72px;
+	height: 72px;
+	min-height: 72px;
+	max-height: 72px;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: 50%;
+	box-sizing: border-box;
+	font: inherit;
+	cursor: pointer;
+	transition:
+		background-color 0.2s ease,
+		border-color 0.2s ease,
+		box-shadow 0.2s ease,
+		color 0.2s ease,
+		transform 0.2s ease;
+}
+
+.m3-totp-page__status-icon--action:hover:not(:disabled) {
+	background: var(--m3-primary-container);
+	border-color: var(--m3-primary);
+	box-shadow: 0 6px 18px rgb(64 158 255 / 24%);
+	color: var(--m3-primary);
+	transform: translateY(-2px);
+}
+
+.m3-totp-page__status-icon--action:active:not(:disabled) {
+	box-shadow: 0 2px 8px rgb(64 158 255 / 20%);
+	transform: translateY(0);
+}
+
+.m3-totp-page__status-icon--action:focus-visible {
+	outline: 3px solid var(--m3-primary-container);
+	outline-offset: 3px;
+}
+
+.m3-totp-page__status-icon--action:disabled {
+	cursor: wait;
+	opacity: 0.65;
+}
+
 .m3-totp-page__status-text {
 	margin: 0;
 	font-family: 'Roboto', system-ui, sans-serif;
@@ -416,6 +479,11 @@ onMounted(() => {
 	flex-direction: column;
 	gap: 16px;
 	align-items: center;
+}
+
+.m3-totp-page__actions--verify {
+	flex-direction: row;
+	justify-content: center;
 }
 
 .m3-totp-page__disable {
@@ -457,49 +525,33 @@ onMounted(() => {
 }
 
 .m3-totp-page__secret {
-	display: flex;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 32px;
 	align-items: center;
-	justify-content: center;
-	gap: 8px;
+	gap: 16px;
+	min-width: 0;
 	background: var(--m3-surface-container-highest);
 	border-radius: 12px;
 	padding: 12px 16px;
 	margin: 8px 0;
 }
 
-.m3-totp-page__secret-label {
-	font-family: 'Roboto', system-ui, sans-serif;
-	font-size: 13px;
-	font-weight: 500;
-	color: var(--m3-on-surface-variant);
-	white-space: nowrap;
-}
-
 .m3-totp-page__secret-value {
+	min-width: 0;
 	font-family: 'Roboto Mono', 'Cascadia Code', monospace;
-	font-size: 13px;
+	font-size: 12px;
 	font-weight: 500;
-	letter-spacing: 2px;
+	letter-spacing: 1px;
 	color: var(--m3-on-surface);
-	word-break: break-all;
-}
-
-.m3-totp-page__secret-copy {
-	background: transparent;
-	border: none;
-	color: var(--m3-primary);
-	cursor: pointer;
-	font-family: 'Roboto', system-ui, sans-serif;
-	font-size: 13px;
-	font-weight: 500;
-	padding: 4px 8px;
-	border-radius: 8px;
+	text-align: center;
 	white-space: nowrap;
-	transition: background 0.15s ease;
 }
 
-.m3-totp-page__secret-copy:hover {
-	background: rgba(64, 158, 255, 0.08);
+.m3-totp-page__copy-button {
+	width: 32px;
+	height: 32px;
+	margin: 0;
+	color: var(--m3-primary);
 }
 
 /* ========== TOTP Input ========== */
@@ -534,147 +586,6 @@ onMounted(() => {
 	box-shadow: inset 0 0 0 2px var(--m3-primary);
 }
 
-/* ========== M3 Filled Button ========== */
-.m3-btn {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-width: 64px;
-	height: 40px;
-	padding: 0 24px;
-	border: none;
-	border-radius: 20px;
-	cursor: pointer;
-	font-family: 'Roboto', system-ui, sans-serif;
-	font-size: 14px;
-	font-weight: 500;
-	line-height: 20px;
-	letter-spacing: 0.1px;
-	overflow: hidden;
-	transition: background 0.15s ease;
-}
-
-.m3-btn--filled {
-	background: var(--m3-primary);
-	color: var(--m3-on-primary);
-}
-
-.m3-btn--filled:hover {
-	background: #66b1ff;
-}
-
-.m3-btn--filled:active {
-	background: #3a8ee6;
-}
-
-.m3-btn--filled:disabled {
-	background: rgba(31, 31, 31, 0.12);
-	color: rgba(31, 31, 31, 0.38);
-	cursor: not-allowed;
-}
-
-.m3-btn--outlined {
-	background: transparent;
-	color: var(--m3-primary);
-	border: 1px solid var(--m3-outline);
-}
-
-.m3-btn--outlined:hover {
-	background: rgba(64, 158, 255, 0.08);
-}
-
-.m3-btn--error {
-	background: var(--m3-error);
-	color: #ffffff;
-}
-
-.m3-btn--error:hover {
-	background: #d32f2f;
-}
-
-/* ========== M3 Filled Text Field (for disable password) ========== */
-.m3-field {
-	width: 100%;
-}
-
-.m3-field__container {
-	position: relative;
-	display: flex;
-	align-items: center;
-	background: var(--m3-surface-container-highest);
-	border-radius: 4px 4px 0 0;
-	height: 48px;
-	cursor: text;
-	transition: background 0.15s ease;
-}
-
-.m3-field__container:hover {
-	background: var(--m3-surface-container-high);
-}
-
-.m3-field__container:focus-within {
-	background: var(--m3-surface-container-highest);
-}
-
-.m3-field__input {
-	width: 100%;
-	height: 100%;
-	padding: 20px 16px 4px;
-	border: none;
-	outline: none;
-	background: transparent;
-	color: var(--m3-on-surface);
-	font-family: 'Roboto', system-ui, sans-serif;
-	font-size: 16px;
-	font-weight: 400;
-	line-height: 24px;
-	letter-spacing: 0.5px;
-	box-sizing: border-box;
-}
-
-.m3-field__input::placeholder {
-	color: transparent;
-}
-
-.m3-field__label {
-	position: absolute;
-	left: 16px;
-	top: 50%;
-	transform: translateY(-50%);
-	font-family: 'Roboto', system-ui, sans-serif;
-	font-size: 16px;
-	font-weight: 400;
-	line-height: 24px;
-	letter-spacing: 0.5px;
-	color: var(--m3-on-surface-variant);
-	pointer-events: none;
-	transition: all 0.15s ease;
-	transform-origin: left top;
-}
-
-.m3-field__input:focus + .m3-field__label,
-.m3-field__input:not(:placeholder-shown) + .m3-field__label {
-	top: 6px;
-	transform: translateY(0) scale(0.75);
-	color: var(--m3-primary);
-	font-weight: 500;
-}
-
-.m3-field__underline {
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	height: 1px;
-	background: var(--m3-outline);
-	transition: all 0.15s ease;
-}
-
-.m3-field__container:focus-within .m3-field__underline {
-	background: var(--m3-primary);
-	height: 2px;
-}
-
 @media (max-width: 480px) {
 	.m3-totp-page__card {
 		padding: 24px 20px;
@@ -689,6 +600,22 @@ onMounted(() => {
 
 	.m3-totp__inputs {
 		gap: 8px;
+	}
+
+	.m3-totp-page__secret {
+		padding: 12px;
+		gap: 12px;
+		align-items: flex-start;
+	}
+
+	.m3-totp-page__secret-value {
+		text-align: left;
+		white-space: normal;
+		overflow-wrap: anywhere;
+	}
+
+	.m3-totp-page__actions--verify {
+		gap: 12px;
 	}
 }
 </style>

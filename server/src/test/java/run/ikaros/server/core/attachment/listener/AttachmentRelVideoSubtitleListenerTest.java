@@ -30,6 +30,7 @@ import run.ikaros.server.store.repository.AttachmentRepository;
 @Testcontainers
 @Import({IkarosTestcontainersConfiguration.class,
     AttachmentRelVideoSubtitleListenerTest.TestMediaInspectionConfiguration.class})
+@org.jspecify.annotations.NullUnmarked
 class AttachmentRelVideoSubtitleListenerTest {
 
     @Autowired

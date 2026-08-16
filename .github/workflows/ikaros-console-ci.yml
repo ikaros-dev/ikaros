@@ -1,0 +1,40 @@
+name: Console CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'console/**'
+      - '.github/workflows/ikaros-console-ci.yml'
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'console/**'
+      - '.github/workflows/ikaros-console-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: console
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: console/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.1
+          cache: pnpm
+          cache-dependency-path: console/pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Check Element Plus usage
+        run: pnpm lint:check

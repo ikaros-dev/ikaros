@@ -52,7 +52,8 @@ public class DefaultAttachmentSha1Service implements AttachmentSha1Service {
 
     Mono<Void> calculateAndSave(AttachmentDriverFetcher fetcher, Attachment snapshot) {
         return fetcher.calculateSha1(snapshot)
-            .flatMap(hashedAttachment -> attachmentService.findById(snapshot.getId())
+            .flatMap(hashedAttachment -> attachmentService
+                .findById(Objects.requireNonNull(snapshot.getId()))
                 .filter(currentAttachment -> isSameFile(snapshot, currentAttachment))
                 .map(currentAttachment ->
                     currentAttachment.setSha1(hashedAttachment.getSha1()))

@@ -1,5 +1,6 @@
 package run.ikaros.server.core.attachment.service;
 
+import static run.ikaros.api.core.attachment.AttachmentConst.DOWNLOAD_DIRECTORY_ID;
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 import static run.ikaros.server.core.attachment.utils.AttachmentTestUtils.attIsEqualsWithoutOrder;
@@ -44,6 +45,7 @@ import run.ikaros.server.store.repository.AttachmentRepository;
 @SpringBootTest
 @Testcontainers
 @Import(IkarosTestcontainersConfiguration.class)
+@org.jspecify.annotations.NullUnmarked
 class AttachmentServiceTest {
     @Autowired
     AttachmentService attachmentService;
@@ -74,6 +76,8 @@ class AttachmentServiceTest {
             .expectNext(0L)
             .verifyComplete();
 
+        StepVerifier.create(initializer.initialize()).verifyComplete();
+
         final String name = "UnitTestDocFile.PNG";
         ClassPathResource classPathResource =
             new ClassPathResource("core/file/" + name);
@@ -85,21 +89,22 @@ class AttachmentServiceTest {
                 AttachmentUploadCondition.builder()
                     .dataBufferFlux(dataBufferFlux)
                     .name(name)
+                    .parentId(DOWNLOAD_DIRECTORY_ID)
                     .build()))
             .expectNextMatches(attachment -> StringUtils.hasText(attachment.getFsPath()))
             .verifyComplete();
 
         StepVerifier.create(attachmentService.findByTypeAndParentIdAndName(AttachmentType.File,
-                null, name).map(Attachment::getName))
+                DOWNLOAD_DIRECTORY_ID, name).map(Attachment::getName))
             .expectNext(name)
             .verifyComplete();
 
         // remove attachment
         StepVerifier.create(attachmentService.removeByTypeAndParentIdAndName(AttachmentType.File,
-            null, name)).verifyComplete();
+            DOWNLOAD_DIRECTORY_ID, name)).verifyComplete();
 
         StepVerifier.create(attachmentService.findByTypeAndParentIdAndName(AttachmentType.File,
-                null, name).map(Attachment::getName))
+                DOWNLOAD_DIRECTORY_ID, name).map(Attachment::getName))
             .verifyComplete();
 
     }
@@ -143,10 +148,12 @@ class AttachmentServiceTest {
 
     @Test
     void save() {
-        // parent id is null
+        StepVerifier.create(initializer.initialize()).verifyComplete();
+
         final var attachment = Attachment.builder()
             .name(RandomUtils.randomString(20))
             .type(AttachmentType.File)
+            .parentId(DOWNLOAD_DIRECTORY_ID)
             .build();
 
         StepVerifier.create(attachmentService.save(attachment))
@@ -171,19 +178,15 @@ class AttachmentServiceTest {
             .build();
 
         StepVerifier.create(attachmentService.save(attachmentPidNotNull))
-            .expectNextMatches(newAttachment ->
-                attachmentPidNotNull.getParentId().equals(newAttachment.getParentId())
-                    && attachmentPidNotNull.getName().equals(newAttachment.getName())
-                    && attachmentPidNotNull.getType().equals(newAttachment.getType()))
-            .verifyComplete();
+            .expectErrorSatisfies(error -> Assertions.assertThat(error)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("根目录只能包含文件夹"))
+            .verify();
 
         StepVerifier.create(attachmentRepository.findByTypeAndParentIdAndName(
                 attachmentPidNotNull.getType(), attachmentPidNotNull.getParentId(),
                 attachmentPidNotNull.getName()
-            )).expectNextMatches(newAttachmentEntity ->
-                attachmentPidNotNull.getType().equals(newAttachmentEntity.getType())
-                    && attachmentPidNotNull.getParentId().equals(newAttachmentEntity.getParentId())
-                    && attachmentPidNotNull.getName().equals(newAttachmentEntity.getName()))
+            ))
             .verifyComplete();
     }
 

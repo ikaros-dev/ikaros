@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -115,5 +116,58 @@ class AttachmentRepositoryTest {
                 Assertions.assertThat(storedAttachment.getModifiedTime()).isEqualTo(modifiedTime);
             })
             .verifyComplete();
+    }
+
+    @Test
+    void countKnownFilesAndFolders() {
+        long initialFiles = repository.countKnownFiles().blockOptional().orElseThrow();
+        long initialFolders = repository.countKnownFolders(
+            AttachmentConst.ROOT_DIRECTORY_ID,
+            AttachmentConst.COVER_DIRECTORY_ID,
+            AttachmentConst.DOWNLOAD_DIRECTORY_ID).blockOptional().orElseThrow();
+        UUID driverId = UuidV7Utils.generateUuid();
+        AttachmentEntity file = attachment(AttachmentType.File, false, null, null);
+        AttachmentEntity driverFile = attachment(AttachmentType.Driver_File, false, null, driverId);
+        AttachmentEntity deletedFile = attachment(AttachmentType.File, true, null, null);
+        AttachmentEntity folder = attachment(AttachmentType.Directory, false, null, null);
+        AttachmentEntity mountFolder = attachment(AttachmentType.Driver_Directory, false,
+            AttachmentConst.ROOT_DIRECTORY_ID, driverId);
+        AttachmentEntity scannedFolder = attachment(AttachmentType.Driver_Directory, false,
+            mountFolder.getId(), driverId);
+        List<AttachmentEntity> attachments = List.of(
+            file, driverFile, deletedFile, folder, mountFolder, scannedFolder);
+
+        StepVerifier.create(repository.insert(file)
+                .then(repository.insert(driverFile))
+                .then(repository.insert(deletedFile))
+                .then(repository.insert(folder))
+                .then(repository.insert(mountFolder))
+                .then(repository.insert(scannedFolder))
+                .then(repository.countKnownFiles()
+                    .zipWith(repository.countKnownFolders(
+                        AttachmentConst.ROOT_DIRECTORY_ID,
+                        AttachmentConst.COVER_DIRECTORY_ID,
+                        AttachmentConst.DOWNLOAD_DIRECTORY_ID))))
+            .assertNext(counts -> {
+                Assertions.assertThat(counts.getT1()).isEqualTo(initialFiles + 2);
+                Assertions.assertThat(counts.getT2()).isEqualTo(initialFolders + 2);
+            })
+            .verifyComplete();
+
+        StepVerifier.create(repository.deleteAll(attachments)).verifyComplete();
+    }
+
+    private AttachmentEntity attachment(AttachmentType type, boolean deleted,
+                                        @Nullable UUID parentId, @Nullable UUID driverId) {
+        UUID id = UuidV7Utils.generateUuid();
+        return AttachmentEntity.builder()
+            .id(id)
+            .name(id.toString())
+            .type(type)
+            .deleted(deleted)
+            .parentId(parentId)
+            .driverId(driverId)
+            .path("/" + id)
+            .build();
     }
 }

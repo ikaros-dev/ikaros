@@ -35,6 +35,7 @@ import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.api.wrap.PagingWrap;
 import run.ikaros.server.core.attachment.event.AttachmentDriverDisableEvent;
 import run.ikaros.server.core.attachment.event.AttachmentDriverEnableEvent;
+import run.ikaros.server.core.attachment.extension.LocalDiskAttachmentDriverFetcher;
 import run.ikaros.server.core.attachment.service.AttachmentContentInspectionService;
 import run.ikaros.server.core.attachment.service.AttachmentDriverMountService;
 import run.ikaros.server.core.attachment.service.AttachmentDriverService;
@@ -66,7 +67,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     private final R2dbcEntityTemplate template;
     private final ExtensionComponentsFinder extensionComponentsFinder;
     /**
-     * 对驱动扫描结果执行有限前缀真实格式检查。
+     * 对驱动扫描结果执行有限前缀真实格式检查.
      */
     private final AttachmentContentInspectionService contentInspectionService;
     /**
@@ -119,7 +120,9 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     public Mono<AttachmentDriver> save(AttachmentDriver driver) {
         Assert.notNull(driver, "'driver' must not null.");
         Assert.notNull(driver.getType(), "'driver type' must not null.");
-        getAttDriverFetcher(driver.getType(), driver.getName());
+        normalizeDriver(driver);
+        getAttDriverFetcher(Objects.requireNonNull(driver.getType()),
+            Objects.requireNonNull(driver.getName()));
         Mono<AttachmentDriverEntity> savedEntity = driver.getId() == null
             ? saveNewDriver(driver)
             : updateExistingDriver(driver);
@@ -127,12 +130,21 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
             .flatMap(entity -> copyProperties(entity, new AttachmentDriver()));
     }
 
+    private void normalizeDriver(AttachmentDriver driver) {
+        if (driver.getType() != AttachmentDriverType.LOCAL) {
+            return;
+        }
+        driver.setName(LocalDiskAttachmentDriverFetcher.LOCAL_DISK_DRIVER_NAME);
+        driver.setAccessToken(null);
+        driver.setRefreshToken(null);
+    }
+
     private Mono<AttachmentDriverEntity> saveNewDriver(AttachmentDriver driver) {
         return repository
             .findByTypeAndNameAndMountName(
-                driver
-                    .getType()
-                    .toString(), driver.getName(), driver.getMountName())
+                Objects.requireNonNull(driver.getType()).toString(),
+                Objects.requireNonNull(driver.getName()),
+                Objects.requireNonNull(driver.getMountName()))
             .flatMap(entity -> updateExistingDriver(driver, entity))
             .switchIfEmpty(Mono.defer(() -> copyProperties(driver, new AttachmentDriverEntity())
                 .map(entity -> entity
@@ -148,7 +160,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
 
     private Mono<AttachmentDriverEntity> updateExistingDriver(AttachmentDriver driver) {
         return repository
-            .findById(driver.getId())
+            .findById(Objects.requireNonNull(driver.getId()))
             .switchIfEmpty(Mono.error(new IllegalArgumentException(
                 "Attachment driver not found for id=" + driver.getId())))
             .flatMap(entity -> updateExistingDriver(driver, entity));
@@ -268,7 +280,7 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
         if (parentId == null) {
             parentId = AttachmentConst.ROOT_DIRECTORY_ID;
         }
-        if (refresh) {
+        if (Boolean.TRUE.equals(refresh)) {
             return refresh(parentId)
                 .then(attachmentService.listByCondition(attachmentSearchCondition));
         }
@@ -353,26 +365,30 @@ public class AttachmentDriverServiceImpl implements AttachmentDriverService {
     private Mono<Void> refreshRemoteFileSystem(Attachment attachment, UUID driverId) {
         final UUID pid = attachment.getId();
         String remotePath = attachment.getFsPath();
+        boolean mountRoot = AttachmentConst.ROOT_DIRECTORY_ID.equals(attachment.getParentId());
         return repository
             .findById(driverId)
             .switchIfEmpty(Mono.error(new IllegalStateException(
                 "Attachment driver not found for id=" + driverId)))
             .flatMap(entity -> copyProperties(entity, new AttachmentDriver()))
-            .flatMap(attachmentDriver ->
-                fetchAndUpdateEntities(attachmentDriver, pid, remotePath));
+            .flatMap(attachmentDriver -> fetchAndUpdateEntities(attachmentDriver,
+                Objects.requireNonNull(pid), Objects.requireNonNull(remotePath), mountRoot));
     }
 
     private Mono<Void> fetchAndUpdateEntities(
-        AttachmentDriver driver, UUID pid, String remotePath) {
+        AttachmentDriver driver, UUID pid, String remotePath, boolean mountRoot) {
         AttachmentDriverFetcher fetcher =
-            getAttDriverFetcher(driver.getType(), driver.getName());
+            getAttDriverFetcher(Objects.requireNonNull(driver.getType()),
+                Objects.requireNonNull(driver.getName()));
         Mono<List<Attachment>> scannedAttachments =
             fetcher
-                .getChildren(driver.getId(), pid, remotePath)
+                .getChildren(Objects.requireNonNull(driver.getId()), pid, remotePath)
+                .filter(attachment -> !mountRoot
+                    || attachment.getType() == AttachmentType.Driver_Directory)
                 .concatMap(attachment -> validateScannedAttachment(fetcher, attachment))
                 .collectList();
         Mono<List<AttachmentEntity>> storedAttachments = attachmentRepository
-            .findAllByParentIdAndDriverId(pid, driver.getId())
+            .findAllByParentIdAndDriverId(pid, Objects.requireNonNull(driver.getId()))
             .collectList();
         return Mono
             .zip(scannedAttachments, storedAttachments)

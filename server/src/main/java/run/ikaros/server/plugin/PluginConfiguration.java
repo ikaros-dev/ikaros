@@ -49,7 +49,8 @@ public class PluginConfiguration {
         // Setup Plugin folder
         String pluginsRoot = pluginProperties.getPluginsRoot();
         if (!StringUtils.hasText(pluginsRoot)) {
-            pluginsRoot = ikarosProperties.getWorkDir().resolve("plugins").toString();
+            pluginsRoot = java.util.Objects.requireNonNull(ikarosProperties.getWorkDir())
+                .resolve("plugins").toString();
         }
         System.setProperty("pf4j.pluginsDir", pluginsRoot);
 

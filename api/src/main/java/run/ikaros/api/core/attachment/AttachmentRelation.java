@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jspecify.annotations.Nullable;
 import run.ikaros.api.store.enums.AttachmentRelationType;
 
 @Data
@@ -15,10 +16,10 @@ import run.ikaros.api.store.enums.AttachmentRelationType;
 @AllArgsConstructor
 @Accessors(chain = true)
 public class AttachmentRelation {
-    private UUID id;
+    private @Nullable UUID id;
     @JsonProperty("attachment_id")
-    private UUID attachmentId;
-    private AttachmentRelationType type;
+    private @Nullable UUID attachmentId;
+    private @Nullable AttachmentRelationType type;
     @JsonProperty("relation_attachment_id")
-    private UUID relationAttachmentId;
+    private @Nullable UUID relationAttachmentId;
 }

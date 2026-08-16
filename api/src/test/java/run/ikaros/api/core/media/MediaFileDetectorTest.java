@@ -9,7 +9,7 @@ import java.util.HexFormat;
 import org.junit.jupiter.api.Test;
 
 /**
- * 有界媒体真实格式检测器测试。
+ * 有界媒体真实格式检测器测试.
  */
 class MediaFileDetectorTest {
 

@@ -11,6 +11,7 @@ public enum SubjectRelationType {
     MUSIC(5),
     NOVEL(6),
     REAL(7),
+    VIDEO(14),
     /**
      * 前传.
      */

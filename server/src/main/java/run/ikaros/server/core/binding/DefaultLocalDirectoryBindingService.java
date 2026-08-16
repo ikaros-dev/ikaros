@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,7 +13,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -100,21 +103,25 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
 
     @Override
     public Mono<DirectoryBindingWorkflowEntity> confirm(LocalScanConfirmRequest request) {
-        if (request == null || !request.isSubjectSelectionValid()
-            || request.getDirectoryId() == null
-            || request.getMode() == null) {
+        if (request == null || !request.isSubjectSelectionValid()) {
             return Mono.error(new IllegalArgumentException("必须恰好提供一个条目，且目录和扫描模式不能为空"));
         }
-        return preview(LocalScanPreviewRequest.builder().directoryId(request.getDirectoryId())
-            .mode(request.getMode()).build())
+        UUID directoryId = request.getDirectoryId();
+        LocalMediaMode mode = request.getMode();
+        List<LocalScanAssignment> assignments = request.getAssignments();
+        if (directoryId == null || mode == null) {
+            return Mono.error(new IllegalArgumentException("必须恰好提供一个条目，且目录和扫描模式不能为空"));
+        }
+        return preview(LocalScanPreviewRequest.builder().directoryId(directoryId)
+            .mode(mode).build())
             .flatMap(preview -> requirePrimaryItems(preview)
-                .then(validateAssignments(preview, request.getAssignments()))
-                .then(selectSubjectId(request))
+                .then(validateAssignments(preview, assignments))
+                .then(Mono.defer(() -> selectSubjectId(request)))
                 .flatMap(subjectId -> loadWorkflow(
-                    request.getDirectoryId(), subjectId, request.getMode())
+                    directoryId, subjectId, mode)
                     .flatMap(holder -> reconcile(holder.workflow(), preview, subjectId,
                         mergeAssignments(parseState(holder.workflow().getLocalScanState()),
-                            request.getAssignments()))
+                            assignments))
                         .flatMap(result -> persistAndSubmit(holder, preview, result)))));
     }
 
@@ -142,12 +149,16 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
     }
 
     private Mono<Void> validateAssignments(LocalScanPreview preview,
-                                           List<LocalScanAssignment> assignments) {
+                                           @Nullable List<LocalScanAssignment> assignments) {
         if (assignments == null || assignments.isEmpty()) {
             return Mono.empty();
         }
         Map<UUID, LocalScanItem> items = new LinkedHashMap<>();
-        preview.getItems().stream().filter(item -> item.getAttachmentId() != null)
+        List<LocalScanItem> previewItems = preview.getItems();
+        if (previewItems == null) {
+            return Mono.error(new IllegalArgumentException("扫描结果不能为空"));
+        }
+        previewItems.stream().filter(item -> item.getAttachmentId() != null)
             .forEach(item -> items.put(item.getAttachmentId(), item));
         Set<UUID> assignedAttachmentIds = new HashSet<>();
         for (LocalScanAssignment assignment : assignments) {
@@ -173,23 +184,48 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
     }
 
     private Mono<UUID> selectSubjectId(LocalScanConfirmRequest request) {
-        if (request.getSubjectId() != null) {
-            if (request.getMode() == LocalMediaMode.AUDIO) {
-                return subjectService.findById(request.getSubjectId())
-                    .filter(subject -> subject.getType() == SubjectType.MUSIC)
-                    .map(Subject::getId)
-                    .switchIfEmpty(Mono.error(
-                        new IllegalArgumentException("音频扫描只能绑定音乐条目")));
-            }
-            return Mono.just(request.getSubjectId());
+        UUID subjectId = request.getSubjectId();
+        LocalMediaMode mode = request.getMode();
+        if (mode == null) {
+            return Mono.error(new IllegalArgumentException("扫描模式不能为空"));
+        }
+        if (subjectId != null) {
+            return subjectService.findById(subjectId)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException(
+                    "未找到条目: " + subjectId)))
+                .flatMap(subject -> validateSubjectType(mode, subject.getType())
+                    .thenReturn(subjectId));
         }
         Subject subject = request.getSubject();
-        if (request.getMode() == LocalMediaMode.AUDIO && subject.getType() != SubjectType.MUSIC) {
-            return Mono.error(new IllegalArgumentException("音频扫描只能创建音乐条目"));
+        if (subject == null) {
+            return Mono.error(new IllegalArgumentException("条目不能为空"));
         }
-        return subjectService.create(subject).map(Subject::getId)
+        return validateSubjectType(mode, subject.getType())
+            .then(Mono.defer(() -> subjectService.create(subject)))
+            .map(Subject::getId)
             .filter(Objects::nonNull)
             .switchIfEmpty(Mono.error(new IllegalStateException("创建本地条目后未返回标识")));
+    }
+
+    private Mono<Void> validateSubjectType(LocalMediaMode mode,
+                                           @Nullable SubjectType subjectType) {
+        Set<SubjectType> allowedTypes = allowedSubjectTypes(mode);
+        if (allowedTypes.contains(subjectType)) {
+            return Mono.empty();
+        }
+        String allowedTypeNames = allowedTypes.stream().map(SubjectType::name)
+            .collect(Collectors.joining("、"));
+        return Mono.error(new IllegalArgumentException("扫描模式 " + mode + " 只允许条目类型 "
+            + allowedTypeNames + "，实际类型为 "
+            + (subjectType == null ? "null" : subjectType.name())));
+    }
+
+    private Set<SubjectType> allowedSubjectTypes(LocalMediaMode mode) {
+        return switch (mode) {
+            case EPISODE -> EnumSet.of(SubjectType.VIDEO, SubjectType.ANIME, SubjectType.REAL);
+            case AUDIO -> EnumSet.of(SubjectType.MUSIC);
+            case IMAGE -> EnumSet.of(SubjectType.COMIC);
+        };
     }
 
     private Mono<WorkflowHolder> loadWorkflow(UUID directoryId, UUID subjectId,
@@ -210,9 +246,13 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
 
     private Mono<ReconcileResult> reconcile(DirectoryBindingWorkflowEntity workflow,
                                              LocalScanPreview preview, UUID subjectId,
-                                             Map<UUID, UUID> manualAssignments) {
+                                             Map<UUID, @Nullable UUID> manualAssignments) {
         LocalState state = parseState(workflow.getLocalScanState());
-        List<LocalScanItem> primaries = preview.getItems().stream()
+        List<LocalScanItem> previewItems = preview.getItems();
+        if (previewItems == null) {
+            return Mono.error(new IllegalArgumentException("扫描结果不能为空"));
+        }
+        List<LocalScanItem> primaries = previewItems.stream()
             .filter(item -> item.getRole() == MediaRole.PRIMARY).toList();
         return Flux.fromIterable(primaries).index()
             .concatMap(indexed -> bindPrimary(indexed.getT2(), subjectId,
@@ -224,10 +264,15 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
 
     private Mono<PrimaryBinding> bindPrimary(LocalScanItem item, UUID subjectId, Float sequence,
                                              Map<UUID, UUID> episodeMappings) {
-        UUID mappedEpisodeId = episodeMappings.get(item.getAttachmentId());
+        UUID attachmentId = item.getAttachmentId();
+        String relativePath = item.getRelativePath();
+        if (attachmentId == null || relativePath == null) {
+            return Mono.error(new IllegalArgumentException("主资源附件标识和相对路径不能为空"));
+        }
+        UUID mappedEpisodeId = episodeMappings.get(attachmentId);
         return attachmentReferenceService.findAllByTypeAndAttachmentId(
                 AttachmentReferenceType.EPISODE,
-                item.getAttachmentId())
+                attachmentId)
             .collectList()
             .flatMap(references -> {
                 if (mappedEpisodeId != null) {
@@ -235,25 +280,31 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
                         !mappedEpisodeId.equals(reference.getReferenceId()));
                     if (conflicts) {
                         return Mono.just(PrimaryBinding.pending(
-                            item.getAttachmentId(), mappedEpisodeId));
+                            attachmentId, mappedEpisodeId));
                     }
                     if (!references.isEmpty()) {
                         return Mono.just(PrimaryBinding.mapped(
-                            item.getAttachmentId(), mappedEpisodeId));
+                            attachmentId, mappedEpisodeId));
                     }
-                    return saveReference(item.getAttachmentId(), mappedEpisodeId)
-                        .thenReturn(PrimaryBinding.mapped(item.getAttachmentId(), mappedEpisodeId));
+                    return saveReference(attachmentId, mappedEpisodeId)
+                        .thenReturn(PrimaryBinding.mapped(attachmentId, mappedEpisodeId));
                 }
                 if (!references.isEmpty()) {
-                    return Mono.just(PrimaryBinding.pending(item.getAttachmentId()));
+                    return Mono.just(PrimaryBinding.pending(attachmentId));
                 }
                 Episode episode = Episode.defaultEpisode(subjectId)
                     .setSequence(sequence)
-                    .setName(item.getRelativePath())
-                    .setNameCn(item.getRelativePath());
+                    .setName(relativePath)
+                    .setNameCn(relativePath);
                 return episodeService.save(episode)
-                    .flatMap(saved -> saveReference(item.getAttachmentId(), saved.getId())
-                        .thenReturn(PrimaryBinding.mapped(item.getAttachmentId(), saved.getId())));
+                    .flatMap(saved -> {
+                        UUID episodeId = saved.getId();
+                        if (episodeId == null) {
+                            return Mono.error(new IllegalStateException("保存剧集后未返回标识"));
+                        }
+                        return saveReference(attachmentId, episodeId)
+                            .thenReturn(PrimaryBinding.mapped(attachmentId, episodeId));
+                    });
             });
     }
 
@@ -282,7 +333,11 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
             .status(TaskStatus.CREATE)
             .createTime(LocalDateTime.now())
             .build();
-        workflow.setTaskId(entity.getId()).setStatus(TaskStatus.CREATE).setEndTime(null)
+        UUID taskId = entity.getId();
+        if (taskId == null) {
+            return Mono.error(new IllegalStateException("创建任务后未返回标识"));
+        }
+        workflow.setTaskId(taskId).setStatus(TaskStatus.CREATE).setEndTime(null)
             .setFailMessage(null);
         return workflowRepository.update(workflow)
             .then(taskService.submit(new LocalDirectoryBindingTask(entity, taskRepository, workflow,
@@ -291,9 +346,14 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
     }
 
     private String writeState(LocalScanPreview preview, ReconcileResult result) {
+        LocalMediaMode mode = preview.getMode();
+        List<LocalScanItem> previewItems = preview.getItems();
+        if (mode == null || previewItems == null) {
+            throw new IllegalArgumentException("扫描模式和扫描结果不能为空");
+        }
         ObjectNode state = objectMapper.createObjectNode();
-        state.put("mode", preview.getMode().name());
-        ArrayNode items = objectMapper.valueToTree(preview.getItems());
+        state.put("mode", mode.name());
+        ArrayNode items = objectMapper.valueToTree(previewItems);
         Set<UUID> currentAttachmentIds = new HashSet<>();
         for (JsonNode node : items) {
             UUID attachmentId = uuidValue(node, "attachment_id");
@@ -317,15 +377,16 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
             UUID attachmentId = uuidValue(item, "attachment_id");
             PrimaryBinding binding = bindings.get(attachmentId);
             if (binding != null) {
+                UUID episodeId = binding.episodeId();
                 if (binding.pending()) {
                     item.put("role", MediaRole.PENDING_CONFIRMATION.name());
-                    if (binding.episodeId() == null) {
+                    if (episodeId == null) {
                         item.remove("episode_id");
                     } else {
-                        item.put("episode_id", binding.episodeId().toString());
+                        item.put("episode_id", episodeId.toString());
                     }
-                } else {
-                    item.put("episode_id", binding.episodeId().toString());
+                } else if (episodeId != null) {
+                    item.put("episode_id", episodeId.toString());
                 }
             }
             if (result.manualAssignments().containsKey(attachmentId)) {
@@ -361,7 +422,7 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
             mapping.put("episode_id", episodeId.toString());
         });
         long missing = result.previousPaths().entrySet().stream()
-            .filter(entry -> preview.getItems().stream().noneMatch(item ->
+            .filter(entry -> previewItems.stream().noneMatch(item ->
                 entry.getKey().equals(item.getAttachmentId())
                     && entry.getValue().equals(item.getRelativePath())))
             .count();
@@ -409,7 +470,7 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
                     }
                 }
             }
-            Map<UUID, UUID> assignments = new LinkedHashMap<>();
+            Map<UUID, @Nullable UUID> assignments = new LinkedHashMap<>();
             JsonNode overrides = root.path("manual_overrides");
             if (overrides.isArray()) {
                 for (JsonNode override : overrides) {
@@ -426,9 +487,9 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
         }
     }
 
-    private Map<UUID, UUID> mergeAssignments(LocalState state,
-                                              List<LocalScanAssignment> assignments) {
-        Map<UUID, UUID> result = new LinkedHashMap<>(state.manualAssignments());
+    private Map<UUID, @Nullable UUID> mergeAssignments(LocalState state,
+                                              @Nullable List<LocalScanAssignment> assignments) {
+        Map<UUID, @Nullable UUID> result = new LinkedHashMap<>(state.manualAssignments());
         if (assignments != null) {
             assignments.stream().filter(Objects::nonNull)
                 .filter(assignment -> assignment.getAttachmentId() != null)
@@ -438,7 +499,7 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
         return result;
     }
 
-    private UUID uuidValue(JsonNode node, String field) {
+    private @Nullable UUID uuidValue(JsonNode node, String field) {
         if (node == null || !node.hasNonNull(field)) {
             return null;
         }
@@ -452,7 +513,7 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
     private record WorkflowHolder(DirectoryBindingWorkflowEntity workflow, boolean exists) {
     }
 
-    private record PrimaryBinding(UUID attachmentId, UUID episodeId, boolean pending) {
+    private record PrimaryBinding(UUID attachmentId, @Nullable UUID episodeId, boolean pending) {
         private static PrimaryBinding mapped(UUID attachmentId, UUID episodeId) {
             return new PrimaryBinding(attachmentId, episodeId, false);
         }
@@ -467,18 +528,18 @@ public class DefaultLocalDirectoryBindingService implements LocalDirectoryBindin
     }
 
     private record ReconcileResult(List<PrimaryBinding> bindings,
-                                   Map<UUID, UUID> manualAssignments,
+                                   Map<UUID, @Nullable UUID> manualAssignments,
                                    Map<UUID, String> previousPaths,
                                    Map<UUID, UUID> previousMappings,
                                    Map<UUID, ObjectNode> previousItems) {
     }
 
     private record LocalState(Map<UUID, UUID> episodeMappings,
-                              Map<UUID, UUID> manualAssignments,
+                              Map<UUID, @Nullable UUID> manualAssignments,
                               Map<UUID, String> relativePaths,
                               Map<UUID, ObjectNode> items) {
         private static LocalState empty() {
-            return new LocalState(Map.of(), Map.of(), Map.of(), Map.of());
+            return new LocalState(Map.of(), new LinkedHashMap<>(), Map.of(), Map.of());
         }
     }
 }

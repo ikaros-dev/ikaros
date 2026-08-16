@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Subsonic API 统一的响应包装.
@@ -21,7 +22,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SubsonicResponse {
     @JsonProperty("subsonic-response")
-    private SubsonicResponseBody body;
+    private @Nullable SubsonicResponseBody body;
 
     @Data
     @Builder(toBuilder = true)
@@ -29,22 +30,22 @@ public class SubsonicResponse {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class SubsonicResponseBody {
-        private String status;  // "ok" | "failed"
-        private String version; // Subsonic API version
-        private String type;    // Server type
+        private @Nullable String status;  // "ok" | "failed"
+        private @Nullable String version; // Subsonic API version
+        private @Nullable String type;    // Server type
         @JsonProperty("serverVersion")
-        private String serverVersion;
-        private Error error;
+        private @Nullable String serverVersion;
+        private @Nullable Error error;
 
         // Data containers
-        private Artists artists;
-        private Artist artist;
-        private AlbumList albumList;
-        private AlbumWithSongs album;
-        private SongChild song;
-        private SearchResult searchResult;
-        private Playlists playlists;
-        private PlaylistWithSongs playlist;
+        private @Nullable Artists artists;
+        private @Nullable Artist artist;
+        private @Nullable AlbumList albumList;
+        private @Nullable AlbumWithSongs album;
+        private @Nullable SongChild song;
+        private @Nullable SearchResult searchResult;
+        private @Nullable Playlists playlists;
+        private @Nullable PlaylistWithSongs playlist;
     }
 
     @Data
@@ -54,7 +55,7 @@ public class SubsonicResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Error {
         private int code;
-        private String message;
+        private @Nullable String message;
     }
 
     @Data
@@ -63,7 +64,7 @@ public class SubsonicResponse {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Artists {
-        private List<ArtistIndex> index;
+        private @Nullable List<ArtistIndex> index;
     }
 
     @Data
@@ -72,8 +73,8 @@ public class SubsonicResponse {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class ArtistIndex {
-        private String name;
-        private List<ArtistChild> artist;
+        private @Nullable String name;
+        private @Nullable List<ArtistChild> artist;
     }
 
     @Data
@@ -82,12 +83,12 @@ public class SubsonicResponse {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class ArtistChild {
-        private String id;
-        private String name;
+        private @Nullable String id;
+        private @Nullable String name;
         @JsonProperty("albumCount")
         private int albumCount;
         @JsonProperty("coverArt")
-        private String coverArt;
+        private @Nullable String coverArt;
     }
 
     @Data
@@ -96,13 +97,13 @@ public class SubsonicResponse {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Artist {
-        private String id;
-        private String name;
+        private @Nullable String id;
+        private @Nullable String name;
         @JsonProperty("albumCount")
         private int albumCount;
         @JsonProperty("coverArt")
-        private String coverArt;
-        private List<AlbumChild> album;
+        private @Nullable String coverArt;
+        private @Nullable List<AlbumChild> album;
     }
 
     @Data
@@ -111,18 +112,18 @@ public class SubsonicResponse {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class AlbumChild {
-        private String id;
-        private String name;
-        private String artist;
+        private @Nullable String id;
+        private @Nullable String name;
+        private @Nullable String artist;
         @JsonProperty("coverArt")
-        private String coverArt;
+        private @Nullable String coverArt;
         @JsonProperty("songCount")
         private int songCount;
-        private String duration;
-        private String created;
-        private String year;
-        private String genre;
-        private String parent;
+        private @Nullable String duration;
+        private @Nullable String created;
+        private @Nullable String year;
+        private @Nullable String genre;
+        private @Nullable String parent;
     }
 
     @Data
@@ -131,7 +132,7 @@ public class SubsonicResponse {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class AlbumList {
-        private List<AlbumChild> album;
+        private @Nullable List<AlbumChild> album;
     }
 
     @Data
@@ -140,17 +141,17 @@ public class SubsonicResponse {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class AlbumWithSongs {
-        private String id;
-        private String name;
-        private String artist;
+        private @Nullable String id;
+        private @Nullable String name;
+        private @Nullable String artist;
         @JsonProperty("coverArt")
-        private String coverArt;
+        private @Nullable String coverArt;
         @JsonProperty("songCount")
         private int songCount;
-        private String duration;
-        private String created;
-        private String parent;
-        private List<SongChild> song;
+        private @Nullable String duration;
+        private @Nullable String created;
+        private @Nullable String parent;
+        private @Nullable List<SongChild> song;
     }
 
     @Data
@@ -159,28 +160,28 @@ public class SubsonicResponse {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class SongChild {
-        private String id;
-        private String parent;
-        private String title;
-        private String artist;
-        private String album;
+        private @Nullable String id;
+        private @Nullable String parent;
+        private @Nullable String title;
+        private @Nullable String artist;
+        private @Nullable String album;
         private int track;
         private int duration;
-        private String contentType;
+        private @Nullable String contentType;
         @JsonProperty("coverArt")
-        private String coverArt;
+        private @Nullable String coverArt;
         private long size;
-        private String path;
-        private String suffix;
+        private @Nullable String path;
+        private @Nullable String suffix;
         @JsonProperty("isDir")
         private boolean isDir;
         private int bitRate;
         private int year;
-        private String genre;
-        private String created;
-        private String albumId;
-        private String artistId;
-        private String type;
+        private @Nullable String genre;
+        private @Nullable String created;
+        private @Nullable String albumId;
+        private @Nullable String artistId;
+        private @Nullable String type;
     }
 
     @Data
@@ -189,9 +190,9 @@ public class SubsonicResponse {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class SearchResult {
-        private List<ArtistChild> artist;
-        private List<AlbumChild> album;
-        private List<SongChild> song;
+        private @Nullable List<ArtistChild> artist;
+        private @Nullable List<AlbumChild> album;
+        private @Nullable List<SongChild> song;
     }
 
     @Data
@@ -200,7 +201,7 @@ public class SubsonicResponse {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Playlists {
-        private List<PlaylistChild> playlist;
+        private @Nullable List<PlaylistChild> playlist;
     }
 
     @Data
@@ -209,14 +210,14 @@ public class SubsonicResponse {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class PlaylistChild {
-        private String id;
-        private String name;
-        private String comment;
+        private @Nullable String id;
+        private @Nullable String name;
+        private @Nullable String comment;
         @JsonProperty("songCount")
         private int songCount;
-        private String duration;
-        private String created;
-        private String owner;
+        private @Nullable String duration;
+        private @Nullable String created;
+        private @Nullable String owner;
         @JsonProperty("public")
         private boolean isPublic;
     }
@@ -227,15 +228,15 @@ public class SubsonicResponse {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class PlaylistWithSongs {
-        private String id;
-        private String name;
-        private String comment;
+        private @Nullable String id;
+        private @Nullable String name;
+        private @Nullable String comment;
         @JsonProperty("songCount")
         private int songCount;
-        private String duration;
-        private String owner;
+        private @Nullable String duration;
+        private @Nullable String owner;
         @JsonProperty("public")
         private boolean isPublic;
-        private List<SongChild> entry;
+        private @Nullable List<SongChild> entry;
     }
 }

@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import org.jspecify.annotations.Nullable;
 import org.reactivestreams.Subscription;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -25,7 +26,7 @@ import run.ikaros.api.core.media.MediaFilePolicy;
 import run.ikaros.server.core.attachment.service.AttachmentMediaValidationService;
 import run.ikaros.server.core.attachment.service.ValidatedMediaStream;
 
-/** 默认附件媒体名称门禁和有限前缀流式验证实现。 */
+/** 默认附件媒体名称门禁和有限前缀流式验证实现. */
 @Service
 public class DefaultAttachmentMediaValidationService
     implements AttachmentMediaValidationService {
@@ -64,37 +65,37 @@ public class DefaultAttachmentMediaValidationService
                 "无法确认媒体文件真实格式: " + filename, null)));
     }
 
-    /** 连接前缀验证阶段和仅允许订阅一次的后续回放阶段。 */
+    /** 连接前缀验证阶段和仅允许订阅一次的后续回放阶段. */
     private static final class StreamValidationSession extends BaseSubscriber<DataBuffer> {
 
-        /** 待验证的原始数据流。 */
+        /** 待验证的原始数据流. */
         private final Flux<DataBuffer> source;
-        /** 规范化后的文件扩展名。 */
+        /** 规范化后的文件扩展名. */
         private final String extension;
-        /** 用于错误信息的安全文件名。 */
+        /** 用于错误信息的安全文件名. */
         private final String filename;
-        /** 返回验证结果的响应式接收器。 */
+        /** 返回验证结果的响应式接收器. */
         private final MonoSink<ValidatedMediaStream> resultSink;
-        /** 不超过检测上限的前缀缓存。 */
+        /** 不超过检测上限的前缀缓存. */
         private final ByteArrayOutputStream prefix =
             new ByteArrayOutputStream(MediaFileDetector.MAX_PREFIX_SIZE);
-        /** 回放流累计请求量。 */
+        /** 回放流累计请求量. */
         private final AtomicLong requested = new AtomicLong();
-        /** 防止回放流被重复订阅。 */
+        /** 防止回放流被重复订阅. */
         private final AtomicBoolean replaySubscribed = new AtomicBoolean();
-        /** 前缀回放流的接收器。 */
-        private volatile FluxSink<DataBuffer> replaySink;
-        /** 前缀达到上限时同一缓冲区内尚未消费的尾部。 */
-        private volatile DataBuffer boundaryBuffer;
-        /** 验证完成后待回放的前缀字节。 */
-        private volatile byte[] replayPrefix;
-        /** 原始上游是否已经结束。 */
+        /** 前缀回放流的接收器. */
+        private volatile @Nullable FluxSink<DataBuffer> replaySink;
+        /** 前缀达到上限时同一缓冲区内尚未消费的尾部. */
+        private volatile @Nullable DataBuffer boundaryBuffer;
+        /** 验证完成后待回放的前缀字节. */
+        private volatile byte @Nullable [] replayPrefix;
+        /** 原始上游是否已经结束. */
         private volatile boolean sourceCompleted;
-        /** 验证结果返回后原始上游延迟报告的错误。 */
-        private volatile Throwable sourceError;
-        /** 当前会话是否已经终止。 */
+        /** 验证结果返回后原始上游延迟报告的错误. */
+        private volatile @Nullable Throwable sourceError;
+        /** 当前会话是否已经终止. */
         private volatile boolean terminated;
-        /** 前缀是否已经完成验证。 */
+        /** 前缀是否已经完成验证. */
         private volatile boolean validated;
 
         private StreamValidationSession(Flux<DataBuffer> source, String extension,

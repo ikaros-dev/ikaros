@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.ExtensionFactory;
 import org.pf4j.ExtensionFinder;
@@ -39,9 +40,12 @@ import run.ikaros.server.plugin.event.IkarosPluginDeleteEvent;
 public class IkarosPluginManager extends DefaultPluginManager
     implements ApplicationContextAware, InitializingBean, DisposableBean {
     private final Map<String, PluginStartingError> startingErrors = new HashMap<>();
+    /** 插件附件驱动类型校验器. */
+    private final AttachmentDriverFetcherTypeValidator attachmentDriverFetcherTypeValidator =
+        new AttachmentDriverFetcherTypeValidator();
 
-    private ApplicationContext rootApplicationContext;
-    private PluginApplicationInitializer pluginApplicationInitializer;
+    private @Nullable ApplicationContext rootApplicationContext;
+    private @Nullable PluginApplicationInitializer pluginApplicationInitializer;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext)
@@ -53,7 +57,8 @@ public class IkarosPluginManager extends DefaultPluginManager
     public void afterPropertiesSet() {
         this.pluginApplicationInitializer
             = new PluginApplicationInitializer(this,
-            rootApplicationContext.getBean(SharedApplicationContextHolder.class));
+            Objects.requireNonNull(rootApplicationContext)
+                .getBean(SharedApplicationContextHolder.class));
     }
 
     @Override
@@ -62,7 +67,8 @@ public class IkarosPluginManager extends DefaultPluginManager
     }
 
     final PluginApplicationContext getPluginApplicationContext(String pluginId) {
-        return pluginApplicationInitializer.getPluginApplicationContext(pluginId);
+        return Objects.requireNonNull(pluginApplicationInitializer)
+            .getPluginApplicationContext(pluginId);
     }
 
     @Override
@@ -75,7 +81,7 @@ public class IkarosPluginManager extends DefaultPluginManager
         return new IkarosExtensionFinder(this);
     }
 
-    public PluginStartingError getPluginStartingError(String pluginId) {
+    public @Nullable PluginStartingError getPluginStartingError(String pluginId) {
         return startingErrors.get(pluginId);
     }
 
@@ -149,7 +155,8 @@ public class IkarosPluginManager extends DefaultPluginManager
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             startingErrors.put(pluginWrapper.getPluginId(), PluginStartingError.of(
-                pluginWrapper.getPluginId(), e.getMessage(), e.toString()));
+                pluginWrapper.getPluginId(), Objects.toString(e.getMessage(), e.toString()),
+                e.toString()));
         }
         return pluginWrapper.getPluginState();
     }
@@ -166,6 +173,7 @@ public class IkarosPluginManager extends DefaultPluginManager
 
         for (PluginWrapper pluginWrapper : resolvedPlugins) {
             // checkExtensionFinderReady(pluginWrapper);
+            validatePlugin(pluginWrapper.getPluginId());
             PluginState pluginState = pluginWrapper.getPluginState();
 
             if (PluginState.DISABLED == pluginState) {
@@ -179,7 +187,8 @@ public class IkarosPluginManager extends DefaultPluginManager
                 try {
                     log.info("Start plugin '{}'", getPluginLabel(pluginWrapper.getDescriptor()));
                     // inject bean
-                    pluginApplicationInitializer.onStartUp(pluginWrapper.getPluginId());
+                    Objects.requireNonNull(pluginApplicationInitializer)
+                        .onStartUp(pluginWrapper.getPluginId());
 
                     pluginWrapper.getPlugin().start();
 
@@ -192,7 +201,8 @@ public class IkarosPluginManager extends DefaultPluginManager
                     pluginWrapper.setPluginState(PluginState.FAILED);
                     pluginWrapper.setFailedException(e);
                     startingErrors.put(pluginWrapper.getPluginId(), PluginStartingError.of(
-                        pluginWrapper.getPluginId(), e.getMessage(), e.toString()));
+                        pluginWrapper.getPluginId(), Objects.toString(e.getMessage(), e.toString()),
+                        e.toString()));
                     releaseAdditionalResources(pluginWrapper.getPluginId());
                     log.error("Unable to start plugin '{}'",
                         getPluginLabel(pluginWrapper.getDescriptor()), e);
@@ -219,6 +229,7 @@ public class IkarosPluginManager extends DefaultPluginManager
         checkPluginId(pluginId);
 
         PluginWrapper pluginWrapper = getPlugin(pluginId);
+        validatePlugin(pluginId);
         PluginDescriptor pluginDescriptor = pluginWrapper.getDescriptor();
         PluginState pluginState = pluginWrapper.getPluginState();
         if (PluginState.STARTED == pluginState) {
@@ -255,7 +266,7 @@ public class IkarosPluginManager extends DefaultPluginManager
 
         try {
             // load and inject bean
-            pluginApplicationInitializer.onStartUp(pluginId);
+            Objects.requireNonNull(pluginApplicationInitializer).onStartUp(pluginId);
 
             // create plugin instance and start it
             pluginWrapper.getPlugin().start();
@@ -272,7 +283,8 @@ public class IkarosPluginManager extends DefaultPluginManager
                 getPluginLabel(pluginWrapper.getDescriptor()), e);
             pluginWrapper.setPluginState(PluginState.FAILED);
             startingErrors.put(pluginWrapper.getPluginId(), PluginStartingError.of(
-                pluginWrapper.getPluginId(), e.getMessage(), e.toString()));
+                pluginWrapper.getPluginId(), Objects.toString(e.getMessage(), e.toString()),
+                e.toString()));
             releaseAdditionalResources(pluginId);
         }
         return pluginWrapper.getPluginState();
@@ -298,7 +310,8 @@ public class IkarosPluginManager extends DefaultPluginManager
                 } catch (PluginRuntimeException e) {
                     log.error(e.getMessage(), e);
                     startingErrors.put(pluginWrapper.getPluginId(), PluginStartingError.of(
-                        pluginWrapper.getPluginId(), e.getMessage(), e.toString()));
+                        pluginWrapper.getPluginId(), Objects.toString(e.getMessage(), e.toString()),
+                        e.toString()));
                 } finally {
                     firePluginStateEvent(
                         new PluginStateEvent(this, pluginWrapper, pluginWrapper.getPluginState()));
@@ -329,12 +342,15 @@ public class IkarosPluginManager extends DefaultPluginManager
      * @param pluginId plugin id
      * @return plugin startup status
      */
-    public PluginState reloadPlugin(String pluginId) {
+    public @Nullable PluginState reloadPlugin(String pluginId) {
         PluginWrapper plugin = getPlugin(pluginId);
+        validatePlugin(pluginId);
         stopPlugin(pluginId, false);
         unloadPlugin(pluginId, false);
         try {
             loadPlugin(plugin.getPluginPath());
+        } catch (PluginValidationException e) {
+            throw e;
         } catch (Exception ex) {
             return null;
         }
@@ -347,7 +363,7 @@ public class IkarosPluginManager extends DefaultPluginManager
      */
     public void releaseAdditionalResources(String pluginId) {
         try {
-            pluginApplicationInitializer.contextDestroyed(pluginId);
+            Objects.requireNonNull(pluginApplicationInitializer).contextDestroyed(pluginId);
         } catch (Exception e) {
             log.debug("Plugin application context close failed. ", e);
         }
@@ -362,13 +378,41 @@ public class IkarosPluginManager extends DefaultPluginManager
     public PluginState loadPlugin(String pluginId) {
         Assert.hasText(pluginId, "'pluginId' must has text.");
         Path pluginPath = getPlugin(pluginId).getPluginPath();
+        validatePlugin(pluginId);
         loadPlugin(pluginPath);
         return getPlugin(pluginId).getPluginState();
     }
 
     @Override
     protected PluginWrapper loadPluginFromPath(Path pluginPath) {
-        return super.loadPluginFromPath(pluginPath);
+        PluginWrapper pluginWrapper = super.loadPluginFromPath(pluginPath);
+        try {
+            attachmentDriverFetcherTypeValidator.validate(pluginWrapper);
+            return pluginWrapper;
+        } catch (RuntimeException | LinkageError e) {
+            super.unloadPlugin(pluginWrapper.getPluginId(), false);
+            throw e;
+        }
+    }
+
+    /**
+     * 校验插件声明的附件驱动类型.
+     *
+     * @param pluginId 插件标识
+     */
+    public void validatePlugin(String pluginId) {
+        Assert.hasText(pluginId, "'pluginId' must has text.");
+        PluginWrapper pluginWrapper = getPlugin(pluginId);
+        if (pluginWrapper == null) {
+            throw new PluginValidationException("未找到待校验插件 [%s]", pluginId);
+        }
+        attachmentDriverFetcherTypeValidator.validate(pluginWrapper);
+    }
+
+    @Override
+    public boolean enablePlugin(String pluginId) {
+        validatePlugin(pluginId);
+        return super.enablePlugin(pluginId);
     }
 
     @Override
@@ -397,7 +441,8 @@ public class IkarosPluginManager extends DefaultPluginManager
 
         firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, null));
         // publish plugin deleted event.
-        rootApplicationContext.publishEvent(new IkarosPluginDeleteEvent(this, pluginId));
+        Objects.requireNonNull(rootApplicationContext)
+            .publishEvent(new IkarosPluginDeleteEvent(this, pluginId));
 
         return result;
     }

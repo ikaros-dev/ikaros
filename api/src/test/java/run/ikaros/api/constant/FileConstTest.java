@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 /**
- * 文件目录常量测试。
+ * 文件目录常量测试.
  */
 class FileConstTest {
 

@@ -20,6 +20,7 @@ import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
 /** 附件驱动禁用监听器测试. */
+@org.jspecify.annotations.NullUnmarked
 class AttachmentDriverDisableListenerTest {
     @Test
     void disableRemovesMappingAndUnregistersValidator() {
