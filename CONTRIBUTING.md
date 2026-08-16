@@ -4,7 +4,7 @@
 
 ### 协作流程规范
 
-新需求新交互，特别是偏向破坏性性的更新，确定的先提 issue，不确定的提 discussion，确定后再创建或者转 issue，issue 定了后，再 fork 切新分支 PR。
+新需求新交互，特别是偏向破坏性的更新，确定的先提 issue，不确定的提 discussion，确定后再创建或者转 issue，issue 定了后，再 fork 切新分支 PR。
 
 - 一个 discussion 应该会对应多个 issue
 - 一个 issue 对应一个问题，一个 PR 解决一个问题
