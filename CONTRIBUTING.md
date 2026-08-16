@@ -9,6 +9,23 @@
 - 一个 discussion 应该会对应多个 issue
 - 一个 issue 对应一个问题，一个 PR 解决一个问题
 
+```mermaid
+flowchart TD
+    S([新需求 / 新交互<br/>特别是破坏性更新]) --> Q{是否确定？}
+    Q -->|确定| I1[创建 issue]
+    Q -->|不确定| D1[创建 discussion 讨论]
+    D1 --> Q2{讨论后确定？}
+    Q2 -->|是| I2[创建或转为 issue]
+    Q2 -->|否| D1
+    I2 --> I1
+    I1 --> F[fork 仓库切新分支<br/>进行开发]
+    F --> P[提交 PR]
+    P --> M[合并，issue 关闭]
+
+    D1 -.->|一个 discussion 可衍生多个 issue| I1
+    I1 -.->|一个 issue 对应一个问题| P
+```
+
 ### 1. Fork 此仓库
 
 点击 [Ikaros 仓库](https://github.com/ikaros-dev/ikaros)主页右上角的 `Fork` 按钮即可。
