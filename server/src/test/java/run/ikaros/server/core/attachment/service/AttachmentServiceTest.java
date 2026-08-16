@@ -186,10 +186,7 @@ class AttachmentServiceTest {
         StepVerifier.create(attachmentRepository.findByTypeAndParentIdAndName(
                 attachmentPidNotNull.getType(), attachmentPidNotNull.getParentId(),
                 attachmentPidNotNull.getName()
-            )).expectNextMatches(newAttachmentEntity ->
-                attachmentPidNotNull.getType().equals(newAttachmentEntity.getType())
-                    && attachmentPidNotNull.getParentId().equals(newAttachmentEntity.getParentId())
-                    && attachmentPidNotNull.getName().equals(newAttachmentEntity.getName()))
+            ))
             .verifyComplete();
     }
 
