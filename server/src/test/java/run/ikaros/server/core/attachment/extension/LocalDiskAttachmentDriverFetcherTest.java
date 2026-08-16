@@ -71,7 +71,7 @@ class LocalDiskAttachmentDriverFetcherTest {
     @Test
     void getChildrenSkipsUnsupportedNameBeforeValidation(@TempDir Path tempDir)
         throws IOException {
-        UUID driverId = UUID.randomUUID();
+        final UUID driverId = UUID.randomUUID();
         Files.writeString(tempDir.resolve("payload.exe"), "not-media");
         Files.writeString(tempDir.resolve("README"), "not-media");
         Files.writeString(tempDir.resolve("archive.zip"), "not-media");

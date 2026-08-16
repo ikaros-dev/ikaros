@@ -100,7 +100,7 @@ class AttachmentDriverServiceImplTest {
     @Mock
     private AttachmentDriverFetcher fetcher;
     /**
-     * 附件内容检查服务。
+     * 附件内容检查服务.
      */
     @Mock
     private AttachmentContentInspectionService contentInspectionService;

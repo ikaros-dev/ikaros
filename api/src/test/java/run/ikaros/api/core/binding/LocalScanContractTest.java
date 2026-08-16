@@ -8,7 +8,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import run.ikaros.api.core.subject.Subject;
 
-/** 本地扫描公共契约测试。 */
+/** 本地扫描公共契约测试. */
 public class LocalScanContractTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 

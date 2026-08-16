@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 /**
- * 权威媒体格式值表和文件名策略测试。
+ * 权威媒体格式值表和文件名策略测试.
  */
 class MediaFilePolicyTest {
 

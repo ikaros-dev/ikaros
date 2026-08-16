@@ -29,7 +29,7 @@ import run.ikaros.server.core.attachment.service.ValidatedMediaStream;
 import run.ikaros.server.store.entity.AttachmentEntity;
 
 /**
- * 附件内容检查服务测试。
+ * 附件内容检查服务测试.
  */
 @org.jspecify.annotations.NullUnmarked
 class DefaultAttachmentContentInspectionServiceTest {

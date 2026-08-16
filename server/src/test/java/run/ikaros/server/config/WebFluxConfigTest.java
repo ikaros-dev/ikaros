@@ -14,7 +14,7 @@ import run.ikaros.api.core.attachment.AttachmentConst;
 import run.ikaros.api.infra.properties.IkarosProperties;
 import run.ikaros.server.console.ConsoleProperties;
 
-/** 验证附件驱动静态文件出口已从 WebFlux 资源映射中移除。 */
+/** 验证附件驱动静态文件出口已从 WebFlux 资源映射中移除. */
 class WebFluxConfigTest {
     @Test
     void addResourceHandlers_doesNotRegisterDriverStaticResource(@TempDir Path workDir) {

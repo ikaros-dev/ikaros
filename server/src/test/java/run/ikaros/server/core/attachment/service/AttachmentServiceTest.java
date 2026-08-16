@@ -1,5 +1,6 @@
 package run.ikaros.server.core.attachment.service;
 
+import static run.ikaros.api.core.attachment.AttachmentConst.DOWNLOAD_DIRECTORY_ID;
 import static run.ikaros.api.core.attachment.AttachmentConst.ROOT_DIRECTORY_ID;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 import static run.ikaros.server.core.attachment.utils.AttachmentTestUtils.attIsEqualsWithoutOrder;
@@ -75,6 +76,8 @@ class AttachmentServiceTest {
             .expectNext(0L)
             .verifyComplete();
 
+        StepVerifier.create(initializer.initialize()).verifyComplete();
+
         final String name = "UnitTestDocFile.PNG";
         ClassPathResource classPathResource =
             new ClassPathResource("core/file/" + name);
@@ -86,21 +89,22 @@ class AttachmentServiceTest {
                 AttachmentUploadCondition.builder()
                     .dataBufferFlux(dataBufferFlux)
                     .name(name)
+                    .parentId(DOWNLOAD_DIRECTORY_ID)
                     .build()))
             .expectNextMatches(attachment -> StringUtils.hasText(attachment.getFsPath()))
             .verifyComplete();
 
         StepVerifier.create(attachmentService.findByTypeAndParentIdAndName(AttachmentType.File,
-                null, name).map(Attachment::getName))
+                DOWNLOAD_DIRECTORY_ID, name).map(Attachment::getName))
             .expectNext(name)
             .verifyComplete();
 
         // remove attachment
         StepVerifier.create(attachmentService.removeByTypeAndParentIdAndName(AttachmentType.File,
-            null, name)).verifyComplete();
+            DOWNLOAD_DIRECTORY_ID, name)).verifyComplete();
 
         StepVerifier.create(attachmentService.findByTypeAndParentIdAndName(AttachmentType.File,
-                null, name).map(Attachment::getName))
+                DOWNLOAD_DIRECTORY_ID, name).map(Attachment::getName))
             .verifyComplete();
 
     }
@@ -144,10 +148,12 @@ class AttachmentServiceTest {
 
     @Test
     void save() {
-        // parent id is null
+        StepVerifier.create(initializer.initialize()).verifyComplete();
+
         final var attachment = Attachment.builder()
             .name(RandomUtils.randomString(20))
             .type(AttachmentType.File)
+            .parentId(DOWNLOAD_DIRECTORY_ID)
             .build();
 
         StepVerifier.create(attachmentService.save(attachment))

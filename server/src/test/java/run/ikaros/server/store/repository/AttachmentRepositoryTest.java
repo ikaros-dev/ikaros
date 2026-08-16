@@ -143,11 +143,11 @@ class AttachmentRepositoryTest {
                 .then(repository.insert(folder))
                 .then(repository.insert(mountFolder))
                 .then(repository.insert(scannedFolder))
-                .then(repository.countKnownFiles())
-                .zipWith(repository.countKnownFolders(
-                    AttachmentConst.ROOT_DIRECTORY_ID,
-                    AttachmentConst.COVER_DIRECTORY_ID,
-                    AttachmentConst.DOWNLOAD_DIRECTORY_ID)))
+                .then(repository.countKnownFiles()
+                    .zipWith(repository.countKnownFolders(
+                        AttachmentConst.ROOT_DIRECTORY_ID,
+                        AttachmentConst.COVER_DIRECTORY_ID,
+                        AttachmentConst.DOWNLOAD_DIRECTORY_ID))))
             .assertNext(counts -> {
                 Assertions.assertThat(counts.getT1()).isEqualTo(initialFiles + 2);
                 Assertions.assertThat(counts.getT2()).isEqualTo(initialFolders + 2);

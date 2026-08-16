@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 /**
- * 文件工具中的媒体策略委托测试。
+ * 文件工具中的媒体策略委托测试.
  */
 class FileUtilsTest {
 
