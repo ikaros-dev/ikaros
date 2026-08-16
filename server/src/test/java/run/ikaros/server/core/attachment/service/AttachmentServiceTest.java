@@ -178,11 +178,10 @@ class AttachmentServiceTest {
             .build();
 
         StepVerifier.create(attachmentService.save(attachmentPidNotNull))
-            .expectNextMatches(newAttachment ->
-                attachmentPidNotNull.getParentId().equals(newAttachment.getParentId())
-                    && attachmentPidNotNull.getName().equals(newAttachment.getName())
-                    && attachmentPidNotNull.getType().equals(newAttachment.getType()))
-            .verifyComplete();
+            .expectErrorSatisfies(error -> Assertions.assertThat(error)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("根目录只能包含文件夹"))
+            .verify();
 
         StepVerifier.create(attachmentRepository.findByTypeAndParentIdAndName(
                 attachmentPidNotNull.getType(), attachmentPidNotNull.getParentId(),
