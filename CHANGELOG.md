@@ -4,6 +4,10 @@
 
 # 1.2.4
 
+
+## 文档
+
+- 贡献指南（CONTRIBUTING.md）补充协作流程规范（issue/discussion/PR 对应关系）并附流程图，润色代码贡献步骤
 - 还原之前的WebConsole的破坏性更新
 - 修复校验fsPath导致的回归BUG，无法正常刷新本地挂载的目录
 - 附件流接口 getStream 支持 redirect 参数，对象存储等外部直链场景下返回 302 重定向，避免流量经过服务端代理
