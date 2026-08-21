@@ -233,7 +233,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                     .tag(tag).description(
                         "获取附件流内容。默认由服务端代理返回，"
                             + "当查询参数 redirect=true 且附件提供外部直链"
-                            + "（如对象存储自定义域名）时，返回 307 重定向到直链。")
+                            + "（如对象存储自定义域名）时，返回 302 重定向到直链。")
                     .parameter(parameterBuilder()
                         .in(ParameterIn.PATH)
                         .name("id")
@@ -244,7 +244,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .name("redirect")
                         .description(
                             "是否重定向到外部直链，true 时若附件属于对象存储等"
-                                + "提供外部直链的驱动则返回 307 重定向，"
+                                + "提供外部直链的驱动则返回 302 重定向，"
                                 + "默认 false 保持服务端代理。")
                         .implementation(Boolean.class))
                     .response(responseBuilder().implementation(String.class)))
@@ -490,9 +490,9 @@ public class AttachmentEndpoint implements CoreEndpoint {
                 .flatMap(url -> {
                     if (StringUtils.hasText(url)
                         && (url.startsWith("http://") || url.startsWith("https://"))) {
-                        // 外部直链，使用 307 重定向，保留原始 HTTP 方法与 Range 头
+                        // 外部直链，使用 302 重定向到直链
                         return ServerResponse
-                            .status(HttpStatus.TEMPORARY_REDIRECT)
+                            .status(HttpStatus.FOUND)
                             .header(HttpHeaders.LOCATION, url)
                             .build();
                     }
@@ -504,7 +504,7 @@ public class AttachmentEndpoint implements CoreEndpoint {
     }
 
     /**
-     * 服务端流式代理附件内容。
+     * 服务端流式代理附件内容.
      * 支持 Range 分段请求（206）与完整内容请求（200）。
      *
      * @param id      附件 ID
