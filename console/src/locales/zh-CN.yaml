@@ -257,7 +257,6 @@ module:
     popconfirm:
       title: 您确定批量删除附件吗？
       btn: 批量删除
-      system_internal_forbidden: 不允许删除系统内置目录
     search_input:
       placeholder: 搜索当前目录下的所有附件，模糊匹配，空格多个关键词，回车搜查
     breadcrumb:

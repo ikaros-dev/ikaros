@@ -265,7 +265,6 @@ module:
     popconfirm:
       title: Are you sure to delete attachments in bulk?
       btn: Batch delete
-      system_internal_forbidden: System internal directories cannot be deleted
     search_input:
       placeholder: >-
         Search all attachments in the current directory, fuzzy match, space
