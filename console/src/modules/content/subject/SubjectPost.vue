@@ -180,7 +180,7 @@ const oepnCropperjsDialog = () => {
 				:model="subject"
 				label-width="85px"
 			>
-				<el-form-item :label="t('common.label.nsfw')">
+				<el-form-item label="NSFW">
 					<el-row>
 						<el-col :span="8">
 							<el-form-item>

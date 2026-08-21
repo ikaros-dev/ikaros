@@ -403,7 +403,7 @@ public class FileUtils {
         MessageDigest digest = MessageDigest.getInstance("SHA-1");
 
         try (FileInputStream fis = new FileInputStream(filePath)) {
-            byte[] buffer = new byte[1024 * 1024];
+            byte[] buffer = new byte[8192];
             int bytesRead;
 
             while ((bytesRead = fis.read(buffer)) != -1) {

@@ -46,7 +46,7 @@ class DefaultUserRoleServiceTest {
 
         when(userRoleRepository.findByUserIdAndRoleId(userId, roleId))
             .thenReturn(Mono.empty());
-        when(userRoleRepository.insert(any(UserRoleEntity.class)))
+        when(userRoleRepository.save(any(UserRoleEntity.class)))
             .thenReturn(Mono.just(entity));
 
         StepVerifier.create(defaultUserRoleService.saveEntity(entity))
@@ -57,7 +57,7 @@ class DefaultUserRoleServiceTest {
             .verifyComplete();
 
         verify(userRoleRepository).findByUserIdAndRoleId(userId, roleId);
-        verify(userRoleRepository).insert(entity);
+        verify(userRoleRepository).save(entity);
     }
 
     @Test
@@ -78,10 +78,7 @@ class DefaultUserRoleServiceTest {
 
         when(userRoleRepository.findByUserIdAndRoleId(userId, roleId))
             .thenReturn(Mono.just(existingEntity));
-        when(userRoleRepository.update(any(UserRoleEntity.class)))
-            .thenReturn(Mono.just(existingEntity));
-        // switchIfEmpty构造时会立即求值insert，需stub避免NPE
-        when(userRoleRepository.insert(any(UserRoleEntity.class)))
+        when(userRoleRepository.save(any(UserRoleEntity.class)))
             .thenReturn(Mono.just(existingEntity));
 
         StepVerifier.create(defaultUserRoleService.saveEntity(incomingEntity))
@@ -92,7 +89,7 @@ class DefaultUserRoleServiceTest {
             .verifyComplete();
 
         verify(userRoleRepository).findByUserIdAndRoleId(userId, roleId);
-        verify(userRoleRepository).update(any(UserRoleEntity.class));
+        verify(userRoleRepository).save(any(UserRoleEntity.class));
     }
 
     @Test

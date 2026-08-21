@@ -1,6 +1,5 @@
 import { definePlugin } from '@runikaros/shared';
 import { markRaw } from 'vue';
-import { RouterView } from 'vue-router';
 import { Folder as FolderIcon } from '@element-plus/icons-vue';
 import Attachments from './Attachments.vue';
 import AttachmentDrivers from './AttachmentDrivers.vue';
@@ -17,7 +16,7 @@ export default definePlugin({
 			route: {
 				path: '/attachments',
 				name: 'Attachments',
-				component: RouterView,
+				component: Attachments,
 				meta: {
 					title: 'module.attachment.title',
 					menu: {
@@ -28,60 +27,57 @@ export default definePlugin({
 						admin: true,
 					},
 				},
-				children: [
-					{
-						path: '',
-						component: Attachments,
+			},
+		},
+		{
+			parentName: 'Root',
+			route: {
+				path: '/attachment/drivers',
+				name: 'AttachmentDrivers',
+				component: AttachmentDrivers,
+				meta: {
+					title: 'module.attachment.driver.title',
+					hidden: true,
+					menu: {
+						name: 'module.attachment.driver.sidebar',
+						hidden: true,
+						admin: true,
 					},
-					{
-						path: '/attachment/drivers',
-						name: 'AttachmentDrivers',
-						component: RouterView,
-						meta: {
-							title: 'module.attachment.driver.title',
-							hidden: true,
-							menu: {
-								name: 'module.attachment.driver.sidebar',
-								hidden: true,
-								admin: true,
-							},
-						},
-						children: [
-							{
-								path: '',
-								component: AttachmentDrivers,
-							},
-							{
-								path: '/attachment/driver/post',
-								name: 'AttachmentDriverPost',
-								component: AttachmentDriverPost,
-								meta: {
-									title: 'module.attachment.driver.post.title',
-									hidden: true,
-									menu: {
-										name: 'module.attachment.driver.post.sidebar',
-										hidden: true,
-										admin: true,
-									},
-								},
-							},
-							{
-								path: '/attachment/driver/put/:id',
-								name: 'AttachmentDriverPut',
-								component: AttachmentDriverPut,
-								meta: {
-									title: 'module.attachment.driver.put.title',
-									hidden: true,
-									menu: {
-										name: 'module.attachment.driver.put.sidebar',
-										hidden: true,
-										admin: true,
-									},
-								},
-							},
-						],
+				},
+			},
+		},
+		{
+			parentName: 'Root',
+			route: {
+				path: '/attachment/driver/post',
+				name: 'AttachmentDriverPost',
+				component: AttachmentDriverPost,
+				meta: {
+					title: 'module.attachment.driver.post.title',
+					hidden: true,
+					menu: {
+						name: 'module.attachment.driver.post.sidebar',
+						hidden: true,
+						admin: true,
 					},
-				],
+				},
+			},
+		},
+		{
+			parentName: 'Root',
+			route: {
+				path: '/attachment/driver/put/:id',
+				name: 'AttachmentDriverPut',
+				component: AttachmentDriverPut,
+				meta: {
+					title: 'module.attachment.driver.put.title',
+					hidden: true,
+					menu: {
+						name: 'module.attachment.driver.put.sidebar',
+						hidden: true,
+						admin: true,
+					},
+				},
 			},
 		},
 	],

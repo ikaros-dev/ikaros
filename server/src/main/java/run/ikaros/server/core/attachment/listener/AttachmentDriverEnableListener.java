@@ -37,7 +37,7 @@ public class AttachmentDriverEnableListener {
     private final LocalAttachmentPathValidator pathValidator;
 
     /**
-     * 创建附件驱动启用监听器.
+     * Construct.
      */
     public AttachmentDriverEnableListener(AttachmentService attachmentService,
                                           DynamicDirectoryResolver dynamicDirectoryResolver,
@@ -50,10 +50,8 @@ public class AttachmentDriverEnableListener {
     }
 
     /**
-     * 挂载已启用的附件驱动目录.
-     *
-     * @param event 附件驱动启用事件
-     * @return 挂载完成信号
+     * 添加挂载的目录对应的附件，如驱动未指定挂载路径，则默认挂载在根目录下
+     * .
      */
     @EventListener(AttachmentDriverEnableEvent.class)
     public Mono<Void> onAttachmentDriverEnableEvent(AttachmentDriverEnableEvent event) {
@@ -79,8 +77,7 @@ public class AttachmentDriverEnableListener {
 
         return attachmentService.findByTypeAndParentIdAndName(
                 AttachmentType.Driver_Directory, ROOT_DIRECTORY_ID, finalMountName)
-            .switchIfEmpty(Mono.just(Attachment
-                .builder()
+            .switchIfEmpty(Mono.just(Attachment.builder()
                 .parentId(ROOT_DIRECTORY_ID)
                 .type(AttachmentType.Driver_Directory)
                 .name(finalMountName)
@@ -101,9 +98,8 @@ public class AttachmentDriverEnableListener {
     }
 
     /**
-     * 初始化所有已启用的本地附件驱动挂载.
-     *
-     * @return 初始化完成信号
+     * 初始化操作,查询启用中的附件驱动，添加静态资源映射
+     * .
      */
     @EventListener(ApplicationReadyEvent.class)
     public Mono<Void> initialize() {
@@ -112,4 +108,5 @@ public class AttachmentDriverEnableListener {
             .flatMap(this::mount)
             .then();
     }
+
 }

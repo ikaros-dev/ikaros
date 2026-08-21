@@ -14,7 +14,7 @@ const breadcrumbList: Ref = ref([]);
 
 const initBreadcrumbList = () => {
 	// console.log('route.matched: ', route.matched);
-	breadcrumbList.value = route.matched.filter((item) => item.meta?.title || item.name);
+	breadcrumbList.value = route.matched;
 };
 
 const handleRedirect = (path) => {

@@ -38,7 +38,7 @@ public class SubjectCollectionCreateEventListener {
             .flatMap(episodeId
                 -> episodeCollectionRepository.findByUserIdAndEpisodeId(userId, episodeId)
                 .switchIfEmpty(
-                    episodeCollectionRepository.insert(EpisodeCollectionEntity.builder()
+                    episodeCollectionRepository.save(EpisodeCollectionEntity.builder()
                             .userId(userId)
                             .subjectId(subjectId)
                             .episodeId(episodeId)

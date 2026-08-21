@@ -61,9 +61,7 @@ public class AttachmentReferenceServiceImpl implements AttachmentReferenceServic
         return checkAttachmentRef(attachmentReference)
             .flatMap(attachmentRef ->
                 copyProperties(attachmentRef, new AttachmentReferenceEntity()))
-            .flatMap(attachmentReferenceEntity -> (attachmentReferenceEntity.getId() == null
-                ? repository.insert(attachmentReferenceEntity)
-                : repository.update(attachmentReferenceEntity))
+            .flatMap(attachmentReferenceEntity -> repository.save(attachmentReferenceEntity)
                 .doOnSuccess(entity -> {
                     AttachmentReferenceSaveEvent event =
                         new AttachmentReferenceSaveEvent(this, entity);

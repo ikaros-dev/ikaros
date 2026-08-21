@@ -3,6 +3,7 @@ package run.ikaros.server.custom.scheme;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 public class DefaultCustomSchemeWatcherManager implements CustomSchemeWatcherManager {
@@ -14,13 +15,13 @@ public class DefaultCustomSchemeWatcherManager implements CustomSchemeWatcherMan
     }
 
     @Override
-    public void register(SchemeWatcher watcher) {
+    public void register(@NonNull SchemeWatcher watcher) {
         Assert.notNull(watcher, "Scheme watcher must not be null");
         watchers.add(watcher);
     }
 
     @Override
-    public void unregister(SchemeWatcher watcher) {
+    public void unregister(@NonNull SchemeWatcher watcher) {
         Assert.notNull(watcher, "Scheme watcher must not be null");
         watchers.remove(watcher);
     }

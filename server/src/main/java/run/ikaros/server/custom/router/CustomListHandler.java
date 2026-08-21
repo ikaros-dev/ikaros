@@ -4,6 +4,7 @@ import static run.ikaros.server.custom.router.CustomRouterFunctionFactory.PathPa
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
@@ -21,7 +22,7 @@ public class CustomListHandler implements CustomRouterFunctionFactory.ListHandle
     }
 
     @Override
-    public Mono<ServerResponse> handle(ServerRequest request) {
+    public Mono<ServerResponse> handle(@NonNull ServerRequest request) {
         return customClient.findAll(scheme.type(), null)
             .collectList()
             .flatMap(customList -> ServerResponse.ok()

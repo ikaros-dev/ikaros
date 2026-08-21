@@ -9,8 +9,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
-import reactor.core.scheduler.Scheduler;
-import reactor.core.scheduler.Schedulers;
 import run.ikaros.server.infra.properties.IkarosTaskProperties;
 
 @Configuration(proxyBeanMethods = false)
@@ -32,15 +30,5 @@ public class TaskConfiguration {
             namedThreadFactory,
             new ThreadPoolExecutor.AbortPolicy()
         );
-    }
-
-    /**
-     * 创建最多并行计算两个文件的附件 SHA-1 调度器.
-     *
-     * @return 附件 SHA-1 调度器
-     */
-    @Bean(destroyMethod = "dispose")
-    public Scheduler attachmentSha1Scheduler() {
-        return Schedulers.newBoundedElastic(2, 100000, "attachment-sha1");
     }
 }

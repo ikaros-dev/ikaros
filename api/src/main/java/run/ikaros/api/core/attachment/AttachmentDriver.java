@@ -25,8 +25,6 @@ public class AttachmentDriver {
     /**
      * enable current attachment driver.
      */
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     private boolean enable;
     @Schema(requiredMode = REQUIRED, defaultValue = "LOCAL")
     private AttachmentDriverType type;

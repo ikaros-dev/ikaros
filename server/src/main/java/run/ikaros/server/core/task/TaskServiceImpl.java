@@ -65,7 +65,7 @@ public class TaskServiceImpl implements TaskService {
                             taskEntity.getId() + "-" + taskEntity.getName(),
                             status, taskStatus);
                     }
-                    return taskRepository.update(taskEntity);
+                    return taskRepository.save(taskEntity);
                 })
                 .subscribe();
         }
@@ -74,10 +74,10 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public void updateAllRunningAndCreatedTaskStatusToCancel() {
         taskRepository.findAllByStatus(TaskStatus.RUNNING)
-            .flatMap(taskEntity -> taskRepository.update(taskEntity.setStatus(TaskStatus.CANCEL)
+            .flatMap(taskEntity -> taskRepository.save(taskEntity.setStatus(TaskStatus.CANCEL)
                 .setFailMessage("Application stop.")))
             .thenMany(taskRepository.findAllByStatus(TaskStatus.CREATE))
-            .flatMap(taskEntity -> taskRepository.update(taskEntity.setStatus(TaskStatus.CANCEL)
+            .flatMap(taskEntity -> taskRepository.save(taskEntity.setStatus(TaskStatus.CANCEL)
                 .setFailMessage("Application stop.")))
             .subscribeOn(Schedulers.boundedElastic())
             .subscribe();
@@ -112,7 +112,7 @@ public class TaskServiceImpl implements TaskService {
             .filter(taskEntities -> taskEntities != null && !taskEntities.isEmpty())
             .flatMap(
                 taskEntities -> Mono.error(new RuntimeException("Submission failed, task exists.")))
-            .switchIfEmpty(taskRepository.insert(entity)
+            .switchIfEmpty(taskRepository.save(entity)
                 .flatMap(taskEntity -> {
                     Future<?> future = executorService.submit(task);
                     futureMap.put(taskEntity.getName(), future);

@@ -2,7 +2,7 @@
 import { apiClient } from '@/utils/api-client';
 import { Attachment } from '@runikaros/api-client';
 import { formatFileSize } from '@/utils/string-util';
-import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 import {
 	ElButton,
 	ElCol,
@@ -64,47 +64,6 @@ const file = computed({
 		emit('update:defineFile', value);
 	},
 });
-
-let sha1RefreshTimer: ReturnType<typeof setTimeout> | undefined;
-const clearSha1RefreshTimer = () => {
-	if (sha1RefreshTimer) {
-		clearTimeout(sha1RefreshTimer);
-		sha1RefreshTimer = undefined;
-	}
-};
-const refreshSha1 = async () => {
-	clearSha1RefreshTimer();
-	if (
-		!drawerVisible.value ||
-		file.value.type !== 'Driver_File' ||
-		file.value.sha1 ||
-		!file.value.id
-	) {
-		return;
-	}
-	try {
-		const { data } = await apiClient.attachment.getAttachmentById({
-			id: file.value.id,
-		});
-		file.value = data;
-	} catch (error) {
-		console.error('Refresh attachment SHA-1 failed', error);
-	}
-	if (!file.value.sha1 && drawerVisible.value) {
-		sha1RefreshTimer = setTimeout(refreshSha1, 1000);
-	}
-};
-watch(
-	[() => props.visible, () => props.defineFile.id],
-	() => {
-		clearSha1RefreshTimer();
-		if (props.visible) {
-			sha1RefreshTimer = setTimeout(refreshSha1, 1000);
-		}
-	},
-	{ immediate: true }
-);
-onUnmounted(clearSha1RefreshTimer);
 
 const handleDelete = async () => {
 	try {
@@ -255,7 +214,7 @@ const getArtplayerInstance = (art: any) => {
 					border
 					direction="vertical"
 				>
-					<el-descriptions-item :label="t('common.label.id')">
+					<el-descriptions-item label="ID">
 						{{ file.id }}
 					</el-descriptions-item>
 					<el-descriptions-item
@@ -282,10 +241,7 @@ const getArtplayerInstance = (art: any) => {
 						{{ formatFileSize(file.size) }}
 					</el-descriptions-item>
 					<el-descriptions-item label="SHA1">
-						{{
-							file.sha1 ||
-							t('module.attachment.details.descItemValue.sha1Calculating')
-						}}
+						{{ file.sha1 }}
 					</el-descriptions-item>
 					<el-descriptions-item
 						:label="t('module.attachment.details.descItemLabel.updateTime')"

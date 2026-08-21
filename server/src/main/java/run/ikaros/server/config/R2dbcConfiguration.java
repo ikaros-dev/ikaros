@@ -42,7 +42,9 @@ public class R2dbcConfiguration {
             if (!cls.isEnum()) {
                 continue;
             }
-            addEnumConverters(converters, cls);
+            Class<? extends Enum> enumCls = cls.asSubclass(Enum.class);
+            converters.add(new String2EnumConverter<>(enumCls));
+            converters.add(new Enum2StringConverter<>(enumCls));
         }
 
 
@@ -50,13 +52,5 @@ public class R2dbcConfiguration {
             PostgresDialect.INSTANCE,
             converters
         );
-    }
-
-    @SuppressWarnings("unchecked")
-    private <E extends Enum<E>> void addEnumConverters(List<Converter<?, ?>> converters,
-                                                        Class<?> enumClass) {
-        Class<E> typedEnumClass = (Class<E>) enumClass;
-        converters.add(new String2EnumConverter<>(typedEnumClass));
-        converters.add(new Enum2StringConverter<>(typedEnumClass));
     }
 }

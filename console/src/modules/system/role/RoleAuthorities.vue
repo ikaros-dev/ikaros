@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
-import { useI18n } from 'vue-i18n';
 import { onMounted, ref, watch } from 'vue';
 import { Authority } from '@runikaros/api-client';
 import { apiClient } from '@/utils/api-client';
@@ -21,7 +20,6 @@ import {
 } from 'element-plus';
 
 const route = useRoute();
-const { t } = useI18n();
 
 const roleId = ref<string>();
 
@@ -108,7 +106,7 @@ const submitRoleAuthoritiesAdd = async () => {
 			authorityIds: authorityIds.value,
 		},
 	});
-	ElMessage.success(t('module.roles.authorities.create_success', { id: roleId.value }));
+	ElMessage.success('Add role authorities success for roleId=' + roleId.value);
 	authorityDialogVisible.value = false;
 	await fetchRoleAutiorities();
 };
@@ -121,7 +119,7 @@ const deleteRoleAuthority = async (authId) => {
 			authorityIds: [authId],
 		},
 	});
-	ElMessage.success(t('module.roles.authorities.delete_success'));
+	ElMessage.success('Delete role authority success.');
 	await fetchRoleAutiorities();
 };
 
@@ -140,15 +138,15 @@ onMounted(() => {
 	<div>
 		<el-dialog
 			v-model="authorityDialogVisible"
-			:title="t('module.roles.dialog.authorities')"
+			title="Role Authorities Multi Select Dialog"
 			width="70%"
 			@open="fetchAuthorities"
 		>
 			<el-form :inline="true" :model="authorityCondition">
-				<el-form-item :label="t('common.label.type')">
+				<el-form-item label="Type">
 					<el-select
 						v-model="authorityCondition.type"
-						:placeholder="t('module.roles.authorities.placeholder')"
+						placeholder="Select Authiroty Type"
 						@change="fetchAttachmentsWithPageOne"
 					>
 						<el-option
@@ -159,14 +157,14 @@ onMounted(() => {
 						/>
 					</el-select>
 				</el-form-item>
-				<el-form-item :label="t('common.label.target')">
+				<el-form-item label="Target">
 					<el-input
 						v-model="authorityCondition.target"
 						clearable
 						@change="fetchAttachmentsWithPageOne"
 					/>
 				</el-form-item>
-				<el-form-item :label="t('common.label.authority')">
+				<el-form-item label="Authority">
 					<el-input
 						v-model="authorityCondition.authority"
 						clearable
@@ -192,43 +190,43 @@ onMounted(() => {
 				@selection-change="onAuthTabSelectChange"
 			>
 				<el-table-column type="selection" width="55" />
-					<el-table-column prop="id" :label="t('common.label.id')" width="150" />
-					<el-table-column prop="type" :label="t('common.label.type')" width="180" />
-					<el-table-column prop="target" :label="t('common.label.target')" />
-					<el-table-column prop="authority" :label="t('common.label.authority')" />
+				<el-table-column prop="id" label="ID" width="150" />
+				<el-table-column prop="type" label="Type" width="180" />
+				<el-table-column prop="target" label="Target" />
+				<el-table-column prop="authority" label="Authority" />
 			</el-table>
 			<template #footer>
 				<div class="dialog-footer">
-					<el-button @click="authorityDialogVisible = false">{{ t('common.button.cancel') }}</el-button>
+					<el-button @click="authorityDialogVisible = false">Cancel</el-button>
 					<el-button type="primary" @click="submitRoleAuthoritiesAdd">
-						{{ t('common.button.submit') }}
+						Submit
 					</el-button>
 				</div>
 			</template>
 		</el-dialog>
 
-		<el-button @click="authorityDialogVisible = true">{{ t('common.button.add') }}</el-button>
+		<el-button @click="authorityDialogVisible = true">Add</el-button>
 
 		<el-table :data="roleAutiorities" style="width: 100%">
-			<el-table-column prop="id" :label="t('common.label.id')" width="160" />
-			<el-table-column prop="type" :label="t('common.label.type')" width="180" />
-			<el-table-column prop="target" :label="t('common.label.target')" />
-			<el-table-column prop="authority" :label="t('common.label.authority')" />
-			<el-table-column fixed="right" :label="t('common.label.operations')" min-width="120">
+			<el-table-column prop="id" label="ID" width="160" />
+			<el-table-column prop="type" label="Type" width="180" />
+			<el-table-column prop="target" label="Target" />
+			<el-table-column prop="authority" label="Authority" />
+			<el-table-column fixed="right" label="Operations" min-width="120">
 				<template #default="scope">
 					<el-popconfirm
 						width="300"
-					:confirm-button-text="t('common.button.delete')"
-					:cancel-button-text="t('common.button.cancel')"
+						confirm-button-text="Delete"
+						cancel-button-text="Cancel"
 						confirm-button-type="danger"
 						:icon="WarningFilled"
 						icon-color="red"
-					:title="t('module.roles.authorities.delete_confirm')"
+						title="Are you sure to delete this authority?"
 						@confirm="deleteRoleAuthority(scope.row.id)"
 					>
 						<template #reference>
 							<el-button type="danger" :disabled="scope.row.id === 1"
-							>{{ t('common.button.delete') }}
+								>Delete
 							</el-button>
 						</template>
 					</el-popconfirm>

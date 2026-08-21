@@ -109,9 +109,6 @@ const totpContainerRef = ref<HTMLDivElement | null>(null);
 
 onMounted(() => {
   handleGenerateToken();
-  if (userStore.consumeConsoleAccessDenied()) {
-    ElMessage.error(t('common.exception.console_access_denied'));
-  }
   usernameRef.value?.focus();
 });
 </script>

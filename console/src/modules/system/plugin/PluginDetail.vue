@@ -214,7 +214,7 @@ onMounted(() => {
 				</el-descriptions-item>
 				<el-descriptions-item
 					v-if="plugin.stylesheet"
-					:label="t('module.plugin.details.label.stylesheet')"
+					label="Stylesheet"
 					:span="2"
 				>
 					{{ plugin.stylesheet }}

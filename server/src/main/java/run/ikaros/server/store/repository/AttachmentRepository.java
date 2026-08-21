@@ -19,8 +19,6 @@ public interface AttachmentRepository extends BaseRepository<AttachmentEntity> {
 
     Flux<AttachmentEntity> findAllByParentId(UUID parentId);
 
-    Flux<AttachmentEntity> findAllByParentIdAndDriverId(UUID parentId, UUID driverId);
-
     Flux<AttachmentEntity> findAllByTypeAndNameLike(AttachmentType type, String name);
 
     Mono<AttachmentEntity> findByUrl(String url);
