@@ -5,6 +5,7 @@ import static run.ikaros.server.custom.router.CustomRouterFunctionFactory.PathPa
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.server.ServerWebInputException;
@@ -33,7 +34,7 @@ public class CustomUpdateHandler implements CustomRouterFunctionFactory.UpdateHa
     }
 
     @Override
-    public Mono<ServerResponse> handle(ServerRequest request) {
+    public Mono<ServerResponse> handle(@NonNull ServerRequest request) {
         return request.bodyToMono(scheme.type())
             .switchIfEmpty(Mono.error(() -> new ServerWebInputException(
                 "Can not read body to:" + scheme.type())))

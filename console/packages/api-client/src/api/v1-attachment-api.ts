@@ -41,8 +41,6 @@ import {
 import { Attachment } from "../models";
 // @ts-ignore
 import { PagingWrap } from "../models";
-// @ts-ignore
-import { UrlWithConditionsRequest } from "../models";
 /**
  * V1AttachmentApi - axios parameter creator
  * @export
@@ -476,112 +474,6 @@ export const V1AttachmentApiAxiosParamCreator = function (
       };
     },
     /**
-     * 在隔离策略下预览指定的 SVG 附件，仅允许读取 SVG 文件。
-     * @param {any} id 待预览 SVG 附件的标识。
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    getSvgPreviewById: async (
-      id: any,
-      options: AxiosRequestConfig = {},
-    ): Promise<RequestArgs> => {
-      // verify required parameter 'id' is not null or undefined
-      assertParamExists("getSvgPreviewById", "id", id);
-      const localVarPath = `/api/v1/attachment/svg-preview/id/{id}`.replace(
-        `{${"id"}}`,
-        encodeURIComponent(String(id)),
-      );
-      // use dummy base URL string because the URL constructor only accepts absolute URLs.
-      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-      let baseOptions;
-      if (configuration) {
-        baseOptions = configuration.baseOptions;
-      }
-
-      const localVarRequestOptions = {
-        method: "GET",
-        ...baseOptions,
-        ...options,
-      };
-      const localVarHeaderParameter = {} as any;
-      const localVarQueryParameter = {} as any;
-
-      // authentication BasicAuth required
-      // http basic authentication required
-      setBasicAuthToObject(localVarRequestOptions, configuration);
-
-      // authentication BearerAuth required
-      // http bearer authentication required
-      await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-      setSearchParams(localVarUrlObj, localVarQueryParameter);
-      let headersFromBaseOptions =
-        baseOptions && baseOptions.headers ? baseOptions.headers : {};
-      localVarRequestOptions.headers = {
-        ...localVarHeaderParameter,
-        ...headersFromBaseOptions,
-        ...options.headers,
-      };
-
-      return {
-        url: toPathString(localVarUrlObj),
-        options: localVarRequestOptions,
-      };
-    },
-    /**
-     * Get URL conditions for attachment\'s driver.
-     * @param {any} id
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    getUrlConditions: async (
-      id: any,
-      options: AxiosRequestConfig = {},
-    ): Promise<RequestArgs> => {
-      // verify required parameter 'id' is not null or undefined
-      assertParamExists("getUrlConditions", "id", id);
-      const localVarPath = `/api/v1/attachment/{id}/url/conditions`.replace(
-        `{${"id"}}`,
-        encodeURIComponent(String(id)),
-      );
-      // use dummy base URL string because the URL constructor only accepts absolute URLs.
-      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-      let baseOptions;
-      if (configuration) {
-        baseOptions = configuration.baseOptions;
-      }
-
-      const localVarRequestOptions = {
-        method: "GET",
-        ...baseOptions,
-        ...options,
-      };
-      const localVarHeaderParameter = {} as any;
-      const localVarQueryParameter = {} as any;
-
-      // authentication BasicAuth required
-      // http basic authentication required
-      setBasicAuthToObject(localVarRequestOptions, configuration);
-
-      // authentication BearerAuth required
-      // http bearer authentication required
-      await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-      setSearchParams(localVarUrlObj, localVarQueryParameter);
-      let headersFromBaseOptions =
-        baseOptions && baseOptions.headers ? baseOptions.headers : {};
-      localVarRequestOptions.headers = {
-        ...localVarHeaderParameter,
-        ...headersFromBaseOptions,
-        ...options.headers,
-      };
-
-      return {
-        url: toPathString(localVarUrlObj),
-        options: localVarRequestOptions,
-      };
-    },
-    /**
      * List attachments by condition.
      * @param {any} [page] 第几页，从1开始, 默认为1.
      * @param {any} [size] 每页条数，默认为10.
@@ -651,67 +543,6 @@ export const V1AttachmentApiAxiosParamCreator = function (
         ...headersFromBaseOptions,
         ...options.headers,
       };
-
-      return {
-        url: toPathString(localVarUrlObj),
-        options: localVarRequestOptions,
-      };
-    },
-    /**
-     * Get attachment URL with conditions.
-     * @param {UrlWithConditionsRequest} urlWithConditionsRequest
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    postUrlWithConditions: async (
-      urlWithConditionsRequest: UrlWithConditionsRequest,
-      options: AxiosRequestConfig = {},
-    ): Promise<RequestArgs> => {
-      // verify required parameter 'urlWithConditionsRequest' is not null or undefined
-      assertParamExists(
-        "postUrlWithConditions",
-        "urlWithConditionsRequest",
-        urlWithConditionsRequest,
-      );
-      const localVarPath = `/api/v1/attachment/url/with/conditions`;
-      // use dummy base URL string because the URL constructor only accepts absolute URLs.
-      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-      let baseOptions;
-      if (configuration) {
-        baseOptions = configuration.baseOptions;
-      }
-
-      const localVarRequestOptions = {
-        method: "POST",
-        ...baseOptions,
-        ...options,
-      };
-      const localVarHeaderParameter = {} as any;
-      const localVarQueryParameter = {} as any;
-
-      // authentication BasicAuth required
-      // http basic authentication required
-      setBasicAuthToObject(localVarRequestOptions, configuration);
-
-      // authentication BearerAuth required
-      // http bearer authentication required
-      await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-      localVarHeaderParameter["Content-Type"] = "application/json";
-
-      setSearchParams(localVarUrlObj, localVarQueryParameter);
-      let headersFromBaseOptions =
-        baseOptions && baseOptions.headers ? baseOptions.headers : {};
-      localVarRequestOptions.headers = {
-        ...localVarHeaderParameter,
-        ...headersFromBaseOptions,
-        ...options.headers,
-      };
-      localVarRequestOptions.data = serializeDataIfNeeded(
-        urlWithConditionsRequest,
-        localVarRequestOptions,
-        configuration,
-      );
 
       return {
         url: toPathString(localVarUrlObj),
@@ -1192,48 +1023,6 @@ export const V1AttachmentApiFp = function (configuration?: Configuration) {
       );
     },
     /**
-     * 在隔离策略下预览指定的 SVG 附件，仅允许读取 SVG 文件。
-     * @param {any} id 待预览 SVG 附件的标识。
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    async getSvgPreviewById(
-      id: any,
-      options?: AxiosRequestConfig,
-    ): Promise<
-      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
-    > {
-      const localVarAxiosArgs =
-        await localVarAxiosParamCreator.getSvgPreviewById(id, options);
-      return createRequestFunction(
-        localVarAxiosArgs,
-        globalAxios,
-        BASE_PATH,
-        configuration,
-      );
-    },
-    /**
-     * Get URL conditions for attachment\'s driver.
-     * @param {any} id
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    async getUrlConditions(
-      id: any,
-      options?: AxiosRequestConfig,
-    ): Promise<
-      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
-    > {
-      const localVarAxiosArgs =
-        await localVarAxiosParamCreator.getUrlConditions(id, options);
-      return createRequestFunction(
-        localVarAxiosArgs,
-        globalAxios,
-        BASE_PATH,
-        configuration,
-      );
-    },
-    /**
      * List attachments by condition.
      * @param {any} [page] 第几页，从1开始, 默认为1.
      * @param {any} [size] 每页条数，默认为10.
@@ -1260,30 +1049,6 @@ export const V1AttachmentApiFp = function (configuration?: Configuration) {
           type,
           name,
           parentId,
-          options,
-        );
-      return createRequestFunction(
-        localVarAxiosArgs,
-        globalAxios,
-        BASE_PATH,
-        configuration,
-      );
-    },
-    /**
-     * Get attachment URL with conditions.
-     * @param {UrlWithConditionsRequest} urlWithConditionsRequest
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    async postUrlWithConditions(
-      urlWithConditionsRequest: UrlWithConditionsRequest,
-      options?: AxiosRequestConfig,
-    ): Promise<
-      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>
-    > {
-      const localVarAxiosArgs =
-        await localVarAxiosParamCreator.postUrlWithConditions(
-          urlWithConditionsRequest,
           options,
         );
       return createRequestFunction(
@@ -1524,34 +1289,6 @@ export const V1AttachmentApiFactory = function (
         .then((request) => request(axios, basePath));
     },
     /**
-     * 在隔离策略下预览指定的 SVG 附件，仅允许读取 SVG 文件。
-     * @param {V1AttachmentApiGetSvgPreviewByIdRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    getSvgPreviewById(
-      requestParameters: V1AttachmentApiGetSvgPreviewByIdRequest,
-      options?: AxiosRequestConfig,
-    ): AxiosPromise<any> {
-      return localVarFp
-        .getSvgPreviewById(requestParameters.id, options)
-        .then((request) => request(axios, basePath));
-    },
-    /**
-     * Get URL conditions for attachment\'s driver.
-     * @param {V1AttachmentApiGetUrlConditionsRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    getUrlConditions(
-      requestParameters: V1AttachmentApiGetUrlConditionsRequest,
-      options?: AxiosRequestConfig,
-    ): AxiosPromise<any> {
-      return localVarFp
-        .getUrlConditions(requestParameters.id, options)
-        .then((request) => request(axios, basePath));
-    },
-    /**
      * List attachments by condition.
      * @param {V1AttachmentApiListAttachmentsByCondition1Request} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
@@ -1568,23 +1305,6 @@ export const V1AttachmentApiFactory = function (
           requestParameters.type,
           requestParameters.name,
           requestParameters.parentId,
-          options,
-        )
-        .then((request) => request(axios, basePath));
-    },
-    /**
-     * Get attachment URL with conditions.
-     * @param {V1AttachmentApiPostUrlWithConditionsRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    postUrlWithConditions(
-      requestParameters: V1AttachmentApiPostUrlWithConditionsRequest,
-      options?: AxiosRequestConfig,
-    ): AxiosPromise<any> {
-      return localVarFp
-        .postUrlWithConditions(
-          requestParameters.urlWithConditionsRequest,
           options,
         )
         .then((request) => request(axios, basePath));
@@ -1761,34 +1481,6 @@ export interface V1AttachmentApiGetStreamByIdRequest {
 }
 
 /**
- * Request parameters for getSvgPreviewById operation in V1AttachmentApi.
- * @export
- * @interface V1AttachmentApiGetSvgPreviewByIdRequest
- */
-export interface V1AttachmentApiGetSvgPreviewByIdRequest {
-  /**
-   * 待预览 SVG 附件的标识。
-   * @type {any}
-   * @memberof V1AttachmentApiGetSvgPreviewById
-   */
-  readonly id: any;
-}
-
-/**
- * Request parameters for getUrlConditions operation in V1AttachmentApi.
- * @export
- * @interface V1AttachmentApiGetUrlConditionsRequest
- */
-export interface V1AttachmentApiGetUrlConditionsRequest {
-  /**
-   *
-   * @type {any}
-   * @memberof V1AttachmentApiGetUrlConditions
-   */
-  readonly id: any;
-}
-
-/**
  * Request parameters for listAttachmentsByCondition1 operation in V1AttachmentApi.
  * @export
  * @interface V1AttachmentApiListAttachmentsByCondition1Request
@@ -1828,20 +1520,6 @@ export interface V1AttachmentApiListAttachmentsByCondition1Request {
    * @memberof V1AttachmentApiListAttachmentsByCondition1
    */
   readonly parentId?: any;
-}
-
-/**
- * Request parameters for postUrlWithConditions operation in V1AttachmentApi.
- * @export
- * @interface V1AttachmentApiPostUrlWithConditionsRequest
- */
-export interface V1AttachmentApiPostUrlWithConditionsRequest {
-  /**
-   *
-   * @type {UrlWithConditionsRequest}
-   * @memberof V1AttachmentApiPostUrlWithConditions
-   */
-  readonly urlWithConditionsRequest: UrlWithConditionsRequest;
 }
 
 /**
@@ -2066,38 +1744,6 @@ export class V1AttachmentApi extends BaseAPI {
   }
 
   /**
-   * 在隔离策略下预览指定的 SVG 附件，仅允许读取 SVG 文件。
-   * @param {V1AttachmentApiGetSvgPreviewByIdRequest} requestParameters Request parameters.
-   * @param {*} [options] Override http request option.
-   * @throws {RequiredError}
-   * @memberof V1AttachmentApi
-   */
-  public getSvgPreviewById(
-    requestParameters: V1AttachmentApiGetSvgPreviewByIdRequest,
-    options?: AxiosRequestConfig,
-  ) {
-    return V1AttachmentApiFp(this.configuration)
-      .getSvgPreviewById(requestParameters.id, options)
-      .then((request) => request(this.axios, this.basePath));
-  }
-
-  /**
-   * Get URL conditions for attachment\'s driver.
-   * @param {V1AttachmentApiGetUrlConditionsRequest} requestParameters Request parameters.
-   * @param {*} [options] Override http request option.
-   * @throws {RequiredError}
-   * @memberof V1AttachmentApi
-   */
-  public getUrlConditions(
-    requestParameters: V1AttachmentApiGetUrlConditionsRequest,
-    options?: AxiosRequestConfig,
-  ) {
-    return V1AttachmentApiFp(this.configuration)
-      .getUrlConditions(requestParameters.id, options)
-      .then((request) => request(this.axios, this.basePath));
-  }
-
-  /**
    * List attachments by condition.
    * @param {V1AttachmentApiListAttachmentsByCondition1Request} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
@@ -2115,25 +1761,6 @@ export class V1AttachmentApi extends BaseAPI {
         requestParameters.type,
         requestParameters.name,
         requestParameters.parentId,
-        options,
-      )
-      .then((request) => request(this.axios, this.basePath));
-  }
-
-  /**
-   * Get attachment URL with conditions.
-   * @param {V1AttachmentApiPostUrlWithConditionsRequest} requestParameters Request parameters.
-   * @param {*} [options] Override http request option.
-   * @throws {RequiredError}
-   * @memberof V1AttachmentApi
-   */
-  public postUrlWithConditions(
-    requestParameters: V1AttachmentApiPostUrlWithConditionsRequest,
-    options?: AxiosRequestConfig,
-  ) {
-    return V1AttachmentApiFp(this.configuration)
-      .postUrlWithConditions(
-        requestParameters.urlWithConditionsRequest,
         options,
       )
       .then((request) => request(this.axios, this.basePath));

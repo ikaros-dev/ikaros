@@ -240,10 +240,9 @@ public class SubjectServiceImpl implements SubjectService, ApplicationContextAwa
             .filter(exists -> exists)
             .flatMap(exists -> subjectSyncRepository.findBySubjectIdAndPlatformAndPlatformId(
                 entity.getSubjectId(), entity.getPlatform(), entity.getPlatformId()))
-            .flatMap(subjectSyncRepository::update)
-            .switchIfEmpty(subjectSyncRepository.insert(entity)
+            .switchIfEmpty(Mono.just(entity)
                 .doOnSuccess(e2 -> log.debug("create new subject sync record: [{}].", e2))
-            );
+                .flatMap(subjectSyncRepository::save));
     }
 
     @Override

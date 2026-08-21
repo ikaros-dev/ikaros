@@ -52,7 +52,7 @@ public class SubjectCollectionScoreUpdateEventListener {
                     subjectEntity.setScore(average);
                     return subjectEntity;
                 }))
-            .flatMap(subjectRepository::update)
+            .flatMap(subjectRepository::save)
             .then();
     }
 }

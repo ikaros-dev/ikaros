@@ -513,7 +513,7 @@ onMounted(getPluginsFromServer);
 			</template>
 		</el-table-column>
 
-		<el-table-column prop="name" :label="t('common.label.id')" width="150" />
+		<el-table-column prop="name" label="ID" width="150" />
 		<el-table-column
 			prop="displayName"
 			:label="t('module.plugin.table.label.name')"

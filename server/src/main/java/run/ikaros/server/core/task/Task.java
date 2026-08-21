@@ -24,17 +24,17 @@ public abstract class Task implements Runnable {
     @Override
     public void run() {
         try {
-            getRepository().update(getEntity().setStatus(TaskStatus.RUNNING))
+            getRepository().save(getEntity().setStatus(TaskStatus.RUNNING))
                 .block(AppConst.BLOCK_TIMEOUT);
             doRun();
-            getRepository().update(getEntity()
+            getRepository().save(getEntity()
                 .setStatus(TaskStatus.FINISH)
                 .setName(getTaskEntityName())
                 .setEndTime(LocalDateTime.now())
             ).block(AppConst.BLOCK_TIMEOUT);
         } catch (Exception e) {
             log.error("exec task fail.", e);
-            getRepository().update(
+            getRepository().save(
                 getEntity()
                     .setFailMessage(e.getClass().getName() + ": " + e.getMessage())
                     .setStatus(TaskStatus.FAIL)

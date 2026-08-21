@@ -38,14 +38,6 @@ public class ProcessSpSubdirectoriesStep implements DirectoryBindingStep {
     private final AttachmentReferenceRepository attachmentReferenceRepository;
     private final EpisodeSequenceRegularService episodeSequenceRegularService;
 
-    /**
-     * 创建特殊子目录处理步骤.
-     *
-     * @param attachmentRepository 附件仓储
-     * @param episodeService 剧集服务
-     * @param referenceRepository 附件引用仓储
-     * @param episodeSequenceRegularService 剧集序号规整服务
-     */
     public ProcessSpSubdirectoriesStep(AttachmentRepository attachmentRepository,
                                        EpisodeService episodeService,
                                        AttachmentReferenceRepository referenceRepository,

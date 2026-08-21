@@ -22,7 +22,7 @@ checkstyle {
 repositories {
     mavenCentral()
 
-    maven { url = 'https://repo.spring.io/milestone' }
+    maven { url 'https://repo.spring.io/milestone' }
     mavenLocal()
 }
 
@@ -37,28 +37,12 @@ springBoot {
     buildInfo()
 }
 
-def mainResourcesDirectory = layout.buildDirectory.dir('resources/main')
-
 bootJar {
-    dependsOn 'buildFrontend'
     manifest {
         attributes "Implementation-Title": "Ikaros Application",
                 "Implementation-Version": archiveVersion
     }
     archiveFileName = "ikaros-server.jar"
-    doFirst {
-        def requiredResources = [
-                'templates/simple/index.html',
-                'console/index.html'
-        ]
-        requiredResources.each { resourcePath ->
-            def resourceFile = project.layout.buildDirectory
-                    .file("resources/main/${resourcePath}").get().asFile
-            if (!resourceFile.isFile()) {
-                throw new GradleException("缺少 JAR 必需资源: ${resourcePath}")
-            }
-        }
-    }
 }
 
 tasks.named('jar') {
@@ -73,7 +57,6 @@ ext {
 
 dependencies {
     implementation project(':api')
-    implementation 'org.mp4parser:isoparser:1.9.41'
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     annotationProcessor "org.springframework:spring-context-indexer"
@@ -109,63 +92,45 @@ dependencies {
 
 
 node {
-    version = '22.22.1'
-    pnpmVersion = '10.32.1'
-    download = true
     nodeProjectDir = file("${rootProject.projectDir}/console")
 }
 
-// pnpm 10.x 在无 TTY 环境(如 Gradle/CI)删除 modules 目录前需要确认，设置 CI=true 跳过
-tasks.withType(PnpmTask).configureEach {
-    environment = ['CI': 'true']
-}
-
-task pnpmInstallPackageShared(type: PnpmTask) {
+task pnpmInstallPackageShared(type: NpxTask) {
+    command = 'pnpm'
     args = ['--filter', './packages/shared', 'install']
 }
 
-task buildFrontendPackageShared(type: PnpmTask) {
+task buildFrontendPackageShared(type: NpxTask) {
+    command = 'pnpm'
     args = ['--filter', './packages/shared', 'build']
     dependsOn("pnpmInstallPackageShared")
 }
 
-task pnpmInstallPackageApiClient(type: PnpmTask) {
+task pnpmInstallPackageApiClient(type: NpxTask) {
+    command = 'pnpm'
     args = ['--filter', './packages/api-client', 'install', '--ignore-scripts=true']
 }
 
-task buildFrontendPackageApiClient(type: PnpmTask) {
+task buildFrontendPackageApiClient(type: NpxTask) {
+    command = 'pnpm'
     args = ['--filter', './packages/api-client', 'build']
     dependsOn("pnpmInstallPackageApiClient")
 }
 
-task pnpmInstallFrontend(type: PnpmTask) {
+task pnpmInstallFrontend(type: NpxTask) {
+    command = "pnpm"
     args = ["install"]
     dependsOn("buildFrontendPackageShared", "buildFrontendPackageApiClient")
 }
 
-task buildFrontend(type: PnpmTask) {
+task buildFrontend(type: NpxTask) {
+    command = 'pnpm'
     args = ['build']
     dependsOn("pnpmInstallFrontend")
-    inputs.files(fileTree("${rootProject.projectDir}/console") {
-        include 'src/**'
-        include 'index.html'
-        include 'vite.config.ts'
-        include 'package.json'
-        include 'pnpm-lock.yaml'
-        include 'pnpm-workspace.yaml'
-    })
-    outputs.dir(file("${rootProject.projectDir}/server/src/main/resources/console"))
 }
 
-tasks.named('processResources') {
-    mustRunAfter('buildFrontend')
-}
-
-tasks.named('processResources') {
-    mustRunAfter('buildFrontend')
-}
-
-task pnpmDev(type: PnpmTask) {
+task pnpmDev(type: NpxTask) {
+    command = "pnpm"
     args = ["dev"]
     dependsOn("buildFrontend")
 }

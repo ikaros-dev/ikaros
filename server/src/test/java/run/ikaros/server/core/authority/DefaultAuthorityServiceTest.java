@@ -116,7 +116,7 @@ class DefaultAuthorityServiceTest {
             .findByTypeAndTargetAndAuthority(
                 AuthorityType.API, "/api/test", "read"))
             .thenReturn(Mono.empty());
-        when(authorityRepository.insert(any(AuthorityEntity.class)))
+        when(authorityRepository.save(any(AuthorityEntity.class)))
             .thenAnswer(inv -> {
                 AuthorityEntity e = inv.getArgument(0);
                 e.setId(id);
@@ -148,12 +148,7 @@ class DefaultAuthorityServiceTest {
             .findByTypeAndTargetAndAuthority(
                 AuthorityType.API, "/api/test", "read"))
             .thenReturn(Mono.just(existingEntity));
-        when(authorityRepository.update(any(AuthorityEntity.class)))
-            .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
-        // switchIfEmpty构造时会立即求值insert，需stub避免NPE
-        when(authorityRepository.insert(any(AuthorityEntity.class)))
-            .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
-        when(authorityRepository.insert(any(AuthorityEntity.class)))
+        when(authorityRepository.save(any(AuthorityEntity.class)))
             .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(
@@ -182,7 +177,7 @@ class DefaultAuthorityServiceTest {
             .findByTypeAndTargetAndAuthority(
                 AuthorityType.API, "/api/users", "read"))
             .thenReturn(Mono.empty());
-        when(authorityRepository.insert(any(AuthorityEntity.class)))
+        when(authorityRepository.save(any(AuthorityEntity.class)))
             .thenAnswer(inv -> {
                 AuthorityEntity e = inv.getArgument(0);
                 e.setId(id);

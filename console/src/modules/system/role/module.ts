@@ -1,7 +1,6 @@
 import { definePlugin } from '@runikaros/shared';
 import { Ticket } from '@element-plus/icons-vue';
 import { markRaw } from 'vue';
-import { RouterView } from 'vue-router';
 import Roles from './Roles.vue';
 import RoleAuthorities from './RoleAuthorities.vue';
 
@@ -14,7 +13,7 @@ export default definePlugin({
 			route: {
 				path: '/roles',
 				name: 'Roles',
-				component: RouterView,
+				component: Roles,
 				meta: {
 					title: 'module.roles.title',
 					menu: {
@@ -25,22 +24,18 @@ export default definePlugin({
 						admin: true,
 					},
 				},
-				children: [
-					{
-						path: '',
-						component: Roles,
-					},
-					{
-						path: 'authorities/:roleId',
-						alias: '/role/authorities/roleId/:roleId',
-						name: 'RoleAuthorities',
-						component: RoleAuthorities,
-						meta: {
-							title: 'module.roles.authorities.sidebar',
-							hidden: true,
-						},
-					},
-				],
+			},
+		},
+		{
+			parentName: 'Root',
+			route: {
+				path: '/role/authorities/roleId/:roleId',
+				name: 'RoleAuthorities',
+				component: RoleAuthorities,
+				meta: {
+					title: 'module.roles.authorities.sidebar',
+					hidden: true,
+				},
 			},
 		},
 	],

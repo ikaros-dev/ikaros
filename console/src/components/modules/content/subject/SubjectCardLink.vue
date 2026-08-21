@@ -3,14 +3,14 @@ import SubjectCard from './SubjectCard.vue';
 
 const props = withDefaults(
 	defineProps<{
-		id: string;
+		id: number;
 		name: string;
 		nameCn?: string;
 		cover: string;
 		percentage: number;
 	}>(),
 	{
-		id: '',
+		id: -1,
 		name: '',
 		nameCn: '',
 		cover: '',

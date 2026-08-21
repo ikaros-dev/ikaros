@@ -56,6 +56,7 @@ export default defineConfigWithVueTs(
 		},
 		rules: {
 			'vue/multi-word-component-names': 'off',
+			'import/no-extraneous-dependencies': 'off',
 			'vue/attribute-hyphenation': 'off',
 			'vue/v-on-event-hyphenation': 'off',
 			'vue/first-attribute-linebreak': [

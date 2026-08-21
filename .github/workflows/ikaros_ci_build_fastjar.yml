@@ -25,14 +25,28 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
           java-version: 21
+      - name: Install pnpm
+        run: npm install -g pnpm
+      - name: Reduce pnpm concurrency
+        run: pnpm config set fetch-retries 5 && pnpm config set fetch-timeout 60000 && pnpm config set network-concurrency 6
+      - name: Use npm mirror
+        run: |
+          npm config set registry https://registry.npmmirror.com
+          pnpm config set registry https://registry.npmmirror.com
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Clean with gradle
         run: |
           ./gradlew clean
-      - name: Build complete server jar with gradle
+      - name: Build console with npm
+        run: |
+          ./gradlew buildFrontend -x test
+      - name: Build server with gradle
         run: |
           ./gradlew build -x test
+      - name: Build server fast jar
+        run: |
+          ./gradlew bootJar -x test
       - name: Upload fast jar to release
         uses: svenstaro/upload-release-action@v2
         with:

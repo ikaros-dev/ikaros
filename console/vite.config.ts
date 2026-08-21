@@ -39,18 +39,6 @@ export default ({ mode }: { mode: string }) => {
 			),
 			emptyOutDir: true,
 			chunkSizeWarningLimit: 2048,
-			rollupOptions: {
-				onwarn(warning, warn) {
-					const isVueUseInvalidPureAnnotation =
-						warning.code === 'INVALID_ANNOTATION' &&
-						warning.id?.includes('/@vueuse/core/dist/index.js') &&
-						warning.message.includes('#__PURE__');
-
-					if (!isVueUseInvalidPureAnnotation) {
-						warn(warning);
-					}
-				},
-			},
 		},
 	});
 };

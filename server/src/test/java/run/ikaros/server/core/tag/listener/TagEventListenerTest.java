@@ -130,7 +130,7 @@ class TagEventListenerTest {
         UUID subjectId = UUID.randomUUID();
         TagEntity tagEntity = buildTagEntity(TagType.SUBJECT);
         tagEntity.setMasterId(subjectId);
-        final TagChangeEvent event = new TagChangeEvent(this, tagEntity);
+        TagChangeEvent event = new TagChangeEvent(this, tagEntity);
 
         SubjectEntity subjectEntity = new SubjectEntity();
         subjectEntity.setId(subjectId);

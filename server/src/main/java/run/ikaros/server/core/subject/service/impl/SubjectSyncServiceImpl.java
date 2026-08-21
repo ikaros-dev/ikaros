@@ -197,9 +197,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                     }
                     return entity;
                 })
-                .flatMap(entity -> entity.getId() == null
-                    ? subjectRepository.insert(entity)
-                    : subjectRepository.update(entity))
+                .flatMap(subjectRepository::save)
                 // .flatMap(this::downloadCoverAndSaveRef)
                 .map(entity -> {
                     subjectIdA.set(entity.getId());
@@ -217,9 +215,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                         .platformId(platformId)
                         .subjectId(sid)
                         .build())))
-                .flatMap(entity -> entity.getId() == null
-                    ? subjectSyncRepository.insert(entity)
-                    : subjectSyncRepository.update(entity));
+                .flatMap(subjectSyncRepository::save);
 
         // 保存剧集信息
         Mono<List<EpisodeEntity>> episodesMono =
@@ -249,9 +245,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                         .setUpdateTime(LocalDateTime.now());
                     return entity;
                 })
-                .flatMap(entity -> entity.getId() == null
-                    ? episodeRepository.insert(entity)
-                    : episodeRepository.update(entity))
+                .flatMap(episodeRepository::save)
                 .collectList();
 
 
@@ -276,9 +270,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                     .setCreateTime(LocalDateTime.now())
                     .setType(TagType.SUBJECT)
                     .setMasterId(subjectIdA.get()))
-                .flatMap(entity -> entity.getId() == null
-                    ? tagRepository.insert(entity)
-                    : tagRepository.update(entity))
+                .flatMap(tagRepository::save)
                 .collectList();
 
         // 保存角色信息
@@ -296,9 +288,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                 .flatMap(character -> characterRepository.findByName(character.getName())
                     .switchIfEmpty(Mono.just(new CharacterEntity()))
                     .flatMap(entity -> copyProperties(character, entity, "id")))
-                .flatMap(entity -> entity.getId() == null
-                    ? characterRepository.insert(entity)
-                    : characterRepository.update(entity))
+                .flatMap(characterRepository::save)
                 .map(BaseEntity::getId)
                 .flatMap(cid -> subjectCharacterRepository.findBySubjectIdAndCharacterId(
                         subjectIdA.get(), cid)
@@ -306,9 +296,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                         .characterId(cid)
                         .subjectId(subjectIdA.get())
                         .build())))
-                .flatMap(entity -> entity.getId() == null
-                    ? subjectCharacterRepository.insert(entity)
-                    : subjectCharacterRepository.update(entity))
+                .flatMap(subjectCharacterRepository::save)
                 .collectList();
 
         // 保存人物信息
@@ -325,9 +313,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                 .flatMap(person -> personRepository.findByName(person.getName())
                     .switchIfEmpty(Mono.just(new PersonEntity()))
                     .flatMap(entity -> copyProperties(person, entity, "id")))
-                .flatMap(entity -> entity.getId() == null
-                    ? personRepository.insert(entity)
-                    : personRepository.update(entity))
+                .flatMap(personRepository::save)
                 .map(BaseEntity::getId)
                 .flatMap(pid -> subjectPersonRepository.findBySubjectIdAndPersonId(
                     subjectIdA.get(), pid
@@ -335,9 +321,7 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
                     .personId(pid)
                     .subjectId(subjectIdA.get())
                     .build())))
-                .flatMap(entity -> entity.getId() == null
-                    ? subjectPersonRepository.insert(entity)
-                    : subjectPersonRepository.update(entity))
+                .flatMap(subjectPersonRepository::save)
                 .collectList();
 
         return spMono.map(subjectPersonEntities -> subjectIdA.get())
@@ -381,13 +365,13 @@ public class SubjectSyncServiceImpl implements SubjectSyncService,
         entity.setCover(attachment.getUrl());
         return attachmentReferenceRepository.findByTypeAndAttachmentIdAndReferenceId(
                 AttachmentReferenceType.SUBJECT, attachment.getId(), entity.getId())
-            .flatMap(attachmentReferenceRepository::update)
-            .switchIfEmpty(attachmentReferenceRepository.insert(AttachmentReferenceEntity.builder()
+            .switchIfEmpty(Mono.just(AttachmentReferenceEntity.builder()
                 .type(AttachmentReferenceType.SUBJECT)
                 .attachmentId(attachment.getId())
                 .referenceId(entity.getId())
                 .build()))
-            .flatMap(attRefEn -> subjectRepository.update(entity));
+            .flatMap(attachmentReferenceRepository::save)
+            .flatMap(attRefEn -> subjectRepository.save(entity));
     }
 
     @Override

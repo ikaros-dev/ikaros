@@ -51,11 +51,7 @@ const loadDirectoryNodes = async (node, resolve) => {
 	});
 	const attachments: Attachment[] = data.items;
 	const dirNodes: DirNode[] = attachments
-		.filter(
-			(att): att is Attachment & { id: string } =>
-				Boolean(att.id) &&
-				(att.type == 'Directory' || att.type == 'Driver_Directory')
-		)
+		.filter((att) => att.type == 'Directory' || att?.type == 'Driver_Directory')
 		.map((attachment) => {
 			const node: DirNode = {
 				value: attachment.id,

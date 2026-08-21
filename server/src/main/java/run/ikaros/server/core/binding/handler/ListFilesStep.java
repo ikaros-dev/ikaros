@@ -3,6 +3,7 @@ package run.ikaros.server.core.binding.handler;
 import static run.ikaros.api.infra.utils.ReactiveBeanUtils.copyProperties;
 
 import java.util.List;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -10,10 +11,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.core.binding.DirectoryBindingContext;
 import run.ikaros.api.core.binding.DirectoryBindingStep;
-import run.ikaros.api.core.media.MediaFileCategory;
-import run.ikaros.api.core.media.MediaFilePolicy;
 import run.ikaros.api.store.enums.AttachmentType;
-import run.ikaros.server.core.attachment.service.AttachmentContentInspectionService;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.repository.AttachmentRepository;
 
@@ -25,14 +23,13 @@ import run.ikaros.server.store.repository.AttachmentRepository;
 @Component
 public class ListFilesStep implements DirectoryBindingStep {
 
-    private final AttachmentRepository attachmentRepository;
-    /** 对候选附件执行有限前缀真实格式检查。 */
-    private final AttachmentContentInspectionService contentInspectionService;
+    private static final Set<String> VIDEO_EXTENSIONS =
+        Set.of(".mkv", ".mp4", ".avi", ".rmvb", ".wmv", ".flv", ".mov", ".ts");
 
-    public ListFilesStep(AttachmentRepository attachmentRepository,
-                         AttachmentContentInspectionService contentInspectionService) {
+    private final AttachmentRepository attachmentRepository;
+
+    public ListFilesStep(AttachmentRepository attachmentRepository) {
         this.attachmentRepository = attachmentRepository;
-        this.contentInspectionService = contentInspectionService;
     }
 
     @Override
@@ -50,20 +47,20 @@ public class ListFilesStep implements DirectoryBindingStep {
         return attachmentRepository.findAllByParentId(context.getDirectoryId())
             .collectList()
             .flatMap(children -> {
+                List<AttachmentEntity> videoEntityList = children.stream()
+                    .filter(att -> att.getType() == AttachmentType.File
+                        || att.getType() == AttachmentType.Driver_File)
+                    .filter(att -> isVideoFile(att.getName()))
+                    .toList();
+
                 List<AttachmentEntity> spDirEntityList = children.stream()
                     .filter(att -> att.getType() == AttachmentType.Directory
                         || att.getType() == AttachmentType.Driver_Directory)
                     .filter(att -> isSpDirectory(att.getName()))
                     .toList();
 
-                return Flux.fromIterable(children)
-                    .filter(att -> att.getType() == AttachmentType.File
-                        || att.getType() == AttachmentType.Driver_File)
-                    .filter(att -> MediaFilePolicy.isAllowedFileName(att.getName()))
-                    .concatMap(entity -> contentInspectionService.inspect(entity)
-                        .filter(result -> result.category() == MediaFileCategory.VIDEO)
-                        .flatMap(ignored ->
-                            copyProperties(entity, Attachment.builder().build())))
+                return Flux.fromIterable(videoEntityList)
+                    .concatMap(entity -> copyProperties(entity, Attachment.builder().build()))
                     .collectList()
                     .flatMap(videoFiles -> {
                         context.setChildAttachments(videoFiles);
@@ -80,6 +77,14 @@ public class ListFilesStep implements DirectoryBindingStep {
                         return context;
                     });
             });
+    }
+
+    private boolean isVideoFile(String name) {
+        if (name == null) {
+            return false;
+        }
+        String lower = name.toLowerCase();
+        return VIDEO_EXTENSIONS.stream().anyMatch(lower::endsWith);
     }
 
     private boolean isSpDirectory(String name) {

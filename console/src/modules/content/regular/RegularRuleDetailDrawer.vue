@@ -62,19 +62,13 @@ const getEpGroupLabel = (group: string) => {
 				<el-descriptions-item :label="t('module.regular.dialog.label.epGroup')">
 					{{ getEpGroupLabel(rule.epGroup) }}
 				</el-descriptions-item>
-				<el-descriptions-item
-					:label="t('module.regular.dialog.label.sequence')"
-				>
+				<el-descriptions-item :label="t('module.regular.dialog.label.sequence')">
 					{{ rule.sequence ?? '-' }}
 				</el-descriptions-item>
-				<el-descriptions-item
-					:label="t('module.regular.dialog.label.priority')"
-				>
+				<el-descriptions-item :label="t('module.regular.dialog.label.priority')">
 					{{ rule.priority }}
 				</el-descriptions-item>
-				<el-descriptions-item
-					:label="t('module.regular.dialog.label.description')"
-				>
+				<el-descriptions-item :label="t('module.regular.dialog.label.description')">
 					{{ rule.description || '-' }}
 				</el-descriptions-item>
 				<el-descriptions-item :label="t('module.regular.dialog.label.enabled')">
@@ -82,14 +76,10 @@ const getEpGroupLabel = (group: string) => {
 						{{ rule.enabled ? '启用' : '禁用' }}
 					</el-tag>
 				</el-descriptions-item>
-				<el-descriptions-item
-					:label="t('module.regular.detail.label.createTime')"
-				>
+				<el-descriptions-item :label="t('module.regular.detail.label.createTime')">
 					{{ rule.createTime ? formatDate(rule.createTime) : '-' }}
 				</el-descriptions-item>
-				<el-descriptions-item
-					:label="t('module.regular.detail.label.updateTime')"
-				>
+				<el-descriptions-item :label="t('module.regular.detail.label.updateTime')">
 					{{ rule.updateTime ? formatDate(rule.updateTime) : '-' }}
 				</el-descriptions-item>
 			</el-descriptions>

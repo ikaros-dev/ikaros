@@ -13,10 +13,6 @@ import Base64 from 'crypto-js/enc-base64';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useUserStore } from '@/stores/user';
-import {
-	detectFileExtensionType,
-	hasActiveFileTransfers,
-} from '@/components/upload/file-pond';
 
 const filePondRef = ref(null);
 const { t } = useI18n();
@@ -120,16 +116,9 @@ const getFirstFile = () => {
 	return filePondRef.value.getFile(0);
 };
 
-const hasIncompleteFiles = () => {
-	// @ts-expect-error
-	const files = filePondRef.value?.getFiles() || [];
-	return hasActiveFileTransfers(files);
-};
-
 defineExpose({
 	handleClearFileList,
 	getFirstFile,
-	hasIncompleteFiles,
 });
 </script>
 
@@ -150,10 +139,7 @@ defineExpose({
 		:chunkUploads="props.enableChunkUploads"
 		:chunkSize="props.chunkSize"
 		:chunkForce="props.enableChunkForce"
-		:fileValidateTypeDetectType="detectFileExtensionType"
-		:fileValidateTypeLabelExpectedTypes="
-			t('component.upload.file-pond-upload.supportedFormatHint')
-		"
+		fileValidateTypeLabelExpectedTypes="请选择 {lastType} 格式的文件"
 		:labelFileProcessing="t('component.upload.file-pond-upload.uploadding')"
 		:labelFileProcessingAborted="
 			t('component.upload.file-pond-upload.cancelUpload')

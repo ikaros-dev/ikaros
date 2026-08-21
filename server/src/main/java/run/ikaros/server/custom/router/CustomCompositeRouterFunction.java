@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
@@ -40,14 +41,15 @@ public class CustomCompositeRouterFunction implements
     }
 
     @Override
-    public Mono<HandlerFunction<ServerResponse>> route(ServerRequest request) {
+    @NonNull
+    public Mono<HandlerFunction<ServerResponse>> route(@NonNull ServerRequest request) {
         return Flux.fromIterable(getRouterFunctions())
             .concatMap(routerFunction -> routerFunction.route(request))
             .next();
     }
 
     @Override
-    public void accept(RouterFunctions.Visitor visitor) {
+    public void accept(@NonNull RouterFunctions.Visitor visitor) {
         getRouterFunctions().forEach(routerFunction -> routerFunction.accept(visitor));
     }
 

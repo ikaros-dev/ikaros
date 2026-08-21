@@ -42,17 +42,14 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
 
     @Override
     public Mono<EpisodeCollection> create(UUID userId, UUID episodeId) {
-        return episodeCollectionRepository
-            .findByUserIdAndEpisodeId(userId, episodeId)
+        return episodeCollectionRepository.findByUserIdAndEpisodeId(userId, episodeId)
             .switchIfEmpty(
-                episodeRepository
-                    .findById(episodeId)
+                episodeRepository.findById(episodeId)
                     .switchIfEmpty(Mono.error(
                         new EpisodeNotFoundException("episode not found for id: " + episodeId)))
                     .map(EpisodeEntity::getSubjectId)
                     .flatMap(subjectId -> episodeCollectionRepository
-                        .insert(EpisodeCollectionEntity
-                            .builder()
+                        .insert(EpisodeCollectionEntity.builder()
                             .id(UuidV7Utils.generateUuid())
                             .userId(userId)
                             .subjectId(subjectId)
@@ -68,10 +65,8 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
 
     @Override
     public Mono<EpisodeCollection> remove(UUID userId, UUID episodeId) {
-        return episodeCollectionRepository
-            .findByUserIdAndEpisodeId(userId, episodeId)
-            .flatMap(entity -> episodeCollectionRepository
-                .delete(entity)
+        return episodeCollectionRepository.findByUserIdAndEpisodeId(userId, episodeId)
+            .flatMap(entity -> episodeCollectionRepository.delete(entity)
                 .doOnSuccess(unused -> log.info(
                     "Remove episode collection for userId=[{}] and episodeId=[{}]",
                     userId, episodeId))
@@ -80,28 +75,24 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
     }
 
     private Mono<EpisodeCollection> entityTo(EpisodeCollectionEntity entity) {
-        return Mono
-            .justOrEmpty(entity)
+        return Mono.justOrEmpty(entity)
             .flatMap(episodeCollectionEntity ->
                 copyProperties(episodeCollectionEntity, new EpisodeCollection()))
             .flatMap(episodeCollection ->
-                episodeRepository
-                    .findById(episodeCollection.getEpisodeId())
+                episodeRepository.findById(episodeCollection.getEpisodeId())
                     .flatMap(episodeEntity -> copyProperties(episodeEntity, episodeCollection)
                     ));
     }
 
     @Override
     public Mono<EpisodeCollection> findByUserIdAndEpisodeId(UUID userId, UUID episodeId) {
-        return episodeCollectionRepository
-            .findByUserIdAndEpisodeId(userId, episodeId)
+        return episodeCollectionRepository.findByUserIdAndEpisodeId(userId, episodeId)
             .flatMap(this::entityTo);
     }
 
     @Override
     public Flux<EpisodeCollection> findAllByUserIdAndSubjectId(UUID userId, UUID subjectId) {
-        return episodeCollectionRepository
-            .findAllByUserIdAndSubjectId(userId, subjectId)
+        return episodeCollectionRepository.findAllByUserIdAndSubjectId(userId, subjectId)
             .flatMap(this::entityTo);
     }
 
@@ -110,14 +101,12 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
                                                       Long progress) {
         Assert.isTrue(progress > 0, "progress must > 0");
 
-        return episodeCollectionRepository
-            .findByUserIdAndEpisodeId(userId, episodeId)
+        return episodeCollectionRepository.findByUserIdAndEpisodeId(userId, episodeId)
             .switchIfEmpty(createNewEpisodeCollectionEntity(userId, episodeId, progress, null))
             .flatMap(episodeCollectionEntity -> updateSubjectId(episodeId, episodeCollectionEntity))
             .map(episodeCollectionEntity -> episodeCollectionEntity.setProgress(progress))
             .flatMap(
-                episodeCollectionEntity -> episodeCollectionRepository
-                    .update(episodeCollectionEntity)
+                episodeCollectionEntity -> episodeCollectionRepository.save(episodeCollectionEntity)
                     .doOnSuccess(episodeCollectionEntity1 -> log.info(
                         "Update episode collection process for episodeId=[{}] and userId=[{}]",
                         episodeId, userId)))
@@ -135,18 +124,14 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
 
         final boolean finish = ((double) progress / duration) >= AppConst.EPISODE_FINISH;
 
-        return episodeCollectionRepository
-            .findByUserIdAndEpisodeId(userId, episodeId)
+        return episodeCollectionRepository.findByUserIdAndEpisodeId(userId, episodeId)
             .switchIfEmpty(createNewEpisodeCollectionEntity(userId, episodeId, progress, duration))
             .flatMap(episodeCollectionEntity -> updateSubjectId(episodeId, episodeCollectionEntity))
             .map(episodeCollectionEntity ->
-                episodeCollectionEntity
-                    .setProgress(progress)
-                    .setDuration(duration)
+                episodeCollectionEntity.setProgress(progress).setDuration(duration)
                     .setUpdateTime(LocalDateTime.now()))
             .flatMap(
-                episodeCollectionEntity -> episodeCollectionRepository
-                    .update(episodeCollectionEntity)
+                episodeCollectionEntity -> episodeCollectionRepository.save(episodeCollectionEntity)
                     .doOnSuccess(episodeCollectionEntity1 -> log.info(
                         "Update episode collection for episodeId=[{}] and userId=[{}]",
                         episodeId, userId)))
@@ -159,20 +144,14 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
                                                                            UUID episodeId,
                                                                            Long progress,
                                                                            Long duration) {
-        return episodeRepository
-            .findById(episodeId)
+        return episodeRepository.findById(episodeId)
             .switchIfEmpty(
                 Mono.error(new EpisodeNotFoundException("Episode not found for id: " + episodeId)))
             .map(EpisodeEntity::getSubjectId)
             .flatMap(subjectId ->
-                episodeCollectionRepository
-                    .insert(EpisodeCollectionEntity
-                        .builder()
-                        .userId(userId)
-                        .subjectId(subjectId)
-                        .episodeId(episodeId)
-                        .progress(progress)
-                        .duration(duration)
+                episodeCollectionRepository.save(EpisodeCollectionEntity.builder()
+                        .userId(userId).subjectId(subjectId)
+                        .episodeId(episodeId).progress(progress).duration(duration)
                         .finish(((double) progress / duration) >= AppConst.EPISODE_FINISH)
                         .updateTime(LocalDateTime.now())
                         .build())
@@ -184,8 +163,7 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
 
     private Mono<EpisodeCollectionEntity> updateSubjectId(
         UUID episodeId, EpisodeCollectionEntity episodeCollectionEntity) {
-        return episodeRepository
-            .findById(episodeId)
+        return episodeRepository.findById(episodeId)
             .switchIfEmpty(
                 Mono.error(new EpisodeNotFoundException("Episode not found for id: " + episodeId)))
             .map(EpisodeEntity::getSubjectId)
@@ -196,16 +174,13 @@ public class EpisodeCollectionServiceImpl implements EpisodeCollectionService {
     public Mono<Void> updateEpisodeCollectionFinish(UUID userId, UUID episodeId,
                                                     Boolean finish) {
         Assert.notNull(finish, "'finish' must not null.");
-        return episodeCollectionRepository
-            .findByUserIdAndEpisodeId(userId, episodeId)
+        return episodeCollectionRepository.findByUserIdAndEpisodeId(userId, episodeId)
             .filter(entity -> !finish.equals(entity.getFinish()))
             .map(episodeCollectionEntity ->
-                episodeCollectionEntity
-                    .setFinish(finish)
+                episodeCollectionEntity.setFinish(finish)
                     .setUpdateTime(LocalDateTime.now()))
             .flatMap(
-                episodeCollectionEntity -> episodeCollectionRepository
-                    .update(episodeCollectionEntity)
+                episodeCollectionEntity -> episodeCollectionRepository.save(episodeCollectionEntity)
                     .doOnSuccess(episodeCollectionEntity1 -> {
                         log.debug(
                             "Update episode collection finish for episodeId=[{}] and userId=[{}]",

@@ -26,6 +26,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import run.ikaros.api.infra.exception.plugin.PluginDisabledException;
 import run.ikaros.server.plugin.event.IkarosPluginDeleteEvent;
@@ -44,7 +45,7 @@ public class IkarosPluginManager extends DefaultPluginManager
     private PluginApplicationInitializer pluginApplicationInitializer;
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext)
+    public void setApplicationContext(@NonNull ApplicationContext applicationContext)
         throws BeansException {
         this.rootApplicationContext = applicationContext;
     }

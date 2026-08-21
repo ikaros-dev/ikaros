@@ -36,9 +36,9 @@ class DefaultRoleAuthorityServiceTest {
 
     @Test
     void addAuthoritiesForRole_multipleAuthorities() {
-        final UUID roleId = UuidV7Utils.generateUuid();
-        final UUID authId1 = UuidV7Utils.generateUuid();
-        final UUID authId2 = UuidV7Utils.generateUuid();
+        UUID roleId = UuidV7Utils.generateUuid();
+        UUID authId1 = UuidV7Utils.generateUuid();
+        UUID authId2 = UuidV7Utils.generateUuid();
 
         when(roleAuthorityRepository.insert(
             any(RoleAuthorityEntity.class)))

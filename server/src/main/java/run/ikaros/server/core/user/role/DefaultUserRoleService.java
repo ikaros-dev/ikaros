@@ -39,8 +39,8 @@ public class DefaultUserRoleService implements UserRoleService {
         Assert.notNull(entity.getRoleId(), "'roleId' must not null.");
         return userRoleRepository.findByUserIdAndRoleId(entity.getUserId(), entity.getRoleId())
             .map(e -> e.setUserId(entity.getUserId()).setRoleId(entity.getRoleId()))
-            .flatMap(userRoleRepository::update)
-            .switchIfEmpty(userRoleRepository.insert(entity));
+            .switchIfEmpty(Mono.just(entity))
+            .flatMap(userRoleRepository::save);
     }
 
     @Override

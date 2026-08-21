@@ -77,12 +77,6 @@ export interface Attachment {
    * @type {any}
    * @memberof Attachment
    */
-  modifiedTime?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof Attachment
-   */
   deleted?: any;
   /**
    *

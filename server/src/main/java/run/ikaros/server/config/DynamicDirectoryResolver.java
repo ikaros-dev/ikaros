@@ -1,10 +1,10 @@
 package run.ikaros.server.config;
 
-import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,16 +18,15 @@ import org.springframework.web.reactive.resource.ResourceResolverChain;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-/**
- * 将驱动虚拟目录安全解析为已注册根目录内的真实文件资源.
- */
 @Slf4j
 @Component
 public class DynamicDirectoryResolver implements ResourceResolver {
-    /** 虚拟路径前缀与真实根目录的映射. */
+    // 存储虚拟路径到真实目录的映射
+    // key: 虚拟路径前缀，必须以 / 开头和结尾，如 "/uploads/"
+    // value: 对应的真实文件系统目录
     private final Map<String, Path> directoryMappings = new ConcurrentHashMap<>();
 
-    /** 未匹配动态目录时使用的后备解析器. */
+    // 用于未匹配时的后备解析器
     private final PathResourceResolver fallbackResolver = new PathResourceResolver();
 
     /**
@@ -36,18 +35,25 @@ public class DynamicDirectoryResolver implements ResourceResolver {
      * 意味着 /dynamic/uploads/** 映射到 /data/uploads/**
      */
     public void addDirectoryMapping(String virtualPath, String realDirectory) {
-        Path realPath;
-        try {
-            realPath = Path.of(realDirectory).toAbsolutePath().normalize().toRealPath();
-        } catch (IOException exception) {
-            throw new IllegalArgumentException("挂载目录不存在或不可访问: " + realDirectory,
-                exception);
+        // 规范化虚拟路径
+        // String normalizedVirtualPath = normalizeVirtualPath(virtualPath);
+        String normalizedVirtualPath = virtualPath;
+
+        // 创建真实目录路径
+        Path realPath = Paths.get(realDirectory).toAbsolutePath().normalize();
+
+        // 确保目录存在
+        if (!Files.exists(realPath)) {
+            try {
+                Files.createDirectories(realPath);
+            } catch (Exception e) {
+                throw new RuntimeException("无法创建目录: " + realDirectory, e);
+            }
         }
-        if (!Files.isDirectory(realPath) || !Files.isReadable(realPath)) {
-            throw new IllegalArgumentException("挂载路径不是可读目录: " + realDirectory);
-        }
-        directoryMappings.put(virtualPath, realPath);
-        log.debug("添加目录映射: {} -> {}", virtualPath, realPath);
+
+        // 存储映射
+        directoryMappings.put(normalizedVirtualPath, realPath);
+        log.debug("添加目录映射: {} -> {}", normalizedVirtualPath, realDirectory);
     }
 
     /**
@@ -97,31 +103,29 @@ public class DynamicDirectoryResolver implements ResourceResolver {
 
             log.debug("检查映射: {} -> {}", virtualPrefix, realBaseDir);
 
-            String normalizedPrefix = virtualPrefix.endsWith("/")
-                ? virtualPrefix.substring(0, virtualPrefix.length() - 1)
-                : virtualPrefix;
-            if (!requestPath.startsWith(normalizedPrefix + "/")) {
-                continue;
-            }
-            String relativePath = requestPath.substring(normalizedPrefix.length() + 1);
-            Path candidatePath = realBaseDir.resolve(relativePath).normalize();
-            if (!candidatePath.startsWith(realBaseDir)) {
-                log.warn("安全警告: 路径遍历尝试 {}", candidatePath);
-                continue;
-            }
-            try {
-                Path realFilePath = candidatePath.toRealPath();
+            // 检查请求路径是否以虚拟前缀开头
+            if (requestPath.startsWith(virtualPrefix)) {
+                // 提取相对路径部分
+                String relativePath = requestPath.substring(virtualPrefix.length() + 1);
+
+                // 构建真实文件路径
+                Path realFilePath = realBaseDir.resolve(relativePath).normalize();
+
+                // 安全检查：确保请求的文件在允许的目录内
                 if (!realFilePath.startsWith(realBaseDir)) {
-                    log.warn("安全警告: 文件真实路径超出挂载目录 {}", realFilePath);
+
+                    log.warn("安全警告: 路径遍历尝试 {}", realFilePath);
                     continue;
                 }
-                if (Files.isReadable(realFilePath)) {
+
+                // 检查文件是否存在且可读
+                if (Files.exists(realFilePath) && Files.isReadable(realFilePath)) {
                     Resource resource = new FileSystemResource(realFilePath);
                     log.debug("找到资源: {}", realFilePath);
                     return Mono.just(resource);
+                } else {
+                    log.debug("资源不存在: {}", realFilePath);
                 }
-            } catch (IOException exception) {
-                log.debug("资源不存在或不可访问: {}", candidatePath);
             }
         }
 

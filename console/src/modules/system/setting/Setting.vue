@@ -142,7 +142,7 @@ const testMailConfig = async () => {
 	testMailBtnLoading.value = true;
 	await apiClient.notify.testMailSend();
 	testMailBtnLoading.value = false;
-	ElMessage.success(t('module.setting.message.test_mail_sent'));
+	ElMessage.success('Email has been sent.');
 };
 
 onMounted(getSettingFromServer);

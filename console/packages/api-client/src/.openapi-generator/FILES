@@ -17,7 +17,6 @@ api/v1-episode-api.ts
 api/v1-indices-api.ts
 api/v1-meta-info-api.ts
 api/v1-migration-api.ts
-api/v1-music-api.ts
 api/v1-notify-api.ts
 api/v1-plugin-api.ts
 api/v1-role-api.ts
@@ -38,7 +37,6 @@ common.ts
 configuration.ts
 git_push.sh
 index.ts
-models/access-url-condition.ts
 models/attachment-driver-fetcher-vo.ts
 models/attachment-driver.ts
 models/attachment-reference.ts
@@ -62,13 +60,6 @@ models/index.ts
 models/jwt-apply-param.ts
 models/jwt-apply-response.ts
 models/link.ts
-models/local-scan-assignment.ts
-models/local-scan-confirm-request.ts
-models/local-scan-item.ts
-models/local-scan-preview-request.ts
-models/local-scan-preview.ts
-models/media-track.ts
-models/music.ts
 models/paging-wrap.ts
 models/plugin-load-location-parent-root-file-name-file-system.ts
 models/plugin-load-location-parent-root-file-name.ts
@@ -79,7 +70,6 @@ models/plugin.ts
 models/post-attachment-relations-param.ts
 models/role-authority-req-params.ts
 models/role.ts
-models/song.ts
 models/subject-collection.ts
 models/subject-hint.ts
 models/subject-hints.ts
@@ -94,7 +84,6 @@ models/totp-setup-response.ts
 models/totp-status-response.ts
 models/totp-validate-param.ts
 models/update-user-request.ts
-models/url-with-conditions-request.ts
 models/user-entity.ts
 models/user-role-req-params.ts
 models/user.ts

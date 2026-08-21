@@ -54,14 +54,14 @@ public class AttachmentRefSubjectCoverChangeListener {
                     .toInstant(ZoneOffset.of("+8")).toEpochMilli())
                     : "")
                     + "-" + entity.getName().substring(entity.getName().lastIndexOf("-") + 1)))
-            .flatMap(attachmentRepository::update)
+            .flatMap(attachmentRepository::save)
             .map(AttachmentEntity::getId)
             .map(attId -> AttachmentReferenceEntity.builder()
                 .type(AttachmentReferenceType.SUBJECT)
                 .attachmentId(attId)
                 .referenceId(subjectId)
                 .build())
-            .flatMap(attachmentReferenceRepository::insert)
+            .flatMap(attachmentReferenceRepository::save)
             .then();
     }
 
