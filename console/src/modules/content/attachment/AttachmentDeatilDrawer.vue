@@ -19,7 +19,7 @@ import { isImage, isVideo, isVoice } from '@/utils/file';
 import { Edit } from '@element-plus/icons-vue';
 import Artplayer from '@/components/video/Artplayer.vue';
 import AttachmentRelationsDialog from './AttachmentRelationsDialog.vue';
-import { getCompleteFileUrl } from '@/utils/url-tuils';
+import { appendRedirectParam, getCompleteFileUrl } from '@/utils/url-tuils';
 
 const { t } = useI18n();
 
@@ -163,11 +163,11 @@ const getArtplayerInstance = (art: any) => {
 				<div class="attach-detail-img pb-3">
 					<a
 						v-if="isImage(file.name as string)"
-						:href="getCompleteFileUrl(file.url)"
+						:href="getCompleteFileUrl(appendRedirectParam(file.url))"
 						target="_blank"
 					>
 						<img
-							:src="file.url"
+							:src="appendRedirectParam(file.url)"
 							class="file-detail-preview-img"
 							loading="lazy"
 						/>
@@ -191,7 +191,7 @@ const getArtplayerInstance = (art: any) => {
 						v-else-if="isVoice(file.name as string)"
 						controls
 						:volume="0.3"
-						:src="getCompleteFileUrl(file.url)"
+						:src="getCompleteFileUrl(appendRedirectParam(file.url))"
 					>
 						{{ t('module.attachment.details.message.hint.audioFormat') }}
 					</audio>
