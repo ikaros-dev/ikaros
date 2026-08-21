@@ -230,12 +230,23 @@ public class AttachmentEndpoint implements CoreEndpoint {
 
             .GET("/attachment/stream/id/{id}", this::getStreamById,
                 builder -> builder.operationId("GetStreamById")
-                    .tag(tag).description("Get attachment stream by id.")
+                    .tag(tag).description(
+                        "获取附件流内容。默认由服务端代理返回，"
+                            + "当查询参数 redirect=true 且附件提供外部直链"
+                            + "（如对象存储自定义域名）时，返回 307 重定向到直链。")
                     .parameter(parameterBuilder()
                         .in(ParameterIn.PATH)
                         .name("id")
-                        .description("Attachment id.")
+                        .description("附件 ID。")
                         .implementation(String.class))
+                    .parameter(parameterBuilder()
+                        .in(ParameterIn.QUERY)
+                        .name("redirect")
+                        .description(
+                            "是否重定向到外部直链，true 时若附件属于对象存储等"
+                                + "提供外部直链的驱动则返回 307 重定向，"
+                                + "默认 false 保持服务端代理。")
+                        .implementation(Boolean.class))
                     .response(responseBuilder().implementation(String.class)))
 
             .build();
@@ -470,6 +481,37 @@ public class AttachmentEndpoint implements CoreEndpoint {
 
     private Mono<ServerResponse> getStreamById(ServerRequest request) {
         UUID id = UUID.fromString(request.pathVariable("id"));
+        // 是否启用重定向到外部直链（如对象存储自定义域名），
+        // 通过查询参数 redirect=true 开启，默认关闭以保持向后兼容。
+        boolean redirect = request.queryParam("redirect")
+            .map(Boolean::parseBoolean).orElse(false);
+        if (redirect) {
+            return attachmentService.getReadUrl(id)
+                .flatMap(url -> {
+                    if (StringUtils.hasText(url)
+                        && (url.startsWith("http://") || url.startsWith("https://"))) {
+                        // 外部直链，使用 307 重定向，保留原始 HTTP 方法与 Range 头
+                        return ServerResponse
+                            .status(HttpStatus.TEMPORARY_REDIRECT)
+                            .header(HttpHeaders.LOCATION, url)
+                            .build();
+                    }
+                    // 非外部直链（如本地驱动 /driver/static），回退到服务端流式代理
+                    return proxyStream(id, request);
+                });
+        }
+        return proxyStream(id, request);
+    }
+
+    /**
+     * 服务端流式代理附件内容。
+     * 支持 Range 分段请求（206）与完整内容请求（200）。
+     *
+     * @param id      附件 ID
+     * @param request 当前请求
+     * @return 附件内容响应
+     */
+    private Mono<ServerResponse> proxyStream(UUID id, ServerRequest request) {
         return Mono.fromCallable(() -> {
             Mono<Attachment> attMono =
                 attachmentService.findById(id);
