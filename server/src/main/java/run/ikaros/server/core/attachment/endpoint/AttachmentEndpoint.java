@@ -482,9 +482,9 @@ public class AttachmentEndpoint implements CoreEndpoint {
     private Mono<ServerResponse> getStreamById(ServerRequest request) {
         UUID id = UUID.fromString(request.pathVariable("id"));
         // 是否启用重定向到外部直链（如对象存储自定义域名），
-        // 通过查询参数 redirect=true 开启，默认关闭以保持向后兼容。
+        // 通过查询参数 redirect=false 关闭，默认开启。
         boolean redirect = request.queryParam("redirect")
-            .map(Boolean::parseBoolean).orElse(false);
+            .map(Boolean::parseBoolean).orElse(true);
         if (redirect) {
             return attachmentService.getReadUrl(id)
                 .flatMap(url -> {
