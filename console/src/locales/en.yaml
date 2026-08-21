@@ -85,7 +85,6 @@ component:
       uploadFinish: Uplaod finish
       uploadException: Uplaod exception
       notSupportFileFormat: Not support file format
-      supportedFormatHint: Select a media file supported by the server
       clickCancel: Click cancel
       clickRetry: Click retry
 view:
@@ -294,77 +293,6 @@ module:
         placeholder: Search keyword, overrides directory name (optional)
       success: Directory bind request submitted, please check the task status
       error: Directory bind request failed
-      local:
-        option: Local scan
-        title: Local directory scan and confirmation
-        workflowId: Workflow ID
-        taskId: Task ID
-        file: File
-        metadata: Scan metadata
-        trackStatus: Track probe
-        probeSuccess: '{count} tracks found'
-        unknownFile: Unknown file
-        cancel: Cancel
-        confirm: Confirm and create task
-        success: 'Local binding task created. Workflow ID: {workflowId}; task ID: {taskId}'
-        error:
-          unknown: Local scan request failed
-        mode:
-          label: Scan mode
-          EPISODE: Episode video
-          AUDIO: Audio
-          IMAGE: Image sequence
-        preview:
-          title: Scan preview
-          action: Scan directory
-          empty: No scannable media files were found in this directory
-          noPrimary: The scan contains no primary resources to confirm
-          noItems: No files
-        role:
-          PRIMARY: Primary resources
-          AUTO_ASSOCIATED: Automatically associated
-          PENDING_CONFIRMATION: Pending confirmation
-          UNASSOCIATED: Unassociated
-          UNKNOWN: Unknown files
-        physicalType:
-          label: Media type
-          VIDEO: Video
-          AUDIO: Audio
-          SUBTITLE: Subtitle
-          LYRICS: Lyrics
-          IMAGE: Image
-          UNKNOWN: Unknown
-        assignment:
-          label: Associate with primary resource
-          placeholder: Select an association
-          unassociated: Keep unassociated
-          invalid: This file has no attachment ID and cannot be confirmed
-        subject:
-          title: Target subject
-          existing: Select existing subject
-          new: Create new subject
-          select: Existing subject
-          searchPlaceholder: Search by subject name
-          name: Subject name
-          nameCn: Chinese name
-          type: Subject type
-          nsfw: Mark as NSFW
-          typeValue:
-            ANIME: Anime
-            COMIC: Comic
-            GAME: Game
-            MUSIC: Music
-            NOVEL: Novel
-            REAL: Live action
-            OTHER: Other
-        rescan:
-          entry: Rescan local directory
-          title: Existing local workflow
-          action: Submit rescan task
-          submitted: 'Rescan task created. Task ID: {taskId}'
-          missing: Missing or renamed files
-          probeFailures: Track probe failures
-          unreadable: The rescan completed, but its result details could not be read
     popconfirm:
       title: Are you sure to delete attachments in bulk?
       btn: Batch delete
@@ -384,9 +312,6 @@ module:
     drawer:
       fragment-upload:
         title: Upload Files
-        formatLoading: Loading allowed attachment formats
-        formatLoadFailed: Failed to load the attachment format whitelist; uploads are blocked
-        retryFormatLoad: Retry
         confirm:
           message: >-
             When exiting the upload page, if a file has not been uploaded, the
@@ -399,10 +324,6 @@ module:
     details:
       title: File details
       descTitle: File Details
-      preview:
-        svgLoading: Loading SVG preview
-        svgFailed: Failed to load SVG preview
-        svgTitle: SVG attachment preview
       descItemLabel:
         name: Name (Double-click the value to rename it)
         type: Type
@@ -809,36 +730,6 @@ module:
       episode:
         details:
           title: Episode Details
-          media:
-            track:
-              audio: Audio
-              subtitle: Subtitle
-              unknown: Unnamed track
-              index: Track {index}
-              default: Default
-              external: External
-              embedded: Embedded
-              unknownLanguage: Unknown language
-              embeddedUnavailable: Embedded tracks cannot be switched separately
-              browserUnsupported: This codec is not supported by the browser
-              playable: Playable
-              unavailable: Unavailable
-              switch: Switch
-              selected: Selected
-            subtitle:
-              enable: Subtitles
-              show: Show
-              hide: Hide
-              select: Select
-            image:
-              empty: The image sequence is empty
-              loading: Restoring reading progress
-              loadFailed: Failed to load the current image
-              retry: Reload
-              page: Page {page}
-              progress: Page {page} of {total}
-              saving: Saving
-              saveFailed: Failed to save progress
           message:
             operate:
               remove-episode-all-att-refs:
@@ -1370,9 +1261,6 @@ module:
     cover: Cover
     add_song: Add Song
     edit_song: Edit Song
-    play: Play
-    no_playable_resource: This song has no playable audio resource
-    play_failed: Failed to load the song resource
     back: Back
     album:
       detail:

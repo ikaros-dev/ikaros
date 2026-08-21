@@ -159,7 +159,8 @@ const apiClient = setupApiClient(axiosInstance);
 function setupApiClient(axios: AxiosInstance) {
 	return {
 		// 通用HTTP方法，用于调用自定义/插件端点
-		get: (url: string, config?: AxiosRequestConfig) => axios.get(url, config),
+		get: (url: string, config?: AxiosRequestConfig) =>
+			axios.get(url, config),
 		post: (url: string, data?: unknown, config?: AxiosRequestConfig) =>
 			axios.post(url, data, config),
 		put: (url: string, data?: unknown, config?: AxiosRequestConfig) =>
@@ -207,4 +208,4 @@ const setApiClientJwtToken = (token?: string) => {
 	delete axiosInstance.defaults.headers.common['Authorization'];
 };
 
-export { apiClient, axiosInstance, setApiClientJwtToken };
+export { apiClient, setApiClientJwtToken };

@@ -5,10 +5,7 @@ import { apiClient } from '@/utils/api-client';
 import { base64Encode, formatFileSize } from '@/utils/string-util';
 import AttachmentFragmentUploadDrawer from './AttachmentFragmentUploadDrawer.vue';
 import moment from 'moment';
-import {
-	loadMediaFileFormatLookup,
-	type MediaFileFormatLookup,
-} from '@/utils/media-file-format';
+import { isImage, isVideo, isVoice } from '@/utils/file';
 import AttachmentDirectoryTreeSelect from '@/components/modules/content/attachment/AttachmentDirectoryTreeSelect.vue';
 
 import {
@@ -77,9 +74,6 @@ const attachmentCondition = ref({
 });
 
 const attachments = ref<Attachment[]>([]);
-const mediaFileFormatLookup = ref<MediaFileFormatLookup>();
-const mediaFileCategory = (fileName?: string) =>
-	fileName ? mediaFileFormatLookup.value?.categoryOf(fileName) : undefined;
 const fetchAttachments = async () => {
 	const { data } = await apiClient.attachment.listAttachmentsByCondition1({
 		page: attachmentCondition.value.page,
@@ -144,16 +138,7 @@ const onSearchNameChange = async () => {
 	await fetchAttachments();
 };
 
-onMounted(() => {
-	fetchAttachments();
-	loadMediaFileFormatLookup()
-		.then((lookup) => {
-			mediaFileFormatLookup.value = lookup;
-		})
-		.catch(() => {
-			mediaFileFormatLookup.value = undefined;
-		});
-});
+onMounted(fetchAttachments);
 </script>
 
 <template>
@@ -250,15 +235,9 @@ onMounted(() => {
 							>
 								<Folder v-if="'Directory' === scoped.row.type" />
 								<span v-else>
-									<Picture
-										v-if="mediaFileCategory(scoped.row.name) === 'IMAGE'"
-									/>
-									<Headset
-										v-else-if="mediaFileCategory(scoped.row.name) === 'AUDIO'"
-									/>
-									<Film
-										v-else-if="mediaFileCategory(scoped.row.name) === 'VIDEO'"
-									/>
+									<Picture v-if="isImage(scoped.row.name)" />
+									<Headset v-else-if="isVoice(scoped.row.name)" />
+									<Film v-else-if="isVideo(scoped.row.name)" />
 									<Document v-else />
 								</span>
 							</el-icon>

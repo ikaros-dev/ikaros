@@ -29,12 +29,6 @@ export interface DirectoryBindingWorkflowEntity {
    * @type {any}
    * @memberof DirectoryBindingWorkflowEntity
    */
-  version?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof DirectoryBindingWorkflowEntity
-   */
   taskId?: any;
   /**
    *
@@ -60,18 +54,6 @@ export interface DirectoryBindingWorkflowEntity {
    * @memberof DirectoryBindingWorkflowEntity
    */
   platform?: DirectoryBindingWorkflowEntityPlatformEnum;
-  /**
-   *
-   * @type {any}
-   * @memberof DirectoryBindingWorkflowEntity
-   */
-  localMode?: any;
-  /**
-   *
-   * @type {any}
-   * @memberof DirectoryBindingWorkflowEntity
-   */
-  localScanState?: any;
   /**
    *
    * @type {any}

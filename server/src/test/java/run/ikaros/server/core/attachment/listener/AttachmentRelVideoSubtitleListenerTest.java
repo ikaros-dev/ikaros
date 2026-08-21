@@ -5,21 +5,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
-import run.ikaros.api.core.media.MediaFileDetectionResult;
-import run.ikaros.api.core.media.MediaFileFormat;
 import run.ikaros.api.infra.utils.UuidV7Utils;
 import run.ikaros.api.store.enums.AttachmentReferenceType;
 import run.ikaros.api.store.enums.AttachmentRelationType;
 import run.ikaros.api.store.enums.AttachmentType;
 import run.ikaros.server.config.IkarosTestcontainersConfiguration;
 import run.ikaros.server.core.attachment.event.AttachmentReferenceSaveEvent;
-import run.ikaros.server.core.attachment.service.AttachmentContentInspectionService;
 import run.ikaros.server.store.entity.AttachmentEntity;
 import run.ikaros.server.store.entity.AttachmentReferenceEntity;
 import run.ikaros.server.store.repository.AttachmentReferenceRepository;
@@ -28,8 +22,7 @@ import run.ikaros.server.store.repository.AttachmentRepository;
 
 @SpringBootTest
 @Testcontainers
-@Import({IkarosTestcontainersConfiguration.class,
-    AttachmentRelVideoSubtitleListenerTest.TestMediaInspectionConfiguration.class})
+@Import(IkarosTestcontainersConfiguration.class)
 class AttachmentRelVideoSubtitleListenerTest {
 
     @Autowired
@@ -44,12 +37,8 @@ class AttachmentRelVideoSubtitleListenerTest {
 
     @AfterEach
     void tearDown() {
-        StepVerifier
-            .create(repository.deleteAll())
-            .verifyComplete();
-        StepVerifier
-            .create(attachmentRelationRepository.deleteAll())
-            .verifyComplete();
+        StepVerifier.create(repository.deleteAll()).verifyComplete();
+        StepVerifier.create(attachmentRelationRepository.deleteAll()).verifyComplete();
     }
 
     @Test
@@ -65,100 +54,44 @@ class AttachmentRelVideoSubtitleListenerTest {
             "[Airota&LoliHouse] Liz and the Blue Bird "
                 + "- Movie [BDRip 1080p HEVC-yuv420p10 FLACx2].tc.ass";
 
-        AttachmentEntity videoAtt = AttachmentEntity
-            .builder()
+        AttachmentEntity videoAtt = AttachmentEntity.builder()
             .id(UuidV7Utils.generateUuid())
-            .name(videoAttName)
-            .type(AttachmentType.File)
-            .path(videoAttName)
+            .name(videoAttName).type(AttachmentType.File).path(videoAttName)
             .build();
-        StepVerifier
-            .create(repository
-                .insert(videoAtt)
-                .map(AttachmentEntity::getId))
+        StepVerifier.create(repository.insert(videoAtt).map(AttachmentEntity::getId))
             .expectNext(videoAtt.getId())
             .verifyComplete();
-        AttachmentEntity scSubtitleAtt = AttachmentEntity
-            .builder()
+        AttachmentEntity scSubtitleAtt = AttachmentEntity.builder()
             .id(UuidV7Utils.generateUuid())
-            .name(assScSubtitleAttName)
-            .type(AttachmentType.File)
-            .path(videoAttName)
+            .name(assScSubtitleAttName).type(AttachmentType.File).path(videoAttName)
             .build();
-        StepVerifier
-            .create(repository
-                .insert(scSubtitleAtt)
-                .map(AttachmentEntity::getId))
+        StepVerifier.create(repository.insert(scSubtitleAtt).map(AttachmentEntity::getId))
             .expectNext(scSubtitleAtt.getId())
             .verifyComplete();
-        AttachmentEntity tcSubtitleAtt = AttachmentEntity
-            .builder()
+        AttachmentEntity tcSubtitleAtt = AttachmentEntity.builder()
             .id(UuidV7Utils.generateUuid())
-            .name(assTcSubtitleAttName)
-            .type(AttachmentType.File)
-            .path(videoAttName)
+            .name(assTcSubtitleAttName).type(AttachmentType.File).path(videoAttName)
             .build();
-        StepVerifier
-            .create(repository
-                .insert(tcSubtitleAtt)
-                .map(AttachmentEntity::getId))
+        StepVerifier.create(repository.insert(tcSubtitleAtt).map(AttachmentEntity::getId))
             .expectNext(tcSubtitleAtt.getId())
             .verifyComplete();
 
         // 操作
-        AttachmentReferenceEntity referenceEntity = AttachmentReferenceEntity
-            .builder()
+        AttachmentReferenceEntity referenceEntity = AttachmentReferenceEntity.builder()
             .id(UuidV7Utils.generateUuid())
             .type(AttachmentReferenceType.EPISODE)
             .attachmentId(videoAtt.getId())
             .build();
-        StepVerifier
-            .create(referenceRepository.insert(referenceEntity))
-            .expectNext(referenceEntity)
-            .verifyComplete();
+        StepVerifier.create(referenceRepository.insert(referenceEntity))
+            .expectNext(referenceEntity).verifyComplete();
         AttachmentReferenceSaveEvent event =
             new AttachmentReferenceSaveEvent(this, referenceEntity);
 
-        StepVerifier
-            .create(listener.onAttachmentReferenceSaveEvent(event))
-            .verifyComplete();
+        StepVerifier.create(listener.onAttachmentReferenceSaveEvent(event)).verifyComplete();
 
         // 查询结果
-        StepVerifier
-            .create(attachmentRelationRepository
-                .findAllByTypeAndAttachmentId(
-                    AttachmentRelationType.VIDEO_SUBTITLE, videoAtt.getId()
-                )
-                .collectList()
-                .map(List::size))
-            .expectNext(2)
-            .verifyComplete();
-    }
-
-    @TestConfiguration
-    static class TestMediaInspectionConfiguration {
-        @Bean
-        @Primary
-        AttachmentContentInspectionService contentInspectionService() {
-            return new AttachmentContentInspectionService() {
-                @Override
-                public reactor.core.publisher.Mono<MediaFileDetectionResult> inspect(
-                    AttachmentEntity attachment) {
-                    MediaFileFormat format = attachment
-                        .getName()
-                        .endsWith(".mkv")
-                        ? MediaFileFormat.MATROSKA : MediaFileFormat.ASS;
-                    return reactor.core.publisher.Mono.just(
-                        new MediaFileDetectionResult(format));
-                }
-
-                @Override
-                public reactor.core.publisher.Mono<MediaFileDetectionResult> inspect(
-                    run.ikaros.api.core.attachment.Attachment attachment,
-                    run.ikaros.api.core.attachment.AttachmentDriverFetcher fetcher) {
-                    return reactor.core.publisher.Mono.empty();
-                }
-            };
-        }
+        StepVerifier.create(attachmentRelationRepository.findAllByTypeAndAttachmentId(
+            AttachmentRelationType.VIDEO_SUBTITLE, videoAtt.getId()
+        ).collectList().map(List::size)).expectNext(2).verifyComplete();
     }
 }

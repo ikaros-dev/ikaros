@@ -2,7 +2,7 @@
 import { usePluginModuleStore } from '@/stores/plugin';
 import { apiClient } from '@/utils/api-client';
 import { PluginModule } from '@runikaros/shared';
-import { Subject, SubjectSyncPlatformEnum } from '@runikaros/api-client';
+import { Subject } from '@runikaros/api-client';
 import {
 	ElButton,
 	ElDialog,
@@ -61,28 +61,14 @@ const subjectId = computed({
 	},
 });
 
-interface SubjectSyncForm {
-	platform: SubjectSyncPlatformEnum | '';
-	platformId: string;
-	subjectId?: string;
-	action: string;
-}
-
-const subjectSync = ref<SubjectSyncForm>({
+const subjectSync = ref({
 	platform: '',
 	platformId: '',
 	subjectId: undefined,
 	action: props.isMerge ? 'MERGE' : 'PULL',
 });
 
-const subjectPlatformArr = ref<SubjectSyncPlatformEnum[]>([]);
-const subjectPlatformSet = new Set<string>(
-	Object.values(SubjectSyncPlatformEnum)
-);
-const isSubjectSyncPlatform = (
-	platform: unknown
-): platform is SubjectSyncPlatformEnum =>
-	typeof platform === 'string' && subjectPlatformSet.has(platform);
+const subjectPlatformArr = ref<string[]>([]);
 
 const { pluginModules } = usePluginModuleStore();
 
@@ -95,29 +81,25 @@ const onConfirm = async (formEl: FormInstance | undefined) => {
 		if (!formEl) return;
 		await formEl.validate(async (valid, fields) => {
 			if (valid) {
-				const platform = subjectSync.value.platform;
-				if (!platform) return;
 				syncButtonLoading.value = true;
 				console.log('subjectSync', subjectSync.value);
 				await apiClient.subjectSync
 					.syncSubjectAndPlatform({
-						platform,
+						platform: subjectSync.value.platform,
 						platformId: subjectSync.value.platformId,
-						subjectId: subjectId.value,
+						subjectId: subjectId.value as string,
 					})
 					.finally(() => {
 						syncButtonLoading.value = false;
 					});
 				const { data } =
 					await apiClient.subjectSync.getSubjectSyncsByPlatformAndPlatformId({
-						platform,
+						platform: subjectSync.value.platform,
 						platformId: subjectSync.value.platformId,
 					});
 				if (data.length > 0) {
-					const subjectId = data[0].subjectId;
-					if (!subjectId) return;
 					const rsp = await apiClient.subject.searchSubjectById({
-						id: subjectId,
+						id: data[0].subjectId,
 					});
 					emit('closeWithSubjectName', rsp.data);
 				}
@@ -161,19 +143,17 @@ const subjectSyncFormRules = reactive<FormRules>({
 	],
 });
 
-onMounted(async () => {
-	for (const pluginModule of pluginModules as PluginModule[]) {
+onMounted(() => {
+	pluginModules.forEach((pluginModule: PluginModule) => {
 		const { extensionPoints } = pluginModule;
-		const getSubjectPlatform = extensionPoints?.['subject:sync:platform'];
-		if (!getSubjectPlatform) continue;
-		const subjectPlatform = await getSubjectPlatform();
-		if (
-			isSubjectSyncPlatform(subjectPlatform) &&
-			!subjectPlatformArr.value.includes(subjectPlatform)
-		) {
-			subjectPlatformArr.value.push(subjectPlatform);
+		if (!extensionPoints?.['subject:sync:platform']) {
+			return;
 		}
-	}
+		const subjectPlatform = extensionPoints[
+			'subject:sync:platform'
+		] as unknown as string;
+		subjectPlatformArr.value.push(subjectPlatform);
+	});
 	if (subjectPlatformArr.value.length == 1) {
 		subjectSync.value.platform = subjectPlatformArr.value[0];
 	}

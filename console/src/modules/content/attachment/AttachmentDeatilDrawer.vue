@@ -2,7 +2,7 @@
 import { apiClient } from '@/utils/api-client';
 import { Attachment } from '@runikaros/api-client';
 import { formatFileSize } from '@/utils/string-util';
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import {
 	ElButton,
 	ElCol,
@@ -15,14 +15,11 @@ import {
 	ElRow,
 } from 'element-plus';
 import { useI18n } from 'vue-i18n';
+import { isImage, isVideo, isVoice } from '@/utils/file';
 import { Edit } from '@element-plus/icons-vue';
 import Artplayer from '@/components/video/Artplayer.vue';
 import AttachmentRelationsDialog from './AttachmentRelationsDialog.vue';
 import { getCompleteFileUrl } from '@/utils/url-tuils';
-import {
-	loadMediaFileFormatLookup,
-	type MediaFileFormatLookup,
-} from '@/utils/media-file-format';
 
 const { t } = useI18n();
 
@@ -68,49 +65,6 @@ const file = computed({
 	},
 });
 
-const mediaFileFormatLookup = ref<MediaFileFormatLookup>();
-const mediaFileCategory = computed(() =>
-	file.value.name
-		? mediaFileFormatLookup.value?.categoryOf(file.value.name)
-		: undefined
-);
-const isSvgFile = computed(
-	() =>
-		Boolean(file.value.name) &&
-		mediaFileFormatLookup.value?.formatOf(file.value.name as string) === 'SVG'
-);
-const svgPreviewUrl = ref('');
-const svgPreviewLoading = ref(false);
-const svgPreviewFailed = ref(false);
-
-const revokeSvgPreviewUrl = () => {
-	if (svgPreviewUrl.value) {
-		URL.revokeObjectURL(svgPreviewUrl.value);
-		svgPreviewUrl.value = '';
-	}
-};
-
-const loadSvgPreview = async () => {
-	revokeSvgPreviewUrl();
-	svgPreviewFailed.value = false;
-	if (!drawerVisible.value || !isSvgFile.value || !file.value.id) return;
-	svgPreviewLoading.value = true;
-	try {
-		const response = await apiClient.attachment.getSvgPreviewById(
-			{ id: file.value.id },
-			{ responseType: 'blob' }
-		);
-		const data = response.data as unknown;
-		const blob = data instanceof Blob ? data : new Blob([data as BlobPart]);
-		svgPreviewUrl.value = URL.createObjectURL(blob);
-	} catch (error) {
-		svgPreviewFailed.value = true;
-		console.error('Load SVG preview failed', error);
-	} finally {
-		svgPreviewLoading.value = false;
-	}
-};
-
 let sha1RefreshTimer: ReturnType<typeof setTimeout> | undefined;
 const clearSha1RefreshTimer = () => {
 	if (sha1RefreshTimer) {
@@ -150,38 +104,14 @@ watch(
 	},
 	{ immediate: true }
 );
-watch(
-	[
-		() => props.visible,
-		() => props.defineFile.id,
-		() => props.defineFile.name,
-		mediaFileFormatLookup,
-	],
-	loadSvgPreview,
-	{ immediate: true }
-);
-onMounted(() => {
-	loadMediaFileFormatLookup()
-		.then((lookup) => {
-			mediaFileFormatLookup.value = lookup;
-		})
-		.catch(() => {
-			mediaFileFormatLookup.value = undefined;
-		});
-});
-onUnmounted(() => {
-	clearSha1RefreshTimer();
-	revokeSvgPreviewUrl();
-});
+onUnmounted(clearSha1RefreshTimer);
 
 const handleDelete = async () => {
-	if (!file.value.id) return;
-	const attachmentId = file.value.id;
 	try {
 		deleting.value = true;
 		await apiClient.attachment
 			.deleteAttachment({
-				id: attachmentId,
+				id: file.value.id,
 			})
 			.then(() => {
 				ElMessage.success(
@@ -254,6 +184,7 @@ const onClose = async () => {
 
 const artplayer = ref<InstanceType<typeof Artplayer>>();
 const artplayerRef = ref();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getArtplayerInstance = (art: any) => {
 	artplayer.value = art;
 };
@@ -271,23 +202,8 @@ const getArtplayerInstance = (art: any) => {
 		<el-row>
 			<el-col :lg="24" :md="24" :sm="24" :xl="24" :xs="24">
 				<div class="attach-detail-img pb-3">
-					<div v-if="isSvgFile" class="svg-preview-container">
-						<div v-if="svgPreviewLoading" class="preview-state">
-							{{ t('module.attachment.details.preview.svgLoading') }}
-						</div>
-						<div v-else-if="svgPreviewFailed" class="preview-state">
-							{{ t('module.attachment.details.preview.svgFailed') }}
-						</div>
-						<iframe
-							v-else-if="svgPreviewUrl"
-							:src="svgPreviewUrl"
-							:title="t('module.attachment.details.preview.svgTitle')"
-							class="svg-preview-frame"
-							sandbox=""
-						></iframe>
-					</div>
 					<a
-						v-else-if="mediaFileCategory === 'IMAGE'"
+						v-if="isImage(file.name as string)"
 						:href="getCompleteFileUrl(file.url)"
 						target="_blank"
 					>
@@ -298,9 +214,9 @@ const getArtplayerInstance = (art: any) => {
 						/>
 					</a>
 					<artplayer
-						v-else-if="mediaFileCategory === 'VIDEO'"
+						v-else-if="isVideo(file.name as string)"
 						ref="artplayerRef"
-						:attachment-id="file.id"
+						v-model:attachmentId="file.id"
 						style="width: 100%"
 						@getInstance="getArtplayerInstance"
 					/>
@@ -313,7 +229,7 @@ const getArtplayerInstance = (art: any) => {
 						{{ t('module.attachment.details.message.hint.videoFormat') }}
 					</video> -->
 					<audio
-						v-else-if="mediaFileCategory === 'AUDIO'"
+						v-else-if="isVoice(file.name as string)"
 						controls
 						:volume="0.3"
 						:src="getCompleteFileUrl(file.url)"
@@ -416,9 +332,8 @@ const getArtplayerInstance = (art: any) => {
 		</template>
 
 		<AttachmentRelationsDialog
-			v-if="file.id"
 			v-model:visible="attachmentRelationsDialogVisible"
-			:attachment-id="file.id"
+			:attachmentId="file.id"
 			@close="onAttachmentRelationsDialogClose"
 		/>
 	</el-drawer>
@@ -429,27 +344,5 @@ const getArtplayerInstance = (art: any) => {
 	width: 100%;
 	height: 100%;
 	border-radius: 5px;
-}
-
-.svg-preview-container {
-	width: 100%;
-	min-height: 360px;
-}
-
-.svg-preview-frame {
-	display: block;
-	width: 100%;
-	height: 60vh;
-	min-height: 360px;
-	border: 1px solid var(--el-border-color);
-	background: var(--el-bg-color);
-}
-
-.preview-state {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	min-height: 360px;
-	color: var(--el-text-color-secondary);
 }
 </style>

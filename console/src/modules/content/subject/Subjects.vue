@@ -153,7 +153,7 @@ watch(findSubjectsCondition.value, () => {
 });
 
 interface EpisodeCountPercentage {
-	subjectId: string;
+	subjectId: number;
 	percentage: number;
 }
 
@@ -161,7 +161,6 @@ const episodeCountPercentages = ref<EpisodeCountPercentage[]>([]);
 const fetchEpisodePercentags = async () => {
 	await subjects.value.forEach(async (sub) => {
 		const subId = sub.id;
-		if (!subId) return;
 		const totalRsp = await apiClient.episode.getCountTotalBySubjectId({
 			id: subId,
 		});
@@ -315,10 +314,10 @@ onMounted(fetchSubjectByRouterQuery);
 			:xl="4"
 		>
 			<SubjectCardLink
-				:id="subject.id ?? ''"
+				:id="subject.id"
 				:name="subject.name"
 				:name-cn="subject.name_cn"
-				:cover="subject.cover ?? ''"
+				:cover="subject.cover"
 				:percentage="episodeAttsPercentage(subject)"
 			/>
 		</el-col>

@@ -34,17 +34,15 @@ const changeAttDriverEnable = async (
 	attDriver: AttachmentDriver,
 	enable: string | number | boolean
 ) => {
-	const driverId = attDriver.id;
-	if (!driverId) return;
-	enablingDriverId.value = driverId;
+	enablingDriverId.value = attDriver.id;
 	try {
 		if (enable) {
 			await apiClient.attachmentDriver.enableDriver1({
-				id: driverId,
+				id: attDriver.id,
 			});
 		} else {
 			await apiClient.attachmentDriver.enableDriver({
-				id: driverId,
+				id: attDriver.id,
 			});
 		}
 		await fetchAttDrivers();

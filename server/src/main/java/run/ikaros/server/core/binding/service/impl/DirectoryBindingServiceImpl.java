@@ -39,16 +39,6 @@ public class DirectoryBindingServiceImpl implements DirectoryBindingService {
     private final ExtensionComponentsFinder extensionComponentsFinder;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    /**
-     * 创建目录绑定服务.
-     *
-     * @param taskService 任务服务
-     * @param taskRepository 任务仓储
-     * @param workflowRepository 目录绑定工作流仓储
-     * @param attachmentRepository 附件仓储
-     * @param builtInSteps 内置目录绑定步骤
-     * @param extensionComponentsFinder 扩展组件查找器
-     */
     public DirectoryBindingServiceImpl(TaskService taskService,
                                        TaskRepository taskRepository,
                                        DirectoryBindingWorkflowRepository workflowRepository,

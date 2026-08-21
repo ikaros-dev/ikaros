@@ -5,7 +5,6 @@ import { i18n, setupI18n } from './locales';
 import { setupPinia } from './stores';
 
 import type { PluginModule, RouteRecordAppend } from '@runikaros/shared';
-import type { Plugin } from '@runikaros/api-client';
 import type { RouteRecordRaw } from 'vue-router';
 
 import { coreModules } from './modules';
@@ -117,18 +116,6 @@ function loadStyle(href: string) {
 const pluginErrorMessages: Array<string> = [];
 const pluginModuleStore = usePluginModuleStore();
 
-type LoadablePlugin = Plugin & { name: string };
-
-const isLoadablePlugin = (value: unknown): value is LoadablePlugin => {
-	if (!value || typeof value !== 'object') return false;
-	const plugin = value as Record<string, unknown>;
-	return (
-		typeof plugin.name === 'string' &&
-		plugin.state === 'STARTED' &&
-		(typeof plugin.entry === 'string' || typeof plugin.stylesheet === 'string')
-	);
-};
-
 async function loadPluginModules() {
 	const { data } = await apiClient.plugin.getPluginsByPaging({
 		page: '1',
@@ -137,15 +124,21 @@ async function loadPluginModules() {
 	// console.log('Load all-plugins: ', data);
 
 	// Get all started plugins
-	const plugins = data.items.filter(isLoadablePlugin);
+	const plugins = data.items.filter((plugin) => {
+		const { entry, stylesheet } = plugin || {};
+		return plugin.state === 'STARTED' && (!!entry || !!stylesheet);
+	});
 
 	for (const plugin of plugins) {
-		const { entry, stylesheet } = plugin;
+		const { entry, stylesheet } = plugin || {
+			entry: '',
+			stylesheet: '',
+		};
 
 		if (entry) {
 			try {
 				const { load } = useScriptTag(
-					`${import.meta.env.VITE_API_URL}${entry}`
+					`${import.meta.env.VITE_API_URL}${plugin?.entry}`
 				);
 
 				await load();

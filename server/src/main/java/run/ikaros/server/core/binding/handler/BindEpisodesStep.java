@@ -38,15 +38,6 @@ public class BindEpisodesStep implements DirectoryBindingStep {
     private final ApplicationEventPublisher eventPublisher;
     private final EpisodeSequenceRegularService episodeSequenceRegularService;
 
-    /**
-     * 创建剧集绑定步骤.
-     *
-     * @param episodeRepository 剧集仓储
-     * @param episodeService 剧集服务
-     * @param attachmentReferenceRepository 附件引用仓储
-     * @param eventPublisher 应用事件发布器
-     * @param episodeSequenceRegularService 剧集序号规整服务
-     */
     public BindEpisodesStep(EpisodeRepository episodeRepository,
                             EpisodeService episodeService,
                             AttachmentReferenceRepository attachmentReferenceRepository,

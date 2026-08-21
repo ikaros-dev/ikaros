@@ -100,7 +100,7 @@ class DefaultUserRoleServiceTest {
         UUID userId = UuidV7Utils.generateUuid();
         UUID roleId1 = UuidV7Utils.generateUuid();
         UUID roleId2 = UuidV7Utils.generateUuid();
-        final UUID[] roleIds = new UUID[] {roleId1, roleId2};
+        UUID[] roleIds = new UUID[] {roleId1, roleId2};
 
         // For each roleId, findByUserIdAndRoleId returns empty -> insert is called
         when(userRoleRepository.findByUserIdAndRoleId(userId, roleId1))

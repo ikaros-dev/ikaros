@@ -18,9 +18,13 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -30,23 +34,21 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.api.constant.FileConst;
-import run.ikaros.api.core.media.MediaFileCategory;
-import run.ikaros.api.core.media.MediaFilePolicy;
 
-/**
- * 文件路径、散列、分片及媒体扩展名处理工具。
- */
 @Slf4j
 public class FileUtils {
 
-    /**
-     * 应用上传文件的基础目录名称。
-     */
+    static final Set<String> IMAGES =
+        Arrays.stream(FileConst.Postfix.IMAGES).collect(Collectors.toSet());
+    static final Set<String> DOCUMENTS =
+        Arrays.stream(FileConst.Postfix.DOCUMENTS).collect(Collectors.toSet());
+    static final Set<String> VIDEOS =
+        Arrays.stream(FileConst.Postfix.VIDEOS).collect(Collectors.toSet());
+    static final Set<String> VOICES =
+        Arrays.stream(FileConst.Postfix.VOICES).collect(Collectors.toSet());
+
     private static final String BASE_UPLOAD_DIR_NAME = FileConst.DEFAULT_DIR_NAME;
 
-    /**
-     * 应用上传文件的基础目录路径。
-     */
     private static final String BASE_UPLOAD_DIR_PATH
         = SystemVarUtils.getCurrentAppDirPath() + File.separator + BASE_UPLOAD_DIR_NAME;
 
@@ -80,10 +82,7 @@ public class FileUtils {
                                                 @NotBlank String postfix) {
         Assert.hasText(postfix, "'postfix' must not be blank");
         return buildAppUploadFileBasePath(basePath, LocalDateTime.now())
-            + File.separator + UUID
-            .randomUUID()
-            .toString()
-            .replace("-", "")
+            + File.separator + UUID.randomUUID().toString().replace("-", "")
             + (('.' == postfix.charAt(0))
             ? postfix : "." + postfix);
     }
@@ -101,24 +100,19 @@ public class FileUtils {
     }
 
     public static boolean isVideo(String url) {
-        return MediaFilePolicy.extensionHasCategory(extensionArgument(url),
-            MediaFileCategory.VIDEO);
+        return VIDEOS.contains(parseFilePostfix(url));
     }
 
     public static boolean isDocument(String url) {
-        String extension = extensionArgument(url);
-        return MediaFilePolicy.extensionHasCategory(extension, MediaFileCategory.SUBTITLE)
-            || MediaFilePolicy.extensionHasCategory(extension, MediaFileCategory.LYRICS);
+        return DOCUMENTS.contains(parseFilePostfix(url));
     }
 
     public static boolean isVoice(String url) {
-        return MediaFilePolicy.extensionHasCategory(extensionArgument(url),
-            MediaFileCategory.AUDIO);
+        return VOICES.contains(parseFilePostfix(url));
     }
 
     public static boolean isImage(String url) {
-        return MediaFilePolicy.extensionHasCategory(extensionArgument(url),
-            MediaFileCategory.IMAGE);
+        return IMAGES.contains(parseFilePostfix(url));
     }
 
     public enum Hash {
@@ -126,10 +120,6 @@ public class FileUtils {
         SHA1("SHA1"),
         SHA256("SHA-256"),
         SHA512("SHA-512");
-
-        /**
-         * 散列算法名称。
-         */
         private final String name;
 
         Hash(String name) {
@@ -200,14 +190,8 @@ public class FileUtils {
         if (originalFilename.indexOf("?") > 0) {
             originalFilename = originalFilename.substring(0, originalFilename.indexOf("?"));
         }
-        return MediaFilePolicy
-            .extractExtension(originalFilename)
-            .orElse("");
-    }
-
-    private static String extensionArgument(String filenameOrExtension) {
-        String extension = parseFilePostfix(filenameOrExtension);
-        return extension.isEmpty() ? filenameOrExtension : extension;
+        int dotIndex = originalFilename.lastIndexOf(".");
+        return originalFilename.substring(dotIndex + 1).toLowerCase(Locale.ROOT);
     }
 
     /**
@@ -311,12 +295,8 @@ public class FileUtils {
                 "target file has exists: " + targetFile.getAbsolutePath());
         }
 
-        if (!targetFile
-            .getParentFile()
-            .exists()) {
-            targetFile
-                .getParentFile()
-                .mkdirs();
+        if (!targetFile.getParentFile().exists()) {
+            targetFile.getParentFile().mkdirs();
         }
 
         try {
@@ -327,15 +307,9 @@ public class FileUtils {
             try (RandomAccessFile accessFile = new RandomAccessFile(targetFile,
                 "rw")) {
                 long total = 0L;
-                List<Path> pathSortedList = chunkFilePaths
-                    .stream()
-                    .sorted((o1, o2) -> (int) (Long.parseLong(o1
-                        .toFile()
-                        .getName())
-                        - Long.parseLong(o2
-                        .toFile()
-                        .getName())))
-                    .toList();
+                List<Path> pathSortedList = chunkFilePaths.stream()
+                    .sorted((o1, o2) -> (int) (Long.parseLong(o1.toFile().getName())
+                        - Long.parseLong(o2.toFile().getName()))).toList();
                 for (Path path : pathSortedList) {
                     File file = path.toFile();
                     byte[] bytes = Files.readAllBytes(file.toPath());
@@ -364,8 +338,7 @@ public class FileUtils {
      * Calculate file size.
      */
     public static Mono<Long> calculateFileSize(Flux<DataBuffer> dataBufferFlux) {
-        return dataBufferFlux
-            .map(DataBuffer::readableByteCount)
+        return dataBufferFlux.map(DataBuffer::readableByteCount)
             .reduce(0L, Long::sum);
     }
 

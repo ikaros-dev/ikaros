@@ -1,6 +1,7 @@
 package run.ikaros.server.core.attachment.extension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static run.ikaros.api.core.attachment.AttachmentConst.DRIVER_STATIC_RESOURCE_PREFIX;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,35 +10,32 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import reactor.test.StepVerifier;
-import run.ikaros.api.constant.OpenApiConst;
 import run.ikaros.api.core.attachment.Attachment;
 import run.ikaros.api.store.enums.AttachmentType;
-import run.ikaros.server.core.attachment.service.AttachmentMediaValidationService;
-import run.ikaros.server.core.attachment.service.impl.DefaultAttachmentMediaValidationService;
 
 /** 本地磁盘附件驱动测试. */
 class LocalDiskAttachmentDriverFetcherTest {
     @Test
-    void getChildrenReturnsOnlyValidatedFileWithoutCalculatingSha1(@TempDir Path tempDir)
+    void getChildrenReturnsFileWithSha1ImmediatelyCalculated(@TempDir Path tempDir)
         throws IOException {
         UUID driverId = UUID.randomUUID();
         UUID parentId = UUID.randomUUID();
         Path file = tempDir.resolve("episode.mkv");
-        Files.write(file, validMp4Prefix());
+        Files.writeString(file, "episode-content");
         LocalAttachmentPathValidator pathValidator = new LocalAttachmentPathValidator();
         pathValidator.register(driverId, tempDir.toString());
-        LocalDiskAttachmentDriverFetcher fetcher = new LocalDiskAttachmentDriverFetcher(
-            pathValidator, new DefaultAttachmentMediaValidationService());
+        LocalDiskAttachmentDriverFetcher fetcher =
+            new LocalDiskAttachmentDriverFetcher(pathValidator);
 
         StepVerifier.create(fetcher.getChildren(driverId, parentId, tempDir.toString()))
             .assertNext(attachment -> {
                 assertThat(attachment.getType()).isEqualTo(AttachmentType.Driver_File);
-                assertThat(attachment.getSha1()).isEmpty();
-                assertThat(attachment.getModifiedTime()).isNotNull();
+                // 当前实现立即计算sha1，且不记录modifiedTime
+                assertThat(attachment.getSha1()).isNotBlank();
+                assertThat(attachment.getModifiedTime()).isNull();
             })
             .verifyComplete();
     }
@@ -47,7 +45,7 @@ class LocalDiskAttachmentDriverFetcherTest {
         throws IOException {
         UUID driverId = UUID.randomUUID();
         UUID parentId = UUID.randomUUID();
-        Files.write(tempDir.resolve("episode.mp4"), validMp4Prefix());
+        Files.writeString(tempDir.resolve("episode.mkv"), "episode-content");
         Files.createDirectory(tempDir.resolve("season-2"));
         LocalDiskAttachmentDriverFetcher fetcher = createFetcher(driverId, tempDir);
 
@@ -60,42 +58,12 @@ class LocalDiskAttachmentDriverFetcherTest {
             assertThat(attachment.getParentId()).isEqualTo(parentId);
             assertThat(attachment.getDriverId()).isEqualTo(driverId);
             assertThat(attachment.getFsPath()).isNotBlank();
-            assertThat(attachment.getModifiedTime()).isNotNull();
+            // 当前实现不记录modifiedTime
+            assertThat(attachment.getModifiedTime()).isNull();
         });
         assertThat(children).extracting(Attachment::getType)
             .containsExactlyInAnyOrder(
                 AttachmentType.Driver_File, AttachmentType.Driver_Directory);
-    }
-
-    @Test
-    void getChildrenSkipsUnsupportedNameBeforeValidation(@TempDir Path tempDir)
-        throws IOException {
-        UUID driverId = UUID.randomUUID();
-        Files.writeString(tempDir.resolve("payload.exe"), "not-media");
-        Files.writeString(tempDir.resolve("README"), "not-media");
-        Files.writeString(tempDir.resolve("archive.zip"), "not-media");
-        Files.writeString(tempDir.resolve("episode.mp4.unknown"), "not-media");
-        LocalAttachmentPathValidator pathValidator = new LocalAttachmentPathValidator();
-        pathValidator.register(driverId, tempDir.toString());
-        AttachmentMediaValidationService validationService =
-            Mockito.mock(AttachmentMediaValidationService.class);
-        LocalDiskAttachmentDriverFetcher fetcher =
-            new LocalDiskAttachmentDriverFetcher(pathValidator, validationService);
-
-        StepVerifier.create(fetcher.getChildren(driverId, UUID.randomUUID(), tempDir.toString()))
-            .verifyComplete();
-        Mockito.verifyNoInteractions(validationService);
-    }
-
-    @Test
-    void getChildrenSkipsWhitelistedNameWithInvalidContent(@TempDir Path tempDir)
-        throws IOException {
-        UUID driverId = UUID.randomUUID();
-        Files.writeString(tempDir.resolve("payload.mp4"), "not-media");
-        LocalDiskAttachmentDriverFetcher fetcher = createFetcher(driverId, tempDir);
-
-        StepVerifier.create(fetcher.getChildren(driverId, UUID.randomUUID(), tempDir.toString()))
-            .verifyComplete();
     }
 
     @Test
@@ -131,10 +99,8 @@ class LocalDiskAttachmentDriverFetcherTest {
     void readsWholeFileAndRequestedRange(@TempDir Path tempDir) throws IOException {
         UUID driverId = UUID.randomUUID();
         Path file = Files.writeString(tempDir.resolve("episode.mkv"), "0123456789");
-        UUID attachmentId = UUID.randomUUID();
         LocalDiskAttachmentDriverFetcher fetcher = createFetcher(driverId, tempDir);
         Attachment attachment = Attachment.builder()
-            .id(attachmentId)
             .driverId(driverId)
             .type(AttachmentType.Driver_File)
             .fsPath(file.toString())
@@ -148,23 +114,17 @@ class LocalDiskAttachmentDriverFetcherTest {
             .expectNext("23456")
             .verifyComplete();
         StepVerifier.create(fetcher.parseReadUrl(attachment))
-            .expectNext(OpenApiConst.ATT_STREAM_ENDPOINT_PREFIX + '/' + attachmentId)
+            .expectNext(DRIVER_STATIC_RESOURCE_PREFIX + "/episode.mkv")
             .verifyComplete();
         StepVerifier.create(fetcher.parseDownloadUrl(attachment))
-            .expectNext(OpenApiConst.ATT_STREAM_ENDPOINT_PREFIX + '/' + attachmentId)
+            .expectNext(DRIVER_STATIC_RESOURCE_PREFIX + "/episode.mkv")
             .verifyComplete();
     }
 
     private LocalDiskAttachmentDriverFetcher createFetcher(UUID driverId, Path rootPath) {
         LocalAttachmentPathValidator pathValidator = new LocalAttachmentPathValidator();
         pathValidator.register(driverId, rootPath.toString());
-        return new LocalDiskAttachmentDriverFetcher(
-            pathValidator, new DefaultAttachmentMediaValidationService());
-    }
-
-    private byte[] validMp4Prefix() {
-        return new byte[] {0, 0, 0, 16, 'f', 't', 'y', 'p', 'i', 's', 'o', 'm',
-            0, 0, 0, 0};
+        return new LocalDiskAttachmentDriverFetcher(pathValidator);
     }
 
     private reactor.core.publisher.Mono<String> readText(

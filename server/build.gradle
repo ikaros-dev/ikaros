@@ -73,7 +73,6 @@ ext {
 
 dependencies {
     implementation project(':api')
-    implementation 'org.mp4parser:isoparser:1.9.41'
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     annotationProcessor "org.springframework:spring-context-indexer"

@@ -50,9 +50,7 @@ onMounted(fetchActuatorInfo);
 		border
 	>
 		<template #extra>
-			<el-button @click="onBasicInfoCopyButtonClick">{{
-				t('common.button.copy')
-			}}</el-button>
+			<el-button @click="onBasicInfoCopyButtonClick">{{ t('common.button.copy') }}</el-button>
 		</template>
 		<!-- git -->
 		<el-descriptions-item>
