@@ -155,7 +155,7 @@ const fetchAlbums = async () => {
 	loading.value = true;
 	try {
 		const response = await apiClient.get(
-			`/api/core/music/albums/${page.value}/${size.value}`
+			`/api/v1/music/albums/${page.value}/${size.value}`
 		);
 		albums.value = (response.data.items || []).filter(Boolean);
 		total.value = response.data.total || 0;
@@ -182,9 +182,9 @@ const handleSave = async () => {
 	saving.value = true;
 	try {
 		if (isEdit.value && form.value.id) {
-			await apiClient.put('/api/core/subject', form.value);
+			await apiClient.put('/api/v1/subject', form.value);
 		} else {
-			await apiClient.post('/api/core/subject', {
+			await apiClient.post('/api/v1/subject', {
 				...form.value,
 				type: 'MUSIC',
 			});
@@ -200,7 +200,7 @@ const handleSave = async () => {
 
 const handleDelete = async (album: MusicAlbum) => {
 	try {
-		await apiClient.delete(`/api/core/subject/${album.id}`);
+		await apiClient.delete(`/api/v1/subject/${album.id}`);
 		await fetchAlbums();
 	} catch (e) {
 		console.error('Failed to delete album:', e);

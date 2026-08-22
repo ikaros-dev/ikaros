@@ -190,7 +190,7 @@ const songForm = ref<Partial<Song>>({});
 
 const fetchAlbum = async () => {
 	try {
-		const response = await apiClient.get(`/api/core/music/album/${albumId}`);
+		const response = await apiClient.get(`/api/v1/music/album/${albumId}`);
 		album.value = response.data;
 	} catch (e) {
 		console.error('Failed to fetch album:', e);
@@ -201,7 +201,7 @@ const fetchSongs = async () => {
 	songsLoading.value = true;
 	try {
 		const response = await apiClient.get(
-			`/api/core/music/album/${albumId}/songs`
+			`/api/v1/music/album/${albumId}/songs`
 		);
 		songs.value = response.data || [];
 	} catch (e) {
@@ -231,9 +231,9 @@ const saveSong = async () => {
 	savingSong.value = true;
 	try {
 		if (editingSong.value && songForm.value.id) {
-			await apiClient.put('/api/core/music/song', songForm.value);
+			await apiClient.put('/api/v1/music/song', songForm.value);
 		} else {
-			await apiClient.post('/api/core/music/song', songForm.value);
+			await apiClient.post('/api/v1/music/song', songForm.value);
 		}
 		songDialogVisible.value = false;
 		await fetchSongs();
@@ -246,7 +246,7 @@ const saveSong = async () => {
 
 const deleteSong = async (song: Song) => {
 	try {
-		await apiClient.delete(`/api/core/music/song/${song.id}`);
+		await apiClient.delete(`/api/v1/music/song/${song.id}`);
 		await fetchSongs();
 	} catch (e) {
 		console.error('Failed to delete song:', e);
