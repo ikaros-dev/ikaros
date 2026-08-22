@@ -16,17 +16,17 @@
 				<template #default="scope">
 					<div class="album-info">
 						<el-image
-							v-if="scope.row.cover"
-							:src="scope.row.cover"
+							v-if="scope?.row?.cover"
+							:src="scope?.row?.cover"
 							style="width: 48px; height: 48px; border-radius: 4px"
 							fit="cover"
 						/>
 						<div class="album-meta">
-							<router-link :to="`/music/album/detail/${scope.row.id}`">
-								{{ scope.row.name || scope.row.nameCn }}
+							<router-link :to="`/music/album/detail/${scope?.row?.id}`">
+								{{ scope?.row?.name || scope?.row?.nameCn }}
 							</router-link>
-							<small v-if="scope.row.nameCn && scope.row.name">
-								{{ scope.row.nameCn }}
+							<small v-if="scope?.row?.nameCn && scope?.row?.name">
+								{{ scope?.row?.nameCn }}
 							</small>
 						</div>
 					</div>
@@ -44,7 +44,7 @@
 			/>
 			<el-table-column :label="$t('module.music.air_time')" width="120">
 				<template #default="scope">
-					{{ formatDate(scope.row.airTime) }}
+					{{ formatDate(scope?.row?.airTime) }}
 				</template>
 			</el-table-column>
 			<el-table-column
@@ -118,6 +118,17 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { apiClient } from '@/utils/api-client';
 
+import {
+	ElInput,
+	ElForm,
+	ElFormItem,
+	ElPagination,
+	ElButton,
+	ElTable,
+	ElTableColumn,
+	ElDialog,
+	ElImage,
+} from 'element-plus';
 interface MusicAlbum {
 	id: string;
 	name: string;
@@ -146,7 +157,7 @@ const fetchAlbums = async () => {
 		const response = await apiClient.get(
 			`/api/core/music/albums/${page.value}/${size.value}`
 		);
-		albums.value = response.data.items || [];
+		albums.value = (response.data.items || []).filter(Boolean);
 		total.value = response.data.total || 0;
 	} catch (e) {
 		console.error('Failed to fetch music albums:', e);

@@ -53,8 +53,8 @@
 				>
 					<template #default="scope">
 						<div>
-							<strong>{{ scope.row.name }}</strong>
-							<small v-if="scope.row.nameCn"> / {{ scope.row.nameCn }}</small>
+							<strong>{{ scope?.row?.name }}</strong>
+							<small v-if="scope?.row?.nameCn"> / {{ scope?.row?.nameCn }}</small>
 						</div>
 					</template>
 				</el-table-column>
@@ -139,6 +139,18 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { apiClient } from '@/utils/api-client';
+
+import {
+	ElInput,
+	ElForm,
+	ElFormItem,
+	ElButton,
+	ElTable,
+	ElTableColumn,
+	ElDialog,
+	ElOption,
+	ElSelect,
+} from 'element-plus';
 
 interface MusicAlbum {
 	id: string;
