@@ -660,9 +660,7 @@ const onAttachmentDetailDrawerClose = () => {
 		width="400px"
 	>
 		<el-form v-if="bindPlatformArr.length > 0">
-			<el-form-item
-				:label="t('module.attachment.bind.platform.title')"
-			>
+			<el-form-item :label="t('module.attachment.bind.platform.title')">
 				<el-select v-model="bindPlatform">
 					<el-option
 						v-for="platform in bindPlatformArr"
@@ -672,17 +670,13 @@ const onAttachmentDetailDrawerClose = () => {
 					/>
 				</el-select>
 			</el-form-item>
-			<el-form-item
-				:label="t('module.attachment.bind.platformId.label')"
-			>
+			<el-form-item :label="t('module.attachment.bind.platformId.label')">
 				<el-input
 					v-model="bindPlatformId"
 					:placeholder="t('module.attachment.bind.platformId.placeholder')"
 				/>
 			</el-form-item>
-			<el-form-item
-				:label="t('module.attachment.bind.keyword.label')"
-			>
+			<el-form-item :label="t('module.attachment.bind.keyword.label')">
 				<el-input
 					v-model="bindSearchKeyword"
 					:placeholder="t('module.attachment.bind.keyword.placeholder')"
