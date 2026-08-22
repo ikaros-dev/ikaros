@@ -233,12 +233,21 @@ const editSong = (song: Song) => {
 const saveSong = async () => {
 	savingSong.value = true;
 	try {
-		// 强制带上当前专辑 ID 作为 subjectId，防止添加歌曲时丢失关联
-		songForm.value.subjectId = albumId;
+		// 按后端 Episode 的 JSON 字段名（snake_case）构造请求体，
+		// 确保 subject_id/name_cn 等字段能正确反序列化并保存
+		const payload = {
+			id: songForm.value.id,
+			subject_id: albumId,
+			name: songForm.value.name,
+			name_cn: songForm.value.nameCn,
+			group: songForm.value.group,
+			sequence: songForm.value.sequence,
+			description: songForm.value.description,
+		};
 		if (editingSong.value && songForm.value.id) {
-			await apiClient.put('/api/v1/music/song', songForm.value);
+			await apiClient.put('/api/v1/music/song', payload);
 		} else {
-			await apiClient.post('/api/v1/music/song', songForm.value);
+			await apiClient.post('/api/v1/music/song', payload);
 		}
 		songDialogVisible.value = false;
 		await fetchSongs();
