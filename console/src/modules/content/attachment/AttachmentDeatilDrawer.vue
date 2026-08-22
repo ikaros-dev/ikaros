@@ -2,7 +2,7 @@
 import { apiClient } from '@/utils/api-client';
 import { Attachment } from '@runikaros/api-client';
 import { formatFileSize } from '@/utils/string-util';
-import { computed, nextTick, ref } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import {
 	ElButton,
 	ElCol,
@@ -141,6 +141,23 @@ const onClose = async () => {
 	emit('close');
 };
 
+// 图片/音频预览 URL，通过 getReadUrl 获取可访问直链（S3 等驱动附件需直链）
+const previewUrl = ref('');
+const fetchPreviewUrl = async () => {
+	const f = file.value;
+	if (!f?.id || (!isImage(f.name as string) && !isVoice(f.name as string))) {
+		previewUrl.value = '';
+		return;
+	}
+	try {
+		const rsp = await apiClient.attachment.getReadUrl({ id: f.id });
+		previewUrl.value = rsp.data ?? '';
+	} catch (e) {
+		previewUrl.value = '';
+	}
+};
+watch(file, fetchPreviewUrl, { immediate: true });
+
 const artplayer = ref<InstanceType<typeof Artplayer>>();
 const artplayerRef = ref();
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -163,11 +180,11 @@ const getArtplayerInstance = (art: any) => {
 				<div class="attach-detail-img pb-3">
 					<a
 						v-if="isImage(file.name as string)"
-						:href="getCompleteFileUrl(appendRedirectParam(file.url))"
+						:href="getCompleteFileUrl(previewUrl)"
 						target="_blank"
 					>
 						<img
-							:src="appendRedirectParam(file.url)"
+							:src="previewUrl"
 							class="file-detail-preview-img"
 							loading="lazy"
 						/>
@@ -191,7 +208,7 @@ const getArtplayerInstance = (art: any) => {
 						v-else-if="isVoice(file.name as string)"
 						controls
 						:volume="0.3"
-						:src="getCompleteFileUrl(appendRedirectParam(file.url))"
+						:src="getCompleteFileUrl(previewUrl)"
 					>
 						{{ t('module.attachment.details.message.hint.audioFormat') }}
 					</audio>

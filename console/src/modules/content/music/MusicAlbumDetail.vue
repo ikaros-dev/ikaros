@@ -2,7 +2,11 @@
 	<div class="music-album-detail">
 		<div class="page-header">
 			<el-button @click="goBack">{{ $t('module.music.back') }}</el-button>
-			<h2>{{ album?.name || album?.nameCn || $t('module.music.album.detail.title') }}</h2>
+			<h2>
+				{{
+					album?.name || album?.nameCn || $t('module.music.album.detail.title')
+				}}
+			</h2>
 		</div>
 
 		<el-card v-if="album" class="album-info-card">
@@ -19,7 +23,9 @@
 					<p v-if="album.description">{{ album.description }}</p>
 					<p class="meta">
 						<span>{{ $t('module.music.song_count') }}: {{ songs.length }}</span>
-						<span v-if="album.score">{{ $t('module.music.score') }}: {{ album.score }}</span>
+						<span v-if="album.score"
+							>{{ $t('module.music.score') }}: {{ album.score }}</span
+						>
 					</p>
 				</div>
 			</div>
@@ -33,9 +39,18 @@
 				</el-button>
 			</div>
 
-			<el-table :data="songs" v-loading="songsLoading" stripe style="width: 100%">
+			<el-table
+				:data="songs"
+				v-loading="songsLoading"
+				stripe
+				style="width: 100%"
+			>
 				<el-table-column type="index" width="50" label="#" />
-				<el-table-column prop="name" :label="$t('module.music.song_name')" min-width="200">
+				<el-table-column
+					prop="name"
+					:label="$t('module.music.song_name')"
+					min-width="200"
+				>
 					<template #default="scope">
 						<div>
 							<strong>{{ scope.row.name }}</strong>
@@ -43,14 +58,26 @@
 						</div>
 					</template>
 				</el-table-column>
-				<el-table-column prop="group" :label="$t('module.music.group')" width="120" />
-				<el-table-column prop="sequence" :label="$t('module.music.track')" width="80" />
+				<el-table-column
+					prop="group"
+					:label="$t('module.music.group')"
+					width="120"
+				/>
+				<el-table-column
+					prop="sequence"
+					:label="$t('module.music.track')"
+					width="80"
+				/>
 				<el-table-column :label="$t('module.music.actions')" width="150">
 					<template #default="scope">
 						<el-button size="small" @click="editSong(scope.row)">
 							{{ $t('module.music.edit') }}
 						</el-button>
-						<el-button size="small" type="danger" @click="deleteSong(scope.row)">
+						<el-button
+							size="small"
+							type="danger"
+							@click="deleteSong(scope.row)"
+						>
 							{{ $t('module.music.delete') }}
 						</el-button>
 					</template>
@@ -61,7 +88,9 @@
 		<!-- Song Dialog -->
 		<el-dialog
 			v-model="songDialogVisible"
-			:title="editingSong ? $t('module.music.edit_song') : $t('module.music.add_song')"
+			:title="
+				editingSong ? $t('module.music.edit_song') : $t('module.music.add_song')
+			"
 			width="500px"
 		>
 			<el-form :model="songForm" label-width="100px">
@@ -76,7 +105,10 @@
 						<el-option label="MAIN" value="MAIN" />
 						<el-option label="OPENING_SONG" value="OPENING_SONG" />
 						<el-option label="ENDING_SONG" value="ENDING_SONG" />
-						<el-option label="ORIGINAL_SOUND_TRACK" value="ORIGINAL_SOUND_TRACK" />
+						<el-option
+							label="ORIGINAL_SOUND_TRACK"
+							value="ORIGINAL_SOUND_TRACK"
+						/>
 						<el-option label="MUSIC_DIST1" value="MUSIC_DIST1" />
 						<el-option label="MUSIC_DIST2" value="MUSIC_DIST2" />
 						<el-option label="MUSIC_DIST3" value="MUSIC_DIST3" />
@@ -156,7 +188,9 @@ const fetchAlbum = async () => {
 const fetchSongs = async () => {
 	songsLoading.value = true;
 	try {
-		const response = await apiClient.get(`/api/core/music/album/${albumId}/songs`);
+		const response = await apiClient.get(
+			`/api/core/music/album/${albumId}/songs`
+		);
 		songs.value = response.data || [];
 	} catch (e) {
 		console.error('Failed to fetch songs:', e);
@@ -170,7 +204,7 @@ const showAddSongDialog = () => {
 	songForm.value = {
 		subjectId: albumId,
 		group: 'MAIN',
-		sequence: (songs.value.length + 1),
+		sequence: songs.value.length + 1,
 	};
 	songDialogVisible.value = true;
 };

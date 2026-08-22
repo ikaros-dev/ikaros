@@ -45,6 +45,7 @@ import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.data.relational.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
@@ -123,28 +124,26 @@ public class AttachmentServiceImpl implements AttachmentService {
     @MonoCacheEvict
     public Mono<AttachmentEntity> saveEntity(AttachmentEntity attachmentEntity) {
         Assert.notNull(attachmentEntity, "'attachmentEntity' must not be null.");
-        return repository
-            .findByTypeAndParentIdAndName(attachmentEntity.getType(),
-                attachmentEntity.getParentId(), attachmentEntity.getName())
-            .switchIfEmpty(findPathByParentId(
+        return findPathByParentId(
                 attachmentEntity.getParentId(),
                 attachmentEntity.getName())
-                .map(attachmentEntity::setPath))
-            .flatMap(entity ->
-                copyProperties(attachmentEntity, entity, "path"))
+            .map(attachmentEntity::setPath)
+            .switchIfEmpty(Mono.just(attachmentEntity))
             .map(entity -> entity.setUpdateTime(LocalDateTime.now()))
             .flatMap(entity -> {
                 if (entity.getId() == null) {
                     entity.setId(UuidV7Utils.generateUuid());
-                    return attachmentRepository.insert(entity);
-                } else {
-                    return attachmentRepository.update(entity);
                 }
+                // 使用 upsert（ON CONFLICT DO UPDATE）原子处理并发：
+                // 同名记录存在则更新、不存在则插入，避免并发刷新目录导致重复插入与唯一键冲突。
+                return attachmentRepository.upsert(entity)
+                    .thenReturn(entity);
             });
     }
 
     @Override
     @MonoCacheEvict
+    @Transactional
     public Mono<Attachment> save(Attachment attachment) {
         Assert.notNull(attachment, "'attachment' must not be null.");
         attachment.setParentId(Optional
@@ -449,10 +448,12 @@ public class AttachmentServiceImpl implements AttachmentService {
         if (Objects.isNull(parentId)) {
             parentId = AttachmentConst.ROOT_DIRECTORY_ID;
         }
+        // 用 Flux 查询并删除所有匹配记录，容忍已存在的重复数据
         return repository
-            .findByTypeAndParentIdAndName(type, parentId, name)
+            .findAllByTypeAndParentIdAndNameForUpdate(type, parentId, name)
             .map(AttachmentEntity::getId)
-            .flatMap(this::removeById);
+            .flatMap(this::removeById)
+            .then();
     }
 
     @Override
