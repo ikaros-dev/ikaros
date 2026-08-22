@@ -2,6 +2,18 @@
 
 更新日志文档，版本顺序从新到旧，最新版本在最前(上)面。
 
+# 1.2.6
+
+
+## 修复
+
+- 全局注册 Element Plus 的 v-loading 指令，解决 music/regular 页面渲染报错
+- 修复 music 接口路径前缀错误（/api/core 修正为 /api/v1）
+- 修复 music 页面表格 scope.row 空值渲染报错（改用可选链并过滤 null 数据）
+- 修复 Subjects 查询条件类型缺少 VIDEO 枚举导致的构建报错
+- 修复 Lucene 搜索索引 airTime 为空时导致的异常
+- 修复专辑添加歌曲未正确关联专辑（subject_id 按后端字段名以 snake_case 发送）
+
 # 1.2.5
 
 

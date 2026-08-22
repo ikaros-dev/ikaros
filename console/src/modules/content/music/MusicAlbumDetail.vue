@@ -53,8 +53,8 @@
 				>
 					<template #default="scope">
 						<div>
-							<strong>{{ scope.row.name }}</strong>
-							<small v-if="scope.row.nameCn"> / {{ scope.row.nameCn }}</small>
+							<strong>{{ scope?.row?.name }}</strong>
+							<small v-if="scope?.row?.nameCn"> / {{ scope?.row?.nameCn }}</small>
 						</div>
 					</template>
 				</el-table-column>
@@ -140,6 +140,18 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { apiClient } from '@/utils/api-client';
 
+import {
+	ElInput,
+	ElForm,
+	ElFormItem,
+	ElButton,
+	ElTable,
+	ElTableColumn,
+	ElDialog,
+	ElOption,
+	ElSelect,
+} from 'element-plus';
+
 interface MusicAlbum {
 	id: string;
 	name: string;
@@ -166,7 +178,10 @@ interface Song {
 
 const route = useRoute();
 const router = useRouter();
-const albumId = route.params.id as string;
+// 专辑 ID 直接取自 URL 路径参数（/music/album/detail/:id），
+// 兼容 Vue Router params 取不到时从路径末尾解析兜底
+const albumId = (route.params.id as string)
+	|| (window.location.pathname.split('/').pop() || '');
 
 const album = ref<MusicAlbum | null>(null);
 const songs = ref<Song[]>([]);
@@ -178,7 +193,7 @@ const songForm = ref<Partial<Song>>({});
 
 const fetchAlbum = async () => {
 	try {
-		const response = await apiClient.get(`/api/core/music/album/${albumId}`);
+		const response = await apiClient.get(`/api/v1/music/album/${albumId}`);
 		album.value = response.data;
 	} catch (e) {
 		console.error('Failed to fetch album:', e);
@@ -189,7 +204,7 @@ const fetchSongs = async () => {
 	songsLoading.value = true;
 	try {
 		const response = await apiClient.get(
-			`/api/core/music/album/${albumId}/songs`
+			`/api/v1/music/album/${albumId}/songs`
 		);
 		songs.value = response.data || [];
 	} catch (e) {
@@ -218,10 +233,21 @@ const editSong = (song: Song) => {
 const saveSong = async () => {
 	savingSong.value = true;
 	try {
+		// 按后端 Episode 的 JSON 字段名（snake_case）构造请求体，
+		// 确保 subject_id/name_cn 等字段能正确反序列化并保存
+		const payload = {
+			id: songForm.value.id,
+			subject_id: albumId,
+			name: songForm.value.name,
+			name_cn: songForm.value.nameCn,
+			group: songForm.value.group,
+			sequence: songForm.value.sequence,
+			description: songForm.value.description,
+		};
 		if (editingSong.value && songForm.value.id) {
-			await apiClient.put('/api/core/music/song', songForm.value);
+			await apiClient.put('/api/v1/music/song', payload);
 		} else {
-			await apiClient.post('/api/core/music/song', songForm.value);
+			await apiClient.post('/api/v1/music/song', payload);
 		}
 		songDialogVisible.value = false;
 		await fetchSongs();
@@ -234,7 +260,7 @@ const saveSong = async () => {
 
 const deleteSong = async (song: Song) => {
 	try {
-		await apiClient.delete(`/api/core/music/song/${song.id}`);
+		await apiClient.delete(`/api/v1/music/song/${song.id}`);
 		await fetchSongs();
 	} catch (e) {
 		console.error('Failed to delete song:', e);
