@@ -45,6 +45,7 @@ import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.data.relational.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
@@ -124,8 +125,9 @@ public class AttachmentServiceImpl implements AttachmentService {
     public Mono<AttachmentEntity> saveEntity(AttachmentEntity attachmentEntity) {
         Assert.notNull(attachmentEntity, "'attachmentEntity' must not be null.");
         return repository
-            .findByTypeAndParentIdAndName(attachmentEntity.getType(),
+            .findAllByTypeAndParentIdAndNameForUpdate(attachmentEntity.getType(),
                 attachmentEntity.getParentId(), attachmentEntity.getName())
+            .next()
             .switchIfEmpty(findPathByParentId(
                 attachmentEntity.getParentId(),
                 attachmentEntity.getName())
@@ -145,6 +147,7 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     @MonoCacheEvict
+    @Transactional
     public Mono<Attachment> save(Attachment attachment) {
         Assert.notNull(attachment, "'attachment' must not be null.");
         attachment.setParentId(Optional
@@ -449,10 +452,12 @@ public class AttachmentServiceImpl implements AttachmentService {
         if (Objects.isNull(parentId)) {
             parentId = AttachmentConst.ROOT_DIRECTORY_ID;
         }
+        // 用 Flux 查询并删除所有匹配记录，容忍已存在的重复数据
         return repository
-            .findByTypeAndParentIdAndName(type, parentId, name)
+            .findAllByTypeAndParentIdAndNameForUpdate(type, parentId, name)
             .map(AttachmentEntity::getId)
-            .flatMap(this::removeById);
+            .flatMap(this::removeById)
+            .then();
     }
 
     @Override
