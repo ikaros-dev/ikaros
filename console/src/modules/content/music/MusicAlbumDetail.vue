@@ -178,7 +178,10 @@ interface Song {
 
 const route = useRoute();
 const router = useRouter();
-const albumId = route.params.id as string;
+// 专辑 ID 直接取自 URL 路径参数（/music/album/detail/:id），
+// 兼容 Vue Router params 取不到时从路径末尾解析兜底
+const albumId = (route.params.id as string)
+	|| (window.location.pathname.split('/').pop() || '');
 
 const album = ref<MusicAlbum | null>(null);
 const songs = ref<Song[]>([]);
@@ -230,6 +233,8 @@ const editSong = (song: Song) => {
 const saveSong = async () => {
 	savingSong.value = true;
 	try {
+		// 强制带上当前专辑 ID 作为 subjectId，防止添加歌曲时丢失关联
+		songForm.value.subjectId = albumId;
 		if (editingSong.value && songForm.value.id) {
 			await apiClient.put('/api/v1/music/song', songForm.value);
 		} else {
