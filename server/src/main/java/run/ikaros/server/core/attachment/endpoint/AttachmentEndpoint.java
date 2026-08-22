@@ -233,7 +233,9 @@ public class AttachmentEndpoint implements CoreEndpoint {
                     .tag(tag).description(
                         "获取附件流内容。默认由服务端代理返回，"
                             + "当查询参数 redirect=true 且附件提供外部直链"
-                            + "（如对象存储自定义域名）时，返回 302 重定向到直链。")
+                            + "（如对象存储自定义域名）时，返回 307 临时重定向到直链，"
+                            + "307 保留请求方法(GET)与请求头(如 Range)，"
+                            + "播放器跟随重定向后仍可拖动进度条。")
                     .parameter(parameterBuilder()
                         .in(ParameterIn.PATH)
                         .name("id")
@@ -243,9 +245,9 @@ public class AttachmentEndpoint implements CoreEndpoint {
                         .in(ParameterIn.QUERY)
                         .name("redirect")
                         .description(
-                            "是否重定向到外部直链，true 时若附件属于对象存储等"
-                                + "提供外部直链的驱动则返回 302 重定向，"
-                                + "默认 false 保持服务端代理。")
+                            "是否重定向到外部直链，默认 true，此时若附件属于对象存储等"
+                                + "提供外部直链的驱动则返回 307 临时重定向"
+                                + "（保留方法/Range 头），false 时始终由服务端代理返回。")
                         .implementation(Boolean.class))
                     .response(responseBuilder().implementation(String.class)))
 
@@ -490,9 +492,11 @@ public class AttachmentEndpoint implements CoreEndpoint {
                 .flatMap(url -> {
                     if (StringUtils.hasText(url)
                         && (url.startsWith("http://") || url.startsWith("https://"))) {
-                        // 外部直链，使用 302 重定向到直链
+                        // 外部直链，使用 307 临时重定向到直链：
+                        // 307 保留请求方法(GET)与请求头(如 Range)，
+                        // 播放器跟随重定向后由对象存储直链处理 Range，可继续拖动进度条。
                         return ServerResponse
-                            .status(HttpStatus.FOUND)
+                            .status(HttpStatus.TEMPORARY_REDIRECT)
                             .header(HttpHeaders.LOCATION, url)
                             .build();
                     }
