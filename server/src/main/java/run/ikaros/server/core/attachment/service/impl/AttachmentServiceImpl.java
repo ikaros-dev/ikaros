@@ -124,24 +124,20 @@ public class AttachmentServiceImpl implements AttachmentService {
     @MonoCacheEvict
     public Mono<AttachmentEntity> saveEntity(AttachmentEntity attachmentEntity) {
         Assert.notNull(attachmentEntity, "'attachmentEntity' must not be null.");
-        return repository
-            .findAllByTypeAndParentIdAndNameForUpdate(attachmentEntity.getType(),
-                attachmentEntity.getParentId(), attachmentEntity.getName())
-            .next()
-            .switchIfEmpty(findPathByParentId(
+        return findPathByParentId(
                 attachmentEntity.getParentId(),
                 attachmentEntity.getName())
-                .map(attachmentEntity::setPath))
-            .flatMap(entity ->
-                copyProperties(attachmentEntity, entity, "path"))
+            .map(attachmentEntity::setPath)
+            .switchIfEmpty(Mono.just(attachmentEntity))
             .map(entity -> entity.setUpdateTime(LocalDateTime.now()))
             .flatMap(entity -> {
                 if (entity.getId() == null) {
                     entity.setId(UuidV7Utils.generateUuid());
-                    return attachmentRepository.insert(entity);
-                } else {
-                    return attachmentRepository.update(entity);
                 }
+                // 使用 upsert（ON CONFLICT DO UPDATE）原子处理并发：
+                // 同名记录存在则更新、不存在则插入，避免并发刷新目录导致重复插入与唯一键冲突。
+                return attachmentRepository.upsert(entity)
+                    .thenReturn(entity);
             });
     }
 
