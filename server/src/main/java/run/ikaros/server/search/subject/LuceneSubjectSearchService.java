@@ -208,8 +208,9 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
         }
         doc.add(new StringField("nsfw", String.valueOf(subjectDoc.getNsfw()), YES));
         doc.add(new StringField("type", String.valueOf(subjectDoc.getType()), YES));
-        doc.add(new StringField("airTime", formatTimestamp(subjectDoc.getAirTime()), YES));
-        doc.add(new StringField("airtime", formatTimestamp(subjectDoc.getAirTime()), YES));
+        if (subjectDoc.getAirTime() != null) {
+            doc.add(new StringField("airTime", formatTimestamp(subjectDoc.getAirTime()), YES));
+        }
         var content = Jsoup.clean(
             stripToEmpty(String.valueOf(subjectDoc.getId())) + SPACE
                 + stripToEmpty(subjectDoc.getName()) + SPACE
@@ -218,7 +219,8 @@ public class LuceneSubjectSearchService implements SubjectSearchService, Disposa
                 + stripToEmpty(subjectDoc.getSummary()) + SPACE
                 + subjectDoc.getNsfw() + SPACE
                 + subjectDoc.getType() + SPACE
-                + formatTimestamp(subjectDoc.getAirTime()) + SPACE
+                + (subjectDoc.getAirTime() == null ? "" : formatTimestamp(subjectDoc.getAirTime()))
+                + SPACE
                 + tags + SPACE,
             Safelist.none());
         doc.add(new StoredField("content", content));
