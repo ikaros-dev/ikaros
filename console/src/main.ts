@@ -12,7 +12,7 @@ import { usePluginModuleStore } from '@/stores/plugin';
 import { apiClient } from '@/utils/api-client';
 import { useUserStore } from '@/stores/user';
 import { useSettingStore } from '@/stores/setting';
-import { ElMessage } from 'element-plus';
+import { ElLoading, ElMessage } from 'element-plus';
 import { useScriptTag } from '@vueuse/core';
 import { defaultConfig, plugin } from '@formkit/vue';
 import formkitConfig from './fromkit/formkit.config';
@@ -23,6 +23,8 @@ const app = createApp(App);
 setupI18n(app);
 setupPinia(app);
 app.use(plugin, defaultConfig(formkitConfig));
+// 全局注册 Element Plus 的 v-loading 指令，供各页面表格加载态使用
+app.directive('loading', ElLoading.directive);
 
 function registerModule(module: PluginModule, core: boolean) {
 	// Register module all components.
