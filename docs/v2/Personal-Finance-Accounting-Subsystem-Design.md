@@ -27,31 +27,109 @@ Accounting 是 Ikaros V2 的个人财务记录与分析子系统。
 - 财务附件
 - 统计与复盘
 
-产品体验可参考 ezBookkeeping 的轻量、自托管、账户/交易/分类/标签/定期交易/对账/统计思路，并与 Ikaros 的 Resource、Analytics、Task、Automation、Notification 和 Secure Data Foundation 联动。
+产品体验可参考 ezBookkeeping 的轻量、自托管、账户/交易/分类/标签/定期交易/对账/统计思路，并与 Ikaros 的 Analytics、Task、Automation、Notification、Attachment 和 Secret Reference 能力联动。
 
 ---
 
-## 2. 安全原则
+## 2. 安全边界
 
-个人财务数据属于 Sensitive Data。
+Accounting 包含隐私数据，但 **默认不是 Secure Data Domain**。
 
-Accounting 的业务数据必须通过 Secure Data Foundation 加密落盘。
+其普通业务数据使用平台正常持久化能力：
 
-支持两种主要 Profile：
+```text
+Accounting
+   ↓
+PostgreSQL
+Attachment / Blob
+Analytics
+```
 
-### SERVER_ASSISTED_ENCRYPTED
+包括：
 
-默认推荐用于希望使用服务器统计、自动化、报表与多端 Web 访问的用户。
+- Account
+- Transaction
+- Category
+- Tag
+- Budget
+- Scheduled Transaction
+- Balance Snapshot
+- Reconciliation
+- Exchange Rate
+- Report Aggregate
 
-服务端在授权运行时可解密必要字段，但所有持久化内容仍为应用层密文。
+这些数据需要受到正常的：
 
-### USER_LOCKED_E2EE
+- Identity
+- Permission / ACL
+- Audit
+- Backup
+- TLS
+- Database / Storage 基础安全措施
 
-适合隐私优先用户。
+保护，但不要求全部通过 Secure Data Foundation 做应用层密文落盘。
 
-服务端只保存密文，深度统计与搜索主要在解锁客户端完成。
+### 2.1 真正 Secret 不直接进入 Accounting
 
-用户创建 Ledger 时必须明确安全模式。
+如果 Accounting 需要保存：
+
+- 银行连接 Token
+- Open Banking Credential
+- 网银密码
+- 卡片 PIN
+- API Key
+- OAuth Refresh Token
+
+应使用：
+
+```text
+Secret Reference
+      ↓
+Password Manager / Credential Store
+```
+
+Accounting 仅保存安全引用：
+
+```text
+credential_ref = secret://vault/...
+```
+
+而不是复制 Secret 明文。
+
+### 2.2 卡号与账户号
+
+银行卡号、银行账号等字段属于高敏感标识，但不等于整个 Ledger 必须进入 Secure Data Foundation。
+
+可根据详细设计采用：
+
+- Masked Display Value
+- Field-level Encryption
+- Tokenized Reference
+- Secret Reference
+
+例如：
+
+```text
+account_name = 招商银行信用卡
+masked_number = **** 1234
+secret_ref = secret://vault/.../card-number
+```
+
+如果某场景只需要展示尾号，则业务数据库无需保存完整卡号明文。
+
+### 2.3 不默认提供全账本 E2EE
+
+V2 核心 Accounting 不以“全账本 USER_LOCKED_E2EE”为默认设计，因为这会直接限制：
+
+- 服务器端统计
+- 自动化
+- 多端查询
+- 预算计算
+- 定期账生成
+- Analytics
+- Dashboard
+
+如果未来确实需要“私密账本”模式，可作为独立扩展能力评估，但不能反向约束普通 Accounting 的核心领域模型。
 
 ---
 
@@ -91,15 +169,19 @@ Ledger 是一套独立财务账本。
 - Personal
 - Family
 - Travel
-- Business-like Personal Project
+- Project
 
-不同 Ledger 可以使用不同：
+Ledger 至少包含：
 
+- Name
 - Base Currency
-- Security Profile
-- Category System
-- Budget
-- Sharing Policy
+- Owner
+- Member / Permission
+- Default Category Set
+- Budget Configuration
+- Archived Status
+
+不同 Ledger 之间的数据默认隔离。
 
 ---
 
@@ -118,49 +200,57 @@ Account 表示资金账户。
 - PREPAID
 - INVESTMENT_TRACKING
 - LOAN
-- ASSET
 - LIABILITY
 - OTHER
 
-Account 属性可包括：
+Account 典型字段：
 
-- Name
-- Account Type
-- Institution
-- Currency
-- Initial Balance
-- Current Balance
+```text
+Account
+├── id
+├── ledger_id
+├── name
+├── type
+├── currency
+├── opening_balance
+├── current_balance
+├── institution
+├── masked_identifier
+├── credential_ref?
+├── archived
+└── metadata
+```
+
+完整银行凭据不应直接进入 Account 普通字段。
+
+### 5.1 Credit Card
+
+信用卡可扩展：
+
 - Credit Limit
 - Billing Day
 - Due Day
-- Icon
-- Color
-- Description
-- Archived
-- Sort Order
+- Statement Balance
+- Available Credit
 
-敏感账户号必须加密，UI 默认脱敏。
+可通过 Notification / Automation 创建还款提醒。
 
----
+### 5.2 Liability / Loan
 
-## 6. Sub Account
+贷款或负债账户可记录：
 
-支持账户层级，例如：
+- Principal
+- Outstanding Balance
+- Interest Metadata
+- Payment Schedule
 
-```text
-Bank A
-├── Checking
-├── Savings
-└── Credit Card
-```
-
-但层级不应破坏独立余额和交易语义。
+V2 初期不要求实现完整金融计算引擎。
 
 ---
 
-## 7. Transaction
+## 6. Transaction
 
-交易是记账系统的核心事实。
+Transaction 是账本中的核心业务事实。
 
 类型：
 
@@ -168,799 +258,667 @@ Bank A
 INCOME
 EXPENSE
 TRANSFER
+ADJUSTMENT
 ```
 
-逻辑字段：
+典型字段：
 
 ```text
 Transaction
 ├── id
+├── ledger_id
 ├── type
-├── source_account
-├── destination_account
+├── account_id
+├── target_account_id?
 ├── amount
 ├── currency
-├── category
-├── tags
-├── payee
+├── exchange_rate?
+├── category_id?
+├── payee_id?
 ├── occurred_at
-├── timezone
 ├── note
-├── location
-├── attachments
 ├── status
-└── provenance
+├── source
+└── attachment_refs
 ```
 
----
+### 6.1 Transfer 是一个业务事实
 
-## 8. Transfer
-
-转账不能建模成“支出 + 收入”两个互不关联记录。
-
-应有一个统一 Transfer Identity：
+转账应保持来源账户和目标账户之间的明确关系：
 
 ```text
-Account A -100
-      ↕ same transfer
-Account B +100
+Account A
+   ↓
+Transfer
+   ↓
+Account B
 ```
 
-多币种转账可包含：
+不要把 Transfer 简化成完全无关联的“一条支出 + 一条收入”。
 
-- Source Amount
-- Source Currency
-- Destination Amount
-- Destination Currency
-- Effective Exchange Rate
-- Fee
+这样才能正确支持：
 
----
+- 转账修改
+- 删除
+- 对账
+- 多币种
+- 手续费
+- 统计排除内部资金流动
 
-## 9. Transaction Status
+### 6.2 Split Transaction
 
-至少支持：
+支持将一笔交易拆分到多个 Category：
 
 ```text
-DRAFT
-PENDING
-CLEARED
-RECONCILED
-VOID
+超市消费 300
+├── 食品 180
+├── 日用品 80
+└── 其他 40
 ```
-
-信用卡未入账、银行 Pending 等业务不能强行当作最终已清算交易。
 
 ---
 
-## 10. Category
+## 7. Category / Tag / Payee
 
-Category 至少区分：
+### 7.1 Category
+
+支持：
 
 - Income Category
 - Expense Category
-- Transfer Category / Purpose
-
-支持两级或多级层级，但 P0 可限制合理深度。
+- Hierarchical Category
 
 例如：
 
 ```text
-Food
-├── Dining
-├── Grocery
-└── Coffee
+餐饮
+├── 早餐
+├── 午餐
+├── 晚餐
+└── 咖啡
 ```
 
----
+### 7.2 Tag
 
-## 11. Tag
+Tag 用于跨分类分析，例如：
 
-Tag 用于跨 Category 的自由维度：
+- 旅行
+- 装修
+- Ikaros
+- 医疗
+- 报销
 
-- Travel
-- Work
-- Family
-- Reimbursable
-- Subscription
+### 7.3 Payee / Counterparty
 
-Category 表达主要财务分类，Tag 表达多维上下文。
+Payee 表示交易对象，例如：
 
----
+- 商户
+- 公司
+- 个人
+- 平台
 
-## 12. Payee / Counterparty
-
-可选管理交易对象：
-
-- Merchant
-- Employer
-- Person
-- Institution
-
-Payee 属于敏感数据，默认加密。
+Payee 不应保存支付平台密码或登录 Credential。
 
 ---
 
-## 13. Multi-currency
+## 8. Scheduled Transaction
 
-每个 Account 有自己的 Native Currency。
+支持周期账：
 
-Ledger 有 Base Currency。
+- 每日
+- 每周
+- 每月
+- 每年
+- 自定义 RRULE / 规则
 
-交易记录必须保留交易发生时的原始金额，不应以后汇率变化就重写历史交易。
+典型场景：
 
-```text
-Original Amount
-Original Currency
-Recorded Exchange Rate
-Base Currency Amount
-```
+- 房租
+- 工资
+- 订阅
+- 贷款还款
+- 保险
 
----
-
-## 14. Exchange Rate
-
-汇率来源可以包括：
-
-- Manual
-- Provider
-- Transaction Actual Rate
-
-必须记录 Provenance 和时间。
-
-历史统计默认使用交易当时记录的有效汇率，而不是查询今天汇率重算。
-
----
-
-## 15. Credit Card
-
-信用卡需要专门业务语义：
-
-- Billing Day
-- Due Day
-- Statement Period
-- Credit Limit
-- Outstanding Balance
-- Statement Amount
-- Payment
-
-信用卡还款应与 Transfer 体系关联。
-
----
-
-## 16. Scheduled Transaction
-
-周期交易用于：
-
-- Rent
-- Salary
-- Subscription
-- Loan Payment
-- Utility
-
-Scheduled Transaction 是规则，不是实际交易。
+需要区分：
 
 ```text
 Scheduled Transaction
-      ↓ due
-Draft / Pending Transaction
-      ↓ confirm / auto-post
-Actual Transaction
+= 计划规则
+
+Transaction
+= 已经发生的账务事实
 ```
 
-避免把未来一年的账全部提前写成真实交易。
+定时规则到期后可以：
+
+- 自动创建 Draft Transaction
+- 提醒用户确认
+- 在明确允许的规则下自动入账
 
 ---
 
-## 17. Recurrence
+## 9. Transaction Template
 
-支持：
-
-- Daily
-- Weekly
-- Monthly
-- Yearly
-- Custom RRULE-like
-- Last Business Day（后续）
-
-需要处理：
-
-- Month End
-- Timezone
-- Missed Schedule
-- Pause / Resume
-
----
-
-## 18. Transaction Template
-
-用户可保存模板：
+用户可建立常用模板，例如：
 
 ```text
-Lunch
-account=Wallet
-category=Dining
-amount=optional
+咖啡
+Account = 支付宝
+Category = 餐饮/咖啡
+Amount = 可留空
 ```
 
-用于快速记账。
+模板减少重复录入。
 
 ---
 
-## 19. Draft
+## 10. Reconciliation
 
-移动端输入过程中应支持自动保存 Draft。
-
-Draft 不进入正式财务统计。
-
----
-
-## 20. Attachments / Receipts
-
-交易可关联：
-
-- Receipt Image
-- Invoice PDF
-- Statement
-- Warranty
-
-Attachment 默认通过 Secure Data Foundation 加密。
-
-OCR 结果同样属于敏感数据。
-
----
-
-## 21. OCR / AI Assisted Entry
-
-可支持：
+对账用于确认 Ikaros 账面余额与外部实际余额一致。
 
 ```text
-Receipt Image
-   ↓ OCR / Vision
-Draft Transaction
-├── amount
-├── merchant
-├── date
-└── suggested category
-   ↓ User Confirm
-Actual Transaction
+Reconciliation
+├── account
+├── statement_date
+├── statement_balance
+├── calculated_balance
+├── difference
+└── status
 ```
-
-AI 只能生成 Draft，不应未经确认直接把不确定识别结果写成财务事实。
-
----
-
-## 22. Import
-
-支持未来导入：
-
-- CSV
-- OFX / QFX
-- QIF
-- Custom Bank CSV
-- ezBookkeeping-like export mapping
-
-Import 必须：
-
-- Preview
-- Column Mapping
-- Dedup Detection
-- Dry Run
-- Validation
-- Rollback / Batch Undo
-
----
-
-## 23. Transaction Dedup
-
-避免银行账单重复导入。
-
-可使用：
-
-- External ID
-- Date
-- Amount
-- Account
-- Counterparty
-- Reference
-
-生成 Dedup Candidate。
-
-系统不应仅凭“同日同金额”自动删除。
-
----
-
-## 24. Reconciliation
-
-支持账户对账。
-
-```text
-Statement Ending Balance
-        ↓
-Compare
-        ↓
-Recorded Cleared Balance
-        ↓
-Difference
-```
-
-Reconciliation Session：
-
-- Statement Period
-- Beginning Balance
-- Ending Balance
-- Cleared Transactions
-- Difference
-- Completed At
-
-完成后相关 Transaction 标记为 RECONCILED。
-
----
-
-## 25. Balance
-
-余额应区分：
-
-- Ledger Balance
-- Cleared Balance
-- Available Balance（如有）
-- Credit Available
-
-不能只有一个模糊 `balance`。
-
----
-
-## 26. Balance Snapshot
-
-为趋势统计和历史恢复，可生成 Balance Snapshot。
-
-Snapshot 是派生数据，不是交易事实替代品。
-
-交易仍然是真相源。
-
----
-
-## 27. Budget
-
-预算支持：
-
-- Monthly
-- Weekly
-- Quarterly
-- Yearly
-- Custom Period
-
-维度：
-
-- Overall
-- Category
-- Tag
-- Account Group
 
 状态：
 
 ```text
-Budget
-├── limit
-├── spent
-├── remaining
-├── progress
-└── forecast
+OPEN
+MATCHED
+DIFFERENCE
+CLOSED
 ```
 
----
+不得通过静默修改历史交易来“自动让余额对上”。
 
-## 28. Rollover Budget
-
-P1 可支持预算结余滚动：
-
-```text
-previous remaining
-    ↓
-next period budget
-```
-
-正负余额是否滚动由用户配置。
+必要时使用 Adjustment Transaction 并保留审计记录。
 
 ---
 
-## 29. Subscription Tracking
-
-基于 Scheduled Transaction 和 Tag 可形成订阅视图：
-
-- Monthly Cost
-- Annualized Cost
-- Next Charge
-- Price Change
-
-不需要另建完全独立的订阅交易系统。
-
----
-
-## 30. Debt / Loan Tracking
-
-P1 支持简单负债：
-
-- Principal
-- Outstanding
-- Payment Schedule
-- Interest Metadata
-
-复杂摊销模型可延后，不把 V2 P0 做成专业贷款计算器。
-
----
-
-## 31. Asset Tracking
-
-P1 可支持手工资产估值：
-
-- Cash-like
-- Property
-- Vehicle
-- Investment Snapshot
-
-投资行情和交易撮合不是 P0 目标。
-
----
-
-## 32. Dashboard
-
-核心 Dashboard：
-
-```text
-Net Worth
-Income
-Expense
-Cash Flow
-Budget Status
-Upcoming Bills
-Account Balances
-Recent Transactions
-```
-
----
-
-## 33. Analytics Integration
-
-财务统计必须通过 Data Analytics / Statistics Subsystem 的 Metric 体系定义。
-
-主要指标：
-
-```text
-finance.income.amount
-finance.expense.amount
-finance.cashflow.net
-finance.asset.total
-finance.liability.total
-finance.networth
-finance.budget.used
-finance.category.expense
-finance.account.balance
-```
-
----
-
-## 34. Charts
-
-支持：
-
-- Category Pie / Bar
-- Income / Expense Trend
-- Cash Flow Trend
-- Account Balance Trend
-- Asset Allocation
-- Net Worth Trend
-- Tag Analysis
-- Sankey-like Flow（P1）
-- YoY / Period-over-period
-
-统计口径必须明确币种与汇率。
-
----
-
-## 35. Calendar View
-
-Transaction 支持日历视图：
-
-```text
-August
-12  ¥85 Lunch
-13  ¥20 Coffee
-15  +Salary
-```
-
-Scheduled Transaction 可作为未来预测项单独显示，不能与已发生交易混淆。
-
----
-
-## 36. Search
+## 11. Budget
 
 支持按：
 
-- Date Range
-- Account
+- Ledger
 - Category
 - Tag
-- Amount Range
-- Payee
-- Note
-- Status
-- Attachment
+- Project
+- 时间周期
 
-在 USER_LOCKED_E2EE 模式下搜索主要由客户端执行。
-
----
-
-## 37. Automation
-
-典型联动：
-
-```text
-scheduled_transaction.due
-→ Notification
-→ Create Draft Transaction
-```
-
-```text
-budget.usage > 80%
-→ Notification
-```
-
-```text
-credit_card.due_in = 3 days
-→ Create Productivity Task
-```
-
-```text
-transaction.created
-→ Analytics Fact
-```
-
----
-
-## 38. Productivity Integration
-
-可将财务事项映射为 Task：
-
-- Pay Credit Card
-- Reconcile Account
-- Submit Reimbursement
-- Review Monthly Budget
-
-但 Task 完成不自动代表财务交易已经发生。
-
-二者通过 Context / Relation 关联。
-
----
-
-## 39. Notification
-
-通知内容默认脱敏。
+建立预算。
 
 例如：
 
 ```text
-A scheduled payment is due tomorrow
+餐饮
+Monthly Budget = 2000
 ```
 
-用户可自行配置显示金额，但锁屏默认尽量减少敏感信息。
+需要展示：
+
+- Budget
+- Actual
+- Remaining
+- Usage Rate
+- Forecast
+
+预算本身不是账户余额。
 
 ---
 
-## 40. Password Manager Integration
+## 12. 多币种
 
-银行账号登录凭据、网银密码、银行卡 PIN 不存入 Accounting 字段。
-
-Account 可以引用：
+Ledger 有 Base Currency，但 Account / Transaction 可以使用不同币种。
 
 ```text
-credential_ref = secret://vault/...
+Ledger Base = CNY
+
+USD Account
+JPY Cash
+EUR Transaction
 ```
 
-UI 可提供：
+Exchange Rate 需要记录 Provenance：
 
 ```text
-Bank Account
-[Open Login Credential]
+ExchangeRate
+├── from_currency
+├── to_currency
+├── rate
+├── effective_at
+├── provider
+└── source_type
 ```
 
-需要再次 Unlock Password Vault。
-
----
-
-## 41. Private Notes Integration
-
-Account 或 Transaction 可关联私密笔记，例如：
-
-- 开户说明
-- 报税备忘
-- 合同说明
-
-但反向关系默认遵循 Private Side Only Visibility。
-
----
-
-## 42. Sharing
-
-家庭账本可支持多用户。
-
-权限至少：
+来源：
 
 ```text
-OWNER
-EDITOR
-VIEWER
+MANUAL
+EXTERNAL_PROVIDER
+IMPORTED
 ```
 
-可进一步控制：
-
-- View Amount
-- Edit Transaction
-- Manage Account
-- Export
-- Manage Members
+历史报表不能因为今天汇率变化就无声改变过去账目的口径。
 
 ---
 
-## 43. Audit
+## 13. 导入
 
-需要审计：
+可逐步支持：
 
-- Transaction Create / Update / Delete
-- Account Edit
-- Import
-- Export
-- Reconciliation
-- Ledger Member Change
-- Security Profile Change
-
-Audit 不记录银行卡完整号码等 Secret。
-
----
-
-## 44. Delete / Correction
-
-财务数据不建议默认硬删除。
-
-支持：
-
-- Edit with Audit
-- Void
-- Trash
-- Restore
-
-已完成 Reconciliation 的交易被修改时必须明确提示，并可能使对账状态失效。
-
----
-
-## 45. Timezone
-
-交易必须保留：
-
-- Local Date
-- Local Time
-- Timezone
-
-跨时区旅行时不能仅用服务器时区解释交易日期。
-
----
-
-## 46. Precision
-
-金额不得使用普通浮点数作为财务真相。
-
-详细数据库设计应采用可精确表达金额的小数/最小货币单位模型，并明确 Currency Minor Unit。
-
----
-
-## 47. Privacy Analytics Boundary
-
-Accounting 数据不得进入跨用户排行榜或所谓“消费健康评分”。
-
-统计用于帮助用户理解自己的数据，不对用户进行价值判断。
-
----
-
-## 48. Export
-
-支持：
-
-- Encrypted Backup
 - CSV
-- JSON
-- Statement PDF（P1）
+- OFX
+- QFX
+- QIF
+- 自定义映射
+- 第三方记账软件导入
 
-明文 Export 属于敏感操作。
+导入流程：
+
+```text
+Source
+  ↓
+Parse
+  ↓
+Normalize
+  ↓
+Deduplicate
+  ↓
+Preview
+  ↓
+Confirm
+  ↓
+Transaction
+```
+
+大批量导入必须支持预览与回滚策略。
+
+### 13.1 Dedup
+
+可使用：
+
+- External Transaction ID
+- Account
+- Amount
+- Time
+- Counterparty
+- Import Batch
+
+辅助去重。
+
+不能仅凭金额相同就判定重复交易。
 
 ---
 
-## 49. Backup / Restore
+## 14. Receipt / Attachment
 
-Accounting 数据备份必须保留：
+交易可以关联：
 
-- Transaction Integrity
-- Account Relationship
-- Currency Metadata
-- Exchange Rate Provenance
-- Attachments
-- Crypto Metadata
+- 收据
+- 发票
+- 账单 PDF
+- 截图
+- 合同
 
-恢复后需要执行一致性检查。
+普通财务附件使用平台 Attachment / Blob 存储。
+
+如果附件中包含真正需要 Secure Domain 保护的内容，可由用户显式存入 Private Notes / Secure Data，并通过 Relation 或安全引用关联，而不是让整个 Accounting Attachment 体系自动转为 Secure Blob。
 
 ---
 
-## 50. P0
+## 15. 统计与 Analytics
+
+Accounting 应深度接入 Data Analytics / Statistics 子系统。
+
+典型指标：
+
+### Cash Flow
+
+```text
+Income
+Expense
+Net Cash Flow
+```
+
+### Spending
+
+- Category Distribution
+- Tag Distribution
+- Account Distribution
+- Payee Distribution
+- Daily / Weekly / Monthly Trend
+
+### Asset / Liability
+
+```text
+Assets
+Liabilities
+Net Worth
+```
+
+### Budget
+
+```text
+Budget Usage
+Remaining
+Overspent
+Forecast
+```
+
+### Comparison
+
+- Month over Month
+- Year over Year
+- Rolling Average
+
+统计事实应来源于 Transaction / Account 等业务事实，而不是把 Dashboard 结果回写成账本状态。
+
+---
+
+## 16. Dashboard
+
+Accounting 首页可包含：
+
+```text
+Net Worth
+Current Month Income
+Current Month Expense
+Cash Flow
+Budget Progress
+Upcoming Bills
+Recent Transactions
+Account Balances
+```
+
+敏感账号默认只显示 Masked Identifier。
+
+---
+
+## 17. Calendar
+
+财务事件可以投射到 Calendar：
+
+- 信用卡还款日
+- 房租
+- 订阅
+- 工资
+- 贷款还款
+- 预算周期
+
+Calendar Event 不直接取代 Transaction。
+
+---
+
+## 18. 与 Productivity / Planning 联动
+
+例如：
+
+```text
+Credit Card Due Date
+       ↓
+Automation
+       ↓
+Create Task
+“偿还信用卡”
+       ↓
+Notification
+```
+
+但：
+
+> Task Completed ≠ Transaction Occurred
+
+用户完成还款待办后，仍需要实际 Transaction 或外部同步事实确认账务变化。
+
+---
+
+## 19. 与 Automation 联动
+
+事件可以包括：
+
+```text
+finance.transaction.created
+finance.transaction.updated
+finance.budget.threshold_reached
+finance.bill.upcoming
+finance.account.reconciled
+finance.import.completed
+```
+
+Automation 可以：
+
+- 发送通知
+- 创建 Task
+- 标记预算风险
+- 创建 Draft Transaction
+- 触发报表
+
+但不能绕过 Accounting Command 直接修改账务表。
+
+---
+
+## 20. 与 Notification 联动
+
+通知场景：
+
+- 账单即将到期
+- 预算达到 80% / 100%
+- 导入完成
+- 对账异常
+- 周期账生成
+- 外部同步失败
+
+Notification 默认避免直接包含完整卡号、银行 Credential 等 Secret。
+
+---
+
+## 21. 与 Password Manager / Secret Reference 联动
+
+Accounting 可以引用 Password Manager 中的 Secret：
+
+```text
+Accounting Account
+       ↓
+credential_ref
+       ↓
+Password Manager
+```
+
+典型用途：
+
+- Bank Connector Credential
+- API Token
+- OAuth Refresh Token
+- Complete Card Number
+- PIN
+
+优先支持：
+
+```text
+Use Secret
+```
+
+而不是：
+
+```text
+Reveal Secret
+```
+
+如果一个 Bank Connector 只需要 Token 完成 API 请求，则 Accounting 不需要得到 Token 的可展示明文。
+
+---
+
+## 22. AI 边界
+
+AI 可以辅助：
+
+- 交易分类建议
+- 账单 OCR 后字段识别
+- 月度财务摘要
+- 支出趋势解释
+- 预算建议
+- 异常消费提示
+
+但必须遵循：
+
+```text
+AI Suggestion
+≠
+Financial Fact
+```
+
+AI 不得：
+
+- 自动修改已确认交易而不留下痕迹
+- 获取 Password Manager 中的 Secret
+- 将完整银行卡号、PIN、Credential 发送给通用模型
+
+财务 AI 是否允许访问交易明细，应由用户和 AI Data Policy 控制。
+
+---
+
+## 23. Permission
+
+至少区分：
+
+```text
+finance.read
+finance.transaction.create
+finance.transaction.update
+finance.transaction.delete
+finance.account.manage
+finance.budget.manage
+finance.import
+finance.export
+finance.admin
+```
+
+家庭共享 Ledger 可以给予不同成员不同权限。
+
+---
+
+## 24. Audit
+
+关键操作进入 Audit：
+
+- 创建 / 删除 Account
+- 修改历史 Transaction
+- 大批量导入
+- 批量删除
+- Reconciliation Adjustment
+- Export
+- Credential Reference 修改
+
+Audit 不记录 Secret 明文。
+
+---
+
+## 25. Offline / Sync
+
+客户端应支持离线记账：
+
+```text
+Offline Transaction
+      ↓
+Local Queue
+      ↓
+Reconnect
+      ↓
+Sync
+```
+
+冲突不能简单使用“最后写入覆盖一切”。
+
+尤其：
+
+- Transaction Update
+- Reconciliation
+- Balance Adjustment
+
+需要明确冲突策略。
+
+---
+
+## 26. 非目标
+
+V2 初期不定位为：
+
+- 企业 ERP
+- 企业总账系统
+- 税务申报系统
+- 银行核心系统
+- 证券交易平台
+- 全自动投资顾问
+
+也不要求 Accounting 整体使用 Secure Data Foundation 或 Zero-knowledge E2EE。
+
+---
+
+## 27. 实施优先级
+
+### P0
 
 - Ledger
 - Account
 - Income / Expense / Transfer
 - Category
 - Tag
-- Multi-currency
-- Credit Card Basic
-- Scheduled Transaction
-- Transaction Template
-- Receipt Attachment
-- Search
-- Dashboard
-- Core Statistics
-- Reconciliation
+- Basic Search
+- Monthly Statistics
 - CSV Import / Export
-- Secure Data Integration
+- Audit
+- Secret Reference 边界
 
----
-
-## 51. P1
+### P1
 
 - Budget
-- OCR Assisted Entry
-- Subscription View
+- Scheduled Transaction
+- Transaction Template
+- Reconciliation
+- Multi-currency
+- Receipt Attachment
+- Calendar / Reminder
 - Advanced Analytics
-- Shared Family Ledger
-- Loan Tracking
-- Asset Tracking
-- Bank Format Import
-- Smart Automation
+
+### P2
+
+- External Bank Connector
+- OCR
+- AI Classification
+- Subscription Detection
+- Debt / Loan Enhancement
+- Optional Advanced Privacy Mode
 
 ---
 
-## 52. P2
+## 28. 结论
 
-- Bank Provider Sync
-- Advanced Forecast
-- Investment Portfolio Integration
-- More Financial Data Providers
+Accounting 的核心目标是：
 
-第三方金融连接必须单独评估隐私、安全和地区合规，不作为 P0 前置依赖。
+> 保持账务模型清晰、可查询、可统计、可自动化，同时把真正的 Secret 隔离到专门的安全域中。
 
----
-
-## 53. 非目标
-
-P0 不目标于：
-
-- 企业复式会计 ERP
-- 自动报税
-- 证券交易
-- 银行支付执行
-- 信贷审批
-- 自动投资建议
-
----
-
-## 54. 核心结论
-
-Accounting 应成为 Ikaros 的个人数据体系之一，而不是孤立的账本 App：
+因此安全模型应是：
 
 ```text
-Accounting
-├── Secure Data Foundation
-├── Analytics
-├── Automation
-├── Productivity
-├── Notification
-├── Attachment
-└── Password Manager Secret Reference
+普通财务业务事实
+→ Normal Platform Storage
+
+真正凭据 / Secret
+→ Secret Reference
+→ Password Manager / Secure Data Foundation
 ```
 
-其核心是真实、可追溯、精确的交易事实，以及在严格隐私边界下生成的个人财务统计与复盘能力。
+而不是：
+
+```text
+所有 Accounting 数据
+→ 全量密文落盘
+```
+
+这使 Accounting 可以自然接入 Analytics、Automation、Task、Notification 和多端体验，同时不牺牲 Password、Token、PIN 等真正高敏感数据的安全边界。
