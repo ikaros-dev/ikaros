@@ -4,7 +4,7 @@
 |---|---|
 | 文档名称 | Ikaros V2 系统概要设计 |
 | 适用版本 | Ikaros V2 |
-| 文档版本 | v0.2 |
+| 文档版本 | v0.3 |
 | 编写日期 | 2026-08-30 |
 | 最后更新 | 2026-08-31 |
 | 状态 | 草案（Draft） |
@@ -260,6 +260,75 @@ API RFC 3339 / ISO 8601
 默认应用时区：UTC+8
 ```
 
+### 2.9 Instance 与 Tenant 边界
+
+Ikaros V2 的默认隔离和部署边界是一个 **Ikaros Instance**。
+
+> **V2 默认不是 SaaS 多租户系统。一个 Ikaros Instance 可以拥有多个 User，但所有用户均处于同一个实例边界内。**
+
+一个 Instance 统一拥有和管理：
+
+```text
+Ikaros Instance
+├── Application Configuration
+├── Users / Roles / Permissions
+├── Resources / Collections / Relations
+├── Attachments / Blobs / Storage
+├── Plugins / Providers
+├── Automation / Background Tasks
+├── Search / Analytics
+└── Application Timezone
+```
+
+统一规则如下：
+
+1. V2 数据模型不得为了假设性的 SaaS 多租户场景，在所有业务表中机械增加 `tenant_id`。
+2. 多 User 是实例内部的身份与授权问题，通过 User、RBAC、ACL、Share 等模型解决，不等同于多 Tenant。
+3. Share、Room、外部访问 Token 等能力用于跨用户或对外协作，不创建新的 Tenant 边界。
+4. Storage、Plugin、Application Timezone 等默认属于 Instance 级能力；若某项能力未来支持用户级覆盖，必须显式设计其优先级和隔离规则。
+5. 如果未来确有 SaaS 或单实例多 Tenant 需求，应通过独立 ADR 和系统设计重新评估数据隔离、密钥、配额、索引、缓存、审计与运维模型，而不是在现有模型上隐式扩展。
+
+### 2.10 统一配置模型与优先级
+
+Ikaros V2 的配置必须具有明确来源、优先级、可变性和安全属性，不能让不同模块自行决定配置覆盖逻辑。
+
+默认配置解析层级为：
+
+```text
+Built-in Default
+        ↓
+Configuration File / Environment
+        ↓
+Persistent Application Configuration
+        ↓
+Effective Configuration
+```
+
+其中部署或专项设计可以将特定启动参数声明为不可被运行时配置覆盖，但该例外必须显式定义。
+
+每项系统配置至少需要明确以下元信息：
+
+- 配置 Key；
+- 数据类型；
+- 默认值；
+- 当前有效值来源；
+- 是否允许运行时修改；
+- 修改后是否立即生效；
+- 是否需要重新加载子系统；
+- 是否需要重启 Server；
+- 是否属于 Secret；
+- 是否允许进入 Export / Backup；
+- 校验规则和可选取值范围。
+
+统一原则：
+
+1. Secret 不属于普通 Application Configuration，敏感值继续使用独立 Secret / Secure Credential 管理路径。
+2. Application Timezone 属于 Instance 级 Persistent Application Configuration，默认值为 **UTC+8**。
+3. 客户端不得维护一套与 Server 无关的“事实配置”；客户端本地配置只负责设备体验偏好，不得覆盖系统业务规则。
+4. 配置修改必须通过受控 API / Command 进行，执行权限校验、参数校验和必要审计。
+5. 影响安全、存储、网络、插件或数据一致性的配置修改应明确是否需要 Step-up Verification、重载或重启。
+6. 配置导出必须遵守敏感数据规则，不能因为配置可备份或迁移就自动导出 Secret 明文。
+
 ---
 
 ## 3. 系统上下文
@@ -321,6 +390,12 @@ Ikaros Server 负责：
 - 设备能力接入。
 
 客户端不得成为跨设备业务状态的唯一真相源。
+
+### 3.3 Instance 边界
+
+对外部客户端而言，一个 Ikaros Server 所代表的 Instance 是默认业务与配置边界。
+
+客户端在建立会话后可以读取当前 Instance 的基本能力、应用时区和必要公开配置，但不得自行构造 Tenant 语义或假设不同用户属于不同租户。
 
 ---
 
@@ -1285,6 +1360,39 @@ Capability Discovery 的原则：
 - Server 仍必须在真实 API 调用时进行完整权限与状态校验；
 - Capability Key 应形成稳定命名约定，避免客户端绑定内部模块实现细节。
 
+### 10.8 空值、未知值与枚举演进
+
+V2 的 API、Event、Export Format 与内部领域契约必须明确区分“没有值”和“值的语义未知”，避免用 `null` 承担所有状态。
+
+以下语义不得混用：
+
+```text
+null
+≠
+unknown
+≠
+not_applicable
+≠
+empty
+```
+
+建议语义如下：
+
+- `null`：当前没有记录该可空字段的值，具体业务含义由字段契约定义；
+- `unknown`：该属性在业务上存在，但当前无法确定其值；
+- `not_applicable`：该属性对当前对象不适用；
+- `empty`：值本身存在但为空，例如空列表、空集合，是否允许空字符串由字段契约定义。
+
+统一规则：
+
+1. 当 `unknown` 或 `not_applicable` 对业务有明确意义时，应通过显式状态、枚举或结构表达，不能一律压缩成 `null`。
+2. PATCH / Partial Update 类接口中“字段未出现”和“字段显式为 `null`”必须具有可区分语义；前者通常表示不修改，后者仅在契约允许时表示清空。
+3. API 与 Event 的枚举使用稳定字符串 Code，不使用编程语言或数据库内部 ordinal 作为公共值。
+4. 面向读取的客户端、Plugin 与 Event Consumer 必须允许未来出现当前版本未知的枚举值，并提供 Unknown / Unsupported 的安全降级，而不是反序列化失败或崩溃。
+5. Server 在写入接口收到不受支持的枚举值时不得静默映射为默认值，应返回明确校验错误，除非该接口契约专门允许扩展值透传。
+6. 增加新的枚举值通常视为兼容性演进；删除或改变既有枚举值语义属于破坏性变更，必须遵循契约版本策略。
+7. Search、Analytics、AI 和 Export 在遇到未知值时必须保留“未知”的事实，不能为了方便统计而擅自归入其他业务分类。
+
 ---
 
 ## 11. 后台执行体系
@@ -1356,6 +1464,34 @@ Worker
 ```
 
 Worker 不能因此获得绕过业务权限和状态机的数据库写入特权。
+
+### 11.5 异步执行失败、取消与重试语义
+
+Background Task、Job Run、Automation Run、Webhook Delivery、异步 Plugin Action 等执行模型必须使用一致的状态语义，不能把所有“没有成功”的情况都表示为 Failed。
+
+基础终态和运行态至少应能够表达：
+
+```text
+Pending
+Running
+Succeeded
+Failed
+Cancelled
+TimedOut
+```
+
+如果实现需要表达 `Queued`、`Cancelling`、`Retrying`、`Throttled` 等中间状态，可以在专项设计中扩展，但不得破坏以下系统级语义：
+
+1. **Failed**：本次执行因错误终止；错误还需要区分 Retryable 与 Non-retryable。
+2. **Cancelled**：执行因用户、管理员或系统明确取消而终止，不等价于失败，默认不得进入普通失败自动重试。
+3. **TimedOut**：超过允许执行时间而终止，不等价于用户取消；是否允许重试由任务策略和错误分类决定。
+4. **Succeeded**：本次执行达到定义的成功条件；仅“进程没有抛异常”不一定代表业务成功。
+5. 等待资源、并发槽位或 Rate Limit 时，可以保持 Pending/Queued 并记录 Wait Reason，不应伪装成 Failed。
+6. 每次 Retry 应视为同一逻辑执行下的新 Attempt，保留 Attempt Number、开始/结束时间与本次错误，避免覆盖历史失败信息。
+7. Retry 必须继承原始 `trace_id`、actor、permission context、idempotency context 与业务关联 ID，同时为新 Attempt 生成可追踪的执行身份。
+8. Cancellation 应尽可能协作式执行；如果外部 Provider 或底层操作无法立即终止，需要区分“已请求取消”和“已经结束”。
+9. 不允许无限重试；重试次数、Backoff、Dead Letter / 人工处理路径应由任务类型明确。
+10. 系统重启后必须能够识别遗留 Running 状态，并根据任务语义恢复、重试或标记异常，而不是永久保持 Running。
 
 ---
 
@@ -1503,6 +1639,33 @@ Secure Data Foundation
 - 大规模批处理；
 - 备份恢复；
 - 插件安装与权限变化。
+
+### 13.6 数据敏感等级
+
+Secure Domain 解决最高敏感场景的密文边界，但系统还需要对普通数据建立统一的敏感等级概念，以约束数据在日志、搜索、AI、缓存、分析与导出等横向能力中的传播。
+
+建议系统级等级为：
+
+| 等级 | 典型含义 |
+|---|---|
+| Public | 明确允许公开访问或公开发布的数据 |
+| Shared | 仅允许特定用户、组、Share 或 ACL 范围访问的数据 |
+| Private | 默认仅 Owner 或明确授权主体访问的普通私有数据 |
+| Sensitive | 需要额外最小化、脱敏、访问审计或传播限制的敏感业务数据 |
+| Secure Domain | 必须进入 Secure Data Foundation 管理的高敏感密文领域 |
+
+统一原则：
+
+1. 敏感等级描述数据处理约束，不替代 Permission / ACL；即使是 Public 数据的修改操作仍然需要授权。
+2. Secure Domain 不只是一个标签，而是触发独立密码学、持久化、缓存、索引与解锁边界。
+3. Password、Token、Secret Key、Credential 等 Secret 默认不得作为普通 Sensitive 字段散落在业务模型中，应进入专门 Secret / Secure Credential 路径。
+4. Application Log、Audit Log、Trace 和 Error Message 必须执行数据最小化；不得为了排障直接记录 Secret、Secure Domain 明文或完整敏感 Payload。
+5. Search Index 只能索引当前数据等级和权限策略允许被检索的内容，并且搜索结果仍需权限感知。
+6. Analytics 应优先消费最小必要事实；如果业务指标不需要原始敏感字段，就不得把原始字段复制进 Fact / Aggregate。
+7. AI Context、Embedding 和 RAG 必须继承数据等级与用户权限；禁止把当前用户无权访问或策略禁止外发的数据发送给 AI Provider。
+8. Cache 必须遵守相同敏感等级；Secure Domain 明文不得进入普通共享缓存，Sensitive 数据应避免出现在不具备隔离能力的缓存键和值中。
+9. Export / Import 必须保留数据权限和安全语义；Sensitive 与 Secure Domain 数据不能因为进入导出流程而自动降级。
+10. Plugin 与 Automation 读取高等级数据时必须通过声明权限和受控 Capability，不能因为运行在 Server 内部而获得默认访问权。
 
 ---
 
@@ -1708,6 +1871,7 @@ Dashboard / Report
 3. 权限敏感数据的缓存键必须包含安全上下文。
 4. Secure Domain 明文不得进入普通共享缓存。
 5. 不能通过缓存绕过最新 ACL / Permission 判断。
+6. Sensitive 数据不得因为缓存方便而降低其数据敏感等级或传播限制。
 
 ---
 
@@ -1886,6 +2050,8 @@ Activity
 
 所有日志与审计时间字段必须遵循统一带时区时间规则；展示时根据应用配置时区转换，默认 UTC+8。
 
+日志、Trace 和 Error Payload 同时必须遵循数据敏感等级，不得记录 Secret 或 Secure Domain 明文。
+
 ### 22.2 Metrics
 
 系统至少监控：
@@ -1996,6 +2162,7 @@ V2 的业务架构不应依赖具体框架才能成立，但结合当前仓库�
 | Entity ID | UUIDv7 / PostgreSQL `uuid` |
 | Time Storage | PostgreSQL `timestamptz` |
 | Default App Timezone | UTC+8 |
+| Instance Model | Single Instance / Multi-user，默认非 SaaS Multi-tenant |
 | Cache | Redis，可选 |
 | API Contract | OpenAPI |
 | Plugin Runtime | PF4J 方向，V2 重新定义稳定扩展契约 |
@@ -2110,7 +2277,8 @@ flowchart TB
 - Secure Domain 应用层加密；
 - 高风险操作审计；
 - Plugin 权限边界；
-- AI 权限继承。
+- AI 权限继承；
+- 数据敏感等级约束横向数据传播。
 
 ### 26.4 可维护性
 
@@ -2249,6 +2417,8 @@ entity/
 ```text
 加载基础配置
   ↓
+解析 Effective Configuration
+  ↓
 初始化数据库连接
   ↓
 执行 Schema Migration
@@ -2319,6 +2489,7 @@ entity/
 - UUIDv7 作为统一实体主键；
 - PostgreSQL-first；
 - 时间统一使用带时区时间以及应用默认 UTC+8；
+- Instance 为默认隔离边界、V2 默认非 SaaS Multi-tenant；
 - Modular Monolith 优先；
 - Resource-centric；
 - Attachment / Blob / Placement 分离；
@@ -2354,27 +2525,32 @@ V2 当前系统级关键决策如下：
 6. **UUIDv7 统一生成**：平台统一 ID Generator 负责高并发、时钟回拨和未来多节点场景；UUIDv7 不替代正式业务时间与排序字段。
 7. **时间必须带时区**：数据库时间点统一使用 `timestamptz`，API 禁止无时区 datetime。
 8. **应用时区统一**：所有官方客户端根据应用配置时区转换展示时间，默认应用时区为 UTC+8；统计、计划和自然日边界同样遵循该配置。
-9. **实体公共字段统一**：独立持久化实体原则上统一使用 `id / created_at / updated_at / version` 基础字段并按需要扩展审计与软删除字段。
-10. **Schema / Migration 有领域所有权**：子系统拥有自己的数据结构和 Migration，生产 Schema 变更只能通过版本化 Migration 执行。
-11. **模块化单体优先**：初期不主动微服务化。
-12. **HTTP-first**：公开 API 是客户端与外部集成主要边界。
-13. **契约显式版本化**：Database Schema、API、Plugin API、Event 与 Export Format 分别维护版本语义。
-14. **Capability Discovery**：客户端通过统一能力发现了解当前实例支持的可选能力，但能力发现不替代权限判断。
-15. **子系统拥有自己的状态**：其他模块禁止直接修改内部数据。
-16. **Capability / Command / Event 分离**：同步查询、状态变更和异步传播具有不同语义。
-17. **跨系统最终一致性**：Search、Analytics、Automation、Notification 默认异步。
-18. **Durable Event**：关键事件使用可靠事件机制，不能只依赖内存发布。
-19. **Search / Analytics 是派生数据**：必须能够重建。
-20. **Platform RBAC 与 Resource ACL 分离**：平台权限和实例权限不混用。
-21. **Secure Domain 显式声明**：高敏感加密边界不扩散到普通业务。
-22. **Secret 与 Parameter 分离**：敏感凭据不能作为普通配置保存。
-23. **AI 不是真相源**：AI 只能建议或通过受控 Tool 执行业务操作。
-24. **Plugin 受权限约束**：插件不拥有默认全库访问权。
-25. **Background Task、Scheduled Job、Productivity Task 分离**。
-26. **Backup 与 Export 分离**：实例灾难恢复和用户数据迁移是不同产品能力，用户数据必须具有可迁移路径。
-27. **高成本能力必须受资源治理**：上传、任务、AI、Webhook、Automation、Plugin、Worker 等必须具备限流、并发、配额或背压机制。
-28. **ADR 记录关键架构选择**：重大系统级决策必须保留选择理由和演进历史。
-29. **自托管简单性长期保留**：单机部署不是过渡方案，而是正式支持场景。
+9. **Instance 是默认隔离边界**：V2 默认是 Single Instance / Multi-user 架构，不以 SaaS Multi-tenant 为基础模型，不机械引入 `tenant_id`。
+10. **配置模型统一**：Built-in Default、File / Environment、Persistent Application Configuration 形成明确配置来源与 Effective Configuration，Secret 与普通配置继续分离。
+11. **实体公共字段统一**：独立持久化实体原则上统一使用 `id / created_at / updated_at / version` 基础字段并按需要扩展审计与软删除字段。
+12. **Schema / Migration 有领域所有权**：子系统拥有自己的数据结构和 Migration，生产 Schema 变更只能通过版本化 Migration 执行。
+13. **模块化单体优先**：初期不主动微服务化。
+14. **HTTP-first**：公开 API 是客户端与外部集成主要边界。
+15. **契约显式版本化**：Database Schema、API、Plugin API、Event 与 Export Format 分别维护版本语义。
+16. **空值和未知语义分离**：`null / unknown / not_applicable / empty` 不得混用，客户端必须允许契约枚举向前扩展。
+17. **Capability Discovery**：客户端通过统一能力发现了解当前实例支持的可选能力，但能力发现不替代权限判断。
+18. **子系统拥有自己的状态**：其他模块禁止直接修改内部数据。
+19. **Capability / Command / Event 分离**：同步查询、状态变更和异步传播具有不同语义。
+20. **跨系统最终一致性**：Search、Analytics、Automation、Notification 默认异步。
+21. **Durable Event**：关键事件使用可靠事件机制，不能只依赖内存发布。
+22. **异步执行状态语义统一**：Failed、Cancelled、TimedOut、Retryable Failure 等必须区分，Retry 继承原始追踪、权限与幂等上下文。
+23. **Search / Analytics 是派生数据**：必须能够重建。
+24. **Platform RBAC 与 Resource ACL 分离**：平台权限和实例权限不混用。
+25. **数据敏感等级统一**：Public、Shared、Private、Sensitive、Secure Domain 对日志、搜索、AI、缓存、分析、导出和插件传播形成统一约束。
+26. **Secure Domain 显式声明**：高敏感加密边界不扩散到普通业务。
+27. **Secret 与 Parameter 分离**：敏感凭据不能作为普通配置保存。
+28. **AI 不是真相源**：AI 只能建议或通过受控 Tool 执行业务操作。
+29. **Plugin 受权限约束**：插件不拥有默认全库访问权。
+30. **Background Task、Scheduled Job、Productivity Task 分离**。
+31. **Backup 与 Export 分离**：实例灾难恢复和用户数据迁移是不同产品能力，用户数据必须具有可迁移路径。
+32. **高成本能力必须受资源治理**：上传、任务、AI、Webhook、Automation、Plugin、Worker 等必须具备限流、并发、配额或背压机制。
+33. **ADR 记录关键架构选择**：重大系统级决策必须保留选择理由和演进历史。
+34. **自托管简单性长期保留**：单机部署不是过渡方案，而是正式支持场景。
 
 ---
 
@@ -2399,8 +2575,11 @@ V2 当前系统级关键决策如下：
 15. V2 Database Overview Design；
 16. V2 API Convention；
 17. Contract Versioning / Compatibility Design；
-18. V2 Deployment & Operations Guide；
-19. CMS 与 App 交互设计。
+18. Instance / Configuration Model Design；
+19. Data Classification / Privacy Handling Design；
+20. Async Execution Semantics Design；
+21. V2 Deployment & Operations Guide；
+22. CMS 与 App 交互设计。
 
 这些文档应继续遵循本文确定的统一模型和系统边界，避免各子系统独立设计后再次出现概念重复、权限重复、存储重复和跨模块直接耦合。
 
@@ -2416,6 +2595,8 @@ Ikaros V2 的核心不是简单增加更多功能，而是建立一套能够长�
 统一 Resource 身份
   +
 UUIDv7 / 带时区时间 / 统一基础约束
+  +
+Instance / Configuration / Data Classification
   +
 专业领域子系统
   +
