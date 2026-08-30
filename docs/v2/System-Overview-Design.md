@@ -177,6 +177,55 @@ PostgreSQL 作为普通业务状态的主要真相源，允许合理使用：
 
 但任何高级能力都必须服务于清晰的领域约束，而不能为了技术炫技增加不可维护性。
 
+### 2.7 主键统一使用 UUIDv7
+
+Ikaros V2 的系统内部持久化实体主键统一使用 **UUIDv7**。
+
+该规则适用于各业务与平台子系统中的核心实体，包括但不限于：
+
+- Resource；
+- Attachment；
+- Blob；
+- Collection；
+- Relation；
+- User / Role / Permission；
+- Task / Goal / Project；
+- Event / Activity；
+- Background Task / Job Run；
+- Share / Room；
+- Plugin Registry；
+- Automation Rule / Run；
+- 其他具有独立生命周期的持久化实体。
+
+统一规则如下：
+
+1. PostgreSQL 中实体主键优先使用原生 `uuid` 类型，不以字符串类型保存 UUID。
+2. 新增核心实体不得使用数据库自增整数、Snowflake ID、UUIDv4 或第三方平台 ID 作为主键。
+3. UUIDv7 应由统一的平台 ID 生成能力产生，避免各子系统自行选择不同 UUID 实现或版本。
+4. UUIDv7 中包含时间有序特性，可以改善按创建顺序写入时的索引局部性，但 **主键本身不得替代 `created_at`、业务时间、排序号或版本号**。
+5. API、Event、Command、Relation 与跨子系统契约中引用内部实体时，应使用同一个 UUIDv7 身份，不再额外引入只为接口层服务的数字 ID。
+6. 第三方 Provider 的 ID 必须通过 External Identity 等映射模型保存，只能作为外部身份，不得成为 Ikaros 内部实体主键。
+7. Blob 的内容摘要仍负责表达内容身份与去重语义；即使 Blob 实体拥有 UUIDv7 主键，也不能用 UUIDv7 替代内容 Hash。
+8. 少数不属于独立实体身份的内部序号、Revision Number、排序位置、统计桶等值可以使用整数或其他适合的数据类型，但不得被提升为系统实体主键。
+
+因此系统内部身份应保持：
+
+```text
+Internal Entity Identity
+        ↓
+      UUIDv7
+
+External Provider Identity
+        ↓
+External Identity Mapping
+
+Content Identity
+        ↓
+   Cryptographic Hash
+```
+
+三类身份语义必须分离。
+
 ---
 
 ## 3. 系统上下文
@@ -893,6 +942,8 @@ PostgreSQL 保存：
 - Plugin Registry；
 - Automation Rule；
 - 其他普通领域数据。
+
+所有具有独立实体身份的核心记录使用 PostgreSQL 原生 `uuid` 类型保存 UUIDv7 主键；外部平台 ID、内容 Hash、Revision Number 与排序序号保持各自独立语义，不得替代实体主键。
 
 ### 8.3 Blob Storage
 
@@ -2042,20 +2093,21 @@ V2 当前系统级关键决策如下：
 2. **Attachment 与 Blob 分离**：业务内容对象与实际字节身份分离。
 3. **Storage Placement 独立**：Blob 可以有多个物理副本。
 4. **PostgreSQL-first**：核心业务数据库只面向 PostgreSQL。
-5. **模块化单体优先**：初期不主动微服务化。
-6. **HTTP-first**：公开 API 是客户端与外部集成主要边界。
-7. **子系统拥有自己的状态**：其他模块禁止直接修改内部数据。
-8. **Capability / Command / Event 分离**：同步查询、状态变更和异步传播具有不同语义。
-9. **跨系统最终一致性**：Search、Analytics、Automation、Notification 默认异步。
-10. **Durable Event**：关键事件使用可靠事件机制，不能只依赖内存发布。
-11. **Search / Analytics 是派生数据**：必须能够重建。
-12. **Platform RBAC 与 Resource ACL 分离**：平台权限和实例权限不混用。
-13. **Secure Domain 显式声明**：高敏感加密边界不扩散到普通业务。
-14. **Secret 与 Parameter 分离**：敏感凭据不能作为普通配置保存。
-15. **AI 不是真相源**：AI 只能建议或通过受控 Tool 执行业务操作。
-16. **Plugin 受权限约束**：插件不拥有默认全库访问权。
-17. **Background Task、Scheduled Job、Productivity Task 分离**。
-18. **自托管简单性长期保留**：单机部署不是过渡方案，而是正式支持场景。
+5. **UUIDv7 主键统一**：所有具有独立实体身份的系统内部持久化实体统一使用 UUIDv7 主键，外部 ID 与内容 Hash 保持独立身份语义。
+6. **模块化单体优先**：初期不主动微服务化。
+7. **HTTP-first**：公开 API 是客户端与外部集成主要边界。
+8. **子系统拥有自己的状态**：其他模块禁止直接修改内部数据。
+9. **Capability / Command / Event 分离**：同步查询、状态变更和异步传播具有不同语义。
+10. **跨系统最终一致性**：Search、Analytics、Automation、Notification 默认异步。
+11. **Durable Event**：关键事件使用可靠事件机制，不能只依赖内存发布。
+12. **Search / Analytics 是派生数据**：必须能够重建。
+13. **Platform RBAC 与 Resource ACL 分离**：平台权限和实例权限不混用。
+14. **Secure Domain 显式声明**：高敏感加密边界不扩散到普通业务。
+15. **Secret 与 Parameter 分离**：敏感凭据不能作为普通配置保存。
+16. **AI 不是真相源**：AI 只能建议或通过受控 Tool 执行业务操作。
+17. **Plugin 受权限约束**：插件不拥有默认全库访问权。
+18. **Background Task、Scheduled Job、Productivity Task 分离**。
+19. **自托管简单性长期保留**：单机部署不是过渡方案，而是正式支持场景。
 
 ---
 
