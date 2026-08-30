@@ -1,152 +1,170 @@
-# AI Intelligence — CMS Console Interaction Specification
+# AI 智能 — CMS Console 交互规格
 
-## 1. Assistant
+## 1. AI 助手
 
-**Route:** `/console/ai/assistant`
+**路由：** `/console/ai/assistant`
 
-### Header
-- Title `AI Assistant`.
-- Persona selector.
-- Model/provider selector showing effective routing policy rather than secret credentials.
-- `New conversation`.
+### 页面标题区
+- 标题：`AI 助手`。
+- Persona 选择器。
+- Model/Provider 选择器：展示当前实际路由策略，不展示 Secret Credential。
+- `新建会话`。
 
-### Layout
-Desktop uses conversation list left, conversation canvas center, context inspector right (collapsible).
+### 页面布局
 
-Conversation list fields: title, persona, last model/provider, updated, pinned state. Search is local/domain-scoped.
+桌面端三栏：左侧会话列表，中间会话 Canvas，右侧可折叠 Context Inspector。
 
-Conversation canvas:
-- message bubbles with role, timestamp, model/persona provenance on assistant messages;
-- Markdown/code rendering;
-- attachment/resource citation chips;
-- per-response actions: Copy, Regenerate, Branch, Feedback, View trace if authorized.
+会话列表字段：标题、Persona、最近使用的 Model/Provider、更新时间、置顶状态。搜索只在 AI 域内执行。
 
-Composer:
-- multiline field;
-- attach Resource/Attachment action;
-- context scope button;
-- model override when allowed;
-- send button;
-- stop-generation button while streaming.
+会话 Canvas：
+- 消息气泡显示角色、时间；Assistant 消息显示 Model/Persona 来源信息；
+- 支持 Markdown/Code 渲染；
+- Attachment/Resource Citation Chip；
+- 每条 Assistant 回复提供：复制、重新生成、分支、反馈、有权限时查看 Trace。
 
-Interactions:
-- Streaming response grows in place with stop control.
-- Stop preserves partial output and marks it `Stopped`.
-- Regenerate creates a sibling response/version rather than silently replacing history.
-- Branch creates new conversation from selected message.
-- Resource chips open referenced resource detail.
+Composer：
+- 多行输入框；
+- 添加 Resource/Attachment；
+- 上下文范围按钮；
+- 有权限时允许 Model Override；
+- 发送按钮；
+- Streaming 时显示停止生成按钮。
 
-Context inspector sections:
-- selected resources;
-- explicit user context;
-- enabled memories;
-- tools/capabilities;
-- privacy classification.
+交互：
+- Streaming 回复在原位置持续增长，并提供停止按钮。
+- 停止后保留已生成内容并标记 `已停止`。
+- `重新生成` 创建兄弟版本/回复，不得静默覆盖原历史。
+- `从此处分支` 从选中消息创建新会话。
+- Resource Chip 打开对应 Resource 详情。
 
-Users can remove context before sending. The final context summary must be inspectable before high-sensitivity requests.
+Context Inspector 分区：
+- 已选择 Resource；
+- 显式用户上下文；
+- 已启用 Memory；
+- Tool/Capability；
+- 隐私分类。
 
-## 2. Models & Providers
+发送前用户可以移除上下文。涉及高敏感数据时，在请求发送前必须允许用户检查最终上下文摘要。
 
-**Route:** `/console/ai/models`
+## 2. 模型与提供方
 
-Tabs: Providers, Models, Routing.
+**路由：** `/console/ai/models`
 
-### Providers table
-Columns: provider name, type, endpoint/region, enabled, health, credential state (`Configured`, `Missing`, `Invalid`), supported capabilities, last check, actions.
+Tabs：`提供方`、`模型`、`路由`。
 
-Provider editor fields:
-- display name;
-- provider type;
-- base endpoint when supported;
-- secret API credential field;
-- organization/project identifiers where applicable;
-- timeout/retry limits;
-- proxy/network options if supported;
-- enabled switch.
+### Provider 表格
 
-`Test connection` uses entered values without exposing secret in response/log UI. Saved credential displays masked configured state only.
+列：Provider 名称、类型、Endpoint/Region、是否启用、健康状态、Credential 状态（`已配置`、`缺失`、`无效`）、支持能力、最近检查、操作。
 
-### Models table
-Columns: model alias, provider, upstream model ID, modalities, context limit, tool support, enabled, cost metadata, default role, actions.
+Provider 编辑器：
+- 显示名称；
+- Provider 类型；
+- 支持时的 Base Endpoint；
+- API Credential Secret 字段；
+- 适用时的 Organization/Project 标识；
+- Timeout/Retry 限制；
+- 支持时的 Proxy/Network 选项；
+- Enabled Switch。
 
-Model editor contains explicit capability switches only when they override/disambiguate provider discovery; otherwise discovered capabilities are read-only.
+`测试连接` 使用当前输入值执行，但响应和 UI 日志中绝不能出现 Secret。保存后只展示 Masked/Configured 状态。
 
-### Routing
-Rule list ordered by priority. Rule fields: request class/persona/capability/privacy class → preferred model(s) → fallback. Drag reorders priority. `Simulate routing` accepts a synthetic request profile and displays selected path without sending content to provider.
+### Model 表格
 
-## 3. Personas
+列：Model Alias、Provider、上游 Model ID、Modalities、Context Limit、Tool Support、Enabled、Cost Metadata、Default Role、操作。
 
-**Route:** `/console/ai/personas`
+只有在需要覆盖/补充 Provider 自动发现能力时，Model 编辑器才允许修改 Capability；否则发现结果只读。
 
-### List
-Card/table fields: avatar/icon, name, description, enabled, default model policy, memory policy, tool policy, updated.
+### 路由
 
-Primary `New persona`.
+规则按优先级排序。规则字段：Request Class / Persona / Capability / Privacy Class → 首选 Model → Fallback。
 
-### Persona editor
-Full-page with tabs:
-- Identity.
-- Instructions.
-- Models.
-- Tools.
-- Memory & Context.
-- Safety/Privacy.
-- Test.
+支持拖拽调整优先级。`模拟路由` 输入一组虚拟请求属性，仅展示最终选择路径，不能把真实内容发送给 Provider。
 
-Identity: name required, avatar/icon, short description, tone tags.
+## 3. Persona 管理
 
-Instructions: structured fields for system behavior/instructions; version indicator; unsaved-change protection.
+**路由：** `/console/ai/personas`
 
-Models: default routing policy, allowed model classes, fallback behavior.
+### 列表
 
-Tools: capability list with enabled/disabled, risk class, permission reason. Enabling a sensitive tool may require admin permission and displays its data-access consequence.
+Card/Table 字段：头像/图标、名称、描述、是否启用、默认模型策略、Memory 策略、Tool 策略、更新时间。
 
-Memory & Context: memory scope, retention, allowed domains, exclusions. Private/password/finance context defaults to denied unless explicitly designed and authorized.
+主操作：`新建 Persona`。
 
-Test tab offers sandbox conversation with visible assembled persona configuration and no production memory mutation unless `Save test as memory` is explicitly chosen.
+### Persona 编辑器
 
-## 4. Context, Privacy & Memory
+使用完整页面，Tabs：
+- `身份`。
+- `指令`。
+- `模型`。
+- `工具`。
+- `记忆与上下文`。
+- `安全与隐私`。
+- `测试`。
 
-**Route:** `/console/ai/privacy`
+身份：名称必填、头像/图标、简短描述、Tone Tag。
 
-Tabs: Context Policy, Memory, Data Sharing.
+指令：结构化 System Behavior / Instruction 字段、版本指示、未保存修改保护。
 
-### Context Policy
-Policy cards/rules define which data domains may be included for which personas/models/providers. Each rule row: data domain, sensitivity, allowed destinations, explicit-consent requirement, retention, enabled.
+模型：默认路由策略、允许使用的 Model Class、Fallback 行为。
 
-Rule editor shows a consequence summary such as `Private Notes content may be sent to Provider X` in warning/error emphasis. Sensitive changes require re-authentication or elevated role when policy demands.
+工具：Capability 列表，显示启用/禁用、风险级别、权限原因。启用高敏感 Tool 时可要求 Admin Permission，并明确说明其数据访问后果。
+
+记忆与上下文：Memory Scope、Retention、允许业务域、排除项。Private Notes、Password Manager、Finance 等敏感域默认禁止，除非产品明确设计且用户完成授权。
+
+测试 Tab 提供 Sandbox 会话，并允许查看组装后的 Persona 配置。默认不得写入生产 Memory；只有用户明确选择 `将测试结果保存为记忆` 时才允许。
+
+## 4. 上下文、隐私与记忆
+
+**路由：** `/console/ai/privacy`
+
+Tabs：`上下文策略`、`记忆`、`数据共享`。
+
+### 上下文策略
+
+Policy Card/Rule 定义“哪些数据域可以被哪些 Persona/Model/Provider 使用”。
+
+每行字段：数据域、敏感级别、允许目标、是否要求显式同意、保留策略、启用状态。
+
+规则编辑器必须用 Warning/Error 明确展示后果，例如：`私密笔记内容可能发送到 Provider X`。敏感规则修改根据策略要求重新认证或更高权限。
 
 ### Memory
-Table: memory label/summary, scope, owner, source conversation, created, last used, expiry, state. Content display follows sensitivity rules.
 
-Actions: inspect, edit summary when supported, disable, delete. Deletion confirmation explains whether historical conversations remain.
+表格：Memory Label/摘要、Scope、Owner、来源 Conversation、创建时间、最近使用、过期时间、状态。内容展示必须遵循敏感级别策略。
 
-`Clear memories` is scoped by persona/domain/date and requires typed confirmation for bulk deletion.
+操作：查看、支持时编辑摘要、禁用、删除。删除确认需说明是否影响历史 Conversation。
 
-### Data Sharing
-Shows provider-by-provider disclosure matrix: data categories that may leave the server, retention/config notes, telemetry state, and links to routing policy. This page is explanatory and policy-backed, not marketing copy.
+`清除记忆` 必须可按 Persona/业务域/日期限定范围；批量删除要求输入确认文本。
 
-## 5. Jobs, Trace & Usage
+### 数据共享
 
-**Route:** `/console/ai/jobs`
+按 Provider 展示披露矩阵：哪些数据类别可能离开服务器、Retention/配置说明、Telemetry 状态，以及路由策略入口。该页面必须基于实际配置和 Policy 展示，不能写成营销宣传文案。
 
-Tabs: Jobs, Traces, Usage.
+## 5. 作业、Trace 与用量
 
-### Jobs
-Columns: job ID, type, input entity safe label, persona/model, state, progress, created, duration, initiator, actions. Failed row exposes error category and retry eligibility.
+**路由：** `/console/ai/jobs`
 
-Job detail timeline: queued → context build → provider request/tool calls → postprocess → persisted. Each stage shows duration and status. Sensitive prompt/content is hidden unless user has explicit trace-content permission.
+Tabs：`作业`、`Trace`、`用量`。
 
-### Traces
-Filter by trace ID, conversation, model/provider, tool, status, date. Table columns: trace, request class, model, tool count, latency, token/input-output units, status, created.
+### 作业
 
-Trace detail is an expandable event tree with request routing, tool calls, retries and timings. Secret headers/credentials are always redacted. Private content redaction follows domain policy.
+列：Job ID、类型、输入实体安全 Label、Persona/Model、状态、进度、创建时间、耗时、发起人、操作。失败行展示 Error Category 和是否可重试。
 
-### Usage
-Period selector + cards: requests, input/output tokens or provider units, estimated cost, failures, latency. Charts by model/provider/persona. Table allows export of aggregated usage metadata; exporting prompt content is a separate privileged action.
+Job 详情 Timeline：排队 → 构建上下文 → Provider 请求/Tool Call → 后处理 → 持久化。每阶段显示耗时和状态。Prompt/内容默认隐藏，只有显式拥有 Trace Content 权限时才能查看。
 
-## Shared rules
-- AI features must clearly distinguish deterministic system actions from model-generated suggestions.
-- Any `Apply suggestion` action previews the concrete mutation before executing it.
-- Provider/model outages expose fallback path and never silently switch to a destination disallowed by privacy policy.
-- Prompt, response, tool and trace content follow sensitivity classification; operational metadata can remain visible when content is redacted.
+### Trace
+
+筛选：Trace ID、Conversation、Model/Provider、Tool、状态、日期。
+
+列：Trace、Request Class、Model、Tool Count、Latency、Token/Input-Output Unit、状态、创建时间。
+
+Trace 详情使用可展开 Event Tree，展示路由、Tool Call、Retry 和 Timing。Credential、Authorization Header 永久 Redact；Private Content 根据业务域 Policy Redact。
+
+### 用量
+
+周期选择器 + KPI：请求数、Input/Output Token 或 Provider Unit、预估成本、失败率、延迟。图表按 Model/Provider/Persona 分组。允许导出聚合用量元数据；导出 Prompt Content 必须是独立的特权操作。
+
+## 通用规则
+- AI 功能必须清晰区分“确定性系统动作”和“模型生成建议”。
+- 所有 `应用建议` 操作必须先预览即将产生的具体数据修改，再执行。
+- Provider/Model 故障时可以展示 Fallback Path，但绝不能静默切换到隐私策略禁止的数据目标。
+- Prompt、Response、Tool、Trace Content 遵循敏感级别分类；内容被 Redact 时仍可展示允许公开的运维元数据。

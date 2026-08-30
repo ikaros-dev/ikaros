@@ -1,173 +1,199 @@
-# Attachment & Storage — CMS Console Interaction Specification
+# 附件与存储 — CMS Console 交互规格
 
-## 1. Attachments & Blobs
+## 1. 附件与 Blob
 
-**Route:** `/console/attachments`
+**路由：** `/console/attachments`
 
-### Header
-- Title `Attachments & Blobs`.
-- Subtitle explains `Resource → Attachment → Blob → Placement`.
-- Primary `Upload attachment`.
-- Secondary `Scan/import`.
+### 页面标题区
+- 标题：`附件与 Blob`。
+- 副标题明确说明 `Resource → Attachment → Blob → Placement` 的层级关系。
+- 主操作：`上传附件`。
+- 次操作：`扫描/导入`。
 
-### KPI cards
-- Attachments.
-- Unique Blobs.
-- Deduplication saved bytes.
-- Missing/unavailable Blobs.
-- Integrity warnings.
+### KPI 卡片
+- Attachment 数量。
+- 唯一 Blob 数量。
+- 去重节省空间。
+- 缺失/不可用 Blob 数量。
+- 完整性警告数量。
 
-### Filters
-Search by attachment name, checksum, blob ID or linked Resource. Chips: attachment role/type, MIME family, availability, original/derived, integrity state, storage tier. Advanced filters: size range, created range, checksum algorithm, reference count, orphan state.
+### 筛选
 
-### Table
-Columns:
-1. selection;
-2. type icon/preview;
-3. attachment display name;
-4. role (`VIDEO`, `AUDIO`, `SUBTITLE`, `COVER`, `PAGE`, `DOCUMENT`, etc.);
-5. linked resource count;
-6. blob short ID + checksum status;
-7. logical size;
-8. placement summary (`2 replicas · Hot/Warm`);
-9. origin (`Original`, `Derived`);
-10. availability/integrity chip;
-11. updated;
-12. actions.
+支持按 Attachment 名称、Checksum、Blob ID、关联 Resource 搜索。
 
-Click opens attachment detail.
+Filter Chip：Attachment 角色/类型、MIME 大类、可用状态、原始/派生、完整性状态、存储层级。
 
-### Attachment detail
-Header: display name, role, MIME, availability. Actions: Preview/Open, Download, Replace relationship-safe content if allowed, Create derivative, overflow.
+高级筛选：大小范围、创建时间、Checksum 算法、引用数量、孤儿状态。
 
-Tabs:
-- Overview.
-- Resource Links.
-- Blob.
-- Derivatives.
-- Activity.
+### Data Table
 
-Overview fields: attachment ID, filename/display name, MIME, size, role, created, creator/source, original/derived, metadata, accessibility state.
+列：
+1. 选择 Checkbox；
+2. 类型图标/预览；
+3. Attachment 显示名称；
+4. 角色，例如 `VIDEO`、`AUDIO`、`SUBTITLE`、`COVER`、`PAGE`、`DOCUMENT`；
+5. 关联 Resource 数量；
+6. Blob 短 ID + Checksum 状态；
+7. 逻辑大小；
+8. Placement 摘要，例如 `2 个副本 · Hot/Warm`；
+9. 来源：`原始` / `派生`；
+10. 可用性/完整性 Chip；
+11. 更新时间；
+12. 操作。
 
-Resource Links table: Resource, relationship role, primary flag, created. `Link resource` searches resources and selects attachment relation role. Removing a link must state whether the attachment remains referenced elsewhere.
+点击行进入 Attachment 详情。
 
-Blob tab: blob ID, checksum algorithm/value, byte size, verification time, reference count, placement list. `Verify integrity` starts background job.
+### Attachment 详情
 
-Derivatives shows parent/child graph (e.g. source video → thumbnail/transcode/subtitle extraction) with generation status and recipe/tool identity when available.
+标题区展示显示名称、角色、MIME、可用状态。操作：预览/打开、下载、在允许时安全替换内容、创建派生内容、Overflow。
 
-## 2. Persistent Storage Tiers
+Tabs：
+- `概览`。
+- `Resource 关联`。
+- `Blob`。
+- `派生内容`。
+- `活动`。
 
-**Route:** `/console/storage/tiers`
+概览字段：Attachment ID、文件名/显示名称、MIME、大小、角色、创建时间、创建者/来源、原始/派生、元数据、可访问状态。
 
-### Overview
-Cards for Hot, Warm, Cold/Archive and total persistent bytes. Each card shows used/capacity, object count, healthy/degraded status and provider/backend.
+Resource 关联表格：Resource、关系角色、是否主附件、创建时间。`关联 Resource` 打开 Resource 搜索，并要求选择 Attachment Relation Role。移除关系前必须明确该 Attachment 是否仍被其他 Resource 引用。
 
-Important language: cache is not a persistent storage tier.
+Blob Tab：Blob ID、Checksum 算法和值、字节大小、最近校验时间、引用数量、Placement 列表。`校验完整性` 创建后台任务。
 
-### Storage backend table
-Columns: name, backend type, tier, endpoint/location (safe display), capacity/used, health, read/write state, replica count, last check, actions.
+派生内容显示父子 Graph，例如原始视频 → 缩略图/转码/字幕提取，并展示生成状态，以及可用时的 Recipe/工具标识。
 
-`Add storage backend` side sheet fields:
-- name required;
-- backend/provider type;
-- tier;
-- endpoint/bucket/path as applicable;
-- credentials secret fields;
-- encryption/config switches;
-- read/write mode;
-- health-check options.
+## 2. 持久化存储层
 
-`Test connection` validates before save without persisting secret values in UI logs. Saved secrets return masked placeholders only.
+**路由：** `/console/storage/tiers`
 
-### Backend detail
-Tabs: Overview, Placements, Policies, Health, Activity.
+### 总览
 
-Overview shows configuration-safe fields, capacity chart, latency/error stats. Placements table lists blobs on this backend with size, replica state, last verified.
+Hot、Warm、Cold/Archive 和总持久化数据分别使用状态卡片。每张卡显示已使用/容量、对象数量、健康/降级状态、Provider/Backend。
 
-Policies page section defines placement/migration rules with priority ordering and dry-run preview. Rule fields: matching condition, target tier/backend, minimum replicas, age/access conditions, action. `Simulate` reports matching objects and estimated bytes before enabling.
+必须明确：**Cache 不是持久化存储层。**
 
-## 3. Cache & My Downloads
+### 存储 Backend 表格
 
-**Route:** `/console/storage/cache`
+列：名称、Backend 类型、Tier、Endpoint/位置（安全显示）、容量/已使用、健康状态、读写状态、副本数量、最近检查、操作。
 
-Tabs: Server Cache, Client Downloads.
+`添加存储 Backend` Side Sheet 字段：
+- 名称：必填；
+- Backend/Provider 类型；
+- Tier；
+- 根据类型展示 Endpoint/Bucket/Path；
+- Credential Secret 字段；
+- 加密/配置 Switch；
+- 读写模式；
+- 健康检查配置。
 
-### Server Cache
-Cards: cache bytes, object count, hit ratio, eviction activity. Table: blob/resource, cache type, size, last access, expires/eviction eligibility, origin persistent placement.
+`测试连接` 使用当前输入进行校验，但不得把 Secret 写入 UI 日志。保存后 Credential 只返回已配置/遮罩状态。
 
-Actions: Evict selected, Warm cache / Prefetch. Eviction must explicitly say persistent data is unaffected.
+### Backend 详情
 
-### Client Downloads
-Columns: user/device, resource, attachment, size, state, downloaded at, last sync. Admins see only metadata required for management; no client-local private path unless explicitly reported and authorized.
+Tabs：`概览`、`Placements`、`策略`、`健康`、`活动`。
 
-Remote removal request, if supported, is labeled `Request client removal` rather than implying immediate deletion.
+概览展示经过安全处理的配置字段、容量图表、延迟和错误统计。
 
-## 4. Archive, Restore & Trash
+Placements 表格列出当前 Backend 上的 Blob、大小、副本状态和最近校验时间。
 
-**Route:** `/console/storage/archive`
+策略区域配置 Placement/迁移规则，支持优先级排序和 Dry-run 预览。规则字段：匹配条件、目标 Tier/Backend、最小副本数、Age/Access 条件、动作。`模拟` 在启用前显示预计命中对象数量和字节数。
 
-Tabs: Archived Resources, Restore Queue, Trash.
+## 3. 缓存与我的下载
 
-### Archived Resources
-Columns: Resource, type, archive date, archive storage summary, logical size, retrieval estimate/status, retention policy, actions.
+**路由：** `/console/storage/cache`
 
-`Restore` dialog:
-- target restore tier/backend;
-- estimated bytes;
-- affected attachments;
-- expected asynchronous behavior;
-- optional `Open when ready` notification.
+Tabs：`服务端缓存`、`客户端下载`。
 
-Submission creates background task and immediately returns to page with progress row.
+### 服务端缓存
 
-### Restore Queue
-Columns: task, target resource/blob count, stage, bytes restored/total, destination, started, ETA when trustworthy, initiator, actions. `Cancel` appears only during cancellable stages and explains cleanup semantics.
+卡片：缓存字节数、对象数、命中率、Eviction 活动。
 
-### Trash
-Columns: Resource/Attachment, type, deleted by, moved to trash, scheduled permanent deletion, dependency/reference summary, actions.
+表格：Blob/Resource、缓存类型、大小、最近访问、过期/可淘汰时间、来源持久化 Placement。
 
-Actions: Restore, Delete permanently. Permanent delete uses error-colored high-risk dialog, lists referenced data impact, requires typing entity name or `DELETE` for bulk deletion.
+操作：`淘汰所选缓存`、`预热/预取`。淘汰确认必须明确：**不会影响持久化数据。**
 
-## 5. Backup & Restore
+### 客户端下载
 
-**Route:** `/console/storage/backup`
+列：用户/设备、Resource、Attachment、大小、状态、下载时间、最近同步。
 
-### Summary cards
-- Last successful backup.
-- Next scheduled backup.
-- Backup destination health.
-- Restore verification status.
+管理员只看到管理所需元数据；除非客户端明确上报并且用户有权限，否则不得显示客户端本地私有路径。
 
-### Backup sets table
-Columns: backup set ID/time, scope, destination, logical size, incremental/full, encryption state, verification, retention expiry, status, actions.
+如果支持远程删除请求，按钮文案必须使用 `请求客户端删除`，不能暗示服务端能够立即删除客户端数据。
 
-Primary actions: `Run backup`, `Configure backup`.
+## 4. 归档、恢复与回收站
 
-### Configure backup
-Sections:
-- Scope: database/config/metadata/blob selection policy.
-- Destination backend.
-- Schedule.
-- Retention policy.
-- Encryption/key reference.
-- Verification policy.
+**路由：** `/console/storage/archive`
 
-Every section shows a concise consequence summary. Credentials/keys are referenced, not displayed.
+Tabs：`已归档资源`、`恢复队列`、`回收站`。
 
-### Restore wizard
-Full-page stepper:
-1. Select backup set.
-2. Verify compatibility and integrity.
-3. Choose restore scope.
-4. Conflict/overwrite policy.
-5. Review impact.
-6. Re-authenticate for destructive overwrite.
-7. Start restore.
+### 已归档资源
 
-Once started, show a durable background-operation page with stage progress, logs/events safe for UI, and explicit server restart requirement if applicable.
+列：Resource、类型、归档时间、归档存储摘要、逻辑大小、预计恢复耗时/状态、保留策略、操作。
 
-## Shared interaction rules
-- Byte counts use binary units consistently and may expose exact bytes in tooltip.
-- Integrity failures use error severity and must never be reduced to a neutral status chip.
-- Background migration, archive, restore, verify, backup and cleanup operations remain navigable after leaving the page.
-- No UI action may imply deleting a Blob when only an Attachment relation is being removed; dialogs must name the actual layer being changed.
+`恢复` Dialog：
+- 目标恢复 Tier/Backend；
+- 预计字节数；
+- 受影响 Attachment；
+- 明确说明这是异步操作；
+- 可选 `恢复完成后通知并打开`。
+
+提交后创建后台任务，并立即返回列表，同时出现进度行。
+
+### 恢复队列
+
+列：任务、目标 Resource/Blob 数量、当前阶段、已恢复/总字节数、目标位置、开始时间、可信时显示 ETA、发起人、操作。
+
+只有当前阶段可安全取消时才显示 `取消`，并解释已完成数据和清理语义。
+
+### 回收站
+
+列：Resource/Attachment、类型、删除者、进入回收站时间、计划永久删除时间、依赖/引用摘要、操作。
+
+操作：恢复、永久删除。永久删除使用 Error 色高风险 Dialog，列出引用影响，并要求输入实体名称；批量永久删除可以要求输入 `DELETE`。
+
+## 5. 备份与恢复
+
+**路由：** `/console/storage/backup`
+
+### 摘要卡片
+- 最近一次成功备份。
+- 下一次计划备份。
+- 备份目标健康状态。
+- 最近恢复验证状态。
+
+### 备份集表格
+
+列：Backup Set ID/时间、范围、目标、逻辑大小、增量/全量、加密状态、校验状态、保留到期时间、状态、操作。
+
+主操作：`立即备份`、`配置备份`。
+
+### 配置备份
+
+分区：
+- 范围：数据库/配置/元数据/Blob 选择策略。
+- 目标 Backend。
+- 调度计划。
+- 保留策略。
+- 加密/Key 引用。
+- 校验策略。
+
+每个分区下方显示简短后果说明。Credential/Key 只展示引用，不展示值。
+
+### 恢复向导
+
+使用完整页面 Stepper：
+1. 选择 Backup Set。
+2. 校验兼容性和完整性。
+3. 选择恢复范围。
+4. 选择冲突/覆盖策略。
+5. 审阅影响。
+6. 涉及覆盖时重新认证。
+7. 启动恢复。
+
+恢复开始后进入可持久访问的后台操作详情页，显示阶段进度、适合 UI 展示的安全日志/事件，以及适用时明确提示是否需要重启服务器。
+
+## 通用交互规则
+- 字节数统一使用 Binary Unit，并可在 Tooltip 中显示精确 Bytes。
+- 完整性失败必须使用 Error 严重级别，不能降级成普通中性 Chip。
+- 迁移、归档、恢复、校验、备份、清理等后台操作离开页面后仍可从后台任务中心继续查看。
+- UI 不得把“移除 Attachment 关系”描述成“删除 Blob”；所有确认文案必须准确说明实际修改的是哪一层。

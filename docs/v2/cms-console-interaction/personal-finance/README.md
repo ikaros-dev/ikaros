@@ -1,181 +1,189 @@
-# Personal Finance — CMS Console Interaction Specification
+# 个人记账 — CMS Console 交互规格
 
-> Financial data is private user data. The UI must avoid leaking amounts, payees, notes, account identifiers, or imported raw rows into URLs, analytics events, notifications, or logs beyond the authorized finance subsystem.
+> 财务数据属于用户私密数据。UI 不得把金额、收付款方、备注、账户标识或导入原始行泄露到 URL、通用 Analytics Event、普通通知或非授权日志中。
 
-## 1. Ledger Overview
+## 1. 账本总览
 
-**Route:** `/console/finance`
+**路由：** `/console/finance`
 
-### Header
-- Title `Ledger Overview`.
-- Ledger selector when multiple ledgers exist.
-- Date period selector defaults to current month.
-- Primary `Add transaction`.
-- Secondary `Import`.
+### 页面标题区
+- 标题：`账本总览`。
+- 存在多个账本时显示账本选择器。
+- 日期周期默认当前月。
+- 主操作：`新增交易`。
+- 次操作：`导入`。
 
-### KPI cards
-- Net worth / selected-ledger balance.
-- Income in period.
-- Expenses in period.
-- Net cash flow.
-- Budget usage when budgets exist.
+### KPI 卡片
+- 净资产 / 当前账本余额。
+- 当前周期收入。
+- 当前周期支出。
+- 净现金流。
+- 存在预算时显示预算使用率。
 
-Amount cards provide `Hide amounts` eye toggle. Hidden state persists per user/device and masks all finance amounts on this page until restored.
+金额卡片提供 `隐藏金额` 眼睛按钮。隐藏状态按用户/设备保存，并在用户重新显示前遮罩本页所有财务金额。
 
-### Main regions
-1. Cash-flow chart with Income / Expense / Net toggle.
-2. Spending by category card with top categories and `View details`.
-3. Account balances card.
-4. Recent transactions table.
-5. Upcoming recurring transactions / budget warnings.
+### 主内容区域
+1. 现金流图表，支持收入 / 支出 / 净额切换。
+2. 分类支出卡片，展示主要分类并提供 `查看详情`。
+3. 账户余额卡片。
+4. 最近交易表格。
+5. 即将发生的周期交易 / 预算警告。
 
-Chart interactions: hover/focus shows period + values; selecting a segment applies that date/category filter to Transactions. Essential chart data has table alternative.
+图表 Hover/Focus 显示周期和金额；点击某个 Segment 进入“交易”并自动应用对应日期/分类筛选。关键图表必须提供 Table 替代。
 
-## 2. Accounts
+## 2. 账户
 
-**Route:** `/console/finance/accounts`
+**路由：** `/console/finance/accounts`
 
-### Table columns
-- account name;
-- type;
-- masked account identifier;
-- currency;
-- current balance;
-- included in net worth switch/status;
-- reconciliation state;
-- updated;
-- actions.
+### 表格列
+- 账户名称；
+- 类型；
+- 遮罩后的账户标识；
+- 币种；
+- 当前余额；
+- 是否计入净资产；
+- 对账状态；
+- 更新时间；
+- 操作。
 
-Primary `Add account` opens side sheet.
+主操作 `添加账户` 打开 Side Sheet。
 
-Account fields:
-- name required;
-- account type (cash, bank, e-wallet, credit, investment/manual other);
-- currency required;
-- opening balance/date;
-- institution optional;
-- masked identifier optional;
-- include in net worth;
-- notes;
-- archive state.
+账户字段：
+- 名称：必填；
+- 账户类型：现金、银行账户、电子钱包、信用账户、投资/其他手工账户；
+- 币种：必填；
+- 初始余额/日期；
+- 金融机构：可选；
+- 遮罩标识：可选；
+- 是否计入净资产；
+- 备注；
+- 归档状态。
 
-Account detail tabs: Overview, Transactions, Reconciliation, Settings.
+账户详情 Tabs：`概览`、`交易`、`对账`、`设置`。
 
-Overview cards: current balance, cleared balance, period inflow/outflow, last reconciled. Balance history chart below.
+概览卡片：当前余额、已清算余额、周期流入/流出、最近对账时间；下方展示余额历史图。
 
-Archive account prevents new normal postings unless explicitly restored, but preserves transactions. Delete is unavailable while transactions exist unless a dedicated migration/delete workflow resolves them.
+归档账户后默认禁止继续新增普通记账，但保留所有历史交易。账户存在交易时不得直接删除，除非专门的迁移/删除流程已经处理依赖。
 
-## 3. Transactions
+## 3. 交易
 
-**Route:** `/console/finance/transactions`
+**路由：** `/console/finance/transactions`
 
-### Toolbar
-Search is limited to authorized finance fields. Filters: date range, account, transaction type, category, amount range, payee, tag, source/import batch, reconciliation state. Sort defaults to date descending.
+### 工具栏
 
-### Table columns
-1. selection;
-2. date/time;
-3. transaction type (`Expense`, `Income`, `Transfer`);
-4. account;
-5. destination account for transfers;
-6. category;
-7. payee;
-8. memo indicator;
-9. amount + currency;
-10. source (`Manual`, `CSV Import`, connector);
-11. reconciliation/cleared state;
-12. actions.
+搜索范围仅限当前用户有权读取的财务字段。
 
-Amount sign/color is accompanied by transaction type text/icon; color alone is insufficient.
+筛选：日期范围、账户、交易类型、分类、金额范围、收付款方、Tag、来源/导入 Batch、对账状态。默认按日期倒序。
 
-Bulk actions: set category, add tag, mark cleared, exclude from reports where supported, delete with confirmation.
+### 表格列
+1. 选择 Checkbox；
+2. 日期/时间；
+3. 交易类型：`支出`、`收入`、`转账`；
+4. 账户；
+5. 转账时的目标账户；
+6. 分类；
+7. 收付款方；
+8. 是否有备注；
+9. 金额 + 币种；
+10. 来源：`手工`、`CSV 导入`、Connector；
+11. 对账/已清算状态；
+12. 操作。
 
-### Add/edit transaction sheet
-Common fields:
-- type required;
-- date/time required;
-- account required;
-- amount > 0 required;
-- currency inherited from account unless conversion is supported;
-- category required by policy but may allow `Uncategorized`;
-- payee;
-- memo;
-- tags;
-- receipt attachment.
+金额正负的颜色必须同时配合交易类型文字/图标，不得只靠颜色表达。
 
-For Transfer:
-- source account;
-- destination account required and different from source;
-- source amount;
-- destination amount/exchange rate when currencies differ;
-- transfer creates linked ledger entries but presents as one logical transfer in UI.
+批量操作：设置分类、添加 Tag、标记已清算、业务支持时从报表排除、确认后删除。
 
-Validation prevents invalid negative/zero amount representation; sign is derived from transaction type.
+### 新增 / 编辑交易 Side Sheet
 
-Deleting a transfer explains that both linked sides are affected. Editing one side edits the logical transfer.
+通用字段：
+- 类型：必填；
+- 日期/时间：必填；
+- 账户：必填；
+- 金额必须 > 0；
+- 默认继承账户币种，只有支持货币转换时才允许选择/换算；
+- 分类：根据策略必填，也可以明确允许 `未分类`；
+- 收付款方；
+- 备注；
+- Tag；
+- 小票 Attachment。
 
-## 4. Budgets & Recurring Items
+转账额外字段：
+- 来源账户；
+- 目标账户：必填且不能与来源相同；
+- 来源金额；
+- 币种不同时显示目标金额/汇率；
+- 底层可以创建关联 Ledger Entry，但 UI 必须把它表现为一笔逻辑转账。
 
-**Route:** `/console/finance/budgets`
+禁止通过负数/零金额表达交易方向，方向由交易类型决定。
 
-Tabs: Budgets, Recurring.
+删除转账时明确说明两侧关联记录都会受影响；编辑任意一侧实际上编辑同一逻辑转账。
 
-### Budgets
-Period selector and budget cards/table. Fields: category/group, budgeted amount, actual amount, remaining, utilization progress, rollover state, forecast.
+## 4. 预算与周期账
 
-Create budget dialog:
-- category/group;
-- amount;
-- period (monthly/custom);
-- start date;
-- rollover switch;
-- warning thresholds.
+**路由：** `/console/finance/budgets`
 
-Clicking actual amount navigates to Transactions filtered by budget category and period.
+Tabs：`预算`、`周期账`。
 
-Over-budget uses warning/error semantics but never blocks transaction entry.
+### 预算
 
-### Recurring items
-Columns: name, type, account, category, amount/rule, cadence, next occurrence, auto-create mode, status, actions.
+顶部周期选择器。预算卡片/表格字段：分类/分组、预算金额、实际金额、剩余、使用率、结转状态、预测。
 
-Recurring editor fields: template transaction fields, recurrence rule, start/end, next date, auto-create vs reminder, tolerance/variable amount notes. Recurrence preview lists next five occurrences.
+创建预算 Dialog：
+- 分类/分组；
+- 金额；
+- 周期：月度/自定义；
+- 开始日期；
+- 是否结转；
+- 警告阈值。
 
-Pausing preserves history and stops future generation. Deleting the recurring rule never deletes generated transactions.
+点击实际金额跳转到交易页面，并自动应用当前预算分类和周期。
 
-## 5. Reconciliation & Import
+超预算使用 Warning/Error 语义，但不能阻止正常新增交易。
 
-**Route:** `/console/finance/reconcile`
+### 周期账
 
-Tabs: Reconciliation, Import Batches.
+列：名称、类型、账户、分类、金额/规则、周期、下一次发生时间、自动创建模式、状态、操作。
 
-### Reconciliation
-Account selector + statement ending date + statement ending balance.
+编辑字段：交易模板字段、重复规则、开始/结束日期、下一次日期、自动创建/仅提醒、可变金额/容差备注。重复规则预览后续 5 次发生时间。
 
-Main split layout:
-- left: unreconciled transactions with checkboxes;
-- right: reconciliation summary showing opening balance, selected cleared total, calculated ending balance, statement balance, difference.
+暂停只停止未来生成并保留历史。删除周期规则不得删除已经生成的交易。
 
-`Complete reconciliation` enabled only when difference is zero or policy explicitly permits adjustment. If adjustment is needed, create an explicit adjustment transaction with review step; never silently alter balances.
+## 5. 对账与导入
 
-Completed reconciliation is immutable by normal edit. Reopen requires elevated confirmation and audit entry.
+**路由：** `/console/finance/reconcile`
 
-### Import wizard
-Step 1 Upload/source: CSV/file/connector selection.
-Step 2 Mapping: preview rows and map source columns to date, amount, type, account, payee, category, memo, external ID.
-Step 3 Parsing rules: date format, decimal separator, currency, debit/credit interpretation.
-Step 4 Deduplication: show candidate duplicate count and matching rule.
-Step 5 Review: valid, warning, rejected rows in tabs.
-Step 6 Commit import.
+Tabs：`对账`、`导入批次`。
 
-Every preview row shows source row number and normalized transaction. Mapping changes recompute preview. Rejected rows show actionable reason.
+### 对账
 
-Import batch detail after commit: imported count, skipped duplicates, rejected, created transactions, mapping profile, source checksum, rollback availability.
+顶部选择账户、Statement Ending Date、Statement Ending Balance。
 
-Rollback, when supported, only removes transactions created by that import and checks whether they were edited/reconciled afterward; conflicts require manual review.
+主体双栏：
+- 左侧：未对账交易 + Checkbox；
+- 右侧：对账摘要，显示期初余额、已选择清算金额、计算期末余额、Statement Balance、差额。
 
-## Shared interaction and security rules
-- Amount masking is available on overview/list/detail surfaces.
-- Currency always accompanies ambiguous amounts.
-- Export requires explicit scope/date and may require re-authentication for large/private exports.
-- Finance data is excluded from generic global notification body text unless the user explicitly enables detailed finance notifications.
-- Destructive operations describe accounting impact, not just record deletion.
+只有差额为 0，或策略明确允许 Adjustment 时才启用 `完成对账`。需要 Adjustment 时必须经过 Review 并创建一笔显式调整交易，绝不能静默修改余额。
+
+已完成对账普通编辑不可修改。重新打开对账需要更高级别确认并产生审计记录。
+
+### 导入向导
+
+Step 1 来源：CSV/File/Connector。
+Step 2 字段映射：预览原始行，并映射日期、金额、类型、账户、收付款方、分类、备注、External ID。
+Step 3 解析规则：日期格式、小数分隔符、币种、借贷方向解释。
+Step 4 去重：显示候选重复数量和匹配规则。
+Step 5 审核：有效、警告、拒绝三类 Tab。
+Step 6 提交导入。
+
+每个预览行显示源行号和标准化后的 Transaction。映射修改后立即重算预览。拒绝行必须给出可操作原因。
+
+导入完成后的 Batch 详情：成功导入数、跳过重复数、拒绝数、创建 Transaction、映射配置、源文件 Checksum、是否可回滚。
+
+支持回滚时，只删除该 Batch 创建的交易；如果交易之后被编辑或完成对账，必须识别冲突并要求人工处理。
+
+## 通用交互与安全规则
+- Overview/List/Detail 均提供金额遮罩能力。
+- 存在币种歧义时金额旁必须显示 Currency。
+- 导出必须明确范围/日期；大范围私密导出可以要求重新认证。
+- 除非用户明确开启“详细财务通知”，通用通知正文不得包含财务具体数据。
+- 危险操作必须说明会产生什么会计影响，而不只是说“删除一条记录”。

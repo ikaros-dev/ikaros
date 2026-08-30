@@ -1,163 +1,172 @@
-# Password Manager — CMS Console Interaction Specification
+# 密码管理 — CMS Console 交互规格
 
-> Password Manager is a high-sensitivity protected domain. Secret values must never appear in URLs, logs, analytics, notification previews, audit descriptions, or generic search results.
+> 密码管理属于最高敏感级别的数据域。Secret 值绝不能出现在 URL、日志、Analytics、通知预览、审计描述或通用搜索结果中。
 
-## 1. Password Vault
+## 1. 密码保险库
 
-**Route:** `/console/passwords`
+**路由：** `/console/passwords`
 
-### Locked state
-Render a security card with `Unlock password vault`. Do not render item counts, titles, domains, folders, usernames, or breach-health information before successful unlock unless product policy explicitly classifies a statistic as safe.
+### 锁定状态
 
-### Unlocked header
-- H1 `Password Vault`.
-- `Lock now` icon.
-- Primary `New item`.
-- Search field scoped to unlocked vault.
-- Folder/type Filter Chips.
+展示安全卡片，主操作为 `解锁密码保险库`。在成功解锁之前，不展示条目数量、标题、域名、Folder、用户名或密码健康状态；只有产品安全策略明确判定为可安全公开的统计数据才例外。
 
-### Main layout
-Desktop two/three-pane layout:
-- left: folders/favorites/types;
-- center: item list;
-- right: item detail when selected.
+### 已解锁标题区
+- H1：`密码保险库`。
+- `立即锁定` 图标按钮。
+- 主操作：`新建条目`。
+- 仅作用于当前已解锁保险库的搜索框。
+- Folder/类型 Filter Chip。
 
-Item list fields:
-- type icon;
-- title;
-- username/display identity masked or partially shown according to policy;
-- favorite;
-- updated;
-- health indicator only if enabled.
+### 主布局
 
-Supported item types may include Login, Secure Note, Card, Identity, API Key, SSH/secret-like custom records according to backend design. The UI must render fields from explicit schemas rather than arbitrary untrusted HTML.
+桌面端采用双栏或三栏：
+- 左侧：Folder、收藏、类型。
+- 中间：条目列表。
+- 右侧：选中条目的详情。
 
-### Item detail
-Header: icon, title, type, favorite. Actions: Edit, Copy username, Copy password/secret, Open website, overflow.
+条目列表字段：
+- 类型图标；
+- 标题；
+- 根据策略遮罩或部分展示 Username/显示身份；
+- 收藏；
+- 更新时间；
+- 启用健康检查时显示健康状态。
 
-Field rows:
-- label;
-- value masked by default for secrets;
-- reveal eye icon;
-- copy icon;
-- optional open-link action for URL fields.
+支持的条目类型可以包括 Login、Secure Note、Card、Identity、API Key、SSH/其他 Secret 类型，具体以 Backend Schema 为准。前端必须根据明确 Schema 渲染字段，不能渲染任意不受信任 HTML。
 
-Reveal interaction:
-- may require re-authentication according to policy;
-- revealed value automatically remasks after timeout or page blur if configured;
-- revealing one secret does not reveal every secret on the item.
+### 条目详情
 
-Copy interaction:
-- Snackbar confirms generic `Copied` without echoing secret;
-- optional clipboard-clear countdown where platform support exists.
+标题区：图标、标题、类型、收藏。操作：编辑、复制用户名、复制密码/Secret、打开网站、Overflow。
 
-### Item editor
-Fields depend on type; Login baseline:
-- name/title required;
-- username;
-- password;
-- website URLs;
-- TOTP secret/setup if supported;
-- notes;
-- folder;
-- tags;
-- custom fields;
-- favorite.
+字段行：
+- Label；
+- Value，Secret 默认遮罩；
+- Reveal 眼睛按钮；
+- Copy 图标；
+- URL 字段可选 Open Link。
 
-Password field includes `Generate` action which opens generator side panel. Save validates URLs/schema but never rejects unusual credentials merely due to character choice.
+Reveal 交互：
+- 根据策略可以要求重新认证；
+- 配置超时或页面失焦自动遮罩；
+- Reveal 一个 Secret 不能自动 Reveal 条目中的其他 Secret。
 
-Delete item moves to protected trash when supported; permanent deletion is a separate high-risk action.
+Copy 交互：
+- Snackbar 只显示通用 `已复制`，绝不回显 Secret；
+- 平台支持时可显示剪贴板自动清理倒计时。
 
-## 2. Generator & Item Creation
+### 条目编辑器
 
-**Route:** `/console/passwords/generator`
+字段随类型变化。Login 的基础字段：
+- 名称/标题：必填；
+- 用户名；
+- 密码；
+- 网站 URL；
+- 支持时的 TOTP Secret/配置；
+- 备注；
+- Folder；
+- Tag；
+- 自定义字段；
+- 收藏。
 
-### Generator card
-Controls:
-- mode segmented control: Random Password / Passphrase / optional PIN.
-- length slider + numeric field.
-- include uppercase/lowercase/numbers/symbols switches.
-- exclude ambiguous characters.
-- minimum digits/symbols advanced fields.
-- passphrase word count, separator and capitalization options.
+密码字段提供 `生成` 操作，打开密码生成器 Side Panel。保存时校验 URL/Schema，但不能因为密码字符“不常见”而无业务依据拒绝凭据。
 
-Generated value is masked initially only if policy requires; otherwise it may be visible because generation is an intentional secret-view surface.
+删除条目优先移入受保护回收站；永久删除必须走独立高风险流程。
 
-Actions:
-- `Regenerate`.
-- `Copy`.
-- `Use in new item`.
+## 2. 生成器与条目创建
 
-Strength meter explains entropy/quality using text labels, not only color. Generator operates locally when architecture supports it so generated secrets are not sent to server before save.
+**路由：** `/console/passwords/generator`
 
-## 3. Health & Secure Send
+### 生成器卡片
 
-**Route:** `/console/passwords/health`
+控制项：
+- 模式 Segmented Control：随机密码 / Passphrase / 可选 PIN。
+- 长度 Slider + 数字输入。
+- 大写字母/小写字母/数字/符号 Switch。
+- 排除易混淆字符。
+- 高级字段：最少数字数、最少符号数。
+- Passphrase：单词数量、分隔符、大小写选项。
 
-Tabs: Health, Secure Send.
+生成值是否初始遮罩由安全策略决定；由于该页面本身就是用户主动生成 Secret 的界面，也可以明确允许直接显示。
 
-### Health
-Summary cards:
-- weak passwords;
-- reused passwords;
-- old passwords;
-- compromised passwords when breach checking is configured.
+操作：
+- `重新生成`。
+- `复制`。
+- `用于新建条目`。
 
-Health table shows item title, issue types, last changed and action `Review`. It must not display the actual password.
+强度指示器必须使用文字解释熵/质量，不能只靠颜色。架构允许时生成器优先在本地运行，避免 Secret 在保存之前发送到服务端。
 
-Issue detail explains why an item is flagged and provides `Edit item`, `Generate replacement`, `Dismiss exception` if policy supports exceptions.
+## 3. 健康检查与安全发送
 
-Compromise checking UI states clearly whether hashes/k-anonymity/local data are used; never imply privacy guarantees beyond implementation.
+**路由：** `/console/passwords/health`
 
-### Secure Send
-List columns: safe label, secret/content type, created, expires, access count/limit, password-protected status, state, actions.
+Tabs：`健康检查`、`安全发送`。
 
-Create wizard:
-- content type/value or linked vault item field selection;
-- expiry required;
-- max accesses;
-- optional recipient hint that is non-sensitive;
-- optional access password;
-- allow download where relevant.
+### 健康检查
 
-After creation, show share URL once in a dedicated result card. `Copy link` does not copy underlying secret. Revocation is immediate. Expired/revoked sends cannot be re-enabled.
+摘要卡片：
+- 弱密码；
+- 重复密码；
+- 长期未修改密码；
+- 配置泄露检测时的疑似泄露密码。
 
-## 4. Devices & Access
+健康表格展示条目标题、问题类型、最近修改时间和 `检查` 操作，但绝不显示实际密码。
 
-**Route:** `/console/passwords/devices`
+问题详情说明被标记原因，并提供 `编辑条目`、`生成替换密码`，以及策略支持时的 `忽略此项`。
 
-### Trusted/authorized devices table
-Fields:
-- device name;
-- platform/browser/app;
-- first authorized;
-- last active;
-- key/device identity fingerprint shortened;
-- trust state;
-- actions.
+泄露检测界面必须明确说明实际采用的是 Hash、k-anonymity、本地数据库还是其他机制，不得宣传超出实现事实的隐私保证。
 
-Click opens device detail with sessions, authorization scope, key metadata, recent vault access/security events.
+### 安全发送
 
-Actions:
-- Rename device.
-- Revoke vault access.
-- Revoke all sessions on device.
+列表列：安全 Label、Secret/内容类型、创建时间、过期时间、访问次数/上限、是否密码保护、状态、操作。
 
-Revocation requires confirmation and explains whether the device can re-authenticate later.
+创建向导：
+- 内容类型和值，或选择已有 Vault Item 的某个字段；
+- 过期时间：必填；
+- 最大访问次数；
+- 可选且非敏感的收件人提示；
+- 可选访问密码；
+- 适用时是否允许下载。
 
-### Vault access policy card
-Controls may include:
-- auto-lock timeout;
-- require re-authentication for reveal/export;
-- biometric/platform-auth preference where client supports it;
-- clipboard clearing policy;
-- offline access policy.
+创建完成后只在专门结果卡片中一次性展示 Share URL。`复制链接` 只复制链接，不复制底层 Secret。撤销立即生效；过期或撤销后不可重新启用。
 
-Changing security policy shows impact summary and may require current master/recovery authentication.
+## 4. 设备与访问
 
-## Shared security rules
-- Locking clears decrypted item state, open editors, generator output and revealed values.
-- Secret fields never participate in browser autofill unless explicitly intended and safe; use appropriate autocomplete semantics.
-- Generic notifications say `Password vault security action required`, not item names or domains.
-- Export/import and recovery actions are high-risk and require re-authentication plus explicit scope review.
-- 403/locked/404 states avoid confirming existence of a specific vault item to unauthorized callers.
+**路由：** `/console/passwords/devices`
+
+### 受信任 / 已授权设备表格
+
+字段：
+- 设备名称；
+- 平台/浏览器/App；
+- 首次授权时间；
+- 最近活动时间；
+- 缩短显示的 Key/Device Fingerprint；
+- 信任状态；
+- 操作。
+
+点击进入设备详情，展示 Session、授权范围、Key 元数据以及最近 Vault Access / Security Event。
+
+操作：
+- 重命名设备。
+- 撤销 Vault Access。
+- 撤销该设备全部 Session。
+
+撤销需要确认，并说明设备之后是否仍能通过重新认证再次授权。
+
+### 保险库访问策略卡片
+
+可配置项包括：
+- 自动锁定超时；
+- Reveal/Export 是否需要重新认证；
+- 客户端支持时的 Biometric/平台认证偏好；
+- 剪贴板清理策略；
+- 离线访问策略。
+
+修改安全策略时显示影响摘要；需要时要求当前 Master/Recovery Authentication。
+
+## 通用安全规则
+- 锁定时清除所有解密条目状态、打开的编辑器、生成器输出和 Reveal 值。
+- Secret 字段默认不参与浏览器 Autofill，除非该字段明确设计为安全且需要 Autofill；正确设置 autocomplete 语义。
+- 通用通知只允许出现类似 `密码保险库需要安全操作` 的文案，不得包含条目名称或域名。
+- Export/Import/Recovery 都属于高风险操作，需要重新认证并明确审阅范围。
+- 403/Locked/404 状态不得向未授权调用方确认某个具体 Vault Item 是否存在。

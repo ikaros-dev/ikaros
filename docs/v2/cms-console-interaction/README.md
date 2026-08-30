@@ -1,227 +1,229 @@
-# Ikaros V2 CMS Console Interaction Specification
+# Ikaros V2 CMS Console 交互规格
 
-> Status: Draft
+> 状态：草案
 >
-> This directory is the implementation source of truth for the Ikaros V2 CMS Console page structure and interaction behavior. The HTML/JS prototype under `docs/v2/prototypes/draft` is exploratory historical material only.
+> 本目录是 Ikaros V2 CMS Console 页面结构与交互行为的实现基线。`docs/v2/prototypes/draft` 下的 HTML/JS 原型仅作为探索阶段的历史参考，不再作为主要交互设计依据。
 
-## 1. Purpose
+## 1. 文档目的
 
-This specification describes the CMS Console without relying on visual mockups. Every implementation should be derivable from the Markdown documents in this directory: what appears in each page region, which fields are visible, which Material Design 3 component is used, what happens when the user interacts with it, and how loading, empty, error, permission, validation, destructive, and background-task states behave.
+本规格不依赖视觉原型图，直接使用 Markdown 描述 CMS Console。前端实现应能够从本目录文档中明确推导出：每个页面区域放置什么内容、展示哪些字段、使用哪一种 Material Design 3 组件、用户操作组件后发生什么，以及加载、空数据、错误、无权限、校验失败、危险操作和后台任务等状态如何表现。
 
-The Console follows the V2 PRD principles: Resource-centric information architecture, Attachment/Blob separation, HTTP-first capabilities, user-owned metadata, explicit lifecycle semantics, composable permissions, and subsystem boundaries.
+Console 遵循 V2 PRD 的核心原则：以 Resource 为中心的信息架构、Attachment 与 Blob 分离、HTTP-first、用户人工元数据优先、明确的生命周期语义、可组合权限以及清晰的子系统边界。
 
-## 2. Global visual language
+## 2. 全局视觉与组件语言
 
-The Console uses **Material Design 3 (M3)** consistently.
+Console 全局统一使用 **Material Design 3（M3）**。
 
-- Desktop-first administration experience with responsive tablet/mobile fallback.
-- Use M3 Navigation Drawer, Top App Bar, Cards, Data Tables, Tabs, Chips, Buttons, Icon Buttons, Menus, Dialogs, Bottom Sheets, Snackbars, Tooltips, Text Fields, Selects, Switches, Checkboxes, Radio Buttons, Progress Indicators, Banners and Empty States.
-- Do not invent subsystem-specific component styles when an M3 component already expresses the state.
-- Dense information pages may use compact density, but touch targets remain at least 44×44 CSS px.
-- Primary action: Filled Button. Secondary action: Filled Tonal or Outlined Button. Low-emphasis action: Text Button/Icon Button.
-- Destructive actions use error color and always require confirmation when data loss, permission revocation, key rotation, session termination, restore overwrite, or permanent deletion is possible.
+- 以桌面端后台管理体验为主要优化目标，同时提供平板和移动端响应式降级。
+- 优先使用 M3 Navigation Drawer、Top App Bar、Card、Data Table、Tab、Chip、Button、Icon Button、Menu、Dialog、Bottom Sheet、Snackbar、Tooltip、Text Field、Select、Switch、Checkbox、Radio Button、Progress Indicator、Banner、Empty State 等标准组件。
+- 当 M3 已有能够表达某种状态的组件时，不为单独子系统发明新的私有组件样式。
+- 高信息密度页面允许使用紧凑密度，但可点击区域不得小于 44×44 CSS px。
+- 主操作使用 Filled Button；次级操作使用 Filled Tonal Button 或 Outlined Button；低强调操作使用 Text Button 或 Icon Button。
+- 删除、永久清理、撤销权限、轮换密钥、终止会话、覆盖恢复等可能造成不可逆后果的操作使用 Error 色，并必须经过确认。
 
-## 3. Application shell
+## 3. 应用整体壳层
 
-### 3.1 Permanent left navigation drawer
+### 3.1 左侧常驻导航抽屉
 
-Desktop width: 280 px expanded. On smaller desktop widths it may collapse to a rail; tablet/mobile uses modal navigation drawer.
+桌面端展开宽度为 280 px。较窄桌面可以折叠为 Navigation Rail；平板和移动端使用 Modal Navigation Drawer。
 
-Top-to-bottom regions:
+从上到下分为以下区域：
 
-1. **Product identity row**
-   - Ikaros mark.
-   - Text `Ikaros Console`.
-   - Optional environment chip such as `Production`, `Staging`, `Local`.
-   - Clicking product identity navigates to `/console/dashboard`.
-2. **Global quick actions**
-   - Search icon/button opens global search.
-   - Create button opens the global create menu when the current permission set has creatable resource types.
-3. **Subsystem navigation groups**
-   - Every menu group corresponds to exactly one subsystem directory in this specification.
-   - **All subsystem groups are collapsed by default on a new browser/session state.**
-   - Clicking a group header toggles only that group.
-   - Group expansion state is persisted locally per browser/user and restored on later visits.
-   - Entering a page from a deep link automatically expands its parent group so the active page is visible.
-   - Expanding one group does not automatically collapse another; users may keep multiple groups open.
-   - Group header shows icon, label and chevron. It is not itself a page unless explicitly documented.
-   - Current page uses the M3 navigation active indicator.
-   - Menu entries hidden by permission are not rendered. A direct URL without permission shows the standard 403 page.
-4. **Bottom utilities**
-   - Documentation link.
-   - Theme selector (System / Light / Dark).
-   - User avatar/menu.
+1. **产品标识区**
+   - Ikaros 标识。
+   - 文本 `Ikaros Console`。
+   - 可选环境 Chip，例如 `生产环境`、`预发布`、`本地`。
+   - 点击产品标识进入 `/console/dashboard`。
+2. **全局快捷操作区**
+   - 搜索按钮：打开全局搜索。
+   - 新建按钮：当前用户存在可创建的 Resource 类型时，打开全局创建菜单。
+3. **子系统导航分组**
+   - 每一个菜单分组严格对应本交互规格中的一个子系统目录。
+   - **新的浏览器/会话状态下，所有子系统菜单默认收起。**
+   - 点击分组标题只切换当前分组的展开/收起状态。
+   - 分组展开状态按“用户 + 浏览器”保存在本地，后续访问时恢复。
+   - 通过深链接直接进入某个页面时，自动展开该页面所属分组，使当前菜单项可见。
+   - 展开一个分组时不自动关闭其他分组，允许多个分组同时展开。
+   - 分组标题包含图标、名称和展开箭头。除非子系统文档特别声明，否则分组标题本身不对应页面。
+   - 当前页面使用 M3 Navigation Active Indicator 标记。
+   - 无权限的菜单项不渲染；用户直接访问无权限 URL 时展示统一 403 页面。
+4. **底部工具区**
+   - 文档入口。
+   - 主题选择器：跟随系统 / 浅色 / 深色。
+   - 当前用户头像与菜单。
 
-### 3.2 Top app bar
+### 3.2 顶部应用栏
 
-Height follows M3 medium/compact desktop guidance depending on page density.
+高度根据页面信息密度采用 M3 的 Medium 或 Compact 桌面规范。
 
-Left region:
-- Optional drawer/rail toggle.
-- Breadcrumb: `Subsystem / Page / Detail` where applicable.
+左侧区域：
+- 可选 Navigation Drawer / Rail 切换按钮。
+- 面包屑：存在详情层级时使用 `子系统 / 页面 / 详情`。
 
-Center/flexible region:
-- Page title is normally rendered in page body, not duplicated in the bar.
+中间自适应区域：
+- 页面 H1 默认放在页面正文标题区，不在 Top App Bar 中重复显示。
 
-Right region:
-- Background-task indicator with running count.
-- Notification icon with unread badge.
-- Help icon when the page has subsystem documentation.
-- User avatar.
+右侧区域：
+- 后台任务图标，并显示正在运行的任务数量。
+- 通知图标，并显示未读 Badge。
+- 当前页面存在对应子系统文档时显示帮助图标。
+- 用户头像。
 
-Interactions:
-- Background-task indicator opens a right-side drawer containing running/recent tasks; clicking a task navigates to its owning subsystem detail when available.
-- Notification icon opens notification center preview; `View all` navigates to the full notification page.
-- Avatar menu contains profile, security/session shortcut, appearance, language, and sign out.
+交互规则：
+- 点击后台任务图标打开右侧 Drawer，展示正在运行和最近完成的后台任务；点击任务后，在存在业务详情页时跳转到所属子系统详情，而不是只展示一个不透明任务 ID。
+- 点击通知图标打开通知预览；点击 `查看全部` 进入完整通知中心。
+- 头像菜单包含个人资料、安全/会话快捷入口、外观、语言和退出登录。
 
-## 4. Standard page anatomy
+## 4. 标准页面结构
 
-Unless a page explicitly overrides it, render regions in this order:
+除非子系统页面明确覆盖，页面区域按以下顺序排列：
 
-1. **Breadcrumb row**.
-2. **Page header**
-   - H1 title.
-   - One-sentence scope description.
-   - Optional status chips.
-   - Primary and secondary actions aligned right on desktop, stacked under title on mobile.
-3. **Context / KPI cards** when the page needs at-a-glance operational information.
-4. **Filter/search toolbar**.
-5. **Primary content** such as data table, cards, editor, chart, calendar, kanban, tree, or detail grid.
-6. **Pagination / infinite loading controls** where required.
-7. **Context drawer or dialog** for create/edit/inspect workflows that should not lose table context.
+1. **面包屑区域**。
+2. **页面标题区**
+   - H1 标题。
+   - 一句说明当前页面职责的副标题。
+   - 可选状态 Chip。
+   - 桌面端主/次操作靠右排列；移动端移动到标题下方纵向排列或收入 Overflow Menu。
+3. **上下文 / KPI 卡片区**：需要快速了解状态的页面才显示。
+4. **搜索 / 筛选工具栏**。
+5. **主内容区域**：Data Table、Card、Editor、Chart、Calendar、Kanban、Tree 或详情 Grid 等。
+6. **分页 / 无限加载控制区**。
+7. **上下文 Drawer 或 Dialog**：用于不应丢失当前列表上下文的新建、编辑和查看流程。
 
-## 5. Common component interaction rules
+## 5. 通用组件交互规则
 
-### 5.1 Search fields
+### 5.1 搜索框
 
-- Leading search icon; clear button appears when non-empty.
-- Enter executes immediately.
-- For server-backed lists, typing debounces for 300 ms if live search is enabled; otherwise explicit Enter/Search button is used.
-- Query is reflected in URL parameters for shareable list state unless the query contains private decrypted content.
-- Clearing restores unfiltered list without full page reload.
+- 左侧显示搜索图标；存在输入内容时右侧显示清空按钮。
+- Enter 立即执行搜索。
+- 服务端列表启用实时搜索时使用 300 ms Debounce；未启用实时搜索时使用 Enter 或显式 `搜索` 按钮。
+- 除解密后的私密查询外，可分享的列表搜索条件同步到 URL Query 参数。
+- 清空搜索后直接恢复未搜索列表，不进行整页刷新。
 
-### 5.2 Filter chips and advanced filters
+### 5.2 Filter Chip 与高级筛选
 
-- Common high-frequency filters use Filter Chips.
-- `More filters` opens a side sheet containing selects, date/time ranges, numeric ranges and switches.
-- Applied advanced-filter count appears as a badge.
-- `Reset` restores documented defaults.
-- Filters that materially change URL-addressable list state persist in query parameters.
+- 高频筛选项使用 Filter Chip。
+- `更多筛选` 打开右侧 Side Sheet，放置 Select、日期时间范围、数值范围和 Switch 等低频条件。
+- 已启用高级筛选数量通过 Badge 显示。
+- `重置` 恢复该页面文档定义的默认条件。
+- 需要支持复制链接/浏览器返回的筛选状态应同步到 URL Query 参数。
 
-### 5.3 Data tables
+### 5.3 Data Table
 
-- Header row remains sticky when the table scrolls vertically.
-- Sortable column header toggles ascending → descending → none.
-- Selection checkboxes appear only when bulk actions are available.
-- Bulk action bar replaces/appears above the normal toolbar after at least one row is selected.
-- Row click opens detail only when it does not conflict with text selection; explicit overflow menu remains available.
-- Overflow menu contains row-specific actions and is permission-aware.
-- Horizontal overflow must scroll; columns must not silently disappear without a responsive alternative.
-- User-customizable column visibility may be stored locally when documented by that page.
+- 表格纵向滚动时表头保持 Sticky。
+- 可排序列点击表头时按“升序 → 降序 → 默认/无排序”循环。
+- 只有存在批量操作时才展示行选择 Checkbox。
+- 选择至少一行后，在普通工具栏上方或原位置显示批量操作栏。
+- 行点击可以打开详情，但不得干扰文本选择；始终保留显式 Overflow Menu。
+- Overflow Menu 根据当前行和用户权限动态展示可用操作。
+- 宽表格必须支持水平滚动；不得在没有响应式替代方案时静默隐藏列。
+- 页面明确支持时，可以把用户自定义列显示状态保存在本地。
 
-### 5.4 Forms
+### 5.4 表单
 
-- Required fields show required semantics, not only color.
-- Validate on blur for field-level validation; validate all on submit.
-- Server validation errors map back to fields when possible and also appear in an error summary banner.
-- `Save` is disabled only when submission is impossible (e.g. required field empty) or request is in flight; do not disable merely because no changes are present unless a separate `No changes` state is obvious.
-- Unsaved changes trigger navigation confirmation when leaving the page/drawer/dialog.
-- Secrets are masked by default and never echoed back after save unless the backend explicitly supports retrieval.
+- 必填字段必须使用语义和文字/符号明确表达，不能只依赖颜色。
+- 字段级校验在 Blur 时执行；提交时执行完整校验。
+- 服务端字段校验错误尽可能回填到对应字段，同时在表单顶部显示错误汇总 Banner。
+- `保存` 仅在提交不可能完成（例如必填字段为空）或请求进行中时禁用；不要仅因为“当前没有变更”而无提示地禁用。
+- 页面、Drawer 或 Dialog 中存在未保存修改时，离开前弹出确认。
+- Secret 字段默认遮罩，保存后不得由前端再次展示明文，除非后端明确支持安全读取流程。
 
-### 5.5 Dialogs and side sheets
+### 5.5 Dialog 与 Side Sheet
 
-Use Dialog for focused confirmation or short forms. Use right-side sheet/drawer for medium-complexity create/edit/inspect tasks that benefit from retaining list context. Full-page editor is used for complex resource editors, document editors, permission matrices, automation builders, and security recovery flows.
+- 短表单和集中确认使用 Dialog。
+- 需要保留当前列表上下文的中等复杂度新建/编辑/查看操作使用右侧 Side Sheet / Drawer。
+- Resource 复杂编辑器、文档编辑器、权限矩阵、自动化规则构建器和安全恢复流程使用独立完整页面。
 
-### 5.6 Feedback
+### 5.6 操作反馈
 
-- Successful lightweight mutation: Snackbar, optionally with `Undo` for reversible actions.
-- Validation failure: inline field errors + error summary.
-- Background operation: progress indicator and background-task entry; the user may leave the page.
-- Blocking operation: modal progress only when leaving would be unsafe.
-- Error Snackbar includes `Retry` only when retry is idempotent/safe.
+- 轻量成功操作：Snackbar；可撤销操作可附带 `撤销`。
+- 校验失败：字段内错误 + 顶部错误汇总。
+- 后台操作：显示 Progress Indicator，同时写入后台任务中心；允许用户离开当前页面。
+- 阻塞操作：只有在用户离开会造成不安全状态时才使用 Modal Progress。
+- Error Snackbar 仅在重试具有幂等性或明确安全时显示 `重试`。
 
-### 5.7 Loading, empty and error states
+### 5.7 加载、空数据和错误状态
 
-Every primary page must implement:
+每一个主页面都必须实现：
 
-- Initial loading skeleton that preserves approximate layout.
-- Refresh/loading indicator for subsequent fetches without blanking existing data.
-- Empty state with explanation and a relevant primary action when the user can create/import data.
-- Filtered-empty state with `Clear filters` action.
-- Recoverable error state with retry.
-- 403 permission state with requested capability and navigation back.
-- 404 detail state when the entity no longer exists.
+- 首次加载 Skeleton，尽量保持最终页面的大致布局，避免大幅跳动。
+- 后续刷新时保留已有数据，只显示刷新指示，不清空整个页面。
+- 真正无数据时显示 Empty State；用户具备创建/导入权限时提供相关主操作。
+- 因筛选条件无结果时显示独立的“筛选后无结果”状态和 `清除筛选`。
+- 可恢复错误提供 `重试`。
+- 403 页面说明缺失的能力/权限，并提供返回入口。
+- 详情实体已不存在时显示标准 404 详情状态。
 
-### 5.8 Destructive confirmations
+### 5.8 危险操作确认
 
-Confirmation dialog contains:
-- exact entity name/count;
-- consequence in plain language;
-- whether operation is reversible;
-- affected dependent objects when relevant;
-- destructive button label that names the action (`Delete permanently`, `Revoke session`, `Rotate key`).
+确认 Dialog 必须包含：
+- 准确的实体名称或实体数量；
+- 用普通语言说明操作后果；
+- 是否可恢复；
+- 必要时列出受影响的依赖对象；
+- 危险按钮必须直接写明动作，例如 `永久删除`、`撤销会话`、`轮换密钥`，不得仅写 `确认`。
 
-For irreversible high-risk actions, require typed confirmation or re-authentication as specified by the subsystem.
+不可逆的高风险操作按子系统要求增加输入实体名称/`DELETE` 或重新认证。
 
-## 6. Responsive behavior
+## 6. 响应式规则
 
-- ≥ 1280 px: permanent expanded navigation drawer, multi-column page layouts.
-- 960–1279 px: navigation rail or compact drawer; two-column layouts collapse where needed.
-- 600–959 px: modal drawer; tables may use horizontal scrolling; detail side panels become full-width sheets.
-- < 600 px: single-column layout; header actions move into overflow/stack; complex tables offer card/list representation only when documented.
-- Console remains functional on mobile but desktop is the optimization target.
+- ≥ 1280 px：常驻展开 Navigation Drawer，多栏页面布局。
+- 960–1279 px：Navigation Rail 或紧凑 Drawer；按需要把两栏布局折叠。
+- 600–959 px：Modal Drawer；表格允许水平滚动；详情侧栏改为全宽 Sheet。
+- < 600 px：单栏布局；标题区操作纵向堆叠或收入 Overflow Menu；复杂表格只有在子系统文档明确设计卡片/列表替代视图时才切换。
+- 移动端保持功能可用，但 Console 的主要优化目标仍是桌面端。
 
-## 7. Accessibility and keyboard behavior
+## 7. 可访问性与键盘交互
 
-- Logical tab order follows visual reading order.
-- Every icon-only action has tooltip and accessible name.
-- Dialogs trap focus and restore focus to trigger on close.
-- Escape closes non-destructive transient surfaces unless a save/critical operation is active.
-- Enter submits simple forms; Ctrl/Cmd+Enter may submit editors when documented.
-- Use semantic status text in addition to color.
-- Charts provide textual summaries/table alternatives for essential values.
+- Tab 顺序遵循视觉阅读顺序。
+- 所有仅图标操作必须具有 Tooltip 和 Accessible Name。
+- Dialog 打开后锁定焦点范围，关闭时恢复到触发元素。
+- 非危险临时界面可用 Esc 关闭；保存/高风险流程执行中不得通过 Esc 意外中断。
+- 简单表单 Enter 提交；编辑器按页面说明可使用 Ctrl/Cmd+Enter 提交。
+- 状态必须同时使用文字表达，不能只依赖颜色。
+- 关键图表必须提供文字摘要或数据表替代。
 
-## 8. Navigation information architecture
+## 8. 导航信息架构
 
-| Subsystem | Directory | Pages |
+| 子系统 | 目录 | 页面 |
 |---|---|---|
-| Workbench | `workbench/` | Dashboard, Global Search, My Activity & Favorites |
-| Content & Creation | `content-creation/` | Unified Resource Library, Collections/Tags/Relations, Articles & Documents, Media Consumption, Sharing & Collaboration |
-| Attachment & Storage | `attachment-storage/` | Attachments & Blobs, Persistent Storage Tiers, Cache & Downloads, Archive/Restore/Trash, Backup & Restore |
-| Productivity & Planning | `productivity-planning/` | Inbox & Today, Projects & Tasks, Calendar & Time Blocks, Goals & OKR, Habits/Focus/Review |
-| Personal Finance | `personal-finance/` | Ledger Overview, Accounts, Transactions, Budgets & Recurring Items, Reconciliation & Import |
-| Private Notes | `private-notes/` | Vault, Versions & Sync Conflicts, Recovery & Export |
-| Password Manager | `password-manager/` | Password Vault, Generator & Item Editor, Health & Secure Send, Devices & Access |
-| AI Intelligence | `ai-intelligence/` | Assistant, Models & Providers, Personas, Context/Privacy/Memory, Jobs/Trace/Usage |
-| Data Analytics | `data-analytics/` | Personal Overview, Content, Storage, Productivity, System History, Metrics Catalog, Reports & Rebuild |
-| Integration & Automation | `integration-automation/` | Automation Rules, Executions & Traces, Events & Failure Queue, Import & Sync, Plugins & Connectors |
-| Identity & Security | `identity-security/` | Users & Roles, Permission Matrix, Active Sessions, Authentication/Keys/Recovery |
-| Platform Configuration | `platform-configuration/` | Parameters, Dictionaries, Menus |
-| Communications & Audit | `communications-audit/` | Announcements, Notification Center & Delivery, Audit & Security Events |
-| System Operations | `system-operations/` | System Health & Alerts, Scheduled Jobs, Background Tasks |
+| 工作台 | `workbench/` | 概览、全局搜索、我的活动与收藏 |
+| 内容与创作 | `content-creation/` | 统一资源库、集合/标签/关系、文章与文档、媒体消费、分享与协作 |
+| 附件与存储 | `attachment-storage/` | 附件与 Blob、持久化存储层、缓存与我的下载、归档/恢复/回收站、备份与恢复 |
+| 效率与计划 | `productivity-planning/` | 收集箱与今天、项目与任务、日历与时间块、目标与 OKR、习惯/专注/复盘 |
+| 个人记账 | `personal-finance/` | 账本总览、账户、交易、预算与周期账、对账与导入 |
+| 私密笔记 | `private-notes/` | 保险库、版本与同步冲突、恢复与导出 |
+| 密码管理 | `password-manager/` | 密码保险库、生成器与条目编辑、健康与安全发送、设备与访问 |
+| AI 智能 | `ai-intelligence/` | 助手、模型与提供方、人格、上下文/隐私/记忆、作业/Trace/用量 |
+| 数据分析 | `data-analytics/` | 个人概览、内容分析、存储分析、效率分析、系统历史、指标目录、报表与重建 |
+| 集成与自动化 | `integration-automation/` | 自动化规则、执行记录与 Trace、事件与失败队列、导入与同步、插件与连接器 |
+| 身份与安全 | `identity-security/` | 用户与角色、权限矩阵、活跃会话、认证/密钥/恢复 |
+| 平台配置 | `platform-configuration/` | 参数、字典、菜单 |
+| 沟通与审计 | `communications-audit/` | 公告、通知中心与投递、审计与安全事件 |
+| 系统运维 | `system-operations/` | 系统健康与告警、定时任务、后台任务 |
 
-## 9. Cross-subsystem deep-link rules
+## 9. 跨子系统深链接规则
 
-- Resource references open Content & Creation resource detail.
-- Attachment/Blob references open Attachment & Storage detail.
-- User/session references open Identity & Security detail if authorized.
-- Task/execution/background-job references open the subsystem that owns the job, not a generic opaque status page.
-- Audit entries may link to referenced business entities but never expose fields the current user cannot read.
-- Private Notes and Password Manager links never reveal decrypted titles/content in URL query strings, analytics events, browser history labels, or notification previews.
+- Resource 引用进入“内容与创作”的 Resource 详情。
+- Attachment / Blob 引用进入“附件与存储”详情。
+- 用户/会话引用在有权限时进入“身份与安全”详情。
+- Task、Execution、后台任务等引用优先进入任务所属业务子系统，而不是统一跳到一个没有业务上下文的状态页。
+- 审计记录可以链接关联业务实体，但不得展示当前用户无权读取的字段。
+- 私密笔记和密码管理的 URL Query、分析事件、浏览器历史标题和通知预览中不得出现解密后的标题或内容。
 
-## 10. Document conventions for subsystem specs
+## 10. 子系统规格文档约定
 
-Each subsystem document defines every page using these dimensions:
+每个子系统文档从以下维度定义页面：
 
-- Route and access capability.
-- Page goal and default state.
-- Header actions.
-- Exact page regions and component types.
-- Visible fields/columns/cards.
-- Component-level interaction logic.
-- Create/edit/detail workflows.
-- Validation and destructive behavior.
-- Loading/empty/error/permission states.
-- Cross-subsystem navigation.
+- 路由和访问能力。
+- 页面目标与默认状态。
+- 标题区操作。
+- 精确的页面区域和组件类型。
+- 可见字段、表格列和卡片。
+- 组件级交互逻辑。
+- 新建、编辑和详情流程。
+- 校验和危险操作规则。
+- 加载、空数据、错误和权限状态。
+- 跨子系统导航。
 
-When this root document and a subsystem document conflict, the subsystem document wins only for that page-specific behavior; global safety, accessibility, and permission rules still apply.
+当根文档和子系统文档存在冲突时，子系统文档只对该页面的特定行为具有更高优先级；全局安全、可访问性和权限规则仍然有效。

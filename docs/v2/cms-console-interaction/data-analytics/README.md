@@ -1,149 +1,157 @@
-# Data Analytics — CMS Console Interaction Specification
+# 数据分析 — CMS Console 交互规格
 
-## 1. Personal Overview
+## 1. 个人概览
 
-**Route:** `/console/analytics`
+**路由：** `/console/analytics`
 
-### Header
-- Title `Personal Analytics`.
-- Period selector with presets: 7 days, 30 days, 90 days, year, custom.
-- Compare toggle: previous period / previous year when data supports it.
-- `Export report` secondary action.
+### 页面标题区
+- 标题：`个人数据概览`。
+- 周期选择器预设：7 天、30 天、90 天、本年、自定义。
+- 对比 Switch：支持时可选择上一周期 / 去年同期。
+- 次操作：`导出报表`。
 
-### KPI cards
-Default cards:
-- resources added;
-- consumption time/progress events;
-- tasks completed;
-- focus time;
-- storage growth;
-- automation/sync activity.
+### KPI 卡片
 
-Each card shows current value, comparison delta and accessible textual interpretation. Clicking a card navigates to the owning analytics page filtered to the same period.
+默认卡片：
+- 新增 Resource；
+- 消费时长/进度事件；
+- 已完成任务；
+- 专注时长；
+- 存储增长；
+- 自动化/同步活动。
 
-### Charts
-- Activity over time.
-- Content type distribution.
-- Completion/progress trend.
-- Storage growth.
+每张卡显示当前值、对比变化值和可访问的文字解释。点击卡片跳转到对应分析页面，并继承当前周期条件。
 
-Charts provide legend toggles, tooltip/focus values, and data-table alternative. Hidden series remain hidden only for current view unless user saves dashboard preferences.
+### 图表
+- 活动趋势。
+- 内容类型分布。
+- 完成/进度趋势。
+- 存储增长。
 
-## 2. Content Analytics
+图表支持 Legend 开关、Hover/Focus 数值和 Data Table 替代。隐藏 Series 默认只对当前视图生效，除非用户显式保存 Dashboard 偏好。
 
-**Route:** `/console/analytics/content`
+## 2. 内容分析
 
-Filters: period, Resource type, collection, provider/source, tags, lifecycle, owner.
+**路由：** `/console/analytics/content`
 
-Cards: resources created, resources completed, favorites added, average progress, most active collection.
+筛选：周期、Resource 类型、Collection、Provider/Source、Tag、生命周期、Owner。
 
-Sections:
-- resource creation trend;
-- consumption by type;
-- top resources by activity;
-- metadata source/conflict trend;
-- collection growth.
+KPI：新增资源、完成资源、增加收藏、平均进度、最活跃 Collection。
 
-Top-resources table columns: resource, type, views/opens or domain activity count, progress/completion, last activity, favorite state. Row opens Content & Creation detail.
+区域：
+- Resource 创建趋势；
+- 按类型统计消费；
+- 活动量最高 Resource；
+- 元数据来源/冲突趋势；
+- Collection 增长。
 
-## 3. Storage Analytics
+Top Resource 表格列：Resource、类型、打开/查看或业务活动次数、进度/完成度、最近活动、收藏状态。点击行进入“内容与创作”详情。
 
-**Route:** `/console/analytics/storage`
+## 3. 存储分析
 
-Cards: persistent bytes, logical attachment bytes, dedup savings, cache bytes (visually and semantically separated), archive bytes, integrity failures.
+**路由：** `/console/analytics/storage`
 
-Charts:
-- persistent bytes over time by tier;
-- bytes by backend;
-- attachment MIME/type distribution;
-- archive/restore throughput;
-- cache hit/eviction trend.
+KPI：持久化字节数、Attachment 逻辑字节数、去重节省空间、Cache 字节数、Archive 字节数、完整性失败数。其中 Cache 必须与持久化存储在视觉和语义上明确区分。
 
-Tables:
-- largest Resources by logical attachment size;
-- largest Blobs;
-- backends by utilization;
-- integrity incidents.
+图表：
+- 按 Tier 展示持久化字节变化；
+- 按 Backend 展示字节占用；
+- Attachment MIME/类型分布；
+- 归档/恢复吞吐；
+- Cache 命中/Eviction 趋势。
 
-Clicking backend/blob navigates to Attachment & Storage details.
+表格：
+- 按逻辑 Attachment 大小排序的最大 Resource；
+- 最大 Blob；
+- Backend 使用率；
+- 完整性事故。
 
-## 4. Productivity Analytics
+点击 Backend/Blob 跳转到“附件与存储”对应详情。
 
-**Route:** `/console/analytics/planning`
+## 4. 效率分析
 
-Cards: planned tasks, completion rate, overdue rate, planned time, actual/focus time, habit completion.
+**路由：** `/console/analytics/planning`
 
-Charts:
-- completed tasks over time;
-- planned vs actual time;
-- projects by effort;
-- deadline performance;
-- focus session distribution.
+KPI：计划任务数、完成率、逾期率、计划时长、实际/专注时长、习惯完成率。
 
-Filter by project, task tag, goal and period. `View source tasks` navigates to Planning with matching filters.
+图表：
+- 已完成任务趋势；
+- 计划 vs 实际时长；
+- Project 投入分布；
+- Deadline 达成情况；
+- Focus Session 分布。
 
-## 5. System History
+支持按 Project、Task Tag、Goal、Period 筛选。`查看原始任务` 跳转到效率与计划页面，并继承对应筛选。
 
-**Route:** `/console/analytics/system`
+## 5. 系统历史
 
-This page contains operational historical metrics, not security audit events.
+**路由：** `/console/analytics/system`
 
-Cards: uptime percentage, request volume if collected, error rate, background job throughput, sync success rate, storage health incidents.
+该页面展示运维历史指标，不展示安全审计事件。
 
-Charts: CPU/memory where available, request latency, job duration, queue depth, DB/storage latency, connector availability.
+KPI：可用率、采集时的请求量、错误率、后台任务吞吐、同步成功率、存储健康事故。
 
-Metric collection gaps render as `No data` intervals, not zero values.
+图表：可用时展示 CPU、Memory、Request Latency、Job Duration、Queue Depth、DB/Storage Latency、Connector Availability。
 
-## 6. Metrics Catalog
+指标采集缺口必须显示为 `无数据` Gap，不能当作数值 0。
 
-**Route:** `/console/analytics/metrics`
+## 6. 指标目录
 
-### Table columns
-- metric key;
-- display name;
-- domain;
-- type (counter/gauge/histogram/derived);
-- unit;
-- dimensions;
-- retention;
-- status;
-- last sample;
-- actions.
+**路由：** `/console/analytics/metrics`
 
-Metric detail displays definition, formula for derived metrics, source events/tables, aggregation window, dimensions/cardinality warning, retention policy and example visualization.
+### 表格列
+- Metric Key；
+- 显示名称；
+- 业务域；
+- 类型：Counter/Gauge/Histogram/Derived；
+- 单位；
+- Dimension；
+- Retention；
+- 状态；
+- 最近 Sample；
+- 操作。
 
-`Preview` opens time-series preview for selected period. Metric definitions that are system-owned are read-only; custom derived metrics, when supported, use formula editor with validation and sample evaluation.
+Metric 详情展示：定义、Derived Metric 的公式、来源 Event/Table、Aggregation Window、Dimension/Cardinality 警告、Retention Policy、示例可视化。
 
-## 7. Reports & Rebuild
+`预览` 打开所选周期的 Time Series。系统内置 Metric Definition 只读；支持自定义 Derived Metric 时使用带校验和 Sample Evaluation 的公式编辑器。
 
-**Route:** `/console/analytics/reports`
+## 7. 报表与重建
 
-Tabs: Saved Reports, Scheduled Reports, Rebuild Jobs.
+**路由：** `/console/analytics/reports`
 
-### Saved Reports
-Columns: name, owner, scope, period rule, widgets/metrics count, updated, actions.
+Tabs：`已保存报表`、`定时报表`、`重建任务`。
 
-Report editor:
-- name;
-- description;
-- default period;
-- filters;
-- widget list with metric, visualization, grouping, ordering;
-- preview.
+### 已保存报表
 
-Drag reorders widgets. Invalid metric/filter combinations show inline errors before save.
+列：名称、Owner、Scope、周期规则、Widget/Metric 数量、更新时间、操作。
 
-### Scheduled Reports
-Columns: report, cadence, recipients/destination, next run, last run, status. Editor supports schedule, timezone, output format and delivery target. Private domain data cannot be added unless report policy explicitly permits it.
+报表编辑器：
+- 名称；
+- 描述；
+- 默认周期；
+- 筛选；
+- Widget 列表，每项包含 Metric、Visualization、Grouping、Ordering；
+- 预览。
 
-### Rebuild Jobs
-Used for rebuilding aggregates/materialized statistics after configuration/schema changes.
+拖拽调整 Widget 顺序。Metric/Filter 组合无效时在保存前显示 Inline Error。
 
-Columns: job ID, scope, time range, state, progress, rows/events processed, started, duration, initiator. `Start rebuild` dialog requires scope and date range and estimates impact where possible. Rebuild is asynchronous and does not blank existing analytics; affected dashboards may show `Rebuilding — data may be stale` banner.
+### 定时报表
 
-## Shared analytics rules
-- Always show timezone and aggregation granularity when interpretation depends on them.
-- Comparison deltas distinguish percentage points from percent change.
-- Missing data, suppressed private data and true zero are visually/textually distinct.
-- Aggregation must respect current user's authorization; cross-user/admin analytics pages must explicitly state scope.
-- Exports include applied filters, period, timezone and generation timestamp in metadata.
+列：报表、周期、Recipient/Destination、下次运行、上次运行、状态。
+
+编辑器配置 Schedule、Timezone、输出格式、Delivery Target。除非报表 Policy 明确允许，不能添加 Private Domain Data。
+
+### 重建任务
+
+用于配置/Schema 修改后重建 Aggregate/Materialized Statistics。
+
+列：Job ID、Scope、时间范围、状态、进度、已处理 Row/Event、开始时间、耗时、发起人。
+
+`开始重建` Dialog 要求选择范围和日期，并尽可能估算影响。重建异步执行，不能把现有分析页面清空；受影响 Dashboard 显示 `正在重建 — 数据可能暂时过期` Banner。
+
+## 通用分析规则
+- 解释结果依赖时区/聚合粒度时必须明确展示。
+- 对比变化需要区分“百分点”和“百分比变化”。
+- 无数据、因隐私被隐藏的数据、真实的 0 三者必须视觉和文字上明确区分。
+- Aggregation 必须遵守当前用户权限；管理员/跨用户分析必须明确说明统计 Scope。
+- 导出文件元数据中包含当前筛选、周期、时区和生成时间。

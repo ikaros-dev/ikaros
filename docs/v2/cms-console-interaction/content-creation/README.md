@@ -1,194 +1,208 @@
-# Content & Creation — CMS Console Interaction Specification
+# 内容与创作 — CMS Console 交互规格
 
-## 1. Unified Resource Library
+## 1. 统一资源库
 
-**Route:** `/console/resources`
+**路由：** `/console/resources`
 
-### Header
-- H1 `Unified Resource Library`.
-- Subtitle explains that Resource represents logical content, not physical storage.
-- Primary `Create resource` button opens type picker.
-- Secondary `Import` button opens import workflow.
+### 页面标题区
+- H1：`统一资源库`。
+- 副标题说明 Resource 表示逻辑内容，而不是物理存储位置。
+- 主操作 `创建资源`：打开 Resource 类型选择器。
+- 次操作 `导入`：进入导入流程。
 
-### KPI row
-Cards: total resources, available, archived, in trash, metadata conflicts. Clicking a card applies the matching filter.
+### KPI 卡片行
 
-### Filter/search toolbar
-- Search text field.
-- Type Filter Chip with multi-select: anime, episode, film, video, manga, chapter, novel, music album, track, image, image collection, article, note, document, game, archive/other.
-- Lifecycle chip: Available, Archived, Trash.
-- Collection chip.
-- Favorite chip.
-- `More filters`: source/provider, external identity platform, tag, owner, created/updated ranges, progress state, attachment presence, metadata conflict state.
-- Sort selector: Updated desc default, Created, Title, Type, Progress.
+卡片：资源总数、正常可用、已归档、回收站、元数据冲突。点击卡片直接应用对应筛选条件。
 
-### Main data table
-Columns:
-1. selection checkbox;
-2. thumbnail/type icon;
-3. title + alternate title below;
-4. type chip;
-5. lifecycle/status chip;
-6. collection summary;
-7. primary external identity/provider;
-8. progress where relevant;
-9. metadata source/conflict indicator;
-10. updated time;
-11. favorite icon;
-12. overflow actions.
+### 搜索 / 筛选工具栏
+- 搜索 Text Field。
+- 类型 Filter Chip，多选：动画、剧集、电影、视频、漫画、章节、小说、音乐专辑、歌曲、图片、图片集、文章、笔记、文档、游戏、归档/其他。
+- 生命周期 Chip：正常、已归档、回收站。
+- Collection Chip。
+- 收藏 Chip。
+- `更多筛选`：来源/提供方、外部平台身份、Tag、所有者、创建/更新时间范围、进度状态、是否存在 Attachment、元数据冲突状态。
+- 排序：默认按更新时间倒序，可选创建时间、标题、类型、进度。
 
-Row interactions:
-- Clicking title/row opens `/console/resources/{id}`.
-- Favorite icon mutates without navigating.
-- Conflict icon opens Metadata tab and scrolls to conflict panel.
-- Overflow: Edit, Add to collection, Manage relations, Archive/Restore, Move to trash, Copy internal ID.
+### 主 Data Table
 
-Bulk actions:
-- Add to collection.
-- Add/remove tags.
-- Archive.
-- Move to trash.
-- Export metadata.
-- Re-run metadata resolution when permitted.
+列：
+1. 选择 Checkbox；
+2. 缩略图/类型图标；
+3. 标题，下方展示可选别名；
+4. 类型 Chip；
+5. 生命周期/状态 Chip；
+6. Collection 摘要；
+7. 主要外部身份/提供方；
+8. 适用时显示进度；
+9. 元数据来源/冲突指示；
+10. 更新时间；
+11. 收藏图标；
+12. Overflow 操作。
 
-### Resource detail page
-**Route:** `/console/resources/{id}`
+行交互：
+- 点击标题或行进入 `/console/resources/{id}`。
+- 点击收藏图标只修改收藏状态，不触发行导航。
+- 点击冲突图标直接进入 Metadata Tab，并滚动到冲突面板。
+- Overflow：编辑、加入 Collection、管理关系、归档/恢复、移入回收站、复制内部 ID。
 
-Header shows title, type chip, lifecycle chip, favorite toggle. Actions: Edit, Open/Play/Read when applicable, Share, overflow.
+批量操作：
+- 加入 Collection。
+- 添加/移除 Tag。
+- 归档。
+- 移入回收站。
+- 导出元数据。
+- 有权限时重新执行元数据解析。
 
-Tabs:
-- `Overview` default.
-- `Metadata`.
-- `Attachments`.
-- `Relations`.
-- `Collections & Tags`.
-- `Activity`.
-- Type-specific tab such as Episodes/Chapters/Tracks/Pages only when meaningful.
+### Resource 详情页
 
-Overview regions:
-- cover/poster card;
-- primary facts grid: internal ID, type, created, updated, owner, lifecycle;
-- description/summary;
-- progress/consumption card when applicable;
-- external identities list with platform, external ID, URL, sync status;
-- quick related-resources card.
+**路由：** `/console/resources/{id}`
 
-Metadata tab:
-- field-by-field rows with field name, effective value, source badge (`Manual`, `Provider`, `Scanner`, `Import`), lock/manual ownership indicator, last update.
-- conflicts show side-by-side candidate values with `Keep mine`, `Accept source`, `Edit manually`.
-- automated sync must never silently replace locked/manual fields.
+标题区展示标题、类型 Chip、生命周期 Chip、收藏按钮。操作：编辑、适用时的打开/播放/阅读、分享、Overflow。
 
-Attachments tab embeds the attachment relationship list but deep-links full management to Attachment & Storage.
+Tabs：
+- `概览`：默认。
+- `元数据`。
+- `附件`。
+- `关系`。
+- `集合与标签`。
+- `活动`。
+- 仅在业务有意义时显示类型专属 Tab，例如剧集、章节、歌曲、页面。
 
-Relations tab renders typed graph/list. Add relation dialog requires relation type, direction, target resource search, optional notes. Prevent self-relation and invalid relation types.
+概览区域：
+- 封面/海报卡片；
+- 基础信息 Grid：内部 ID、类型、创建时间、更新时间、所有者、生命周期；
+- 描述/简介；
+- 适用时展示消费/进度卡片；
+- 外部身份列表：平台、外部 ID、URL、同步状态；
+- 相关 Resource 快捷卡片。
 
-### Create/edit resource workflow
-Full-page or large side sheet depending on type complexity.
+元数据 Tab：
+- 按字段逐行展示：字段名、生效值、来源 Badge（`人工`、`提供方`、`扫描器`、`导入`）、人工归属/锁定标识、最近更新时间。
+- 存在冲突时并排展示候选值，并提供 `保留我的值`、`采用来源值`、`手工编辑`。
+- 自动同步不得静默覆盖已锁定或人工确认的字段。
 
-Common fields:
-- Resource type (required on create, immutable unless explicit migration exists).
-- Title (required).
-- Alternate title.
-- Summary/description.
-- Cover attachment selector.
-- Collections.
-- Tags.
-- External identities.
-- Type-specific fields.
+附件 Tab 内嵌 Resource 与 Attachment 的关系列表；复杂管理通过深链接进入“附件与存储”。
 
-Save validates required/type-specific fields. `Save and add attachments` may be offered after create.
+关系 Tab 展示有类型的关系 Graph/List。新增关系 Dialog 必填关系类型、方向、目标 Resource 搜索，可选备注；禁止自关联和不合法关系类型。
 
-## 2. Collections, Tags & Relations
+### 创建 / 编辑 Resource
 
-**Route:** `/console/collections`
+根据类型复杂度使用独立完整页面或大型 Side Sheet。
 
-Tabs: Collections, Tags, Relation Types/Explorer.
+通用字段：
+- Resource 类型：创建时必填；除非存在明确迁移能力，否则创建后不可直接修改。
+- 标题：必填。
+- 别名。
+- 简介/描述。
+- 封面 Attachment 选择器。
+- Collection。
+- Tag。
+- 外部身份。
+- 类型专属字段。
 
-### Collections tab
-Table columns: name, kind (`Manual`, `Dynamic`), resource count, owner, visibility, updated, actions.
+保存时执行通用和类型专属校验。创建成功后可提供 `保存并添加附件`。
 
-Create collection dialog fields:
-- name required;
-- description;
-- kind;
-- parent collection when hierarchy is supported;
-- visibility;
-- for Dynamic: rule builder.
+## 2. 集合、标签与关系
 
-Dynamic rule builder uses rows of Field / Operator / Value with AND/OR groups, live preview count, `Test rules` action. Invalid rules block save.
+**路由：** `/console/collections`
 
-Collection detail shows header + tabs Resources, Rules/Settings, Activity. Resources support drag ordering only for explicitly ordered manual collections.
+Tabs：`集合`、`标签`、`关系类型/关系浏览器`。
 
-### Tags tab
-Columns: tag name, namespace/type, usage count, color/visual token, updated. Actions: rename, merge, delete. Merge dialog chooses destination and previews affected resources. Delete warns how many assignments are removed.
+### Collection Tab
 
-### Relations explorer
-Source resource selector + relation type chips + optional target type. Main area shows either table or graph. Graph node click opens inspector; table remains available for accessibility and bulk editing.
+表格列：名称、类型（`手动` / `动态`）、Resource 数量、所有者、可见性、更新时间、操作。
 
-## 3. Articles & Documents
+新建 Collection Dialog 字段：
+- 名称：必填；
+- 描述；
+- 类型；
+- 支持层级时选择父 Collection；
+- 可见性；
+- Dynamic 类型显示规则构建器。
 
-**Route:** `/console/documents`
+动态规则构建器使用“字段 / 操作符 / 值”行，并支持 AND/OR 分组、实时预览命中数量和 `测试规则`。存在无效规则时禁止保存。
 
-List toolbar: search, content kind, status Draft/Published/Archived, author, tags, updated range. Table columns: title, kind, status, author, version, updated, published, actions.
+Collection 详情包含标题区和 `资源`、`规则/设置`、`活动` Tabs。只有明确支持顺序的手动 Collection 才允许拖拽排序。
 
-Primary `New` menu: Article, Document, Note-like public document types supported by the core model.
+### Tag Tab
 
-### Editor
-Full-page editor with:
-- top title field;
-- autosave state (`Saved`, `Saving…`, `Offline changes`, `Conflict`);
-- formatting toolbar / Markdown mode depending on chosen editor implementation;
-- center editing canvas;
-- right properties panel for status, slug/public identity if supported, tags, collection, cover, permissions, publication schedule;
-- bottom/version indicator.
+列：Tag 名称、命名空间/类型、使用数量、颜色/视觉 Token、更新时间。操作：重命名、合并、删除。
 
-Interactions:
-- Ctrl/Cmd+S forces save.
-- Publish opens confirmation/review dialog showing visibility and scheduled time.
-- Version history opens side sheet; selecting a version shows read-only diff/preview; restore creates a new version instead of deleting history.
-- Attachment insertion opens attachment picker/upload and creates explicit attachment relationship.
+合并 Dialog 选择目标 Tag，并预览受影响 Resource。删除前显示将移除多少条绑定关系。
 
-## 4. Media Consumption
+### 关系浏览器
 
-**Route:** `/console/media`
+顶部提供来源 Resource 选择器、关系类型 Chip、可选目标类型筛选。主区域可切换 Table / Graph。Graph 节点点击打开 Inspector；为了可访问性和批量编辑，始终保留 Table 视图。
 
-This is management-oriented consumption state, not a dedicated living-room player UI.
+## 3. 文章与文档
 
-Tabs: Continue, History, Playlists/Queues, Playback Settings.
+**路由：** `/console/documents`
 
-Continue cards show poster, title, episode/chapter/track context, progress bar, last activity, Resume.
+列表工具栏：搜索、内容类型、状态（草稿/已发布/已归档）、作者、Tag、更新时间范围。表格列：标题、类型、状态、作者、版本、更新时间、发布时间、操作。
 
-History table: resource, content position, device/client, started, completed state, last position, actions. `Remove from history` does not delete resource.
+主操作 `新建` 菜单：文章、文档，以及核心模型明确支持的公开笔记类内容。
 
-Playlist/queue detail: ordered rows with drag handles, resource, duration, availability, actions. Reordering persists after drop with snackbar confirmation.
+### 编辑器
 
-Playback settings expose server-supported defaults only; unsupported client-specific settings are not shown.
+使用完整页面：
+- 顶部标题字段；
+- 自动保存状态：`已保存`、`正在保存…`、`离线修改`、`存在冲突`；
+- 根据编辑器实现提供格式工具栏 / Markdown 模式；
+- 中间编辑 Canvas；
+- 右侧属性面板：状态、Slug/公开标识（如支持）、Tag、Collection、封面、权限、定时发布；
+- 底部/角落显示版本状态。
 
-## 5. Sharing & Collaboration
+交互：
+- Ctrl/Cmd+S 强制保存。
+- 发布前弹出确认/预览 Dialog，明确可见性和计划发布时间。
+- 版本历史通过 Side Sheet 打开；选择版本后展示只读 Diff/预览；恢复旧版本时创建新的当前版本，不删除历史。
+- 插入附件时打开 Attachment Picker/上传界面，并建立明确 Attachment 关系。
 
-**Route:** `/console/sharing`
+## 4. 媒体消费
 
-Tabs: Share Links, Rooms, Collaboration.
+**路由：** `/console/media`
 
-### Share Links
-Columns: target resource/collection, permission, expiry, access count, created by, status, actions.
+该页面用于管理消费状态，不定位为客厅式全屏播放器界面。
 
-Create share dialog:
-- target search;
-- permission: view, view+download, comment where supported;
-- expiry datetime required by default policy;
-- optional password;
-- access limit;
-- download switch;
-- optional note.
+Tabs：`继续`、`历史`、`播放列表/队列`、`播放设置`。
 
-After create, show one-time copyable URL/token surface. Revocation is immediate and requires confirmation. Expired/revoked links cannot be reactivated; create a new link.
+继续卡片展示海报、标题、剧集/章节/歌曲上下文、进度条、最近活动时间和 `继续`。
 
-### Rooms
-Columns: room name, media/queue, owner, member count, state, created/last activity. Detail shows members, roles, synchronized playback state, chat/event history where supported. Ending a room asks confirmation but does not alter underlying resources.
+历史表格：Resource、内容位置、设备/客户端、开始时间、是否完成、最后位置、操作。`从历史中移除` 只删除消费历史，不删除 Resource。
 
-### Collaboration
-Shows documents/resources with active collaborators, pending comments, presence status and permission. Permission changes use explicit role selector and create audit events.
+播放列表/队列详情：有序行，包含拖拽手柄、Resource、时长、可用状态、操作。拖拽结束后持久化顺序，并显示 Snackbar。
 
-## Shared states
-All list pages implement root-spec loading/empty/error states. Resource lifecycle operations must distinguish Archive, Trash and Permanent Delete. Permanent deletion is never placed directly in the primary row action; it is available only from trash/detail flows with high-risk confirmation.
+播放设置只展示服务端明确支持的默认项，不展示仅特定客户端支持、后端无法控制的设置。
+
+## 5. 分享与协作
+
+**路由：** `/console/sharing`
+
+Tabs：`分享链接`、`Room`、`协作`。
+
+### 分享链接
+
+列：目标 Resource/Collection、权限、过期时间、访问次数、创建者、状态、操作。
+
+创建分享 Dialog：
+- 目标搜索；
+- 权限：查看、查看+下载、支持时的评论；
+- 默认策略要求过期时间；
+- 可选密码；
+- 访问次数上限；
+- 是否允许下载；
+- 可选备注。
+
+创建成功后展示一次性可复制 URL/Token。撤销立即生效并需要确认。已经过期或撤销的链接不可重新启用，只能创建新链接。
+
+### Room
+
+列：Room 名称、媒体/队列、房主、成员数、状态、创建时间/最近活动。详情展示成员、角色、同步播放状态，以及支持时的聊天/事件历史。结束 Room 需要确认，但不得修改底层 Resource。
+
+### 协作
+
+展示存在活跃协作者的文档/Resource、待处理评论、在线状态和权限。权限修改使用明确 Role Selector，并产生审计事件。
+
+## 通用状态与生命周期规则
+
+所有列表页面实现根规格定义的加载、空数据和错误状态。Resource 生命周期必须明确区分“归档”“回收站”“永久删除”。永久删除不能直接放在普通列表行的主操作中，只能从回收站/详情流程进入，并使用高风险确认。

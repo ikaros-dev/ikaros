@@ -1,132 +1,139 @@
-# Platform Configuration — CMS Console Interaction Specification
+# 平台配置 — CMS Console 交互规格
 
-## 1. Parameters
+## 1. 参数
 
-**Route:** `/console/platform/parameters`
+**路由：** `/console/platform/parameters`
 
-### Header
-- Title `Parameters`.
-- Subtitle explains these are platform/runtime configuration values, not arbitrary database editing.
-- Search field.
-- Filter Chips: subsystem, scope, restart requirement, source (`Default`, `Config`, `Database`, `Environment`, `Effective override`).
-- Primary `Add custom parameter` only when backend supports extensible parameters.
+### 页面标题区
+- 标题：`参数`。
+- 副标题明确说明：这里管理的是平台/运行时配置，不是任意数据库字段编辑器。
+- 搜索框。
+- Filter Chip：子系统、Scope、是否需要重启、来源（`默认值`、`配置文件`、`数据库`、`环境变量`、`有效覆盖值`）。
+- 只有 Backend 支持扩展参数时才显示主操作 `添加自定义参数`。
 
-### Parameter table
-Columns:
-- key;
-- display name;
-- subsystem/group;
-- effective value;
-- source;
-- data type;
-- scope (`Global`, `User-default`, etc.);
-- restart-required indicator;
-- last changed;
-- actions.
+### 参数表格
 
-Sensitive values render `Configured`/masked state, never raw content.
+列：
+- Key；
+- 显示名称；
+- 子系统/分组；
+- Effective Value；
+- Source；
+- Data Type；
+- Scope，例如 `Global`、`User-default`；
+- 是否需要重启；
+- 最近修改时间；
+- 操作。
 
-### Parameter detail/edit sheet
-Fields:
-- key read-only for system parameters;
-- description;
-- current effective value;
-- configured override;
-- default value;
-- type and validation constraints;
-- source precedence explanation;
-- restart requirement;
-- affected subsystem/services.
+敏感值只显示 `已配置` / Masked State，不展示明文。
 
-Interactions:
-- Editing uses type-appropriate M3 control: Switch for boolean, numeric field for numbers, select for enums, textarea for structured text, secret field for credentials.
-- `Reset to default` removes override rather than writing a copy of the default value.
-- Save validates format and displays before/after diff.
-- If restart is required, success Snackbar/banner says `Saved — restart required` and links to relevant operation documentation/status; UI must not imply live application.
-- Environment-sourced immutable parameters show read-only explanation and where the value must be changed operationally without exposing secret environment content.
+### 参数详情 / 编辑 Side Sheet
 
-### Bulk configuration import/export
-If supported, use explicit actions in overflow. Import flow previews unknown keys, invalid values, restart-required changes and secret omissions before apply. Secrets are excluded from export by default.
+字段：
+- 系统参数的 Key 只读；
+- 描述；
+- 当前 Effective Value；
+- 当前配置 Override；
+- Default Value；
+- Type 与 Validation Constraint；
+- Source Precedence 说明；
+- Restart Requirement；
+- 受影响的 Subsystem/Service。
 
-## 2. Dictionaries
+交互：
+- 根据数据类型使用合适 M3 控件：Boolean 用 Switch，Number 用数字输入，Enum 用 Select，结构化文本用 Textarea，Credential 用 Secret Field。
+- `恢复默认值` 的语义是移除 Override，而不是把 Default Value 再复制写入一遍。
+- 保存前校验格式，并展示 Before/After Diff。
+- 如果修改需要重启，成功后的 Snackbar/Banner 明确显示 `已保存 — 需要重启后生效`，并链接到相关运维说明/状态；不得让用户误以为已经实时生效。
+- 来自 Environment 且运行时不可修改的参数显示 Read-only 说明，并告诉用户应该从哪个运维入口修改，但不得暴露 Secret Environment Value。
 
-**Route:** `/console/platform/dictionaries`
+### 批量配置导入 / 导出
 
-This page manages controlled platform dictionaries/enumerations that are explicitly designed to be runtime-configurable; it is not a generic SQL table editor.
+支持时放在 Overflow 中。导入前预览 Unknown Key、Invalid Value、需要重启的修改以及未包含 Secret 的项目，再允许 Apply。Secret 默认从 Export 中排除。
 
-### Master/detail layout
-Left panel/table: dictionary key, name, entry count, subsystem, system/custom, updated.
+## 2. 字典
 
-Selecting a dictionary shows detail header and entries table.
+**路由：** `/console/platform/dictionaries`
 
-Entry columns:
-- value/key;
-- display label;
-- optional localized labels indicator;
-- description;
-- sort order;
-- enabled;
-- system/custom;
-- usage count where available;
-- actions.
+该页面只管理产品明确设计为“运行时可配置”的受控 Dictionary/Enumeration，不是通用 SQL Table Editor。
 
-### Entry editor
-Fields: value/key required, default label required, localized labels, description, order, enabled, optional metadata/schema-defined fields.
+### Master / Detail 布局
 
-Interactions:
-- Drag handles reorder when ordering is meaningful; server persists explicit sort index after drop.
-- Disabling keeps existing references valid but removes entry from new-selection controls unless subsystem states otherwise.
-- Deleting an entry with references is blocked or requires a migration destination. Dialog shows reference count and `Replace with` selector.
-- System-owned entries may be read-only except label localization if explicitly supported.
+左侧列表：Dictionary Key、名称、Entry 数量、所属子系统、System/Custom、更新时间。
 
-## 3. Menus
+选择 Dictionary 后，右侧展示详情标题和 Entry Table。
 
-**Route:** `/console/platform/menus`
+Entry 列：
+- Value/Key；
+- Display Label；
+- 是否存在 Localized Label；
+- 描述；
+- Sort Order；
+- Enabled；
+- System/Custom；
+- 可用时显示引用数量；
+- 操作。
 
-This page manages configurable navigation entries only when V2 supports runtime/plugin menus. Core subsystem grouping rules from the root interaction specification remain authoritative.
+### Entry 编辑器
 
-### Layout
-Left: menu tree grouped by subsystem. Right: selected item inspector/editor.
+字段：Value/Key（必填）、默认 Label（必填）、Localized Label、描述、顺序、Enabled、可选 Metadata/Schema-defined Field。
 
-Every subsystem group is shown as a tree root. Core groups cannot be removed. The editor clearly differentiates `Core`, `Plugin`, and `Custom` entries.
+交互：
+- 顺序有业务意义时展示 Drag Handle；拖放后由服务端保存显式 Sort Index。
+- Disable 后已有引用继续有效，但新建选择控件中默认不再出现该 Entry，除非子系统另有定义。
+- 删除有引用的 Entry 时必须阻止，或要求选择 Migration Destination。Dialog 显示引用数量和 `替换为` Select。
+- System-owned Entry 默认只读；只有产品明确允许时才可修改本地化 Label。
 
-Tree row fields:
-- drag handle when movable;
-- icon;
-- label;
-- route/link summary;
-- visibility state;
-- source chip;
-- permission requirement indicator;
-- overflow actions.
+## 3. 菜单
 
-### Menu item editor
-Fields:
-- label required;
-- optional localization key/labels;
-- icon token;
-- parent subsystem/group;
-- order;
-- destination type (`Internal route`, `External URL`, `Plugin route`);
-- destination;
-- required permission/capability;
-- open-in-new-tab for external links;
-- visibility/enabled.
+**路由：** `/console/platform/menus`
 
-Validation:
-- Internal route must match registered/allowed route pattern.
-- External URL requires valid safe scheme (`https` by default; other schemes only by explicit policy).
-- Permission requirement cannot be removed from a plugin/core item when backend declares a mandatory capability.
+仅当 V2 支持 Runtime/Plugin Menu 配置时提供本页面。根交互规格定义的“菜单按子系统分组、默认收起”等核心规则始终具有更高优先级。
 
-Interactions:
-- Drag reorder only within allowed parent boundaries.
-- Moving a custom/plugin item between subsystem groups requires confirmation because it changes information architecture.
-- Preview panel shows how the navigation drawer will render for a selected example role, but preview never bypasses permissions.
-- `Restore defaults` is scoped to selected menu/customization and previews which custom order/labels are lost.
+### 布局
 
-## Shared configuration rules
-- Every changed setting displays provenance and effective value after save.
-- Secrets remain masked; copy/reveal is unavailable unless the setting is explicitly designed for retrieval.
-- Changes that affect security, plugins, storage, authentication, or external connectivity link to audit records.
-- Configuration edits should be versioned/auditable where backend supports rollback; `Rollback` previews the exact target version.
-- Invalid platform configuration must fail closed with actionable field errors rather than saving partially without explanation.
+左侧：按子系统分组的 Menu Tree。右侧：当前选中 Item 的 Inspector/Editor。
+
+每个子系统分组作为 Tree Root。Core Group 不允许删除。编辑器必须区分 `Core`、`Plugin`、`Custom` 来源。
+
+Tree Row 字段：
+- 可移动时显示 Drag Handle；
+- 图标；
+- Label；
+- Route/Link 摘要；
+- Visibility；
+- Source Chip；
+- Permission Requirement 指示；
+- Overflow。
+
+### Menu Item 编辑器
+
+字段：
+- Label：必填；
+- 可选 Localization Key/Label；
+- Icon Token；
+- Parent Subsystem/Group；
+- Order；
+- Destination Type：`内部路由`、`外部 URL`、`插件路由`；
+- Destination；
+- Required Permission/Capability；
+- External Link 是否新标签页打开；
+- Visibility/Enabled。
+
+校验：
+- Internal Route 必须匹配已注册/允许的 Route Pattern。
+- External URL 默认只允许安全 `https` Scheme；其他 Scheme 只有显式 Policy 允许才可使用。
+- Plugin/Core Item 如果 Backend 声明 Mandatory Capability，则前端不能删除对应 Permission Requirement。
+
+交互：
+- 拖拽排序只能发生在允许的 Parent Boundary 内。
+- 把 Custom/Plugin Item 移动到其他子系统分组时要求确认，因为这会改变 Information Architecture。
+- Preview Panel 可以模拟某个 Role 看到的 Navigation Drawer，但 Preview 永远不能绕过实际 Permission。
+- `恢复默认菜单` 只作用于明确选中的 Customization，并预览将丢失的自定义顺序/Label。
+
+## 通用配置规则
+- 每次保存后都展示配置来源和最终 Effective Value。
+- Secret 持续 Masked；除非字段本身明确支持安全 Retrieval，否则不提供 Copy/Reveal。
+- 影响 Security、Plugin、Storage、Authentication、External Connectivity 的配置修改应能关联到 Audit Record。
+- Backend 支持时配置修改应 Versioned/Auditable；`回滚` 前预览准确目标版本和 Diff。
+- 无效平台配置必须 Fail Closed，给出可操作字段错误；不能悄悄部分保存。

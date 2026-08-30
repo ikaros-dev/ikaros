@@ -1,143 +1,161 @@
-# Productivity & Planning — CMS Console Interaction Specification
+# 效率与计划 — CMS Console 交互规格
 
-## 1. Inbox & Today
+## 1. 收集箱与今天
 
-**Route:** `/console/planning/today`
+**路由：** `/console/planning/today`
 
-### Header
-- Title `Inbox & Today`.
-- Primary `Add task`.
-- Secondary `Plan day`.
-- Date control defaults to Today; arrows move previous/next day.
+### 页面标题区
+- 标题：`收集箱与今天`。
+- 主操作：`添加任务`。
+- 次操作：`规划今天`。
+- 日期控件默认选中今天；左右箭头切换前一天/后一天。
 
-### Page layout
-Desktop uses two columns: left 40% Inbox, right 60% Today timeline/list. Mobile stacks Inbox then Today.
+### 页面布局
 
-### Inbox panel
-Rows contain:
-- completion checkbox;
-- task title;
-- optional source/resource chip;
-- capture time;
-- urgency/importance indicators;
-- overflow.
+桌面端双栏：左侧约 40% 为收集箱，右侧约 60% 为今天；移动端依次纵向排列“收集箱 → 今天”。
 
-Inline interactions:
-- Checkbox marks complete with Undo Snackbar.
-- Clicking title opens task detail side sheet.
-- `Plan` button/drag moves task into Today and asks for time block only if scheduling is desired.
+### 收集箱面板
 
-Quick capture field at top accepts title on Enter. Optional natural-language parsing may suggest date/project but must preview parsed fields before committing hidden changes.
+任务行包含：
+- 完成 Checkbox；
+- 任务标题；
+- 可选来源/关联 Resource Chip；
+- 收集时间；
+- 紧急/重要标识；
+- Overflow。
 
-### Today panel
-Sections: Overdue, Scheduled, Unscheduled, Completed collapsed by default.
+行内交互：
+- 勾选 Checkbox 完成任务，并显示带 `撤销` 的 Snackbar。
+- 点击标题打开任务详情 Side Sheet。
+- 点击 `规划` 或拖拽任务到“今天”区域；只有用户需要明确排入日程时才要求选择时间块。
 
-Task row fields: status, title, project, scheduled time, deadline, estimate, actual/focus duration, linked resource, priority indicators.
+顶部 Quick Capture 输入框按 Enter 创建任务。可选自然语言解析可以建议日期/项目，但必须先预览解析后的字段，不能静默写入隐藏属性。
 
-Drag between sections updates scheduling/status only after valid drop. If a drop creates time conflict, show conflict sheet with `Keep both`, `Move`, `Cancel`.
+### 今天面板
 
-## 2. Projects & Tasks
+分区：`已逾期`、`已安排`、`未安排`、`已完成`；其中 `已完成` 默认收起。
 
-**Route:** `/console/planning/projects`
+任务行字段：状态、标题、项目、安排时间、截止时间、预计时长、实际/专注时长、关联 Resource、优先级/重要/紧急标识。
 
-Left project navigation panel: All Tasks, Active Projects, Someday, Archived. Project rows show name and incomplete count.
+拖拽到不同分区时只修改对应的安排/状态字段。若拖放产生时间冲突，打开冲突处理 Sheet，提供 `保留两者`、`移动`、`取消`。
 
-Main header shows selected project name, status chip, owner, progress. Actions: Add task, Edit project, overflow.
+## 2. 项目与任务
 
-Views: List, Board, Timeline when supported. View selection persists per project.
+**路由：** `/console/planning/projects`
 
-### Task list columns
-- status checkbox;
-- title;
-- assignee/owner when multi-user;
-- importance/urgency;
-- scheduled;
-- deadline;
-- estimate;
-- linked resource;
-- updated;
-- actions.
+左侧 Project 导航：全部任务、进行中项目、Someday、已归档。每个项目行显示名称和未完成任务数量。
 
-### Task detail side sheet
-Sections:
-- title and status;
-- project;
-- description;
-- assignee/owner;
-- priority/importance/urgency;
-- schedule and deadline;
-- estimate and actual time;
-- linked Resources/Collections;
-- checklist/subtasks;
-- tags;
-- activity/comments where enabled.
+主区域标题显示当前 Project 名称、状态 Chip、所有者、进度。操作：添加任务、编辑项目、Overflow。
 
-Changing status saves immediately except transitions with business validation. Destructive `Delete task` appears in overflow and confirms that linked Resource is unaffected.
+支持视图：列表、看板，以及后端支持时的 Timeline。每个 Project 单独保存用户最近使用的视图。
 
-### Project editor
-Fields: name required, description, status, start date, target date, color/icon, default collection/resource links, members/permissions if supported. Archive keeps tasks and history; Delete requires dependency summary.
+### 任务列表列
+- 状态 Checkbox；
+- 标题；
+- 多用户场景下的 Assignee/Owner；
+- 重要/紧急；
+- 安排时间；
+- 截止时间；
+- 预计时长；
+- 关联 Resource；
+- 更新时间；
+- 操作。
 
-## 3. Calendar & Time Blocks
+### 任务详情 Side Sheet
 
-**Route:** `/console/planning/calendar`
+分区：
+- 标题与状态；
+- Project；
+- 描述；
+- Assignee/Owner；
+- 优先级/重要/紧急；
+- 安排时间与截止时间；
+- 预计时长与实际时长；
+- 关联 Resource/Collection；
+- Checklist/Subtask；
+- Tag；
+- 支持时的活动/评论。
 
-### Header controls
-Today button, previous/next arrows, date range label, view segmented control (`Day`, `Week`, `Month`), `New time block`.
+普通状态切换立即保存；存在业务校验的状态迁移必须等待服务端确认。`删除任务` 放入 Overflow，并明确说明删除任务不会影响关联 Resource。
 
-### Calendar canvas
-Day/week show time grid. Month shows compact task/event summaries.
+### Project 编辑器
 
-Time block visual contains title, time range, linked task/project icon, conflict indicator, completion/focus state.
+字段：名称（必填）、描述、状态、开始日期、目标日期、颜色/图标、默认 Collection/Resource 关联、支持时的成员/权限。
 
-Interactions:
-- Click empty slot opens create sheet prefilled with start time.
-- Drag block moves it; resize handles change duration.
-- Before persistence, show temporary ghost position.
-- Conflicts are visually marked; hard conflicts defined by policy require confirmation.
-- Clicking block opens detail popover/sheet.
+归档 Project 保留任务和历史。删除必须展示依赖摘要。
 
-Create/edit fields: title, start/end, timezone, linked task, linked Resource, recurrence, reminder, notes. End must be after start. Recurrence editor supports preview of next occurrences.
+## 3. 日历与时间块
 
-## 4. Goals & OKR
+**路由：** `/console/planning/calendar`
 
-**Route:** `/console/planning/goals`
+### 标题区控制
 
-Tabs: Goals, OKR, Archive.
+`今天`、前/后日期箭头、日期范围文本、视图 Segmented Control（`日`、`周`、`月`）、`新建时间块`。
 
-Goal cards show title, period, progress, confidence/status, linked projects/tasks, owner. Filter by period/status/owner.
+### 日历 Canvas
 
-Goal detail:
-- summary card;
-- progress chart;
-- milestones/key results;
-- linked projects/tasks;
-- check-in history.
+日/周视图展示时间 Grid；月视图展示紧凑的任务/事件摘要。
 
-Create goal fields: title, description, measurement method (`manual`, `task completion`, `numeric`), starting/current/target values when numeric, period, owner, linked entities.
+时间块显示：标题、时间范围、关联任务/项目图标、冲突标识、完成/专注状态。
 
-OKR key-result rows show target, current, unit, progress, last check-in. `Check in` dialog asks current value, confidence, note; history remains immutable except admin correction with audit.
+交互：
+- 点击空白时间段打开创建 Sheet，并预填开始时间。
+- 拖拽时间块移动时间；拖动 Resize Handle 修改时长。
+- 服务端保存前显示临时 Ghost 位置。
+- 冲突需要视觉标识；策略定义为 Hard Conflict 时必须确认。
+- 点击时间块打开详情 Popover/Sheet。
 
-## 5. Habits, Focus & Review
+新建/编辑字段：标题、开始/结束时间、时区、关联 Task、关联 Resource、重复规则、提醒、备注。结束时间必须晚于开始时间。重复规则编辑器预览后续若干次发生时间。
 
-**Route:** `/console/planning/focus`
+## 4. 目标与 OKR
 
-Tabs: Habits, Focus Sessions, Review.
+**路由：** `/console/planning/goals`
 
-### Habits
-Table/cards: habit name, cadence, current streak, completion rate, today state, next due, actions.
+Tabs：`目标`、`OKR`、`归档`。
 
-Habit editor: name, cadence, target frequency, reminder, start/end, linked goal. Completing today toggles with Undo and updates streak after server confirmation.
+目标卡片展示标题、周期、进度、信心/状态、关联项目/任务、所有者。支持按周期、状态、所有者筛选。
 
-### Focus Sessions
-Top card provides timer/session controls only if server/client architecture supports authoritative session state. Fields: linked task, planned duration, mode, interruption notes.
+目标详情：
+- 摘要卡片；
+- 进度图；
+- Milestone/Key Result；
+- 关联 Project/Task；
+- Check-in 历史。
 
-History table: task, planned, actual, started, ended, interruptions, outcome.
+创建目标字段：标题、描述、衡量方式（`手工`、`任务完成度`、`数值`）、数值型目标的起始/当前/目标值、周期、所有者、关联实体。
 
-### Review
-Period selector: Daily, Weekly, Monthly. Review page composes read-only summary cards: completed tasks, planned vs actual time, overdue carryover, habits, goal progress, notable activity. Editable reflection fields: wins, blockers, notes, next priorities. Saving review creates versioned review record; prior periods remain accessible.
+OKR 的 Key Result 行显示目标、当前值、单位、进度、最近 Check-in。`Check in` Dialog 输入当前值、信心、备注；历史默认不可修改，管理员修正必须产生审计记录。
 
-## Shared states
-- Time/date operations always display timezone where ambiguity exists.
-- Task updates are optimistic only for reversible low-risk fields; scheduling conflicts and status transitions wait for server response.
-- Completed items can be hidden but never silently deleted.
-- Calendar and planning filters are URL-addressable so a filtered view can be bookmarked.
+## 5. 习惯、专注与复盘
+
+**路由：** `/console/planning/focus`
+
+Tabs：`习惯`、`专注记录`、`复盘`。
+
+### 习惯
+
+表格/卡片字段：习惯名称、频率、当前连续天数、完成率、今天状态、下次到期、操作。
+
+习惯编辑器：名称、频率、目标次数、提醒、开始/结束日期、关联目标。完成今天的习惯时支持 `撤销`；连续天数在服务端确认后更新。
+
+### 专注记录
+
+只有客户端/服务端架构支持可靠的权威 Session 状态时，顶部才提供计时器和 Session 控制。
+
+字段：关联任务、计划时长、模式、中断备注。
+
+历史表格：Task、计划时长、实际时长、开始、结束、中断次数、结果。
+
+### 复盘
+
+周期选择：每日、每周、每月。
+
+页面组合只读摘要卡片：完成任务、计划 vs 实际时间、逾期结转、习惯、目标进度、值得关注的活动。
+
+可编辑字段：成果、阻碍、备注、下一周期优先事项。保存后创建有版本的 Review Record，历史周期可回看。
+
+## 通用状态
+- 时间/日期存在歧义时必须展示时区。
+- 只有可逆低风险字段可以使用乐观更新；安排冲突和关键状态迁移等待服务端确认。
+- 已完成项允许隐藏，但不能静默删除。
+- Calendar/Planning 的筛选条件应可写入 URL，使用户能够收藏特定视图。

@@ -1,140 +1,148 @@
-# Private Notes — CMS Console Interaction Specification
+# 私密笔记 — CMS Console 交互规格
 
-> Private Notes is a protected private-data domain. The Console must not expose decrypted titles, snippets, tags, search terms, conflict content, or export contents outside the unlocked vault context.
+> 私密笔记属于受保护的私密数据域。Console 不得在保险库已解锁上下文之外暴露解密后的标题、摘要、Tag、搜索词、冲突内容或导出内容。
 
-## 1. Vault
+## 1. 保险库
 
-**Route:** `/console/private-notes`
+**路由：** `/console/private-notes`
 
-### Locked state
-The default state after session start is a security card, not a list skeleton.
+### 锁定状态
 
-Card contains:
-- lock icon;
-- title `Private Notes is locked`;
-- short explanation;
-- `Unlock vault` primary button;
-- optional supported unlock methods listed without revealing sensitive account detail.
+会话开始后的默认状态应直接展示安全卡片，而不是笔记列表 Skeleton。
 
-Unlock opens an authentication dialog/full-page security flow. On success, return to the original route. Failed attempts use generic error text and rate-limit feedback.
+卡片包含：
+- 锁图标；
+- 标题：`私密笔记已锁定`；
+- 简短说明；
+- 主操作：`解锁保险库`；
+- 可选展示支持的解锁方式，但不得泄露敏感账户信息。
 
-### Unlocked header
-- Title `Private Notes`.
-- Lock-now icon button.
-- Primary `New private note`.
-- Search field scoped only to decrypted vault search.
-- Timeout indicator/menu showing auto-lock policy.
+点击解锁后打开认证 Dialog 或完整安全流程。成功后返回用户原本访问的路由。失败时使用通用错误信息，并显示 Rate Limit 状态，不通过错误文案泄露安全细节。
 
-### Layout
-Desktop three-pane option:
-1. folders/collections/tags navigation;
-2. note list;
-3. editor/preview.
+### 已解锁标题区
+- 标题：`私密笔记`。
+- `立即锁定` Icon Button。
+- 主操作：`新建私密笔记`。
+- 只在当前已解锁保险库中生效的搜索框。
+- 显示自动锁定策略/倒计时的菜单或状态指示。
 
-On narrower screens, list and editor become separate routes/sheets.
+### 布局
 
-### Note list fields
-- title;
-- updated time;
-- favorite/pin icon;
-- optional safe local status such as unsynced/conflict;
-- no plaintext snippet when privacy policy disables it.
+桌面端可使用三栏布局：
+1. Folder/Collection/Tag 导航；
+2. 笔记列表；
+3. 编辑器/预览。
 
-Filters: folder, tag, favorites, updated date, conflict state. Filter state containing private names is stored only within encrypted/local vault context and never URL query parameters.
+较窄屏幕下列表与编辑器拆分成不同路由或全宽 Sheet。
 
-### Editor
-Fields/components:
-- title required;
-- content editor;
-- folder/collection selector;
-- private tags;
-- attachment picker for private attachments only;
-- pinned/favorite state;
-- autosave indicator;
-- version indicator.
+### 笔记列表字段
+- 标题；
+- 更新时间；
+- 收藏/置顶图标；
+- 可选安全本地状态，例如未同步/冲突；
+- 隐私策略禁止时不显示明文摘要。
 
-Interactions:
-- Autosave after idle debounce; explicit Ctrl/Cmd+S supported.
-- Leaving with unsynced changes prompts confirmation.
-- `Lock now` flushes pending encrypted save, clears decrypted UI state, closes previews and returns to locked card.
-- Clipboard actions may show optional `Clear clipboard after N seconds` message if platform supports it.
+筛选：Folder、Tag、收藏、更新时间、冲突状态。包含私密名称的筛选状态只能保存在加密/本地保险库上下文中，不能写入 URL Query。
 
-## 2. Versions & Sync Conflicts
+### 编辑器
 
-**Route:** `/console/private-notes/conflicts`
+字段/组件：
+- 标题：必填；
+- 内容编辑器；
+- Folder/Collection 选择器；
+- 私密 Tag；
+- 仅允许选择私密 Attachment 的附件选择器；
+- 置顶/收藏状态；
+- 自动保存状态；
+- 版本状态。
 
-The page itself remains locked until vault unlock.
+交互：
+- 空闲 Debounce 后自动保存，同时支持 Ctrl/Cmd+S 强制保存。
+- 存在未同步修改时离开页面需要确认。
+- `立即锁定` 必须先提交/刷新待保存的加密内容，随后清除所有解密 UI 状态、关闭预览并回到锁定卡片。
+- 平台支持时，复制操作可以提示 `N 秒后清空剪贴板`，但不得承诺浏览器无法保证的能力。
 
-### Summary cards
-- notes with conflicts;
-- unsynced local changes;
-- failed encrypted sync operations.
+## 2. 版本与同步冲突
 
-### Conflict list
-Columns/rows show safe identifiers within unlocked context:
-- note title;
-- local version timestamp/device;
-- remote version timestamp/device;
-- conflict reason/type;
-- status;
-- action `Resolve`.
+**路由：** `/console/private-notes/conflicts`
 
-### Conflict resolution page
-Three-column desktop comparison:
-- Local version.
-- Remote version.
-- Result/merged version.
+未解锁保险库时该页面保持锁定状态。
 
-Each side shows timestamp, device/source, version ID and decrypted content. For text content, line/block diff highlights additions/removals. Attachments are compared by safe attachment metadata.
+### 摘要卡片
+- 存在冲突的笔记数；
+- 未同步的本地修改数；
+- 加密同步失败数。
 
-Actions:
-- `Keep local`.
-- `Keep remote`.
-- `Use merged result`.
-- `Cancel`.
+### 冲突列表
 
-Resolution never deletes historical versions immediately; selected result becomes a new current version. A conflict resolution audit record contains technical metadata but not plaintext note content.
+在已解锁上下文中展示安全识别信息：
+- 笔记标题；
+- 本地版本时间/设备；
+- 远端版本时间/设备；
+- 冲突原因/类型；
+- 状态；
+- `解决` 操作。
 
-## 3. Recovery & Export
+### 冲突解决页
 
-**Route:** `/console/private-notes/recovery`
+桌面端使用三栏比较：
+- 本地版本。
+- 远端版本。
+- 最终/合并版本。
 
-### Recovery section
-Shows:
-- vault encryption/recovery status;
-- last successful secure backup/recovery-package creation;
-- recovery method availability;
-- warnings if recovery is not configured.
+两侧展示时间、设备/来源、Version ID 和解密内容。文本使用行/Block Diff 高亮新增与删除。Attachment 只通过安全附件元数据比较。
 
-Actions requiring re-authentication:
-- create/rotate recovery material;
-- restore from encrypted package;
-- verify recovery package.
+操作：
+- `保留本地版本`。
+- `采用远端版本`。
+- `使用合并结果`。
+- `取消`。
 
-Recovery secrets are shown only when product design explicitly requires one-time display. One-time screens include `I have saved this securely` acknowledgement before leaving.
+解决冲突时不立即删除历史版本；用户选择的结果创建一个新的当前版本。冲突解决审计记录只保存技术元数据，不记录笔记明文内容。
 
-### Export section
-Export form:
-- scope: all notes / selected folder / selected notes;
-- format: encrypted Ikaros package default, optional plaintext formats only when explicitly supported;
-- include attachments switch;
-- password/encryption options;
-- destination: download or configured secure storage.
+## 3. 恢复与导出
 
-Plaintext export displays high-risk warning and requires re-authentication. Export is a background task for large scopes. Notification text only states that the private export is ready; it does not include note names.
+**路由：** `/console/private-notes/recovery`
 
-### Import/restore
-Wizard:
-1. Select encrypted package.
-2. Authenticate/decrypt.
-3. Validate package and version compatibility.
-4. Preview counts only unless vault is unlocked.
-5. Select merge policy: keep existing, replace newer/older according to explicit rule, import as duplicates.
-6. Confirm and run.
+### 恢复区域
 
-## Shared security behavior
-- Auto-lock on configured inactivity, explicit sign-out, session revocation, or security event.
-- Browser refresh/deep link may require unlock again depending on key residency policy.
-- Decrypted data must not be placed in URL, document title, generic browser notification, generic analytics, audit message, or global search index.
-- Error messages avoid revealing whether a specific private note exists when authorization/unlock has failed.
-- Screenshots/clipboard restrictions are platform-dependent; the UI may communicate them but must not claim guarantees the browser cannot enforce.
+展示：
+- 保险库加密/恢复状态；
+- 最近一次安全备份/恢复包创建时间；
+- 可用恢复方式；
+- 尚未配置恢复能力时的警告。
+
+以下操作需要重新认证：
+- 创建/轮换恢复材料；
+- 从加密包恢复；
+- 验证恢复包。
+
+只有产品设计明确要求一次性展示恢复 Secret 时才显示。一次性页面离开前要求用户勾选 `我已安全保存这些信息`。
+
+### 导出区域
+
+导出表单：
+- 范围：全部笔记 / 指定 Folder / 指定笔记；
+- 格式：默认使用加密 Ikaros Package；明确支持时才提供明文格式；
+- 是否包含 Attachment；
+- Password/Encryption 选项；
+- 目标：直接下载或已配置安全存储。
+
+明文导出显示高风险警告并要求重新认证。大范围导出使用后台任务。通知只说 `私密笔记导出已就绪`，不得包含具体笔记名称。
+
+### 导入 / 恢复
+
+向导：
+1. 选择加密 Package。
+2. 认证/解密。
+3. 校验 Package 和版本兼容性。
+4. 未解锁时只预览数量；解锁后才允许展示明细。
+5. 选择合并策略：保留现有、按明确规则比较新旧、作为副本导入。
+6. 确认并执行。
+
+## 通用安全行为
+- 根据配置的无操作时间自动锁定；退出登录、会话撤销、安全事件也立即触发锁定。
+- 根据 Key Residency 策略，刷新浏览器或深链接进入时可能需要重新解锁。
+- 解密数据不得出现在 URL、Document Title、通用浏览器通知、通用 Analytics、审计说明或全局搜索索引中。
+- 当授权/解锁失败时，错误信息不得确认某条私密笔记是否存在。
+- 截图/剪贴板限制取决于平台能力；UI 可以说明限制，但不能声称浏览器端无法保证的安全能力。

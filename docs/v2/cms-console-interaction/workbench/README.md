@@ -1,166 +1,179 @@
-# Workbench — CMS Console Interaction Specification
+# 工作台 — CMS Console 交互规格
 
-## Scope
+## 范围
 
-Workbench is the daily entry point. It surfaces cross-system status without becoming a second copy of every subsystem.
+工作台是用户每天进入 CMS Console 后的默认入口，用于汇总跨子系统状态，但不能演变成各子系统页面的重复副本。
 
-## 1. Dashboard
+## 1. 概览
 
-**Route:** `/console/dashboard`
+**路由：** `/console/dashboard`
 
-### Header
-- Title `Dashboard`.
-- Subtitle `Your Ikaros workspace at a glance.`
-- Right actions: `Customize`, `Refresh` icon.
-- `Customize` opens a right-side sheet where widgets can be enabled/disabled and reordered by drag handle; save order per user.
+### 页面标题区
+- 标题：`概览`。
+- 副标题：`快速了解你的 Ikaros 工作空间。`
+- 右侧操作：`自定义`、`刷新`图标按钮。
+- 点击 `自定义` 打开右侧 Drawer，可启用/关闭 Widget，并通过拖拽手柄调整顺序；布局按用户保存。
 
-### Region A — Welcome and system context
-Use an M3 elevated card spanning the page width.
+### 区域 A — 欢迎与系统上下文
 
-Fields/components:
-- Greeting using display name.
-- Current server/environment chip.
-- Last successful refresh timestamp.
-- Optional warning chips for degraded system health, pending security action, failed sync, or backup warning.
+使用横跨内容区域的 M3 Elevated Card。
 
-Interaction:
-- Warning chip navigates to the owning subsystem filtered to the relevant incident.
-- Refresh keeps current widgets visible and shows linear progress at top; do not blank the page.
+字段/组件：
+- 根据用户显示名称生成欢迎语。
+- 当前服务器/环境 Chip。
+- 最近一次成功刷新时间。
+- 可选警告 Chip：系统健康降级、待处理安全操作、同步失败、备份异常等。
 
-### Region B — KPI card row
-Default cards:
-1. `Resources` — total resource count; secondary text `+N in last 7 days`.
-2. `Storage` — used / provisioned persistent capacity; progress bar.
-3. `Today` — planned tasks / completed tasks.
-4. `Background work` — running / failed jobs.
-5. `Notifications` — unread count.
+交互：
+- 点击警告 Chip 跳转到对应子系统，并自动带上相关事故/异常筛选条件。
+- 点击刷新时保留当前 Widget 内容，只在页面顶部显示 Linear Progress，不得把页面整体清空。
 
-Each card is clickable only when a useful destination exists. Card hover/focus exposes the destination through tooltip/accessibility label.
+### 区域 B — KPI 卡片行
 
-### Region C — Continue / recent activity
-Two-column desktop grid.
+默认卡片：
+1. `资源`：Resource 总数；副文本显示 `最近 7 天 +N`。
+2. `存储`：已使用 / 已配置持久化容量；显示 Progress Bar。
+3. `今天`：计划任务数 / 已完成任务数。
+4. `后台任务`：运行中 / 失败任务数。
+5. `通知`：未读数量。
 
-**Continue card** shows up to 6 resumable items:
-- thumbnail/icon;
-- resource title;
-- resource type chip;
-- progress percentage / current episode or chapter;
-- last activity time;
-- `Resume` action.
+只有存在有意义目标页面时卡片才可点击。Hover/Focus 时通过 Tooltip 和 Accessible Label 说明点击后的目标。
 
-**Recent activity card** shows timestamped rows:
-- activity icon;
-- short action text;
-- linked entity;
-- timestamp.
+### 区域 C — 继续处理 / 最近活动
 
-`View all` opens My Activity & Favorites.
+桌面端使用双栏 Grid。
 
-### Region D — Operational attention
-Cards for items needing action, hidden when zero:
-- metadata conflicts;
-- failed automation/sync executions;
-- expiring share links;
-- storage/archive restore pending;
-- security/session warnings.
+**继续处理卡片**最多显示 6 项可继续的内容：
+- 缩略图或类型图标；
+- Resource 标题；
+- Resource 类型 Chip；
+- 进度百分比、当前剧集/章节等业务位置；
+- 最近活动时间；
+- `继续` 操作。
 
-Each row shows severity, title, owning subsystem, age, and `Review`.
+**最近活动卡片**按时间显示：
+- 活动图标；
+- 简短操作描述；
+- 可点击的关联实体；
+- 时间。
 
-### Empty/loading/error
-- First-run empty dashboard keeps KPI skeletons and shows onboarding card with `Import content`, `Configure storage`, `Connect provider` shortcuts.
-- A failed widget does not fail the whole dashboard; render widget-local error with `Retry`.
+`查看全部` 进入“我的活动与收藏”。
 
-## 2. Global Search
+### 区域 D — 待处理事项
 
-**Route:** `/console/search`
+仅当数量大于 0 时显示对应卡片：
+- 元数据冲突；
+- 自动化/同步执行失败；
+- 即将过期的分享链接；
+- 等待中的归档恢复；
+- 安全/会话警告。
 
-### Header and search surface
-- Large M3 Search Bar under title.
-- Query field supports plain keyword search without AI dependency.
-- Leading search icon; trailing clear icon; optional keyboard shortcut hint `Ctrl/Cmd + K`.
+每一行显示严重级别、标题、所属子系统、发生时间和 `处理` 按钮。
 
-### Filter row
-Filter Chips:
-- Resource type.
-- Subsystem/domain.
-- Lifecycle status.
-- Owner.
-- Updated date.
-- Favorites only.
+### 空状态、加载与错误
 
-`More filters` opens side sheet for source/provider, tags, collection, attachment type, storage state and advanced metadata fields.
+- 首次使用且无业务数据时，保留 KPI Skeleton，并显示引导卡片，提供 `导入内容`、`配置存储`、`连接提供方` 快捷入口。
+- 单个 Widget 加载失败不能导致整个 Dashboard 失败；该 Widget 独立显示错误状态和 `重试`。
 
-### Results layout
-Top summary line: `N results in X ms` and sort selector (`Relevance`, `Updated`, `Created`, `Title`).
+## 2. 全局搜索
 
-Results grouped by domain only when `Group by subsystem` toggle is on. Default is a unified ranked list.
+**路由：** `/console/search`
 
-Resource result fields:
-- type icon/thumbnail;
-- primary title;
-- alternate title if any;
-- short highlighted metadata snippet;
-- collection/tag chips;
-- lifecycle/status chip;
-- last updated;
-- favorite toggle.
+### 标题区与搜索区域
+- 页面标题下放置大型 M3 Search Bar。
+- 即使没有 AI，也必须支持普通关键词搜索。
+- 左侧搜索图标；右侧清空按钮；可显示快捷键提示 `Ctrl/Cmd + K`。
 
-Non-resource result fields vary by domain but always show domain label and safe identifying fields.
+### 筛选行
 
-### Search interaction rules
-- Enter submits query and updates URL `q=` except decrypted private queries.
-- Search history is local/user-scoped and can be disabled in settings.
-- Arrow keys move through suggestions; Enter opens selected suggestion.
-- Clicking a result opens detail in same tab; Ctrl/Cmd-click follows browser new-tab behavior.
-- Favorites icon updates optimistically and rolls back on server failure.
+Filter Chip：
+- Resource 类型。
+- 子系统/业务域。
+- 生命周期状态。
+- 所有者。
+- 更新时间。
+- 仅收藏。
 
-### Private-domain behavior
-Private Notes and Password Manager never return decrypted content into global search while vault is locked. Instead show a secure placeholder row such as `Private Notes — unlock to search`, with `Unlock` action. Search terms are not copied into telemetry.
+`更多筛选` 打开 Side Sheet，包含来源/提供方、标签、Collection、Attachment 类型、存储状态以及高级元数据字段。
 
-## 3. My Activity & Favorites
+### 搜索结果布局
 
-**Route:** `/console/activity`
+顶部摘要显示：`N 条结果，用时 X ms`，右侧为排序选择器：`相关度`、`更新时间`、`创建时间`、`标题`。
 
-### Header
-Actions: `Export my activity` when permitted, `Clear local history` for local-only UI history.
+默认使用统一排序结果列表；只有打开 `按子系统分组` Switch 后才按业务域分组。
+
+Resource 搜索结果字段：
+- 类型图标/缩略图；
+- 主标题；
+- 可选别名/副标题；
+- 命中关键词的简短元数据摘要；
+- Collection/Tag Chip；
+- 生命周期/状态 Chip；
+- 最近更新时间；
+- 收藏按钮。
+
+非 Resource 结果根据业务域展示，但必须始终显示业务域标签和经过权限处理的安全识别字段。
+
+### 搜索交互规则
+
+- Enter 提交搜索，并同步 `q=` 到 URL；解密后的私密查询除外。
+- 搜索历史按用户保存在本地，并允许在设置中关闭。
+- 上下方向键在建议项中移动；Enter 打开当前建议项。
+- 单击结果在当前标签页打开；Ctrl/Cmd + Click 保留浏览器新标签页行为。
+- 收藏按钮使用乐观更新；服务端失败时回滚并显示 Snackbar。
+
+### 私密域行为
+
+私密笔记和密码管理在保险库锁定时不得把解密内容返回全局搜索。结果区域只显示安全占位，例如 `私密笔记 — 解锁后搜索`，并提供 `解锁` 操作。搜索词不得写入 Telemetry。
+
+## 3. 我的活动与收藏
+
+**路由：** `/console/activity`
+
+### 页面标题区
+
+操作：有权限时显示 `导出我的活动`；本地 UI 历史存在时显示 `清除本地历史`。
 
 ### Tabs
-- `Activity` default.
-- `Favorites`.
-- `Progress`.
+- `活动`：默认。
+- `收藏`。
+- `进度`。
 
-### Activity tab
-Toolbar filters: action type, resource type, date range, subsystem.
+### 活动 Tab
 
-Timeline rows contain:
-- action icon;
-- action verb and linked entity;
-- contextual metadata such as collection/project;
-- device/source when useful;
-- timestamp.
+工具栏筛选：操作类型、Resource 类型、日期范围、子系统。
 
-Activity is business/user activity and must not be mixed with administrative audit events.
+时间线行包含：
+- 操作图标；
+- 动作描述和可点击实体；
+- Collection/Project 等上下文；
+- 有价值时显示设备/来源；
+- 时间。
 
-### Favorites tab
-Toggle between compact table and card grid.
+此处只展示业务/用户活动，不得与管理审计事件混在一起。
 
-Table columns:
-- resource/title;
-- type;
-- collection;
-- progress;
-- last opened;
-- favorite date;
-- actions.
+### 收藏 Tab
 
-Bulk actions: remove favorite, add to collection, export selection where supported.
+支持在紧凑表格和卡片 Grid 之间切换。
 
-### Progress tab
-Sections by media/reading/task semantics. Each row shows item, current position, percentage, last consumed time, and `Resume`/`Reset progress` menu action.
+表格列：
+- Resource / 标题；
+- 类型；
+- Collection；
+- 进度；
+- 最近打开；
+- 收藏时间；
+- 操作。
 
-Reset progress requires confirmation describing the affected progress only, not the Resource itself.
+批量操作：取消收藏、加入 Collection，以及业务支持时导出所选内容。
 
-### States
-- Empty favorites: explanation + `Browse Resource Library`.
-- Empty filtered activity: `Clear filters`.
-- Pagination uses cursor-based `Load more` or numbered pages consistently with backend capability; never mix within one tab.
+### 进度 Tab
+
+按视频/阅读/任务等业务语义分区。每行显示条目、当前位置、百分比、最近消费时间，以及 `继续` / `重置进度` 菜单操作。
+
+重置进度必须确认，并明确说明只影响进度记录，不影响 Resource 本身。
+
+### 状态
+- 无收藏：显示说明 + `浏览统一资源库`。
+- 筛选后无活动：显示 `清除筛选`。
+- 分页根据后端能力统一选择 Cursor `加载更多` 或页码分页，同一个 Tab 内不得混用两种方式。
