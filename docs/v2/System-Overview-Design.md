@@ -4,8 +4,9 @@
 |---|---|
 | 文档名称 | Ikaros V2 系统概要设计 |
 | 适用版本 | Ikaros V2 |
-| 文档版本 | v0.1 |
+| 文档版本 | v0.2 |
 | 编写日期 | 2026-08-30 |
+| 最后更新 | 2026-08-31 |
 | 状态 | 草案（Draft） |
 | 产品基线 | `Product-Requirements-Document.md` |
 
@@ -201,8 +202,8 @@ Ikaros V2 的系统内部持久化实体主键统一使用 **UUIDv7**。
 
 1. PostgreSQL 中实体主键优先使用原生 `uuid` 类型，不以字符串类型保存 UUID。
 2. 新增核心实体不得使用数据库自增整数、Snowflake ID、UUIDv4 或第三方平台 ID 作为主键。
-3. UUIDv7 应由统一的平台 ID 生成能力产生，避免各子系统自行选择不同 UUID 实现或版本。
-4. UUIDv7 中包含时间有序特性，可以改善按创建顺序写入时的索引局部性，但 **主键本身不得替代 `created_at`、业务时间、排序号或版本号**。
+3. UUIDv7 必须由统一的平台 ID Generator 产生；统一实现必须考虑同毫秒高并发、系统时钟回拨以及未来多节点同时生成等情况，避免各子系统自行选择不同 UUID 实现或生成策略。
+4. UUIDv7 中包含时间有序特性，可以改善按创建顺序写入时的索引局部性，但 **主键本身不得替代 `created_at`、业务时间、排序号或版本号，也不得把 `ORDER BY id` 当作严格业务时间排序语义**。
 5. API、Event、Command、Relation 与跨子系统契约中引用内部实体时，应使用同一个 UUIDv7 身份，不再额外引入只为接口层服务的数字 ID。
 6. 第三方 Provider 的 ID 必须通过 External Identity 等映射模型保存，只能作为外部身份，不得成为 Ikaros 内部实体主键。
 7. Blob 的内容摘要仍负责表达内容身份与去重语义；即使 Blob 实体拥有 UUIDv7 主键，也不能用 UUIDv7 替代内容 Hash。
@@ -225,6 +226,39 @@ Content Identity
 ```
 
 三类身份语义必须分离。
+
+### 2.8 统一时间与时区原则
+
+Ikaros V2 对时间采用统一的系统级规则：
+
+> **凡表示一个实际发生时刻、状态变化时刻、计划执行时刻或可比较时间点的数据，都必须以带时区语义的时间保存；任何客户端展示均根据应用配置的时区进行转换，应用默认时区为 UTC+8。**
+
+统一规则如下：
+
+1. PostgreSQL 中表示时间点的字段统一使用 `timestamptz`，禁止使用不带时区语义的 `timestamp without time zone` 保存事件时刻。
+2. API 中时间点统一使用 ISO 8601 / RFC 3339 表达，并且必须显式包含 `Z` 或 UTC Offset；禁止传输无时区的 naive datetime。
+3. 数据库存储负责保留正确的绝对时间点，展示层不得假定数据库中的文本形式就是最终展示时区。
+4. Web、Flutter App 及其他官方客户端展示时间时，统一读取**应用配置时区**并进行转换；默认应用时区为 **UTC+8**。
+5. Scheduled Job、Reminder、Calendar Rule、账期、统计自然日等依赖“当地墙上时间”的业务除了保存实际执行时间外，还必须保存或解析其时区上下文；未显式指定时使用应用配置时区。
+6. Analytics 中“日 / 周 / 月”等时间窗口的切分默认按应用配置时区计算，而不是固定按照数据库会话时区或客户端本地时区计算。
+7. 日志、Event、Audit、Trace 等跨系统时间必须携带完整时间点语义，便于不同节点、Worker 和外部系统之间进行准确关联。
+8. 不得使用 UUIDv7 中的时间部分代替正式时间字段。
+
+因此时间处理链路为：
+
+```text
+带时区的业务时间点
+        ↓
+PostgreSQL timestamptz
+        ↓
+API RFC 3339 / ISO 8601
+        ↓
+读取应用配置时区
+        ↓
+转换并展示
+
+默认应用时区：UTC+8
+```
 
 ---
 
@@ -945,6 +979,63 @@ PostgreSQL 保存：
 
 所有具有独立实体身份的核心记录使用 PostgreSQL 原生 `uuid` 类型保存 UUIDv7 主键；外部平台 ID、内容 Hash、Revision Number 与排序序号保持各自独立语义，不得替代实体主键。
 
+凡表示真实时间点的数据库字段统一使用 `timestamptz`；数据库 Schema 中不得为了开发便利将真实业务时间退化为无时区 `timestamp`。
+
+#### 8.2.1 实体公共字段约定
+
+具有独立生命周期的普通持久化实体原则上统一包含以下公共字段：
+
+```text
+id           uuid / UUIDv7
+created_at   timestamptz
+updated_at   timestamptz
+version      bigint
+```
+
+根据领域需要可以增加：
+
+```text
+created_by   uuid / UUIDv7
+updated_by   uuid / UUIDv7
+deleted_at   timestamptz
+```
+
+统一约束：
+
+- `id` 表达实体身份；
+- `created_at`、`updated_at` 表达正式时间语义，不能从 UUIDv7 临时推导后替代；
+- `version` 用于需要乐观并发控制的实体；
+- `created_by`、`updated_by` 只在业务或审计确实需要时保存；
+- `deleted_at` 仅用于采用软删除语义的实体；
+- 纯关联表、中间表、统计桶、不可独立寻址的 Value Object 不要求机械复制全部公共字段，应按实际生命周期设计。
+
+#### 8.2.2 时间字段与应用时区
+
+数据库中的时间点必须保持带时区语义，应用配置提供统一的展示和业务默认时区。
+
+应用时区规则：
+
+- 应用必须提供统一时区配置；
+- 默认值为 **UTC+8**；
+- Server、CMS、Flutter App 对同一业务时间的默认展示必须遵循该配置；
+- 用户设备当前本地时区不得静默覆盖应用配置时区；
+- 如果未来支持用户级时区覆盖，必须作为显式产品能力设计，而不是由客户端自行猜测；
+- 统计自然日、计划任务、提醒、日历和账期等涉及本地时间边界的能力必须使用同一时区规则。
+
+#### 8.2.3 Schema 与 Migration 所有权
+
+数据库采用单一 PostgreSQL 并不意味着数据库表没有领域所有权。
+
+统一规则：
+
+1. 每个子系统拥有自己领域数据结构及对应 Schema Migration 的设计责任。
+2. 其他子系统不得直接通过私有 Repository、SQL 或对方内部表结构修改其状态。
+3. 跨子系统关系应优先通过公开契约和稳定实体 ID 建立，不应创建要求调用方理解对方内部 Schema 的强耦合数据库导航关系。
+4. 所有生产 Schema 变更必须通过版本化 Migration 执行，禁止依赖 ORM / Framework 在生产环境自动建表或自动修改 Schema。
+5. Migration 采用可审计、可重复部署、整体向前演进的策略；生产升级流程不得把自动执行破坏性 Rollback 作为主要恢复方式。
+6. 大规模数据回填、内容迁移、索引重建等长时间操作应与短事务 DDL Migration 分离，并优先通过 Background Task 或专用数据迁移流程执行。
+7. Schema Version 属于系统兼容性的一部分，升级前后必须能够判断当前数据库是否处于受支持版本。
+
 ### 8.3 Blob Storage
 
 Blob Storage 可以由不同 Provider 实现：
@@ -1000,6 +1091,8 @@ Fact、Aggregate、Metric 结果用于统计与报表。
 - 时间语义；
 - 版本；
 - 可重建路径。
+
+涉及自然日、周、月、季度等统计窗口时，默认依据应用配置时区进行边界切分，默认应用时区为 UTC+8。
 
 ---
 
@@ -1103,7 +1196,10 @@ API 应统一：
 - Trace ID；
 - Idempotency Key；
 - 版本策略；
+- 时间与时区格式；
 - 审计上下文。
+
+所有 API 时间点必须显式带时区信息，并遵循本概要设计的统一时间与时区原则。
 
 ### 10.3 幂等
 
@@ -1141,6 +1237,53 @@ API 应统一：
 - Plugin；
 - 第三方开发者；
 - 自动化测试。
+
+### 10.6 契约版本与兼容性
+
+V2 必须明确区分以下版本，而不是只维护一个模糊的“系统版本”：
+
+```text
+Database Schema Version
+API Version
+Plugin API Version
+Event Contract Version
+Export Format Version
+```
+
+统一原则：
+
+1. **Database Schema Version** 用于判断数据库是否可以被当前 Server 安全启动和迁移。
+2. **API Version** 用于控制客户端与 Server 的公开接口兼容关系。
+3. **Plugin API Version** 用于声明插件依赖的公共扩展契约，插件不得通过内部 Java 类型规避版本控制。
+4. **Event Contract Version** 用于标识可被 Automation、Analytics、Plugin、Worker 或其他消费者长期消费的 Event Schema。
+5. **Export Format Version** 用于保证用户导出数据未来仍然可以被识别、迁移或导入。
+6. 对外契约优先采用向后兼容的增量演进方式；删除字段、改变字段含义、改变默认值语义等破坏性修改必须进入明确的版本升级或弃用流程。
+7. Event 一旦成为公开或跨子系统稳定契约，不得静默改变既有字段语义；消费者必须能够识别其版本。
+8. 弃用能力必须提供可识别的 Deprecated 状态和合理迁移窗口，不能在无版本信号的情况下直接消失。
+
+### 10.7 Capability Discovery
+
+由于不同 Ikaros 实例可能启用不同插件、Provider、Worker 与可选基础设施，客户端不能通过“调用失败”来猜测服务器具备哪些能力。
+
+Server 应提供统一 Capability Discovery 能力，用于暴露当前实例可用的产品与运行能力，例如：
+
+```text
+ai.enabled
+room.enabled
+secure_notes.enabled
+media.transcode.available
+storage.archive.available
+search.semantic.available
+plugin.<key>.enabled
+```
+
+Capability Discovery 的原则：
+
+- 表达“当前实例是否具备某能力”，不替代 Permission / ACL；
+- 能力可用不代表当前用户有权调用；
+- 客户端可以据此决定是否显示入口、按钮、配置项或降级提示；
+- Server 仍必须在真实 API 调用时进行完整权限与状态校验；
+- Capability Key 应形成稳定命名约定，避免客户端绑定内部模块实现细节。
 
 ---
 
@@ -1193,6 +1336,8 @@ Background Task 应具备：
 - 定期执行统计聚合。
 
 Scheduled Job 触发后通常产生一个 Background Task / Job Run。
+
+Scheduled Job 若按固定当地时间表达执行计划，必须显式关联时区；没有单独指定时使用应用配置时区，默认 UTC+8。
 
 ### 11.4 Worker 演进
 
@@ -1530,6 +1675,15 @@ Dashboard / Report
 - Owner；
 - Version。
 
+时间类 Metric 还必须明确：
+
+- 事实时间字段；
+- 时间窗口所采用的应用时区；
+- 日 / 周 / 月边界定义；
+- 夏令时或未来时区策略变化时的处理方式。
+
+未特别声明时，时间窗口使用应用配置时区，默认 UTC+8。
+
 这样能够避免同一个“完成任务数”“观看时长”“存储占用”等指标在不同页面出现不同口径。
 
 ---
@@ -1636,7 +1790,7 @@ Blob 可能仍然被以下对象引用：
 
 ---
 
-## 21. 备份与恢复
+## 21. 备份、恢复与数据可迁移性
 
 Ikaros V2 的备份对象不仅是 PostgreSQL。
 
@@ -1680,6 +1834,37 @@ Plugin
 执行完整性校验
 ```
 
+### 21.3 Backup / Restore 与 Export / Import 分离
+
+必须明确：
+
+```text
+Backup / Restore
+        ≠
+Export / Import
+```
+
+两者解决的问题不同：
+
+- **Backup / Restore**：面向 Ikaros 实例灾难恢复，目标是恢复系统运行状态和完整数据关系。
+- **Export / Import**：面向用户数据自主、迁移和互操作，目标是让用户能够以可理解、可版本化的格式带走并重新导入自己的数据。
+
+因此 Export 不得只是数据库 Dump 的别名。
+
+### 21.4 数据导出与迁移原则
+
+Ikaros 作为自托管平台必须避免通过内部数据库 Schema 形成事实上的数据锁定。
+
+统一原则：
+
+1. 用户拥有的核心内容、元数据、Collection、Tag、Relation、个人状态等应具有可导出路径。
+2. 在权限和存储条件允许的情况下，导出可以包含原始 Attachment / Blob 或对其进行明确引用。
+3. Export Format 必须具有独立版本，并能够描述导出来源、生成时间、格式版本和必要的实体关系。
+4. Import 必须进行格式版本校验、权限校验、重复数据判断和冲突处理，不能直接覆盖现有业务状态。
+5. Secure Domain 导出必须继续遵守对应安全设计；不能为了“可迁移”而将受保护内容自动降级为普通明文包。
+6. 第三方 External Identity 应作为映射信息导出，而不是把外部 ID 重新当作内部主键。
+7. 数据导出、实例备份与跨版本 Migration 可以复用底层序列化能力，但三者的产品语义和安全边界必须保持独立。
+
 ---
 
 ## 22. 可观测性与运维
@@ -1698,6 +1883,8 @@ Activity
 ```
 
 三者不能混为一张表或一个概念。
+
+所有日志与审计时间字段必须遵循统一带时区时间规则；展示时根据应用配置时区转换，默认 UTC+8。
 
 ### 22.2 Metrics
 
@@ -1767,6 +1954,8 @@ CMS 主要面向：
 
 CMS 不拥有独立的后台业务规则。
 
+CMS 展示时间时必须使用 Server 提供或配置同步得到的应用时区，不得默认直接使用浏览器所在设备时区覆盖系统设置。
+
 ### 23.2 Flutter App
 
 Flutter App 主要面向：
@@ -1784,9 +1973,13 @@ Flutter App 主要面向：
 
 移动端与桌面端应共享同一业务 API，但可根据设备能力提供不同交互。
 
+Flutter App 展示时间时同样遵循应用配置时区；默认 UTC+8，不以设备当前时区静默替代应用配置。
+
 ### 23.3 第三方客户端
 
 只要具备相同权限，第三方客户端应能够通过公开 API 完成与官方客户端一致的核心业务能力。
+
+第三方客户端可以按自身需求转换展示时区，但不得假定 Server 返回的是无时区本地时间。
 
 ---
 
@@ -1800,6 +1993,9 @@ V2 的业务架构不应依赖具体框架才能成立，但结合当前仓库�
 | Server Framework | Spring Boot 4 / WebFlux |
 | Reactive Data | Reactor / R2DBC |
 | Database | PostgreSQL |
+| Entity ID | UUIDv7 / PostgreSQL `uuid` |
+| Time Storage | PostgreSQL `timestamptz` |
+| Default App Timezone | UTC+8 |
 | Cache | Redis，可选 |
 | API Contract | OpenAPI |
 | Plugin Runtime | PF4J 方向，V2 重新定义稳定扩展契约 |
@@ -1942,6 +2138,33 @@ flowchart TB
 
 不以“未来可能很多用户”为理由提前构建复杂分布式架构。
 
+### 26.6 资源限制、限流与背压
+
+所有高成本能力都必须具备明确的资源治理机制，不能假设自托管实例的调用量永远很小。
+
+至少需要考虑：
+
+- HTTP API Rate Limit；
+- 单次上传大小限制；
+- 并发上传 / 下载限制；
+- Background Task 全局与分类并发限制；
+- 单用户或单来源批处理数量限制；
+- AI 请求并发、Token、上下文或成本额度；
+- Webhook 最大重试次数和退避策略；
+- Automation 单位时间执行次数限制；
+- Plugin 可使用的线程、任务、外部调用等资源边界；
+- Worker 并发与队列背压；
+- 可选 Storage Quota；
+- 导入、转码、索引、备份等大任务的磁盘和临时空间保护。
+
+统一原则：
+
+1. 具体限额可以由部署配置决定，但系统能力必须预留限流、并发控制、配额或背压入口。
+2. 超出资源限制时必须返回可解释状态，不能通过无限排队或 OOM 作为事实上的流控机制。
+3. Background Task 队列应能够区分等待、执行、被限流和失败，而不是把所有未执行任务都表示为相同状态。
+4. Rate Limit 和 Quota 必须遵守身份与权限上下文，避免不同用户或插件互相耗尽资源而无法追踪来源。
+5. Secure Domain、AI、Plugin 和外部 Provider 等高成本或高风险能力可以定义更严格的独立限制。
+
 ---
 
 ## 27. 故障与降级原则
@@ -2030,6 +2253,8 @@ entity/
   ↓
 执行 Schema Migration
   ↓
+校验 Database Schema Version
+  ↓
 初始化 Security / Key Runtime
   ↓
 加载核心子系统
@@ -2047,6 +2272,8 @@ entity/
 对外提供服务
 ```
 
+系统不得在 Schema Version 不受当前版本支持时带病启动并继续写入业务数据。
+
 ### 29.2 停机阶段
 
 优雅停机应：
@@ -2061,7 +2288,7 @@ entity/
 
 ---
 
-## 30. 设计文档关系
+## 30. 设计文档关系与架构治理
 
 本概要设计与现有 V2 文档的关系如下：
 
@@ -2083,6 +2310,36 @@ entity/
 
 未来新增 Media、Reading、Music、Storage、Search、Collaboration、Plugin 等详细设计时，都应以本文档的系统边界作为上位约束。
 
+### 30.1 Architecture Decision Record
+
+对全系统具有长期影响且一旦改变会产生广泛迁移成本的决策，应使用 ADR（Architecture Decision Record）记录其背景、备选方案、最终选择与后果。
+
+至少以下类型的决策适合建立 ADR：
+
+- UUIDv7 作为统一实体主键；
+- PostgreSQL-first；
+- 时间统一使用带时区时间以及应用默认 UTC+8；
+- Modular Monolith 优先；
+- Resource-centric；
+- Attachment / Blob / Placement 分离；
+- Capability / Command / Event 边界；
+- Secure Domain 与普通业务数据分离；
+- Plugin 公共契约与权限模型；
+- API / Event / Export 版本策略；
+- 影响整个系统的存储、搜索或一致性策略变化。
+
+ADR 与概要设计的职责不同：
+
+```text
+System Overview
+回答：当前统一规则是什么
+
+ADR
+回答：为什么选择这条规则、考虑过什么方案、改变它会带来什么后果
+```
+
+ADR 被新决策替代时应标记 Superseded，而不是删除历史记录。
+
 ---
 
 ## 31. 关键架构决策摘要
@@ -2094,20 +2351,30 @@ V2 当前系统级关键决策如下：
 3. **Storage Placement 独立**：Blob 可以有多个物理副本。
 4. **PostgreSQL-first**：核心业务数据库只面向 PostgreSQL。
 5. **UUIDv7 主键统一**：所有具有独立实体身份的系统内部持久化实体统一使用 UUIDv7 主键，外部 ID 与内容 Hash 保持独立身份语义。
-6. **模块化单体优先**：初期不主动微服务化。
-7. **HTTP-first**：公开 API 是客户端与外部集成主要边界。
-8. **子系统拥有自己的状态**：其他模块禁止直接修改内部数据。
-9. **Capability / Command / Event 分离**：同步查询、状态变更和异步传播具有不同语义。
-10. **跨系统最终一致性**：Search、Analytics、Automation、Notification 默认异步。
-11. **Durable Event**：关键事件使用可靠事件机制，不能只依赖内存发布。
-12. **Search / Analytics 是派生数据**：必须能够重建。
-13. **Platform RBAC 与 Resource ACL 分离**：平台权限和实例权限不混用。
-14. **Secure Domain 显式声明**：高敏感加密边界不扩散到普通业务。
-15. **Secret 与 Parameter 分离**：敏感凭据不能作为普通配置保存。
-16. **AI 不是真相源**：AI 只能建议或通过受控 Tool 执行业务操作。
-17. **Plugin 受权限约束**：插件不拥有默认全库访问权。
-18. **Background Task、Scheduled Job、Productivity Task 分离**。
-19. **自托管简单性长期保留**：单机部署不是过渡方案，而是正式支持场景。
+6. **UUIDv7 统一生成**：平台统一 ID Generator 负责高并发、时钟回拨和未来多节点场景；UUIDv7 不替代正式业务时间与排序字段。
+7. **时间必须带时区**：数据库时间点统一使用 `timestamptz`，API 禁止无时区 datetime。
+8. **应用时区统一**：所有官方客户端根据应用配置时区转换展示时间，默认应用时区为 UTC+8；统计、计划和自然日边界同样遵循该配置。
+9. **实体公共字段统一**：独立持久化实体原则上统一使用 `id / created_at / updated_at / version` 基础字段并按需要扩展审计与软删除字段。
+10. **Schema / Migration 有领域所有权**：子系统拥有自己的数据结构和 Migration，生产 Schema 变更只能通过版本化 Migration 执行。
+11. **模块化单体优先**：初期不主动微服务化。
+12. **HTTP-first**：公开 API 是客户端与外部集成主要边界。
+13. **契约显式版本化**：Database Schema、API、Plugin API、Event 与 Export Format 分别维护版本语义。
+14. **Capability Discovery**：客户端通过统一能力发现了解当前实例支持的可选能力，但能力发现不替代权限判断。
+15. **子系统拥有自己的状态**：其他模块禁止直接修改内部数据。
+16. **Capability / Command / Event 分离**：同步查询、状态变更和异步传播具有不同语义。
+17. **跨系统最终一致性**：Search、Analytics、Automation、Notification 默认异步。
+18. **Durable Event**：关键事件使用可靠事件机制，不能只依赖内存发布。
+19. **Search / Analytics 是派生数据**：必须能够重建。
+20. **Platform RBAC 与 Resource ACL 分离**：平台权限和实例权限不混用。
+21. **Secure Domain 显式声明**：高敏感加密边界不扩散到普通业务。
+22. **Secret 与 Parameter 分离**：敏感凭据不能作为普通配置保存。
+23. **AI 不是真相源**：AI 只能建议或通过受控 Tool 执行业务操作。
+24. **Plugin 受权限约束**：插件不拥有默认全库访问权。
+25. **Background Task、Scheduled Job、Productivity Task 分离**。
+26. **Backup 与 Export 分离**：实例灾难恢复和用户数据迁移是不同产品能力，用户数据必须具有可迁移路径。
+27. **高成本能力必须受资源治理**：上传、任务、AI、Webhook、Automation、Plugin、Worker 等必须具备限流、并发、配额或背压机制。
+28. **ADR 记录关键架构选择**：重大系统级决策必须保留选择理由和演进历史。
+29. **自托管简单性长期保留**：单机部署不是过渡方案，而是正式支持场景。
 
 ---
 
@@ -2128,10 +2395,12 @@ V2 当前系统级关键决策如下：
 11. Background Task / Scheduler Design；
 12. Notification Subsystem Design；
 13. Backup / Restore / Archive Design；
-14. V2 Database Overview Design；
-15. V2 API Convention；
-16. V2 Deployment & Operations Guide；
-17. CMS 与 App 交互设计。
+14. Data Export / Import Format Design；
+15. V2 Database Overview Design；
+16. V2 API Convention；
+17. Contract Versioning / Compatibility Design；
+18. V2 Deployment & Operations Guide；
+19. CMS 与 App 交互设计。
 
 这些文档应继续遵循本文确定的统一模型和系统边界，避免各子系统独立设计后再次出现概念重复、权限重复、存储重复和跨模块直接耦合。
 
@@ -2146,6 +2415,8 @@ Ikaros V2 的核心不是简单增加更多功能，而是建立一套能够长�
 ```text
 统一 Resource 身份
   +
+UUIDv7 / 带时区时间 / 统一基础约束
+  +
 专业领域子系统
   +
 Attachment / Blob / Storage 基础
@@ -2153,6 +2424,8 @@ Attachment / Blob / Storage 基础
 Identity / Permission / Secure Data
   +
 Capability / Command / Event / Automation
+  +
+Versioned Contract / Capability Discovery
   +
 Search / Analytics / AI 横向能力
   +
