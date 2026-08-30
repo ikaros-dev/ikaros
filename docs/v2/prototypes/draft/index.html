@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="Ikaros V2 Material Design 3 可交互 CMS 产品原型">
+  <title>Ikaros · V2 工作空间</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell" data-od-id="ikaros-app-shell">
+    <aside class="nav-drawer" id="navDrawer" aria-label="主导航" data-od-id="primary-navigation">
+      <div class="brand" data-od-id="product-brand">
+        <div class="brand-mark" aria-hidden="true" id="brandMark"></div>
+        <div class="brand-copy">
+          <div class="brand-name">Ikaros</div>
+          <div class="brand-meta">V2 工作空间 · 交互原型</div>
+        </div>
+      </div>
+      <nav class="nav-scroll" id="navGroups"></nav>
+      <div class="nav-footer">
+        <button class="nav-item" data-route="prototype" data-od-id="nav-prototype-notes">
+          <span class="nav-icon" aria-hidden="true"></span><span>原型说明与范围</span><span class="stage">P0–P2</span>
+        </button>
+      </div>
+    </aside>
+    <div class="scrim" id="navScrim" aria-hidden="true"></div>
+
+    <div class="main-column">
+      <header class="top-app-bar" id="topBar" data-od-id="top-app-bar">
+        <button class="icon-button menu-button" id="menuButton" aria-label="打开导航菜单" data-od-id="mobile-menu-button"></button>
+        <label class="global-search" data-od-id="global-search-control">
+          <span id="searchIcon" aria-hidden="true"></span>
+          <input id="globalSearch" type="search" autocomplete="off" placeholder="搜索资源、任务、交易与设置" aria-label="全局搜索">
+          <span class="kbd">Ctrl K</span>
+        </label>
+        <div class="top-actions">
+          <button class="icon-button quick-hide" id="quickButton" aria-label="快捷操作" title="快捷操作"></button>
+          <button class="icon-button" id="notificationButton" aria-label="打开通知中心" title="通知中心"><span class="notification-dot" id="notificationDot"></span></button>
+          <button class="icon-button" id="themeButton" aria-label="切换明暗主题" title="切换主题"></button>
+          <button class="icon-button avatar-button" id="profileButton" aria-label="打开个人菜单" title="演示用户"><span class="avatar">林</span></button>
+        </div>
+      </header>
+
+      <section class="page-head" data-od-id="page-heading-region">
+        <div>
+          <div class="breadcrumb" id="breadcrumb">Ikaros / 工作台</div>
+          <h1 id="pageTitle" data-od-id="page-title">概览</h1>
+          <p class="page-subtitle" id="pageSubtitle">正在载入工作空间…</p>
+        </div>
+        <div class="page-actions" id="pageActions"></div>
+      </section>
+
+      <main class="content" id="view" tabindex="-1" data-od-id="page-content"></main>
+    </div>
+  </div>
+
+  <button class="fab" id="fab" data-od-id="context-fab" aria-label="创建"><span id="fabIcon"></span><span id="fabLabel">创建</span></button>
+
+  <div class="overlay" id="sheetOverlay" aria-hidden="true"></div>
+  <aside class="side-sheet" id="sideSheet" aria-label="详情" aria-hidden="true" data-od-id="detail-side-sheet"></aside>
+
+  <dialog id="appDialog" aria-labelledby="dialogTitle" data-od-id="app-dialog">
+    <div class="dialog-head"><h2 id="dialogTitle">对话框</h2><p class="muted" id="dialogSubtitle"></p></div>
+    <div class="dialog-body" id="dialogBody"></div>
+    <div class="dialog-actions" id="dialogActions"></div>
+  </dialog>
+
+  <div class="snackbar" id="snackbar" role="status" aria-live="polite"><span id="snackbarText"></span><button id="snackbarAction" hidden></button></div>
+  <div id="floatingPanel"></div>
+
+  <script src="app-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+
