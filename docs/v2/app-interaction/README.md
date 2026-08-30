@@ -449,3 +449,292 @@ UI 必须使用状态 Chip + 解释文本。例如：
 3. 写明页面目的、入口、布局、组件、字段、状态、交互与响应式变化。
 4. 写明安全边界与离线语义（如果适用）。
 5. 如果页面依赖 V2 设计新增业务能力，应先更新对应 V2 产品 / 子系统文档，不在 UI 文档中偷偷创造新的业务事实。
+
+---
+
+## 14. 文档优先级与冲突处理
+
+`docs/v2/` 下的 Product Requirements Document、System Overview 与各子系统设计文档是 Ikaros V2 业务语义的 **Source of Truth**。
+
+`docs/v2/app-interaction/` 是领域设计到客户端实现之间的 UI / UX 契约层，负责把已经确定的业务能力映射为：
+
+- 用户能够理解的信息架构。
+- 可操作的页面与导航。
+- 明确的组件、字段和状态。
+- 跨尺寸响应式布局。
+- 可由 Flutter 客户端实现的交互流程。
+
+设计层级为：
+
+```text
+V2 PRD / System Overview
+        ↓
+Subsystem / Domain Design
+        ↓
+App Interaction Design
+        ↓
+Flutter Implementation
+```
+
+如果 App 交互设计与上位 V2 领域设计发生冲突，应优先修正交互设计，不得为了 UI 实现便利而改变既有领域模型、权限边界、安全语义或业务事实。
+
+如果交互设计需要一个上位文档尚未定义的新业务能力，应先补充相应 PRD / Subsystem Design，再在本目录中设计对应页面。
+
+---
+
+## 15. Review Focus
+
+本目录及后续相关 PR 的 Review 应优先检查“产品与领域语义是否正确”，而不是只检查 Markdown 格式。
+
+### 15.1 信息架构
+
+重点确认：
+
+- App 一级导航是否符合 V2 产品定位。
+- 子系统分组是否符合用户使用路径。
+- 高频功能是否拥有足够短的操作路径。
+- 低频能力是否避免挤占主导航。
+- Desktop 与 Mobile 是否共享一致的信息架构，而不是形成两套产品。
+
+### 15.2 App / CMS 边界
+
+重点确认是否存在将后台管理能力错误暴露到普通用户 App 的情况。
+
+App 应关注当前用户自己的：
+
+- 数据与 Resource。
+- 设备与 Session。
+- 通知与 Activity。
+- Download / Offline / Sync 状态。
+- 用户级 Automation / Integration。
+- 分享、Room 与协作行为。
+
+CMS 负责平台级：
+
+- User / Role / Permission。
+- Parameter / Dictionary / Menu。
+- Audit。
+- Scheduled Job。
+- Runtime Metrics / Health / Alert。
+- Storage Provider。
+- Blob 生命周期、GC 与 Retention。
+- 其他平台治理与运维能力。
+
+### 15.3 领域语义
+
+Review 时必须特别关注 UI 是否错误合并 V2 中已经明确区分的概念，例如：
+
+```text
+Resource ≠ Attachment ≠ Blob
+Download ≠ Cache
+Task ≠ Calendar Event
+Scheduled Time ≠ Deadline
+Time Block ≠ Task
+Goal ≠ Task List
+Transfer ≠ Expense + Income
+Login ≠ Secure Vault Unlock
+Account Recovery ≠ Vault Recovery
+AI Suggestion ≠ Business Fact
+Activity ≠ Audit
+Import ≠ Sync
+```
+
+UI 可以简化操作路径，但不能改变这些业务事实。
+
+### 15.4 响应式布局
+
+重点检查 Compact、Medium、Expanded、Large 四种 Size Class 下：
+
+- 主操作是否始终可发现。
+- 页面是否真正重排，而不是简单拉宽或缩小。
+- Desktop 是否有效利用宽屏空间。
+- Mobile 是否避免堆叠过多复杂组件。
+- Detail / Context Pane 是否只在合适宽度出现。
+- Drawer / NavigationRail / Permanent Sidebar 的切换是否合理。
+
+### 15.5 Offline-first
+
+重点检查以下状态是否能够被用户明确理解：
+
+- Local Only。
+- Pending Sync。
+- Syncing。
+- Synced。
+- Conflict。
+- Offline。
+- Downloaded。
+- Cached。
+- Remote Only。
+- Processing。
+- Restoring。
+- Missing。
+- Corrupted。
+
+禁止将离线本地写入伪装成“已同步成功”，禁止将 Cache 表述为用户主动维护的永久 Download，也禁止后台任务只呈现没有语义的无限 Loading。
+
+### 15.6 Secure Domain
+
+Private Notes 与 Password Manager 应重点检查：
+
+- Locked 状态是否泄露 Protected Metadata。
+- App Switcher / Screenshot 是否泄露敏感内容。
+- Clipboard 是否按规则自动清理。
+- Secure Attachment 是否采用安全读取流程。
+- Offline Cache 是否保持加密。
+- 本地 Search Index 是否符合加密要求。
+- Login 与 Vault Unlock 是否明确分离。
+- Account Recovery 与 Cryptographic Recovery 是否明确分离。
+- AI 是否默认无法访问 Secure Domain。
+
+### 15.7 AI
+
+AI 交互必须满足：
+
+```text
+Agent Permission ⊆ Current Principal Permission
+```
+
+并确认：
+
+- AI 不绕过 Capability / Command。
+- AI 不通过客户端设计获得数据库直写语义。
+- 高风险动作必须存在显式用户确认。
+- Tool Call 有明确执行状态与结果。
+- AI 建议与真实业务状态存在可理解的视觉区别。
+- Context 来源可查看。
+- External Model 的隐私边界可理解。
+- AI Memory 与业务事实保持分离。
+
+---
+
+## 16. Non-goals
+
+本目录当前**不负责定义**：
+
+- 最终视觉稿与 Pixel-perfect UI。
+- 品牌视觉规范。
+- Design Token / Color Token / Typography Token / Animation Token。
+- Flutter Widget 的最终技术选型。
+- Flutter 状态管理方案。
+- Router 实现方案。
+- API Contract / DTO。
+- 数据库 Schema。
+- 后端领域模型。
+- CMS Console 页面交互。
+- 各平台原生能力的具体实现代码。
+
+文档中出现的 Material Design 3 / Flutter Widget 名称主要用于表达推荐的 UI 结构，例如：
+
+```text
+NavigationBar
+NavigationRail
+NavigationDrawer
+SearchAnchor
+FilterChip
+SegmentedButton
+ModalBottomSheet
+Dialog
+SnackBar
+```
+
+这些是推荐实现映射，而不是不可替换的技术约束。
+
+真正需要长期保持稳定的是：
+
+- 信息层级。
+- 页面职责。
+- 字段语义。
+- 用户操作路径。
+- 状态变化。
+- 权限边界。
+- 安全边界。
+- 响应式行为。
+
+---
+
+## 17. 命名约定
+
+为了与 V2 领域模型、代码和未来 Flutter Route 保持一致：
+
+- 目录名使用英文。
+- Markdown 文件名使用英文。
+- 文档正文使用中文。
+- 领域实体优先使用 V2 已定义名称。
+- 首次出现的重要英文领域术语可以保留英文。
+- 不为了 UI 文案重新创造第二套领域概念。
+
+优先沿用的领域术语包括但不限于：
+
+```text
+Resource
+Collection
+Attachment
+Activity
+Task
+Project
+Goal
+OKR
+Time Block
+Ledger
+Transaction
+Vault
+Persona
+Automation
+Room
+```
+
+具体面向最终用户展示的中文文案可以在客户端实现阶段继续优化，但不得因此改变领域语义。
+
+---
+
+## 18. 文档演进原则
+
+后续新增或调整 V2 功能时，推荐按照以下顺序演进：
+
+```text
+1. Product Requirement
+        ↓
+2. System / Subsystem / Domain Design
+        ↓
+3. App Interaction Design
+        ↓
+4. Flutter Implementation
+        ↓
+5. Interaction Feedback
+        ↓
+6. Design Document Revision
+```
+
+原则上不采用长期的“先实现页面，再根据代码反推产品设计”流程。
+
+如果开发过程中发现交互文档无法合理实现，应先判断问题属于：
+
+1. 页面交互设计问题。
+2. 领域模型缺少能力。
+3. API 能力不足。
+4. 平台能力缺失。
+5. 客户端技术限制。
+
+然后回到对应设计层解决，而不是在 Flutter 页面内部引入隐式业务规则。
+
+---
+
+## 19. 设计文档定位
+
+Ikaros V2 App 相关文档的职责层级为：
+
+```text
+PRD
+定义“为什么做、做什么”
+
+System / Subsystem Design
+定义“业务世界如何运作，以及系统级约束是什么”
+
+App Interaction Design
+定义“用户如何看到并操作这些能力”
+
+Flutter App
+定义“客户端如何实现这些交互”
+```
+
+因此 `docs/v2/app-interaction/` 应作为 V2 App UI / UX 的长期维护基线，而不是一次性的页面草稿。
