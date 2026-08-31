@@ -4,7 +4,7 @@
 |---|---|
 | 文档名称 | Ikaros V2 系统概要设计 |
 | 适用版本 | Ikaros V2 |
-| 文档版本 | v0.3 |
+| 文档版本 | v0.4 |
 | 编写日期 | 2026-08-30 |
 | 最后更新 | 2026-08-31 |
 | 状态 | 草案（Draft） |
@@ -68,7 +68,7 @@ Ikaros V2 的主要运行模式仍然是用户自行部署。
 
 ### 2.2 数据自主
 
-用户的 Resource、Attachment、Blob、文档、媒体、个人状态、创作数据与配置应由用户自己的 Ikaros 实例控制。
+用户的 Resource、Attachment、Blob、Personal Drive 文件空间、文档、媒体、个人状态、创作数据与配置应由用户自己的 Ikaros 实例控制。
 
 第三方服务只能作为：
 
@@ -111,6 +111,7 @@ V2 使用统一 Resource 身份和通用平台能力，但不能把所有内容�
 - 小说与电子书的章节、排版和阅读进度；
 - 音乐的艺术家、专辑、曲目和播放队列；
 - 图片的相册、EXIF、预览与原图；
+- Personal Drive 的文件树、File Revision、Trash、设备目录备份与文件同步；
 - 文档的 Revision、协作和编辑；
 - Productivity 的 Task、Goal、Project、OKR；
 - Accounting 的 Ledger、Account、Transaction、Budget；
@@ -273,6 +274,7 @@ Ikaros Instance
 ├── Application Configuration
 ├── Users / Roles / Permissions
 ├── Resources / Collections / Relations
+├── Personal Drive / File Sync
 ├── Attachments / Blobs / Storage
 ├── Plugins / Providers
 ├── Automation / Background Tasks
@@ -366,6 +368,7 @@ Ikaros Server 负责：
 - 业务规则；
 - 身份与权限；
 - Resource 与 Attachment 管理；
+- Personal Drive 文件空间、File Revision、Trash 与服务端同步状态；
 - 存储编排；
 - 搜索与索引；
 - 插件；
@@ -386,10 +389,11 @@ Ikaros Server 负责：
 - 媒体播放；
 - 漫画、小说、文档阅读；
 - 部分离线缓存；
+- Personal Drive 的本地目录选择、文件变化采集、Camera Roll 接入与传输执行；
 - Secure Domain 中需要客户端持有密钥时的本地解锁与解密；
 - 设备能力接入。
 
-客户端不得成为跨设备业务状态的唯一真相源。
+客户端不得成为跨设备业务状态的唯一真相源。Drive 的文件身份、Revision、Trash、冲突结果和远端同步事实由 Server 端领域状态权威决定。
 
 ### 3.3 Instance 边界
 
@@ -418,6 +422,7 @@ flowchart TB
     subgraph Application[应用与平台层]
         SECURITY[身份 / 权限 / 安全]
         RESOURCE[Resource / Collection / Relation]
+        DRIVE[Personal Drive / File Sync]
         CONTENT[媒体 / 阅读 / 音乐 / 图片 / 创作]
         PRODUCTIVITY[效率规划]
         FINANCE[个人财务]
@@ -768,6 +773,70 @@ Analytics 数据属于派生数据，不能反过来成为业务状态真相源�
 
 插件执行任何业务修改时仍需进入目标子系统的公开 Command / Capability。
 
+### 5.17 Personal Drive / File Synchronization 子系统
+
+Personal Drive 是正式的一级业务子系统，负责“用户可理解的文件空间与文件同步语义”。
+
+主要拥有：
+
+- Drive Space；
+- Drive Node / File / Folder；
+- 稳定文件身份与父子关系；
+- File Revision / Current Revision；
+- Trash / Restore / Permanent Delete 请求；
+- Special Folder；
+- Drive Quota / Logical Usage Projection；
+- Sync Binding；
+- Local Item / Remote Node Mapping；
+- 文件级 Sync State；
+- Conflict / Conflict Copy；
+- Camera Backup 的文件侧状态；
+- Drive Command / Query / Event 契约。
+
+该子系统不拥有：
+
+- Blob Placement、Bucket、Object Key 或物理文件路径；
+- 通用 Device Registration、Change Feed、Sync Cursor Runtime 与 Pending Mutation Envelope；
+- Photo 的 EXIF、Timeline、Album；
+- Media 的播放、转码、字幕领域模型；
+- Document 的协同编辑语义。
+
+其跨域关系必须保持：
+
+```text
+Drive File Node
+      ↓ current revision
+File Revision
+      ↓
+Attachment
+      ↓
+Blob
+      ↓
+Placement / Storage Provider
+```
+
+以及：
+
+```text
+Offline / Device Sync Runtime
+      ↓ 提供可靠传播、Cursor、Pending Mutation
+Personal Drive
+      ↓ 定义文件树、Revision、同步策略与冲突语义
+Photo / Media / Document
+      ↓ 可选领域投影
+```
+
+核心规则：
+
+1. **Drive Node ID ≠ Path**：路径是用户组织语义，不是内容身份。
+2. **File Revision 不可变**：覆盖写必须创建新 Revision，不原地改写 Blob。
+3. **Drive File ≠ Attachment / Blob**：文件空间身份、业务内容对象和实际字节身份分离。
+4. **Backup Mode ≠ Two-way Sync**：单向备份默认不得传播远端删除去破坏本地原始数据。
+5. **Sync Runtime ≠ Drive Conflict Resolver**：通用同步基础设施负责可靠传播，Drive 负责文件级合并与冲突判断。
+6. **Camera Backup Success ≠ Photo Projection Success**：原始文件保存和照片专业入库必须分别可观测。
+7. **Trash / Revision Retention ≠ Blob GC**：Drive 生命周期不能直接绕过 Storage 引用检查触发物理删除。
+8. **Share 不复制文件所有权**：Drive File / Folder 可以进入统一 ACL / Share，但授权不创建第二份 Blob。
+
 ---
 
 ## 6. 平台核心模型
@@ -887,6 +956,31 @@ Resource
 
 用户明确确认或修改的数据默认具有更高优先级，自动同步不得无提示覆盖。
 
+### 6.9 Drive Node / File Revision
+
+Drive Node 表达用户文件空间中的稳定节点身份；File Revision 表达某个文件节点在某一时刻已经提交的不可变内容版本。
+
+```text
+Drive Space
+  ↓
+Drive Node (File / Folder)
+  ↓ File only
+File Revision
+  ↓
+Attachment
+  ↓
+Blob
+```
+
+统一原则：
+
+- Folder 只表达组织结构，不持有 Blob；
+- Move / Rename 只改变组织关系，不改变 Drive Node 身份；
+- 文件内容替换产生新的 File Revision；
+- Path 由父子关系和名称推导，不作为稳定 ID；
+- 同一 Blob 可以被不同 Drive File Revision 或其他领域 Attachment 复用，物理去重不等于业务对象合并；
+- Drive File 可以保持为普通文件，也可以通过显式领域投影进入 Photo / Media / Document 等专业 Resource。
+
 ---
 
 ## 7. 子系统边界与联动模型
@@ -947,6 +1041,9 @@ Task Completed
 - ResourceCreated；
 - AttachmentImported；
 - BlobReplicaLost；
+- DriveFileRevisionCommitted；
+- DriveNodeMoved；
+- DriveSyncConflictDetected；
 - TaskCompleted；
 - DocumentPublished；
 - RoomCreated；
@@ -1041,6 +1138,7 @@ PostgreSQL 保存：
 - Attachment 元数据；
 - Blob 元数据；
 - Placement 状态；
+- Personal Drive 的 Drive Space / Node / File Revision / Trash / Sync Binding / Conflict 等领域状态；
 - 用户；
 - 权限；
 - 业务状态；
@@ -1231,6 +1329,41 @@ Derived Attachment
 
 客户端不能只得到一个模糊的“404”或“播放失败”，而应能解释内容为什么当前不可用。
 
+### 9.5 Personal Drive 文件写入与设备备份流程
+
+Personal Drive 的文件写入必须复用 Attachment / Blob Storage，而不是维护第二套物理文件存储体系。
+
+基础流程：
+
+```mermaid
+flowchart LR
+    LOCAL[本地文件 / Camera Roll]
+    CLIENT[Desktop / Mobile Sync Client]
+    UPLOAD[可恢复上传 / 完整性确认]
+    BLOB[Blob + Placement]
+    ATTACH[Attachment]
+    REV[File Revision]
+    NODE[Drive File Node]
+    PROJ[可选领域投影]
+
+    LOCAL --> CLIENT
+    CLIENT --> UPLOAD
+    UPLOAD --> BLOB
+    BLOB --> ATTACH
+    ATTACH --> REV
+    REV --> NODE
+    REV --> PROJ
+```
+
+系统级边界：
+
+1. 上传完成只有在 Storage 完整性确认和 Drive Revision 原子提交完成后，才能成为可见的远端文件版本。
+2. 断点续传、分片和临时上传状态不等于正式 File Revision。
+3. 单向 Backup 与双向 Sync 必须使用不同同步策略，不能用一套删除传播规则处理所有场景。
+4. 设备侧变化检测和本地路径只作为同步输入；服务端 Drive Node ID、Revision 与稳定 Cursor 才是跨设备收敛依据。
+5. Photo / Media / Document 投影失败不得回滚已经成功保存的 Drive 原始文件；投影作为独立可重试状态处理。
+6. Drive 删除、Revision 清理和物理 Blob GC 继续遵守 Attachment / Blob Storage 的引用与保留规则。
+
 ---
 
 ## 10. API 总体设计
@@ -1343,6 +1476,9 @@ Export Format Version
 Server 应提供统一 Capability Discovery 能力，用于暴露当前实例可用的产品与运行能力，例如：
 
 ```text
+drive.enabled
+drive.device_backup.available
+drive.two_way_sync.available
 ai.enabled
 room.enabled
 secure_notes.enabled
@@ -1408,6 +1544,8 @@ V2 中至少存在三种“任务”概念，必须严格区分。
 系统一次异步执行实例，例如：
 
 - 导入；
+- Personal Drive 目录扫描、备份、同步与冲突修复；
+- Camera Backup 批量传输；
 - 转码；
 - OCR；
 - 索引重建；
@@ -1588,6 +1726,7 @@ Resource ACL：
 - 能否查看某个 Resource；
 - 能否编辑某个 Document；
 - 能否下载某个 Attachment；
+- 能否读取、写入或分享某个 Drive File / Folder；
 - 能否管理某个 Collection；
 - 能否加入某个 Room。
 
@@ -1931,6 +2070,7 @@ Resource 被删除不代表 Blob 可以立即删除。
 Blob 可能仍然被以下对象引用：
 
 - 其他 Attachment；
+- Drive File Revision；
 - Revision；
 - Share；
 - Backup；
@@ -2064,6 +2204,7 @@ Activity
 - Scheduled Job；
 - Event Backlog；
 - Search Index Lag；
+- Drive Sync Lag / Conflict / Failed Transfer；
 - Storage Provider Health；
 - Blob Missing / Corrupted；
 - Cache；
@@ -2109,6 +2250,7 @@ CMS 主要面向：
 - 内容管理；
 - Resource 编辑；
 - Collection 管理；
+- Personal Drive 文件管理、Trash、Revision 与同步状态查看；
 - 用户、角色与权限；
 - Plugin；
 - Storage；
@@ -2127,6 +2269,8 @@ CMS 展示时间时必须使用 Server 提供或配置同步得到的应用时�
 Flutter App 主要面向：
 
 - 内容发现；
+- Personal Drive 文件访问、上传下载与设备目录备份；
+- 支持能力可用时的双向文件同步与 Camera Backup；
 - 播放；
 - 阅读；
 - 音乐；
@@ -2167,6 +2311,7 @@ V2 的业务架构不应依赖具体框架才能成立，但结合当前仓库�
 | API Contract | OpenAPI |
 | Plugin Runtime | PF4J 方向，V2 重新定义稳定扩展契约 |
 | Search | 独立 Search Subsystem，具体引擎可演进 |
+| Personal Drive | 独立 Drive Domain，复用 Attachment / Blob Storage 与 Device Sync Runtime |
 | CMS | Vue / TypeScript / Vite 方向 |
 | App | Flutter |
 | Metrics | Micrometer / Prometheus 方向 |
@@ -2253,7 +2398,7 @@ flowchart TB
 - 普通列表和详情查询不应依赖跨全部子系统的大型 JOIN；
 - 大文件上传和下载使用流式处理；
 - 媒体内容不得整体加载到 JVM 内存；
-- 大规模导入、转码、索引、备份通过后台任务执行；
+- 大规模导入、Drive Sync、Camera Backup、转码、索引、备份通过后台任务执行；
 - Search / Analytics 使用派生数据降低核心业务库压力。
 
 ### 26.2 可靠性
@@ -2315,6 +2460,7 @@ flowchart TB
 - HTTP API Rate Limit；
 - 单次上传大小限制；
 - 并发上传 / 下载限制；
+- Drive Sync / Camera Backup 并发、带宽与待传输队列限制；
 - Background Task 全局与分类并发限制；
 - 单用户或单来源批处理数量限制；
 - AI 请求并发、Token、上下文或成本额度；
@@ -2350,6 +2496,7 @@ V2 必须允许非核心能力故障时继续提供核心服务。
 | Analytics 异常 | 核心业务不受影响，统计延迟更新 |
 | 单个 Storage Replica 异常 | 尝试其他可用副本并标记异常 |
 | 冷存储内容未恢复 | 返回 Restoring 状态，而不是假装资源不存在 |
+| Drive 客户端暂时离线 | Server 端文件事实继续可用；客户端恢复连接后基于稳定 Cursor / Mapping 收敛，不静默覆盖冲突 |
 | 单个 Plugin 崩溃 | 隔离插件故障，避免拖垮整个 Server |
 
 ---
@@ -2364,6 +2511,7 @@ V2 必须允许非核心能力故障时继续提供核心服务。
 server
 └── subsystem
     ├── resource
+    ├── drive
     ├── media
     ├── reading
     ├── music
@@ -2466,6 +2614,8 @@ entity/
 |---|---|
 | `Product-Requirements-Document.md` | 定义产品目标、核心概念、功能范围和产品约束 |
 | `System-Overview-Design.md` | 定义整个 V2 的系统级总体结构与统一架构规则 |
+| `Personal-Drive-File-Synchronization-Subsystem-Design.md` | 定义 Personal Drive、File Revision、文件同步、Camera Backup、冲突与跨域边界 |
+| `Personal-Drive-File-Synchronization-P0-Semantics.md` | 定义 Drive P0 Change Generation、Tombstone、Atomic Save、Quota 与同步一致性语义 |
 | `Platform-Integration-Automation-Design.md` | 详细定义 Capability、Command、Event、Relation、Automation、Activity、Context |
 | `Security-Identity-Authorization-Crypto-Subsystem-Design.md` | 详细定义认证、授权、Step-up、安全会话与密码学能力 |
 | `Secure-Data-Foundation-Design.md` | 定义 Secure Domain 的统一密文持久化与安全基础 |
@@ -2493,6 +2643,7 @@ entity/
 - Modular Monolith 优先；
 - Resource-centric；
 - Attachment / Blob / Placement 分离；
+- Personal Drive 的 Path / Node / File Revision 与 Attachment / Blob 分离；
 - Capability / Command / Event 边界；
 - Secure Domain 与普通业务数据分离；
 - Plugin 公共契约与权限模型；
@@ -2547,10 +2698,11 @@ V2 当前系统级关键决策如下：
 28. **AI 不是真相源**：AI 只能建议或通过受控 Tool 执行业务操作。
 29. **Plugin 受权限约束**：插件不拥有默认全库访问权。
 30. **Background Task、Scheduled Job、Productivity Task 分离**。
-31. **Backup 与 Export 分离**：实例灾难恢复和用户数据迁移是不同产品能力，用户数据必须具有可迁移路径。
-32. **高成本能力必须受资源治理**：上传、任务、AI、Webhook、Automation、Plugin、Worker 等必须具备限流、并发、配额或背压机制。
-33. **ADR 记录关键架构选择**：重大系统级决策必须保留选择理由和演进历史。
-34. **自托管简单性长期保留**：单机部署不是过渡方案，而是正式支持场景。
+31. **Personal Drive 是一级业务子系统**：Drive Node / Path / File Revision 表达文件空间和历史，不取代 Attachment / Blob；单向 Backup、双向 Sync、Camera Backup 使用明确不同语义并复用通用 Device Sync Runtime。
+32. **Backup 与 Export 分离**：实例灾难恢复和用户数据迁移是不同产品能力，用户数据必须具有可迁移路径。
+33. **高成本能力必须受资源治理**：上传、任务、AI、Webhook、Automation、Plugin、Worker 等必须具备限流、并发、配额或背压机制。
+34. **ADR 记录关键架构选择**：重大系统级决策必须保留选择理由和演进历史。
+35. **自托管简单性长期保留**：单机部署不是过渡方案，而是正式支持场景。
 
 ---
 
@@ -2579,7 +2731,8 @@ V2 当前系统级关键决策如下：
 19. Data Classification / Privacy Handling Design；
 20. Async Execution Semantics Design；
 21. V2 Deployment & Operations Guide；
-22. CMS 与 App 交互设计。
+22. Personal Drive App / CMS Interaction Design；
+23. CMS 与 App 交互设计。
 
 这些文档应继续遵循本文确定的统一模型和系统边界，避免各子系统独立设计后再次出现概念重复、权限重复、存储重复和跨模块直接耦合。
 
@@ -2597,6 +2750,8 @@ Ikaros V2 的核心不是简单增加更多功能，而是建立一套能够长�
 UUIDv7 / 带时区时间 / 统一基础约束
   +
 Instance / Configuration / Data Classification
+  +
+Personal Drive / File Revision / Device File Sync
   +
 专业领域子系统
   +
