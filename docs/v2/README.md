@@ -20,8 +20,12 @@
 - [`Core-Resource-Library-Subsystem-Design.md`](./Core-Resource-Library-Subsystem-Design.md) — Resource、Collection、Relation、Tag、External Identity、Metadata Provenance、用户状态、生命周期与搜索投影。
 - [`Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md`](./Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md) — Source、Scan、Candidate、Match、Import Plan、Metadata Refresh、Provenance、幂等与失败恢复。
 - [`Attachment-Blob-Storage-Subsystem-Design.md`](./Attachment-Blob-Storage-Subsystem-Design.md) — Attachment / Blob / Replica / 分层存储与内容生命周期。
+- [`Personal-Drive-File-Synchronization-Subsystem-Design.md`](./Personal-Drive-File-Synchronization-Subsystem-Design.md) — Drive Space、Drive Node、File Revision、上传下载、目录同步、Camera Backup、冲突与分享边界。
+- [`Personal-Drive-File-Synchronization-P0-Semantics.md`](./Personal-Drive-File-Synchronization-P0-Semantics.md) — Drive Change Generation、Tombstone / Restore、Atomic Save、Quota、Camera Backup 与 P0 同步一致性语义。
 - [`Sharing-Collaboration-Room-Subsystem-Design.md`](./Sharing-Collaboration-Room-Subsystem-Design.md) — Share、Invite、Room、Membership、Presence、实时状态、Sequence、Replay 与权限收敛。
 - [`Offline-Cache-Device-Synchronization-Subsystem-Design.md`](./Offline-Cache-Device-Synchronization-Subsystem-Design.md) — Device、Download / Cache、Pending Mutation、Change Feed / Cursor、Tombstone、Conflict、Full Resync 与 Secure Offline Data。
+- [`Search-Discovery-Subsystem-Design.md`](./Search-Discovery-Subsystem-Design.md) — Search Document、权限感知查询、索引投影、Generation Rebuild、失败恢复与 Semantic Search 边界。
+- [`Backup-Restore-Data-Portability-Subsystem-Design.md`](./Backup-Restore-Data-Portability-Subsystem-Design.md) — Restore Point、Backup Manifest、一致恢复点、Verification、Restore、Retention、Export / Import 与安全边界。
 - [`Background-Task-Scheduler-Design.md`](./Background-Task-Scheduler-Design.md) — 后台任务、调度、重试、状态与 Worker 执行模型。
 - [`Platform-Integration-Automation-Design.md`](./Platform-Integration-Automation-Design.md) — Capability、Command、Event、Automation 与外部集成。
 - [`Platform-Administration-Operations-Subsystem-Design.md`](./Platform-Administration-Operations-Subsystem-Design.md) — 平台配置、通知、审计、运维、管理与可观测性。
@@ -96,7 +100,8 @@
 |---|---|---|---|---|---|
 | Resource / Collection / Relation / User State | ✅ | ✅ `Core-Resource-Library-Subsystem-Design.md` | ✅ | 部分 | 核心契约已覆盖 |
 | Content Ingestion / Import / Metadata Sync | ✅ | ✅ `Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md` | 间接 | 部分 | 核心契约已覆盖 |
-| Attachment / Blob / Storage | ✅ | ✅ | 间接 | ✅ | 已覆盖 |
+| Attachment / Blob / Storage | ✅ | ✅ `Attachment-Blob-Storage-Subsystem-Design.md` | 间接 | ✅ | 核心契约已覆盖 |
+| Personal Drive / File Sync / Camera Backup | ⚠️ 详细设计新增早于 PRD / System Overview 正式收录 | ✅ 主设计 + P0 Semantics | 尚未形成独立交互规格 | 尚未形成独立管理规格 | 服务端契约已较完整；产品 / 系统基线需后续显式确认 |
 | Sharing / Collaboration / Room | ✅ | ✅ `Sharing-Collaboration-Room-Subsystem-Design.md` | ✅ | 部分 | 核心契约已覆盖 |
 | Offline Cache / Device Sync | ✅ 系统原则 | ✅ `Offline-Cache-Device-Synchronization-Subsystem-Design.md` | ✅ | 不适用 | 核心契约已覆盖 |
 | Content Creation / Revision / Collaborative Document | ✅ | ✅ `Content-Creation-Revision-Collaborative-Document-Subsystem-Design.md` | ✅ | ✅ | 核心契约已覆盖 |
@@ -117,18 +122,22 @@
 | Personal Finance | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
 | Password Manager | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
 | Private Notes | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
-| Search / Discovery | ✅ | 核心投影契约已覆盖；实现级设计视复杂度再拆分 | ✅ | 部分 | 基础已覆盖 |
-| Backup / Restore / Data Portability | ✅ | System Overview + Database Overview 已定义核心原则 | 间接 | 运维入口 | 基础已覆盖；生产化时可拆专项设计 |
+| Search / Discovery | ✅ | ✅ `Search-Discovery-Subsystem-Design.md` | ✅ | 部分 | 增量投影、权限、重建与失败恢复契约已覆盖 |
+| Backup / Restore / Data Portability | ✅ | ✅ `Backup-Restore-Data-Portability-Subsystem-Design.md` | 间接 | 运维入口 | 恢复点、校验、恢复、保留与迁移契约已覆盖 |
 
 ### 3.1 覆盖结论
 
-按当前 PRD、System Overview、App Interaction 与 CMS Interaction 的产品能力进行交叉检查后，**暂未发现仍然缺少服务端领域契约、且会阻塞 V2 核心编码的大型 P0 领域**。
+按当前 PRD、System Overview、App Interaction、CMS Interaction 与已合入专项设计进行交叉检查后：
 
-这不表示所有未来实现细节都应提前写成独立文档。以下方向已经有系统级 / 领域级边界，只有在实际复杂度出现时再拆专项设计更合适：
+1. **未发现仍然缺少服务端领域契约、且会阻塞 V2 核心编码的大型 P0 领域。**
+2. Search / Discovery 原本只有分散在 System Overview 与 Core Resource 中的投影原则；现已补充独立的索引、权限、Generation Rebuild 与失败恢复契约。
+3. Backup / Restore / Data Portability 原本只有系统级原则；现已补充 Restore Point、Manifest、Verification、Restore Activation、Retention 与 Export / Import 契约。
+4. Personal Drive / File Synchronization 已存在较完整主设计与 P0 Semantics，但其产品范围尚未被 PRD / System Overview 显式列为正式子系统。本索引只记录这一事实，不反向替产品基线做未经确认的扩域决定。
+
+以下方向已经有足够的系统级 / 领域级边界，只有在实际复杂度出现时再拆专项设计更合适：
 
 - Notification Delivery Provider / Template Runtime；
-- Search Engine / Ranking / Index Operations；
-- Backup / Disaster Recovery / Data Portability；
+- Advanced Search Ranking / Personalized Recommendation；
 - WebRTC / Large-scale Realtime Gateway；
 - Large-scale CRDT / Collaborative Editing Runtime；
 - Multi-node Transcode Worker / Hardware Acceleration Scheduler；
@@ -144,16 +153,19 @@
 本轮补齐后，后续实现尤其应保持以下边界：
 
 1. **Resource ≠ Attachment ≠ Blob**：逻辑内容身份、可关联内容对象和实际字节身份分离。
-2. **Download ≠ Cache ≠ Server Replica**：显式离线副本、可淘汰缓存和服务端存储副本分离。
-3. **Working Copy ≠ Revision ≠ Publication**：编辑态、不可变历史和已发布版本分离。
-4. **Media Release ≠ Playback Variant**：源版本与播放清晰度 / 转码方案分离。
-5. **Playlist ≠ Playback Queue**：长期集合与当前播放上下文分离。
-6. **Reading Locator ≠ Pixel Offset**：跨设备阅读位置使用逻辑定位。
-7. **Photo Original ≠ Preview / Thumbnail**：用户原始内容和可重建派生内容分离。
-8. **Game Asset Available ≠ Installed**：服务器存在安装包不代表任何设备已安装。
-9. **Share / Room ≠ Resource ACL**：授权入口、协作上下文和目标对象最终权限分离。
-10. **Sync Runtime ≠ Domain Conflict Resolver**：同步负责可靠传播，领域负责业务合并。
-11. **Search / Analytics / AI Projection ≠ Business Truth**：派生数据可重建，不反向成为业务真相源。
+2. **Drive Node / Path ≠ Attachment / Blob**：用户文件树与文件版本是组织及历史语义，不把路径重新变成内容身份。
+3. **Download ≠ Cache ≠ Server Replica**：显式离线副本、可淘汰缓存和服务端存储副本分离。
+4. **Working Copy ≠ Revision ≠ Publication**：编辑态、不可变历史和已发布版本分离。
+5. **Media Release ≠ Playback Variant**：源版本与播放清晰度 / 转码方案分离。
+6. **Playlist ≠ Playback Queue**：长期集合与当前播放上下文分离。
+7. **Reading Locator ≠ Pixel Offset**：跨设备阅读位置使用逻辑定位。
+8. **Photo Original ≠ Preview / Thumbnail**：用户原始内容和可重建派生内容分离。
+9. **Game Asset Available ≠ Installed**：服务器存在安装包不代表任何设备已安装。
+10. **Share / Room ≠ Resource ACL**：授权入口、协作上下文和目标对象最终权限分离。
+11. **Sync Runtime ≠ Domain Conflict Resolver**：同步负责可靠传播，领域负责业务合并。
+12. **Search / Analytics / AI Projection ≠ Business Truth**：派生数据可重建，不反向成为业务真相源。
+13. **Backup / Restore ≠ Export / Import**：灾难恢复保存实例恢复语义，数据迁移保存开放、版本化和可合并语义。
+14. **Backup Success ≠ Restore Verified**：任务成功、恢复点发布、完整性验证和真实恢复演练必须分开表达。
 
 ---
 
@@ -182,7 +194,8 @@ Prototype / Implementation
 3. 数据库与 API 的跨域规则不得由单个子系统自行覆盖；
 4. 子系统负责定义自己的领域所有权、不变量、Command / Event 和失败语义；
 5. 交互文档通过公开能力实现体验，不反向制造隐藏业务通道；
-6. Prototype 只能验证交互，不自动成为接口和数据模型约束。
+6. Prototype 只能验证交互，不自动成为接口和数据模型约束；
+7. 如果详细设计新增了 PRD / System Overview 尚未定义的新产品域，必须在覆盖矩阵明确标记，不能因为“已有详细设计”就默认产品范围已经批准。
 
 ---
 
@@ -255,6 +268,28 @@ Prototype / Implementation
 - 权限撤销传播；
 - Secure Domain 密文同步。
 
+对于搜索功能还应补充：
+
+- Search Document 与稳定文档身份；
+- Source Version / Projector Version；
+- 权限候选过滤与最终权威授权分离；
+- 增量索引、Dead Letter 与 Reconciliation；
+- Full Rebuild / Generation 切换；
+- Facet / Suggestion 的信息泄露边界；
+- Search Engine 故障时业务写入降级；
+- Semantic / Embedding 的可选能力与敏感数据边界。
+
+对于备份 / 恢复功能还应补充：
+
+- Restore Point 与不可变 Manifest；
+- PostgreSQL + Blob 的一致恢复语义；
+- Full / Incremental Chain；
+- Verification 与 Restore Drill；
+- Restore Preflight / Activation；
+- Retention / Pin / Safe Prune；
+- Secure Material 独立保护；
+- Backup / Restore 与 Export / Import 分离。
+
 ---
 
 ## 7. 后续文档策略
@@ -263,12 +298,13 @@ Prototype / Implementation
 
 下一步更有价值的是进入实现前设计审查：
 
-1. 从 P0 范围提取实际模块 / Package Ownership；
-2. 将领域不变量映射为 PostgreSQL Constraint / Transaction Boundary；
-3. 将 Command / Query / Event 映射为 API 与内部接口；
-4. 为跨域事件建立契约版本与 Outbox / Consumer 幂等策略；
-5. 为每个子系统生成首批 Flyway Schema 设计；
-6. 建立 V2 implementation roadmap 与依赖图；
-7. 只有当某个实现问题超出现有设计边界时，再新增专项设计。
+1. 先确认 Personal Drive 是否正式进入 V2 PRD / System Overview 产品范围；若确认，再同步补齐系统概要与 App / CMS 信息架构。
+2. 从 P0 范围提取实际模块 / Package Ownership；
+3. 将领域不变量映射为 PostgreSQL Constraint / Transaction Boundary；
+4. 将 Command / Query / Event 映射为 API 与内部接口；
+5. 为跨域事件建立契约版本与 Outbox / Consumer 幂等策略；
+6. 为每个子系统生成首批 Flyway Schema 设计；
+7. 建立 V2 implementation roadmap 与依赖图；
+8. 只有当某个实现问题超出现有设计边界时，再新增专项设计。
 
 这样可以避免文档继续横向膨胀，却迟迟不进入可验证的工程实现。
