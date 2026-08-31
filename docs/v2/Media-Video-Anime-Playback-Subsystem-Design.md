@@ -13,7 +13,7 @@
 | 数据库基线 | `Database-Overview-Design.md` |
 | 依赖设计 | `Core-Resource-Library-Subsystem-Design.md`、`Attachment-Blob-Storage-Subsystem-Design.md`、`Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md`、`Background-Task-Scheduler-Design.md`、`Sharing-Collaboration-Room-Subsystem-Design.md` |
 
-> 本文档定义 Ikaros V2 动画、影视与通用视频领域中的 Work、Season、Episode、Release / Media Version、Track、Subtitle、Media Probe、Playback Source、Transcoding、Playback Session 与播放进度的服务端边界。
+> 本文档定义 Ikaros V2 动画、影视与通用视频领域中的 Media Subject、Season、Episode、Release / Media Version、Track、Subtitle、Media Probe、Playback Source、Transcoding、Playback Session 与播放进度的服务端边界。
 >
 > 本文档不把播放器 UI、FFmpeg、VLC、HLS 或 DASH 某一种实现当作领域模型。专业媒体领域负责“一个内容如何被组织和播放”，Storage 负责“字节在哪里”，客户端负责“如何解码和呈现”。
 
@@ -24,7 +24,7 @@
 Media 子系统需要解决：
 
 1. 动画、电视剧、电影和通用视频如何在统一 Resource 身份下保留专业结构。
-2. Work / Season / Episode 之间如何建立强领域关系，而不是全部塞进 Generic Relation。
+2. Media Subject / Season / Episode 之间如何建立强领域关系，而不是全部塞进 Generic Relation。
 3. 一个 Episode 存在多个压制组、文件版本或来源时如何表达 Release / Media Version。
 4. “原始版本”与“同一原始版本的 1080p / 720p 转码清晰度”如何严格区分。
 5. 内嵌 Video / Audio / Subtitle Track 与外挂 Subtitle Attachment 如何统一暴露给播放器。
@@ -48,7 +48,7 @@ Media 子系统需要解决：
 
 ### 2.1 本子系统负责
 
-- Media Work / Season / Episode；
+- Media Subject / Season / Episode；
 - Movie / Standalone Video；
 - Media Release / Source Version；
 - Attachment 与 Episode / Video 的媒体角色关联；
@@ -82,8 +82,8 @@ Media 子系统需要解决：
 
 ## 3. 核心不变量
 
-1. **逻辑作品与媒体字节分离**：Work / Episode 不保存物理路径或 Object Key。
-2. **Episode 等强领域关系由 Media 拥有**：`Episode -> Season -> Work` 不依赖自由 Generic Relation 才成立。
+1. **逻辑作品与媒体字节分离**：Media Subject / Episode 不保存物理路径或 Object Key。
+2. **Episode 等强领域关系由 Media 拥有**：`Episode -> Season -> Media Subject` 不依赖自由 Generic Relation 才成立。
 3. **一个 Episode 可以有零个、一个或多个 Release**：没有媒体文件也仍可以是合法的 Episode Resource。
 4. **Release 与 Transcode Variant 分离**：不同压制组 / 不同源文件是 Release；720p / 1080p adaptive rendition 是 Variant。
 5. **原始 Attachment 与 Derived Attachment 可追溯**：转码结果必须能追踪来源。
@@ -102,7 +102,7 @@ Media 子系统需要解决：
 ## 4. 领域模型总览
 
 ```text
-Media Work Resource
+Media Subject Resource
    ├── Season
    │    ├── Episode Resource
    │    │     ├── Media Release A
@@ -141,15 +141,15 @@ Movie / Standalone Video Resource
 
 推荐规则：
 
-> Season 若具有稳定业务身份和独立生命周期，可以成为 Resource；如果只是 Work 内部组织节点，可以只作为 Media Entity。
+> Season 若具有稳定业务身份和独立生命周期，可以成为 Resource；如果只是 Media Subject 内部组织节点，可以只作为 Media Entity。
 
 不应为了“所有东西都是 Resource”强迫所有内部结构升级为 Resource。
 
 ---
 
-## 6. Media Work
+## 6. Media Subject
 
-Media Work 表达一部作品。
+Media Subject 表达一部作品。
 
 例如：
 
@@ -179,7 +179,7 @@ Season 用于组织 Episode。
 至少可以表达：
 
 - id；
-- work id；
+- media subject id；
 - season number；
 - display title；
 - sort order；
@@ -190,8 +190,8 @@ Season 用于组织 Episode。
 
 约束：
 
-- 同一 Work 内 season order 必须稳定；
-- Season 移动到另一个 Work 是显式迁移，不是普通字段 PATCH；
+- 同一 Media Subject 内 season order 必须稳定；
+- Season 移动到另一个 Media Subject 是显式迁移，不是普通字段 PATCH；
 - 删除 Season 时不能默认级联永久删除 Episode / Blob。
 
 ---
@@ -203,7 +203,7 @@ Episode 是可独立播放和记录进度的逻辑内容。
 至少具有：
 
 - Resource ID；
-- work id；
+- media subject id；
 - season id（可选）；
 - episode number / index；
 - absolute number（可选）；
@@ -728,7 +728,7 @@ Session 是运行 / 历史事实，不是媒体文件本体。
 User + Playable Resource
 ```
 
-通常 Episode 的 Progress 记录在 Episode Resource 上，而不是整个 Series Work。
+通常 Episode 的 Progress 记录在 Episode Resource 上，而不是整个 Series 对应的 Media Subject。
 
 至少需要：
 
@@ -1003,7 +1003,7 @@ Room 中每个用户的长期个人 Progress 仍独立保存。
 
 典型 Command：
 
-- CreateMediaWork
+- CreateMediaSubject
 - CreateSeason
 - MoveSeason
 - CreateEpisode
@@ -1033,7 +1033,7 @@ Room 中每个用户的长期个人 Progress 仍独立保存。
 
 建议能力：
 
-- GetMediaWork
+- GetMediaSubject
 - ListSeasons
 - ListEpisodes
 - GetEpisode
@@ -1057,7 +1057,7 @@ Room 中每个用户的长期个人 Progress 仍独立保存。
 
 建议：
 
-- `media.work.created`
+- `media.subject.created`
 - `media.season.created`
 - `media.episode.created`
 - `media.release.added`
@@ -1099,7 +1099,7 @@ Playback URL 不应成为永久可分享凭据。
 
 1. 核心实体使用 PostgreSQL `uuid` / UUIDv7。
 2. 时间点使用 `timestamptz`。
-3. Episode 在 Work / Season 内的机器排序具有明确约束。
+3. Episode 在 Media Subject / Season 内的机器排序具有明确约束。
 4. Release -> Target Resource 必须属于允许的 Playable Type。
 5. Source Attachment 关联避免无意义重复。
 6. Playback Variant 必须引用有效 Source Release / Derivation。
@@ -1139,7 +1139,7 @@ Playback URL 不应成为永久可分享凭据。
 
 Ingestion 可以发现：
 
-- Work / Episode Candidate；
+- Media Subject / Episode Candidate；
 - Source Media；
 - Subtitle；
 - NFO / Provider metadata；
@@ -1173,7 +1173,7 @@ Core Resource 继续拥有：
 
 Media 拥有：
 
-- Work / Season / Episode 专业结构；
+- Media Subject / Season / Episode 专业结构；
 - Release；
 - Track；
 - Playback；
@@ -1295,7 +1295,7 @@ Analytics 可以消费：
 
 ### P0
 
-- Work / Season / Episode；
+- Media Subject / Season / Episode；
 - Movie / Video；
 - Media Release；
 - Source Attachment；
@@ -1334,7 +1334,7 @@ Ikaros V2 的 Media 领域应保持以下分层：
 
 ```text
 Logical Content
-Work / Season / Episode / Movie / Video
+Media Subject / Season / Episode / Movie / Video
         ↓
 Media Release / Version
 “哪个源版本”
