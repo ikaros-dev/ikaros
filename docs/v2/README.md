@@ -15,13 +15,15 @@
 3. [`Database-Overview-Design.md`](./Database-Overview-Design.md) — PostgreSQL-first 数据模型、实体关系与数据库约束。
 4. [`API-Convention-Design.md`](./API-Convention-Design.md) — HTTP API、错误、分页、幂等、并发、任务与实时接口约定。
 
-### 第二层：平台底座
+### 第二层：平台与内容底座
 
 - [`Core-Resource-Library-Subsystem-Design.md`](./Core-Resource-Library-Subsystem-Design.md) — Resource、Collection、Relation、Tag、External Identity、Metadata Provenance、用户状态、生命周期与搜索投影。
+- [`Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md`](./Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md) — Source、Scan、Candidate、Match、Import Plan、Metadata Refresh、Provenance、幂等与失败恢复。
 - [`Attachment-Blob-Storage-Subsystem-Design.md`](./Attachment-Blob-Storage-Subsystem-Design.md) — Attachment / Blob / Replica / 分层存储与内容生命周期。
+- [`Sharing-Collaboration-Room-Subsystem-Design.md`](./Sharing-Collaboration-Room-Subsystem-Design.md) — Share、Invite、Room、Membership、Presence、实时状态、Sequence、Replay 与权限收敛。
 - [`Background-Task-Scheduler-Design.md`](./Background-Task-Scheduler-Design.md) — 后台任务、调度、重试、状态与 Worker 执行模型。
 - [`Platform-Integration-Automation-Design.md`](./Platform-Integration-Automation-Design.md) — Capability、Command、Event、Automation 与外部集成。
-- [`Platform-Administration-Operations-Subsystem-Design.md`](./Platform-Administration-Operations-Subsystem-Design.md) — 平台配置、运维、管理与可观测性。
+- [`Platform-Administration-Operations-Subsystem-Design.md`](./Platform-Administration-Operations-Subsystem-Design.md) — 平台配置、通知、审计、运维、管理与可观测性。
 - [`Data-Analytics-Statistics-Subsystem-Design.md`](./Data-Analytics-Statistics-Subsystem-Design.md) — Activity、统计、分析投影与数据边界。
 
 ### 第三层：身份与高敏感数据
@@ -49,6 +51,7 @@
 - 登录与账户；
 - 首页、统一资源库与搜索；
 - 视频、阅读、音乐、图片、游戏等内容消费；
+- 分享、Room 与协作；
 - AI、Analytics、Automation；
 - Productivity、Finance、Password Manager、Private Notes；
 - Notification、Offline Cache 等多端能力。
@@ -64,7 +67,7 @@
 - Attachment / Storage；
 - 内容创作；
 - AI、Analytics、Integration / Automation；
-- 平台配置与系统运维；
+- 平台配置、通知、审计与系统运维；
 - Secure Domain 管理入口。
 
 入口：[`cms-console-interaction/README.md`](./cms-console-interaction/README.md)
@@ -80,11 +83,14 @@
 | 能力 | PRD / 系统概要 | 服务端详细设计 | App 交互 | CMS 交互 | 当前状态 |
 |---|---|---|---|---|---|
 | Resource / Collection / Relation / User State | ✅ | ✅ `Core-Resource-Library-Subsystem-Design.md` | ✅ | 部分 | 核心契约已补齐 |
+| Content Ingestion / Import / Metadata Sync | ✅ | ✅ `Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md` | 间接 | 部分 | 核心导入与同步契约已补齐 |
 | Attachment / Blob / Storage | ✅ | ✅ | 间接 | ✅ | 已覆盖 |
+| Sharing / Collaboration / Room | ✅ | ✅ `Sharing-Collaboration-Room-Subsystem-Design.md` | ✅ | 部分 | 核心分享与实时协作契约已补齐 |
 | 身份 / 授权 / Crypto | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
 | Secure Data 基础 | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
 | Background Task / Scheduler | ✅ | ✅ | 间接 | 运维入口 | 已覆盖 |
 | Plugin / Integration / Automation | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
+| Notification | ✅ | 核心能力已由 Platform Administration & Operations 设计覆盖 | ✅ | ✅ | 基础已覆盖；复杂度增长时再拆专项文档 |
 | AI Intelligence | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
 | AI Persona | ✅ | ✅ | ✅ | 间接 | 已覆盖 |
 | Analytics / Statistics | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
@@ -97,16 +103,17 @@
 | 音乐专业领域 | ✅ | 待独立详细设计 | ✅ | 部分 | **待补充** |
 | 图片 / 相册专业领域 | ✅ | 待独立详细设计 | ✅ | 部分 | **待补充** |
 | 内容创作 / Revision / 协作文档 | ✅ | 待独立详细设计 | ✅ | ✅ | **待补充** |
-| Sharing / Collaboration / Room | ✅ | 待独立详细设计 | ✅ | 部分 | **待补充** |
-| Notification | ✅ | 待独立详细设计 | ✅ | 部分 | **待补充** |
 | Offline Cache / Device Sync | 系统原则 | 待独立详细设计 | ✅ | 不适用 | **待补充** |
 | Search / Discovery | ✅ | 核心投影契约已覆盖；实现级设计视复杂度再拆分 | ✅ | 部分 | 基础已覆盖 |
+| Backup / Restore / Data Portability | ✅ | System Overview + Database Overview 已定义核心原则 | 间接 | 运维入口 | 基础已覆盖；生产化时可拆专项设计 |
 
 说明：
 
 - “待独立详细设计”不表示当前 PRD 或系统概要完全没有描述，而是缺少与现有 Storage / Security / AI 等同层级的服务端领域设计文档。
 - 交互文档可以先定义用户体验，但不能替代领域所有权、事务边界、数据不变量、Command / Event、权限与失败语义。
+- Notification 已在 `Platform-Administration-Operations-Subsystem-Design.md` 中覆盖 Notification Center、状态、来源、Channel、Template、Rule、用户偏好、Provider、Delivery Log、重试与通知风暴控制，因此不再视为“完全缺失”。
 - Search 的业务边界已在核心资源库设计中补齐；如果后续从 PostgreSQL FTS 演进到独立搜索引擎，再增加专门的索引、Ranking 与运维设计。
+- Backup / Restore / Data Portability 已在 System Overview 与 Database Overview 中定义一致恢复点、Schema Compatibility、Secure Key Material、派生数据重建等系统级要求；真正进入生产恢复演练和跨版本迁移实现时再拆专项文档更合适。
 
 ---
 
@@ -159,9 +166,20 @@ Prototype / Implementation
 
 对于实时功能还应补充：
 
-- WebSocket / SSE / WebRTC 的职责边界；
+- HTTP / WebSocket / SSE / WebRTC 的职责边界；
 - reconnect / replay / sequence / presence 语义；
-- 服务端权威状态与客户端临时状态的区别。
+- 服务端权威状态与客户端临时状态的区别；
+- 实时连接中的权限撤销传播。
+
+对于导入 / 同步功能还应补充：
+
+- Source 与 Credential 边界；
+- Scan / Candidate / Match / Plan / Run 分层；
+- Dry Run / Preview；
+- Checkpoint / Retry / Cancel；
+- 幂等和去重；
+- 外部来源删除与内部生命周期分离；
+- Metadata Provenance 与人工修改优先级。
 
 对于离线功能还应补充：
 
@@ -176,13 +194,21 @@ Prototype / Implementation
 
 ## 6. 当前建议的后续补充顺序
 
-按对其他模块的依赖程度，建议后续优先级：
+经过核心 Resource、Ingestion 和 Collaboration 设计补齐后，后续优先级调整为：
 
-1. **Sharing / Collaboration / Room** — 同时影响视频、音乐、文档、权限和实时协议。
-2. **Content Creation / Revision / Collaborative Document** — PRD 已明确创作与协作，CMS 交互也已存在，需要服务端契约承接。
-3. **Media Domain** — 细化作品 / Season / Episode / Playback Variant / Track / Subtitle / Derived Attachment 与转码任务。
-4. **Notification** — 统一站内通知、推送渠道、偏好、去重、已读状态和事件订阅。
-5. **Offline Cache / Device Sync** — 多端客户端落地前必须明确一致性、删除传播与 Secure Domain 限制。
-6. **Reading / Music / Photo** — 在核心 Resource 与 Attachment 契约稳定后分别补齐专业模型。
+1. **Content Creation / Revision / Collaborative Document** — 明确 Document / Article / Revision、Draft / Publish、Autosave、并发编辑、恢复与协作算法边界。
+2. **Media Domain** — 细化 Work / Season / Episode / Playback Variant / Track / Subtitle / Media Probe / Transcoding / Playback Session。
+3. **Offline Cache / Device Sync** — 多端客户端正式落地前明确同步游标、冲突、删除传播、本地加密与设备撤销。
+4. **Reading Domain** — Comic / Novel / Ebook 的 Volume / Chapter / Page / Layout / Reading Progress 专业模型。
+5. **Music Domain** — Artist / Album / Disc / Track / Queue / Lyrics / Audio Fingerprint 等专业模型。
+6. **Photo Domain** — Photo / Album / EXIF / Preview / Original / Burst / Live Photo 等专业模型。
+
+后续视实现复杂度再决定是否拆分：
+
+- Notification Delivery 专项设计；
+- Search Engine / Ranking 专项设计；
+- Backup / Disaster Recovery / Data Portability 专项设计；
+- WebRTC / 大规模 Realtime Gateway；
+- Resource Merge / Split 与专业 Metadata Mapping。
 
 该顺序不是版本承诺，只表示从当前文档依赖关系看，优先补充这些设计能减少后续重复定义和返工。
