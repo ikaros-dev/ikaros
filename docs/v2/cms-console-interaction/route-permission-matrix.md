@@ -66,7 +66,32 @@ Router 定义每个受保护 Route 所需的最小“查看/进入”能力。
 - `resource.update` 不自动授予覆盖人工锁定元数据的能力；元数据来源冲突使用独立能力/策略。
 - `resource.trash` 与 `resource.purge` 必须分离；永久清理不得因为拥有普通删除能力而出现。
 
-## 5. 附件与存储
+## 5. Personal Drive / 个人网盘
+
+> Personal Drive 是独立业务子系统，不归入 Attachment / Storage。Capability Key 在本矩阵中表达交互层最小边界，最终 canonical key 仍以安全子系统 Permission Catalog 为准。
+
+| 页面 | Route | 查看/进入能力 | 写操作能力 | 高风险 / 额外条件 |
+|---|---|---|---|---|
+| 文件空间 / Drive Home | `/console/drive` | `drive.space.read`；展示文件名、目录结构、缩略图、预览或下载时还需 `drive.file.read` | `drive.file.write` / `drive.folder.write` | 永久删除不得由普通写权限隐含授予 |
+| Drive Space 列表 / 详情 | `/console/drive/spaces`、`/console/drive/spaces/{spaceId}` | `drive.space.read` | `drive.space.manage`（仅允许的空间级配置） | 他人 Space 仍受 ACL / Scope 限制 |
+| Drive Node / File Detail | `/console/drive/nodes/{nodeId}` | `drive.file.read` | `drive.file.write` | 分享/ACL 按独立能力；内容读取不能由平台管理员角色隐含获得 |
+| Revision History | `/console/drive/revisions` 或 File Detail Tab | `drive.revision.read` + 目标 File READ | `drive.revision.write` | Restore as New Revision：`drive.revision.restore`；需要时 Step-up |
+| 传输中心 | `/console/drive/transfers` | `drive.transfer.read` | `drive.transfer.manage` | 没有 `drive.file.read` 时仅显示安全诊断摘要，不显示文件名/路径/预览 |
+| 同步关系 | `/console/drive/sync`、`/console/drive/sync/{bindingId}` | `drive.sync.read` | `drive.sync.manage` | 危险删除传播策略、Force Reconcile 可要求 Step-up；本地路径按额外设备诊断权限最小化展示 |
+| 冲突处理 | `/console/drive/conflicts` | `drive.conflict.read` | `drive.conflict.resolve` | 显式丢弃一侧内容属于高影响动作；Preview 仍需 `drive.file.read` |
+| 回收站 | `/console/drive/trash` | `drive.trash.read`；文件名/原路径仍受 `drive.file.read` / Scope | `drive.trash.restore` | Permanent Delete：`drive.file.purge` + Step-up / Policy |
+| 配额 | `/console/drive/quota` | `drive.quota.read` | `drive.quota.manage` | 修改他人 Quota 可要求 Step-up；逻辑用量不等于物理 Storage Used |
+| Drive Policies | `/console/drive/policies` | `drive.policy.read` | `drive.policy.manage` | 高风险策略修改要求 Audit / 可选 Step-up；不得管理 S3 Credential / Placement / Blob GC |
+
+### 5.1 权限与隐私硬规则
+
+- **Platform ADMIN ≠ Drive File READ。** `platform.*`、`permission.manage`、系统运维或其他管理员能力均不得自动推导出 `drive.file.read`。
+- Drive 运维权限可以允许查看 Space ID、Owner 摘要、Quota、Transfer / Sync / Conflict 数量、Health、Error Category 等最小必要诊断信息，但不得因此展示私有 File Name、Folder Path、Thumbnail、Preview、Content 或设备 Local Path。
+- `drive.space.read` / `drive.transfer.read` / `drive.sync.read` 等“治理/诊断可见性”与 `drive.file.read` 的内容读取能力必须分别判断。
+- Deep Link 不能扩权：从 Storage、Background Task、Audit、Photo / Media / Document Projection 跳转到 Drive 后，仍重新执行目标 Drive Capability + ACL / Scope 判定。
+- Drive File Detail 可链接 Attachment / Blob，但 `drive.file.write` 不授予 Placement、Provider、Blob GC 等 Storage 管理权限；反向亦然。
+
+## 6. 附件与存储
 
 | 页面 | Route | 查看能力 | 写操作能力 | 高风险能力 |
 |---|---|---|---|---|
@@ -76,7 +101,7 @@ Router 定义每个受保护 Route 所需的最小“查看/进入”能力。
 | 归档/恢复/回收站 | `/console/storage/archive` | `storage.archive.read` | `storage.archive` / `storage.restore` | 永久清理 `resource.purge` / `blob.purge` |
 | 备份与恢复 | `/console/storage/backup` | `backup.read` | `backup.run` / `backup.manage` | 覆盖恢复 `backup.restore` + Step-up |
 
-## 6. 效率与计划
+## 7. 效率与计划
 
 | 页面 | Route | 查看能力 | 写操作能力 | 专用能力 |
 |---|---|---|---|---|
@@ -86,7 +111,7 @@ Router 定义每个受保护 Route 所需的最小“查看/进入”能力。
 | 目标与 OKR | `/console/planning/goals` | `planning.goal.read` | `planning.goal.write` | 管理他人目标按 owner/admin scope |
 | 习惯/专注/复盘 | `/console/planning/focus` | `planning.focus.read` | `planning.focus.write` | — |
 
-## 7. 个人记账
+## 8. 个人记账
 
 > Finance 是私密业务域。列表、搜索、导出、通知正文都必须继续遵守 Finance 数据敏感性策略。
 
@@ -99,7 +124,7 @@ Router 定义每个受保护 Route 所需的最小“查看/进入”能力。
 | 对账与导入 | `/console/finance/reconcile` | `finance.reconcile.read` | `finance.reconcile.execute` / `finance.import` | 重开已完成对账可要求 Step-up |
 | 财务导出 | 各页动作 | 相应 read | `finance.export` | 大范围/明文导出可要求 Step-up |
 
-## 8. 私密笔记
+## 9. 私密笔记
 
 Secure Session 未解锁时即使拥有 Permission 也只显示锁定界面。
 
@@ -110,7 +135,7 @@ Secure Session 未解锁时即使拥有 Permission 也只显示锁定界面。
 | 恢复与导出 | `/console/private-notes/recovery` | `private_note.recovery.read` | `private_note.export` / `private_note.restore` | 明文导出、恢复、密钥操作要求 Step-up |
 | 密钥/恢复材料操作 | 页面内动作 | — | `private_note.key.reset` / 对应 canonical key | Required SVL + Policy |
 
-## 9. 密码管理
+## 10. 密码管理
 
 | 页面 | Route | 查看能力 | 写操作能力 | Step-up / 高风险 |
 |---|---|---|---|---|
@@ -120,7 +145,7 @@ Secure Session 未解锁时即使拥有 Permission 也只显示锁定界面。
 | 设备与访问 | `/console/passwords/devices` | `password_device.read` | `password_device.revoke` | 撤销设备、改变 Vault 策略可要求 Step-up |
 | 导出/恢复 | 页面内动作 | `password_vault.read` | `password_vault.export` / `password_vault.restore` | 必须 Step-up + 显式范围确认 |
 
-## 10. AI 智能
+## 11. AI 智能
 
 | 页面 | Route | 查看能力 | 写/使用能力 | 管理能力 |
 |---|---|---|---|---|
@@ -130,7 +155,7 @@ Secure Session 未解锁时即使拥有 Permission 也只显示锁定界面。
 | 上下文/隐私/记忆 | `/console/ai/privacy` | `ai.privacy.read` | `ai.memory.manage` | 隐私策略 `ai.privacy.manage` + Step-up（按策略） |
 | 作业/Trace/用量 | `/console/ai/jobs` | `ai.job.read` | `ai.job.retry` | Trace 内容 `ai.trace.content.read` 与仅元数据读取分离 |
 
-## 11. 数据分析
+## 12. 数据分析
 
 | 页面 | Route | 查看能力 | 写/管理能力 | 导出 |
 |---|---|---|---|---|
@@ -144,7 +169,7 @@ Secure Session 未解锁时即使拥有 Permission 也只显示锁定界面。
 
 分析权限不能绕过源业务域权限。聚合数据若可反推出无权读取的个人/私密内容，后端必须抑制或降维。
 
-## 12. 集成与自动化
+## 13. 集成与自动化
 
 | 页面 | Route | 查看能力 | 写/执行能力 | 高风险能力 |
 |---|---|---|---|---|
@@ -154,7 +179,7 @@ Secure Session 未解锁时即使拥有 Permission 也只显示锁定界面。
 | 导入与同步 | `/console/integration/sync` | `sync.read` | `sync.manage` / `sync.execute` | 冲突覆盖按 Resource 写权限 |
 | 插件与连接器 | `/console/integration/plugins` | `plugin.read` | `plugin.manage` / `connector.manage` | 扩权、安装、Secret 变更可要求 Step-up |
 
-## 13. 身份与安全
+## 14. 身份与安全
 
 | 页面 | Route | 查看能力 | 写/管理能力 | Step-up |
 |---|---|---|---|---|
@@ -166,7 +191,7 @@ Secure Session 未解锁时即使拥有 Permission 也只显示锁定界面。
 | Recovery | 同上 Tab | `security.recovery.read` | `security.recovery.manage` | Required SVL + Policy |
 | OAuth/API Access | 同上 Tab | `security.api_access.read` | `security.api_access.manage` | Token 创建/高权限 Scope 可 Step-up |
 
-### 13.1 Permission 与 Verification 的硬规则
+### 14.1 Permission 与 Verification 的硬规则
 
 例如用户拥有 `private_note.key.reset`：
 
@@ -179,7 +204,9 @@ AND SecurityPolicyAllows
 
 全部满足后才允许执行。SVL 高不产生新的 Permission。
 
-## 14. 平台配置
+同样地，平台管理员角色或高 SVL 不产生 `drive.file.read`；Drive 内容读取必须独立授权并继续满足目标 Space / Node 的 ACL / Scope。
+
+## 15. 平台配置
 
 | 页面 | Route | 查看能力 | 写能力 | 高风险 |
 |---|---|---|---|---|
@@ -189,7 +216,7 @@ AND SecurityPolicyAllows
 
 环境变量来源的只读配置即使拥有 write Permission 也不能在 UI 中伪装成可写。
 
-## 15. 沟通与审计
+## 16. 沟通与审计
 
 | 页面 | Route | 查看能力 | 写/管理能力 | 额外条件 |
 |---|---|---|---|---|
@@ -201,7 +228,7 @@ AND SecurityPolicyAllows
 
 审计记录不可因为拥有普通写权限被修改或删除。
 
-## 16. 系统运维
+## 17. 系统运维
 
 | 页面 | Route | 查看能力 | 写/执行能力 | 高风险 |
 |---|---|---|---|---|
@@ -209,9 +236,9 @@ AND SecurityPolicyAllows
 | 定时任务 | `/console/ops/jobs` | `system.job.read` | `system.job.manage` / `system.job.run` | System-owned Job 可只读 |
 | 后台任务 | `/console/ops/background` | `system.task.read` | `system.task.cancel` / `system.task.retry` | 业务任务还需所属子系统能力 |
 
-“可以看到全局后台任务”不自动意味着可以读取任务中的私密业务 payload。
+“可以看到全局后台任务”不自动意味着可以读取任务中的私密业务 payload；Drive Task 也不得因为 `system.task.read` 泄露无权访问的文件名、Path 或内容。
 
-## 17. Capability Scope 与所有权
+## 18. Capability Scope 与所有权
 
 同一个 Capability 还应结合后端 Scope：
 
@@ -226,7 +253,9 @@ Console 不应仅通过 Capability Key 推断 Scope。服务端返回的有效�
 - Detail 能展示哪些字段。
 - 操作影响范围。
 
-## 18. 路由元数据建议
+对于 Personal Drive，即使某个治理 Capability 具有 `admin` Scope，也只表示该治理动作的范围；除非 `drive.file.read` 自身明确授权对应 Scope，否则不得推导出任意用户 Drive 内容读取能力。
+
+## 19. 路由元数据建议
 
 前端 Route Record 建议至少声明以下元数据：
 
@@ -253,7 +282,7 @@ destructive
 
 但这些前端元数据只是渲染辅助。真正 Authorization / SVL / Policy 判定必须在后端重新执行。
 
-## 19. 插件页面权限
+## 20. 插件页面权限
 
 插件注册 Console 页面时必须提供：
 - 唯一 Route ID。
@@ -266,7 +295,7 @@ destructive
 
 插件不能覆盖 Core Route，也不能通过自定义 Menu 配置把受保护页面降级为无需权限的普通链接。
 
-## 20. 403 页面标准
+## 21. 403 页面标准
 
 403 页面包含：
 - Shield/Lock 图标。

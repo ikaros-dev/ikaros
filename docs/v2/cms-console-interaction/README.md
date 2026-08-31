@@ -278,6 +278,7 @@ Resource、Attachment、Collection、Tag、User、Storage Backend、Model、Pers
 |---|---|---|
 | 工作台 | `workbench/` | 概览、全局搜索、我的活动与收藏 |
 | 内容与创作 | `content-creation/` | 统一资源库、集合/标签/关系、文章与文档、媒体消费、分享与协作 |
+| 个人网盘 | `personal-drive/` | 文件空间、Revision / Trash、传输与同步、冲突处理、配额与策略；作为独立业务子系统，不归入 Attachment / Storage |
 | 附件与存储 | `attachment-storage/` | 附件与 Blob、持久化存储层、缓存与我的下载、归档/恢复/回收站、备份与恢复 |
 | 效率与计划 | `productivity-planning/` | 收集箱与今天、项目与任务、日历与时间块、目标与 OKR、习惯/专注/复盘 |
 | 个人记账 | `personal-finance/` | 账本总览、账户、交易、预算与周期账、对账与导入 |
@@ -301,13 +302,17 @@ Resource、Attachment、Collection、Tag、User、Storage Backend、Model、Pers
 - 有查看权限但没有创建/修改/删除权限：页面正常展示，只隐藏或禁用相应操作并在需要时解释原因。
 - 高风险动作除 Permission 外，还必须满足后端要求的 Step-up Verification / SVL。
 - **后端 Authorization 永远是安全边界。前端隐藏菜单或按钮只用于 UX，不能代替服务端鉴权。**
+- **Platform ADMIN / 平台管理能力不自动授予 `Drive File READ`。** Drive 运维、Quota、Policy、Transfer / Sync 诊断权限与用户文件名、路径、缩略图、预览、下载等内容读取权限必须分别判断。
 - 插件注册页面、菜单或操作时必须声明对应 Capability；插件无法通过前端配置绕过后端权限。
 - Capability 的最终 canonical key 以安全子系统设计/后端实现为准；交互文档使用的 key 必须建立显式映射，不允许不同页面自行创造同义权限名。
 
 ## 10. 跨子系统深链接规则
 
 - Resource 引用进入“内容与创作”的 Resource 详情。
-- Attachment / Blob 引用进入“附件与存储”详情。
+- Drive Space / Node / File Revision / Sync Binding / Conflict 引用进入“个人网盘”对应详情；没有目标 Drive 内容读取权限时，只允许进入该用户有权查看的安全诊断视图，不得通过 Deep Link 泄露文件名、Path、Thumbnail 或 Content。
+- Attachment / Blob 引用进入“附件与存储”详情；Drive File Detail 可深链接到其 Attachment / Blob 摘要，Attachment / Storage 也可在有 Drive 读取权限时反向进入对应 Drive File，但两端不得跨域直接修改对方状态。
+- Device Sync Runtime / Background Task 可深链接到 Drive Binding / Conflict；同步运行时诊断不能替代 Personal Drive 的业务冲突处理页面。
+- Drive 的 Photo / Media / Document Projection 可深链接到对应专业子系统；投影页不能据此取得额外 Drive File READ 权限。
 - 用户/会话引用在有权限时进入“身份与安全”详情。
 - Task、Execution、后台任务等引用优先进入任务所属业务子系统。
 - 审计记录可以链接关联业务实体，但不得展示当前用户无权读取的字段。
