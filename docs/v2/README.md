@@ -33,7 +33,12 @@
 - [`Password-Manager-Subsystem-Design.md`](./Password-Manager-Subsystem-Design.md) — 密码管理器领域模型与安全交互。
 - [`Private-Notes-Subsystem-Design.md`](./Private-Notes-Subsystem-Design.md) — 私密笔记的安全数据模型与访问边界。
 
-### 第四层：业务增强能力
+### 第四层：专业内容领域
+
+- [`Content-Creation-Revision-Collaborative-Document-Subsystem-Design.md`](./Content-Creation-Revision-Collaborative-Document-Subsystem-Design.md) — Document / Article / Note、Working Copy、不可变 Revision、Publication、Comment / Annotation 与协同编辑边界。
+- [`Media-Video-Anime-Playback-Subsystem-Design.md`](./Media-Video-Anime-Playback-Subsystem-Design.md) — Work / Season / Episode、Media Release、Probe / Track / Subtitle、Playback Variant、Transcoding、Playback Session 与 Progress。
+
+### 第五层：业务增强能力
 
 - [`AI-Intelligence-Subsystem-Design.md`](./AI-Intelligence-Subsystem-Design.md) — AI Provider、Context、Tool、智能处理与安全边界。
 - [`AI-Persona-System-Design.md`](./AI-Persona-System-Design.md) — AI Persona、角色配置与行为边界。
@@ -51,6 +56,7 @@
 - 登录与账户；
 - 首页、统一资源库与搜索；
 - 视频、阅读、音乐、图片、游戏等内容消费；
+- 文档、文章、普通 Note 与创作；
 - 分享、Room 与协作；
 - AI、Analytics、Automation；
 - Productivity、Finance、Password Manager、Private Notes；
@@ -65,7 +71,7 @@
 - Workbench；
 - 身份与安全；
 - Attachment / Storage；
-- 内容创作；
+- 内容创作与媒体管理；
 - AI、Analytics、Integration / Automation；
 - 平台配置、通知、审计与系统运维；
 - Secure Domain 管理入口。
@@ -86,6 +92,8 @@
 | Content Ingestion / Import / Metadata Sync | ✅ | ✅ `Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md` | 间接 | 部分 | 核心导入与同步契约已补齐 |
 | Attachment / Blob / Storage | ✅ | ✅ | 间接 | ✅ | 已覆盖 |
 | Sharing / Collaboration / Room | ✅ | ✅ `Sharing-Collaboration-Room-Subsystem-Design.md` | ✅ | 部分 | 核心分享与实时协作契约已补齐 |
+| Content Creation / Revision / Collaborative Document | ✅ | ✅ `Content-Creation-Revision-Collaborative-Document-Subsystem-Design.md` | ✅ | ✅ | 核心创作、版本、发布与协作契约已补齐 |
+| 视频 / 动画 / 影视专业领域 | ✅ | ✅ `Media-Video-Anime-Playback-Subsystem-Design.md` | ✅ | 部分 | 核心媒体与播放契约已补齐 |
 | 身份 / 授权 / Crypto | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
 | Secure Data 基础 | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
 | Background Task / Scheduler | ✅ | ✅ | 间接 | 运维入口 | 已覆盖 |
@@ -98,11 +106,9 @@
 | Personal Finance | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
 | Password Manager | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
 | Private Notes | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
-| 视频 / 动画 / 影视专业领域 | ✅ | 待独立详细设计 | ✅ | 部分 | **待补充** |
 | 漫画 / 小说专业领域 | ✅ | 待独立详细设计 | ✅ | 部分 | **待补充** |
 | 音乐专业领域 | ✅ | 待独立详细设计 | ✅ | 部分 | **待补充** |
 | 图片 / 相册专业领域 | ✅ | 待独立详细设计 | ✅ | 部分 | **待补充** |
-| 内容创作 / Revision / 协作文档 | ✅ | 待独立详细设计 | ✅ | ✅ | **待补充** |
 | Offline Cache / Device Sync | 系统原则 | 待独立详细设计 | ✅ | 不适用 | **待补充** |
 | Search / Discovery | ✅ | 核心投影契约已覆盖；实现级设计视复杂度再拆分 | ✅ | 部分 | 基础已覆盖 |
 | Backup / Restore / Data Portability | ✅ | System Overview + Database Overview 已定义核心原则 | 间接 | 运维入口 | 基础已覆盖；生产化时可拆专项设计 |
@@ -111,6 +117,8 @@
 
 - “待独立详细设计”不表示当前 PRD 或系统概要完全没有描述，而是缺少与现有 Storage / Security / AI 等同层级的服务端领域设计文档。
 - 交互文档可以先定义用户体验，但不能替代领域所有权、事务边界、数据不变量、Command / Event、权限与失败语义。
+- Content Creation 设计明确区分 Working Copy、不可变 Revision 与 Publication；autosave 不等于 Revision，恢复旧版本通过创建新 Revision 完成。
+- Media 设计明确区分 Media Release / Version 与 Playback Variant / Quality，避免把不同源版本和转码清晰度混成同一概念。
 - Notification 已在 `Platform-Administration-Operations-Subsystem-Design.md` 中覆盖 Notification Center、状态、来源、Channel、Template、Rule、用户偏好、Provider、Delivery Log、重试与通知风暴控制，因此不再视为“完全缺失”。
 - Search 的业务边界已在核心资源库设计中补齐；如果后续从 PostgreSQL FTS 演进到独立搜索引擎，再增加专门的索引、Ranking 与运维设计。
 - Backup / Restore / Data Portability 已在 System Overview 与 Database Overview 中定义一致恢复点、Schema Compatibility、Secure Key Material、派生数据重建等系统级要求；真正进入生产恢复演练和跨版本迁移实现时再拆专项文档更合适。
@@ -171,6 +179,28 @@ Prototype / Implementation
 - 服务端权威状态与客户端临时状态的区别；
 - 实时连接中的权限撤销传播。
 
+对于创作 / Revision 功能还应补充：
+
+- Working Copy 与正式 Revision 分离；
+- Revision 不可变；
+- Restore 产生新 Revision；
+- autosave / revision checkpoint 策略；
+- Publication 固定 Revision；
+- Comment / Annotation Anchor；
+- Merge / Conflict；
+- realtime operation 与持久 Revision 的边界。
+
+对于媒体功能还应补充：
+
+- Work / Season / Episode 专业结构；
+- Release / Source Version 与 Playback Variant 分离；
+- Probe / Track / Subtitle；
+- Direct Play / Direct Stream / Transcode；
+- Derived Attachment 与 Transcode Profile；
+- Playback Session / Progress / History；
+- Progress 乱序合并；
+- Room 权威播放状态与个人 Progress 分离。
+
 对于导入 / 同步功能还应补充：
 
 - Source 与 Credential 边界；
@@ -194,14 +224,12 @@ Prototype / Implementation
 
 ## 6. 当前建议的后续补充顺序
 
-经过核心 Resource、Ingestion 和 Collaboration 设计补齐后，后续优先级调整为：
+经过 Core Resource、Ingestion、Collaboration、Content Creation 与 Media 设计补齐后，后续优先级调整为：
 
-1. **Content Creation / Revision / Collaborative Document** — 明确 Document / Article / Revision、Draft / Publish、Autosave、并发编辑、恢复与协作算法边界。
-2. **Media Domain** — 细化 Work / Season / Episode / Playback Variant / Track / Subtitle / Media Probe / Transcoding / Playback Session。
-3. **Offline Cache / Device Sync** — 多端客户端正式落地前明确同步游标、冲突、删除传播、本地加密与设备撤销。
-4. **Reading Domain** — Comic / Novel / Ebook 的 Volume / Chapter / Page / Layout / Reading Progress 专业模型。
-5. **Music Domain** — Artist / Album / Disc / Track / Queue / Lyrics / Audio Fingerprint 等专业模型。
-6. **Photo Domain** — Photo / Album / EXIF / Preview / Original / Burst / Live Photo 等专业模型。
+1. **Offline Cache / Device Sync** — 已经横跨 Document、Media、Private Notes 与多端 Progress；需要尽快明确同步游标、冲突、删除传播、本地加密与设备撤销。
+2. **Reading Domain** — Comic / Novel / Ebook 的 Volume / Chapter / Page / Layout / Reading Progress 专业模型。
+3. **Music Domain** — Artist / Album / Disc / Track / Queue / Lyrics / Audio Fingerprint 等专业模型。
+4. **Photo Domain** — Photo / Album / EXIF / Preview / Original / Burst / Live Photo 等专业模型。
 
 后续视实现复杂度再决定是否拆分：
 
@@ -209,6 +237,8 @@ Prototype / Implementation
 - Search Engine / Ranking 专项设计；
 - Backup / Disaster Recovery / Data Portability 专项设计；
 - WebRTC / 大规模 Realtime Gateway；
-- Resource Merge / Split 与专业 Metadata Mapping。
+- Resource Merge / Split 与专业 Metadata Mapping；
+- 大规模 CRDT / Collaborative Editing Runtime；
+- 多节点 Transcode Worker / Hardware Acceleration Scheduler。
 
 该顺序不是版本承诺，只表示从当前文档依赖关系看，优先补充这些设计能减少后续重复定义和返工。
