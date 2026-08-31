@@ -64,6 +64,7 @@
 
 - 登录、账户、应用 Shell、首页与统一搜索；
 - Resource Library；
+- Personal Drive、文件访问、目录备份与设备同步；
 - 视频、阅读、音乐、图片、游戏等内容消费 / 归档；
 - 文档、文章、普通 Note 与创作；
 - 分享、Room 与协作；
@@ -81,6 +82,7 @@
 - Workbench；
 - 身份与安全；
 - Attachment / Storage；
+- Personal Drive、同步状态与管理入口；
 - 内容创作与内容管理；
 - AI、Analytics、Integration / Automation；
 - 平台配置、通知、审计与系统运维；
@@ -101,7 +103,7 @@
 | Resource / Collection / Relation / User State | ✅ | ✅ `Core-Resource-Library-Subsystem-Design.md` | ✅ | 部分 | 核心契约已覆盖 |
 | Content Ingestion / Import / Metadata Sync | ✅ | ✅ `Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md` | 间接 | 部分 | 核心契约已覆盖 |
 | Attachment / Blob / Storage | ✅ | ✅ `Attachment-Blob-Storage-Subsystem-Design.md` | 间接 | ✅ | 核心契约已覆盖 |
-| Personal Drive / File Sync / Camera Backup | ⚠️ 详细设计新增早于 PRD / System Overview 正式收录 | ✅ 主设计 + P0 Semantics | 尚未形成独立交互规格 | 尚未形成独立管理规格 | 服务端契约已较完整；产品 / 系统基线需后续显式确认 |
+| Personal Drive / File Sync / Camera Backup | ✅ | ✅ 主设计 + P0 Semantics | 尚未形成独立交互规格 | 尚未形成独立管理规格 | 产品 / 系统基线与服务端契约已覆盖；交互规格待补充 |
 | Sharing / Collaboration / Room | ✅ | ✅ `Sharing-Collaboration-Room-Subsystem-Design.md` | ✅ | 部分 | 核心契约已覆盖 |
 | Offline Cache / Device Sync | ✅ 系统原则 | ✅ `Offline-Cache-Device-Synchronization-Subsystem-Design.md` | ✅ | 不适用 | 核心契约已覆盖 |
 | Content Creation / Revision / Collaborative Document | ✅ | ✅ `Content-Creation-Revision-Collaborative-Document-Subsystem-Design.md` | ✅ | ✅ | 核心契约已覆盖 |
@@ -132,7 +134,7 @@
 1. **未发现仍然缺少服务端领域契约、且会阻塞 V2 核心编码的大型 P0 领域。**
 2. Search / Discovery 原本只有分散在 System Overview 与 Core Resource 中的投影原则；现已补充独立的索引、权限、Generation Rebuild 与失败恢复契约。
 3. Backup / Restore / Data Portability 原本只有系统级原则；现已补充 Restore Point、Manifest、Verification、Restore Activation、Retention 与 Export / Import 契约。
-4. Personal Drive / File Synchronization 已存在较完整主设计与 P0 Semantics，但其产品范围尚未被 PRD / System Overview 显式列为正式子系统。本索引只记录这一事实，不反向替产品基线做未经确认的扩域决定。
+4. Personal Drive / File Synchronization 已正式进入 V2 PRD 与 System Overview，并已有主设计与 P0 Semantics。当前主要缺口转为 App / CMS 的独立信息架构与交互规格，而不是产品或服务端领域边界。
 
 以下方向已经有足够的系统级 / 领域级边界，只有在实际复杂度出现时再拆专项设计更合适：
 
@@ -268,6 +270,17 @@ Prototype / Implementation
 - 权限撤销传播；
 - Secure Domain 密文同步。
 
+对于 Personal Drive / 文件同步功能还应补充：
+
+- Drive Node / Path 与 Attachment / Blob 身份分离；
+- File Revision 不可变与覆盖写语义；
+- Trash / Restore / Permanent Delete 与 Blob GC 分离；
+- Sync Binding、Local Item Mapping 与稳定服务端 Cursor；
+- 单向 Backup 与双向 Sync 的删除传播边界；
+- Conflict Copy 与禁止静默丢数据；
+- Camera Backup 与 Photo Projection 的状态分离；
+- Quota、Tombstone、Atomic Save 与失败恢复。
+
 对于搜索功能还应补充：
 
 - Search Document 与稳定文档身份；
@@ -298,7 +311,7 @@ Prototype / Implementation
 
 下一步更有价值的是进入实现前设计审查：
 
-1. 先确认 Personal Drive 是否正式进入 V2 PRD / System Overview 产品范围；若确认，再同步补齐系统概要与 App / CMS 信息架构。
+1. 补齐 Personal Drive 的 App / CMS 信息架构与交互规格，使已确认的产品与系统边界真正落到用户入口和管理入口；
 2. 从 P0 范围提取实际模块 / Package Ownership；
 3. 将领域不变量映射为 PostgreSQL Constraint / Transaction Boundary；
 4. 将 Command / Query / Event 映射为 API 与内部接口；
