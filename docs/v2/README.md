@@ -75,6 +75,8 @@
 
 入口：[`app-interaction/README.md`](./app-interaction/README.md)
 
+Personal Drive 独立交互规格：[`app-interaction/drive/personal-drive-file-sync.md`](./app-interaction/drive/personal-drive-file-sync.md)
+
 ### CMS / Web Console 交互
 
 [`cms-console-interaction/`](./cms-console-interaction/) 描述 CMS / Web Console 的管理端交互，包括：
@@ -90,6 +92,10 @@
 
 入口：[`cms-console-interaction/README.md`](./cms-console-interaction/README.md)
 
+Personal Drive 独立管理规格：[`cms-console-interaction/personal-drive/README.md`](./cms-console-interaction/personal-drive/README.md)
+
+CMS 路由与权限矩阵：[`cms-console-interaction/route-permission-matrix.md`](./cms-console-interaction/route-permission-matrix.md)
+
 ### 原型
 
 [`prototypes/`](./prototypes/) 保存 V2 交互原型草稿，仅用于辅助讨论，不应作为服务端领域契约、数据库 Schema 或 API 的事实来源。
@@ -103,7 +109,7 @@
 | Resource / Collection / Relation / User State | ✅ | ✅ `Core-Resource-Library-Subsystem-Design.md` | ✅ | 部分 | 核心契约已覆盖 |
 | Content Ingestion / Import / Metadata Sync | ✅ | ✅ `Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md` | 间接 | 部分 | 核心契约已覆盖 |
 | Attachment / Blob / Storage | ✅ | ✅ `Attachment-Blob-Storage-Subsystem-Design.md` | 间接 | ✅ | 核心契约已覆盖 |
-| Personal Drive / File Sync / Camera Backup | ✅ | ✅ 主设计 + P0 Semantics | 尚未形成独立交互规格 | 尚未形成独立管理规格 | 产品 / 系统基线与服务端契约已覆盖；交互规格待补充 |
+| Personal Drive / File Sync / Camera Backup | ✅ | ✅ 主设计 + P0 Semantics | ✅ `app-interaction/drive/personal-drive-file-sync.md` | ✅ `cms-console-interaction/personal-drive/README.md` + Route / Permission Matrix | 产品、系统、服务端与 App / CMS 交互均已覆盖；根导航与权限索引已同步 |
 | Sharing / Collaboration / Room | ✅ | ✅ `Sharing-Collaboration-Room-Subsystem-Design.md` | ✅ | 部分 | 核心契约已覆盖 |
 | Offline Cache / Device Sync | ✅ 系统原则 | ✅ `Offline-Cache-Device-Synchronization-Subsystem-Design.md` | ✅ | 不适用 | 核心契约已覆盖 |
 | Content Creation / Revision / Collaborative Document | ✅ | ✅ `Content-Creation-Revision-Collaborative-Document-Subsystem-Design.md` | ✅ | ✅ | 核心契约已覆盖 |
@@ -134,7 +140,8 @@
 1. **未发现仍然缺少服务端领域契约、且会阻塞 V2 核心编码的大型 P0 领域。**
 2. Search / Discovery 原本只有分散在 System Overview 与 Core Resource 中的投影原则；现已补充独立的索引、权限、Generation Rebuild 与失败恢复契约。
 3. Backup / Restore / Data Portability 原本只有系统级原则；现已补充 Restore Point、Manifest、Verification、Restore Activation、Retention 与 Export / Import 契约。
-4. Personal Drive / File Synchronization 已正式进入 V2 PRD 与 System Overview，并已有主设计与 P0 Semantics。当前主要缺口转为 App / CMS 的独立信息架构与交互规格，而不是产品或服务端领域边界。
+4. Personal Drive / File Synchronization 已完成 PRD、System Overview、主设计、P0 Semantics、App 独立交互规格、CMS 独立管理规格，以及 App / CMS 根导航与 CMS Route / Permission Matrix 的索引同步；当前不再存在“交互待补”的覆盖缺口。
+5. Personal Drive 的权限索引继续保持 **Platform ADMIN ≠ Drive File READ**，并将 Drive 内容读取与运维诊断、Quota / Policy、Attachment / Storage 管理分离。
 
 以下方向已经有足够的系统级 / 领域级边界，只有在实际复杂度出现时再拆专项设计更合适：
 
@@ -309,9 +316,11 @@ Prototype / Implementation
 
 当前阶段不再建议为了“看起来完整”继续批量拆分设计文档。
 
-下一步更有价值的是进入实现前设计审查：
+Personal Drive 的产品、系统、服务端、App / CMS 交互，以及根导航 / Route Permission Matrix 的索引治理已经完成。本 PR 当前不继续进入 Database Schema、API 或 Command / Event 实现映射。
 
-1. 补齐 Personal Drive 的 App / CMS 信息架构与交互规格，使已确认的产品与系统边界真正落到用户入口和管理入口；
+下一步更有价值的是在后续独立步骤进入实现前设计审查：
+
+1. 持续校验 Personal Drive App / CMS 入口、Deep Link 与权限矩阵是否与独立交互规格保持一致，避免后续新增页面重新并入 Attachment / Storage 或弱化 `Platform ADMIN ≠ Drive File READ`；
 2. 从 P0 范围提取实际模块 / Package Ownership；
 3. 将领域不变量映射为 PostgreSQL Constraint / Transaction Boundary；
 4. 将 Command / Query / Event 映射为 API 与内部接口；
