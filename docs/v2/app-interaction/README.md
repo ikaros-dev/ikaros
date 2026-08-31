@@ -45,6 +45,8 @@ App 面向 Desktop 与 Mobile，暂定 Flutter 技术栈，并统一采用 Mater
 | V2 设计来源 | App 设计落点 |
 |---|---|
 | `Product-Requirements-Document.md` | 全局信息架构、Library、Media、Reading、Music、Photo、Document、Game、Search、Activity、Share、Room、Download、Offline |
+| `Personal-Drive-File-Synchronization-Subsystem-Design.md` | 个人网盘、Drive Home / Folder / File / Revision / Trash、传输、设备备份与同步、冲突、Camera Backup、Quota |
+| `Personal-Drive-File-Synchronization-P0-Semantics.md` | Drive Change Generation、Revision / Tombstone / Restore、Atomic Save、Quota 与 P0 同步一致性状态的客户端表达 |
 | `Productivity-Planning-Subsystem-Design.md` | Today、Inbox、Task、Project、Calendar、Goal、OKR、Habit、Focus、Review |
 | `Personal-Finance-Accounting-Subsystem-Design.md` | 财务首页、账户、交易、预算、周期账、对账、导入 |
 | `Private-Notes-Subsystem-Design.md` | 私密保险库、Notebook、笔记、编辑、版本、冲突、加密导出与恢复 |
@@ -79,6 +81,7 @@ App 面向 Desktop 与 Mobile，暂定 Flutter 技术栈，并统一采用 Mater
 #### 内容库
 
 - 统一资源库
+- 个人网盘
 - Collection / 标签
 - 视频与影视
 - 漫画与小说
@@ -117,6 +120,7 @@ App 面向 Desktop 与 Mobile，暂定 Flutter 技术栈，并统一采用 Mater
 
 #### 本地与设备
 
+- 备份与同步
 - 我的下载
 - 离线内容
 - 缓存与空间
@@ -353,6 +357,10 @@ UI 必须使用状态 Chip + 解释文本。例如：
 
 - [统一资源库、Resource 详情、Collection、标签与关系](./library/resource-library.md)
 
+### Drive
+
+- [个人网盘、文件访问、备份与同步](./drive/personal-drive-file-sync.md)
+
 ### Video
 
 - [动画、影视、视频与播放器](./video/video-media.md)
@@ -503,6 +511,7 @@ Flutter Implementation
 App 应关注当前用户自己的：
 
 - 数据与 Resource。
+- Personal Drive、Drive File / Folder / Revision 与设备备份同步状态。
 - 设备与 Session。
 - 通知与 Activity。
 - Download / Offline / Sync 状态。
@@ -526,6 +535,9 @@ Review 时必须特别关注 UI 是否错误合并 V2 中已经明确区分的�
 
 ```text
 Resource ≠ Attachment ≠ Blob
+Drive Node / Path ≠ Attachment / Blob
+Drive File ≠ Download ≠ Cache ≠ Local Path
+Device Backup / Sync ≠ Resource Download / Offline Cache
 Download ≠ Cache
 Task ≠ Calendar Event
 Scheduled Time ≠ Deadline
@@ -570,7 +582,7 @@ UI 可以简化操作路径，但不能改变这些业务事实。
 - Missing。
 - Corrupted。
 
-禁止将离线本地写入伪装成“已同步成功”，禁止将 Cache 表述为用户主动维护的永久 Download，也禁止后台任务只呈现没有语义的无限 Loading。
+禁止将离线本地写入伪装成“已同步成功”，禁止将 Cache 表述为用户主动维护的永久 Download，禁止把 Drive File、Download、Cache 与 Local Path 合并成同一种“本地/远端文件”状态，也禁止后台任务只呈现没有语义的无限 Loading。
 
 ### 15.6 Secure Domain
 
