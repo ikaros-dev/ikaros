@@ -182,6 +182,16 @@ CREATE TABLE planning_recurrence (
 );
 CREATE INDEX idx_planning_recurrence_due ON planning_recurrence (active, next_run_at);
 
+CREATE TABLE planning_time_block (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, title VARCHAR(512) NOT NULL,
+    task_id UUID, start_at TIMESTAMPTZ NOT NULL, end_at TIMESTAMPTZ NOT NULL,
+    kind VARCHAR(16) NOT NULL DEFAULT 'FIXED', status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE', time_zone VARCHAR(64) NOT NULL DEFAULT 'UTC',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    version BIGINT NOT NULL DEFAULT 0, CHECK (end_at > start_at), CHECK (kind IN ('FIXED','FLEXIBLE')),
+    CHECK (status IN ('ACTIVE','CANCELLED')), CHECK (version >= 0), FOREIGN KEY (task_id) REFERENCES planning_task(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_planning_time_block_owner_time ON planning_time_block (owner_id, start_at, end_at);
+
 CREATE TABLE offline_download_manifest (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), intent_id UUID NOT NULL, manifest_version BIGINT NOT NULL,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (intent_id, manifest_version),
