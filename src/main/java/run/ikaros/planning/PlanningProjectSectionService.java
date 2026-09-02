@@ -1,0 +1,2 @@
+package run.ikaros.planning; import java.util.UUID; import reactor.core.publisher.Flux; import reactor.core.publisher.Mono;
+public interface PlanningProjectSectionService {Mono<PlanningProjectSectionView> create(UUID owner,UUID project,CreatePlanningProjectSectionRequest r);Flux<PlanningProjectSectionView> list(UUID owner,UUID project);Mono<PlanningProjectSectionView> update(UUID owner,UUID section,UpdatePlanningProjectSectionRequest r);Mono<Void> delete(UUID owner,UUID section);}

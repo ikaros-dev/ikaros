@@ -5,4 +5,4 @@ import java.util.UUID;
 public record CreatePlanningTaskRequest(@NotBlank String title, String description,
     PlanningTaskPriority priority, boolean important, boolean urgent, Instant scheduledStart, Instant scheduledEnd, Instant deadline,
     Integer estimatedDurationMinutes,
-    UUID projectId, UUID parentTaskId) {}
+    UUID projectId, UUID sectionId, UUID parentTaskId) {}

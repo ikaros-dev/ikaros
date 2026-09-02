@@ -141,7 +141,7 @@ CREATE INDEX idx_backup_restore_point_created ON backup_restore_point (state, cr
 CREATE TABLE planning_task (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, title VARCHAR(512) NOT NULL,
     description TEXT, status VARCHAR(24) NOT NULL DEFAULT 'INBOX', priority VARCHAR(24) NOT NULL DEFAULT 'NONE', important BOOLEAN NOT NULL DEFAULT FALSE, urgent BOOLEAN NOT NULL DEFAULT FALSE,
-    scheduled_start TIMESTAMPTZ, scheduled_end TIMESTAMPTZ, deadline TIMESTAMPTZ, estimated_duration_minutes INTEGER, project_id UUID, parent_task_id UUID, completed_at TIMESTAMPTZ,
+    scheduled_start TIMESTAMPTZ, scheduled_end TIMESTAMPTZ, deadline TIMESTAMPTZ, estimated_duration_minutes INTEGER, project_id UUID, section_id UUID, parent_task_id UUID, completed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
     version BIGINT NOT NULL DEFAULT 0, CHECK (status IN ('INBOX','PLANNED','IN_PROGRESS','COMPLETED','BLOCKED','CANCELLED','ARCHIVED')),
     CHECK (priority IN ('NONE','LOW','MEDIUM','HIGH','URGENT')), CHECK (scheduled_end IS NULL OR scheduled_start IS NULL OR scheduled_end > scheduled_start), CHECK (estimated_duration_minutes IS NULL OR estimated_duration_minutes > 0), CHECK (version >= 0),
@@ -228,6 +228,13 @@ CREATE TABLE planning_task_dependency (
     FOREIGN KEY (depends_on_task_id) REFERENCES planning_task(id) ON DELETE CASCADE
 );
 CREATE INDEX idx_planning_task_dependency_reverse ON planning_task_dependency (depends_on_task_id, task_id);
+CREATE TABLE planning_project_section (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), project_id UUID NOT NULL, name VARCHAR(256) NOT NULL, position INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    version BIGINT NOT NULL DEFAULT 0, UNIQUE (project_id, name), CHECK (position >= 0), CHECK (version >= 0), FOREIGN KEY (project_id) REFERENCES planning_project(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_planning_project_section_project_position ON planning_project_section (project_id, position);
+ALTER TABLE planning_task ADD CONSTRAINT fk_planning_task_section FOREIGN KEY (section_id) REFERENCES planning_project_section(id) ON DELETE SET NULL;
 
 CREATE TABLE planning_time_entry (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, task_id UUID NOT NULL, duration_minutes INTEGER NOT NULL,
