@@ -8,6 +8,7 @@ export class ApiError extends Error {
 }
 
 const apiBase = (import.meta.env.VITE_API_BASE_URL || '/api/v2').replace(/\/$/, '')
+function requestId() { return crypto.randomUUID() }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${apiBase}${path}`, {
@@ -32,8 +33,10 @@ export type BackgroundTaskRecord = { id: string; task_type?: string; owning_subs
 export const api = {
   listResources: (params = '') => request<Page<ResourceRecord> | ResourceRecord[]>(`/resources${params}`),
   getResource: (id: string) => request<ResourceRecord>(`/resources/${encodeURIComponent(id)}`),
-  createResource: (body: Record<string, unknown>) => request<ResourceRecord>('/resources', { method: 'POST', body: JSON.stringify(body) }),
+  createResource: (body: Record<string, unknown>) => request<ResourceRecord>('/resources', { method: 'POST', headers: { 'Idempotency-Key': requestId() }, body: JSON.stringify(body) }),
+  updateResource: (id: string, body: Record<string, unknown>, etag: string) => request<ResourceRecord>(`/resources/${encodeURIComponent(id)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/merge-patch+json', 'If-Match': etag }, body: JSON.stringify(body) }),
   archiveResource: (id: string, etag?: string) => request<void>(`/resources/${encodeURIComponent(id)}/actions/archive`, { method: 'POST', headers: etag ? { 'If-Match': etag } : undefined }),
+  restoreResource: (id: string, etag?: string) => request<ResourceRecord>(`/resources/${encodeURIComponent(id)}/actions/restore`, { method: 'POST', headers: etag ? { 'If-Match': etag } : undefined }),
   listUsers: (params = '') => request<Page<UserRecord> | UserRecord[]>(`/admin/users${params}`),
   listRoles: () => request<unknown>('/admin/roles'),
   listPermissions: () => request<unknown>('/admin/permissions'),
