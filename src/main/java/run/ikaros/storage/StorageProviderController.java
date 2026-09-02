@@ -36,6 +36,11 @@ public class StorageProviderController {
         return registry.list();
     }
 
+    @GetMapping("/{providerId}")
+    public Mono<StorageProvider> get(@PathVariable UUID providerId) {
+        return registry.get(providerId);
+    }
+
     @PostMapping("/{providerId}/enable")
     public Mono<StorageProvider> enable(@PathVariable UUID providerId) {
         return registry.enable(providerId);
