@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 
 @Service
 public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindingService {
@@ -38,9 +39,25 @@ public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindi
 
     @Override
     public Mono<MediaDeliveryBindingView> update(UUID id, MediaDeliveryBindingRequest request) {
+        return updateInternal(id, request, null);
+    }
+
+    @Override
+    public Mono<MediaDeliveryBindingView> update(UUID id, MediaDeliveryBindingRequest request, long expectedVersion) {
+        return updateInternal(id, request, expectedVersion);
+    }
+
+    private Mono<MediaDeliveryBindingView> updateInternal(UUID id, MediaDeliveryBindingRequest request,
+                                                          Long expectedVersion) {
         validate(request);
         return bindings.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Delivery Binding 不存在")))
-            .flatMap(old -> save(old, old.storageProviderId(), request)).map(this::view);
+            .flatMap(old -> {
+                long actualVersion = old.version() == null ? 0 : old.version();
+                if (expectedVersion != null && actualVersion != expectedVersion) {
+                    return Mono.error(new PreconditionFailedException("If-Match 与 Delivery Binding 当前版本不匹配"));
+                }
+                return save(old, old.storageProviderId(), request);
+            }).map(this::view);
     }
 
     @Override
@@ -69,6 +86,6 @@ public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindi
     private MediaDeliveryBindingView view(MediaDeliveryBindingEntity e) {
         return new MediaDeliveryBindingView(e.id(), e.storageProviderId(), e.deliveryProviderKey(), e.originType(),
             e.authMode(), e.priority(), e.enabled(), e.cacheKeyPolicy(), e.rangePolicy(), e.fallbackParticipation(),
-            e.createdAt(), e.updatedAt());
+            e.createdAt(), e.updatedAt(), e.version());
     }
 }

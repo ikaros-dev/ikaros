@@ -10,8 +10,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.common.IfMatchVersion;
 
 @RestController
 @RequestMapping("/api/v2/storage/providers/{providerId}/delivery-bindings")
@@ -24,8 +27,10 @@ public class MediaDeliveryBindingController {
     @GetMapping
     public Flux<MediaDeliveryBindingView> list(@PathVariable UUID providerId) { return service.list(providerId); }
     @PutMapping("/{bindingId}")
-    public Mono<MediaDeliveryBindingView> update(@PathVariable UUID bindingId,
-        @Valid @RequestBody MediaDeliveryBindingRequest request) { return service.update(bindingId, request); }
+    public Mono<ResponseEntity<MediaDeliveryBindingView>> update(@PathVariable UUID bindingId,
+        @RequestHeader(value = "If-Match", required = false) String ifMatch,
+        @Valid @RequestBody MediaDeliveryBindingRequest request) { return service.update(bindingId, request, IfMatchVersion.parse(ifMatch))
+        .map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view)); }
     @DeleteMapping("/{bindingId}")
     public Mono<Void> delete(@PathVariable UUID bindingId) { return service.delete(bindingId); }
 }
