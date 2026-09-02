@@ -21,9 +21,11 @@ import org.springframework.http.ResponseEntity;
 @RequestMapping({"/api/attachments", "/api/v2/attachments"})
 public class AttachmentController {
     private final StorageService storageService;
+    private final DeliveryGrantService deliveryGrantService;
 
-    public AttachmentController(StorageService storageService) {
+    public AttachmentController(StorageService storageService, DeliveryGrantService deliveryGrantService) {
         this.storageService = storageService;
+        this.deliveryGrantService = deliveryGrantService;
     }
 
     @Operation(summary = "查询附件元数据", description = "按 Attachment 身份读取元数据，并校验所属 Resource 的访问权。")
@@ -40,11 +42,15 @@ public class AttachmentController {
     @Operation(summary = "读取附件内容", description = "通过 Storage Provider 读取附件内容，支持单一 bytes Range。")
     @GetMapping("/{attachmentId}/content")
     public Mono<ResponseEntity<Flux<DataBuffer>>> content(
-        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @RequestHeader(value = "X-Ikaros-Actor-Id", required = false) UUID actorId,
         @PathVariable UUID attachmentId,
-        @RequestHeader(value = "Range", required = false) String range
+        @RequestHeader(value = "Range", required = false) String range,
+        @RequestHeader(value = "X-Ikaros-Delivery-Grant", required = false) String deliveryGrant
     ) {
-        return storageService.readContent(actorId, attachmentId, range).map(content -> {
+        Mono<UUID> authorizedActor = deliveryGrant == null || deliveryGrant.isBlank()
+            ? (actorId == null ? Mono.error(new run.ikaros.common.NotFoundException("需要 Actor 或 Delivery Grant")) : Mono.just(actorId))
+            : deliveryGrantService.authorize(actorId, attachmentId, deliveryGrant, range);
+        return authorizedActor.flatMap(a -> storageService.readContent(a, attachmentId, range)).map(content -> {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(content.mediaType()));
             headers.setContentLength(content.length());
