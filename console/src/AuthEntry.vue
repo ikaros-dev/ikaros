@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+
+const route = useRoute(); const router = useRouter()
+const email = ref(''); const code = ref(''); const password = ref(''); const confirmPassword = ref(''); const error = ref(''); const submitted = ref(false)
+const mode = computed(() => route.path.startsWith('/setup') ? 'setup' : route.path.startsWith('/login/verify') ? 'verify' : route.path.startsWith('/recovery') ? 'recovery' : 'login')
+const content = computed(() => mode.value === 'setup' ? { eyebrow: '首次初始化', title: '创建工作空间管理员', subtitle: '完成一次性初始化后，才能进入 Ikaros Console。' } : mode.value === 'verify' ? { eyebrow: '安全验证', title: '输入验证码', subtitle: '验证码已发送到你的登录邮箱，请在有效期内完成验证。' } : mode.value === 'recovery' ? { eyebrow: '账号恢复', title: '恢复你的账号', subtitle: '我们会发送安全链接，帮助你重新获得访问权限。' } : { eyebrow: '安全访问', title: '欢迎回来', subtitle: '登录你的 Ikaros 工作空间' })
+function submit() { error.value = ''; if (mode.value === 'setup' && password.value.length < 8) { error.value = '管理员密码至少需要 8 位'; return } if (mode.value === 'setup' && password.value !== confirmPassword.value) { error.value = '两次输入的密码不一致'; return } if (mode.value === 'verify' && code.value.length !== 6) { error.value = '请输入 6 位验证码'; return } if (mode.value !== 'setup' && !email.value.trim()) { error.value = '请输入邮箱地址'; return } submitted.value = true }
+function backToLogin() { router.push('/login') }
+</script>
+
+<template>
+  <div class="login-page auth-entry"><div class="login-decoration"><div class="login-orb one"></div><div class="login-orb two"></div><span>✦</span></div><main class="login-card"><div class="login-brand"><div class="brand-mark">i</div><div><strong>Ikaros</strong><small>Console</small></div></div><p class="eyebrow">{{ content.eyebrow }}</p><h1>{{ content.title }}</h1><p class="login-subtitle">{{ content.subtitle }}</p><div v-if="submitted" class="auth-success"><span>✓</span><div><b>{{ mode === 'setup' ? '初始化已提交' : mode === 'verify' ? '验证成功' : '请检查你的邮箱' }}</b><p>{{ mode === 'setup' ? '正在准备你的 Console 环境。' : mode === 'verify' ? '认证完成，正在进入工作台。' : '如果邮箱存在，我们已发送后续步骤。' }}</p></div></div><form v-else @submit.prevent="submit"><label v-if="mode !== 'verify'">邮箱<input v-model="email" type="email" autocomplete="email" placeholder="name@example.com" /></label><label v-if="mode === 'verify'">验证码<input v-model="code" inputmode="numeric" maxlength="6" placeholder="输入 6 位验证码" /></label><template v-if="mode === 'setup'"><label>管理员密码<input v-model="password" type="password" autocomplete="new-password" placeholder="至少 8 位" /></label><label>确认密码<input v-model="confirmPassword" type="password" autocomplete="new-password" placeholder="再次输入密码" /></label></template><p v-if="error" class="login-error" role="alert">{{ error }}</p><button class="filled-button login-button" type="submit">{{ mode === 'setup' ? '完成初始化' : mode === 'verify' ? '完成验证' : mode === 'recovery' ? '发送恢复链接' : '继续' }} <span>→</span></button></form><button class="text-button auth-back" @click="backToLogin">返回登录</button><p class="login-footnote">所有认证与恢复动作都会遵循安全策略并写入审计记录。</p></main></div>
+</template>
