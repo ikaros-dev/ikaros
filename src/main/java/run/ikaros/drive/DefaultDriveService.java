@@ -26,6 +26,8 @@ public class DefaultDriveService implements DriveService {
         boolean enabled, SyncBindingState state, long cursor, Instant created, Instant updated) {}
     private record Conflict(UUID id, UUID binding, UUID node, UUID baseRevision, UUID remoteRevision,
         String localFingerprint, SyncConflictState state, Instant detected, Instant resolved, UUID resolvedBy) {}
+    private record Mapping(UUID id, UUID binding, String localItem, UUID remoteNode, UUID revision,
+        String fingerprint, long remoteVersion, SyncMappingState state, Instant updated) {}
     private final UuidV7Generator ids = new UuidV7Generator();
     private final ConcurrentMap<UUID, Space> spaces = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Node> nodes = new ConcurrentHashMap<>();
@@ -33,6 +35,7 @@ public class DefaultDriveService implements DriveService {
     private final ConcurrentMap<UUID, Reservation> reservations = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Binding> bindings = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Conflict> conflicts = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Mapping> mappings = new ConcurrentHashMap<>();
 
     @Override public Mono<DriveSpaceView> createSpace(UUID actorId, CreateDriveSpaceRequest request) {
         return Mono.fromSupplier(() -> {
@@ -213,8 +216,27 @@ public class DefaultDriveService implements DriveService {
                 d.appVersion(), DeviceTrustState.REVOKED, d.registered(), d.lastSeen(), Instant.now());
                 devices.put(deviceId, revoked); return deviceView(revoked); });
     }
-    @Override public Mono<SyncMappingView> upsertMapping(UUID actorId, UUID bindingId, UpsertSyncMappingRequest request) { return Mono.error(new NotFoundException("Sync Binding 不存在")); }
-    @Override public Flux<SyncMappingView> mappings(UUID actorId, UUID bindingId) { return Flux.empty(); }
+    @Override public Mono<SyncMappingView> upsertMapping(UUID actorId, UUID bindingId, UpsertSyncMappingRequest request) {
+        return ownedBinding(actorId, bindingId).flatMap(binding -> {
+            if (!binding.enabled()) return Mono.error(new NotFoundException("Sync Binding 不存在或已暂停"));
+            Node remote = nodes.get(request.remoteNodeId());
+            if (remote == null || !remote.space().equals(binding.space()))
+                return Mono.error(new NotFoundException("Remote Node 不存在"));
+            String localItem = request.localItemId().trim();
+            String key = bindingId + "\u0000" + localItem;
+            Mapping current = mappings.get(key);
+            Mapping updated = new Mapping(current == null ? ids.next() : current.id(), bindingId, localItem,
+                request.remoteNodeId(), request.lastSyncedRevisionId(), request.lastSyncedFingerprint(),
+                request.lastSeenRemoteVersion(), request.state() == null ? SyncMappingState.ACTIVE : request.state(), Instant.now());
+            mappings.put(key, updated);
+            return Mono.just(mappingView(updated));
+        });
+    }
+    @Override public Flux<SyncMappingView> mappings(UUID actorId, UUID bindingId) {
+        return ownedBinding(actorId, bindingId).flatMapMany(binding -> Flux.fromIterable(mappings.values())
+            .filter(mapping -> mapping.binding().equals(binding.id())).sort(java.util.Comparator.comparing(Mapping::updated))
+            .map(this::mappingView));
+    }
     @Override public Flux<DriveTombstoneView> tombstones(UUID actorId, UUID spaceId, long afterSequence) { return ownedSpace(actorId,spaceId).flatMapMany(s->Flux.empty()); }
     @Override public Flux<SyncMutationResult> applyMutations(UUID actorId, UUID bindingId, java.util.List<SyncMutationRequest> requests) { return Flux.fromIterable(requests).concatMap(request -> { Mono<DriveNodeView> action = switch (request.kind()) { case RENAME -> rename(actorId,request.nodeId(),new RenameDriveNodeRequest(request.name(),request.expectedVersion())); case MOVE -> move(actorId,request.nodeId(),new MoveDriveNodeRequest(request.parentId(),request.expectedVersion())); case TRASH -> trash(actorId,request.nodeId(),request.expectedVersion()); case RESTORE -> restore(actorId,request.nodeId(),request.expectedVersion()); }; return action.map(node->new SyncMutationResult(request.operationId(),true,node,null,null)).onErrorResume(error->Mono.just(new SyncMutationResult(request.operationId(),false,null,error.getClass().getSimpleName(),error.getMessage()))); }); }
     @Override public Mono<SyncBindingView> advanceCursor(UUID actorId, UUID bindingId, long cursor) { return Mono.error(new NotFoundException("Sync Binding 不存在")); }
@@ -271,4 +293,7 @@ public class DefaultDriveService implements DriveService {
     private SyncConflictView conflictView(Conflict conflict) { return new SyncConflictView(conflict.id(), conflict.binding(),
         conflict.node(), conflict.baseRevision(), conflict.remoteRevision(), conflict.localFingerprint(), conflict.state(),
         conflict.detected(), conflict.resolved(), conflict.resolvedBy()); }
+    private SyncMappingView mappingView(Mapping mapping) { return new SyncMappingView(mapping.id(), mapping.binding(),
+        mapping.localItem(), mapping.remoteNode(), mapping.revision(), mapping.fingerprint(), mapping.remoteVersion(),
+        mapping.state(), mapping.updated()); }
 }
