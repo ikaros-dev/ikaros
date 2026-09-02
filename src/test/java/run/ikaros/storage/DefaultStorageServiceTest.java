@@ -30,6 +30,7 @@ class DefaultStorageServiceTest {
     private AttachmentRepository attachmentRepository;
     private BlobRepository blobRepository;
     private BlobPlacementRepository placementRepository;
+    private DerivedAttachmentRepository derivedAttachmentRepository;
     private AuditService auditService;
     private DefaultStorageService service;
 
@@ -39,11 +40,12 @@ class DefaultStorageServiceTest {
         attachmentRepository = mock(AttachmentRepository.class);
         blobRepository = mock(BlobRepository.class);
         placementRepository = mock(BlobPlacementRepository.class);
+        derivedAttachmentRepository = mock(DerivedAttachmentRepository.class);
         auditService = mock(AuditService.class);
         TransactionalOperator transaction = mock(TransactionalOperator.class);
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
         service = new DefaultStorageService(resourceRepository, attachmentRepository, blobRepository,
-            placementRepository, auditService, transaction);
+            placementRepository, derivedAttachmentRepository, auditService, transaction);
     }
 
     @Test

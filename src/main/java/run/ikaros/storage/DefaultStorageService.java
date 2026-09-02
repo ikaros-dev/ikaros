@@ -20,6 +20,7 @@ public class DefaultStorageService implements StorageService {
     private final AttachmentRepository attachmentRepository;
     private final BlobRepository blobRepository;
     private final BlobPlacementRepository placementRepository;
+    private final DerivedAttachmentRepository derivedAttachmentRepository;
     private final AuditService auditService;
     private final TransactionalOperator transactionalOperator;
 
@@ -37,14 +38,28 @@ public class DefaultStorageService implements StorageService {
                                  AttachmentRepository attachmentRepository,
                                  BlobRepository blobRepository,
                                  BlobPlacementRepository placementRepository,
+                                 DerivedAttachmentRepository derivedAttachmentRepository,
                                  AuditService auditService,
                                  TransactionalOperator transactionalOperator) {
         this.resourceRepository = resourceRepository;
         this.attachmentRepository = attachmentRepository;
         this.blobRepository = blobRepository;
         this.placementRepository = placementRepository;
+        this.derivedAttachmentRepository = derivedAttachmentRepository;
         this.auditService = auditService;
         this.transactionalOperator = transactionalOperator;
+    }
+
+    @Override
+    public Mono<AttachmentView> attachDerived(UUID ownerId, UUID resourceId, CreateDerivedAttachmentRequest request) {
+        return attachmentRepository.findById(request.sourceAttachmentId())
+            .filter(source -> source.resourceId().equals(resourceId) && source.deletedAt() == null)
+            .switchIfEmpty(Mono.error(new NotFoundException("来源附件不存在或无权访问")))
+            .then(attach(ownerId, resourceId, new AttachBlobRequest(request.content().sha256(), request.content().sizeBytes(),
+                request.content().mediaType(), request.content().fileName(), AttachmentKind.DERIVED,
+                request.content().provider(), request.content().tier(), request.content().objectKey())))
+            .flatMap(view -> derivedAttachmentRepository.save(new DerivedAttachmentEntity(null, request.sourceAttachmentId(),
+                view.id(), Instant.now(), null)).thenReturn(view));
     }
 
     @Override

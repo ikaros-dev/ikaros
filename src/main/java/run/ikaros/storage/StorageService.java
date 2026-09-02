@@ -20,6 +20,16 @@ public interface StorageService {
     Mono<AttachmentView> attach(UUID ownerId, UUID resourceId, AttachBlobRequest request);
 
     /**
+     * 登记一个可追溯到原始附件的派生附件。
+     *
+     * @param ownerId 当前拥有者标识
+     * @param resourceId Resource 标识
+     * @param request 来源附件与派生内容
+     * @return 新建派生附件视图
+     */
+    Mono<AttachmentView> attachDerived(UUID ownerId, UUID resourceId, CreateDerivedAttachmentRequest request);
+
+    /**
      * 查询 Resource 的附件及其当前已知 Storage Placement。
      *
      * @param ownerId 当前拥有者标识
