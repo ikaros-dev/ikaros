@@ -102,6 +102,7 @@ public class DefaultStorageService implements StorageService {
         return owned(ownerId, resourceId).then(transactionalOperator.transactional(
             findOrCreateBlob(request)
                 .flatMap(blob -> ensurePlacement(blob, request)
+                    .then(markAvailable(blob))
                     .then(attachmentRepository.save(new AttachmentEntity(
                         null, resourceId, blob.id(), request.fileName(), request.kind(), Instant.now(), null, null
                     )))
@@ -184,7 +185,7 @@ public class DefaultStorageService implements StorageService {
             })
             .switchIfEmpty(Mono.defer(() -> blobRepository.save(new BlobEntity(
                 null, "SHA-256", request.sha256().toLowerCase(), request.sizeBytes(), request.mediaType(),
-                BlobAvailability.AVAILABLE, Instant.now(), null
+                BlobAvailability.PROCESSING, Instant.now(), null
             ))));
     }
 
@@ -203,6 +204,14 @@ public class DefaultStorageService implements StorageService {
                 PlacementState.ACTIVE, Instant.now(), Instant.now(), null
             ))))
             .then();
+    }
+
+    private Mono<Void> markAvailable(BlobEntity blob) {
+        if (blob.availability() != BlobAvailability.PROCESSING) {
+            return Mono.empty();
+        }
+        return blobRepository.save(new BlobEntity(blob.id(), blob.hashAlgorithm(), blob.sha256(), blob.sizeBytes(),
+            blob.mediaType(), BlobAvailability.AVAILABLE, blob.createdAt(), blob.version())).then();
     }
 
     private Mono<AttachmentView> toView(AttachmentEntity attachment, BlobEntity blob) {
