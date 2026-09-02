@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
@@ -17,6 +18,7 @@ import run.ikaros.common.PageResponse;
 public class InMemoryBackgroundTaskService implements BackgroundTaskService {
     private static final int MAX_ATTEMPTS = 3;
     private final Map<UUID, BackgroundTask> tasks = new ConcurrentHashMap<>();
+    private final ConcurrentMap<UUID, ConcurrentMap<Integer, BackgroundTaskAttemptEntity>> attemptHistory = new ConcurrentHashMap<>();
 
     @Override
     public Mono<BackgroundTask> get(UUID taskId) {
@@ -44,7 +46,8 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
 
     @Override
     public Flux<BackgroundTaskAttemptEntity> attempts(UUID taskId) {
-        return get(taskId).thenMany(Flux.empty());
+        return get(taskId).thenMany(Flux.defer(() -> Flux.fromIterable(attemptHistory
+            .getOrDefault(taskId, new ConcurrentHashMap<>()).values()).sort(Comparator.comparingInt(BackgroundTaskAttemptEntity::attemptNo))));
     }
 
     @Override
@@ -75,9 +78,12 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
                 .filter(task -> task.status() == TaskStatus.RUNNING && task.leaseExpiresAt() != null
                     && !task.leaseExpiresAt().isAfter(observedAt))
                 .findFirst()
-                .ifPresent(task -> tasks.replace(task.id(), task, new BackgroundTask(task.id(), task.taskType(), TaskStatus.PENDING,
-                    task.payload(), task.idempotencyKey(), observedAt, null, null, null, task.attempt(), task.cancelRequestedAt(),
-                    task.progress(), task.result(), task.createdAt(), observedAt, task.parentTaskId())));
+                .ifPresent(task -> {
+                    finishAttempt(task, "LEASE_LOST", "Lease 已过期");
+                    tasks.replace(task.id(), task, new BackgroundTask(task.id(), task.taskType(), TaskStatus.PENDING,
+                        task.payload(), task.idempotencyKey(), observedAt, null, null, null, task.attempt(), task.cancelRequestedAt(),
+                        task.progress(), task.result(), task.createdAt(), observedAt, task.parentTaskId()));
+                });
             return tasks.values().stream()
             .filter(task -> task.status() == TaskStatus.PENDING && !task.availableAt().isAfter(observedAt))
             .sorted(Comparator.comparing(BackgroundTask::availableAt).thenComparing(BackgroundTask::createdAt))
@@ -87,6 +93,9 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
                 BackgroundTask claimed = copy(task, TaskStatus.RUNNING, runnerId, UUID.randomUUID(),
                     now.plus(leaseDuration), task.attempt() + 1, task.cancelRequestedAt(), task.progress(), task.result());
                 tasks.replace(task.id(), task, claimed);
+                attemptHistory.computeIfAbsent(task.id(), ignored -> new ConcurrentHashMap<>()).put(claimed.attempt(),
+                    new BackgroundTaskAttemptEntity(UUID.randomUUID(), task.id(), claimed.attempt(), TaskStatus.RUNNING.name(),
+                        runnerId, null, claimed.leaseExpiresAt(), now, now, null, now));
                 return Mono.just(claimed);
             }).orElseGet(Mono::empty);
         });
@@ -106,7 +115,7 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
         return leased(taskId, leaseToken).map(task -> {
             BackgroundTask updated = copy(task, TaskStatus.SUCCEEDED, task.leaseOwner(), task.leaseToken(),
                 task.leaseExpiresAt(), task.attempt(), task.cancelRequestedAt(), task.progress(), result);
-            tasks.replace(task.id(), task, updated); return updated;
+            tasks.replace(task.id(), task, updated); finishAttempt(task, TaskStatus.SUCCEEDED.name(), null); return updated;
         });
     }
 
@@ -119,11 +128,19 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
                 task.payload(), task.idempotencyKey(), availableAt, retryable ? null : task.leaseOwner(),
                 retryable ? null : task.leaseToken(), retryable ? null : task.leaseExpiresAt(), task.attempt(),
                 task.cancelRequestedAt(), task.progress(), error, task.createdAt(), Instant.now(), task.parentTaskId());
-            tasks.replace(task.id(), task, updated); return updated;
+            tasks.replace(task.id(), task, updated); finishAttempt(task, TaskStatus.FAILED.name(),
+                error == null ? null : String.valueOf(error.get("message"))); return updated;
         });
     }
 
     private Duration backoff(int attempt) { return Duration.ofSeconds(Math.min(3600L, 30L * (1L << Math.min(attempt, 7)))); }
+
+    private void finishAttempt(BackgroundTask task, String status, String error) {
+        ConcurrentMap<Integer, BackgroundTaskAttemptEntity> history = attemptHistory.get(task.id());
+        if (history == null) return;
+        history.computeIfPresent(task.attempt(), (number, old) -> new BackgroundTaskAttemptEntity(old.id(), old.taskId(), old.attemptNo(),
+            status, old.claimedBy(), old.leaseExpiresAt(), old.heartbeatAt(), old.startedAt(), Instant.now(), error, old.createdAt()));
+    }
 
     @Override
     public Mono<BackgroundTask> retry(UUID taskId) {

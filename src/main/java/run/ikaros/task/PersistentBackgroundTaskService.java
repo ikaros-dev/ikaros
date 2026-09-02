@@ -85,7 +85,8 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
                 .flatMap(expired -> tasks.save(new BackgroundTaskEntity(expired.id(), expired.taskType(),
                     TaskStatus.PENDING.name(), expired.payload(), expired.idempotencyKey(), observedAt, null, null, null,
                     expired.attempt(), expired.cancelRequestedAt(), expired.progress(), expired.result(), expired.createdAt(),
-                    Instant.now(), expired.parentTaskId()))))
+                    Instant.now(), expired.parentTaskId()))
+                    .flatMap(requeued -> finishAttempt(expired, "LEASE_LOST", "Lease 已过期").thenReturn(requeued))))
             .switchIfEmpty(Mono.error(new NotFoundException("没有可执行的 Task")))
             .flatMap(task -> {
                 Instant now = Instant.now(); UUID token = UUID.randomUUID();
@@ -109,7 +110,8 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     public Mono<BackgroundTask> complete(UUID taskId, UUID leaseToken, Map<String, Object> result) {
         return leased(taskId, leaseToken).flatMap(task -> encode(result).flatMap(json -> tasks.save(copy(task,
             TaskStatus.SUCCEEDED, task.leaseOwner(), task.leaseToken(), task.leaseExpiresAt(), task.attempt(),
-            task.cancelRequestedAt(), task.progress(), json)))).flatMap(this::view);
+            task.cancelRequestedAt(), task.progress(), json))
+            .flatMap(saved -> finishAttempt(task, TaskStatus.SUCCEEDED.name(), null).then(view(saved)))));
     }
 
     @Override
@@ -123,9 +125,20 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
                     availableAt, retryable ? null : task.leaseOwner(), retryable ? null : task.leaseToken(),
                     retryable ? null : task.leaseExpiresAt(), task.attempt(), task.cancelRequestedAt(), task.progress(), json,
                     task.createdAt(), Instant.now(), task.parentTaskId());
-                return tasks.save(failed);
-            }))
-            .flatMap(this::view);
+                return tasks.save(failed).flatMap(saved -> finishAttempt(task, TaskStatus.FAILED.name(), message(error)).then(view(saved)));
+            }));
+    }
+
+    private Mono<Void> finishAttempt(BackgroundTaskEntity task, String status, String error) {
+        return attempts.findByTaskIdAndAttemptNo(task.id(), task.attempt())
+            .flatMap(old -> attempts.save(new BackgroundTaskAttemptEntity(old.id(), old.taskId(), old.attemptNo(), status,
+                old.claimedBy(), old.leaseExpiresAt(), old.heartbeatAt(), old.startedAt(), Instant.now(), error, old.createdAt())))
+            .then();
+    }
+
+    private String message(Map<String, Object> error) {
+        Object value = error == null ? null : error.get("message");
+        return value == null ? null : value.toString();
     }
 
     private Duration backoff(int attempt) { return Duration.ofSeconds(Math.min(3600L, 30L * (1L << Math.min(attempt, 7)))); }
