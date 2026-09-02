@@ -45,6 +45,19 @@ class StorageRestoreBudgetServiceTest {
             .verify();
     }
 
+    @Test
+    void queuesWhenConcurrentBudgetIsExhausted() {
+        when(budgets.findById(StorageRestoreBudgetService.DEFAULT_ID)).thenReturn(Mono.just(budget(
+            StorageRestoreBudgetAction.QUEUE_AFTER_BUDGET_RESET, 100)));
+        when(budgets.countActiveRequests()).thenReturn(Mono.just(2L));
+        when(budgets.sumActiveBytes()).thenReturn(Mono.just(0L));
+        when(budgets.sumRequestedBytesSince(org.mockito.ArgumentMatchers.any())).thenReturn(Mono.just(0L));
+
+        StepVerifier.create(service.evaluate(1, 11, null))
+            .expectNext(StorageRestoreBudgetDecision.QUEUED)
+            .verifyComplete();
+    }
+
     private StorageRestoreBudgetEntity budget(StorageRestoreBudgetAction action, long maxBytes) {
         return new StorageRestoreBudgetEntity(StorageRestoreBudgetService.DEFAULT_ID, maxBytes, 10,
             2, 100, 1000, 1000, action, Instant.now(), 0L);
