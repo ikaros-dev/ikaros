@@ -28,20 +28,35 @@ public class DeliveryGrantController {
     @PostMapping
     public Mono<DeliveryGrantContractView> issue(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @PathVariable UUID attachmentId, @Valid @RequestBody DeliveryGrantRequest request) {
-        return service.issue(actorId, attachmentId, request).flatMap(grant ->
-            (request != null && request.existingLeaseId() != null
-                ? leases.get(actorId, request.existingLeaseId())
-                    .filter(lease -> lease.attachmentId().equals(attachmentId))
-                    .flatMap(lease -> leases.renew(actorId, lease.id(), request.ttlSeconds()))
-                : leases.create(actorId, attachmentId, new DeliveryLeaseRequest(grant.token(), request == null ? null : request.ttlSeconds())))
-                .flatMap(lease -> bindings.findById(lease.bindingId())
-                    .flatMap(binding -> providers.findByProviderKey(binding.deliveryProviderKey())
-                        .zipWith(blobs.findById(lease.blobId()))
-                        .map(providerAndBlob -> new DeliveryGrantContractView(grant.id(), grant.attachmentId(), lease.id(),
-                            providerAndBlob.getT1().id(), grant.method(), "/api/v2/attachments/" + attachmentId
-                                + "/content?delivery_grant=" + grant.token(), grant.expiresAt(),
-                            binding.rangePolicy() != DeliveryBindingRangePolicy.UNSUPPORTED,
-                            providerAndBlob.getT2().mediaType(), providerAndBlob.getT2().sizeBytes(), grant.revocationLevel())))));
+        return service.issue(actorId, attachmentId, request)
+            .flatMap(grant -> createOrRenewLease(actorId, attachmentId, request, grant)
+                .flatMap(lease -> contract(attachmentId, grant, lease))
+                .onErrorResume(error -> service.revoke(actorId, grant.id())
+                    .onErrorResume(revokeError -> Mono.empty())
+                    .then(Mono.error(error))));
+    }
+
+    private Mono<DeliveryLeaseView> createOrRenewLease(UUID actorId, UUID attachmentId,
+        DeliveryGrantRequest request, DeliveryGrantView grant) {
+        if (request != null && request.existingLeaseId() != null) {
+            return leases.get(actorId, request.existingLeaseId())
+                .filter(lease -> lease.attachmentId().equals(attachmentId))
+                .flatMap(lease -> leases.renew(actorId, lease.id(), request.ttlSeconds()));
+        }
+        return leases.create(actorId, attachmentId,
+            new DeliveryLeaseRequest(grant.token(), request == null ? null : request.ttlSeconds()));
+    }
+
+    private Mono<DeliveryGrantContractView> contract(UUID attachmentId, DeliveryGrantView grant,
+        DeliveryLeaseView lease) {
+        return bindings.findById(lease.bindingId())
+            .flatMap(binding -> providers.findByProviderKey(binding.deliveryProviderKey())
+                .zipWith(blobs.findById(lease.blobId()))
+                .map(providerAndBlob -> new DeliveryGrantContractView(grant.id(), grant.attachmentId(), lease.id(),
+                    providerAndBlob.getT1().id(), grant.method(), "/api/v2/attachments/" + attachmentId
+                        + "/content?delivery_grant=" + grant.token(), grant.expiresAt(),
+                    binding.rangePolicy() != DeliveryBindingRangePolicy.UNSUPPORTED,
+                    providerAndBlob.getT2().mediaType(), providerAndBlob.getT2().sizeBytes(), grant.revocationLevel())));
     }
 
     @PostMapping("/{grantId}/actions/revoke")
