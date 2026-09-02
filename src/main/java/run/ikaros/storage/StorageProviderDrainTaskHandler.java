@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import run.ikaros.common.ConflictException;
 import run.ikaros.task.BackgroundTask;
 import run.ikaros.task.BackgroundTaskDispatcher;
 
@@ -28,7 +27,7 @@ public class StorageProviderDrainTaskHandler {
         UUID providerId = UUID.fromString(String.valueOf(task.payload().get("provider_id")));
         return providers.get(providerId).flatMap(provider -> placements.countByProviderAndPlacementState(provider.providerKey(), PlacementState.ACTIVE)
             .flatMap(active -> {
-                if (active > 0) return Mono.error(new ConflictException("Provider 仍存在 Active Placement，Drain 暂停"));
+                if (active > 0) return Mono.error(new IllegalStateException("Provider 仍存在 Active Placement，Drain 等待中"));
                 return providers.disable(providerId).map(disabled -> {
                     Map<String, Object> result = new HashMap<>();
                     result.put("provider_id", providerId.toString());
