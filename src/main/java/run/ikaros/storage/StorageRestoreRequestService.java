@@ -102,6 +102,21 @@ public class StorageRestoreRequestService {
         return requests.findAllByActorIdOrderByCreatedAtDesc(actorId).map(this::view);
     }
 
+    public Mono<StorageRestoreRequestView> cancel(UUID actorId, UUID id) {
+        return requests.findById(id).filter(r -> r.actorId().equals(actorId))
+            .switchIfEmpty(Mono.error(new NotFoundException("Restore Request 不存在或无权访问")))
+            .flatMap(old -> {
+                if (old.status() == StorageRestoreRequestStatus.COMPLETED
+                    || old.status() == StorageRestoreRequestStatus.FAILED
+                    || old.status() == StorageRestoreRequestStatus.PARTIAL_FAILURE
+                    || old.status() == StorageRestoreRequestStatus.CANCELLED) return Mono.just(old);
+                Mono<Void> stop = old.backgroundTaskId() == null ? Mono.empty() : tasks.cancel(old.backgroundTaskId()).then();
+                return stop.then(requests.save(new StorageRestoreRequestEntity(old.id(), old.actorId(), old.scope(), old.scopeId(),
+                    StorageRestoreRequestStatus.CANCELLED, old.totalItems(), old.completedItems(), old.totalBytes(), old.errorSummary(),
+                    old.idempotencyKey(), old.backgroundTaskId(), old.createdAt(), Instant.now(), old.version())));
+            }).map(this::view);
+    }
+
     private Mono<AttachmentEntity> authorizedAttachment(UUID actorId, UUID id) {
         return attachments.findById(id).filter(a -> a.deletedAt() == null)
             .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或已删除")))

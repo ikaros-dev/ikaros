@@ -33,4 +33,11 @@ public class StorageRestoreContractController {
         @RequestParam(required=false) String cursor, @RequestParam(required=false) String status) {
         return service.list(actorId);
     }
+
+    @DeleteMapping("/api/v2/restore-requests/{requestId}")
+    public Mono<ResponseEntity<StorageRestoreRequestView>> cancel(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID requestId) {
+        return service.cancel(actorId, requestId)
+            .map(view -> ResponseEntity.accepted().body(view));
+    }
 }
