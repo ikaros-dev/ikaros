@@ -30,7 +30,9 @@ public class DeliveryGrantController {
         @PathVariable UUID attachmentId, @Valid @RequestBody DeliveryGrantRequest request) {
         return service.issue(actorId, attachmentId, request).flatMap(grant ->
             (request != null && request.existingLeaseId() != null
-                ? leases.get(actorId, request.existingLeaseId()).filter(lease -> lease.attachmentId().equals(attachmentId))
+                ? leases.get(actorId, request.existingLeaseId())
+                    .filter(lease -> lease.attachmentId().equals(attachmentId))
+                    .flatMap(lease -> leases.renew(actorId, lease.id(), request.ttlSeconds()))
                 : leases.create(actorId, attachmentId, new DeliveryLeaseRequest(grant.token(), request == null ? null : request.ttlSeconds())))
                 .flatMap(lease -> bindings.findById(lease.bindingId())
                     .flatMap(binding -> providers.findByProviderKey(binding.deliveryProviderKey())
