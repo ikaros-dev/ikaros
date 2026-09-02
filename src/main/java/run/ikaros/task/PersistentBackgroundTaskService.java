@@ -68,13 +68,15 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
         if (taskType == null || taskType.isBlank()) return Mono.error(new IllegalArgumentException("Task 类型不能为空"));
         Mono<BackgroundTaskEntity> existing = idempotencyKey == null ? Mono.empty()
             : tasks.findByTaskTypeAndIdempotencyKey(taskType, idempotencyKey);
-        return existing.switchIfEmpty(Mono.defer(() -> encode(payload).flatMap(json -> {
+        Mono<BackgroundTask> reused = existing.flatMap(this::view);
+        Mono<BackgroundTask> created = Mono.defer(() -> encode(payload).flatMap(json -> {
             Instant now = Instant.now();
             return tasks.save(new BackgroundTaskEntity(null, taskType, TaskStatus.PENDING.name(), json,
                 idempotencyKey, now, timeoutAt(payload, now), null, null, null, 0, null, "{}", "{}", now, now, null));
-        }))).flatMap(saved -> events.append("operations.background-task.created", 1, "background_task", saved.id(),
+        })).flatMap(saved -> events.append("operations.background-task.created", 1, "background_task", saved.id(),
             "{\"task_id\":\"" + saved.id() + "\",\"task_type\":\"" + saved.taskType()
                 + "\",\"status\":\"" + saved.status() + "\"}").then(view(saved)));
+        return reused.switchIfEmpty(created);
     }
 
     @Override
