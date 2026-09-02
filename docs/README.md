@@ -31,3 +31,7 @@
 - [AI 智能子系统](03-ai-and-analytics/AI-Intelligence-Subsystem-Design.md)
 - [AI Persona](03-ai-and-analytics/AI-Persona-System-Design.md)
 - [数据分析与统计](03-ai-and-analytics/Data-Analytics-Statistics-Subsystem-Design.md)
+
+## 100：图表展示
+
+- [图表展示目录](90-diagrams/README.md)
