@@ -48,7 +48,7 @@ public class StorageRestoreRequestService {
         return existing.switchIfEmpty(Mono.defer(() -> authorizedAttachment(actorId, request.attachmentId())
             .flatMap(attachment -> blobs.findById(attachment.blobId())
                 .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
-                .flatMap(blob -> budget.check(1, blob.sizeBytes()).then(placements.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
+                .flatMap(blob -> budget.check(1, blob.sizeBytes(), request.budgetConfirmationToken()).then(placements.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
                     .filter(p -> p.placementState() == PlacementState.ACTIVE).hasElements()
                     .flatMap(readable -> {
                         if (readable) return Mono.error(new ConflictException("附件已经存在可读副本"));
@@ -71,6 +71,11 @@ public class StorageRestoreRequestService {
 
     public Mono<StorageRestoreRequestView> requestSeason(UUID actorId, UUID seasonId, String providerRestoreClass,
         String idempotencyKey) {
+        return requestSeason(actorId, seasonId, providerRestoreClass, null, idempotencyKey);
+    }
+
+    public Mono<StorageRestoreRequestView> requestSeason(UUID actorId, UUID seasonId, String providerRestoreClass,
+        String budgetConfirmationToken, String idempotencyKey) {
         if (idempotencyKey == null || idempotencyKey.isBlank()) return Mono.error(new IllegalArgumentException("缺少 Idempotency-Key"));
         return requests.findByActorIdAndScopeAndScopeIdAndIdempotencyKey(actorId, StorageRestoreScope.SEASON, seasonId, idempotencyKey)
             .switchIfEmpty(Mono.defer(() -> seasons.findById(seasonId).filter(s -> s.ownerId().equals(actorId))
@@ -83,7 +88,7 @@ public class StorageRestoreRequestService {
                 .collectList().flatMap(candidates -> {
                     if (candidates.isEmpty()) return Mono.error(new ConflictException("Season 没有可恢复附件"));
                     long totalBytes = candidates.stream().mapToLong(RestoreCandidate::bytes).sum();
-                    return budget.check(candidates.size(), totalBytes).then(Mono.defer(() -> {
+                    return budget.check(candidates.size(), totalBytes, budgetConfirmationToken).then(Mono.defer(() -> {
                         Instant now = Instant.now();
                         return requests.save(new StorageRestoreRequestEntity(null, actorId, StorageRestoreScope.SEASON, seasonId,
                             StorageRestoreRequestStatus.REQUESTED, candidates.size(), 0, totalBytes, null, idempotencyKey, null, now, now, null));

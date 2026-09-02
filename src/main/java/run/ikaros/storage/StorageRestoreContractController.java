@@ -20,7 +20,8 @@ public class StorageRestoreContractController {
             return Mono.error(new IllegalArgumentException("缺少 Idempotency-Key"));
         }
         return service.requestAttachment(actorId, new RequestAttachmentRestore(attachmentId,
-            options == null ? null : options.providerRestoreClass()), idempotencyKey)
+            options == null ? null : options.providerRestoreClass(),
+            options == null ? null : options.budgetConfirmationToken()), idempotencyKey)
             .map(view -> ResponseEntity.accepted().header("Location", "/api/v2/restore-requests/" + view.id()).body(contract(view)));
     }
 

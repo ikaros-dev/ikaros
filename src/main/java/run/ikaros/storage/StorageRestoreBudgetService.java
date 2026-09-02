@@ -41,10 +41,14 @@ public class StorageRestoreBudgetService {
     }
 
     public Mono<Void> check(int items, long bytes) {
+        return check(items, bytes, null);
+    }
+
+    public Mono<Void> check(int items, long bytes, String confirmationToken) {
         if (items < 1 || bytes < 0) return Mono.error(new IllegalArgumentException("Restore 请求规模无效"));
         return budgets.findById(DEFAULT_ID).flatMap(budget -> {
             if (items > budget.maxItemsPerRequest() || bytes > budget.maxBytesPerRequest())
-                return reject(budget, "Restore 请求超过单次预算");
+                return overBudget(budget, confirmationToken, "Restore 请求超过单次预算");
             Instant startOfDay = ZonedDateTime.now(ZoneOffset.UTC).toLocalDate().atStartOfDay(ZoneOffset.UTC).toInstant();
             return budgets.countActiveRequests().zipWith(budgets.sumActiveBytes()).zipWith(budgets.sumRequestedBytesSince(startOfDay))
                 .flatMap(values -> {
@@ -55,10 +59,16 @@ public class StorageRestoreBudgetService {
                         || bytes > budget.maxConcurrentBytes() - activeBytes;
                     if (activeCount >= budget.maxConcurrentOperations() || exceedsConcurrentBytes
                         || dailyBytes > budget.dailyRequestedBytes() - bytes)
-                        return reject(budget, "Restore 请求超过并发或每日预算");
+                        return overBudget(budget, confirmationToken, "Restore 请求超过并发或每日预算");
                     return Mono.empty();
                 });
         });
+    }
+
+    private Mono<Void> overBudget(StorageRestoreBudgetEntity budget, String confirmationToken, String message) {
+        if (budget.overBudgetAction() == StorageRestoreBudgetAction.REQUIRE_CONFIRMATION
+            && confirmationToken != null && !confirmationToken.isBlank()) return Mono.empty();
+        return reject(budget, message);
     }
 
     private Mono<Void> reject(StorageRestoreBudgetEntity budget, String message) {
