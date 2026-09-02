@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
@@ -68,15 +69,23 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
         if (taskType == null || taskType.isBlank()) return Mono.error(new IllegalArgumentException("Task 类型不能为空"));
         Mono<BackgroundTaskEntity> existing = idempotencyKey == null ? Mono.empty()
             : tasks.findByTaskTypeAndIdempotencyKey(taskType, idempotencyKey);
-        Mono<BackgroundTask> reused = existing.flatMap(this::view);
-        Mono<BackgroundTask> created = Mono.defer(() -> encode(payload).flatMap(json -> {
+        Mono<TaskSubmission> reused = existing.map(entity -> new TaskSubmission(entity, false));
+        Mono<TaskSubmission> created = Mono.defer(() -> encode(payload).flatMap(json -> {
             Instant now = Instant.now();
             return tasks.save(new BackgroundTaskEntity(null, taskType, TaskStatus.PENDING.name(), json,
-                idempotencyKey, now, timeoutAt(payload, now), null, null, null, 0, null, "{}", "{}", now, now, null));
-        })).flatMap(saved -> events.append("operations.background-task.created", 1, "background_task", saved.id(),
-            "{\"task_id\":\"" + saved.id() + "\",\"task_type\":\"" + saved.taskType()
-                + "\",\"status\":\"" + saved.status() + "\"}").then(view(saved)));
-        return reused.switchIfEmpty(created);
+                idempotencyKey, now, timeoutAt(payload, now), null, null, null, 0, null, "{}", "{}", now, now, null))
+                .onErrorResume(DuplicateKeyException.class, error -> tasks
+                    .findByTaskTypeAndIdempotencyKey(taskType, idempotencyKey)
+                    .switchIfEmpty(Mono.error(error)))
+                .map(saved -> new TaskSubmission(saved, true));
+        }));
+        return reused.switchIfEmpty(created).flatMap(submission -> {
+            BackgroundTaskEntity saved = submission.task();
+            Mono<Void> createdEvent = submission.created() ? events.append("operations.background-task.created", 1,
+                "background_task", saved.id(), "{\"task_id\":\"" + saved.id() + "\",\"task_type\":\""
+                    + saved.taskType() + "\",\"status\":\"" + saved.status() + "\"}").then() : Mono.empty();
+            return createdEvent.then(view(saved));
+        });
     }
 
     @Override
@@ -232,6 +241,8 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
             return Mono.error(new IllegalStateException("Task 数据损坏", error));
         }
     }
+
+    private record TaskSubmission(BackgroundTaskEntity task, boolean created) {}
 
     private Mono<String> encode(Map<String, Object> value) {
         try { return Mono.just(mapper.writeValueAsString(value == null ? Map.of() : value)); }
