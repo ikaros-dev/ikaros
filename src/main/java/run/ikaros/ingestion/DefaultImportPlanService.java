@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.event.DurableEventService;
 interface ImportPlanService {
     Mono<ImportPlanView> generate(UUID ownerId, UUID scanRunId, GenerateImportPlanRequest request);
     Mono<List<ImportPlanItemEntity>> items(UUID ownerId, UUID planId);
@@ -17,8 +18,12 @@ interface ImportPlanService {
 class DefaultImportPlanService implements ImportPlanService {
     private final ScanRunRepository scans; private final IngestionCandidateRepository candidates;
     private final ImportPlanRepository plans; private final ImportPlanItemRepository items; private final ObjectMapper mapper;
+    private final DurableEventService events;
     DefaultImportPlanService(ScanRunRepository scans, IngestionCandidateRepository candidates, ImportPlanRepository plans,
-        ImportPlanItemRepository items, ObjectMapper mapper) { this.scans=scans; this.candidates=candidates; this.plans=plans; this.items=items; this.mapper=mapper; }
+        ImportPlanItemRepository items, ObjectMapper mapper) { this(scans,candidates,plans,items,mapper,null); }
+    @org.springframework.beans.factory.annotation.Autowired
+    DefaultImportPlanService(ScanRunRepository scans, IngestionCandidateRepository candidates, ImportPlanRepository plans,
+        ImportPlanItemRepository items, ObjectMapper mapper, DurableEventService events) { this.scans=scans; this.candidates=candidates; this.plans=plans; this.items=items; this.mapper=mapper; this.events=events; }
     public Mono<ImportPlanView> generate(UUID ownerId, UUID scanId, GenerateImportPlanRequest request) {
         return scans.findByIdAndOwnerId(scanId, ownerId).switchIfEmpty(Mono.error(new NotFoundException("扫描运行不存在或无权访问")))
             .then(encode(request.policySnapshot())).flatMap(policy -> plans.save(new ImportPlanEntity(null, scanId, ownerId,
@@ -27,7 +32,10 @@ class DefaultImportPlanService implements ImportPlanService {
                 .flatMap(candidate -> items.save(new ImportPlanItemEntity(null, plan.id(), candidate.id(),
                     ImportAction.REQUIRE_REVIEW.name(), null, "等待匹配策略确认", candidate.confidence(),
                     plan.id()+":"+candidate.id(), Instant.now(), null))).count().map(count -> new ImportPlanView(
-                        plan.id(), plan.scanRunId(), plan.dryRun(), plan.status(), plan.generatedAt(), count)));
+                        plan.id(), plan.scanRunId(), plan.dryRun(), plan.status(), plan.generatedAt(), count))
+                    .flatMap(view -> events == null ? Mono.just(view) : events.append("ingestion.plan.generated", 1,
+                        "ingestion_import_plan", plan.id(), "{\"plan_id\":\"" + plan.id()
+                            + "\",\"scan_run_id\":\"" + plan.scanRunId() + "\"}").thenReturn(view)));
     }
     public Mono<List<ImportPlanItemEntity>> items(UUID ownerId, UUID planId) {
         return plans.findByIdAndOwnerId(planId, ownerId).switchIfEmpty(Mono.error(new NotFoundException("Import Plan 不存在或无权访问")))

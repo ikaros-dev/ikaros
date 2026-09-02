@@ -9,12 +9,18 @@ import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.task.BackgroundTaskService;
+import run.ikaros.event.DurableEventService;
 @Service
 public class DefaultImportRunService implements ImportRunService {
     private final ImportPlanRepository plans; private final ImportRunRepository runs;
-    private final BackgroundTaskService tasks; private final AuditService audit;
+    private final BackgroundTaskService tasks; private final AuditService audit; private final DurableEventService events;
     public DefaultImportRunService(ImportPlanRepository plans, ImportRunRepository runs, BackgroundTaskService tasks, AuditService audit) {
-        this.plans=plans; this.runs=runs; this.tasks=tasks; this.audit=audit;
+        this(plans,runs,tasks,audit,null);
+    }
+    @org.springframework.beans.factory.annotation.Autowired
+    public DefaultImportRunService(ImportPlanRepository plans, ImportRunRepository runs, BackgroundTaskService tasks,
+        AuditService audit, DurableEventService events) {
+        this.plans=plans; this.runs=runs; this.tasks=tasks; this.audit=audit; this.events=events;
     }
     public Mono<ImportRunView> start(UUID ownerId, UUID planId, StartImportRequest request) {
         return plans.findByIdAndOwnerId(planId, ownerId).switchIfEmpty(Mono.error(new NotFoundException("Import Plan 不存在或无权访问")))
@@ -24,7 +30,10 @@ public class DefaultImportRunService implements ImportRunService {
                 "ingestion.import:"+planId+":"+request.expectedPlanVersion()))
             .flatMap(task -> { Instant now=Instant.now(); return runs.save(new ImportRunEntity(null, planId, ownerId, ownerId,
                 ImportRunStatus.PENDING.name(), null, 0, 0, 0, task.id(), now, null, now, null)); })
-            .flatMap(run -> audit.record(ownerId,"ingestion.import.start","INGESTION_IMPORT_RUN",run.id(),"{}").thenReturn(view(run)));
+            .flatMap(run -> (events == null ? Mono.empty() : events.append("ingestion.import.started", 1,
+                "ingestion_import_run", run.id(), "{\"run_id\":\"" + run.id() + "\",\"plan_id\":\""
+                    + run.planId() + "\"}").then()).then(audit.record(ownerId,"ingestion.import.start",
+                        "INGESTION_IMPORT_RUN",run.id(),"{}")).thenReturn(view(run)));
     }
     public Mono<List<ImportRunView>> list(UUID ownerId) { return runs.findAllByOwnerIdOrderByCreatedAtDesc(ownerId).map(this::view).collectList(); }
     public Mono<ImportRunView> get(UUID ownerId, UUID runId) { return owned(ownerId,runId).map(this::view); }
