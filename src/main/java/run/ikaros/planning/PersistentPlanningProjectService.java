@@ -11,13 +11,19 @@ import run.ikaros.common.NotFoundException;
 @Service
 public class PersistentPlanningProjectService implements PlanningProjectService {
     private final PlanningProjectRepository repository;
+    private final PlanningProjectMemberRepository members;
 
-    public PersistentPlanningProjectService(PlanningProjectRepository repository) { this.repository = repository; }
+    public PersistentPlanningProjectService(PlanningProjectRepository repository, PlanningProjectMemberRepository members) {
+        this.repository = repository; this.members = members;
+    }
 
     @Override public Mono<PlanningProjectView> create(UUID ownerId, CreatePlanningProjectRequest request) {
         Instant now = Instant.now();
         return repository.save(new PlanningProjectEntity(null, ownerId, request.name().trim(), request.description(),
-            PlanningProjectStatus.ACTIVE, now, now, null)).map(this::view);
+            PlanningProjectStatus.ACTIVE, now, now, null))
+            .flatMap(project -> members.save(new PlanningProjectMemberEntity(null, project.id(), ownerId,
+                PlanningProjectMemberRole.MANAGE_PROJECT, now)).thenReturn(project))
+            .map(this::view);
     }
 
     @Override public Flux<PlanningProjectView> list(UUID ownerId) {
