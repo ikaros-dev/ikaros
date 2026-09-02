@@ -212,7 +212,7 @@ public class DefaultResourceService implements ResourceService {
     private Mono<ResourceView> toView(ResourceEntity resource) {
         Mono<List<ResourceTitleView>> titles = titleRepository
             .findAllByResourceIdOrderByPrimaryDescLocaleAsc(resource.id())
-            .map(title -> new ResourceTitleView(title.id(), title.locale(), title.title(), title.primary()))
+            .map(title -> new ResourceTitleView(title.id(), title.locale(), title.title(), title.primary(), title.titleKind()))
             .collectList();
         Mono<List<ExternalIdentityView>> identities = identityRepository
             .findAllByResourceIdOrderByProviderAsc(resource.id())

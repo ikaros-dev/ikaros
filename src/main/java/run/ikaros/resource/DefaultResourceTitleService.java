@@ -79,9 +79,11 @@ public class DefaultResourceTitleService implements ResourceTitleService {
         boolean primary = request.primary() || current == null && existing.isEmpty()
             || current != null && current.primary() && !request.primary();
         ResourceTitleEntity target = current == null
-            ? new ResourceTitleEntity(null, resourceId, request.locale(), request.title(), primary, now, now, null)
+            ? new ResourceTitleEntity(null, resourceId, request.locale(), request.title(), primary, now, now, null,
+                request.kind() == null ? ResourceTitleKind.TITLE : request.kind())
             : new ResourceTitleEntity(current.id(), resourceId, current.locale(), request.title(), primary,
-                current.createdAt(), now, current.version());
+                current.createdAt(), now, current.version(),
+                request.kind() == null ? current.titleKind() : request.kind());
         List<ResourceTitleEntity> updated = new ArrayList<>();
         for (ResourceTitleEntity title : existing) {
             updated.add(request.primary() && !title.id().equals(current == null ? null : current.id())
@@ -99,11 +101,11 @@ public class DefaultResourceTitleService implements ResourceTitleService {
 
     private ResourceTitleEntity withPrimary(ResourceTitleEntity title, boolean primary) {
         return new ResourceTitleEntity(title.id(), title.resourceId(), title.locale(), title.title(), primary,
-            title.createdAt(), Instant.now(), title.version());
+            title.createdAt(), Instant.now(), title.version(), title.titleKind());
     }
 
     private ResourceTitleView toView(ResourceTitleEntity title) {
-        return new ResourceTitleView(title.id(), title.locale(), title.title(), title.primary());
+        return new ResourceTitleView(title.id(), title.locale(), title.title(), title.primary(), title.titleKind());
     }
 
     private Mono<ResourceEntity> owned(UUID ownerId, UUID resourceId) {
