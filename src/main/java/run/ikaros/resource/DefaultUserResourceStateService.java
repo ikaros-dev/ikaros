@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 
 @Service
 public class DefaultUserResourceStateService implements UserResourceStateService {
@@ -27,6 +28,17 @@ public class DefaultUserResourceStateService implements UserResourceStateService
 
     @Override
     public Mono<UserResourceStateView> set(UUID userId, UUID resourceId, UserResourceStateRequest request) {
+        return setInternal(userId, resourceId, request, null);
+    }
+
+    @Override
+    public Mono<UserResourceStateView> set(UUID userId, UUID resourceId, UserResourceStateRequest request,
+                                           long expectedVersion) {
+        return setInternal(userId, resourceId, request, expectedVersion);
+    }
+
+    private Mono<UserResourceStateView> setInternal(UUID userId, UUID resourceId,
+                                                     UserResourceStateRequest request, Long expectedVersion) {
         if (request.rating() != null && (request.rating().signum() < 0 || request.rating().doubleValue() > 10)) {
             return Mono.error(new IllegalArgumentException("评分必须介于 0 和 10 之间"));
         }
@@ -37,9 +49,15 @@ public class DefaultUserResourceStateService implements UserResourceStateService
             .then(states.findByUserIdAndResourceId(userId, resourceId))
             .defaultIfEmpty(new UserResourceStateEntity(userId, resourceId, false, null, null, null, null,
                 null, null, null))
-            .flatMap(current -> states.save(new UserResourceStateEntity(userId, resourceId, request.favorite(),
-                request.rating(), request.statusCode(), request.progressValue(), request.progressUnit(),
-                request.progressValue() == null ? current.lastAccessedAt() : Instant.now(), current.version(), Instant.now())))
+            .flatMap(current -> {
+                long actualVersion = current.version() == null ? 0 : current.version();
+                if (expectedVersion != null && actualVersion != expectedVersion) {
+                    return Mono.error(new PreconditionFailedException("If-Match 与用户资源状态当前版本不匹配"));
+                }
+                return states.save(new UserResourceStateEntity(userId, resourceId, request.favorite(),
+                    request.rating(), request.statusCode(), request.progressValue(), request.progressUnit(),
+                    request.progressValue() == null ? current.lastAccessedAt() : Instant.now(), current.version(), Instant.now()));
+            })
             .map(this::view).as(transaction::transactional);
     }
 
