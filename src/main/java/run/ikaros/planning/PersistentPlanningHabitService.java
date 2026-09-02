@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 
 @Service
 public class PersistentPlanningHabitService implements PlanningHabitService {
@@ -20,7 +21,9 @@ public class PersistentPlanningHabitService implements PlanningHabitService {
             request.targetValue(), request.schedule().trim(), request.timeZone() == null ? "UTC" : request.timeZone(), request.startAt(), PlanningHabitStatus.ACTIVE, now, now, null)).map(this::view);
     }
     @Override public Flux<PlanningHabitView> list(UUID ownerId) { return habits.findAllByOwnerIdOrderByCreatedAtDesc(ownerId).map(this::view); }
-    @Override public Mono<PlanningHabitView> archive(UUID ownerId, UUID habitId) { return owned(ownerId, habitId).flatMap(old -> habits.save(new PlanningHabitEntity(old.id(), old.ownerId(), old.name(), old.description(), old.metric(), old.targetValue(), old.schedule(), old.timeZone(), old.startAt(), PlanningHabitStatus.ARCHIVED, old.createdAt(), Instant.now(), old.version()))).map(this::view); }
+    @Override public Mono<PlanningHabitView> archive(UUID ownerId, UUID habitId) { return archiveInternal(ownerId, habitId, null); }
+    @Override public Mono<PlanningHabitView> archive(UUID ownerId, UUID habitId, long expectedVersion) { return archiveInternal(ownerId, habitId, expectedVersion); }
+    private Mono<PlanningHabitView> archiveInternal(UUID ownerId, UUID habitId, Long expectedVersion) { return owned(ownerId, habitId).flatMap(old -> { if (expectedVersion != null && (old.version() == null ? 0 : old.version()) != expectedVersion) return Mono.error(new PreconditionFailedException("If-Match 与 Habit 当前版本不匹配")); return habits.save(new PlanningHabitEntity(old.id(), old.ownerId(), old.name(), old.description(), old.metric(), old.targetValue(), old.schedule(), old.timeZone(), old.startAt(), PlanningHabitStatus.ARCHIVED, old.createdAt(), Instant.now(), old.version())); }).map(this::view); }
     @Override public Mono<PlanningHabitCheckInView> checkIn(UUID ownerId, UUID habitId, CreatePlanningHabitCheckInRequest request) { return owned(ownerId, habitId).flatMap(habit -> { if (habit.status() == PlanningHabitStatus.ARCHIVED) return Mono.error(new ConflictException("已归档习惯不能打卡"));
         Instant occurred = request.occurredAt() == null ? Instant.now() : request.occurredAt(); return checkIns.save(new PlanningHabitCheckInEntity(null, ownerId, habitId, request.value(), occurred, request.note(), Instant.now())).map(this::checkInView); }); }
     @Override public Flux<PlanningHabitCheckInView> listCheckIns(UUID ownerId, UUID habitId) { return owned(ownerId, habitId).thenMany(checkIns.findAllByOwnerIdAndHabitIdOrderByOccurredAtDesc(ownerId, habitId)).map(this::checkInView); }
