@@ -112,7 +112,9 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
             .concatMap(task -> tasks.save(new BackgroundTaskEntity(task.id(), task.taskType(), TaskStatus.TIMED_OUT.name(),
                 task.payload(), task.idempotencyKey(), task.availableAt(), task.timeoutAt(), null, null, null, task.attempt(),
                 task.cancelRequestedAt(), task.progress(), "{\"code\":\"TASK_TIMEOUT\"}", task.createdAt(), Instant.now(), task.parentTaskId()))
-                .flatMap(saved -> finishAttempt(task, TaskStatus.TIMED_OUT.name(), "TASK_TIMEOUT")))
+                .flatMap(saved -> finishAttempt(task, TaskStatus.TIMED_OUT.name(), "TASK_TIMEOUT")
+                    .then(events.append("operations.background-task.timed-out", 1, "background_task", saved.id(),
+                        "{\"task_id\":\"" + saved.id() + "\",\"attempt_no\":" + saved.attempt() + "}"))))
             .then();
     }
 
@@ -183,7 +185,8 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
                 Instant now = Instant.now();
                 return tasks.save(new BackgroundTaskEntity(null, old.taskType(), TaskStatus.PENDING.name(), old.payload(), null,
                     now, timeoutAtJson(old.payload(), now), null, null, null, 0, null, "{}", "{}", now, now, old.id()));
-            }).flatMap(this::view);
+            }).flatMap(saved -> events.append("operations.background-task.retry-requested", 1, "background_task", saved.parentTaskId(),
+                "{\"task_id\":\"" + saved.parentTaskId() + "\",\"next_attempt_no\":" + (saved.attempt() + 1) + "}").then(view(saved)));
     }
 
     @Override
@@ -191,8 +194,9 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
         return tasks.findById(taskId).switchIfEmpty(Mono.error(new NotFoundException("Task 不存在")))
             .flatMap(task -> tasks.save(copy(task, task.status().equals(TaskStatus.RUNNING.name()) ? TaskStatus.RUNNING : TaskStatus.CANCELLED,
                 task.leaseOwner(), task.leaseToken(),
-                task.leaseExpiresAt(), task.attempt(), Instant.now(), task.progress(), task.result())))
-            .flatMap(this::view);
+                task.leaseExpiresAt(), task.attempt(), Instant.now(), task.progress(), task.result()))
+                .flatMap(saved -> events.append("operations.background-task.cancel-requested", 1, "background_task", saved.id(),
+                    "{\"task_id\":\"" + saved.id() + "\"}").then(view(saved))));
     }
 
     @Override
@@ -201,7 +205,10 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
             if (task.cancelRequestedAt() == null) return Mono.error(new ConflictException("Task 尚未请求取消"));
             return tasks.save(copy(task, TaskStatus.CANCELLED, task.leaseOwner(), task.leaseToken(), task.leaseExpiresAt(),
                 task.attempt(), task.cancelRequestedAt(), task.progress(), task.result()))
-                .flatMap(saved -> finishAttempt(task, TaskStatus.CANCELLED.name(), null).then(view(saved)));
+                .flatMap(saved -> finishAttempt(task, TaskStatus.CANCELLED.name(), null)
+                    .then(events.append("operations.background-task.cancelled", 1, "background_task", saved.id(),
+                        "{\"task_id\":\"" + saved.id() + "\",\"attempt_no\":" + saved.attempt() + "}"))
+                    .then(view(saved)));
         });
     }
 
