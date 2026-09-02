@@ -1,5 +1,7 @@
 package run.ikaros.planning;
 import jakarta.validation.Valid;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -11,6 +13,8 @@ public class PlanningTaskController {
     public PlanningTaskController(PlanningTaskService service){this.service=service;}
     @PostMapping public Mono<PlanningTaskView> create(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,@Valid @RequestBody CreatePlanningTaskRequest request){return service.create(owner,request);}
     @GetMapping public Flux<PlanningTaskView> list(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,@RequestParam(required=false) PlanningTaskStatus status){return service.list(owner,status);}
+    @GetMapping("/today") public Flux<PlanningTaskView> today(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,@RequestParam(defaultValue="UTC") String timeZone){return service.today(owner,ZoneId.of(timeZone));}
+    @GetMapping("/upcoming") public Flux<PlanningTaskView> upcoming(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,@RequestParam(required=false) Instant from){return service.upcoming(owner,from);}
     @PatchMapping("/{taskId}") public Mono<PlanningTaskView> update(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,@PathVariable UUID taskId,@Valid @RequestBody UpdatePlanningTaskRequest request){return service.update(owner,taskId,request);}
     @PostMapping("/{taskId}/status/{status}") public Mono<PlanningTaskView> status(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,@PathVariable UUID taskId,@PathVariable PlanningTaskStatus status){return service.changeStatus(owner,taskId,status);}
 }
