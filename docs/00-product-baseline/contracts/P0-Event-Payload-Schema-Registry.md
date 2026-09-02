@@ -440,6 +440,12 @@ Payload 与 attached 相同 identity key。
 { "lease_id": "uuid", "attachment_id": "uuid" }
 ```
 
+### `storage.restore-budget.updated@1`
+
+```json
+{ "policy_id": "uuid", "scope_type": "INSTANCE", "scope_id": null, "version": 2 }
+```
+
 ### `storage.restore.reconcile-requested@1`
 
 ```json

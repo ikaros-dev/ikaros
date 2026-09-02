@@ -21,6 +21,7 @@
         "storage.provider.created", "storage.provider.updated", "storage.provider.enabled", "storage.provider.disabled", "storage.provider.drain-requested",
         "storage.delivery-provider.created", "storage.delivery-provider.updated", "storage.delivery-provider.probe-requested", "storage.delivery-provider.signing-key-rotation-requested",
         "storage.delivery-lease.created", "storage.delivery-lease.released", "storage.delivery-lease.expired",
+        "storage.restore-budget.updated",
         "storage.blob.gc-requested", "storage.blob.purged", "storage.restore.reconcile-requested", "storage.restore.reconciled",
         "attachment.purged", "ingestion.import.started", "ingestion.plan.generated", "source.item.unavailable",
         "operations.background-task.created", "operations.background-task.started", "operations.background-task.succeeded", "operations.background-task.failed",

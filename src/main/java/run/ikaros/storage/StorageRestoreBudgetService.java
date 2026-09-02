@@ -8,13 +8,17 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.PreconditionFailedException;
+import run.ikaros.event.DurableEventService;
 
 @Service
 public class StorageRestoreBudgetService {
     public static final UUID DEFAULT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private final StorageRestoreBudgetRepository budgets;
+    private final DurableEventService events;
 
-    public StorageRestoreBudgetService(StorageRestoreBudgetRepository budgets) { this.budgets = budgets; }
+    public StorageRestoreBudgetService(StorageRestoreBudgetRepository budgets, DurableEventService events) {
+        this.budgets = budgets; this.events = events;
+    }
 
     public Mono<StorageRestoreBudgetView> get() {
         return budgets.findById(DEFAULT_ID).map(this::view);
@@ -30,7 +34,10 @@ public class StorageRestoreBudgetService {
             return Mono.error(new PreconditionFailedException("If-Match 与 Restore Budget 当前版本不匹配")); return budgets.save(new StorageRestoreBudgetEntity(DEFAULT_ID,
             request.maxBytesPerRequest(), request.maxItemsPerRequest(), request.maxConcurrentOperations(),
             request.maxConcurrentBytes(), request.dailyRequestedBytes(), request.dailyProviderRestoreBytes(),
-            request.overBudgetAction(), now, old.version())); }).map(this::view);
+            request.overBudgetAction(), now, old.version())); })
+            .flatMap(saved -> events.append("storage.restore-budget.updated", 1, "restore_budget_policy", saved.id(),
+                "{\"policy_id\":\"" + saved.id() + "\",\"scope_type\":\"INSTANCE\",\"scope_id\":null,\"version\":"
+                    + (saved.version() == null ? 0 : saved.version()) + "}").thenReturn(view(saved)));
     }
 
     public Mono<Void> check(int items, long bytes) {
