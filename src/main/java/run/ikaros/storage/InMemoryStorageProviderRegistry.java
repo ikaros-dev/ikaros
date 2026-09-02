@@ -1,13 +1,13 @@
 package run.ikaros.storage;
 
 import java.time.Instant;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 
@@ -50,7 +50,7 @@ public class InMemoryStorageProviderRegistry implements StorageProviderRegistry 
     }
 
     @Override
-    public Collection<StorageProvider> list() { return List.copyOf(providers.values()); }
+    public Flux<StorageProvider> list() { return Flux.fromIterable(List.copyOf(providers.values())); }
 
     @Override
     public Mono<Void> requireWritable(UUID providerId) {

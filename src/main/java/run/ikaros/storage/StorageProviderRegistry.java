@@ -1,8 +1,8 @@
 package run.ikaros.storage;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface StorageProviderRegistry {
@@ -11,7 +11,7 @@ public interface StorageProviderRegistry {
     Mono<StorageProvider> enable(UUID providerId);
     Mono<StorageProvider> disable(UUID providerId);
     Mono<StorageProvider> get(UUID providerId);
-    Collection<StorageProvider> list();
+    Flux<StorageProvider> list();
     Mono<Void> requireWritable(UUID providerId);
     Mono<Void> requireWritableByKey(String providerKey);
 }
