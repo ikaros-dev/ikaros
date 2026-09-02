@@ -16,9 +16,15 @@ import run.ikaros.common.NotFoundException;
 public class InMemoryPluginRuntime implements PluginRuntime {
     private final Map<String, PluginDescriptor> plugins = new ConcurrentHashMap<>();
     private final String serverVersion;
+    private final PluginExtensionRegistry extensionRegistry;
 
     public InMemoryPluginRuntime(@Value("${ikaros.server.version:2.0.0}") String serverVersion) {
+        this(serverVersion, null);
+    }
+
+    public InMemoryPluginRuntime(String serverVersion, PluginExtensionRegistry extensionRegistry) {
         this.serverVersion = serverVersion;
+        this.extensionRegistry = extensionRegistry;
     }
 
     @Override
@@ -47,6 +53,7 @@ public class InMemoryPluginRuntime implements PluginRuntime {
             PluginDescriptor updated = new PluginDescriptor(current.manifest(), PluginLifecycle.ENABLED,
                 current.grantedPermissions());
             plugins.replace(pluginId, current, updated);
+            register(updated.manifest());
             return Mono.just(updated);
         });
     }
@@ -65,6 +72,7 @@ public class InMemoryPluginRuntime implements PluginRuntime {
                 return Mono.error(new ConflictException("启用中的插件必须先禁用"));
             }
             plugins.remove(pluginId);
+            unregister(pluginId);
             return Mono.empty();
         });
     }
@@ -87,8 +95,17 @@ public class InMemoryPluginRuntime implements PluginRuntime {
             }
             PluginDescriptor updated = new PluginDescriptor(current.manifest(), next, current.grantedPermissions());
             plugins.replace(id, current, updated);
+            if (next == PluginLifecycle.DISABLED) unregister(id);
             return Mono.just(updated);
         });
+    }
+
+    private void register(PluginManifest manifest) {
+        if (extensionRegistry != null) extensionRegistry.register(manifest);
+    }
+
+    private void unregister(String pluginId) {
+        if (extensionRegistry != null) extensionRegistry.unregister(pluginId);
     }
 
     private boolean compatible(PluginManifest manifest) {
