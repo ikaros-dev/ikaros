@@ -11,6 +11,8 @@ pnpm dev
 
 默认入口：`/console/dashboard`。
 
+需要调用 Drive 与 Planning 用户接口时，在环境中配置 `VITE_ACTOR_ID`；请求会通过 `X-Ikaros-Actor-Id` 传递当前用户主体。
+
 ## 构建
 
 ```bash
