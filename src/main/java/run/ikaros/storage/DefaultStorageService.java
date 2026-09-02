@@ -154,6 +154,17 @@ public class DefaultStorageService implements StorageService {
     }
 
     @Override
+    public Mono<AttachmentView> get(UUID ownerId, UUID attachmentId) {
+        return attachmentRepository.findById(attachmentId)
+            .filter(attachment -> attachment.deletedAt() == null)
+            .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或已删除")))
+            .flatMap(attachment -> owned(ownerId, attachment.resourceId())
+                .then(blobRepository.findById(attachment.blobId())
+                    .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
+                    .flatMap(blob -> toView(attachment, blob))));
+    }
+
+    @Override
     public Mono<Void> remove(UUID ownerId, UUID resourceId, UUID attachmentId) {
         return owned(ownerId, resourceId)
             .then(attachmentRepository.findByIdAndResourceIdAndDeletedAtIsNull(attachmentId, resourceId)

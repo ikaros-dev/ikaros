@@ -42,6 +42,15 @@ public interface StorageService {
      */
     Mono<List<AttachmentView>> list(UUID ownerId, UUID resourceId);
 
+    /**
+     * 按附件身份读取元数据，并校验其所属 Resource 的访问权。
+     *
+     * @param ownerId 当前拥有者标识
+     * @param attachmentId Attachment 标识
+     * @return 附件元数据
+     */
+    Mono<AttachmentView> get(UUID ownerId, UUID attachmentId);
+
     Mono<Void> remove(UUID ownerId, UUID resourceId, UUID attachmentId);
 
     /**
