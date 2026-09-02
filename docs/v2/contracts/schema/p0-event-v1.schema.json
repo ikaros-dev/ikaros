@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ikaros.run/schemas/v2/p0-event-v1.schema.json",
+  "title": "Ikaros V2 P0 Durable Event v1",
+  "description": "Machine-readable P0 event envelope/type baseline. Payload field compatibility remains governed by P0-Event-Payload-Schema-Registry.md and is expanded into per-event schemas during Phase 0 implementation.",
+  "type": "object",
+  "required": ["event_id", "event_type", "schema_version", "occurred_at", "producer_subsystem", "payload"],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "resource.resource.created", "resource.resource.updated", "resource.resource.archived", "resource.resource.restored", "resource.resource.trashed",
+        "resource.external-identity.attached", "resource.external-identity.detached", "resource.tag.created", "resource.tag.added", "resource.tag.removed",
+        "resource.collection.created", "resource.collection.member-added", "resource.collection.member-removed", "resource.user-state.changed",
+        "storage.attachment.created", "storage.attachment.archived", "storage.attachment.trashed", "storage.blob.verified", "storage.blob.integrity-failed",
+        "storage.provider.created", "storage.provider.updated", "storage.provider.enabled", "storage.provider.disabled", "storage.provider.drain-requested",
+        "storage.blob.gc-requested", "storage.blob.purged",
+        "operations.background-task.created", "operations.background-task.started", "operations.background-task.succeeded", "operations.background-task.failed",
+        "operations.background-task.cancel-requested", "operations.background-task.cancelled", "operations.background-task.retry-requested", "operations.background-task.timed-out",
+        "identity.user.created", "identity.user.disabled", "identity.user.enabled", "identity.user.sessions-revoked", "identity.role.created",
+        "identity.role.permissions-replaced", "identity.user.role-assigned", "identity.user.role-removed", "identity.session.revoked"
+      ]
+    },
+    "schema_version": { "type": "integer", "const": 1 },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "producer_subsystem": { "type": "string", "enum": ["resource", "storage", "operations", "identity"] },
+    "actor": {
+      "type": ["object", "null"],
+      "properties": { "type": { "type": "string" }, "id": { "type": ["string", "null"], "format": "uuid" } },
+      "required": ["type"],
+      "additionalProperties": true
+    },
+    "subject": {
+      "type": ["object", "null"],
+      "properties": { "type": { "type": "string" }, "id": { "type": ["string", "null"], "format": "uuid" } },
+      "required": ["type"],
+      "additionalProperties": true
+    },
+    "correlation_id": { "type": ["string", "null"], "format": "uuid" },
+    "causation_id": { "type": ["string", "null"], "format": "uuid" },
+    "payload": { "type": "object" }
+  },
+  "allOf": [
+    { "if": { "properties": { "event_type": { "pattern": "^resource\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "resource" } } } },
+    { "if": { "properties": { "event_type": { "pattern": "^storage\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "storage" } } } },
+    { "if": { "properties": { "event_type": { "pattern": "^operations\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "operations" } } } },
+    { "if": { "properties": { "event_type": { "pattern": "^identity\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "identity" } } } }
+  ],
+  "additionalProperties": true
+}
