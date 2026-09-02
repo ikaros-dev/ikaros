@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 
 @Service
 public class PersistentPlanningFocusSessionService implements PlanningFocusSessionService {
@@ -27,14 +28,24 @@ public class PersistentPlanningFocusSessionService implements PlanningFocusSessi
     }
     @Override public Flux<PlanningFocusSessionView> list(UUID ownerId) { return sessions.findAllByOwnerIdOrderByStartedAtDesc(ownerId).map(this::view); }
     @Override public Mono<PlanningFocusSessionView> complete(UUID ownerId, UUID sessionId, CompletePlanningFocusSessionRequest request) {
+        return completeInternal(ownerId, sessionId, request, null);
+    }
+    @Override public Mono<PlanningFocusSessionView> complete(UUID ownerId, UUID sessionId, CompletePlanningFocusSessionRequest request, long expectedVersion) {
+        return completeInternal(ownerId, sessionId, request, expectedVersion);
+    }
+    private Mono<PlanningFocusSessionView> completeInternal(UUID ownerId, UUID sessionId, CompletePlanningFocusSessionRequest request, Long expectedVersion) {
         return owned(ownerId, sessionId).flatMap(old -> { if (old.status() != PlanningFocusSessionStatus.RUNNING) return Mono.error(new ConflictException("当前专注会话不能完成"));
+            checkVersion(old.version(), expectedVersion);
             Instant ended = Instant.now(); int minutes = request.actualMinutes() == null ? Math.max(1, (int) Duration.between(old.startedAt(), ended).toMinutes()) : request.actualMinutes();
             return sessions.save(new PlanningFocusSessionEntity(old.id(), old.ownerId(), old.taskId(), old.mode(), PlanningFocusSessionStatus.COMPLETED,
                 old.plannedMinutes(), minutes, old.startedAt(), ended, request.note(), old.createdAt(), old.version())).flatMap(saved -> old.taskId() == null ? Mono.just(saved)
                 : entries.save(new PlanningTimeEntryEntity(null, ownerId, old.taskId(), minutes, old.startedAt(), ended, PlanningTimeEntrySource.FOCUS, request.note(), ended)).thenReturn(saved));
         }).map(this::view);
     }
-    @Override public Mono<PlanningFocusSessionView> cancel(UUID ownerId, UUID sessionId) { return owned(ownerId, sessionId).flatMap(old -> { if (old.status() != PlanningFocusSessionStatus.RUNNING) return Mono.error(new ConflictException("当前专注会话不能取消"));
+    @Override public Mono<PlanningFocusSessionView> cancel(UUID ownerId, UUID sessionId) { return cancelInternal(ownerId, sessionId, null); }
+    @Override public Mono<PlanningFocusSessionView> cancel(UUID ownerId, UUID sessionId, long expectedVersion) { return cancelInternal(ownerId, sessionId, expectedVersion); }
+    private Mono<PlanningFocusSessionView> cancelInternal(UUID ownerId, UUID sessionId, Long expectedVersion) { return owned(ownerId, sessionId).flatMap(old -> { if (old.status() != PlanningFocusSessionStatus.RUNNING) return Mono.error(new ConflictException("当前专注会话不能取消"));
+        checkVersion(old.version(), expectedVersion);
         return sessions.save(new PlanningFocusSessionEntity(old.id(), old.ownerId(), old.taskId(), old.mode(), PlanningFocusSessionStatus.CANCELLED, old.plannedMinutes(), null, old.startedAt(), Instant.now(), old.note(), old.createdAt(), old.version())); }).map(this::view); }
     private Mono<PlanningTaskEntity> task(UUID ownerId, UUID taskId) {
         if (taskId == null) return Mono.empty();
@@ -48,4 +59,5 @@ public class PersistentPlanningFocusSessionService implements PlanningFocusSessi
     }
     private Mono<PlanningFocusSessionEntity> owned(UUID ownerId, UUID id) { return sessions.findById(id).filter(s -> s.ownerId().equals(ownerId)).switchIfEmpty(Mono.error(new NotFoundException("Focus Session 不存在"))); }
     private PlanningFocusSessionView view(PlanningFocusSessionEntity s) { return new PlanningFocusSessionView(s.id(), s.ownerId(), s.taskId(), s.mode(), s.status(), s.plannedMinutes(), s.actualMinutes(), s.startedAt(), s.endedAt(), s.note(), s.createdAt(), s.version() == null ? 0 : s.version()); }
+    private void checkVersion(Long actual, Long expected) { if (expected != null && (actual == null ? 0 : actual) != expected) throw new PreconditionFailedException("If-Match 与 Focus Session 当前版本不匹配"); }
 }
