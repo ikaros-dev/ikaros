@@ -1,0 +1,1 @@
+package run.ikaros.music; import java.util.UUID; import org.springframework.data.repository.reactive.ReactiveCrudRepository; import reactor.core.publisher.Flux; public interface MusicAlbumRepository extends ReactiveCrudRepository<MusicAlbumEntity,UUID>{Flux<MusicAlbumEntity> findAllByOwnerId(UUID ownerId);}

@@ -1,0 +1,3 @@
+package run.ikaros.music;
+import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.annotation.Version; import org.springframework.data.relational.core.mapping.Table; import org.springframework.data.relational.core.mapping.Column;
+@Table("music_audio_source") public record MusicAudioSourceEntity(@Id UUID id,@Column("owner_id") UUID ownerId,@Column("track_id") UUID trackId,@Column("attachment_id") UUID attachmentId,String codec,String container,@Column("duration_millis") Long durationMillis,@Column("sample_rate") Integer sampleRate,@Column("bit_depth") Integer bitDepth,Integer channels,Integer bitrate,boolean lossless,String availability,@Column("preference_weight") int preferenceWeight,@Version Long version) {}
