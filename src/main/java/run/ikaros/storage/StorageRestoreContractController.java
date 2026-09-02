@@ -29,9 +29,9 @@ public class StorageRestoreContractController {
         @PathVariable UUID requestId) { return service.get(actorId, requestId); }
 
     @GetMapping("/api/v2/restore-requests")
-    public Flux<StorageRestoreRequestView> list(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+    public Mono<StorageRestoreRequestListView> list(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @RequestParam(required=false) String cursor, @RequestParam(required=false) String status) {
-        return service.list(actorId);
+        return service.list(actorId).collectList().map(items -> new StorageRestoreRequestListView(items, null));
     }
 
     @DeleteMapping("/api/v2/restore-requests/{requestId}")
