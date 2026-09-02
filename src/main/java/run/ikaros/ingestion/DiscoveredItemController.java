@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
@@ -28,5 +29,12 @@ public class DiscoveredItemController {
     public Mono<List<DiscoveredItemView>> list(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
                                                @PathVariable UUID scanId) {
         return service.list(actorId, scanId);
+    }
+
+    @org.springframework.web.bind.annotation.PatchMapping("/items/{itemId}/unavailable")
+    public Mono<DiscoveredItemView> unavailable(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+                                                @PathVariable UUID itemId,
+                                                @RequestParam(defaultValue = "source unavailable") String reason) {
+        return service.markUnavailable(actorId, itemId, reason);
     }
 }

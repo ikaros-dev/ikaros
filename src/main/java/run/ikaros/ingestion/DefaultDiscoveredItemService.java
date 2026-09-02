@@ -6,15 +6,19 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.event.DurableEventService;
 
 @Service
 public class DefaultDiscoveredItemService implements DiscoveredItemService {
     private final ScanRunRepository scanRuns;
     private final DiscoveredItemRepository items;
+    private final DurableEventService events;
 
-    public DefaultDiscoveredItemService(ScanRunRepository scanRuns, DiscoveredItemRepository items) {
+    public DefaultDiscoveredItemService(ScanRunRepository scanRuns, DiscoveredItemRepository items,
+                                        DurableEventService events) {
         this.scanRuns = scanRuns;
         this.items = items;
+        this.events = events;
     }
 
     @Override
@@ -33,6 +37,20 @@ public class DefaultDiscoveredItemService implements DiscoveredItemService {
             .switchIfEmpty(Mono.error(new NotFoundException("扫描运行不存在或无权访问")))
             .thenMany(items.findAllByScanRunIdOrderByRelativeKeyAsc(scanRunId))
             .map(this::view).collectList();
+    }
+
+    @Override
+    public Mono<DiscoveredItemView> markUnavailable(UUID ownerId, UUID itemId, String reason) {
+        return items.findById(itemId).switchIfEmpty(Mono.error(new NotFoundException("来源项目不存在")))
+            .flatMap(item -> scanRuns.findByIdAndOwnerId(item.scanRunId(), ownerId)
+                .switchIfEmpty(Mono.error(new NotFoundException("扫描运行不存在或无权访问")))
+                .then(items.save(new DiscoveredItemEntity(item.id(), item.sourceId(), item.scanRunId(), item.relativeKey(),
+                    item.sizeBytes(), item.modifiedAt(), item.etag(), item.mediaType(), "UNAVAILABLE",
+                    item.scanGeneration(), item.createdAt(), item.version()))))
+            .flatMap(saved -> events.append("source.item.unavailable", 1, "ingestion_source_item", saved.id(),
+                "{\"item_id\":\"" + saved.id() + "\",\"source_id\":\"" + saved.sourceId()
+                    + "\",\"reason\":\"" + (reason == null ? "unknown" : reason.replace("\"", "'")) + "\"}")
+                .thenReturn(view(saved)));
     }
 
     private DiscoveredItemView view(DiscoveredItemEntity item) {
