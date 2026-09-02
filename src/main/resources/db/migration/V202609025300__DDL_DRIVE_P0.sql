@@ -274,6 +274,16 @@ CREATE TABLE planning_milestone (
 CREATE INDEX idx_planning_milestone_owner_due ON planning_milestone (owner_id, due_at);
 CREATE INDEX idx_planning_milestone_goal_due ON planning_milestone (goal_id, due_at);
 
+CREATE TABLE planning_review (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, period VARCHAR(16) NOT NULL,
+    period_start TIMESTAMPTZ NOT NULL, period_end TIMESTAMPTZ NOT NULL, note TEXT NOT NULL,
+    wins TEXT, challenges TEXT, next_focus TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, version BIGINT NOT NULL DEFAULT 0,
+    UNIQUE (owner_id, period, period_start), CHECK (period IN ('DAILY','WEEKLY','MONTHLY','QUARTERLY')),
+    CHECK (period_end > period_start), CHECK (version >= 0)
+);
+CREATE INDEX idx_planning_review_owner_period ON planning_review (owner_id, period, period_start DESC);
+
 CREATE TABLE offline_download_manifest (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), intent_id UUID NOT NULL, manifest_version BIGINT NOT NULL,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (intent_id, manifest_version),
