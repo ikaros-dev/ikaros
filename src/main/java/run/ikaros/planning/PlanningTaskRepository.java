@@ -5,4 +5,5 @@ import reactor.core.publisher.Flux;
 public interface PlanningTaskRepository extends ReactiveCrudRepository<PlanningTaskEntity, UUID> {
     Flux<PlanningTaskEntity> findAllByOwnerIdOrderByCreatedAtDesc(UUID ownerId);
     Flux<PlanningTaskEntity> findAllByOwnerIdAndStatusOrderByCreatedAtDesc(UUID ownerId, PlanningTaskStatus status);
+    Flux<PlanningTaskEntity> findAllByProjectIdOrderByCreatedAtDesc(UUID projectId);
 }
