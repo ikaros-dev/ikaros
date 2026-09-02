@@ -1,0 +1,2 @@
+package run.ikaros.photo; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.annotation.Version; import org.springframework.data.relational.core.mapping.Table; import org.springframework.data.relational.core.mapping.Column;
+@Table("photo_asset") public record PhotoAssetEntity(@Id UUID id,@Column("owner_id") UUID ownerId,@Column("photo_id") UUID photoId,@Column("attachment_id") UUID attachmentId,PhotoAssetRole role,@Column("is_primary") boolean primary,String availability,@Version Long version) {}
