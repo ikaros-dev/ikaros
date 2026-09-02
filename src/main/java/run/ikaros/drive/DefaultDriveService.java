@@ -28,6 +28,8 @@ public class DefaultDriveService implements DriveService {
         String localFingerprint, SyncConflictState state, Instant detected, Instant resolved, UUID resolvedBy) {}
     private record Mapping(UUID id, UUID binding, String localItem, UUID remoteNode, UUID revision,
         String fingerprint, long remoteVersion, SyncMappingState state, Instant updated) {}
+    private record CameraBackup(UUID id, UUID binding, String sourceItem, CameraBackupState state, UUID remoteNode,
+        UUID remoteRevision, String fingerprint, String error, Instant updated) {}
     private final UuidV7Generator ids = new UuidV7Generator();
     private final ConcurrentMap<UUID, Space> spaces = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Node> nodes = new ConcurrentHashMap<>();
@@ -36,6 +38,7 @@ public class DefaultDriveService implements DriveService {
     private final ConcurrentMap<UUID, Binding> bindings = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Conflict> conflicts = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, Mapping> mappings = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, CameraBackup> cameraBackups = new ConcurrentHashMap<>();
 
     @Override public Mono<DriveSpaceView> createSpace(UUID actorId, CreateDriveSpaceRequest request) {
         return Mono.fromSupplier(() -> {
@@ -260,8 +263,30 @@ public class DefaultDriveService implements DriveService {
             return bindingView(updated);
         });
     }
-    @Override public Mono<CameraBackupView> updateCameraBackup(UUID actorId, UUID bindingId, CameraBackupRequest request) { return Mono.error(new NotFoundException("Sync Binding 不存在")); }
-    @Override public Flux<CameraBackupView> cameraBackups(UUID actorId, UUID bindingId) { return Flux.empty(); }
+    @Override public Mono<CameraBackupView> updateCameraBackup(UUID actorId, UUID bindingId, CameraBackupRequest request) {
+        return ownedBinding(actorId, bindingId).flatMap(binding -> {
+            if (binding.mode() != SyncMode.BACKUP) return Mono.error(new NotFoundException("Backup Binding 不存在"));
+            String source = request.sourceItemId().trim();
+            String key = bindingId + "\u0000" + source;
+            CameraBackup current = cameraBackups.get(key);
+            if (current != null && current.state() == CameraBackupState.BACKUP_VERIFIED
+                && request.state() == CameraBackupState.ERROR)
+                return Mono.error(new ConflictException("已验证备份不能降级为错误"));
+            if (current != null && current.state() == CameraBackupState.REMOVED_AFTER_VERIFIED_BACKUP
+                && request.state() != CameraBackupState.REMOVED_AFTER_VERIFIED_BACKUP)
+                return Mono.error(new ConflictException("已释放本地空间的备份不能重新排队"));
+            CameraBackup updated = new CameraBackup(current == null ? ids.next() : current.id(), bindingId, source,
+                request.state(), request.remoteNodeId(), request.remoteRevisionId(), request.contentFingerprint(),
+                request.errorMessage(), Instant.now());
+            cameraBackups.put(key, updated);
+            return Mono.just(cameraView(updated));
+        });
+    }
+    @Override public Flux<CameraBackupView> cameraBackups(UUID actorId, UUID bindingId) {
+        return ownedBinding(actorId, bindingId).flatMapMany(binding -> Flux.fromIterable(cameraBackups.values())
+            .filter(camera -> camera.binding().equals(binding.id())).sort(java.util.Comparator.comparing(CameraBackup::updated))
+            .map(this::cameraView));
+    }
     private Mono<DriveNodeView> changeLifecycle(UUID actor, UUID id, long expected, DriveLifecycle target) {
         return ownedNode(actor,id).flatMap(node -> { checkVersion(node, expected); if (node.lifecycle()==DriveLifecycle.PURGED) return Mono.error(new ConflictException("已永久删除的节点不能恢复"));
             Node changed = new Node(node.id(),node.space(),node.parent(),node.type(),node.name(),node.normalized(),target,node.revision(),node.version()+1,node.created(),Instant.now()); nodes.put(id,changed); advance(spaces.get(node.space())); return Mono.just(view(changed)); });
@@ -315,4 +340,7 @@ public class DefaultDriveService implements DriveService {
     private SyncMappingView mappingView(Mapping mapping) { return new SyncMappingView(mapping.id(), mapping.binding(),
         mapping.localItem(), mapping.remoteNode(), mapping.revision(), mapping.fingerprint(), mapping.remoteVersion(),
         mapping.state(), mapping.updated()); }
+    private CameraBackupView cameraView(CameraBackup camera) { return new CameraBackupView(camera.id(), camera.binding(),
+        camera.sourceItem(), camera.state(), camera.remoteNode(), camera.remoteRevision(), camera.fingerprint(),
+        camera.error(), camera.updated()); }
 }
