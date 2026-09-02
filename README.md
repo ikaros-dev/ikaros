@@ -1,6 +1,6 @@
 # Ikaros
 
-Ikaros 是一个自托管的个人数字内容平台。当前工程从零实现，产品与领域边界以 [docs/v2/Product-Requirements-Document.md](docs/v2/Product-Requirements-Document.md) 为准。
+Ikaros 是一个自托管的个人数字内容平台。当前工程从零实现，产品与领域边界以 [docs/v2/Product-Requirements-Document.md](docs/Product-Requirements-Document.md) 为准。
 
 ## 当前基础能力
 
