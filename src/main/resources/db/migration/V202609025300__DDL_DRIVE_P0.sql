@@ -171,6 +171,17 @@ CREATE TABLE planning_task_tag (
 );
 CREATE INDEX idx_planning_task_tag_tag ON planning_task_tag (tag_id, task_id);
 
+CREATE TABLE planning_recurrence (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, task_id UUID NOT NULL,
+    rule VARCHAR(512) NOT NULL, mode VARCHAR(32) NOT NULL DEFAULT 'FIXED_SCHEDULE', time_zone VARCHAR(64) NOT NULL DEFAULT 'UTC',
+    next_run_at TIMESTAMPTZ, active BOOLEAN NOT NULL DEFAULT TRUE, last_run_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    version BIGINT NOT NULL DEFAULT 0, UNIQUE (owner_id, task_id),
+    CHECK (mode IN ('FIXED_SCHEDULE','COMPLETION_BASED')), CHECK (version >= 0),
+    FOREIGN KEY (task_id) REFERENCES planning_task(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_planning_recurrence_due ON planning_recurrence (active, next_run_at);
+
 CREATE TABLE offline_download_manifest (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), intent_id UUID NOT NULL, manifest_version BIGINT NOT NULL,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (intent_id, manifest_version),
