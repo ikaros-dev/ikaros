@@ -24,7 +24,7 @@ public class DeliveryProviderOperationsService {
             Map.of("provider_id", providerId.toString(), "requested_by", actorId.toString()),
             "storage.delivery-provider-probe:" + providerId + ":" + idempotencyKey))
             .flatMap(task -> events.append("storage.delivery-provider.probe-requested", 1, "delivery_provider", providerId,
-                "{\"provider_id\":\"" + providerId + "\",\"task_id\":\"" + task.id() + "\"}").thenReturn(task));
+                "{\"delivery_provider_id\":\"" + providerId + "\",\"task_id\":\"" + task.id() + "\"}").thenReturn(task));
     }
 
     public Mono<BackgroundTask> rotate(UUID providerId, UUID actorId, String idempotencyKey,
@@ -39,7 +39,7 @@ public class DeliveryProviderOperationsService {
         return require(providerId).then(tasks.submit("storage.delivery-provider-rotate-signing-key", payload,
             "storage.delivery-provider-rotate-signing-key:" + providerId + ":" + idempotencyKey))
             .flatMap(task -> events.append("storage.delivery-provider.signing-key-rotation-requested", 1, "delivery_provider", providerId,
-                "{\"provider_id\":\"" + providerId + "\",\"task_id\":\"" + task.id() + "\"}").thenReturn(task));
+                "{\"delivery_provider_id\":\"" + providerId + "\",\"task_id\":\"" + task.id() + "\"}").thenReturn(task));
     }
 
     private Mono<Void> require(UUID id) { return providers.findById(id)

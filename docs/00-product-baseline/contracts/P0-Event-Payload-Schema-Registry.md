@@ -413,13 +413,13 @@ Payload 与 attached 相同 identity key。
 ### `storage.delivery-provider.probe-requested@1`
 
 ```json
-{ "provider_id": "uuid", "task_id": "uuid" }
+{ "delivery_provider_id": "uuid", "task_id": "uuid" }
 ```
 
 ### `storage.delivery-provider.signing-key-rotation-requested@1`
 
 ```json
-{ "provider_id": "uuid", "task_id": "uuid" }
+{ "delivery_provider_id": "uuid", "task_id": "uuid" }
 ```
 
 ### `storage.delivery-provider.probed@1`
