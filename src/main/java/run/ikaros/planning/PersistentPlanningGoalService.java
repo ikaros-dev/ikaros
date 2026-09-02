@@ -45,7 +45,14 @@ public class PersistentPlanningGoalService implements PlanningGoalService {
         }).map(this::view);
     }
     @Override public Mono<PlanningGoalView> changeStatus(UUID ownerId, UUID goalId, PlanningGoalStatus status) {
-        return owned(ownerId, goalId).flatMap(old -> { if (old.status() == PlanningGoalStatus.ARCHIVED && status != PlanningGoalStatus.ARCHIVED)
+        return changeStatusInternal(ownerId, goalId, status, null);
+    }
+    @Override public Mono<PlanningGoalView> changeStatus(UUID ownerId, UUID goalId, PlanningGoalStatus status, long expectedVersion) {
+        return changeStatusInternal(ownerId, goalId, status, expectedVersion);
+    }
+    private Mono<PlanningGoalView> changeStatusInternal(UUID ownerId, UUID goalId, PlanningGoalStatus status, Long expectedVersion) {
+        return owned(ownerId, goalId).flatMap(old -> { if (expectedVersion != null) check(old, expectedVersion);
+            if (old.status() == PlanningGoalStatus.ARCHIVED && status != PlanningGoalStatus.ARCHIVED)
                 return Mono.error(new ConflictException("已归档目标不能恢复"));
             return goals.save(new PlanningGoalEntity(old.id(), old.ownerId(), old.title(), old.description(), old.type(), status, old.progress(),
                 old.startAt(), old.deadline(), status == PlanningGoalStatus.COMPLETED ? Instant.now() : old.completedAt(), old.createdAt(), Instant.now(), old.version()));

@@ -26,8 +26,9 @@ public class PlanningGoalController {
         @Valid @RequestBody UpdatePlanningGoalProgressRequest request) { long version=IfMatchVersion.parse(ifMatch); return service.updateProgress(ownerId, goalId,
         new UpdatePlanningGoalProgressRequest(request.progress(), version)).map(view -> ResponseEntity.ok()
         .eTag(IfMatchVersion.etag(view.version())).body(view)); }
-    @PostMapping("/{goalId}/status/{status}") public Mono<PlanningGoalView> status(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,
-        @PathVariable UUID goalId, @PathVariable PlanningGoalStatus status) { return service.changeStatus(ownerId, goalId, status); }
+    @PostMapping("/{goalId}/status/{status}") public Mono<ResponseEntity<PlanningGoalView>> status(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,
+        @PathVariable UUID goalId, @PathVariable PlanningGoalStatus status, @RequestHeader(value="If-Match",required=false) String ifMatch) { return service.changeStatus(ownerId, goalId, status,
+        IfMatchVersion.parse(ifMatch)).map(view->ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view)); }
     @PutMapping("/{goalId}/tasks/{taskId}") public Mono<Void> attachTask(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,
         @PathVariable UUID goalId, @PathVariable UUID taskId) { return service.attachTask(ownerId, goalId, taskId); }
     @DeleteMapping("/{goalId}/tasks/{taskId}") public Mono<Void> detachTask(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,
