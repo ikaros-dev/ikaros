@@ -19,7 +19,7 @@
         "resource.collection.created", "resource.collection.member-added", "resource.collection.member-removed", "resource.user-state.changed",
         "storage.attachment.created", "storage.attachment.archived", "storage.attachment.trashed", "storage.blob.verified", "storage.blob.integrity-failed",
         "storage.provider.created", "storage.provider.updated", "storage.provider.enabled", "storage.provider.disabled", "storage.provider.drain-requested",
-        "storage.delivery-provider.created", "storage.delivery-provider.updated", "storage.delivery-provider.probe-requested", "storage.delivery-provider.signing-key-rotation-requested",
+        "storage.delivery-provider.created", "storage.delivery-provider.updated", "storage.delivery-provider.probe-requested", "storage.delivery-provider.probed", "storage.delivery-provider.degraded", "storage.delivery-provider.signing-key-rotation-requested", "storage.delivery-provider.signing-key-rotated",
         "storage.delivery-lease.created", "storage.delivery-lease.released", "storage.delivery-lease.expired",
         "storage.restore-budget.updated",
         "storage.delivery-binding.created", "storage.delivery-binding.updated", "storage.delivery-binding.removed",

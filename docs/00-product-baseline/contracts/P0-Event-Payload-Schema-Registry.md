@@ -422,6 +422,24 @@ Payload 与 attached 相同 identity key。
 { "provider_id": "uuid", "task_id": "uuid" }
 ```
 
+### `storage.delivery-provider.probed@1`
+
+```json
+{ "delivery_provider_id": "uuid", "health_status": "HEALTHY|DEGRADED|UNHEALTHY|UNKNOWN", "capability_changes": [] }
+```
+
+### `storage.delivery-provider.degraded@1`
+
+```json
+{ "delivery_provider_id": "uuid", "reason_code": "health-check-degraded" }
+```
+
+### `storage.delivery-provider.signing-key-rotated@1`
+
+```json
+{ "delivery_provider_id": "uuid", "previous_key_version": 1, "new_key_version": 2 }
+```
+
 ### `storage.delivery-lease.created@1`
 
 ```json
