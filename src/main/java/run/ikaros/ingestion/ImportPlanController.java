@@ -18,4 +18,9 @@ public class ImportPlanController {
     @PostMapping("/plans/{planId}/approve")
     public Mono<ImportPlanView> approve(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId, @PathVariable UUID planId,
         @Valid @RequestBody ApproveImportPlanRequest request) { return service.approve(actorId, planId, request); }
+    @PatchMapping("/plans/{planId}/items/{itemId}")
+    public Mono<ImportPlanItemEntity> updateItem(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId, @PathVariable UUID planId,
+        @PathVariable UUID itemId, @Valid @RequestBody UpdateImportPlanItemRequest request) {
+        return service.updateItem(actorId, planId, itemId, request);
+    }
 }

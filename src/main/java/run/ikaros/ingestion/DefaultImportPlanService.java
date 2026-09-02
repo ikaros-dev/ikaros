@@ -13,6 +13,7 @@ interface ImportPlanService {
     Mono<ImportPlanView> generate(UUID ownerId, UUID scanRunId, GenerateImportPlanRequest request);
     Mono<List<ImportPlanItemEntity>> items(UUID ownerId, UUID planId);
     Mono<ImportPlanView> approve(UUID ownerId, UUID planId, ApproveImportPlanRequest request);
+    Mono<ImportPlanItemEntity> updateItem(UUID ownerId, UUID planId, UUID itemId, UpdateImportPlanItemRequest request);
 }
 
 @Service
@@ -47,7 +48,19 @@ class DefaultImportPlanService implements ImportPlanService {
             .flatMap(plan -> { if (!"GENERATED".equals(plan.status())) return Mono.error(new IllegalStateException("计划当前不可审批"));
                 if (plan.version()!=null && !plan.version().equals(request.expectedVersion())) return Mono.error(new run.ikaros.common.ConflictException("Import Plan 版本已过期"));
                 return plans.save(new ImportPlanEntity(plan.id(),plan.scanRunId(),plan.ownerId(),plan.dryRun(),"APPROVED",plan.policySnapshotJson(),plan.generatedAt(),plan.version())); })
-            .flatMap(plan -> items.findAllByPlanIdOrderByCreatedAtAsc(plan.id()).count().map(count -> new ImportPlanView(plan.id(),plan.scanRunId(),plan.dryRun(),plan.status(),plan.version(),plan.generatedAt(),count)));
+            .flatMap(plan -> items.findAllByPlanIdOrderByCreatedAtAsc(plan.id()).collectList().flatMap(all -> {
+                if (all.stream().anyMatch(item -> "REQUIRE_REVIEW".equals(item.action()) || "CONFLICT".equals(item.action())))
+                    return Mono.error(new run.ikaros.common.ConflictException("Import Plan 仍有未解决的审核项"));
+                return Mono.just(new ImportPlanView(plan.id(),plan.scanRunId(),plan.dryRun(),plan.status(),plan.version(),plan.generatedAt(),all.size()));
+            }));
+    }
+    public Mono<ImportPlanItemEntity> updateItem(UUID ownerId, UUID planId, UUID itemId, UpdateImportPlanItemRequest request) {
+        return plans.findByIdAndOwnerId(planId, ownerId).switchIfEmpty(Mono.error(new NotFoundException("Import Plan 不存在或无权访问")))
+            .flatMap(plan -> { if (!"GENERATED".equals(plan.status())) return Mono.error(new run.ikaros.common.ConflictException("已审批计划不可修改"));
+                return items.findById(itemId).switchIfEmpty(Mono.error(new NotFoundException("计划项不存在")))
+                    .flatMap(item -> { if (!planId.equals(item.planId())) return Mono.error(new NotFoundException("计划项不存在"));
+                        if (item.version()!=null && !item.version().equals(request.expectedVersion())) return Mono.error(new run.ikaros.common.ConflictException("计划项版本已过期"));
+                        return items.save(new ImportPlanItemEntity(item.id(),item.planId(),item.candidateId(),request.action().name(),request.targetId(),request.reason(),item.confidence(),item.idempotencyKey(),item.createdAt(),item.version())); }); });
     }
     private Mono<String> encode(Map<String,Object> value) { try { return Mono.just(mapper.writeValueAsString(value==null?Map.of():value)); }
         catch (JsonProcessingException e) { return Mono.error(new IllegalArgumentException("policy snapshot 无法序列化", e)); } }
