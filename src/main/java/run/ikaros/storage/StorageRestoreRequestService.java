@@ -19,12 +19,14 @@ public class StorageRestoreRequestService {
     private final BlobPlacementRepository placements;
     private final StorageRestoreRequestRepository requests;
     private final BackgroundTaskService tasks;
+    private final StorageRestoreBudgetService budget;
 
     public StorageRestoreRequestService(AttachmentRepository attachments, ResourceRepository resources,
         BlobRepository blobs, BlobPlacementRepository placements, StorageRestoreRequestRepository requests,
-        BackgroundTaskService tasks) {
+        BackgroundTaskService tasks, StorageRestoreBudgetService budget) {
         this.attachments = attachments; this.resources = resources; this.blobs = blobs;
         this.placements = placements; this.requests = requests; this.tasks = tasks;
+        this.budget = budget;
     }
 
     public Mono<StorageRestoreRequestView> requestAttachment(UUID actorId, RequestAttachmentRestore request,
@@ -38,7 +40,7 @@ public class StorageRestoreRequestService {
         return existing.switchIfEmpty(Mono.defer(() -> authorizedAttachment(actorId, request.attachmentId())
             .flatMap(attachment -> blobs.findById(attachment.blobId())
                 .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
-                .flatMap(blob -> placements.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
+                .flatMap(blob -> budget.check(1, blob.sizeBytes()).then(placements.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
                     .filter(p -> p.placementState() == PlacementState.ACTIVE).hasElements()
                     .flatMap(readable -> {
                         if (readable) return Mono.error(new ConflictException("附件已经存在可读副本"));
@@ -46,7 +48,7 @@ public class StorageRestoreRequestService {
                         return requests.save(new StorageRestoreRequestEntity(null, actorId, StorageRestoreScope.ATTACHMENT,
                             request.attachmentId(), StorageRestoreRequestStatus.REQUESTED, 1, 0, blob.sizeBytes(), null,
                             idempotencyKey, null, now, now, null));
-                    }))
+                    })))
                 .flatMap(saved -> tasks.submit("storage.restore", Map.of("restore_request_id", saved.id().toString(),
                     "attachment_id", request.attachmentId().toString(), "provider_restore_class",
                     request.providerRestoreClass() == null ? "STANDARD" : request.providerRestoreClass()),
