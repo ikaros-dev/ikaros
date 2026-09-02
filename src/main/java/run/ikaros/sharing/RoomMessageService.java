@@ -1,0 +1,1 @@
+package run.ikaros.sharing; import java.util.UUID; import reactor.core.publisher.Flux; import reactor.core.publisher.Mono; public interface RoomMessageService{Mono<RoomMessageView> send(UUID actor,UUID roomId,SendRoomMessageRequest request);Flux<RoomMessageView> list(UUID actor,UUID roomId);}
