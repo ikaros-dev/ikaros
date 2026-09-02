@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.common.PageResponse;
 
 @RestController
 @RequestMapping({"/api/background-tasks", "/api/v2/background-tasks"})
@@ -23,6 +24,16 @@ public class BackgroundTaskController {
     @GetMapping
     public Flux<BackgroundTask> list(@RequestParam(required = false) TaskStatus status) {
         return service.list(status);
+    }
+
+    @GetMapping(params = "page")
+    public Mono<PageResponse<BackgroundTask>> listPage(
+        @RequestParam(required = false) TaskStatus status,
+        @RequestParam(required = false, name = "task_type") String taskType,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
+    ) {
+        return service.list(status, taskType, page, size);
     }
 
     @GetMapping("/{taskId}")
