@@ -11,6 +11,11 @@ import run.ikaros.storage.BlobRepository;
 import run.ikaros.storage.PlacementState;
 import run.ikaros.storage.StorageProviderRegistry;
 import run.ikaros.storage.StorageProviderStatus;
+import run.ikaros.storage.StorageRestoreRequestRepository;
+import run.ikaros.storage.StorageRestoreRequestStatus;
+import run.ikaros.storage.StorageRestoreScope;
+import java.util.List;
+import reactor.core.publisher.Flux;
 
 /** Attachment-shaped alias required by the media delivery contract. */
 @RestController
@@ -21,10 +26,12 @@ public class AttachmentMediaAvailabilityController {
     private final BlobRepository blobs;
     private final BlobPlacementRepository placements;
     private final StorageProviderRegistry providerRegistry;
+    private final StorageRestoreRequestRepository restoreRequests;
     public AttachmentMediaAvailabilityController(AttachmentRepository attachments, MediaAvailabilityService availability,
-        BlobRepository blobs, BlobPlacementRepository placements, StorageProviderRegistry providerRegistry) {
+        BlobRepository blobs, BlobPlacementRepository placements, StorageProviderRegistry providerRegistry,
+        StorageRestoreRequestRepository restoreRequests) {
         this.attachments = attachments; this.availability = availability; this.blobs = blobs; this.placements = placements;
-        this.providerRegistry = providerRegistry;
+        this.providerRegistry = providerRegistry; this.restoreRequests = restoreRequests;
     }
     @GetMapping
     public Mono<MediaAvailabilityResponse> get(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,
@@ -35,29 +42,39 @@ public class AttachmentMediaAvailabilityController {
                 .then(blobs.findById(attachment.blobId())
                     .map(blob -> new AttachmentContext(attachmentId, blob))
                     .switchIfEmpty(Mono.error(new NotFoundException("附件引用的 Blob 不存在"))))
-                .flatMap(context -> response(context.attachmentId(), context.blob())));
+                .flatMap(context -> response(owner, context.attachmentId(), context.blob())));
     }
 
-    private Mono<MediaAvailabilityResponse> response(UUID attachmentId, run.ikaros.storage.BlobEntity blob) {
+    private Mono<MediaAvailabilityResponse> response(UUID owner, UUID attachmentId, run.ikaros.storage.BlobEntity blob) {
         return switch (blob.availability()) {
-            case RESTORING -> Mono.just(new MediaAvailabilityResponse(attachmentId, MediaContractAvailability.RESTORING,
-                null, null, null, null));
-            case PROCESSING -> Mono.just(new MediaAvailabilityResponse(attachmentId, MediaContractAvailability.RESTORING,
-                null, null, null, null));
+            case RESTORING, PROCESSING -> activeRestore(owner, attachmentId)
+                .map(request -> new MediaAvailabilityResponse(attachmentId, MediaContractAvailability.RESTORING,
+                    request.id(), null, null, null))
+                .switchIfEmpty(Mono.just(new MediaAvailabilityResponse(attachmentId,
+                    MediaContractAvailability.RESTORING, null, null, null, null)));
             case MISSING -> Mono.just(new MediaAvailabilityResponse(attachmentId, MediaContractAvailability.MISSING,
                 null, null, null, null));
-            case CORRUPTED -> Mono.just(new MediaAvailabilityResponse(attachmentId, MediaContractAvailability.UNAVAILABLE,
+            case CORRUPTED -> Mono.just(new MediaAvailabilityResponse(attachmentId, MediaContractAvailability.CORRUPTED,
                 null, null, null, null));
-            case AVAILABLE, REMOTE -> placements.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
-                .filter(placement -> placement.placementState() == PlacementState.ACTIVE)
-                .concatMap(placement -> providerRegistry.getByKey(placement.provider())
-                    .map(provider -> provider.status() != StorageProviderStatus.DISABLED
-                        && provider.status() != StorageProviderStatus.FAILED))
-                .any(Boolean::booleanValue)
-                .map(readable -> new MediaAvailabilityResponse(attachmentId,
-                    readable ? MediaContractAvailability.READY : MediaContractAvailability.MISSING,
-                    null, null, null, null));
+            case AVAILABLE, REMOTE -> placements.findAllByBlobIdOrderByCreatedAtAsc(blob.id()).collectList()
+                .flatMap(all -> Flux.fromIterable(all)
+                    .filter(placement -> placement.placementState() == PlacementState.ACTIVE)
+                    .concatMap(placement -> providerRegistry.getByKey(placement.provider())
+                        .map(provider -> provider.status() != StorageProviderStatus.DISABLED
+                            && provider.status() != StorageProviderStatus.FAILED))
+                    .any(Boolean::booleanValue)
+                    .map(readable -> new MediaAvailabilityResponse(attachmentId,
+                        readable ? MediaContractAvailability.READY
+                            : all.stream().anyMatch(p -> p.placementState() != PlacementState.ACTIVE)
+                                ? MediaContractAvailability.RESTORE_REQUIRED : MediaContractAvailability.MISSING,
+                        null, null, null, null)));
         };
+    }
+
+    private Mono<run.ikaros.storage.StorageRestoreRequestEntity> activeRestore(UUID owner, UUID attachmentId) {
+        return restoreRequests.findFirstByActorIdAndScopeAndScopeIdAndStatusInOrderByCreatedAtDesc(owner,
+            StorageRestoreScope.ATTACHMENT, attachmentId,
+            List.of(StorageRestoreRequestStatus.REQUESTED, StorageRestoreRequestStatus.IN_PROGRESS));
     }
 
     private MediaContractAvailability contractStatus(MediaAvailability value) {
