@@ -1,0 +1,1 @@
+package run.ikaros.finance; import java.math.BigDecimal; import java.time.Instant; import java.util.UUID; public record ExchangeRateView(UUID id,String fromCurrency,String toCurrency,BigDecimal rate,Instant effectiveAt,String provider,ExchangeRateSource source) {}
