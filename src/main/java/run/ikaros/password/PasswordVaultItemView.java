@@ -1,0 +1,1 @@
+package run.ikaros.password; import java.time.Instant; import java.util.UUID; public record PasswordVaultItemView(UUID id,UUID vaultId,String itemType,String encryptedName,String encryptedPayload,String encryptedCustomFields,boolean favorite,long revision,boolean tombstone,Instant createdAt,Instant updatedAt) {}
