@@ -237,6 +237,17 @@ CREATE TABLE planning_time_entry (
 );
 CREATE INDEX idx_planning_time_entry_task_created ON planning_time_entry (owner_id, task_id, created_at DESC);
 
+CREATE TABLE planning_focus_session (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, task_id UUID,
+    mode VARCHAR(16) NOT NULL DEFAULT 'FREEFORM', status VARCHAR(16) NOT NULL DEFAULT 'RUNNING',
+    planned_minutes INTEGER, actual_minutes INTEGER, started_at TIMESTAMPTZ NOT NULL, ended_at TIMESTAMPTZ, note TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, version BIGINT NOT NULL DEFAULT 0,
+    CHECK (mode IN ('FREEFORM','POMODORO')), CHECK (status IN ('RUNNING','COMPLETED','CANCELLED')),
+    CHECK (planned_minutes IS NULL OR planned_minutes > 0), CHECK (actual_minutes IS NULL OR actual_minutes > 0), CHECK (version >= 0),
+    FOREIGN KEY (task_id) REFERENCES planning_task(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_planning_focus_session_owner_started ON planning_focus_session (owner_id, started_at DESC);
+
 CREATE TABLE offline_download_manifest (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), intent_id UUID NOT NULL, manifest_version BIGINT NOT NULL,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (intent_id, manifest_version),
