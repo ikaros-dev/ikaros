@@ -203,11 +203,18 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     @Override
     public Mono<BackgroundTask> cancel(UUID taskId) {
         return tasks.findById(taskId).switchIfEmpty(Mono.error(new NotFoundException("Task 不存在")))
-            .flatMap(task -> tasks.save(copy(task, task.status().equals(TaskStatus.RUNNING.name()) ? TaskStatus.RUNNING : TaskStatus.CANCELLED,
-                task.leaseOwner(), task.leaseToken(),
-                task.leaseExpiresAt(), task.attempt(), Instant.now(), task.progress(), task.result()))
-                .flatMap(saved -> events.append("operations.background-task.cancel-requested", 1, "background_task", saved.id(),
-                    "{\"task_id\":\"" + saved.id() + "\"}").then(view(saved))));
+            .flatMap(task -> {
+                TaskStatus status = TaskStatus.valueOf(task.status());
+                if (status == TaskStatus.CANCELLED) return view(task);
+                if (status == TaskStatus.SUCCEEDED || status == TaskStatus.FAILED || status == TaskStatus.TIMED_OUT) {
+                    return Mono.error(new ConflictException("终态 Task 不能取消"));
+                }
+                TaskStatus target = status == TaskStatus.RUNNING ? TaskStatus.RUNNING : TaskStatus.CANCELLED;
+                return tasks.save(copy(task, target, task.leaseOwner(), task.leaseToken(),
+                    task.leaseExpiresAt(), task.attempt(), Instant.now(), task.progress(), task.result()))
+                    .flatMap(saved -> events.append("operations.background-task.cancel-requested", 1, "background_task", saved.id(),
+                        "{\"task_id\":\"" + saved.id() + "\"}").then(view(saved)));
+            });
     }
 
     @Override
