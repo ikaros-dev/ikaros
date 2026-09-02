@@ -220,6 +220,15 @@ CREATE TABLE planning_goal_task (
 CREATE INDEX idx_planning_goal_owner_status ON planning_goal (owner_id, status, updated_at DESC);
 CREATE INDEX idx_planning_goal_task_task ON planning_goal_task (task_id, goal_id);
 
+CREATE TABLE planning_task_dependency (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), task_id UUID NOT NULL, depends_on_task_id UUID NOT NULL,
+    type VARCHAR(16) NOT NULL DEFAULT 'BLOCKED_BY', created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    UNIQUE (task_id, depends_on_task_id), CHECK (task_id <> depends_on_task_id), CHECK (type IN ('BLOCKS','BLOCKED_BY')),
+    FOREIGN KEY (task_id) REFERENCES planning_task(id) ON DELETE CASCADE,
+    FOREIGN KEY (depends_on_task_id) REFERENCES planning_task(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_planning_task_dependency_reverse ON planning_task_dependency (depends_on_task_id, task_id);
+
 CREATE TABLE offline_download_manifest (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), intent_id UUID NOT NULL, manifest_version BIGINT NOT NULL,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (intent_id, manifest_version),
