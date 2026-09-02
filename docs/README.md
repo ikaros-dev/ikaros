@@ -35,3 +35,15 @@
 ## 100：图表展示
 
 - [图表展示目录](90-diagrams/README.md)
+
+## V2 文档汇总
+
+`docs/v2` 中的完整设计内容已按主题汇总到上述阶段目录：
+
+- [V2 总索引与覆盖矩阵](00-product-baseline/V2-Document-Index.md)
+- [平台基础详细设计](01-platform-foundation/)
+- [领域能力详细设计](02-domain-capabilities/)
+- [AI 与分析详细设计](03-ai-and-analytics/)
+- [契约、数据库与验收材料](00-product-baseline/)
+
+同名文档以 `docs/v2` 版本为准；`docs/v2` 原目录暂时保留，作为来源归档和链接兼容层。

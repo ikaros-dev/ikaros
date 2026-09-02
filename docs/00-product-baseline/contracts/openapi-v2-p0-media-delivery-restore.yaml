@@ -1,0 +1,708 @@
+openapi: 3.1.0
+info:
+  title: Ikaros V2 P0 Media Delivery / Restore API Addendum
+  version: 0.1.0
+  description: >-
+    Normative P0 extension for media availability, archive restore, delivery grants,
+    delivery-provider administration and restore-budget administration.
+servers:
+  - url: /api/v2
+security:
+  - bearerAuth: []
+
+paths:
+  /attachments/{attachment_id}/availability:
+    get:
+      operationId: storage.get-media-availability
+      summary: Get media availability for an attachment
+      parameters:
+        - $ref: '#/components/parameters/AttachmentId'
+      responses:
+        '200':
+          description: Availability resolved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaAvailabilityResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /attachments/{attachment_id}/delivery-grants:
+    post:
+      operationId: storage.issue-delivery-grant
+      summary: Issue a short-lived playback or download delivery grant
+      parameters:
+        - $ref: '#/components/parameters/AttachmentId'
+        - $ref: '#/components/parameters/IdempotencyKeyOptional'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueDeliveryGrantRequest'
+      responses:
+        '200':
+          description: Grant issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryGrant'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Restore required or attachment is not currently deliverable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: No valid delivery path
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /attachments/{attachment_id}/restore-requests:
+    post:
+      operationId: storage.request-restore-attachment
+      summary: Request restore for one attachment
+      parameters:
+        - $ref: '#/components/parameters/AttachmentId'
+        - $ref: '#/components/parameters/IdempotencyKeyRequired'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestoreOptions'
+      responses:
+        '202':
+          description: Restore request accepted, queued, partially accepted or attached to existing operations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestoreRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Restore budget or policy rejected the request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /media/seasons/{season_id}/restore-requests:
+    post:
+      operationId: storage.request-restore-season
+      summary: Request restore for a season
+      parameters:
+        - name: season_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/IdempotencyKeyRequired'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestoreOptions'
+      responses:
+        '202':
+          description: Restore request accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestoreRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Budget confirmation required or request rejected
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /restore-requests:
+    get:
+      operationId: storage.list-restore-requests
+      summary: List restore requests visible to the caller
+      parameters:
+        - name: cursor
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Restore request page
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RestoreRequest'
+                  next_cursor:
+                    type: [string, 'null']
+
+  /restore-requests/{request_id}:
+    get:
+      operationId: storage.get-restore-request
+      summary: Get restore request status
+      parameters:
+        - $ref: '#/components/parameters/RestoreRequestId'
+      responses:
+        '200':
+          description: Restore request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestoreRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      operationId: storage.cancel-restore-request
+      summary: Request cancellation of a restore request
+      parameters:
+        - $ref: '#/components/parameters/RestoreRequestId'
+      responses:
+        '202':
+          description: Cancellation accepted or request already terminal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestoreRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /delivery-leases/{lease_id}/renew:
+    post:
+      operationId: storage.renew-delivery-lease
+      summary: Renew an active playback/download delivery lease
+      parameters:
+        - name: lease_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lease renewed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryLease'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '410':
+          description: Lease expired and cannot be renewed
+
+  /delivery-leases/{lease_id}:
+    delete:
+      operationId: storage.release-delivery-lease
+      summary: Release a playback/download delivery lease
+      parameters:
+        - name: lease_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Released or already released
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/delivery-providers:
+    get:
+      operationId: storage.list-delivery-providers
+      summary: List delivery providers
+      responses:
+        '200':
+          description: Delivery providers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeliveryProvider'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      operationId: storage.create-delivery-provider
+      summary: Create a delivery provider
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKeyRequired'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryProviderWrite'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryProvider'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/delivery-providers/{delivery_provider_id}:
+    get:
+      operationId: storage.get-delivery-provider
+      parameters:
+        - $ref: '#/components/parameters/DeliveryProviderId'
+      responses:
+        '200':
+          description: Delivery provider
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryProvider'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: storage.update-delivery-provider
+      parameters:
+        - $ref: '#/components/parameters/DeliveryProviderId'
+        - name: If-Match
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryProviderWrite'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryProvider'
+        '409':
+          description: Version conflict
+
+  /admin/delivery-providers/{delivery_provider_id}/probe:
+    post:
+      operationId: storage.probe-delivery-provider
+      parameters:
+        - $ref: '#/components/parameters/DeliveryProviderId'
+        - $ref: '#/components/parameters/IdempotencyKeyRequired'
+      responses:
+        '202':
+          description: Probe task accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BackgroundTaskReference'
+
+  /admin/delivery-providers/{delivery_provider_id}/rotate-signing-key:
+    post:
+      operationId: storage.rotate-delivery-signing-key
+      parameters:
+        - $ref: '#/components/parameters/DeliveryProviderId'
+        - $ref: '#/components/parameters/IdempotencyKeyRequired'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [credential_ref]
+              properties:
+                credential_ref:
+                  type: string
+                  description: Secret reference only, never raw key material
+                emergency:
+                  type: boolean
+                  default: false
+      responses:
+        '202':
+          description: Rotation accepted
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/restore-budget-policy:
+    get:
+      operationId: storage.get-restore-budget-policy
+      responses:
+        '200':
+          description: Effective instance restore budget
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestoreBudgetPolicy'
+    put:
+      operationId: storage.update-restore-budget-policy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestoreBudgetPolicy'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestoreBudgetPolicy'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  parameters:
+    AttachmentId:
+      name: attachment_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RestoreRequestId:
+      name: request_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    DeliveryProviderId:
+      name: delivery_provider_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    IdempotencyKeyRequired:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 255
+    IdempotencyKeyOptional:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema:
+        type: string
+        maxLength: 255
+
+  responses:
+    Forbidden:
+      description: Forbidden
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    NotFound:
+      description: Not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
+  schemas:
+    MediaAvailabilityResponse:
+      type: object
+      required: [attachment_id, availability]
+      properties:
+        attachment_id:
+          type: string
+          format: uuid
+        availability:
+          $ref: '#/components/schemas/MediaAvailability'
+        restore_request_id:
+          type: [string, 'null']
+          format: uuid
+        restore_latency_min_seconds:
+          type: [integer, 'null']
+          minimum: 0
+        restore_latency_max_seconds:
+          type: [integer, 'null']
+          minimum: 0
+        temporary_copy_expires_at:
+          type: [string, 'null']
+          format: date-time
+
+    MediaAvailability:
+      type: string
+      enum:
+        - READY
+        - RESTORE_REQUIRED
+        - RESTORING
+        - READY_TEMPORARILY
+        - UNAVAILABLE
+        - MISSING
+        - CORRUPTED
+
+    IssueDeliveryGrantRequest:
+      type: object
+      required: [intent]
+      properties:
+        intent:
+          type: string
+          enum: [PLAYBACK, DOWNLOAD]
+        existing_lease_id:
+          type: [string, 'null']
+          format: uuid
+        require_range:
+          type: boolean
+          default: true
+
+    DeliveryGrant:
+      type: object
+      required:
+        - grant_id
+        - attachment_id
+        - lease_id
+        - delivery_provider_id
+        - method
+        - url
+        - expires_at
+        - range_supported
+        - revocation_mode
+      properties:
+        grant_id:
+          type: string
+          format: uuid
+        attachment_id:
+          type: string
+          format: uuid
+        lease_id:
+          type: string
+          format: uuid
+        delivery_provider_id:
+          type: string
+          format: uuid
+        method:
+          type: string
+          enum: [GET]
+        url:
+          type: string
+          format: uri
+          description: Short-lived. Must not be persisted or logged in full.
+        expires_at:
+          type: string
+          format: date-time
+        range_supported:
+          type: boolean
+        content_type:
+          type: [string, 'null']
+        content_length:
+          type: [integer, 'null']
+          minimum: 0
+        revocation_mode:
+          type: string
+          enum: [IMMEDIATE, KEY_VERSION_BOUND, TTL_BOUNDED, NOT_REVOCABLE_BEFORE_EXPIRY]
+
+    DeliveryLease:
+      type: object
+      required: [id, attachment_id, purpose, expires_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        attachment_id:
+          type: string
+          format: uuid
+        purpose:
+          type: string
+          enum: [PLAYBACK, DOWNLOAD]
+        expires_at:
+          type: string
+          format: date-time
+        released_at:
+          type: [string, 'null']
+          format: date-time
+
+    RestoreOptions:
+      type: object
+      properties:
+        restore_class:
+          type: [string, 'null']
+        budget_confirmation_token:
+          type: [string, 'null']
+          description: Opaque confirmation reference, not payment data
+
+    RestoreRequest:
+      type: object
+      required:
+        - id
+        - scope_type
+        - scope_id
+        - status
+        - item_count
+        - total_bytes
+        - ready_items
+        - failed_items
+        - budget_decision
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        scope_type:
+          type: string
+          enum: [ATTACHMENT, EPISODE, SEASON, RESOURCE_SET]
+        scope_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [PENDING, ACTIVE, PARTIAL, SUCCEEDED, FAILED, CANCEL_REQUESTED, CANCELLED]
+        item_count:
+          type: integer
+          minimum: 0
+        total_bytes:
+          type: integer
+          minimum: 0
+        ready_items:
+          type: integer
+          minimum: 0
+        failed_items:
+          type: integer
+          minimum: 0
+        budget_decision:
+          type: string
+          enum: [ACCEPTED, PARTIAL, CONFIRMED, QUEUED, REJECTED]
+        created_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: [string, 'null']
+          format: date-time
+        estimated_available_min_at:
+          type: [string, 'null']
+          format: date-time
+        estimated_available_max_at:
+          type: [string, 'null']
+          format: date-time
+        temporary_copy_expires_at:
+          type: [string, 'null']
+          format: date-time
+
+    DeliveryProviderWrite:
+      type: object
+      required: [provider_key, provider_type, display_name, config]
+      properties:
+        provider_key:
+          type: string
+        provider_type:
+          type: string
+          enum: [DIRECT, CDN, SERVER_PROXY]
+        display_name:
+          type: string
+        credential_ref:
+          type: [string, 'null']
+          description: Secret reference only
+        config:
+          type: object
+          additionalProperties: true
+        enabled:
+          type: boolean
+          default: true
+
+    DeliveryProvider:
+      allOf:
+        - $ref: '#/components/schemas/DeliveryProviderWrite'
+        - type: object
+          required: [id, capabilities, grant_revocation_mode, signing_key_version, health_status, version]
+          properties:
+            id:
+              type: string
+              format: uuid
+            capabilities:
+              type: object
+              additionalProperties: true
+            grant_revocation_mode:
+              type: string
+              enum: [IMMEDIATE, KEY_VERSION_BOUND, TTL_BOUNDED, NOT_REVOCABLE_BEFORE_EXPIRY]
+            signing_key_version:
+              type: integer
+              minimum: 1
+            health_status:
+              type: string
+              enum: [UNKNOWN, HEALTHY, DEGRADED, UNHEALTHY]
+            version:
+              type: integer
+              minimum: 1
+
+    RestoreBudgetPolicy:
+      type: object
+      properties:
+        max_bytes_per_request:
+          type: [integer, 'null']
+          minimum: 0
+        max_items_per_request:
+          type: [integer, 'null']
+          minimum: 0
+        max_concurrent_operations:
+          type: [integer, 'null']
+          minimum: 0
+        max_concurrent_bytes:
+          type: [integer, 'null']
+          minimum: 0
+        daily_requested_bytes:
+          type: [integer, 'null']
+          minimum: 0
+        daily_provider_restore_bytes:
+          type: [integer, 'null']
+          minimum: 0
+        auto_prefetch_max_bytes_per_trigger:
+          type: [integer, 'null']
+          minimum: 0
+        auto_prefetch_max_items_per_trigger:
+          type: [integer, 'null']
+          minimum: 0
+        overflow_action:
+          type: string
+          enum: [REJECT, REQUIRE_CONFIRMATION, QUEUE_AFTER_BUDGET_RESET, PARTIAL_ACCEPT]
+
+    BackgroundTaskReference:
+      type: object
+      required: [background_task_id]
+      properties:
+        background_task_id:
+          type: string
+          format: uuid
+
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        code:
+          type: [string, 'null']
+        detail:
+          type: [string, 'null']
