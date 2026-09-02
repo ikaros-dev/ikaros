@@ -1,6 +1,5 @@
 package run.ikaros.plugin;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -8,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 
@@ -76,8 +76,8 @@ public class InMemoryPluginRuntime implements PluginRuntime {
     }
 
     @Override
-    public Collection<PluginDescriptor> list() {
-        return List.copyOf(plugins.values());
+    public Flux<PluginDescriptor> list() {
+        return Flux.fromIterable(List.copyOf(plugins.values()));
     }
 
     private Mono<PluginDescriptor> update(String id, PluginLifecycle expected, PluginLifecycle next) {
