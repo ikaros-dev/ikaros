@@ -1,0 +1,1 @@
+package run.ikaros.notes; import java.time.Instant; import java.util.UUID; public record NoteView(UUID id,UUID vaultId,UUID notebookId,String encryptedTitle,String encryptedBody,String encryptedProperties,long revision,boolean tombstone,Instant createdAt,Instant updatedAt) {}

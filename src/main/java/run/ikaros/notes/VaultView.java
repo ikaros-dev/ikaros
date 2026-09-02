@@ -1,0 +1,1 @@
+package run.ikaros.notes; import java.time.Instant; import java.util.UUID; public record VaultView(UUID id,UUID ownerId,String name,String securityProfile,String cryptoContext,VaultStatus status,Instant createdAt) {}

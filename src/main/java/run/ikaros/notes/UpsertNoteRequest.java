@@ -1,0 +1,1 @@
+package run.ikaros.notes; import jakarta.validation.constraints.NotBlank; import java.util.UUID; public record UpsertNoteRequest(UUID notebookId,@NotBlank String encryptedTitle,@NotBlank String encryptedBody,String encryptedProperties,long expectedRevision) {}
