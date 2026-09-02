@@ -1,24 +1,69 @@
 # Ikaros
+<p align="center">
+    <a href="#" target="_blank">
+        <img width="100" src="assets/logo.png" alt="Ikaros logo" />
+    </a>
+</p>
 
-Ikaros 是一个自托管的个人数字内容平台。当前工程从零实现，产品与领域边界以 [V2 产品需求文档](docs/00-product-baseline/Product-Requirements-Document.md) 为准。完整文档见 [docs/README.md](docs/README.md)。
 
-## 当前基础能力
+<p align="center">
+<a href="https://t.me/run_ikaros"><img alt="Telegram" src="https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white" /></a>
+<a href="https://app.codecov.io/github/ikaros-dev/ikaros"><img alt="code coverage" src="https://img.shields.io/codecov/c/github/ikaros-dev/ikaros/main?style=flat-square" /></a>
+<a href="https://github.com/ikaros-dev/ikaros/commits"><img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/ikaros-dev/ikaros.svg?style=flat-square" /></a>
+<a href="https://github.com/ikaros-dev/ikaros/actions"><img alt="GitHub workflow build status" src="https://img.shields.io/github/actions/workflow/status/ikaros-dev/ikaros/ikaros-server-ci.yml?branch=main&style=flat-square" /></a>
+<br />
+<a href="https://github.com/ikaros-dev/ikaros/releases"><img alt="Github Releases" src="https://img.shields.io/github/v/release/ikaros-dev/ikaros?include_prereleases&style=flat-square" /></a>
+<a href="https://github.com/ikaros-dev/ikaros/stargazers"><img alt="GitHub Stargazers" src="https://img.shields.io/github/stars/ikaros-dev/ikaros.svg?style=flat-square&label=Stars&logo=github" /></a>
+<a href="https://github.com/ikaros-dev/ikaros/issues"><img src="https://img.shields.io/github/issues/ikaros-dev/ikaros?color=blue&style=flat-square"/></a>
+<a href="https://hub.docker.com/r/ikarosrun/ikaros"><img alt="Docker pulls" src="https://img.shields.io/docker/pulls/ikarosrun/ikaros?style=flat-square" /></a>
+<a href="https://deepwiki.com/ikaros-dev/ikaros"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki" /></a>
+</p>
 
-- Resource-centric 资源、标题、外部身份、Collection 与关系边界
-- Attachment → Blob → Placement 的持久化模型与内容摘要去重
-- 逻辑删除、恢复与可审计的 Blob GC 候选扫描
-- 用户、角色、权限注册表、会话安全等级与权限加验证等级双重校验基础
-- 用途绑定的 Email OTP Challenge、一次性消费、失败锁定与发送频率限制基础
-- Session 绑定的 Step-up 流程，可将完成 Email OTP 的指定会话提升为 SVL-1
-- HTTP-first REST API 与 OpenAPI 文档
-- PostgreSQL-first R2DBC 持久化与版本化 SQL 迁移
+<p align="center"><b>Ikaros</b> [Ίκαρος]，Ikaros 是一个自托管的个人数字内容平台。</p>
 
-## 本地运行
+# 特性
 
-准备 PostgreSQL 后设置 `IKAROS_R2DBC_URL`、`IKAROS_DB_USERNAME` 与 `IKAROS_DB_PASSWORD`，再执行：
+- 统一资源管理: 所有的资源由统一的平台进行管理，再也不用东一个西一个了
+- 元数据支持: 您是否看着全是罗马音的一堆资源不明所以，ikaros 支持资源元数据
+- 快捷的搜索: 即使您有几十万资源，一样可以提供毫秒级的搜索响应
+- 插件支持: ikaros 本体只提供最为基础的功能，其它附加功能由插件提供
+- 客户端支持: 各个主流平台的客户端，包括不限于 Windows, 安卓
 
-```powershell
-mvn spring-boot:run
-```
+# 文档
 
-API 文档：`http://localhost:10000/swagger-ui.html`。
+请看：https://docs.ikaros.run/
+
+# 许可证
+
+<a href="https://github.com/ikaros-dev/ikaros/blob/main/LICENSE"><img alt="LICENSE" src="https://img.shields.io/github/license/ikaros-dev/ikaros?style=flat-square" /></a>
+
+Ikaros 使用 AGPL-v3.0 协议开源，请遵守开源协议。
+
+# 项目进度
+
+Project: https://github.com/orgs/ikaros-dev/projects
+
+Open Issue: https://github.com/orgs/ikaros-dev/projects/4/views/8
+
+# 相关文档
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) : 贡献指南
+- [CHANGELOG.md](CHANGELOG.md) : 更新日志
+
+# 免责声明
+
+- 本程序为开源解决方案，所有源代码公开获取。
+- 本程序的作用是为了辅助**个人**对资源进行管理，类似于是 C/S 架构的文件管理器。
+- 本程序仅供个人使用，不建议允许公网访问。
+- 使用本程序的用户的行为，仅与相应的用户有关，与本程序无关，更与本程序开发团队无关。
+- 非本程序开发团队所开发的本程序插件，与本程序开发团队无关。
+
+## 贡献者
+
+![Contributors](https://contrib.nn.ci/api?repo=ikaros-dev/ikaros&repo=ikaros-dev/docs&repo=ikaros-dev/app)
+
+# 感谢
+
+- 项目中用到的所有开源项目
+- 参考的所有开源项目
+
