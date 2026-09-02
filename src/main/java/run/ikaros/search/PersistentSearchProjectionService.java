@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -16,11 +17,19 @@ import reactor.core.publisher.Mono;
 @Service
 public class PersistentSearchProjectionService implements SearchProjectionService {
     private final SearchDocumentRepository repository;
+    private final SearchProjectionFailureRepository failureRepository;
     private final ObjectMapper mapper;
     private final AtomicLong generation = new AtomicLong();
 
     public PersistentSearchProjectionService(SearchDocumentRepository repository, ObjectMapper mapper) {
-        this.repository = repository; this.mapper = mapper;
+        this(repository, null, mapper);
+    }
+
+    @Autowired
+    public PersistentSearchProjectionService(SearchDocumentRepository repository,
+                                             SearchProjectionFailureRepository failureRepository,
+                                             ObjectMapper mapper) {
+        this.repository = repository; this.failureRepository = failureRepository; this.mapper = mapper;
     }
 
     @Override
@@ -45,8 +54,16 @@ public class PersistentSearchProjectionService implements SearchProjectionServic
     @Override
     public Mono<ProjectionFailure> recordFailure(UUID sourceId, long sourceVersion,
                                                   long rebuildGeneration, String reason) {
-        return Mono.just(new ProjectionFailure(sourceId, sourceVersion, rebuildGeneration,
-            reason == null ? "unknown" : reason, Instant.now()));
+        String failureReason = reason == null ? "unknown" : reason;
+        Instant failedAt = Instant.now();
+        if (failureRepository == null) {
+            return Mono.just(new ProjectionFailure(sourceId, sourceVersion, rebuildGeneration,
+                failureReason, failedAt));
+        }
+        return failureRepository.save(new SearchProjectionFailureEntity(null, sourceId, sourceVersion,
+                rebuildGeneration, failureReason, failedAt, null))
+            .map(ignored -> new ProjectionFailure(sourceId, sourceVersion, rebuildGeneration,
+                failureReason, failedAt));
     }
 
     private Mono<SearchDocument> save(UUID sourceId, long sourceVersion, Map<String, Object> fields,
