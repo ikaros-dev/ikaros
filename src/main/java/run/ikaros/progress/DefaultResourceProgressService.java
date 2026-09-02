@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 import run.ikaros.resource.ResourceEntity;
 import run.ikaros.resource.ResourceRepository;
 
@@ -29,6 +30,17 @@ public class DefaultResourceProgressService implements ResourceProgressService {
 
     @Override
     public Mono<ResourceProgressView> set(UUID ownerId, UUID resourceId, SetProgressRequest request) {
+        return setInternal(ownerId, resourceId, request, null);
+    }
+
+    @Override
+    public Mono<ResourceProgressView> set(UUID ownerId, UUID resourceId, SetProgressRequest request,
+                                          long expectedVersion) {
+        return setInternal(ownerId, resourceId, request, expectedVersion);
+    }
+
+    private Mono<ResourceProgressView> setInternal(UUID ownerId, UUID resourceId, SetProgressRequest request,
+                                                   Long expectedVersion) {
         if (request.type() == null) {
             return Mono.error(new IllegalArgumentException("进度类型不能为空"));
         }
@@ -37,8 +49,14 @@ public class DefaultResourceProgressService implements ResourceProgressService {
         }
         return owned(ownerId, resourceId)
             .then(progressRepository.findByOwnerIdAndResourceIdAndProgressType(ownerId, resourceId, request.type())
-                .flatMap(existing -> progressRepository.save(new ResourceProgressEntity(existing.id(), ownerId, resourceId,
-                    request.type(), request.position(), request.total(), request.completed(), Instant.now(), existing.version())))
+                .flatMap(existing -> {
+                    long actualVersion = existing.version() == null ? 0 : existing.version();
+                    if (expectedVersion != null && actualVersion != expectedVersion) {
+                        return Mono.error(new PreconditionFailedException("If-Match 与消费进度当前版本不匹配"));
+                    }
+                    return progressRepository.save(new ResourceProgressEntity(existing.id(), ownerId, resourceId,
+                        request.type(), request.position(), request.total(), request.completed(), Instant.now(), existing.version()));
+                })
                 .switchIfEmpty(Mono.defer(() -> progressRepository.save(new ResourceProgressEntity(null, ownerId, resourceId,
                     request.type(), request.position(), request.total(), request.completed(), Instant.now(), null)))))
             .map(this::toView)
@@ -63,6 +81,6 @@ public class DefaultResourceProgressService implements ResourceProgressService {
 
     private ResourceProgressView toView(ResourceProgressEntity progress) {
         return new ResourceProgressView(progress.id(), progress.resourceId(), progress.progressType(),
-            progress.positionValue(), progress.totalValue(), progress.completed(), progress.updatedAt());
+            progress.positionValue(), progress.totalValue(), progress.completed(), progress.updatedAt(), progress.version());
     }
 }
