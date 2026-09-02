@@ -21,6 +21,7 @@ import PlanningWorkspace from './PlanningWorkspace.vue'
 import GoalWorkspace from './GoalWorkspace.vue'
 import CalendarWorkspace from './CalendarWorkspace.vue'
 import FocusWorkspace from './FocusWorkspace.vue'
+import FinanceWorkspace from './FinanceWorkspace.vue'
 import AccessDenied from './AccessDenied.vue'
 import { getRouteMeta } from './config/route-meta'
 import './styles.css'
@@ -41,6 +42,7 @@ router.addRoute({ path: '/console/planning/projects', component: PlanningWorkspa
 router.addRoute({ path: '/console/planning/goals', component: GoalWorkspace })
 router.addRoute({ path: '/console/planning/calendar', component: CalendarWorkspace })
 router.addRoute({ path: '/console/planning/focus', component: FocusWorkspace })
+router.addRoute({ path: '/console/finance', component: FinanceWorkspace })
 router.beforeEach((to) => {
   if (!to.path.startsWith('/console/') || to.path === '/console/403') return true
   let capabilities: string[] = []
