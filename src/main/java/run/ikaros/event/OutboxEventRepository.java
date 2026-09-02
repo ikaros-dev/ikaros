@@ -11,6 +11,11 @@ public interface OutboxEventRepository extends ReactiveCrudRepository<OutboxEven
     Flux<OutboxEventEntity> findTop100ByDispatchedAtIsNullOrderByOccurredAtAsc();
 
     @Modifying
+    @Query("update event_outbox set attempt_count = attempt_count + 1, last_attempt_at = :attemptedAt "
+        + "where id = :id and dispatched_at is null")
+    Mono<Integer> recordAttempt(UUID id, java.time.Instant attemptedAt);
+
+    @Modifying
     @Query("update event_outbox set dispatched_at = :dispatchedAt, attempt_count = attempt_count + 1, "
         + "last_attempt_at = :dispatchedAt where id = :id and dispatched_at is null")
     Mono<Integer> markDispatched(UUID id, java.time.Instant dispatchedAt);

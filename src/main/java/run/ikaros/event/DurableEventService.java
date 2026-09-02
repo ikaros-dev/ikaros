@@ -40,10 +40,11 @@ public class DurableEventService {
         return outbox.findTop100ByDispatchedAtIsNullOrderByOccurredAtAsc()
             .concatMap(event -> inbox.existsByConsumerIdAndEventId(consumerId, event.id())
                 .flatMap(processed -> processed
-                    ? mark(event)
-                    : transaction.transactional(handler.apply(event)
-                        .then(inbox.save(new InboxEntryEntity(null, consumerId, event.id(), Instant.now())))
-                        .then(mark(event)))))
+                    ? Mono.defer(() -> mark(event))
+                    : transaction.transactional(outbox.recordAttempt(event.id(), Instant.now()).then()
+                        .then(handler.apply(event))
+                        .then(Mono.defer(() -> inbox.save(new InboxEntryEntity(null, consumerId, event.id(), Instant.now()))))
+                        .then(Mono.defer(() -> mark(event))))))
             .count();
     }
 
