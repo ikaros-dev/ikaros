@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
-  title: Ikaros V2 P0 Contract Convergence API Addendum
+  title: Ikaros V2 P0 契约收敛 API 补充规范
   version: 0.1.0
-  description: Additive HTTP contracts declared by the P0 Catalog but absent from the original P0 OpenAPI baseline.
+  description: 对 P0 Catalog 已声明、但原始 P0 OpenAPI 基线中缺失的 HTTP 契约进行增量补充。
 servers:
   - url: /api/v2
 security:
@@ -18,7 +18,7 @@ paths:
         - { name: object_type, in: query, required: true, schema: { type: string } }
         - { name: external_id, in: query, required: true, schema: { type: string } }
       responses:
-        '200': { description: Matched resource, content: { application/json: { schema: { $ref: './openapi-v2-p0.yaml#/components/schemas/Resource' } } } }
+        '200': { description: 匹配到的资源, content: { application/json: { schema: { $ref: './openapi-v2-p0.yaml#/components/schemas/Resource' } } } }
         '404': { $ref: './openapi-v2-p0.yaml#/components/responses/NotFound' }
   /resources/{resource_id}/actions/trash:
     parameters:
@@ -29,7 +29,7 @@ paths:
       parameters:
         - { $ref: './openapi-v2-p0.yaml#/components/parameters/IfMatch' }
       responses:
-        '200': { description: Trashed resource, content: { application/json: { schema: { $ref: './openapi-v2-p0.yaml#/components/schemas/Resource' } } } }
+        '200': { description: 已移入回收站的资源, content: { application/json: { schema: { $ref: './openapi-v2-p0.yaml#/components/schemas/Resource' } } } }
         '412': { $ref: './openapi-v2-p0.yaml#/components/responses/PreconditionFailed' }
         '428': { $ref: './openapi-v2-p0.yaml#/components/responses/PreconditionRequired' }
   /resources/{resource_id}/user-state:
@@ -39,7 +39,7 @@ paths:
       operationId: getResourceUserState
       x-ikaros-contract-id: resource.get-user-state
       responses:
-        '200': { description: Current user state, content: { application/json: { schema: { $ref: '#/components/schemas/UserResourceState' } } } }
+        '200': { description: 当前用户状态, content: { application/json: { schema: { $ref: '#/components/schemas/UserResourceState' } } } }
   /tags:
     get:
       operationId: listTags
@@ -48,7 +48,7 @@ paths:
         - { $ref: './openapi-v2-p0.yaml#/components/parameters/Cursor' }
         - { $ref: './openapi-v2-p0.yaml#/components/parameters/Limit' }
       responses:
-        '200': { description: Tag page, content: { application/json: { schema: { $ref: '#/components/schemas/Page' } } } }
+        '200': { description: 标签分页结果, content: { application/json: { schema: { $ref: '#/components/schemas/Page' } } } }
   /collections:
     get:
       operationId: listCollections
@@ -57,7 +57,7 @@ paths:
         - { $ref: './openapi-v2-p0.yaml#/components/parameters/Cursor' }
         - { $ref: './openapi-v2-p0.yaml#/components/parameters/Limit' }
       responses:
-        '200': { description: Collection page, content: { application/json: { schema: { $ref: '#/components/schemas/Page' } } } }
+        '200': { description: Collection 分页结果, content: { application/json: { schema: { $ref: '#/components/schemas/Page' } } } }
   /background-tasks:
     get:
       operationId: listBackgroundTasks
@@ -68,7 +68,7 @@ paths:
         - { name: status, in: query, schema: { type: string } }
         - { name: task_type, in: query, schema: { type: string } }
       responses:
-        '200': { description: Background task page, content: { application/json: { schema: { $ref: '#/components/schemas/Page' } } } }
+        '200': { description: 后台任务分页结果, content: { application/json: { schema: { $ref: '#/components/schemas/Page' } } } }
   /background-tasks/{task_id}/attempts:
     parameters:
       - { $ref: './openapi-v2-p0.yaml#/components/parameters/TaskId' }
@@ -76,7 +76,7 @@ paths:
       operationId: listBackgroundTaskAttempts
       x-ikaros-contract-id: operations.list-task-attempts
       responses:
-        '200': { description: Attempt history, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/BackgroundTaskAttempt' } } } } }
+        '200': { description: 任务尝试历史, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/BackgroundTaskAttempt' } } } } }
   /admin/blobs/{blob_id}/placements:
     parameters:
       - { name: blob_id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -84,7 +84,7 @@ paths:
       operationId: listBlobPlacements
       x-ikaros-contract-id: storage.list-blob-placements
       responses:
-        '200': { description: Blob placements, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/BlobPlacement' } } } } }
+        '200': { description: Blob 存储位置列表, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/BlobPlacement' } } } } }
   /admin/storage-providers/{provider_id}:
     parameters:
       - { name: provider_id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -92,19 +92,19 @@ paths:
       operationId: getStorageProvider
       x-ikaros-contract-id: storage.get-provider
       responses:
-        '200': { description: Storage provider, content: { application/json: { schema: { $ref: './openapi-v2-p0.yaml#/components/schemas/StorageProvider' } } } }
+        '200': { description: 存储提供方, content: { application/json: { schema: { $ref: './openapi-v2-p0.yaml#/components/schemas/StorageProvider' } } } }
   /me:
     get:
       operationId: getCurrentUser
       x-ikaros-contract-id: identity.get-current-user
       responses:
-        '200': { description: Current user, content: { application/json: { schema: { $ref: './openapi-v2-p0.yaml#/components/schemas/User' } } } }
+        '200': { description: 当前用户, content: { application/json: { schema: { $ref: './openapi-v2-p0.yaml#/components/schemas/User' } } } }
   /me/sessions:
     get:
       operationId: listSessions
       x-ikaros-contract-id: identity.list-sessions
       responses:
-        '200': { description: Sessions, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/SessionSummary' } } } } }
+        '200': { description: 会话列表, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/SessionSummary' } } } } }
   /admin/users/{user_id}:
     parameters:
       - { name: user_id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -112,7 +112,7 @@ paths:
       operationId: getUser
       x-ikaros-contract-id: identity.get-user
       responses:
-        '200': { description: User, content: { application/json: { schema: { $ref: './openapi-v2-p0.yaml#/components/schemas/User' } } } }
+        '200': { description: 用户, content: { application/json: { schema: { $ref: './openapi-v2-p0.yaml#/components/schemas/User' } } } }
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer }
