@@ -102,11 +102,17 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
     @Override
     public Mono<BackgroundTask> fail(UUID taskId, UUID leaseToken, Map<String, Object> error) {
         return leased(taskId, leaseToken).map(task -> {
-            BackgroundTask updated = copy(task, TaskStatus.FAILED, task.leaseOwner(), task.leaseToken(),
-                task.leaseExpiresAt(), task.attempt(), task.cancelRequestedAt(), task.progress(), error);
+            boolean retryable = Boolean.TRUE.equals(error == null ? null : error.get("retryable"));
+            Instant availableAt = retryable ? Instant.now().plus(backoff(task.attempt())) : task.availableAt();
+            BackgroundTask updated = new BackgroundTask(task.id(), task.taskType(), retryable ? TaskStatus.PENDING : TaskStatus.FAILED,
+                task.payload(), task.idempotencyKey(), availableAt, retryable ? null : task.leaseOwner(),
+                retryable ? null : task.leaseToken(), retryable ? null : task.leaseExpiresAt(), task.attempt(),
+                task.cancelRequestedAt(), task.progress(), error, task.createdAt(), Instant.now(), task.parentTaskId());
             tasks.replace(task.id(), task, updated); return updated;
         });
     }
+
+    private Duration backoff(int attempt) { return Duration.ofSeconds(Math.min(3600L, 30L * (1L << Math.min(attempt, 7)))); }
 
     @Override
     public Mono<BackgroundTask> retry(UUID taskId) {

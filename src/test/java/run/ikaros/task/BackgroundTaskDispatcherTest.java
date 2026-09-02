@@ -20,11 +20,22 @@ class BackgroundTaskDispatcherTest {
     void persistsHandlerFailureBeforePropagatingError() {
         InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
         BackgroundTaskDispatcher dispatcher = new BackgroundTaskDispatcher(tasks);
-        dispatcher.register("broken", task -> reactor.core.publisher.Mono.error(new IllegalStateException("boom")));
+        dispatcher.register("broken", task -> reactor.core.publisher.Mono.error(new IllegalArgumentException("boom")));
         BackgroundTask submitted = tasks.submit("broken", Map.of(), "broken-once").block();
-        org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class,
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
             () -> dispatcher.dispatchOnce("runner", Duration.ofMinutes(1)).block());
         assertEquals(TaskStatus.FAILED, tasks.get(submitted.id()).block().status());
+    }
+
+    @org.junit.jupiter.api.Test
+    void retryableHandlerFailureReturnsTaskToPendingWithBackoff() {
+        InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
+        BackgroundTaskDispatcher dispatcher = new BackgroundTaskDispatcher(tasks);
+        dispatcher.register("transient", task -> reactor.core.publisher.Mono.error(new RuntimeException("temporary")));
+        BackgroundTask submitted = tasks.submit("transient", Map.of(), "transient-once").block();
+        org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class,
+            () -> dispatcher.dispatchOnce("runner", Duration.ofMinutes(1)).block());
+        assertEquals(TaskStatus.PENDING, tasks.get(submitted.id()).block().status());
     }
 
     @org.junit.jupiter.api.Test

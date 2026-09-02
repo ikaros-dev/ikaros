@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
+import run.ikaros.common.NotFoundException;
 
 /** 统一的 Task claim/handler/complete 运行链，业务 Handler 不直接操作 Task persistence。 */
 @Service
@@ -36,7 +37,12 @@ public class BackgroundTaskDispatcher {
                 .flatMap(result -> tasks.complete(task.id(), task.leaseToken(), result))
                 .onErrorResume(error -> tasks.fail(task.id(), task.leaseToken(), Map.of(
                     "code", error.getClass().getSimpleName(), "message", error.getMessage() == null ? "Task Handler 执行失败" : error.getMessage(),
-                    "retryable", true)).then(Mono.error(error)));
+                    "retryable", retryable(error))).then(Mono.error(error)));
         });
+    }
+
+    private boolean retryable(Throwable error) {
+        return !(error instanceof ConflictException || error instanceof IllegalArgumentException
+            || error instanceof NotFoundException);
     }
 }

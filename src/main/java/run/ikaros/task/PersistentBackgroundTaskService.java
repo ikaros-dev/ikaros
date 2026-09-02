@@ -107,11 +107,20 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     @Override
     public Mono<BackgroundTask> fail(UUID taskId, UUID leaseToken, Map<String, Object> error) {
         return leased(taskId, leaseToken)
-            .flatMap(task -> encode(error).flatMap(json -> tasks.save(copy(task, TaskStatus.FAILED,
-                task.leaseOwner(), task.leaseToken(), task.leaseExpiresAt(), task.attempt(), task.cancelRequestedAt(),
-                task.progress(), json))))
+            .flatMap(task -> encode(error).flatMap(json -> {
+                boolean retryable = Boolean.TRUE.equals(error == null ? null : error.get("retryable"));
+                Instant availableAt = retryable ? Instant.now().plus(backoff(task.attempt())) : task.availableAt();
+                BackgroundTaskEntity failed = new BackgroundTaskEntity(task.id(), task.taskType(),
+                    retryable ? TaskStatus.PENDING.name() : TaskStatus.FAILED.name(), task.payload(), task.idempotencyKey(),
+                    availableAt, retryable ? null : task.leaseOwner(), retryable ? null : task.leaseToken(),
+                    retryable ? null : task.leaseExpiresAt(), task.attempt(), task.cancelRequestedAt(), task.progress(), json,
+                    task.createdAt(), Instant.now(), task.parentTaskId());
+                return tasks.save(failed);
+            }))
             .flatMap(this::view);
     }
+
+    private Duration backoff(int attempt) { return Duration.ofSeconds(Math.min(3600L, 30L * (1L << Math.min(attempt, 7)))); }
 
     @Override
     public Mono<BackgroundTask> retry(UUID taskId) {
