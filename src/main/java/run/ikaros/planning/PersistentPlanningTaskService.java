@@ -9,6 +9,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 
 @Service
 public class PersistentPlanningTaskService implements PlanningTaskService {
@@ -166,7 +167,7 @@ public class PersistentPlanningTaskService implements PlanningTaskService {
 
   private void check(PlanningTaskEntity t, long expected) {
     long actual = t.version() == null ? 0 : t.version();
-    if (actual != expected) throw new ConflictException("Task 版本冲突");
+    if (actual != expected) throw new PreconditionFailedException("If-Match 与 Task 当前版本不匹配");
   }
 
   private void validateSchedule(Instant start, Instant end) {
