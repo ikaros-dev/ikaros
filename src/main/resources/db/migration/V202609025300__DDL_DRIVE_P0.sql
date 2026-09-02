@@ -203,6 +203,23 @@ CREATE TABLE planning_reminder (
 CREATE INDEX idx_planning_reminder_due ON planning_reminder (status, trigger_at);
 CREATE INDEX idx_planning_reminder_owner ON planning_reminder (owner_id, trigger_at);
 
+CREATE TABLE planning_goal (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, title VARCHAR(512) NOT NULL, description TEXT,
+    type VARCHAR(24) NOT NULL DEFAULT 'OUTCOME', status VARCHAR(24) NOT NULL DEFAULT 'ACTIVE', progress DOUBLE PRECISION NOT NULL DEFAULT 0,
+    start_at TIMESTAMPTZ, deadline TIMESTAMPTZ, completed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    version BIGINT NOT NULL DEFAULT 0, CHECK (type IN ('OUTCOME','HABIT','PROJECT','PERSONAL','WORK')),
+    CHECK (status IN ('ACTIVE','COMPLETED','ABANDONED','ARCHIVED')), CHECK (progress >= 0 AND progress <= 1),
+    CHECK (deadline IS NULL OR start_at IS NULL OR deadline > start_at), CHECK (version >= 0)
+);
+CREATE TABLE planning_goal_task (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), goal_id UUID NOT NULL, task_id UUID NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (goal_id, task_id),
+    FOREIGN KEY (goal_id) REFERENCES planning_goal(id) ON DELETE CASCADE, FOREIGN KEY (task_id) REFERENCES planning_task(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_planning_goal_owner_status ON planning_goal (owner_id, status, updated_at DESC);
+CREATE INDEX idx_planning_goal_task_task ON planning_goal_task (task_id, goal_id);
+
 CREATE TABLE offline_download_manifest (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), intent_id UUID NOT NULL, manifest_version BIGINT NOT NULL,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (intent_id, manifest_version),
