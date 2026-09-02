@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { api, unwrapPage } from './services/api'
 
 type Item = { label: string; path: string; icon: string; capability?: string }
 type Group = { label: string; icon: string; items: Item[] }
@@ -20,7 +21,7 @@ const groups: Group[] = [
   { label: '沟通与审计', icon: '✉', items: [{ label: '公告', path: 'communications/announcements', icon: '▰' }, { label: '通知中心', path: 'communications/notifications', icon: '♧' }, { label: '审计日志', path: 'communications/audit', icon: '≡' }] },
   { label: '系统运维', icon: '♨', items: [{ label: '系统健康与告警', path: 'ops/health', icon: '♥' }, { label: '定时任务', path: 'ops/jobs', icon: '◷' }, { label: '后台任务', path: 'ops/background', icon: '⇄' }] }
 ]
-const expanded = ref<string[]>([]); const drawer = ref(false); const dialog = ref(''); const toast = ref(''); const query = ref(''); const selectedTab = ref('概览')
+const expanded = ref<string[]>([]); const drawer = ref(false); const dialog = ref(''); const toast = ref(''); const query = ref(''); const selectedTab = ref('概览'); const loading = ref(false); const apiConnected = ref(false)
 const currentPath = computed(() => String(route.params.pathMatch || 'dashboard'))
 const current = computed(() => groups.flatMap(g => g.items).find(i => i.path === currentPath.value) || groups[0].items[0])
 const currentGroup = computed(() => groups.find(g => g.items.some(i => i.path === currentPath.value)) || groups[0])
@@ -33,7 +34,17 @@ const isDashboard = computed(() => currentPath.value === 'dashboard'); const isS
 const kpis = [{ label: '资源', value: '12,486', trend: '+8.4%', icon: '◈', tone: 'primary' }, { label: '存储', value: '68.4 GB', trend: '已配置 100 GB', icon: '▥', tone: 'teal' }, { label: '今天', value: '8 / 12', trend: '4 项待完成', icon: '✓', tone: 'orange' }, { label: '后台任务', value: '3', trend: '1 项失败', icon: '⇄', tone: 'purple' }, { label: '通知', value: '6', trend: '2 条重要', icon: '✉', tone: 'pink' }]
 const activities = [{ icon: '✦', text: '完成了媒体资源的元数据同步', target: '《星际穿越》', time: '12 分钟前', color: 'purple' }, { icon: '✓', text: '完成任务', target: '整理本周阅读清单', time: '1 小时前', color: 'teal' }, { icon: '↗', text: '更新了项目', target: 'Ikaros V2 产品设计', time: '昨天 18:24', color: 'orange' }, { icon: '♧', text: '收藏了资源', target: 'Material Design 3', time: '昨天 15:08', color: 'blue' }]
 const resources = [{ name: '《星际穿越》', type: '电影', tags: ['科幻', '收藏'], status: '进行中', progress: 72, updated: '12 分钟前' }, { name: 'Ikaros V2 产品设计', type: '文档', tags: ['项目'], status: '已更新', progress: 100, updated: '昨天' }, { name: 'Material Design 3', type: '网页', tags: ['设计系统'], status: '收藏', progress: 34, updated: '3 天前' }, { name: '2026 年读书计划', type: '集合', tags: ['计划'], status: '草稿', progress: 18, updated: '5 天前' }]
-const rows = [{ name: '媒体资源索引', owner: '系统', status: '已启用', updated: '刚刚' }, { name: '每周资料备份', owner: '你', status: '运行中', updated: '8 分钟前' }, { name: '阅读进度同步', owner: '你', status: '已暂停', updated: '昨天' }, { name: '存储健康检查', owner: '系统', status: '已启用', updated: '昨天' }, { name: '活动周报', owner: '你', status: '失败', updated: '2 天前' }]
+const rows = ref([{ name: '媒体资源索引', owner: '系统', status: '已启用', updated: '刚刚' }, { name: '每周资料备份', owner: '你', status: '运行中', updated: '8 分钟前' }, { name: '阅读进度同步', owner: '你', status: '已暂停', updated: '昨天' }, { name: '存储健康检查', owner: '系统', status: '已启用', updated: '昨天' }, { name: '活动周报', owner: '你', status: '失败', updated: '2 天前' }])
+async function loadResources() {
+  if (isDashboard.value || currentPath.value !== 'library') return
+  loading.value = true
+  try {
+    const result = unwrapPage(await api.listResources('?limit=5'))
+    if (result.length) rows.value = result.map(item => ({ name: item.title || `Resource ${item.id.slice(0, 8)}`, owner: '当前用户', status: item.lifecycle || '已启用', updated: item.updated_at ? new Date(item.updated_at).toLocaleString('zh-CN') : '刚刚' }))
+    apiConnected.value = true
+  } catch { apiConnected.value = false; notify('后端暂不可用，已保留演示数据') } finally { loading.value = false }
+}
+onMounted(loadResources); watch(currentPath, loadResources)
 function genericTitle() { return current.value.label }
 </script>
 
@@ -63,7 +74,7 @@ function genericTitle() { return current.value.label }
           <section class="surface-card attention-card"><div class="card-heading"><div><h3>待处理事项 <span class="count-badge">4</span></h3><p>需要你关注的空间状态</p></div><button class="text-button" @click="go('ops/background')">查看任务中心</button></div><div class="attention-grid"><div class="attention-item"><span class="attention-dot error"></span><div><b>备份任务执行失败</b><small>系统运维 · 2 小时前</small></div><button class="outlined-button small" @click="go('ops/background')">处理</button></div><div class="attention-item"><span class="attention-dot warning"></span><div><b>3 个元数据冲突</b><small>内容与创作 · 昨天</small></div><button class="outlined-button small" @click="go('library')">处理</button></div><div class="attention-item"><span class="attention-dot info"></span><div><b>分享链接即将过期</b><small>分享与协作 · 3 天内</small></div><button class="outlined-button small" @click="go('sharing')">处理</button></div></div></section>
         </div>
         <div v-else class="generic-page">
-          <section class="hero-row"><div><p class="eyebrow">{{ currentGroup.label }}</p><h1>{{ genericTitle() }}</h1><p class="subtitle">管理和查看你的{{ genericTitle() }}，所有变更都会记录并支持恢复。</p></div><div class="title-actions"><button class="filled-button" @click="openDialog('create')">＋ 新建</button><button class="icon-button elevated" @click="notify('列表已刷新')">⟳</button></div></section>
+          <section class="hero-row"><div><p class="eyebrow">{{ currentGroup.label }}</p><h1>{{ genericTitle() }}</h1><p class="subtitle">管理和查看你的{{ genericTitle() }}，所有变更都会记录并支持恢复。</p></div><div class="title-actions"><button class="filled-button" @click="openDialog('create')">＋ 新建</button><button class="icon-button elevated" :disabled="loading" @click="loadResources">{{ loading ? '…' : '⟳' }}</button></div></section>
           <div v-if="isSearch" class="search-hero"><div class="search-box"><span>⌕</span><input v-model="query" placeholder="搜索资源、文档、任务和活动…" @keyup.enter="notify('已搜索：' + (query || '全部'))"/><button v-if="query" @click="query = ''">×</button><kbd>⌘ K</kbd></div><div class="filter-row"><span class="filter-chip active">全部类型</span><span class="filter-chip">最近更新</span><span class="filter-chip">仅收藏</span><button class="filter-more" @click="openDialog('filters')">＋ 更多筛选</button></div></div>
           <section class="mini-kpi-row"><div class="mini-kpi"><span>总条目</span><b>1,284</b><small>较上月 +12%</small></div><div class="mini-kpi"><span>活跃中</span><b>86</b><small>7 天内更新</small></div><div class="mini-kpi"><span>待处理</span><b class="warning-text">12</b><small>需要关注</small></div><div class="mini-kpi"><span>同步状态</span><b class="success-text">正常</b><small>刚刚检查</small></div></section>
           <section class="surface-card table-card"><div class="table-toolbar"><div class="search-inline"><span>⌕</span><input placeholder="筛选当前列表" v-model="query"/></div><div class="filter-row"><span class="filter-chip active">全部状态</span><span class="filter-chip">最近更新</span><button class="outlined-button small" @click="openDialog('filters')">筛选</button><button class="icon-button compact">⋮</button></div></div><div class="bulk-bar" v-if="query">正在筛选 <b>“{{ query }}”</b><button class="text-button" @click="query=''">清除</button></div><table><thead><tr><th class="check"><input type="checkbox" /></th><th>名称</th><th>所有者</th><th>状态</th><th>最近更新</th><th>操作</th></tr></thead><tbody><tr v-for="row in rows" :key="row.name" @click="openDialog('detail')"><td class="check"><input type="checkbox" @click.stop /></td><td><div class="table-name"><span class="row-icon">◈</span><b>{{ row.name }}</b></div></td><td>{{ row.owner }}</td><td><span class="status-chip" :class="row.status === '失败' ? 'danger' : row.status === '运行中' ? 'warning' : row.status === '已暂停' ? 'neutral' : 'success'">● {{ row.status }}</span></td><td class="muted-text">{{ row.updated }}</td><td><button class="icon-button compact" @click.stop="openDialog('detail')">⋮</button></td></tr></tbody></table><div class="table-footer"><span>显示 1–5，共 28 项</span><div><button class="icon-button compact">‹</button><button class="icon-button compact">›</button></div></div></section>
