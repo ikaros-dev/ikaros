@@ -112,6 +112,11 @@ public class DefaultStorageService implements StorageService {
     }
 
     @Override
+    public Mono<AttachmentView> commitUpload(UUID ownerId, UUID resourceId, CommitUploadRequest request) {
+        return attach(ownerId, resourceId, request.asAttachment());
+    }
+
+    @Override
     public Mono<List<AttachmentView>> list(UUID ownerId, UUID resourceId) {
         return owned(ownerId, resourceId)
             .thenMany(attachmentRepository.findAllByResourceIdAndDeletedAtIsNullOrderByCreatedAtAsc(resourceId))

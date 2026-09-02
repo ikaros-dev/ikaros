@@ -21,6 +21,8 @@ public interface StorageService {
      */
     Mono<AttachmentView> attach(UUID ownerId, UUID resourceId, AttachBlobRequest request);
 
+    Mono<AttachmentView> commitUpload(UUID ownerId, UUID resourceId, CommitUploadRequest request);
+
     /**
      * 登记一个可追溯到原始附件的派生附件。
      *

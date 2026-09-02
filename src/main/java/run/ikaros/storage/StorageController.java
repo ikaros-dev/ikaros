@@ -114,6 +114,25 @@ public class StorageController {
         return storageService.list(actorId, resourceId);
     }
 
+    @Operation(summary = "提交附件上传", description = "确认 Provider 已完成上传，再原子提交 Blob、Placement 和 Attachment。"
+        + "相同内容复用 Blob，但每次提交仍创建独立 Attachment。")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "上传提交成功"),
+        @ApiResponse(responseCode = "400", description = "上传身份或位置参数不合法", content = @Content),
+        @ApiResponse(responseCode = "404", description = "资源不存在或无权访问", content = @Content),
+        @ApiResponse(responseCode = "409", description = "内容或物理对象键冲突", content = @Content)
+    })
+    @PostMapping("/commit")
+    public Mono<ResponseEntity<AttachmentView>> commitUpload(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID resourceId,
+        @Valid @RequestBody CommitUploadRequest request
+    ) {
+        return storageService.commitUpload(actorId, resourceId, request)
+            .map(attachment -> ResponseEntity.created(URI.create("/api/resources/" + resourceId
+                + "/attachments/" + attachment.id())).body(attachment));
+    }
+
     @Operation(summary = "删除资源附件", description = "软删除 Attachment，Blob 由后续 GC 根据引用计数决定是否清理。")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "附件删除成功"),
