@@ -19,10 +19,13 @@ public class DefaultDriveService implements DriveService {
         DriveLifecycle lifecycle, UUID revision, long version, Instant created, Instant updated) {}
     private record Device(UUID id, UUID user, String installation, String displayName, String platform,
         String appVersion, DeviceTrustState trust, Instant registered, Instant lastSeen, Instant revoked) {}
+    private record Reservation(UUID id, UUID space, UUID upload, long bytes, QuotaReservationState state,
+        Instant expires) {}
     private final UuidV7Generator ids = new UuidV7Generator();
     private final ConcurrentMap<UUID, Space> spaces = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Node> nodes = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Device> devices = new ConcurrentHashMap<>();
+    private final ConcurrentMap<UUID, Reservation> reservations = new ConcurrentHashMap<>();
 
     @Override public Mono<DriveSpaceView> createSpace(UUID actorId, CreateDriveSpaceRequest request) {
         return Mono.fromSupplier(() -> {
@@ -99,9 +102,25 @@ public class DefaultDriveService implements DriveService {
     @Override public Flux<DriveRevisionView> revisions(UUID actorId, UUID nodeId) { return ownedNode(actorId,nodeId).flatMapMany(n -> n.revision()==null ? Flux.empty() : Flux.just(new DriveRevisionView(n.revision(),nodeId,1,UUID.randomUUID(),null,null,n.updated(),actorId))); }
     @Override public Flux<DriveChangeView> changes(UUID actorId, UUID spaceId, long afterSequence) { return ownedSpace(actorId,spaceId).flatMapMany(s -> Flux.empty()); }
     @Override public Mono<DriveQuotaView> quota(UUID actorId, UUID spaceId) { return ownedSpace(actorId,spaceId).map(s -> new DriveQuotaView(spaceId,Long.MAX_VALUE,0,0,Long.MAX_VALUE)); }
-    @Override public Mono<DriveQuotaReservationView> beginUpload(UUID actorId, UUID spaceId, BeginDriveUploadRequest request) { return ownedSpace(actorId,spaceId).map(s -> new DriveQuotaReservationView(ids.next(),spaceId,request.uploadSessionId(),request.reservedBytes(),QuotaReservationState.ACTIVE,Instant.now().plusSeconds(3600))); }
-    @Override public Mono<DriveQuotaReservationView> finalizeUpload(UUID actorId, UUID spaceId, UUID reservationId) { return Mono.error(new NotFoundException("配额 reservation 不存在")); }
-    @Override public Mono<DriveQuotaReservationView> abortUpload(UUID actorId, UUID spaceId, UUID reservationId) { return Mono.error(new NotFoundException("配额 reservation 不存在")); }
+    @Override public Mono<DriveQuotaReservationView> beginUpload(UUID actorId, UUID spaceId, BeginDriveUploadRequest request) {
+        return ownedSpace(actorId, spaceId).flatMap(s -> Mono.defer(() -> {
+            Reservation existing = reservations.values().stream().filter(r -> r.space().equals(spaceId)
+                && r.upload().equals(request.uploadSessionId())).findFirst().orElse(null);
+            if (existing != null && existing.state() == QuotaReservationState.ACTIVE
+                && existing.expires().isAfter(Instant.now())) return Mono.just(reservationView(existing));
+            Instant expires = Instant.now().plusSeconds(3600);
+            Reservation created = new Reservation(ids.next(), spaceId, request.uploadSessionId(), request.reservedBytes(),
+                QuotaReservationState.ACTIVE, expires);
+            reservations.put(created.id(), created);
+            return Mono.just(reservationView(created));
+        }));
+    }
+    @Override public Mono<DriveQuotaReservationView> finalizeUpload(UUID actorId, UUID spaceId, UUID reservationId) {
+        return settleReservation(actorId, spaceId, reservationId, QuotaReservationState.COMMITTED);
+    }
+    @Override public Mono<DriveQuotaReservationView> abortUpload(UUID actorId, UUID spaceId, UUID reservationId) {
+        return settleReservation(actorId, spaceId, reservationId, QuotaReservationState.RELEASED);
+    }
     @Override public Mono<SyncBindingView> createBinding(UUID actorId, CreateSyncBindingRequest request) { return Mono.error(new UnsupportedOperationException("内存 Drive 未实现同步 Binding")); }
     @Override public Flux<SyncBindingView> bindings(UUID actorId) { return Flux.empty(); }
     @Override public Mono<SyncBindingView> setBindingEnabled(UUID actorId, UUID bindingId, boolean enabled) { return Mono.error(new NotFoundException("Sync Binding 不存在")); }
@@ -151,4 +170,24 @@ public class DefaultDriveService implements DriveService {
     private DriveNodeView view(Node n) { return new DriveNodeView(n.id(),n.space(),n.parent(),n.type(),n.name(),n.normalized(),n.lifecycle(),n.revision(),n.version(),n.created(),n.updated()); }
     private DeviceView deviceView(Device d) { return new DeviceView(d.id(), d.user(), d.installation(), d.displayName(), d.platform(),
         d.appVersion(), d.trust(), d.registered(), d.lastSeen(), d.revoked()); }
+    private Mono<DriveQuotaReservationView> settleReservation(UUID actor, UUID spaceId, UUID id,
+                                                               QuotaReservationState target) {
+        return ownedSpace(actor, spaceId).then(Mono.defer(() -> {
+            Reservation current = reservations.get(id);
+            if (current == null || !current.space().equals(spaceId)) {
+                return Mono.error(new NotFoundException("配额 reservation 不存在"));
+            }
+            if (current.state() == QuotaReservationState.ACTIVE) {
+                Reservation updated = new Reservation(current.id(), current.space(), current.upload(), current.bytes(),
+                    target, current.expires());
+                reservations.replace(id, current, updated);
+                return Mono.just(reservationView(updated));
+            }
+            return Mono.just(reservationView(current));
+        }));
+    }
+    private DriveQuotaReservationView reservationView(Reservation reservation) {
+        return new DriveQuotaReservationView(reservation.id(), reservation.space(), reservation.upload(),
+            reservation.bytes(), reservation.state(), reservation.expires());
+    }
 }
