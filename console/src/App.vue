@@ -72,6 +72,9 @@ async function loadResources() {
     } else if (currentPath.value === 'security/permissions') {
       const result = await api.listRoles()
       if (result.length) rows.value = result.slice(0, 5).map(item => ({ name: item.name || item.code || item.id.slice(0, 8), owner: `${item.permissions?.length || 0} 项权限`, status: item.builtIn ? '系统角色' : '自定义角色', updated: '权限注册表' }))
+    } else if (currentPath.value === 'storage/tiers') {
+      const result = await api.listStorageProviders()
+      if (result.length) rows.value = result.slice(0, 5).map(item => ({ name: item.providerKey || item.id.slice(0, 8), owner: `${item.providerType || '存储'} · ${item.tier || '默认层'}`, status: item.status || 'DISABLED', updated: item.updatedAt ? new Date(item.updatedAt).toLocaleString('zh-CN') : '刚刚' }))
     } else return
     apiConnected.value = true
   } catch (error) {
