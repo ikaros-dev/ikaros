@@ -149,7 +149,7 @@ public class PersistentPlanningTaskService implements PlanningTaskService {
     return repository.findById(parentTaskId)
         .switchIfEmpty(Mono.error(new ConflictException("Parent Task 不存在")))
         .flatMap(parent -> {
-          if (projectId == null || !projectId.equals(parent.projectId())) {
+          if (!java.util.Objects.equals(projectId, parent.projectId())) {
             return Mono.error(new ConflictException("Parent Task 必须属于同一 Project"));
           }
           return parent.ownerId().equals(actor) ? Mono.empty() : requireProjectMember(actor, projectId);
