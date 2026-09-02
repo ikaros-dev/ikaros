@@ -20,4 +20,6 @@ public interface StoragePlacementService {
      * @return 当前 Placement 与策略满足情况
      */
     Mono<StoragePlacementPlanView> inspect(UUID blobId, StorageTier preferredTier, int minimumReplicas);
+
+    reactor.core.publisher.Flux<PlacementView> list(UUID blobId);
 }

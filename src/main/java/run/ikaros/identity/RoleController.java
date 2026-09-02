@@ -24,7 +24,7 @@ import reactor.core.publisher.Mono;
  * 提供角色和平台权限注册表的管理接口。
  */
 @RestController
-@RequestMapping("/api/roles")
+@RequestMapping({"/api/roles", "/api/v2/admin/roles"})
 public class RoleController {
     private final RoleService roleService;
 

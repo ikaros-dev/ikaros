@@ -17,6 +17,8 @@ public interface UserService {
      */
     Mono<UserView> create(UUID actorId, CreateUserRequest request);
 
+    Mono<UserView> get(UUID userId);
+
     /**
      * 分页查询平台用户。
      *

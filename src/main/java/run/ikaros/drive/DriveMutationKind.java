@@ -1,0 +1,2 @@
+package run.ikaros.drive;
+public enum DriveMutationKind { NODE_CREATED, CONTENT_REVISION_CREATED, NODE_RENAMED, NODE_MOVED, NODE_TRASHED, NODE_RESTORED }

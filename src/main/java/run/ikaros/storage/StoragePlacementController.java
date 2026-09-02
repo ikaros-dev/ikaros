@@ -32,6 +32,11 @@ public class StoragePlacementController {
         this.storagePlacementService = storagePlacementService;
     }
 
+    @GetMapping("/{blobId}/placements")
+    public reactor.core.publisher.Flux<PlacementView> list(@PathVariable UUID blobId) {
+        return storagePlacementService.list(blobId);
+    }
+
     /**
      * 查询 Blob 当前副本及目标层级满足情况。
      *

@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 
@@ -23,6 +24,26 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     public PersistentBackgroundTaskService(BackgroundTaskRepository tasks, BackgroundTaskAttemptRepository attempts,
                                            ObjectMapper mapper) {
         this.tasks = tasks; this.attempts = attempts; this.mapper = mapper;
+    }
+
+    @Override
+    public Mono<BackgroundTask> get(UUID taskId) {
+        return tasks.findById(taskId).switchIfEmpty(Mono.error(new NotFoundException("Task 不存在")))
+            .flatMap(this::view);
+    }
+
+    @Override
+    public Flux<BackgroundTask> list(TaskStatus status) {
+        Flux<BackgroundTaskEntity> source = status == null ? tasks.findAll() :
+            tasks.findAllByStatusOrderByCreatedAtDesc(status.name());
+        return source.flatMap(this::view);
+    }
+
+    @Override
+    public Flux<BackgroundTaskAttemptEntity> attempts(UUID taskId) {
+        return tasks.existsById(taskId).flatMapMany(exists -> exists
+            ? attempts.findAllByTaskIdOrderByAttemptNoAsc(taskId)
+            : Flux.error(new NotFoundException("Task 不存在")));
     }
 
     @Override

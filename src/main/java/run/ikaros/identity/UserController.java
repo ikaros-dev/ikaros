@@ -29,7 +29,7 @@ import run.ikaros.common.PageResponse;
  */
 @Validated
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping({"/api/users", "/api/v2/admin/users"})
 public class UserController {
     private final UserService userService;
 
@@ -89,6 +89,11 @@ public class UserController {
         @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
         return userService.list(status, query, page, size);
+    }
+
+    @GetMapping("/{userId}")
+    public Mono<UserView> get(@PathVariable UUID userId) {
+        return userService.get(userId);
     }
 
     /**

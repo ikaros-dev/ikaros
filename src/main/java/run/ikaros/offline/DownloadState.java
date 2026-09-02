@@ -1,0 +1,2 @@
+package run.ikaros.offline;
+public enum DownloadState { QUEUED, DOWNLOADING, PAUSED, VERIFYING, COMPLETED, FAILED, NEEDS_REPAIR, CANCELLED, REMOVED }

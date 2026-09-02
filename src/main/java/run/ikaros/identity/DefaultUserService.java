@@ -50,6 +50,11 @@ public class DefaultUserService implements UserService {
     }
 
     @Override
+    public Mono<UserView> get(UUID userId) {
+        return requiredUser(userId).flatMap(this::toView);
+    }
+
+    @Override
     public Mono<PageResponse<UserView>> list(UserStatus status, String query, int page, int size) {
         String keyword = query == null ? "" : query.trim();
         return userRepository.findAll()

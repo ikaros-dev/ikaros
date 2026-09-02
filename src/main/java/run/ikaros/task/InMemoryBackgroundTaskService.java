@@ -8,12 +8,28 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 
 @Service
 public class InMemoryBackgroundTaskService implements BackgroundTaskService {
     private final Map<UUID, BackgroundTask> tasks = new ConcurrentHashMap<>();
+
+    @Override
+    public Mono<BackgroundTask> get(UUID taskId) {
+        return Mono.justOrEmpty(tasks.get(taskId)).switchIfEmpty(Mono.error(new NotFoundException("Task 不存在")));
+    }
+
+    @Override
+    public Flux<BackgroundTask> list(TaskStatus status) {
+        return Flux.fromIterable(tasks.values()).filter(task -> status == null || task.status() == status);
+    }
+
+    @Override
+    public Flux<BackgroundTaskAttemptEntity> attempts(UUID taskId) {
+        return get(taskId).thenMany(Flux.empty());
+    }
 
     @Override
     public Mono<BackgroundTask> submit(String taskType, Map<String, Object> payload, String idempotencyKey) {
@@ -84,10 +100,6 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
         return get(id).flatMap(task -> task.status() == TaskStatus.RUNNING && token != null
             && token.equals(task.leaseToken()) && task.leaseExpiresAt().isAfter(Instant.now())
             ? Mono.just(task) : Mono.error(new ConflictException("Task Lease 已失效")));
-    }
-
-    private Mono<BackgroundTask> get(UUID id) {
-        return Mono.justOrEmpty(tasks.get(id)).switchIfEmpty(Mono.error(new NotFoundException("Task 不存在")));
     }
 
     private BackgroundTask copy(BackgroundTask old, TaskStatus status, String owner, UUID token, Instant expires,

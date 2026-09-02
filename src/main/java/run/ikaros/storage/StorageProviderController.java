@@ -15,7 +15,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping({"/api/storage/providers", "/api/v2/storage/providers"})
+@RequestMapping({"/api/storage/providers", "/api/v2/storage/providers", "/api/v2/admin/storage-providers"})
 public class StorageProviderController {
     private final StorageProviderRegistry registry;
 

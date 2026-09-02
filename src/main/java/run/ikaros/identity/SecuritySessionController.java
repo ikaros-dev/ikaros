@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono;
  * 提供会话查询和撤销接口；实际登录与验证码校验由认证 Provider 后续接入。
  */
 @RestController
-@RequestMapping("/api/users/{userId}/sessions")
+@RequestMapping({"/api/users/{userId}/sessions", "/api/v2/users/{userId}/sessions"})
 public class SecuritySessionController {
     private final SecuritySessionService sessionService;
 
