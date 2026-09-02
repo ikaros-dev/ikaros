@@ -19,7 +19,8 @@ public enum PlatformPermission {
     RESOURCE_DELETE("resource.delete", "删除资源"),
     RESOURCE_DOWNLOAD("resource.download", "下载资源"),
     RESOURCE_SHARE("resource.share", "分享资源"),
-    STORAGE_PROVIDER_MANAGE("storage.provider.manage", "管理存储 Provider");
+    STORAGE_PROVIDER_MANAGE("storage.provider.manage", "管理存储 Provider"),
+    INGESTION_SOURCE_MANAGE("ingestion.source.manage", "管理导入来源");
 
     /** 权限的稳定标识。 */
     private final String key;
