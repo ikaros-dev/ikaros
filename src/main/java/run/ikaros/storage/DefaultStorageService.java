@@ -122,6 +122,18 @@ public class DefaultStorageService implements StorageService {
     }
 
     @Override
+    public Mono<Void> remove(UUID ownerId, UUID resourceId, UUID attachmentId) {
+        return owned(ownerId, resourceId)
+            .then(attachmentRepository.findByIdAndResourceIdAndDeletedAtIsNull(attachmentId, resourceId)
+                .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或已删除")))
+                .flatMap(attachment -> attachmentRepository.save(new AttachmentEntity(
+                    attachment.id(), attachment.resourceId(), attachment.blobId(), attachment.fileName(),
+                    attachment.attachmentKind(), attachment.createdAt(), Instant.now(), attachment.version()
+                )).then(auditService.record(ownerId, "attachment.delete", "ATTACHMENT", attachment.id(), "{}"))))
+            .then();
+    }
+
+    @Override
     public Mono<List<BlobGcCandidateView>> findGarbageCollectionCandidates(int limit, Duration minimumAge) {
         if (limit < 1 || limit > 500) {
             return Mono.error(new IllegalArgumentException("GC 候选数量必须介于 1 和 500 之间"));

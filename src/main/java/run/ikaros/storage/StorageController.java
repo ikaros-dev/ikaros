@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import reactor.core.publisher.Mono;
 
 /**
@@ -111,6 +112,21 @@ public class StorageController {
         @PathVariable UUID resourceId
     ) {
         return storageService.list(actorId, resourceId);
+    }
+
+    @Operation(summary = "删除资源附件", description = "软删除 Attachment，Blob 由后续 GC 根据引用计数决定是否清理。")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "附件删除成功"),
+        @ApiResponse(responseCode = "404", description = "资源或附件不存在", content = @Content)
+    })
+    @DeleteMapping("/{attachmentId}")
+    public Mono<ResponseEntity<Void>> remove(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID resourceId,
+        @PathVariable UUID attachmentId
+    ) {
+        return storageService.remove(actorId, resourceId, attachmentId)
+            .thenReturn(ResponseEntity.noContent().build());
     }
 
 }
