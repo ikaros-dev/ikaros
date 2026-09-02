@@ -140,7 +140,7 @@ CREATE INDEX idx_backup_restore_point_created ON backup_restore_point (state, cr
 
 CREATE TABLE planning_task (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, title VARCHAR(512) NOT NULL,
-    description TEXT, status VARCHAR(24) NOT NULL DEFAULT 'INBOX', priority VARCHAR(24) NOT NULL DEFAULT 'NONE',
+    description TEXT, status VARCHAR(24) NOT NULL DEFAULT 'INBOX', priority VARCHAR(24) NOT NULL DEFAULT 'NONE', important BOOLEAN NOT NULL DEFAULT FALSE, urgent BOOLEAN NOT NULL DEFAULT FALSE,
     scheduled_start TIMESTAMPTZ, scheduled_end TIMESTAMPTZ, deadline TIMESTAMPTZ, estimated_duration_minutes INTEGER, project_id UUID, parent_task_id UUID, completed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
     version BIGINT NOT NULL DEFAULT 0, CHECK (status IN ('INBOX','PLANNED','IN_PROGRESS','COMPLETED','BLOCKED','CANCELLED','ARCHIVED')),
