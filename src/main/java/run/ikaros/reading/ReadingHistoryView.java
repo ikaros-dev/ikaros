@@ -1,0 +1,1 @@
+package run.ikaros.reading; import java.time.Instant; import java.util.UUID; public record ReadingHistoryView(UUID id,UUID workId,UUID chapterId,Instant startedAt,Instant endedAt,long durationSeconds,String startLocator,String endLocator) {}

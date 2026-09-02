@@ -1,0 +1,1 @@
+package run.ikaros.reading; import java.time.Instant; import java.util.UUID; public record ReadingSessionView(UUID id,UUID workId,UUID editionId,UUID currentChapterId,String locatorKind,String locatorValue,boolean offline,Instant startedAt,Instant lastActiveAt,Instant endedAt) {}

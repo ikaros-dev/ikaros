@@ -1,0 +1,1 @@
+package run.ikaros.reading; import java.util.UUID; import org.springframework.data.repository.reactive.ReactiveCrudRepository; import reactor.core.publisher.Mono; public interface ReadingProgressRepository extends ReactiveCrudRepository<ReadingProgressEntity,UUID>{Mono<ReadingProgressEntity> findByOwnerIdAndWorkIdAndEditionId(UUID ownerId,UUID workId,UUID editionId);}

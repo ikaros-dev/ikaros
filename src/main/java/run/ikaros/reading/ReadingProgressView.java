@@ -1,0 +1,1 @@
+package run.ikaros.reading; import java.time.Instant; import java.util.UUID; public record ReadingProgressView(UUID id,UUID workId,UUID editionId,UUID chapterId,String locatorKind,String locatorValue,String contentVersion,boolean completed,ReadingProgressIntent intent,Instant updatedAt,long version) {}
