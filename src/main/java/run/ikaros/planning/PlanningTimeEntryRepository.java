@@ -7,4 +7,5 @@ import reactor.core.publisher.Flux;
 public interface PlanningTimeEntryRepository extends ReactiveCrudRepository<PlanningTimeEntryEntity, UUID> {
     Flux<PlanningTimeEntryEntity> findAllByOwnerIdOrderByCreatedAtDesc(UUID ownerId);
     Flux<PlanningTimeEntryEntity> findAllByOwnerIdAndTaskIdOrderByCreatedAtDesc(UUID ownerId, UUID taskId);
+    Flux<PlanningTimeEntryEntity> findAllByTaskIdOrderByCreatedAtDesc(UUID taskId);
 }
