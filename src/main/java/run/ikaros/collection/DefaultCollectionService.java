@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PageResponse;
 import run.ikaros.resource.ResourceRepository;
 
 /**
@@ -59,6 +60,18 @@ public class DefaultCollectionService implements CollectionService {
         return collectionRepository.findAllByOwnerIdOrderByUpdatedAtDesc(ownerId)
             .map(this::toView)
             .collectList();
+    }
+
+    @Override
+    public Mono<PageResponse<CollectionView>> list(UUID ownerId, int page, int size) {
+        if (page < 0 || size < 1 || size > 100) {
+            return Mono.error(new IllegalArgumentException("分页参数不合法"));
+        }
+        return collectionRepository.findAllByOwnerIdOrderByUpdatedAtDesc(ownerId)
+            .map(this::toView)
+            .collectList()
+            .map(all -> new PageResponse<>(all.stream().skip((long) page * size).limit(size).toList(),
+                all.size(), page, size));
     }
 
     @Override

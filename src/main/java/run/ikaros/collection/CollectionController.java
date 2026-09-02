@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+import run.ikaros.common.PageResponse;
 
 /**
  * 提供 Collection 组织能力的 HTTP-first 接口。
@@ -80,6 +81,16 @@ public class CollectionController {
     @GetMapping
     public Mono<List<CollectionView>> list(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId) {
         return collectionService.list(actorId);
+    }
+
+    @Operation(summary = "分页查询资源集合", description = "按更新时间倒序返回当前用户 Collection 的分页结果。")
+    @GetMapping(params = "page")
+    public Mono<PageResponse<CollectionView>> listPage(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @RequestParam(defaultValue = "0") @Min(0) int page,
+        @RequestParam(defaultValue = "20") @Min(1) int size
+    ) {
+        return collectionService.list(actorId, page, size);
     }
 
     /**
