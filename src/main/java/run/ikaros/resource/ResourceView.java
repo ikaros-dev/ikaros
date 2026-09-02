@@ -10,10 +10,19 @@ import java.util.UUID;
 public record ResourceView(
     UUID id,
     ResourceType type,
+    String primaryTitle,
+    String summary,
+    ResourceClassification dataClassification,
     ResourceLifecycle lifecycle,
     List<ResourceTitleView> titles,
     List<ExternalIdentityView> externalIdentities,
     Instant createdAt,
     Instant updatedAt
 ) {
+    public ResourceView(UUID id, ResourceType type, ResourceLifecycle lifecycle,
+                        List<ResourceTitleView> titles, List<ExternalIdentityView> externalIdentities,
+                        Instant createdAt, Instant updatedAt) {
+        this(id, type, null, null, ResourceClassification.PRIVATE, lifecycle, titles, externalIdentities,
+            createdAt, updatedAt);
+    }
 }

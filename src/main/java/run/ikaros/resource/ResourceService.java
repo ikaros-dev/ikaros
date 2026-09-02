@@ -27,6 +27,8 @@ public interface ResourceService {
      */
     Mono<ResourceView> get(UUID ownerId, UUID resourceId);
 
+    Mono<ResourceView> update(UUID ownerId, UUID resourceId, UpdateResourceRequest request);
+
     /**
      * 按标题关键词与类型分页浏览活动 Resource。
      *

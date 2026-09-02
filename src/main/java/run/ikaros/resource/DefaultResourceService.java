@@ -62,7 +62,8 @@ public class DefaultResourceService implements ResourceService {
     public Mono<ResourceView> create(UUID ownerId, CreateResourceRequest request) {
         Instant now = Instant.now();
         ResourceEntity resource = new ResourceEntity(
-            null, ownerId, request.type(), ResourceLifecycle.ACTIVE, now, now, null, null
+            null, ownerId, request.type(), request.title(), null, ResourceClassification.PRIVATE,
+            ResourceLifecycle.ACTIVE, now, now, null, null
         );
         return transactionalOperator.transactional(resourceRepository.save(resource)
             .flatMap(saved -> titleRepository.save(new ResourceTitleEntity(
@@ -75,6 +76,23 @@ public class DefaultResourceService implements ResourceService {
     @Override
     public Mono<ResourceView> get(UUID ownerId, UUID resourceId) {
         return owned(ownerId, resourceId).flatMap(this::toView);
+    }
+
+    @Override
+    public Mono<ResourceView> update(UUID ownerId, UUID resourceId, UpdateResourceRequest request) {
+        return transactionalOperator.transactional(owned(ownerId, resourceId).flatMap(resource -> {
+            if (resource.version() == null || resource.version() != request.expectedVersion()) {
+                return Mono.error(new ConflictException("resource.version-conflict", "Resource 版本已过期"));
+            }
+            ResourceEntity updated = new ResourceEntity(resource.id(), resource.ownerId(), resource.resourceType(),
+                request.primaryTitle() == null ? resource.primaryTitle() : request.primaryTitle(),
+                request.summary() == null ? resource.summary() : request.summary(), resource.dataClassification(),
+                resource.lifecycle(), resource.createdAt(), Instant.now(), resource.deletedAt(), resource.version());
+            return resourceRepository.save(updated)
+                .flatMap(saved -> emit("resource.resource.updated", saved)
+                    .then(auditService.record(ownerId, "resource.update", "RESOURCE", resourceId, "{}"))
+                    .then(toView(saved)));
+        }));
     }
 
     @Override
@@ -98,7 +116,8 @@ public class DefaultResourceService implements ResourceService {
                     return Mono.empty();
                 }
                 ResourceEntity trashed = new ResourceEntity(
-                    resource.id(), resource.ownerId(), resource.resourceType(), ResourceLifecycle.TRASHED,
+                    resource.id(), resource.ownerId(), resource.resourceType(), resource.primaryTitle(), resource.summary(),
+                    resource.dataClassification(), ResourceLifecycle.TRASHED,
                     resource.createdAt(), Instant.now(), Instant.now(), resource.version()
                 );
                 return resourceRepository.save(trashed)
@@ -118,7 +137,8 @@ public class DefaultResourceService implements ResourceService {
                     return Mono.error(new ConflictException("只有活动 Resource 才能归档"));
                 }
                 ResourceEntity archived = new ResourceEntity(
-                    resource.id(), resource.ownerId(), resource.resourceType(), ResourceLifecycle.ARCHIVED,
+                    resource.id(), resource.ownerId(), resource.resourceType(), resource.primaryTitle(), resource.summary(),
+                    resource.dataClassification(), ResourceLifecycle.ARCHIVED,
                     resource.createdAt(), Instant.now(), resource.deletedAt(), resource.version()
                 );
                 return resourceRepository.save(archived)
@@ -138,7 +158,8 @@ public class DefaultResourceService implements ResourceService {
                     return Mono.error(new ConflictException("只有已归档或已移入回收站的 Resource 才能恢复"));
                 }
                 ResourceEntity restored = new ResourceEntity(
-                    resource.id(), resource.ownerId(), resource.resourceType(), ResourceLifecycle.ACTIVE,
+                    resource.id(), resource.ownerId(), resource.resourceType(), resource.primaryTitle(), resource.summary(),
+                    resource.dataClassification(), ResourceLifecycle.ACTIVE,
                     resource.createdAt(), Instant.now(), null, resource.version()
                 );
                 return resourceRepository.save(restored)
@@ -198,8 +219,9 @@ public class DefaultResourceService implements ResourceService {
             .map(this::toIdentityView)
             .collectList();
         return Mono.zip(titles, identities)
-            .map(parts -> new ResourceView(resource.id(), resource.resourceType(), resource.lifecycle(),
-                parts.getT1(), parts.getT2(), resource.createdAt(), resource.updatedAt()));
+            .map(parts -> new ResourceView(resource.id(), resource.resourceType(), resource.primaryTitle(),
+                resource.summary(), resource.dataClassification(), resource.lifecycle(), parts.getT1(), parts.getT2(),
+                resource.createdAt(), resource.updatedAt()));
     }
 
     private ExternalIdentityView toIdentityView(ExternalIdentityEntity identity) {
