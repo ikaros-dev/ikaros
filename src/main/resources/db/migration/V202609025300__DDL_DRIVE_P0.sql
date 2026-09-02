@@ -309,6 +309,15 @@ CREATE INDEX idx_planning_okr_cycle_owner_start ON planning_okr_cycle (owner_id,
 CREATE INDEX idx_planning_okr_objective_cycle ON planning_okr_objective (owner_id, cycle_id, created_at DESC);
 CREATE INDEX idx_planning_okr_key_result_objective ON planning_okr_key_result (owner_id, objective_id, created_at DESC);
 
+CREATE TABLE planning_okr_check_in (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, key_result_id UUID NOT NULL,
+    current_value DOUBLE PRECISION NOT NULL, progress DOUBLE PRECISION NOT NULL, confidence VARCHAR(16) NOT NULL,
+    note TEXT, blocker TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    CHECK (progress >= 0 AND progress <= 1), CHECK (confidence IN ('ON_TRACK','AT_RISK','OFF_TRACK')),
+    FOREIGN KEY (key_result_id) REFERENCES planning_okr_key_result(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_planning_okr_check_in_key_result ON planning_okr_check_in (owner_id, key_result_id, created_at DESC);
+
 CREATE TABLE offline_download_manifest (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), intent_id UUID NOT NULL, manifest_version BIGINT NOT NULL,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (intent_id, manifest_version),
