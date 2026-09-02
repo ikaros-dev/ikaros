@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PageResponse;
 
 @Service
 public class InMemoryBackgroundTaskService implements BackgroundTaskService {
@@ -24,6 +25,20 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
     @Override
     public Flux<BackgroundTask> list(TaskStatus status) {
         return Flux.fromIterable(tasks.values()).filter(task -> status == null || task.status() == status);
+    }
+
+    @Override
+    public Mono<PageResponse<BackgroundTask>> list(TaskStatus status, String taskType, int page, int size) {
+        if (page < 0 || size < 1 || size > 100) {
+            return Mono.error(new IllegalArgumentException("分页参数不合法"));
+        }
+        String type = taskType == null ? "" : taskType.trim();
+        return list(status)
+            .filter(task -> type.isEmpty() || task.taskType().equals(type))
+            .sort(Comparator.comparing(BackgroundTask::createdAt).reversed())
+            .collectList()
+            .map(all -> new PageResponse<>(all.stream().skip((long) page * size).limit(size).toList(),
+                all.size(), page, size));
     }
 
     @Override
