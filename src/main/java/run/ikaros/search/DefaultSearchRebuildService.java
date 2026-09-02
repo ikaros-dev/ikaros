@@ -18,9 +18,9 @@ public class DefaultSearchRebuildService implements SearchRebuildService {
         if (projectorVersion == null || projectorVersion.isBlank()) {
             return Mono.error(new IllegalArgumentException("projector version 不能为空"));
         }
-        return projectionService.startRebuild().flatMapMany(generation -> source
-            .concatMap(input -> project(input, projectorVersion, generation)))
-            .reduce(new Counts(), Counts::add)
+        return projectionService.startRebuild().flatMap(generation -> source
+            .concatMap(input -> project(input, projectorVersion, generation))
+            .reduce(new Counts(generation, 0, 0), Counts::add))
             .map(counts -> new SearchRebuildResult(counts.generation, counts.projected, counts.failed));
     }
 
