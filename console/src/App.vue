@@ -69,6 +69,9 @@ async function loadResources() {
     } else if (currentPath.value === 'ops/background') {
       const result = await api.listBackgroundTasks()
       if (result.length) rows.value = result.slice(0, 5).map(item => ({ name: item.task_type || item.id.slice(0, 8), owner: item.owning_subsystem || '系统', status: item.state || '排队中', updated: item.created_at ? new Date(item.created_at).toLocaleString('zh-CN') : '刚刚' }))
+    } else if (currentPath.value === 'security/permissions') {
+      const result = await api.listRoles()
+      if (result.length) rows.value = result.slice(0, 5).map(item => ({ name: item.name || item.code || item.id.slice(0, 8), owner: `${item.permissions?.length || 0} 项权限`, status: item.builtIn ? '系统角色' : '自定义角色', updated: '权限注册表' }))
     } else return
     apiConnected.value = true
   } catch (error) {
