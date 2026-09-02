@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.dao.DuplicateKeyException;
@@ -67,11 +69,12 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
                 return providers.save(replacement)
                     .onErrorMap(DuplicateKeyException.class, error -> new ConflictException("Delivery Provider 标识已存在"))
                     .flatMap(saved -> {
+                    List<String> changedFields = changedFields(old, saved);
                     Mono<Void> stateEvent = old.enabled() == saved.enabled() ? Mono.<Void>empty()
                         : emit(saved.enabled() ? "storage.delivery-provider.enabled" : "storage.delivery-provider.disabled", saved,
                             "{\"delivery_provider_id\":\"" + saved.id() + "\"}");
                     return emit("storage.delivery-provider.updated", saved,
-                        "{\"delivery_provider_id\":\"" + saved.id() + "\",\"changed_fields\":[\"config\",\"enabled\"],\"version\":"
+                        "{\"delivery_provider_id\":\"" + saved.id() + "\",\"changed_fields\":" + jsonArray(changedFields) + ",\"version\":"
                             + (saved.version() == null ? 0 : saved.version()) + "}")
                         .then(stateEvent).thenReturn(view(saved));
                 });
@@ -86,6 +89,19 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
         catch (JsonProcessingException e) { return Mono.error(new IllegalArgumentException("Delivery Provider config 无法序列化", e)); } }
     private Mono<Void> emit(String type, DeliveryProviderEntity provider, String payload) {
         return events.append(type, 1, "delivery_provider", provider.id(), payload).then();
+    }
+    private List<String> changedFields(DeliveryProviderEntity old, DeliveryProviderEntity saved) {
+        List<String> fields = new ArrayList<>();
+        if (!old.providerKey().equals(saved.providerKey())) fields.add("provider_key");
+        if (old.providerType() != saved.providerType()) fields.add("provider_type");
+        if (!old.displayName().equals(saved.displayName())) fields.add("display_name");
+        if (!java.util.Objects.equals(old.credentialRef(), saved.credentialRef())) fields.add("credential_ref");
+        if (!old.config().equals(saved.config())) fields.add("config");
+        if (old.enabled() != saved.enabled()) fields.add("enabled");
+        return fields;
+    }
+    private String jsonArray(List<String> fields) {
+        return fields.stream().map(field -> "\"" + field + "\"").collect(java.util.stream.Collectors.joining(",", "[", "]"));
     }
     private record ProviderChange(DeliveryProviderEntity old, DeliveryProviderEntity saved) {}
     private DeliveryProviderView view(DeliveryProviderEntity e) { return new DeliveryProviderView(e.id(), e.providerKey(), e.providerType(), e.displayName(),
