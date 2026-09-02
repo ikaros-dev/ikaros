@@ -35,6 +35,7 @@ export type DriveSpaceRecord = { id: string; name?: string; displayName?: string
 export type PlanningTaskRecord = { id: string; title?: string; status?: string; priority?: string; due_at?: string; updated_at?: string }
 export type SessionRecord = { id: string; userId?: string; loginMethod?: string; currentSvl?: string; verifiedAt?: string; verificationExpiresAt?: string; expiresAt?: string; lastActiveAt?: string }
 export type CollectionRecord = { id: string; name: string; description?: string; updatedAt?: string }
+export type MediaHistoryRecord = { id: string; resourceId?: string; sessionId?: string; startedAt?: string; endedAt?: string; watchedSeconds?: number }
 
 export const api = {
   listResources: (params = '') => request<Page<ResourceRecord> | ResourceRecord[]>(`/resources${params}`),
@@ -52,6 +53,7 @@ export const api = {
   listDriveSpaces: (actorId: string) => request<DriveSpaceRecord[]>('/drive/spaces', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   createDriveSpace: (displayName: string, actorId: string) => request<DriveSpaceRecord>('/drive/spaces', { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId, 'Idempotency-Key': requestId() }, body: JSON.stringify({ displayName }) }),
   listTodayTasks: (actorId: string, timeZone = 'Asia/Shanghai') => request<PlanningTaskRecord[]>(`/planning/tasks/today?timeZone=${encodeURIComponent(timeZone)}`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
+  listMediaHistory: (actorId: string) => request<MediaHistoryRecord[]>('/media/playback/history', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   listSessions: (userId: string) => request<SessionRecord[]>(`/users/${encodeURIComponent(userId)}/sessions`),
   revokeSession: (userId: string, sessionId: string, actorId: string) => request<void>(`/users/${encodeURIComponent(userId)}/sessions/${encodeURIComponent(sessionId)}`, { method: 'DELETE', headers: { 'X-Ikaros-Actor-Id': actorId } }),
   listCollections: (actorId: string) => request<CollectionRecord[]>('/collections', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
