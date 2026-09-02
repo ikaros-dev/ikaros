@@ -59,4 +59,14 @@ class BackgroundTaskDispatcherTest {
         assertEquals(TaskStatus.RUNNING, reclaimed.status());
         assertEquals(2, reclaimed.attempt());
     }
+
+    @org.junit.jupiter.api.Test
+    void cancellingRunningTaskOnlyRequestsCancellation() {
+        InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
+        tasks.submit("cancellable", Map.of(), "cancel-running").block();
+        BackgroundTask running = tasks.claim("runner", Duration.ofMinutes(1)).block();
+        BackgroundTask requested = tasks.cancel(running.id()).block();
+        assertEquals(TaskStatus.RUNNING, requested.status());
+        org.junit.jupiter.api.Assertions.assertNotNull(requested.cancelRequestedAt());
+    }
 }

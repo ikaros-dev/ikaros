@@ -162,7 +162,8 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
             if (task.status() == TaskStatus.SUCCEEDED || task.status() == TaskStatus.FAILED) {
                 throw new ConflictException("终态 Task 不能取消");
             }
-            BackgroundTask updated = copy(task, TaskStatus.CANCELLED, task.leaseOwner(), task.leaseToken(),
+            TaskStatus status = task.status() == TaskStatus.RUNNING ? TaskStatus.RUNNING : TaskStatus.CANCELLED;
+            BackgroundTask updated = copy(task, status, task.leaseOwner(), task.leaseToken(),
                 task.leaseExpiresAt(), task.attempt(), Instant.now(), task.progress(), task.result());
             tasks.replace(task.id(), task, updated); return updated;
         });

@@ -160,7 +160,8 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     @Override
     public Mono<BackgroundTask> cancel(UUID taskId) {
         return tasks.findById(taskId).switchIfEmpty(Mono.error(new NotFoundException("Task 不存在")))
-            .flatMap(task -> tasks.save(copy(task, TaskStatus.CANCELLED, task.leaseOwner(), task.leaseToken(),
+            .flatMap(task -> tasks.save(copy(task, task.status().equals(TaskStatus.RUNNING.name()) ? TaskStatus.RUNNING : TaskStatus.CANCELLED,
+                task.leaseOwner(), task.leaseToken(),
                 task.leaseExpiresAt(), task.attempt(), Instant.now(), task.progress(), task.result())))
             .flatMap(this::view);
     }
