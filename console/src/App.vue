@@ -33,7 +33,7 @@ const current = computed(() => groups.flatMap(g => g.items).find(i => i.path ===
 const currentGroup = computed(() => groups.find(g => g.items.some(i => i.path === currentPath.value)) || groups[0])
 const currentMeta = computed(() => getRouteMeta(currentPath.value))
 const pageTitle = computed(() => current.value.label)
-function go(path: string) { router.push('/console/' + path); drawer.value = false }
+function go(path: string) { router.push(path === 'login' ? '/login' : '/console/' + path); drawer.value = false }
 function toggle(label: string) { expanded.value = expanded.value.includes(label) ? expanded.value.filter(v => v !== label) : [...expanded.value, label] }
 function notify(message: string) { toast.value = message; setTimeout(() => toast.value = '', 2800) }
 function openDialog(kind: string) { dialog.value = kind }
