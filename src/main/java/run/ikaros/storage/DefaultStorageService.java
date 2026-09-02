@@ -1,6 +1,7 @@
 package run.ikaros.storage;
 
 import java.time.Instant;
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -87,11 +88,28 @@ public class DefaultStorageService implements StorageService {
     }
 
     @Override
-    public Mono<List<UUID>> findGarbageCollectionCandidates(int limit) {
+    public Mono<List<BlobGcCandidateView>> findGarbageCollectionCandidates(int limit, Duration minimumAge) {
+        if (limit < 1 || limit > 500) {
+            return Mono.error(new IllegalArgumentException("GC 候选数量必须介于 1 和 500 之间"));
+        }
+        if (minimumAge.isNegative()) {
+            return Mono.error(new IllegalArgumentException("GC 最小保留期不能为负数"));
+        }
+        Instant eligibleBefore = Instant.now().minus(minimumAge);
         return blobRepository.findGarbageCollectionCandidates()
+            .filter(blob -> !blob.createdAt().isAfter(eligibleBefore))
             .take(limit)
-            .map(BlobEntity::id)
+            .map(blob -> new BlobGcCandidateView(blob.id(), blob.sha256(), blob.sizeBytes(), blob.createdAt(),
+                blob.createdAt().plus(minimumAge)))
             .collectList();
+    }
+
+    @Override
+    public Mono<Void> recordGarbageCollectionDecision(UUID actorId, UUID blobId, boolean approved) {
+        return blobRepository.findById(blobId)
+            .switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在")))
+            .flatMap(blob -> auditService.record(actorId, approved ? "blob.gc.approve" : "blob.gc.reject",
+                "BLOB", blob.id(), "{}"));
     }
 
     private Mono<BlobEntity> findOrCreateBlob(AttachBlobRequest request) {

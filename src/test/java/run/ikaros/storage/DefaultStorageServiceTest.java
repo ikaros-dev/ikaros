@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
+import java.time.Duration;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -124,5 +125,40 @@ class DefaultStorageServiceTest {
             .assertNext(view -> assertThat(view.kind()).isEqualTo(AttachmentKind.DERIVED))
             .verifyComplete();
         verify(derivedAttachmentRepository).save(any(DerivedAttachmentEntity.class));
+    }
+
+    @Test
+    void onlyReturnsUnreferencedBlobsOlderThanMinimumAge() {
+        Instant oldCreatedAt = Instant.now().minus(Duration.ofDays(3));
+        Instant recentCreatedAt = Instant.now().minus(Duration.ofHours(2));
+        BlobEntity oldBlob = new BlobEntity(UUID.randomUUID(), "c".repeat(64), 10L, "text/plain",
+            BlobAvailability.AVAILABLE, oldCreatedAt, 0L);
+        BlobEntity recentBlob = new BlobEntity(UUID.randomUUID(), "d".repeat(64), 20L, "text/plain",
+            BlobAvailability.AVAILABLE, recentCreatedAt, 0L);
+        when(blobRepository.findGarbageCollectionCandidates()).thenReturn(Flux.just(oldBlob, recentBlob));
+
+        StepVerifier.create(service.findGarbageCollectionCandidates(10, Duration.ofDays(1)))
+            .assertNext(candidates -> {
+                assertThat(candidates).singleElement().satisfies(candidate -> {
+                    assertThat(candidate.blobId()).isEqualTo(oldBlob.id());
+                    assertThat(candidate.eligibleAt()).isEqualTo(oldCreatedAt.plus(Duration.ofDays(1)));
+                });
+            })
+            .verifyComplete();
+    }
+
+    @Test
+    void recordsApprovedGarbageCollectionDecision() {
+        UUID actorId = UUID.randomUUID();
+        BlobEntity blob = new BlobEntity(UUID.randomUUID(), "e".repeat(64), 30L, "text/plain",
+            BlobAvailability.AVAILABLE, Instant.now().minus(Duration.ofDays(2)), 0L);
+        when(blobRepository.findById(blob.id())).thenReturn(Mono.just(blob));
+        when(auditService.record(actorId, "blob.gc.approve", "BLOB", blob.id(), "{}"))
+            .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.recordGarbageCollectionDecision(actorId, blob.id(), true))
+            .verifyComplete();
+
+        verify(auditService).record(actorId, "blob.gc.approve", "BLOB", blob.id(), "{}");
     }
 }

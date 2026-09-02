@@ -1,6 +1,7 @@
 package run.ikaros.storage;
 
 import java.util.List;
+import java.time.Duration;
 import java.util.UUID;
 import reactor.core.publisher.Mono;
 
@@ -44,5 +45,15 @@ public interface StorageService {
      * @param limit 返回上限
      * @return 可供 GC 策略继续评估的 Blob 列表
      */
-    Mono<List<UUID>> findGarbageCollectionCandidates(int limit);
+    Mono<List<BlobGcCandidateView>> findGarbageCollectionCandidates(int limit, Duration minimumAge);
+
+    /**
+     * 记录 Blob GC 的人工决策，不在本步骤执行物理删除。
+     *
+     * @param actorId 执行决策的主体标识
+     * @param blobId Blob 标识
+     * @param approved 是否批准进入物理清理阶段
+     * @return 审计写入完成信号
+     */
+    Mono<Void> recordGarbageCollectionDecision(UUID actorId, UUID blobId, boolean approved);
 }

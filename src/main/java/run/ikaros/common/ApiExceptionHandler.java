@@ -46,6 +46,17 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 
+    /**
+     * 处理服务层收到的非法参数。
+     *
+     * @param exception 参数异常
+     * @return 400 问题响应
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail handleIllegalArgument(IllegalArgumentException exception) {
+        return problem(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
     private ProblemDetail problem(HttpStatus status, String detail) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
         problem.setProperty("timestamp", Instant.now());
