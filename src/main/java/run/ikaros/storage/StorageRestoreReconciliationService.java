@@ -52,8 +52,10 @@ public class StorageRestoreReconciliationService {
                 .map(query -> query.query(provider, context.placement, context.blob))
                 .orElseGet(() -> Mono.just(StorageRestoreProviderStatus.UNKNOWN)))
             .flatMap(status -> switch (status) {
-                case READABLE -> activate(context);
-                case NOT_READABLE -> fail(context, "Provider 对账确认对象不可读");
+                case READABLE -> context.operation.status() == StorageRestoreOperationStatus.SUCCEEDED
+                    ? Mono.just(context) : activate(context);
+                case NOT_READABLE -> context.operation.status() == StorageRestoreOperationStatus.FAILED
+                    ? Mono.just(context) : fail(context, "Provider 对账确认对象不可读");
                 case RESTORING, UNKNOWN -> Mono.just(context);
             });
     }
@@ -65,12 +67,20 @@ public class StorageRestoreReconciliationService {
         BlobEntity blob = new BlobEntity(c.blob.id(), c.blob.hashAlgorithm(), c.blob.sha256(), c.blob.sizeBytes(),
             c.blob.mediaType(), BlobAvailability.AVAILABLE, c.blob.createdAt(), c.blob.version());
         StorageRestoreOperationEntity operation = updated(c.operation, StorageRestoreOperationStatus.SUCCEEDED, null);
-        return placements.save(active).then(blobs.save(blob)).then(operations.save(operation)).thenReturn(new Context(operation, active, blob));
+        return placements.save(active).then(blobs.save(blob)).then(operations.save(operation))
+            .flatMap(saved -> events.append("storage.restore-operation.ready", 1, "restore_operation", saved.id(),
+                "{\"operation_id\":\"" + saved.id() + "\",\"placement_id\":\"" + saved.placementId()
+                    + "\",\"restore_expires_at\":" + (saved.restoreExpiresAt() == null ? "null"
+                        : "\"" + saved.restoreExpiresAt() + "\"") + "}").thenReturn(new Context(saved, active, blob)));
     }
 
     private Mono<Context> fail(Context c, String reason) {
         StorageRestoreOperationEntity operation = updated(c.operation, StorageRestoreOperationStatus.FAILED, reason);
-        return operations.save(operation).thenReturn(new Context(operation, c.placement, c.blob));
+        return operations.save(operation)
+            .flatMap(saved -> events.append("storage.restore-operation.failed", 1, "restore_operation", saved.id(),
+                "{\"operation_id\":\"" + saved.id() + "\",\"placement_id\":\"" + saved.placementId()
+                    + "\",\"error_code\":\"restore-reconcile-failed\",\"retryable\":false}")
+                .thenReturn(new Context(saved, c.placement, c.blob)));
     }
 
     private StorageRestoreOperationEntity updated(StorageRestoreOperationEntity old, StorageRestoreOperationStatus status, String error) {
