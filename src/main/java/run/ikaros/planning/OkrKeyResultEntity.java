@@ -1,0 +1,3 @@
+package run.ikaros.planning;
+import java.time.Instant; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.annotation.Version; import org.springframework.data.relational.core.mapping.Column; import org.springframework.data.relational.core.mapping.Table;
+@Table("planning_okr_key_result") public record OkrKeyResultEntity(@Id UUID id,@Column("owner_id") UUID ownerId,@Column("objective_id") UUID objectiveId,String title,OkrMetricType metricType,Double startValue,Double targetValue,Double currentValue,OkrStatus status,@Column("created_at") Instant createdAt,@Column("updated_at") Instant updatedAt,@Version Long version) {}

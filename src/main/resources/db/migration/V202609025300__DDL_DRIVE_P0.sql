@@ -284,6 +284,31 @@ CREATE TABLE planning_review (
 );
 CREATE INDEX idx_planning_review_owner_period ON planning_review (owner_id, period, period_start DESC);
 
+CREATE TABLE planning_okr_cycle (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, name VARCHAR(128) NOT NULL,
+    start_at TIMESTAMPTZ NOT NULL, end_at TIMESTAMPTZ NOT NULL, status VARCHAR(16) NOT NULL DEFAULT 'DRAFT',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    version BIGINT NOT NULL DEFAULT 0, CHECK (end_at > start_at), CHECK (status IN ('DRAFT','ACTIVE','COMPLETED','ARCHIVED')), CHECK (version >= 0)
+);
+CREATE TABLE planning_okr_objective (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, cycle_id UUID NOT NULL, title VARCHAR(512) NOT NULL,
+    description TEXT, goal_id UUID, status VARCHAR(16) NOT NULL DEFAULT 'DRAFT', created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, version BIGINT NOT NULL DEFAULT 0,
+    CHECK (status IN ('DRAFT','ACTIVE','COMPLETED','ARCHIVED')), CHECK (version >= 0), FOREIGN KEY (cycle_id) REFERENCES planning_okr_cycle(id) ON DELETE CASCADE,
+    FOREIGN KEY (goal_id) REFERENCES planning_goal(id) ON DELETE SET NULL
+);
+CREATE TABLE planning_okr_key_result (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, objective_id UUID NOT NULL, title VARCHAR(512) NOT NULL,
+    metric_type VARCHAR(16) NOT NULL, start_value DOUBLE PRECISION NOT NULL, target_value DOUBLE PRECISION NOT NULL,
+    current_value DOUBLE PRECISION NOT NULL, status VARCHAR(16) NOT NULL DEFAULT 'DRAFT', created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, version BIGINT NOT NULL DEFAULT 0,
+    CHECK (metric_type IN ('NUMERIC','PERCENTAGE','BOOLEAN','MILESTONE')), CHECK (start_value <> target_value), CHECK (status IN ('DRAFT','ACTIVE','COMPLETED','ARCHIVED')), CHECK (version >= 0),
+    FOREIGN KEY (objective_id) REFERENCES planning_okr_objective(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_planning_okr_cycle_owner_start ON planning_okr_cycle (owner_id, start_at DESC);
+CREATE INDEX idx_planning_okr_objective_cycle ON planning_okr_objective (owner_id, cycle_id, created_at DESC);
+CREATE INDEX idx_planning_okr_key_result_objective ON planning_okr_key_result (owner_id, objective_id, created_at DESC);
+
 CREATE TABLE offline_download_manifest (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), intent_id UUID NOT NULL, manifest_version BIGINT NOT NULL,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (intent_id, manifest_version),
