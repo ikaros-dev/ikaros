@@ -29,7 +29,9 @@ public class DeliveryGrantController {
     public Mono<DeliveryGrantContractView> issue(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @PathVariable UUID attachmentId, @Valid @RequestBody DeliveryGrantRequest request) {
         return service.issue(actorId, attachmentId, request).flatMap(grant ->
-            leases.create(actorId, attachmentId, new DeliveryLeaseRequest(grant.token(), request == null ? null : request.ttlSeconds()))
+            (request != null && request.existingLeaseId() != null
+                ? leases.get(actorId, request.existingLeaseId()).filter(lease -> lease.attachmentId().equals(attachmentId))
+                : leases.create(actorId, attachmentId, new DeliveryLeaseRequest(grant.token(), request == null ? null : request.ttlSeconds())))
                 .flatMap(lease -> bindings.findById(lease.bindingId())
                     .flatMap(binding -> providers.findByProviderKey(binding.deliveryProviderKey())
                         .zipWith(blobs.findById(lease.blobId()))

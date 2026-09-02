@@ -37,12 +37,15 @@ public class PersistentDeliveryGrantService implements DeliveryGrantService {
         DeliveryGrantRequest value = request == null ? new DeliveryGrantRequest(null, null, null) : request;
         int ttl = value.ttlSeconds() == null ? DEFAULT_TTL_SECONDS : value.ttlSeconds();
         if (ttl < 1 || ttl > MAX_TTL_SECONDS) return Mono.error(new IllegalArgumentException("Grant TTL 必须在 1 到 3600 秒之间"));
-        validateRange(value.rangeStart(), value.rangeEnd());
+        if (value.intent() == null) return Mono.error(new IllegalArgumentException("Delivery Grant intent 必须是 PLAYBACK 或 DOWNLOAD"));
+        Long rangeStart = Boolean.FALSE.equals(value.requireRange()) ? null : value.rangeStart();
+        Long rangeEnd = Boolean.FALSE.equals(value.requireRange()) ? null : value.rangeEnd();
+        validateRange(rangeStart, rangeEnd);
         return ownedAttachment(actorId, attachmentId).flatMap(attachment -> {
             String token = newToken();
             Instant now = Instant.now();
             MediaDeliveryGrantEntity entity = new MediaDeliveryGrantEntity(null, attachment.id(), actorId,
-                hash(token), "GET", value.rangeStart(), value.rangeEnd(), now.plusSeconds(ttl),
+                hash(token), "GET", rangeStart, rangeEnd, now.plusSeconds(ttl),
                 DeliveryGrantRevocationLevel.IMMEDIATE, null, now, null);
             return grants.save(entity).map(saved -> new DeliveryGrantView(saved.id(), saved.attachmentId(), token,
                 saved.method(), saved.expiresAt(), saved.rangeStart(), saved.rangeEnd(), saved.revocationLevel(), saved.version()));

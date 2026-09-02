@@ -57,6 +57,14 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
     }
 
     @Override
+    public Mono<DeliveryLeaseView> get(UUID actorId, UUID leaseId) {
+        return leases.findByIdAndOwnerId(leaseId, actorId)
+            .filter(l -> l.releasedAt() == null && l.leaseExpiresAt().isAfter(Instant.now()))
+            .switchIfEmpty(Mono.error(new NotFoundException("Delivery Lease 不存在、已释放或已过期")))
+            .map(this::view);
+    }
+
+    @Override
     public Mono<DeliveryLeaseView> renew(UUID actorId, UUID leaseId, Integer requestedTtl) {
         return renewInternal(actorId, leaseId, requestedTtl, null);
     }
