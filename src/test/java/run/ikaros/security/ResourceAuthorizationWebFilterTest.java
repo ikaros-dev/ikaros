@@ -57,4 +57,17 @@ class ResourceAuthorizationWebFilterTest {
 
         assertEquals(401, exchange.getResponse().getStatusCode().value());
     }
+
+    @Test
+    void rejectsDeliveryGrantWithoutSession() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(
+            "/api/v2/attachments/" + UUID.randomUUID() + "/delivery-grants")
+            .header("X-Ikaros-Actor-Id", actor.toString()).build());
+        WebFilterChain chain = mock(WebFilterChain.class);
+
+        new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
+
+        assertEquals(401, exchange.getResponse().getStatusCode().value());
+    }
 }

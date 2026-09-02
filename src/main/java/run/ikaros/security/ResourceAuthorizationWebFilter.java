@@ -33,10 +33,12 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             || path.startsWith("/api/v2/admin/delivery-providers")
             || path.startsWith("/api/v2/admin/restore-budget-policy")
             || path.startsWith("/api/v2/storage/restore-budget")
-            || path.startsWith("/api/v2/attachments/") && path.contains("/restore-requests")
+            || path.startsWith("/api/v2/attachments/") && (path.contains("/restore-requests")
+                || path.contains("/availability") || path.contains("/delivery-grants") || path.contains("/content"))
             || path.startsWith("/api/v2/media/seasons/") && path.contains("/restore-requests")
             || path.startsWith("/api/v2/restore-requests")
             || path.startsWith("/api/v2/storage/restore-requests")
+            || path.startsWith("/api/v2/delivery-leases")
             || path.startsWith("/api/v2/ingestion/sources") || path.startsWith("/api/ingestion/sources"))) {
             return chain.filter(exchange);
         }
@@ -64,6 +66,10 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             return "POST".equals(method) && (path.endsWith("/restore-requests")
                 || path.endsWith("/restore-requests/attachments"))
                 ? PlatformPermission.STORAGE_RESTORE_REQUEST : PlatformPermission.STORAGE_RESTORE_READ;
+        }
+        if (path.contains("/availability") || path.contains("/delivery-grants")
+            || path.contains("/delivery-leases") || path.contains("/content")) {
+            return PlatformPermission.RESOURCE_READ;
         }
         if (path.contains("/storage/providers")) return PlatformPermission.STORAGE_PROVIDER_MANAGE;
         if (path.contains("/ingestion/sources")) return PlatformPermission.INGESTION_SOURCE_MANAGE;
