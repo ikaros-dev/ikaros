@@ -193,8 +193,8 @@ public class StorageRestoreTaskHandler {
             .flatMap(saved -> status == StorageRestoreRequestStatus.COMPLETED
                 || status == StorageRestoreRequestStatus.PARTIAL_FAILURE
                 || status == StorageRestoreRequestStatus.FAILED
-                ? events.append("storage.restore-request.completed", 1, "restore_request", saved.id(),
-                    "{\"request_id\":\"" + saved.id() + "\",\"status\":\"" + saved.status()
+                    ? events.append("storage.restore-request.completed", 1, "restore_request", saved.id(),
+                    "{\"request_id\":\"" + saved.id() + "\",\"status\":\"" + publicStatus(saved.status())
                         + "\",\"ready_items\":" + saved.completedItems() + ",\"failed_items\":"
                         + Math.max(0, saved.totalItems() - saved.completedItems()) + "}").thenReturn(saved)
                 : Mono.just(saved));
@@ -204,5 +204,16 @@ public class StorageRestoreTaskHandler {
         Object value = payload.get(key);
         if (value == null) throw new IllegalArgumentException("Task Payload 缺少 " + key);
         return UUID.fromString(value.toString());
+    }
+
+    private String publicStatus(StorageRestoreRequestStatus status) {
+        return switch (status) {
+            case REQUESTED -> "PENDING";
+            case IN_PROGRESS -> "ACTIVE";
+            case COMPLETED -> "SUCCEEDED";
+            case PARTIAL_FAILURE -> "PARTIAL";
+            case FAILED -> "FAILED";
+            case CANCELLED -> "CANCELLED";
+        };
     }
 }
