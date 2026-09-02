@@ -1,0 +1,1 @@
+package run.ikaros.photo; import java.time.Instant; import java.util.UUID; public record PhotoView(UUID id,UUID resourceId,Instant captureTime,Integer width,Integer height,String cameraMake,String cameraModel) {}
