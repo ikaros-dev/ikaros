@@ -33,7 +33,9 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
                 "{}", DeliveryGrantRevocationLevel.IMMEDIATE, 1, DeliveryProviderHealthStatus.UNKNOWN,
                 request.enabled() == null || request.enabled(), now, now, null)); }))
             .onErrorMap(DuplicateKeyException.class, e -> new ConflictException("Delivery Provider 标识已存在")))
-            .flatMap(saved -> emit("storage.delivery-provider.created", saved).thenReturn(view(saved)));
+            .flatMap(saved -> emit("storage.delivery-provider.created", saved,
+                "{\"delivery_provider_id\":\"" + saved.id() + "\",\"provider_type\":\"" + saved.providerType() + "\"}")
+                .thenReturn(view(saved)));
     }
 
     @Override public Flux<DeliveryProviderView> list() { return providers.findAll().map(this::view); }
@@ -51,7 +53,9 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
                     request.displayName().trim(), request.credentialRef(), config, old.capabilities(), old.grantRevocationMode(),
                     old.signingKeyVersion(), old.healthStatus(), request.enabled() == null ? old.enabled() : request.enabled(),
                     old.createdAt(), Instant.now(), old.version())); })
-            .flatMap(saved -> emit("storage.delivery-provider.updated", saved).thenReturn(view(saved))));
+            .flatMap(saved -> emit("storage.delivery-provider.updated", saved,
+                "{\"delivery_provider_id\":\"" + saved.id() + "\",\"changed_fields\":[\"config\",\"enabled\"],\"version\":"
+                    + (saved.version() == null ? 0 : saved.version()) + "}").thenReturn(view(saved))));
     }
 
     private void validate(DeliveryProviderWriteRequest request) {
@@ -60,7 +64,9 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
     }
     private Mono<String> encode(Map<String, Object> value) { try { return Mono.just(mapper.writeValueAsString(value == null ? Map.of() : value)); }
         catch (JsonProcessingException e) { return Mono.error(new IllegalArgumentException("Delivery Provider config 无法序列化", e)); } }
-    private Mono<Void> emit(String type, DeliveryProviderEntity provider) { return events.append(type, 1, "delivery_provider", provider.id(), "{}").then(); }
+    private Mono<Void> emit(String type, DeliveryProviderEntity provider, String payload) {
+        return events.append(type, 1, "delivery_provider", provider.id(), payload).then();
+    }
     private DeliveryProviderView view(DeliveryProviderEntity e) { return new DeliveryProviderView(e.id(), e.providerKey(), e.providerType(), e.displayName(),
         e.credentialRef(), decode(e.config()), decode(e.capabilities()), e.grantRevocationMode(), e.signingKeyVersion(), e.healthStatus(), e.enabled(),
         e.createdAt(), e.updatedAt(), e.version() == null ? 0 : e.version()); }
