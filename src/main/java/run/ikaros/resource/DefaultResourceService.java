@@ -89,10 +89,25 @@ public class DefaultResourceService implements ResourceService {
                 request.summary() == null ? resource.summary() : request.summary(), resource.dataClassification(),
                 resource.lifecycle(), resource.createdAt(), Instant.now(), resource.deletedAt(), resource.version());
             return resourceRepository.save(updated)
-                .flatMap(saved -> emit("resource.resource.updated", saved)
+                .flatMap(saved -> syncPrimaryTitle(resource, saved, request)
+                    .then(emit("resource.resource.updated", saved))
                     .then(auditService.record(ownerId, "resource.update", "RESOURCE", resourceId, "{}"))
                     .then(toView(saved)));
         }));
+    }
+
+    private Mono<Void> syncPrimaryTitle(ResourceEntity previous, ResourceEntity updated,
+                                         UpdateResourceRequest request) {
+        if (request.primaryTitle() == null || request.primaryTitle().equals(previous.primaryTitle())) {
+            return Mono.empty();
+        }
+        return titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(updated.id())
+            .filter(ResourceTitleEntity::primary)
+            .next()
+            .flatMap(title -> titleRepository.save(new ResourceTitleEntity(title.id(), title.resourceId(),
+                title.locale(), request.primaryTitle(), true, title.createdAt(), Instant.now(), title.version(),
+                title.titleKind())))
+            .then();
     }
 
     @Override
