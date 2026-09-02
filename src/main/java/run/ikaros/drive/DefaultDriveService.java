@@ -249,7 +249,22 @@ public class DefaultDriveService implements DriveService {
             .map(this::mappingView));
     }
     @Override public Flux<DriveTombstoneView> tombstones(UUID actorId, UUID spaceId, long afterSequence) { return ownedSpace(actorId,spaceId).flatMapMany(s -> Flux.fromIterable(tombstoneLog.values()).filter(t -> t.spaceId().equals(spaceId) && t.sequence() > afterSequence).sort(java.util.Comparator.comparing(DriveTombstoneView::sequence))); }
-    @Override public Flux<SyncMutationResult> applyMutations(UUID actorId, UUID bindingId, java.util.List<SyncMutationRequest> requests) { return Flux.fromIterable(requests).concatMap(request -> { Mono<DriveNodeView> action = switch (request.kind()) { case RENAME -> rename(actorId,request.nodeId(),new RenameDriveNodeRequest(request.name(),request.expectedVersion())); case MOVE -> move(actorId,request.nodeId(),new MoveDriveNodeRequest(request.parentId(),request.expectedVersion())); case TRASH -> trash(actorId,request.nodeId(),request.expectedVersion()); case RESTORE -> restore(actorId,request.nodeId(),request.expectedVersion()); }; return action.map(node->new SyncMutationResult(request.operationId(),true,node,null,null)).onErrorResume(error->Mono.just(new SyncMutationResult(request.operationId(),false,null,error.getClass().getSimpleName(),error.getMessage()))); }); }
+    @Override public Flux<SyncMutationResult> applyMutations(UUID actorId, UUID bindingId, java.util.List<SyncMutationRequest> requests) {
+        return ownedBinding(actorId, bindingId).flatMapMany(binding -> {
+            if (!binding.enabled()) return Flux.error(new NotFoundException("Sync Binding 不存在或已暂停"));
+            return Flux.fromIterable(requests).concatMap(request -> {
+                Mono<DriveNodeView> action = switch (request.kind()) {
+                    case RENAME -> rename(actorId, request.nodeId(), new RenameDriveNodeRequest(request.name(), request.expectedVersion()));
+                    case MOVE -> move(actorId, request.nodeId(), new MoveDriveNodeRequest(request.parentId(), request.expectedVersion()));
+                    case TRASH -> trash(actorId, request.nodeId(), request.expectedVersion());
+                    case RESTORE -> restore(actorId, request.nodeId(), request.expectedVersion());
+                };
+                return action.map(node -> new SyncMutationResult(request.operationId(), true, node, null, null))
+                    .onErrorResume(error -> Mono.just(new SyncMutationResult(request.operationId(), false, null,
+                        error.getClass().getSimpleName(), error.getMessage())));
+            });
+        });
+    }
     @Override public Mono<SyncBindingView> advanceCursor(UUID actorId, UUID bindingId, long cursor) {
         if (cursor < 0) return Mono.error(new IllegalArgumentException("Sync Cursor 不能为负数"));
         return ownedBinding(actorId, bindingId).flatMap(binding -> {
