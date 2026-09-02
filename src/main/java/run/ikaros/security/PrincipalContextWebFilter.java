@@ -23,7 +23,9 @@ public class PrincipalContextWebFilter implements WebFilter {
             UUID sessionId = session == null || session.isBlank() ? null : UUID.fromString(session);
             String requestId = headerOrNew(exchange, "X-Request-Id");
             String correlationId = headerOrNew(exchange, "X-Correlation-Id");
-            PrincipalContext context = new PrincipalContext(actorId, sessionId, requestId, correlationId, false);
+            String causationId = exchange.getRequest().getHeaders().getFirst("X-Causation-Id");
+            PrincipalContext context = new PrincipalContext(actorId, sessionId, requestId, correlationId,
+                causationId, false);
             exchange.getResponse().getHeaders().set("X-Request-Id", requestId);
             return chain.filter(exchange).contextWrite(ctx -> ctx.put(PrincipalContext.CONTEXT_KEY, context));
         } catch (IllegalArgumentException invalidIdentity) {

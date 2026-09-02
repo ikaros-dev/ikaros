@@ -18,6 +18,16 @@ public record OutboxEventEntity(
     @Column("occurred_at") Instant occurredAt,
     @Column("attempt_count") int attemptCount,
     @Column("last_attempt_at") Instant lastAttemptAt,
-    @Column("dispatched_at") Instant dispatchedAt
+    @Column("dispatched_at") Instant dispatchedAt,
+    @Column("request_id") String requestId,
+    @Column("correlation_id") String correlationId,
+    @Column("causation_id") String causationId,
+    @Column("actor_id") UUID actorId
 ) {
+    public OutboxEventEntity(UUID id, String eventType, int schemaVersion, String aggregateType, UUID aggregateId,
+                             String payloadJson, Instant occurredAt, int attemptCount, Instant lastAttemptAt,
+                             Instant dispatchedAt) {
+        this(id, eventType, schemaVersion, aggregateType, aggregateId, payloadJson, occurredAt, attemptCount,
+            lastAttemptAt, dispatchedAt, null, null, null, null);
+    }
 }

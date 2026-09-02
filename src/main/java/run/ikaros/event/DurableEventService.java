@@ -6,6 +6,8 @@ import java.util.function.Function;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
+import run.ikaros.security.PrincipalContexts;
+import run.ikaros.security.PrincipalContext;
 
 /** Outbox 写入与 Inbox 幂等消费边界。 */
 @Service
@@ -32,8 +34,19 @@ public class DurableEventService {
             || normalized.contains("refresh_token")) {
             return Mono.error(new IllegalArgumentException("事件 Payload 不得包含 Secret 或 Token"));
         }
-        return outbox.save(new OutboxEventEntity(null, eventType, schemaVersion, aggregateType,
-            aggregateId, payloadJson, Instant.now(), 0, null, null));
+        return PrincipalContexts.current()
+            .flatMap(context -> appendNow(eventType, schemaVersion, aggregateType, aggregateId, payloadJson, context))
+            .switchIfEmpty(appendNow(eventType, schemaVersion, aggregateType, aggregateId, payloadJson, null));
+    }
+
+    private Mono<OutboxEventEntity> appendNow(String eventType, int schemaVersion, String aggregateType,
+                                              UUID aggregateId, String payloadJson, PrincipalContext context) {
+        return outbox.save(new OutboxEventEntity(null, eventType, schemaVersion, aggregateType, aggregateId,
+            payloadJson, Instant.now(), 0, null, null,
+            context == null ? null : context.requestId(),
+            context == null ? null : context.correlationId(),
+            context == null ? null : context.causationId(),
+            context == null ? null : context.actorId()));
     }
 
     public Mono<Long> dispatchOnce(String consumerId, Function<OutboxEventEntity, Mono<Void>> handler) {
