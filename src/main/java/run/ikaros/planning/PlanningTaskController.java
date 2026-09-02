@@ -15,6 +15,7 @@ public class PlanningTaskController {
     @GetMapping public Flux<PlanningTaskView> list(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,@RequestParam(required=false) PlanningTaskStatus status){return service.list(owner,status);}
     @GetMapping("/today") public Flux<PlanningTaskView> today(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,@RequestParam(defaultValue="UTC") String timeZone){return service.today(owner,ZoneId.of(timeZone));}
     @GetMapping("/upcoming") public Flux<PlanningTaskView> upcoming(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,@RequestParam(required=false) Instant from){return service.upcoming(owner,from);}
+    @GetMapping("/smart") public Flux<PlanningTaskView> smart(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,@RequestParam(required=false) PlanningTaskStatus status,@RequestParam(required=false) PlanningTaskPriority priority,@RequestParam(required=false) Instant from,@RequestParam(required=false) Instant to,@RequestParam(defaultValue="false") boolean overdue){return service.filter(owner,status,priority,from,to,overdue);}
     @PatchMapping("/{taskId}") public Mono<PlanningTaskView> update(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,@PathVariable UUID taskId,@Valid @RequestBody UpdatePlanningTaskRequest request){return service.update(owner,taskId,request);}
     @PostMapping("/{taskId}/status/{status}") public Mono<PlanningTaskView> status(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,@PathVariable UUID taskId,@PathVariable PlanningTaskStatus status){return service.changeStatus(owner,taskId,status);}
 }
