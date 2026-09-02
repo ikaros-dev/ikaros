@@ -31,6 +31,8 @@ export type UserRecord = { id: string; display_name?: string; username?: string;
 export type BackgroundTaskRecord = { id: string; task_type?: string; owning_subsystem?: string; state?: string; progress?: number; current_stage?: string; created_at?: string }
 export type RoleRecord = { id: string; code?: string; name?: string; description?: string; builtIn?: boolean; permissions?: string[] }
 export type StorageProviderRecord = { id: string; providerKey?: string; providerType?: string; tier?: string; status?: string; updatedAt?: string }
+export type DriveSpaceRecord = { id: string; name?: string; status?: string; quota_bytes?: number; used_bytes?: number; updated_at?: string }
+export type PlanningTaskRecord = { id: string; title?: string; status?: string; priority?: string; due_at?: string; updated_at?: string }
 
 export const api = {
   listResources: (params = '') => request<Page<ResourceRecord> | ResourceRecord[]>(`/resources${params}`),
@@ -43,6 +45,8 @@ export const api = {
   listRoles: () => request<RoleRecord[]>('/admin/roles'),
   listPermissions: () => request<string[]>('/admin/permissions'),
   listStorageProviders: () => request<StorageProviderRecord[]>('/admin/storage-providers'),
+  listDriveSpaces: (actorId: string) => request<DriveSpaceRecord[]>('/drive/spaces', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
+  listTodayTasks: (actorId: string, timeZone = 'Asia/Shanghai') => request<PlanningTaskRecord[]>(`/planning/tasks/today?timeZone=${encodeURIComponent(timeZone)}`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   enableStorageProvider: (id: string) => request<StorageProviderRecord>(`/admin/storage-providers/${encodeURIComponent(id)}/enable`, { method: 'POST' }),
   disableStorageProvider: (id: string) => request<void>(`/admin/storage-providers/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   getBackgroundTask: (id: string) => request<BackgroundTaskRecord>(`/background-tasks/${encodeURIComponent(id)}`),

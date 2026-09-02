@@ -81,6 +81,7 @@ const resources = [{ name: '《星际穿越》', type: '电影', tags: ['科幻'
 type TableRow = { id?: string; name: string; owner: string; status: string; updated: string }
 const rows = ref<TableRow[]>([{ id: 'demo-backup', name: '媒体资源索引', owner: '系统', status: '已启用', updated: '刚刚' }, { id: 'demo-weekly-backup', name: '每周资料备份', owner: '你', status: '运行中', updated: '8 分钟前' }, { id: 'demo-reading-sync', name: '阅读进度同步', owner: '你', status: '已暂停', updated: '昨天' }, { id: 'demo-storage-health', name: '存储健康检查', owner: '系统', status: '已启用', updated: '昨天' }, { id: 'demo-weekly-report', name: '活动周报', owner: '你', status: '失败', updated: '2 天前' }])
 const demoRows = rows.value
+const actorId = String(import.meta.env.VITE_ACTOR_ID || '')
 async function loadResources() {
   if (isDashboard.value) return
   loading.value = true
@@ -101,6 +102,12 @@ async function loadResources() {
     } else if (currentPath.value === 'storage/tiers') {
       const result = await api.listStorageProviders()
       if (result.length) rows.value = result.slice(0, 5).map(item => ({ name: item.providerKey || item.id.slice(0, 8), owner: `${item.providerType || '存储'} · ${item.tier || '默认层'}`, status: item.status || 'DISABLED', updated: item.updatedAt ? new Date(item.updatedAt).toLocaleString('zh-CN') : '刚刚' }))
+    } else if (currentPath.value === 'drive' || currentPath.value === 'drive/spaces') {
+      const result = await api.listDriveSpaces(actorId)
+      if (result.length) rows.value = result.slice(0, 5).map(item => ({ id: item.id, name: item.name || `Drive Space ${item.id.slice(0, 8)}`, owner: '当前用户', status: item.status || 'ACTIVE', updated: item.updated_at ? new Date(item.updated_at).toLocaleString('zh-CN') : '刚刚' }))
+    } else if (currentPath.value === 'planning/today') {
+      const result = await api.listTodayTasks(actorId)
+      if (result.length) rows.value = result.slice(0, 5).map(item => ({ id: item.id, name: item.title || `Task ${item.id.slice(0, 8)}`, owner: item.priority || '普通', status: item.status || 'OPEN', updated: item.due_at ? new Date(item.due_at).toLocaleString('zh-CN') : '今天' }))
     } else return
     apiConnected.value = true
   } catch (error) {
