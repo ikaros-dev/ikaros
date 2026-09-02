@@ -37,9 +37,9 @@ public class BlobGcTaskHandler {
                 String requested = "{\"blob_id\":\"" + candidate.blobId() + "\",\"task_id\":\"" + task.id() + "\"}";
                 return events.append("storage.blob.gc-requested", 1, "blob", candidate.blobId(), requested)
                     .then(collector.purge(candidate.blobId()))
-                    .then(events.append("storage.blob.purged", 1, "blob", candidate.blobId(),
-                        "{\"blob_id\":\"" + candidate.blobId() + "\",\"purged_placement_count\":1}"))
-                    .thenReturn(candidate.blobId());
+                    .flatMap(purgedCount -> events.append("storage.blob.purged", 1, "blob", candidate.blobId(),
+                        "{\"blob_id\":\"" + candidate.blobId() + "\",\"purged_placement_count\":" + purgedCount + "}")
+                        .thenReturn(candidate.blobId()));
             })
             .collectList()
             .map(purged -> {

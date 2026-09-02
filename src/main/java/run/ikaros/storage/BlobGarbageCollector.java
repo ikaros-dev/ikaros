@@ -26,8 +26,8 @@ public class BlobGarbageCollector {
         this.leases = leases; this.providers = providers; this.deleter = deleter;
     }
 
-    public Mono<Void> purge(UUID blobId) {
-        return transaction.transactional(blobs.findById(blobId)
+    public Mono<Integer> purge(UUID blobId) {
+        Mono<Integer> purge = blobs.findById(blobId)
             .switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在")))
             .flatMap(blob -> attachments.countByBlobIdAndDeletedAtIsNull(blob.id())
                 .filter(count -> count == 0)
@@ -36,14 +36,20 @@ public class BlobGarbageCollector {
                 .flatMap(active -> active ? Mono.error(new ConflictException("Blob 存在有效 Retention Hold")) : Mono.empty())
                 .then(leases.protectsBlob(blob.id()))
                 .flatMap(active -> active ? Mono.error(new ConflictException("Blob 正被 Delivery Lease 保护")) : Mono.empty())
-                .then(placements.findAllByBlobIdOrderByCreatedAtAsc(blob.id()).concatMap(placement ->
-                    providers.getByKey(placement.provider()).switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
-                        .flatMap(provider -> deleter.supports(provider)
-                            ? deleter.delete(provider, placement, blob)
-                            : Mono.error(new run.ikaros.common.StorageUnavailableException("Provider 不支持物理删除"))))
-                    .then())
-                .then(placements.deleteByBlobId(blob.id()))
-                .then(blobs.deleteById(blob.id())))
-            .then());
+                .then(placements.findAllByBlobIdOrderByCreatedAtAsc(blob.id()).collectList())
+                .flatMap(all -> deletePlacements(blob, all)));
+        return transaction.transactional(purge);
+    }
+
+    private Mono<Integer> deletePlacements(BlobEntity blob, java.util.List<BlobPlacementEntity> all) {
+        return reactor.core.publisher.Flux.fromIterable(all)
+            .concatMap(placement -> providers.getByKey(placement.provider())
+                .switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
+                .flatMap(provider -> deleter.supports(provider)
+                    ? deleter.delete(provider, placement, blob)
+                    : Mono.error(new run.ikaros.common.StorageUnavailableException("Provider 不支持物理删除"))))
+            .then(placements.deleteByBlobId(blob.id()))
+            .then(blobs.deleteById(blob.id()))
+            .thenReturn(all.size());
     }
 }
