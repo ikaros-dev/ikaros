@@ -8,21 +8,31 @@ import java.util.Map;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Mono;
 import run.ikaros.audit.AuditService;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.event.DurableEventService;
 
 @Service
 public class DefaultIngestionSourceService implements IngestionSourceService {
     private final IngestionSourceRepository repository;
     private final AuditService auditService;
     private final ObjectMapper mapper;
+    private final DurableEventService events;
 
     public DefaultIngestionSourceService(IngestionSourceRepository repository, AuditService auditService,
                                          ObjectMapper mapper) {
+        this(repository, auditService, mapper, null);
+    }
+
+    @Autowired
+    public DefaultIngestionSourceService(IngestionSourceRepository repository, AuditService auditService,
+                                         ObjectMapper mapper, DurableEventService events) {
         this.repository = repository;
         this.auditService = auditService;
         this.mapper = mapper;
+        this.events = events;
     }
 
     @Override
@@ -35,8 +45,9 @@ public class DefaultIngestionSourceService implements IngestionSourceService {
             null, ownerId, request.type().name(), request.displayName(), request.rootReference(),
             request.credentialReference(), policy, IngestionSourceStatus.ENABLED.name(), null,
             "UNKNOWN", now, now, null)))
-            .flatMap(source -> auditService.record(ownerId, "ingestion.source.create", "INGESTION_SOURCE",
-                source.id(), "{}").thenReturn(toView(source)));
+            .flatMap(source -> emit("ingestion.source.created", source.id(), ownerId, null)
+                .then(auditService.record(ownerId, "ingestion.source.create", "INGESTION_SOURCE", source.id(), "{}"))
+                .thenReturn(toView(source)));
     }
 
     @Override
@@ -64,7 +75,16 @@ public class DefaultIngestionSourceService implements IngestionSourceService {
             current.id(), current.ownerId(), current.sourceType(), current.displayName(), current.rootReference(),
             current.credentialReference(), current.scanPolicyJson(), status.name(), current.lastSuccessfulScan(),
             current.healthStatus(), current.createdAt(), Instant.now(), current.version())))
-            .flatMap(saved -> auditService.record(ownerId, action, "INGESTION_SOURCE", sourceId, "{}").thenReturn(toView(saved)));
+            .flatMap(saved -> emit("ingestion.source." + status.name().toLowerCase(), sourceId, ownerId, status.name())
+                .then(auditService.record(ownerId, action, "INGESTION_SOURCE", sourceId, "{}"))
+                .thenReturn(toView(saved)));
+    }
+
+    private Mono<Void> emit(String type, UUID sourceId, UUID ownerId, String status) {
+        if (events == null) return Mono.empty();
+        String extra = status == null ? "" : ",\"status\":\"" + status + "\"";
+        return events.append(type, 1, "ingestion_source", sourceId,
+            "{\"source_id\":\"" + sourceId + "\",\"owner_id\":\"" + ownerId + "\"" + extra + "}").then();
     }
 
     private Mono<IngestionSourceEntity> owned(UUID ownerId, UUID sourceId) {
