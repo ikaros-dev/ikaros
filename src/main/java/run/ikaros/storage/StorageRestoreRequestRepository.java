@@ -10,6 +10,7 @@ public interface StorageRestoreRequestRepository extends ReactiveCrudRepository<
     Mono<StorageRestoreRequestEntity> findByActorIdAndScopeAndScopeIdAndIdempotencyKey(UUID actorId,
         StorageRestoreScope scope, UUID scopeId, String idempotencyKey);
     Flux<StorageRestoreRequestEntity> findAllByActorIdOrderByCreatedAtDesc(UUID actorId);
+    Flux<StorageRestoreRequestEntity> findAllByStatusOrderByCreatedAtAsc(StorageRestoreRequestStatus status);
     Mono<StorageRestoreRequestEntity> findFirstByActorIdAndScopeAndScopeIdAndStatusInOrderByCreatedAtDesc(
         UUID actorId, StorageRestoreScope scope, UUID scopeId, Collection<StorageRestoreRequestStatus> statuses);
 }

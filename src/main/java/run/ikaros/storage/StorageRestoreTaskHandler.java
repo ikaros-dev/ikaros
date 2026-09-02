@@ -210,7 +210,7 @@ public class StorageRestoreTaskHandler {
 
     private String publicStatus(StorageRestoreRequestStatus status) {
         return switch (status) {
-            case REQUESTED -> "PENDING";
+            case QUEUED, REQUESTED -> "PENDING";
             case IN_PROGRESS -> "ACTIVE";
             case COMPLETED -> "SUCCEEDED";
             case PARTIAL_FAILURE -> "PARTIAL";

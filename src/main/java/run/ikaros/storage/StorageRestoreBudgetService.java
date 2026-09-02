@@ -45,6 +45,10 @@ public class StorageRestoreBudgetService {
     }
 
     public Mono<Void> check(int items, long bytes, String confirmationToken) {
+        return evaluate(items, bytes, confirmationToken).then();
+    }
+
+    public Mono<StorageRestoreBudgetDecision> evaluate(int items, long bytes, String confirmationToken) {
         if (items < 1 || bytes < 0) return Mono.error(new IllegalArgumentException("Restore 请求规模无效"));
         return budgets.findById(DEFAULT_ID).flatMap(budget -> {
             if (items > budget.maxItemsPerRequest() || bytes > budget.maxBytesPerRequest())
@@ -60,15 +64,17 @@ public class StorageRestoreBudgetService {
                     if (activeCount >= budget.maxConcurrentOperations() || exceedsConcurrentBytes
                         || dailyBytes > budget.dailyRequestedBytes() - bytes)
                         return overBudget(budget, confirmationToken, "Restore 请求超过并发或每日预算");
-                    return Mono.empty();
+                    return Mono.just(StorageRestoreBudgetDecision.ACCEPTED);
                 });
         });
     }
 
-    private Mono<Void> overBudget(StorageRestoreBudgetEntity budget, String confirmationToken, String message) {
+    private Mono<StorageRestoreBudgetDecision> overBudget(StorageRestoreBudgetEntity budget, String confirmationToken, String message) {
         if (budget.overBudgetAction() == StorageRestoreBudgetAction.REQUIRE_CONFIRMATION
-            && confirmationToken != null && !confirmationToken.isBlank()) return Mono.empty();
-        return reject(budget, message);
+            && confirmationToken != null && !confirmationToken.isBlank()) return Mono.just(StorageRestoreBudgetDecision.CONFIRMED);
+        if (budget.overBudgetAction() == StorageRestoreBudgetAction.QUEUE_AFTER_BUDGET_RESET
+            && message.contains("并发或每日")) return Mono.just(StorageRestoreBudgetDecision.QUEUED);
+        return reject(budget, message).then(Mono.empty());
     }
 
     private Mono<Void> reject(StorageRestoreBudgetEntity budget, String message) {

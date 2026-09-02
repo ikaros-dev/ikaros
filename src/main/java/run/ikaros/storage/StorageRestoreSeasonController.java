@@ -25,7 +25,7 @@ public class StorageRestoreSeasonController {
 
     private String status(StorageRestoreRequestStatus value) {
         return switch (value) {
-            case REQUESTED -> "PENDING";
+            case QUEUED, REQUESTED -> "PENDING";
             case IN_PROGRESS -> "ACTIVE";
             case COMPLETED -> "SUCCEEDED";
             case PARTIAL_FAILURE -> "PARTIAL";
