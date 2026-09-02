@@ -239,8 +239,27 @@ public class DefaultDriveService implements DriveService {
     }
     @Override public Flux<DriveTombstoneView> tombstones(UUID actorId, UUID spaceId, long afterSequence) { return ownedSpace(actorId,spaceId).flatMapMany(s->Flux.empty()); }
     @Override public Flux<SyncMutationResult> applyMutations(UUID actorId, UUID bindingId, java.util.List<SyncMutationRequest> requests) { return Flux.fromIterable(requests).concatMap(request -> { Mono<DriveNodeView> action = switch (request.kind()) { case RENAME -> rename(actorId,request.nodeId(),new RenameDriveNodeRequest(request.name(),request.expectedVersion())); case MOVE -> move(actorId,request.nodeId(),new MoveDriveNodeRequest(request.parentId(),request.expectedVersion())); case TRASH -> trash(actorId,request.nodeId(),request.expectedVersion()); case RESTORE -> restore(actorId,request.nodeId(),request.expectedVersion()); }; return action.map(node->new SyncMutationResult(request.operationId(),true,node,null,null)).onErrorResume(error->Mono.just(new SyncMutationResult(request.operationId(),false,null,error.getClass().getSimpleName(),error.getMessage()))); }); }
-    @Override public Mono<SyncBindingView> advanceCursor(UUID actorId, UUID bindingId, long cursor) { return Mono.error(new NotFoundException("Sync Binding 不存在")); }
-    @Override public Mono<SyncBindingView> requestFullResync(UUID actorId, UUID bindingId) { return Mono.error(new NotFoundException("Sync Binding 不存在")); }
+    @Override public Mono<SyncBindingView> advanceCursor(UUID actorId, UUID bindingId, long cursor) {
+        if (cursor < 0) return Mono.error(new IllegalArgumentException("Sync Cursor 不能为负数"));
+        return ownedBinding(actorId, bindingId).flatMap(binding -> {
+            if (!binding.enabled()) return Mono.error(new NotFoundException("Sync Binding 不存在或已暂停"));
+            if (cursor < binding.cursor()) return Mono.error(new ConflictException("Sync Cursor 不能回退"));
+            Binding updated = new Binding(binding.id(), binding.user(), binding.device(), binding.space(), binding.root(),
+                binding.scope(), binding.displayPath(), binding.sourceKind(), binding.mode(), binding.deletePolicy(),
+                binding.conflictPolicy(), binding.enabled(), binding.state(), cursor, binding.created(), Instant.now());
+            bindings.put(bindingId, updated);
+            return Mono.just(bindingView(updated));
+        });
+    }
+    @Override public Mono<SyncBindingView> requestFullResync(UUID actorId, UUID bindingId) {
+        return ownedBinding(actorId, bindingId).map(binding -> {
+            Binding updated = new Binding(binding.id(), binding.user(), binding.device(), binding.space(), binding.root(),
+                binding.scope(), binding.displayPath(), binding.sourceKind(), binding.mode(), binding.deletePolicy(),
+                binding.conflictPolicy(), binding.enabled(), SyncBindingState.DEGRADED, 0, binding.created(), Instant.now());
+            bindings.put(bindingId, updated);
+            return bindingView(updated);
+        });
+    }
     @Override public Mono<CameraBackupView> updateCameraBackup(UUID actorId, UUID bindingId, CameraBackupRequest request) { return Mono.error(new NotFoundException("Sync Binding 不存在")); }
     @Override public Flux<CameraBackupView> cameraBackups(UUID actorId, UUID bindingId) { return Flux.empty(); }
     private Mono<DriveNodeView> changeLifecycle(UUID actor, UUID id, long expected, DriveLifecycle target) {
