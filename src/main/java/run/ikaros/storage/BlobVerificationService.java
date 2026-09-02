@@ -53,6 +53,7 @@ public class BlobVerificationService {
         String eventType = result.status() == BlobIntegrityStatus.VERIFIED
             ? "storage.blob.verified" : "storage.blob.integrity-failed";
         String payload = "{\"blob_id\":\"" + blob.id() + "\",\"placement_id\":\"" + placement.id()
+            + "\",\"integrity_status\":\"" + result.status() + "\",\"verified_at\":\"" + now
             + "\",\"actual_sha256\":\"" + result.actualSha256() + "\",\"actual_size\":" + result.actualSize() + "}";
         return transaction.transactional(placements.save(updatedPlacement).then(blobs.save(updatedBlob))
             .then(events.append(eventType, 1, "blob", blob.id(), payload)).thenReturn(

@@ -236,7 +236,9 @@ public class DefaultStorageService implements StorageService {
         }
         return taskService.submit("storage.blob-gc", Map.of("limit", limit,
             "minimum_age_seconds", minimumAge.getSeconds(), "requested_by", actorId.toString()),
-            "storage.blob-gc:" + actorId + ":" + limit + ":" + minimumAge.getSeconds());
+            "storage.blob-gc:" + actorId + ":" + limit + ":" + minimumAge.getSeconds())
+            .flatMap(task -> eventService == null ? Mono.just(task) : eventService.append("storage.blob.gc-requested", 1,
+                "storage_blob_gc", task.id(), "{\"task_id\":\"" + task.id() + "\"}").thenReturn(task));
     }
 
     private Mono<BlobEntity> findOrCreateBlob(AttachBlobRequest request) {
