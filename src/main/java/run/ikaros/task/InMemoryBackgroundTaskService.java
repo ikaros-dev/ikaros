@@ -179,6 +179,18 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
         });
     }
 
+    @Override
+    public Mono<BackgroundTask> acknowledgeCancellation(UUID taskId, UUID leaseToken) {
+        return leased(taskId, leaseToken).flatMap(task -> {
+            if (task.cancelRequestedAt() == null) return Mono.error(new ConflictException("Task 尚未请求取消"));
+            BackgroundTask updated = copy(task, TaskStatus.CANCELLED, task.leaseOwner(), task.leaseToken(),
+                task.leaseExpiresAt(), task.attempt(), task.cancelRequestedAt(), task.progress(), task.result());
+            tasks.replace(task.id(), task, updated);
+            finishAttempt(task, TaskStatus.CANCELLED.name(), null);
+            return Mono.just(updated);
+        });
+    }
+
     private Mono<BackgroundTask> leased(UUID id, UUID token) {
         return get(id).flatMap(task -> task.status() == TaskStatus.RUNNING && token != null
             && token.equals(task.leaseToken()) && task.leaseExpiresAt().isAfter(Instant.now())

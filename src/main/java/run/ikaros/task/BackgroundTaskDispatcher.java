@@ -34,7 +34,9 @@ public class BackgroundTaskDispatcher {
                     .then(Mono.error(new ConflictException("未注册 Task Handler: " + task.taskType())));
             }
             return handler.handle(task).defaultIfEmpty(Map.of())
-                .flatMap(result -> tasks.complete(task.id(), task.leaseToken(), result))
+                .flatMap(result -> tasks.get(task.id()).flatMap(current -> current.cancelRequestedAt() != null
+                    ? tasks.acknowledgeCancellation(task.id(), task.leaseToken())
+                    : tasks.complete(task.id(), task.leaseToken(), result)))
                 .onErrorResume(error -> tasks.fail(task.id(), task.leaseToken(), Map.of(
                     "code", error.getClass().getSimpleName(), "message", error.getMessage() == null ? "Task Handler 执行失败" : error.getMessage(),
                     "retryable", retryable(error))).then(Mono.error(error)));

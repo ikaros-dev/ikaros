@@ -177,6 +177,16 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
             .flatMap(this::view);
     }
 
+    @Override
+    public Mono<BackgroundTask> acknowledgeCancellation(UUID taskId, UUID leaseToken) {
+        return leased(taskId, leaseToken).flatMap(task -> {
+            if (task.cancelRequestedAt() == null) return Mono.error(new ConflictException("Task 尚未请求取消"));
+            return tasks.save(copy(task, TaskStatus.CANCELLED, task.leaseOwner(), task.leaseToken(), task.leaseExpiresAt(),
+                task.attempt(), task.cancelRequestedAt(), task.progress(), task.result()))
+                .flatMap(saved -> finishAttempt(task, TaskStatus.CANCELLED.name(), null).then(view(saved)));
+        });
+    }
+
     private Mono<BackgroundTaskEntity> leased(UUID id, UUID token) {
         return tasks.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Task 不存在"))).flatMap(task ->
             task.status().equals(TaskStatus.RUNNING.name()) && token != null && token.equals(task.leaseToken())

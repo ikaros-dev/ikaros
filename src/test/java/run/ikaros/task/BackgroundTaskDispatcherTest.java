@@ -78,4 +78,15 @@ class BackgroundTaskDispatcherTest {
         org.junit.jupiter.api.Assertions.assertNull(tasks.claim("runner", Duration.ofMinutes(1)).block());
         assertEquals(TaskStatus.TIMED_OUT, tasks.get(submitted.id()).block().status());
     }
+
+    @org.junit.jupiter.api.Test
+    void handlerCompletionHonorsCancellationRequest() {
+        InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
+        BackgroundTaskDispatcher dispatcher = new BackgroundTaskDispatcher(tasks);
+        dispatcher.register("cooperative", task -> tasks.cancel(task.id()).thenReturn(Map.of("ok", true)));
+        BackgroundTask submitted = tasks.submit("cooperative", Map.of(), "cooperative-cancel").block();
+        BackgroundTask result = dispatcher.dispatchOnce("runner", Duration.ofMinutes(1)).block();
+        assertEquals(TaskStatus.CANCELLED, result.status());
+        assertEquals(TaskStatus.CANCELLED, tasks.get(submitted.id()).block().status());
+    }
 }

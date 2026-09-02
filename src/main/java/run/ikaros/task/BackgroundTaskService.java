@@ -19,4 +19,5 @@ public interface BackgroundTaskService {
     Mono<BackgroundTask> fail(UUID taskId, UUID leaseToken, Map<String, Object> error);
     Mono<BackgroundTask> retry(UUID taskId);
     Mono<BackgroundTask> cancel(UUID taskId);
+    Mono<BackgroundTask> acknowledgeCancellation(UUID taskId, UUID leaseToken);
 }
