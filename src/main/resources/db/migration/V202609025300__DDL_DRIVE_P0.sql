@@ -192,6 +192,17 @@ CREATE TABLE planning_time_block (
 );
 CREATE INDEX idx_planning_time_block_owner_time ON planning_time_block (owner_id, start_at, end_at);
 
+CREATE TABLE planning_reminder (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, target_type VARCHAR(32) NOT NULL, target_id UUID NOT NULL,
+    trigger_at TIMESTAMPTZ NOT NULL, time_zone VARCHAR(64) NOT NULL DEFAULT 'UTC', channel VARCHAR(32) NOT NULL DEFAULT 'IN_APP',
+    status VARCHAR(24) NOT NULL DEFAULT 'SCHEDULED', snoozed_until TIMESTAMPTZ, fired_at TIMESTAMPTZ, acknowledged_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    version BIGINT NOT NULL DEFAULT 0, CHECK (target_type IN ('TASK','TIME_BLOCK','PROJECT','GOAL','IMPORTANT_DATE')),
+    CHECK (status IN ('SCHEDULED','SNOOZED','FIRED','ACKNOWLEDGED','CANCELLED')), CHECK (version >= 0)
+);
+CREATE INDEX idx_planning_reminder_due ON planning_reminder (status, trigger_at);
+CREATE INDEX idx_planning_reminder_owner ON planning_reminder (owner_id, trigger_at);
+
 CREATE TABLE offline_download_manifest (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), intent_id UUID NOT NULL, manifest_version BIGINT NOT NULL,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (intent_id, manifest_version),
