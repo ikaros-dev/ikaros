@@ -77,7 +77,8 @@ const visibleAnnouncements = computed(() => announcements.filter(item => announc
 const isLogin = computed(() => route.path === '/login'); const loginEmail = ref(''); const loginPassword = ref(''); const rememberLogin = ref(true); const loginError = ref('')
 function submitLogin() { loginError.value = ''; if (!loginEmail.value.trim()) { loginError.value = '请输入用户名或邮箱'; return } if (loginPassword.value.length < 6) { loginError.value = '密码至少需要 6 位'; return } const target = String(route.query.returnTo || '/console/dashboard'); router.push(target.startsWith('/console/') ? target : '/console/dashboard'); notify('演示登录成功；后端认证接口尚未接入') }
 const kpis = [{ label: '资源', value: '12,486', trend: '+8.4%', icon: '◈', tone: 'primary' }, { label: '存储', value: '68.4 GB', trend: '已配置 100 GB', icon: '▥', tone: 'teal' }, { label: '今天', value: '8 / 12', trend: '4 项待完成', icon: '✓', tone: 'orange' }, { label: '后台任务', value: '3', trend: '1 项失败', icon: '⇄', tone: 'purple' }, { label: '通知', value: '6', trend: '2 条重要', icon: '✉', tone: 'pink' }]
-const activities = [{ icon: '✦', text: '完成了媒体资源的元数据同步', target: '《星际穿越》', time: '12 分钟前', color: 'purple' }, { icon: '✓', text: '完成任务', target: '整理本周阅读清单', time: '1 小时前', color: 'teal' }, { icon: '↗', text: '更新了项目', target: 'Ikaros V2 产品设计', time: '昨天 18:24', color: 'orange' }, { icon: '♧', text: '收藏了资源', target: 'Material Design 3', time: '昨天 15:08', color: 'blue' }]
+type ActivityItem = { icon: string; text: string; target: string; time: string; color: string }
+const activities = ref<ActivityItem[]>([{ icon: '✦', text: '完成了媒体资源的元数据同步', target: '《星际穿越》', time: '12 分钟前', color: 'purple' }, { icon: '✓', text: '完成任务', target: '整理本周阅读清单', time: '1 小时前', color: 'teal' }, { icon: '↗', text: '更新了项目', target: 'Ikaros V2 产品设计', time: '昨天 18:24', color: 'orange' }, { icon: '♧', text: '收藏了资源', target: 'Material Design 3', time: '昨天 15:08', color: 'blue' }])
 const resources = [{ name: '《星际穿越》', type: '电影', tags: ['科幻', '收藏'], status: '进行中', progress: 72, updated: '12 分钟前' }, { name: 'Ikaros V2 产品设计', type: '文档', tags: ['项目'], status: '已更新', progress: 100, updated: '昨天' }, { name: 'Material Design 3', type: '网页', tags: ['设计系统'], status: '收藏', progress: 34, updated: '3 天前' }, { name: '2026 年读书计划', type: '集合', tags: ['计划'], status: '草稿', progress: 18, updated: '5 天前' }]
 type TableRow = { id?: string; name: string; owner: string; status: string; updated: string }
 const rows = ref<TableRow[]>([{ id: 'demo-backup', name: '媒体资源索引', owner: '系统', status: '已启用', updated: '刚刚' }, { id: 'demo-weekly-backup', name: '每周资料备份', owner: '你', status: '运行中', updated: '8 分钟前' }, { id: 'demo-reading-sync', name: '阅读进度同步', owner: '你', status: '已暂停', updated: '昨天' }, { id: 'demo-storage-health', name: '存储健康检查', owner: '系统', status: '已启用', updated: '昨天' }, { id: 'demo-weekly-report', name: '活动周报', owner: '你', status: '失败', updated: '2 天前' }])
@@ -137,7 +138,35 @@ async function loadResources() {
     } else { rows.value = fallbackRows.map(row => ({ ...row })); notify('后端暂不可用，已保留当前页面演示数据') }
   } finally { loading.value = false }
 }
-onMounted(loadResources); watch(currentPath, loadResources)
+function activityPresentation(type = ''): Pick<ActivityItem, 'icon' | 'text' | 'color'> {
+  const normalized = type.toUpperCase()
+  if (normalized.includes('FAVOR')) return { icon: '♧', text: '收藏了资源', color: 'blue' }
+  if (normalized.includes('PLAY') || normalized.includes('VIEW') || normalized.includes('READ')) return { icon: '▶', text: '访问了资源', color: 'teal' }
+  if (normalized.includes('DOWNLOAD')) return { icon: '⇩', text: '下载了资源', color: 'orange' }
+  return { icon: '✦', text: '更新了资源活动', color: 'purple' }
+}
+function activityTime(value?: string) { return value ? new Date(value).toLocaleString('zh-CN') : '刚刚' }
+async function loadActivities() {
+  if (!actorId || (!isDashboard.value && currentPath.value !== 'activity')) return
+  try {
+    const records = await api.listRecentActivity(actorId, 10)
+    if (!records.length) return
+    const titleCache = new Map<string, string>()
+    const items = await Promise.all(records.slice(0, 6).map(async record => {
+      const resourceId = record.resourceId || record.resource_id || ''
+      let target = record.details || resourceId.slice(0, 8) || '资源'
+      if (resourceId && !record.details) {
+        if (!titleCache.has(resourceId)) { try { titleCache.set(resourceId, (await api.getResource(resourceId)).title || resourceId.slice(0, 8)) } catch { titleCache.set(resourceId, resourceId.slice(0, 8)) } }
+        target = titleCache.get(resourceId) || target
+      }
+      return { ...activityPresentation(record.type), target, time: activityTime(record.occurredAt || record.occurred_at) }
+    }))
+    activities.value = items
+  } catch (error) {
+    if (error instanceof ApiError && [401, 403].includes(error.status)) notify('活动列表暂不可用：当前会话没有访问权限')
+  }
+}
+onMounted(() => { loadResources(); loadActivities() }); watch(currentPath, () => { loadResources(); loadActivities() })
 onMounted(() => applyTheme(theme.value)); watch(expanded, () => applyTheme(theme.value), { deep: true })
 watch(() => route.query.q, value => { query.value = String(value || '') })
 onMounted(() => window.addEventListener('keydown', handleShortcut)); onBeforeUnmount(() => window.removeEventListener('keydown', handleShortcut))

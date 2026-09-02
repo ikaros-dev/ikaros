@@ -48,6 +48,7 @@ export type PlanningFocusRecord = { id: string; taskId?: string; mode?: string; 
 export type SessionRecord = { id: string; userId?: string; loginMethod?: string; currentSvl?: string; verifiedAt?: string; verificationExpiresAt?: string; expiresAt?: string; lastActiveAt?: string }
 export type CollectionRecord = { id: string; name: string; description?: string; updatedAt?: string }
 export type MediaHistoryRecord = { id: string; resourceId?: string; sessionId?: string; startedAt?: string; endedAt?: string; watchedSeconds?: number }
+export type ResourceActivityRecord = { id: string; resourceId?: string; resource_id?: string; type?: string; details?: string; occurredAt?: string; occurred_at?: string }
 
 export const api = {
   listResources: (params = '') => request<Page<ResourceRecord> | ResourceRecord[]>(`/resources${params}`),
@@ -55,6 +56,7 @@ export const api = {
   getFavorite: (id: string, actorId: string) => request<FavoriteRecord>(`/resources/${encodeURIComponent(id)}/favorite`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   addFavorite: (id: string, actorId: string) => request<FavoriteRecord>(`/resources/${encodeURIComponent(id)}/favorite`, { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId } }),
   removeFavorite: (id: string, actorId: string) => request<void>(`/resources/${encodeURIComponent(id)}/favorite`, { method: 'DELETE', headers: { 'X-Ikaros-Actor-Id': actorId } }),
+  listRecentActivity: (actorId: string, limit = 10) => request<ResourceActivityRecord[]>(`/activity?limit=${limit}`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   listDocuments: (actorId: string) => request<DocumentRecord[]>('/documents', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   getWorkingCopy: (id: string, actorId: string) => request<WorkingCopyRecord>(`/documents/${encodeURIComponent(id)}/working-copy`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   updateWorkingCopy: (id: string, body: { content: string; contentSchemaVersion?: string; expectedVersion: number }, actorId: string) => request<WorkingCopyRecord>(`/documents/${encodeURIComponent(id)}/working-copy`, { method: 'PUT', headers: { 'X-Ikaros-Actor-Id': actorId, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
