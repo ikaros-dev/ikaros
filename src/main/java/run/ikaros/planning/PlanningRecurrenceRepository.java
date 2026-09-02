@@ -6,4 +6,5 @@ import reactor.core.publisher.Mono;
 
 public interface PlanningRecurrenceRepository extends ReactiveCrudRepository<PlanningRecurrenceEntity, UUID> {
     Mono<PlanningRecurrenceEntity> findByOwnerIdAndTaskId(UUID ownerId, UUID taskId);
+    Mono<PlanningRecurrenceEntity> findByTaskId(UUID taskId);
 }
