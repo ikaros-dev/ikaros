@@ -1,0 +1,1 @@
+CREATE TABLE finance_ledger_member (id UUID PRIMARY KEY DEFAULT uuid_v7(),ledger_id UUID NOT NULL,principal_id UUID NOT NULL,added_by UUID NOT NULL,role VARCHAR(24) NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT now(),version BIGINT NOT NULL DEFAULT 0,CHECK(role IN ('VIEWER','EDITOR')),FOREIGN KEY(ledger_id) REFERENCES finance_ledger(id),UNIQUE(ledger_id,principal_id));
