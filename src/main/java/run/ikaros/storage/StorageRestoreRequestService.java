@@ -2,6 +2,7 @@ package run.ikaros.storage;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -112,6 +113,29 @@ public class StorageRestoreRequestService {
         return requests.findAllByActorIdOrderByCreatedAtDesc(actorId)
             .filter(request -> status == null || request.status() == status)
             .map(this::view);
+    }
+
+    public Mono<RestoreRequestPage> listPage(UUID actorId, StorageRestoreRequestStatus status, String cursor) {
+        return list(actorId, status).collectList().map(all -> {
+            int start = 0;
+            if (cursor != null && !cursor.isBlank()) {
+                UUID cursorId;
+                try {
+                    cursorId = UUID.fromString(cursor);
+                } catch (IllegalArgumentException ex) {
+                    throw new IllegalArgumentException("Restore Request cursor 无效");
+                }
+                int cursorIndex = -1;
+                for (int i = 0; i < all.size(); i++) {
+                    if (all.get(i).id().equals(cursorId)) { cursorIndex = i; break; }
+                }
+                if (cursorIndex < 0) throw new IllegalArgumentException("Restore Request cursor 不属于当前查询");
+                start = cursorIndex + 1;
+            }
+            int end = Math.min(start + 50, all.size());
+            String next = end < all.size() ? all.get(end - 1).id().toString() : null;
+            return new RestoreRequestPage(all.subList(start, end), next);
+        });
     }
 
     public Mono<StorageRestoreRequestView> cancel(UUID actorId, UUID id) {

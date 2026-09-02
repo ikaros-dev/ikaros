@@ -31,8 +31,8 @@ public class StorageRestoreContractController {
     @GetMapping("/api/v2/restore-requests")
     public Mono<RestoreRequestContractListView> list(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @RequestParam(required=false) String cursor, @RequestParam(required=false) String status) {
-        return service.list(actorId, internalStatus(status)).map(this::contract).collectList()
-            .map(items -> new RestoreRequestContractListView(items, null));
+        return service.listPage(actorId, internalStatus(status), cursor)
+            .map(page -> new RestoreRequestContractListView(page.items().stream().map(this::contract).toList(), page.nextCursor()));
     }
 
     @DeleteMapping("/api/v2/restore-requests/{requestId}")
