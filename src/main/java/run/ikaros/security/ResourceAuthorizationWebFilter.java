@@ -29,6 +29,10 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
         String path = exchange.getRequest().getPath().value();
         if (!(path.startsWith("/api/v2/resources") || path.startsWith("/api/resources")
             || path.startsWith("/api/v2/storage/providers") || path.startsWith("/api/storage/providers")
+            || path.startsWith("/api/v2/admin/storage-providers")
+            || path.startsWith("/api/v2/admin/delivery-providers")
+            || path.startsWith("/api/v2/admin/restore-budget-policy")
+            || path.startsWith("/api/v2/storage/restore-budget")
             || path.startsWith("/api/v2/ingestion/sources") || path.startsWith("/api/ingestion/sources"))) {
             return chain.filter(exchange);
         }
@@ -47,6 +51,11 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
     }
 
     private PlatformPermission permission(String method, String path) {
+        if (path.contains("/admin/delivery-providers")) {
+            return "GET".equals(method) ? PlatformPermission.STORAGE_DELIVERY_READ
+                : PlatformPermission.STORAGE_DELIVERY_MANAGE;
+        }
+        if (path.contains("restore-budget")) return PlatformPermission.STORAGE_TIERING_MANAGE;
         if (path.contains("/storage/providers")) return PlatformPermission.STORAGE_PROVIDER_MANAGE;
         if (path.contains("/ingestion/sources")) return PlatformPermission.INGESTION_SOURCE_MANAGE;
         if ("GET".equals(method)) return PlatformPermission.RESOURCE_READ;

@@ -20,4 +20,28 @@ class ResourceAuthorizationWebFilterTest {
         new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
         assertEquals(401, exchange.getResponse().getStatusCode().value());
     }
+
+    @Test
+    void rejectsDeliveryAdminRequestWithoutSession() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
+            "/api/v2/admin/delivery-providers").header("X-Ikaros-Actor-Id", actor.toString()).build());
+        WebFilterChain chain = mock(WebFilterChain.class);
+
+        new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
+
+        assertEquals(401, exchange.getResponse().getStatusCode().value());
+    }
+
+    @Test
+    void rejectsStorageProviderAdminAliasWithoutSession() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
+            "/api/v2/admin/storage-providers").header("X-Ikaros-Actor-Id", actor.toString()).build());
+        WebFilterChain chain = mock(WebFilterChain.class);
+
+        new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
+
+        assertEquals(401, exchange.getResponse().getStatusCode().value());
+    }
 }

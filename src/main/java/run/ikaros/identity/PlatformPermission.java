@@ -20,6 +20,12 @@ public enum PlatformPermission {
     RESOURCE_DOWNLOAD("resource.download", "下载资源"),
     RESOURCE_SHARE("resource.share", "分享资源"),
     STORAGE_PROVIDER_MANAGE("storage.provider.manage", "管理存储 Provider"),
+    STORAGE_DELIVERY_READ("storage.delivery.read", "查看 Delivery Provider 与 Binding"),
+    STORAGE_DELIVERY_MANAGE("storage.delivery.manage", "管理 Delivery Provider 与 Binding"),
+    STORAGE_TIERING_MANAGE("storage.tiering.manage", "管理存储分层与恢复预算"),
+    STORAGE_RESTORE_REQUEST("storage.restore.request", "请求媒体恢复"),
+    STORAGE_RESTORE_READ("storage.restore.read", "查看媒体恢复状态"),
+    STORAGE_RESTORE_MANAGE("storage.restore.manage", "管理媒体恢复任务"),
     INGESTION_SOURCE_MANAGE("ingestion.source.manage", "管理导入来源");
 
     /** 权限的稳定标识。 */
