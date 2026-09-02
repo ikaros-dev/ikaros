@@ -42,6 +42,13 @@ public class StorageRestoreContractController {
             .map(view -> ResponseEntity.accepted().body(contract(view)));
     }
 
+    @PostMapping("/api/v2/restore-requests/{requestId}/actions/retry")
+    public Mono<ResponseEntity<RestoreRequestContractView>> retry(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @RequestHeader(value="Idempotency-Key", required=false) String idempotencyKey, @PathVariable UUID requestId) {
+        return service.retry(actorId, requestId, idempotencyKey)
+            .map(view -> ResponseEntity.accepted().body(contract(view)));
+    }
+
     private RestoreRequestContractView contract(StorageRestoreRequestView view) {
         int failed = view.status() == StorageRestoreRequestStatus.FAILED || view.status() == StorageRestoreRequestStatus.PARTIAL_FAILURE
             ? Math.max(0, view.totalItems() - view.completedItems()) : 0;

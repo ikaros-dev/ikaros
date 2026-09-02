@@ -446,6 +446,12 @@ Payload 与 attached 相同 identity key。
 { "policy_id": "uuid", "scope_type": "INSTANCE", "scope_id": null, "version": 2 }
 ```
 
+### `storage.restore-request.retry-requested@1`
+
+```json
+{ "request_id": "uuid", "failed_item_count": 3 }
+```
+
 ### `storage.restore.reconcile-requested@1`
 
 ```json

@@ -153,6 +153,33 @@ public class StorageRestoreRequestService {
             }).map(this::view);
     }
 
+    public Mono<StorageRestoreRequestView> retry(UUID actorId, UUID id, String idempotencyKey) {
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            return Mono.error(new IllegalArgumentException("缺少 Idempotency-Key"));
+        }
+        return requests.findById(id).filter(request -> request.actorId().equals(actorId))
+            .switchIfEmpty(Mono.error(new NotFoundException("Restore Request 不存在或无权访问")))
+            .flatMap(request -> {
+                if (request.status() != StorageRestoreRequestStatus.FAILED
+                    && request.status() != StorageRestoreRequestStatus.PARTIAL_FAILURE) {
+                    return Mono.error(new ConflictException("只有失败或部分失败的 Restore Request 可以重试"));
+                }
+                Map<String, Object> payload = request.scope() == StorageRestoreScope.SEASON
+                    ? Map.of("restore_request_id", request.id().toString(), "season_id", request.scopeId().toString(),
+                        "retry_failed_only", true, "provider_restore_class", "STANDARD")
+                    : Map.of("restore_request_id", request.id().toString(), "attachment_id", request.scopeId().toString(),
+                        "retry_failed_only", true, "provider_restore_class", "STANDARD");
+                return tasks.submit("storage.restore", payload, "storage.restore.retry:" + id + ":" + idempotencyKey)
+                    .flatMap(task -> requests.save(new StorageRestoreRequestEntity(request.id(), request.actorId(), request.scope(),
+                        request.scopeId(), StorageRestoreRequestStatus.REQUESTED, request.totalItems(), request.completedItems(),
+                        request.totalBytes(), request.errorSummary(), request.idempotencyKey(), task.id(), request.createdAt(),
+                        Instant.now(), request.version())))
+                    .flatMap(updated -> events.append("storage.restore-request.retry-requested", 1, "restore_request", updated.id(),
+                        "{\"request_id\":\"" + updated.id() + "\",\"failed_item_count\":"
+                            + Math.max(0, updated.totalItems() - updated.completedItems()) + "}").thenReturn(updated));
+            }).map(this::view);
+    }
+
     private Mono<AttachmentEntity> authorizedAttachment(UUID actorId, UUID id) {
         return attachments.findById(id).filter(a -> a.deletedAt() == null)
             .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或已删除")))
