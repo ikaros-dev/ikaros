@@ -78,7 +78,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
         if (runnerId == null || runnerId.isBlank() || leaseDuration == null || leaseDuration.isZero()
             || leaseDuration.isNegative()) return Mono.error(new IllegalArgumentException("Lease 参数不合法"));
         Instant observedAt = Instant.now();
-        return tasks.findTop1ByStatusAndAvailableAtLessThanEqualOrderByAvailableAtAscCreatedAtAsc(
+        return expireDue(observedAt).then(tasks.findTop1ByStatusAndAvailableAtLessThanEqualOrderByAvailableAtAscCreatedAtAsc(
                 TaskStatus.PENDING.name(), observedAt)
             .switchIfEmpty(tasks.findTop1ByStatusAndLeaseExpiresAtLessThanEqualOrderByLeaseExpiresAtAsc(
                 TaskStatus.RUNNING.name(), observedAt)
@@ -96,7 +96,18 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
                     .then(attempts.save(new BackgroundTaskAttemptEntity(null, task.id(), task.attempt() + 1,
                         TaskStatus.RUNNING.name(), runnerId, claimed.leaseExpiresAt(), now, now, null, null, now)))
                     .then(view(claimed));
-            });
+            }));
+    }
+
+    private Mono<Void> expireDue(Instant now) {
+        return reactor.core.publisher.Flux.concat(
+            tasks.findAllByStatusAndTimeoutAtLessThanEqual(TaskStatus.PENDING.name(), now),
+            tasks.findAllByStatusAndTimeoutAtLessThanEqual(TaskStatus.RUNNING.name(), now))
+            .concatMap(task -> tasks.save(new BackgroundTaskEntity(task.id(), task.taskType(), TaskStatus.TIMED_OUT.name(),
+                task.payload(), task.idempotencyKey(), task.availableAt(), task.timeoutAt(), null, null, null, task.attempt(),
+                task.cancelRequestedAt(), task.progress(), "{\"code\":\"TASK_TIMEOUT\"}", task.createdAt(), Instant.now(), task.parentTaskId()))
+                .flatMap(saved -> finishAttempt(task, TaskStatus.TIMED_OUT.name(), "TASK_TIMEOUT")))
+            .then();
     }
 
     @Override

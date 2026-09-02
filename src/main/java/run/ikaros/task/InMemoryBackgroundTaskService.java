@@ -75,6 +75,16 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
         return Mono.defer(() -> {
             Instant observedAt = Instant.now();
             tasks.values().stream()
+                .filter(task -> (task.status() == TaskStatus.PENDING || task.status() == TaskStatus.RUNNING)
+                    && task.timeoutAt() != null && !task.timeoutAt().isAfter(observedAt))
+                .forEach(task -> {
+                    finishAttempt(task, TaskStatus.TIMED_OUT.name(), "TASK_TIMEOUT");
+                    tasks.replace(task.id(), task, new BackgroundTask(task.id(), task.taskType(), TaskStatus.TIMED_OUT,
+                        task.payload(), task.idempotencyKey(), task.availableAt(), task.timeoutAt(), null, null, null,
+                        task.attempt(), task.cancelRequestedAt(), task.progress(), Map.of("code", "TASK_TIMEOUT"),
+                        task.createdAt(), observedAt, task.parentTaskId()));
+                });
+            tasks.values().stream()
                 .filter(task -> task.status() == TaskStatus.RUNNING && task.leaseExpiresAt() != null
                     && !task.leaseExpiresAt().isAfter(observedAt))
                 .findFirst()

@@ -69,4 +69,13 @@ class BackgroundTaskDispatcherTest {
         assertEquals(TaskStatus.RUNNING, requested.status());
         org.junit.jupiter.api.Assertions.assertNotNull(requested.cancelRequestedAt());
     }
+
+    @org.junit.jupiter.api.Test
+    void expiredTaskIsNotClaimedAndBecomesTimedOut() throws InterruptedException {
+        InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
+        BackgroundTask submitted = tasks.submit("short", Map.of("timeout_seconds", 1), "short-timeout").block();
+        Thread.sleep(1100);
+        org.junit.jupiter.api.Assertions.assertNull(tasks.claim("runner", Duration.ofMinutes(1)).block());
+        assertEquals(TaskStatus.TIMED_OUT, tasks.get(submitted.id()).block().status());
+    }
 }

@@ -13,4 +13,5 @@ public interface BackgroundTaskRepository extends ReactiveCrudRepository<Backgro
         String status, Instant now);
     Mono<BackgroundTaskEntity> findTop1ByStatusAndLeaseExpiresAtLessThanEqualOrderByLeaseExpiresAtAsc(
         String status, Instant now);
+    reactor.core.publisher.Flux<BackgroundTaskEntity> findAllByStatusAndTimeoutAtLessThanEqual(String status, Instant now);
 }
