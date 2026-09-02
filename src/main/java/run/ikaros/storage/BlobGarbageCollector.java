@@ -14,10 +14,11 @@ public class BlobGarbageCollector {
     private final AttachmentRepository attachments;
     private final BlobPlacementRepository placements;
     private final TransactionalOperator transaction;
+    private final BlobRetentionHoldRepository holds;
 
     public BlobGarbageCollector(BlobRepository blobs, AttachmentRepository attachments,
-                                BlobPlacementRepository placements, TransactionalOperator transaction) {
-        this.blobs = blobs; this.attachments = attachments; this.placements = placements; this.transaction = transaction;
+                                BlobPlacementRepository placements, TransactionalOperator transaction, BlobRetentionHoldRepository holds) {
+        this.blobs = blobs; this.attachments = attachments; this.placements = placements; this.transaction = transaction; this.holds = holds;
     }
 
     public Mono<Void> purge(UUID blobId) {
@@ -26,6 +27,8 @@ public class BlobGarbageCollector {
             .flatMap(blob -> attachments.countByBlobIdAndDeletedAtIsNull(blob.id())
                 .filter(count -> count == 0)
                 .switchIfEmpty(Mono.error(new ConflictException("Blob 仍存在有效 Attachment 引用")))
+                .then(holds.existsActiveByBlobId(blob.id(), java.time.Instant.now()))
+                .flatMap(active -> active ? Mono.error(new ConflictException("Blob 存在有效 Retention Hold")) : Mono.empty())
                 .then(placements.deleteByBlobId(blob.id()))
                 .then(blobs.deleteById(blob.id())))
             .then());
