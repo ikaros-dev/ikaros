@@ -2,6 +2,7 @@ package run.ikaros.drive;
 
 import java.time.Instant;
 import java.text.Normalizer;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -43,6 +44,7 @@ public class DefaultDriveService implements DriveService {
     private final ConcurrentMap<String, CameraBackup> cameraBackups = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Change> changeLog = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, DriveTombstoneView> tombstoneLog = new ConcurrentHashMap<>();
+    private final ConcurrentMap<UUID, List<DriveRevisionView>> revisionLog = new ConcurrentHashMap<>();
 
     @Override public Mono<DriveSpaceView> createSpace(UUID actorId, CreateDriveSpaceRequest request) {
         return Mono.fromSupplier(() -> {
@@ -119,8 +121,9 @@ public class DefaultDriveService implements DriveService {
     }
     @Override public Mono<DriveNodeView> trash(UUID actorId, UUID nodeId, long expectedVersion) { return changeLifecycle(actorId,nodeId,expectedVersion,DriveLifecycle.TRASHED); }
     @Override public Mono<DriveNodeView> restore(UUID actorId, UUID nodeId, long expectedVersion) { return changeLifecycle(actorId,nodeId,expectedVersion,DriveLifecycle.ACTIVE); }
-    @Override public Mono<DriveRevisionView> createRevision(UUID actorId, UUID nodeId, CreateDriveRevisionRequest request) { return ownedNode(actorId,nodeId).flatMap(n->{ if(n.type()!=DriveNodeType.FILE)return Mono.error(new ConflictException("只有文件节点可以创建版本")); checkVersion(n,request.expectedNodeVersion()); UUID rid=ids.next(); Node changed=new Node(n.id(),n.space(),n.parent(),n.type(),n.name(),n.normalized(),n.lifecycle(),rid,n.version()+1,n.created(),Instant.now()); nodes.put(nodeId,changed); advance(spaces.get(n.space())); recordChange(n.space(), n.id(), DriveMutationKind.CONTENT_REVISION_CREATED, changed.version(), rid); return Mono.just(new DriveRevisionView(rid,nodeId,n.version()+1,request.attachmentId(),request.contentFingerprint(),Instant.now(),Instant.now(),actorId)); }); }
-    @Override public Flux<DriveRevisionView> revisions(UUID actorId, UUID nodeId) { return ownedNode(actorId,nodeId).flatMapMany(n -> n.revision()==null ? Flux.empty() : Flux.just(new DriveRevisionView(n.revision(),nodeId,1,UUID.randomUUID(),null,null,n.updated(),actorId))); }
+    @Override public Mono<DriveRevisionView> createRevision(UUID actorId, UUID nodeId, CreateDriveRevisionRequest request) { return ownedNode(actorId,nodeId).flatMap(n->{ if(n.type()!=DriveNodeType.FILE)return Mono.error(new ConflictException("只有文件节点可以创建版本")); checkVersion(n,request.expectedNodeVersion()); UUID rid=ids.next(); Instant now=Instant.now(); Node changed=new Node(n.id(),n.space(),n.parent(),n.type(),n.name(),n.normalized(),n.lifecycle(),rid,n.version()+1,n.created(),now); nodes.put(nodeId,changed); DriveRevisionView revision=new DriveRevisionView(rid,nodeId,n.version()+1,request.attachmentId(),request.contentFingerprint(),now,now,actorId); revisionLog.compute(nodeId,(key,current)->{java.util.ArrayList<DriveRevisionView> values=new java.util.ArrayList<>(current==null?List.of():current); values.add(revision); return List.copyOf(values);}); advance(spaces.get(n.space())); recordChange(n.space(), n.id(), DriveMutationKind.CONTENT_REVISION_CREATED, changed.version(), rid); return Mono.just(revision); }); }
+    @Override public Flux<DriveRevisionView> revisions(UUID actorId, UUID nodeId) { return ownedNode(actorId,nodeId)
+        .flatMapMany(n -> Flux.fromIterable(revisionLog.getOrDefault(nodeId, List.of()))); }
     @Override public Flux<DriveChangeView> changes(UUID actorId, UUID spaceId, long afterSequence) { return ownedSpace(actorId,spaceId).flatMapMany(s -> Flux.fromIterable(changeLog.values()).filter(c -> c.space().equals(spaceId) && c.sequence() > afterSequence).sort(java.util.Comparator.comparing(Change::sequence)).map(this::changeView)); }
     @Override public Mono<DriveQuotaView> quota(UUID actorId, UUID spaceId) { return ownedSpace(actorId,spaceId).map(s -> new DriveQuotaView(spaceId,Long.MAX_VALUE,0,0,Long.MAX_VALUE)); }
     @Override public Mono<DriveQuotaReservationView> beginUpload(UUID actorId, UUID spaceId, BeginDriveUploadRequest request) {
