@@ -248,6 +248,22 @@ CREATE TABLE planning_focus_session (
 );
 CREATE INDEX idx_planning_focus_session_owner_started ON planning_focus_session (owner_id, started_at DESC);
 
+CREATE TABLE planning_habit (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, name VARCHAR(256) NOT NULL, description TEXT,
+    metric VARCHAR(16) NOT NULL DEFAULT 'BOOLEAN', target_value DOUBLE PRECISION, schedule VARCHAR(256) NOT NULL,
+    time_zone VARCHAR(64) NOT NULL DEFAULT 'UTC', start_at TIMESTAMPTZ, status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    version BIGINT NOT NULL DEFAULT 0, CHECK (metric IN ('BOOLEAN','COUNT','DURATION','NUMERIC')), CHECK (target_value IS NULL OR target_value > 0),
+    CHECK (status IN ('ACTIVE','ARCHIVED')), CHECK (version >= 0)
+);
+CREATE TABLE planning_habit_check_in (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, habit_id UUID NOT NULL, value DOUBLE PRECISION NOT NULL,
+    occurred_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, note TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    FOREIGN KEY (habit_id) REFERENCES planning_habit(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_planning_habit_owner_created ON planning_habit (owner_id, created_at DESC);
+CREATE INDEX idx_planning_habit_check_in_habit_occurred ON planning_habit_check_in (owner_id, habit_id, occurred_at DESC);
+
 CREATE TABLE offline_download_manifest (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), intent_id UUID NOT NULL, manifest_version BIGINT NOT NULL,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (intent_id, manifest_version),
