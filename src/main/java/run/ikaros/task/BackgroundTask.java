@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public record BackgroundTask(UUID id, String taskType, TaskStatus status, Map<String, Object> payload,
-                             String idempotencyKey, Instant availableAt, String leaseOwner,
+                             String idempotencyKey, Instant availableAt, Instant timeoutAt, String leaseOwner,
                              UUID leaseToken, Instant leaseExpiresAt, int attempt, Instant cancelRequestedAt,
                              Map<String, Object> progress, Map<String, Object> result,
                              Instant createdAt, Instant updatedAt, UUID parentTaskId) {

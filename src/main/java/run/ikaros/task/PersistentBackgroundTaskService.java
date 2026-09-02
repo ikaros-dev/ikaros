@@ -69,7 +69,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
         return existing.switchIfEmpty(Mono.defer(() -> encode(payload).flatMap(json -> {
             Instant now = Instant.now();
             return tasks.save(new BackgroundTaskEntity(null, taskType, TaskStatus.PENDING.name(), json,
-                idempotencyKey, now, null, null, null, 0, null, "{}", "{}", now, now, null));
+                idempotencyKey, now, timeoutAt(payload, now), null, null, null, 0, null, "{}", "{}", now, now, null));
         }))).flatMap(this::view);
     }
 
@@ -83,7 +83,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
             .switchIfEmpty(tasks.findTop1ByStatusAndLeaseExpiresAtLessThanEqualOrderByLeaseExpiresAtAsc(
                 TaskStatus.RUNNING.name(), observedAt)
                 .flatMap(expired -> tasks.save(new BackgroundTaskEntity(expired.id(), expired.taskType(),
-                    TaskStatus.PENDING.name(), expired.payload(), expired.idempotencyKey(), observedAt, null, null, null,
+                    TaskStatus.PENDING.name(), expired.payload(), expired.idempotencyKey(), observedAt, expired.timeoutAt(), null, null, null,
                     expired.attempt(), expired.cancelRequestedAt(), expired.progress(), expired.result(), expired.createdAt(),
                     Instant.now(), expired.parentTaskId()))
                     .flatMap(requeued -> finishAttempt(expired, "LEASE_LOST", "Lease 已过期").thenReturn(requeued))))
@@ -122,7 +122,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
                 Instant availableAt = retryable ? Instant.now().plus(backoff(task.attempt())) : task.availableAt();
                 BackgroundTaskEntity failed = new BackgroundTaskEntity(task.id(), task.taskType(),
                     retryable ? TaskStatus.PENDING.name() : TaskStatus.FAILED.name(), task.payload(), task.idempotencyKey(),
-                    availableAt, retryable ? null : task.leaseOwner(), retryable ? null : task.leaseToken(),
+                    availableAt, task.timeoutAt(), retryable ? null : task.leaseOwner(), retryable ? null : task.leaseToken(),
                     retryable ? null : task.leaseExpiresAt(), task.attempt(), task.cancelRequestedAt(), task.progress(), json,
                     task.createdAt(), Instant.now(), task.parentTaskId());
                 return tasks.save(failed).flatMap(saved -> finishAttempt(task, TaskStatus.FAILED.name(), message(error)).then(view(saved)));
@@ -153,7 +153,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
                 }
                 Instant now = Instant.now();
                 return tasks.save(new BackgroundTaskEntity(null, old.taskType(), TaskStatus.PENDING.name(), old.payload(), null,
-                    now, null, null, null, 0, null, "{}", "{}", now, now, old.id()));
+                    now, timeoutAtJson(old.payload(), now), null, null, null, 0, null, "{}", "{}", now, now, old.id()));
             }).flatMap(this::view);
     }
 
@@ -176,7 +176,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     private Mono<BackgroundTask> view(BackgroundTaskEntity entity) {
         try {
             return Mono.just(new BackgroundTask(entity.id(), entity.taskType(), TaskStatus.valueOf(entity.status()),
-                mapper.readValue(entity.payload(), new TypeReference<>() { }), entity.idempotencyKey(), entity.availableAt(),
+                mapper.readValue(entity.payload(), new TypeReference<>() { }), entity.idempotencyKey(), entity.availableAt(), entity.timeoutAt(),
                 entity.leaseOwner(), entity.leaseToken(), entity.leaseExpiresAt(), entity.attempt(),
                 entity.cancelRequestedAt(), mapper.readValue(entity.progress(), new TypeReference<>() { }),
                 mapper.readValue(entity.result(), new TypeReference<>() { }), entity.createdAt(), entity.updatedAt(), entity.parentTaskId()));
@@ -193,6 +193,18 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     private BackgroundTaskEntity copy(BackgroundTaskEntity old, TaskStatus status, String owner, UUID token,
                                       Instant expires, int attempt, Instant cancelled, String progress, String result) {
         return new BackgroundTaskEntity(old.id(), old.taskType(), status.name(), old.payload(), old.idempotencyKey(),
-            old.availableAt(), owner, token, expires, attempt, cancelled, progress, result, old.createdAt(), Instant.now(), old.parentTaskId());
+            old.availableAt(), old.timeoutAt(), owner, token, expires, attempt, cancelled, progress, result, old.createdAt(), Instant.now(), old.parentTaskId());
+    }
+
+    private Instant timeoutAt(Map<String, Object> payload, Instant createdAt) {
+        Object value = payload == null ? null : payload.get("timeout_seconds");
+        if (value == null) return null;
+        try { long seconds = Long.parseLong(value.toString()); return seconds > 0 ? createdAt.plusSeconds(seconds) : null; }
+        catch (NumberFormatException ignored) { return null; }
+    }
+
+    private Instant timeoutAtJson(String payload, Instant createdAt) {
+        try { return timeoutAt(mapper.readValue(payload, new TypeReference<>() { }), createdAt); }
+        catch (JsonProcessingException ignored) { return null; }
     }
 }

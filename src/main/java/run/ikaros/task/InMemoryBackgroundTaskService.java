@@ -62,7 +62,7 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
             }
             Instant now = Instant.now();
             BackgroundTask task = new BackgroundTask(UUID.randomUUID(), taskType, TaskStatus.PENDING, payload,
-                idempotencyKey, now, null, null, null, 0, null, Map.of(), Map.of(), now, now, null);
+                idempotencyKey, now, timeoutAt(payload, now), null, null, null, 0, null, Map.of(), Map.of(), now, now, null);
             tasks.put(task.id(), task);
             return task;
         });
@@ -81,7 +81,7 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
                 .ifPresent(task -> {
                     finishAttempt(task, "LEASE_LOST", "Lease 已过期");
                     tasks.replace(task.id(), task, new BackgroundTask(task.id(), task.taskType(), TaskStatus.PENDING,
-                        task.payload(), task.idempotencyKey(), observedAt, null, null, null, task.attempt(), task.cancelRequestedAt(),
+                    task.payload(), task.idempotencyKey(), observedAt, task.timeoutAt(), null, null, null, task.attempt(), task.cancelRequestedAt(),
                         task.progress(), task.result(), task.createdAt(), observedAt, task.parentTaskId()));
                 });
             return tasks.values().stream()
@@ -125,7 +125,7 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
             boolean retryable = Boolean.TRUE.equals(error == null ? null : error.get("retryable")) && task.attempt() < MAX_ATTEMPTS;
             Instant availableAt = retryable ? Instant.now().plus(backoff(task.attempt())) : task.availableAt();
             BackgroundTask updated = new BackgroundTask(task.id(), task.taskType(), retryable ? TaskStatus.PENDING : TaskStatus.FAILED,
-                task.payload(), task.idempotencyKey(), availableAt, retryable ? null : task.leaseOwner(),
+                task.payload(), task.idempotencyKey(), availableAt, task.timeoutAt(), retryable ? null : task.leaseOwner(),
                 retryable ? null : task.leaseToken(), retryable ? null : task.leaseExpiresAt(), task.attempt(),
                 task.cancelRequestedAt(), task.progress(), error, task.createdAt(), Instant.now(), task.parentTaskId());
             tasks.replace(task.id(), task, updated); finishAttempt(task, TaskStatus.FAILED.name(),
@@ -150,7 +150,7 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
             }
             Instant now = Instant.now();
             BackgroundTask retry = new BackgroundTask(UUID.randomUUID(), old.taskType(), TaskStatus.PENDING, old.payload(),
-                null, now, null, null, null, 0, null, Map.of(), Map.of(), now, now, old.id());
+                null, now, timeoutAt(old.payload(), now), null, null, null, 0, null, Map.of(), Map.of(), now, now, old.id());
             tasks.put(retry.id(), retry);
             return Mono.just(retry);
         });
@@ -177,7 +177,14 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
 
     private BackgroundTask copy(BackgroundTask old, TaskStatus status, String owner, UUID token, Instant expires,
                                 int attempt, Instant cancelled, Map<String, Object> progress, Map<String, Object> result) {
-        return new BackgroundTask(old.id(), old.taskType(), status, old.payload(), old.idempotencyKey(), old.availableAt(),
+        return new BackgroundTask(old.id(), old.taskType(), status, old.payload(), old.idempotencyKey(), old.availableAt(), old.timeoutAt(),
             owner, token, expires, attempt, cancelled, progress, result, old.createdAt(), Instant.now(), old.parentTaskId());
+    }
+
+    private Instant timeoutAt(Map<String, Object> payload, Instant createdAt) {
+        Object value = payload == null ? null : payload.get("timeout_seconds");
+        if (value == null) return null;
+        try { long seconds = Long.parseLong(value.toString()); return seconds > 0 ? createdAt.plusSeconds(seconds) : null; }
+        catch (NumberFormatException ignored) { return null; }
     }
 }
