@@ -14,8 +14,12 @@ public class PersistentPlanningFocusSessionService implements PlanningFocusSessi
     private final PlanningFocusSessionRepository sessions;
     private final PlanningTaskRepository tasks;
     private final PlanningTimeEntryRepository entries;
+    private final PlanningProjectRepository projects;
+    private final PlanningProjectMemberRepository members;
     public PersistentPlanningFocusSessionService(PlanningFocusSessionRepository sessions, PlanningTaskRepository tasks,
-        PlanningTimeEntryRepository entries) { this.sessions = sessions; this.tasks = tasks; this.entries = entries; }
+        PlanningTimeEntryRepository entries, PlanningProjectRepository projects,
+        PlanningProjectMemberRepository members) { this.sessions = sessions; this.tasks = tasks; this.entries = entries;
+        this.projects = projects; this.members = members; }
     @Override public Mono<PlanningFocusSessionView> start(UUID ownerId, StartPlanningFocusSessionRequest request) {
         return task(ownerId, request.taskId()).then(Mono.defer(() -> { Instant now = Instant.now();
             return sessions.save(new PlanningFocusSessionEntity(null, ownerId, request.taskId(), request.mode() == null ? PlanningFocusMode.FREEFORM : request.mode(),
@@ -32,7 +36,16 @@ public class PersistentPlanningFocusSessionService implements PlanningFocusSessi
     }
     @Override public Mono<PlanningFocusSessionView> cancel(UUID ownerId, UUID sessionId) { return owned(ownerId, sessionId).flatMap(old -> { if (old.status() != PlanningFocusSessionStatus.RUNNING) return Mono.error(new ConflictException("当前专注会话不能取消"));
         return sessions.save(new PlanningFocusSessionEntity(old.id(), old.ownerId(), old.taskId(), old.mode(), PlanningFocusSessionStatus.CANCELLED, old.plannedMinutes(), null, old.startedAt(), Instant.now(), old.note(), old.createdAt(), old.version())); }).map(this::view); }
-    private Mono<PlanningTaskEntity> task(UUID ownerId, UUID taskId) { return taskId == null ? Mono.empty() : tasks.findById(taskId).filter(t -> t.ownerId().equals(ownerId)).switchIfEmpty(Mono.error(new NotFoundException("Task 不存在"))); }
+    private Mono<PlanningTaskEntity> task(UUID ownerId, UUID taskId) {
+        if (taskId == null) return Mono.empty();
+        return tasks.findById(taskId).switchIfEmpty(Mono.error(new NotFoundException("Task 不存在"))).flatMap(task -> {
+            if (task.ownerId().equals(ownerId)) return Mono.just(task);
+            if (task.projectId() == null) return Mono.error(new NotFoundException("Task 不存在或无权访问"));
+            return projects.findById(task.projectId()).flatMap(project -> project.ownerId().equals(ownerId)
+                ? Mono.just(task) : members.findByProjectIdAndUserId(task.projectId(), ownerId).map(member -> task))
+                .switchIfEmpty(Mono.error(new NotFoundException("Task 不存在或无权访问")));
+        });
+    }
     private Mono<PlanningFocusSessionEntity> owned(UUID ownerId, UUID id) { return sessions.findById(id).filter(s -> s.ownerId().equals(ownerId)).switchIfEmpty(Mono.error(new NotFoundException("Focus Session 不存在"))); }
     private PlanningFocusSessionView view(PlanningFocusSessionEntity s) { return new PlanningFocusSessionView(s.id(), s.ownerId(), s.taskId(), s.mode(), s.status(), s.plannedMinutes(), s.actualMinutes(), s.startedAt(), s.endedAt(), s.note(), s.createdAt(), s.version() == null ? 0 : s.version()); }
 }
