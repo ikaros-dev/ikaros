@@ -45,22 +45,24 @@ public class StorageRestoreTaskHandler {
     private Mono<Map<String, Object>> handle(BackgroundTask task) {
         UUID requestId = uuid(task.payload(), "restore_request_id");
         String restoreClass = String.valueOf(task.payload().getOrDefault("provider_restore_class", "STANDARD"));
+        boolean retryFailedOnly = Boolean.TRUE.equals(task.payload().get("retry_failed_only"));
         return requests.findById(requestId)
             .switchIfEmpty(Mono.error(new NotFoundException("Restore Request 不存在")))
             .flatMap(request -> updateStatus(request, StorageRestoreRequestStatus.IN_PROGRESS).then(
                 task.payload().containsKey("season_id")
-                    ? restoreSeason(request, requestId, task.id(), restoreClass, uuid(task.payload(), "season_id"))
+                    ? restoreSeason(request, requestId, task.id(), restoreClass, uuid(task.payload(), "season_id"), retryFailedOnly)
                     : attachments.findById(uuid(task.payload(), "attachment_id"))
                         .filter(attachment -> attachment.deletedAt() == null)
                         .switchIfEmpty(Mono.error(new NotFoundException("附件不存在")))
-                        .flatMap(attachment -> restoreAttachment(request, attachment, requestId, task.id(), restoreClass, true))));
+                        .flatMap(attachment -> restoreAttachment(request, attachment, requestId, task.id(), restoreClass, true,
+                            retryFailedOnly))));
     }
 
     private Mono<Map<String, Object>> restoreSeason(StorageRestoreRequestEntity request, UUID requestId, UUID taskId,
-        String restoreClass, UUID seasonId) {
+        String restoreClass, UUID seasonId, boolean retryFailedOnly) {
         return episodes.findAllByOwnerIdAndSeasonIdOrderByEpisodeNumberAsc(request.actorId(), seasonId)
             .flatMap(episode -> attachments.findAllByResourceIdAndDeletedAtIsNullOrderByCreatedAtAsc(episode.resourceId()))
-            .concatMap(attachment -> restoreAttachment(request, attachment, requestId, taskId, restoreClass, false))
+            .concatMap(attachment -> restoreAttachment(request, attachment, requestId, taskId, restoreClass, false, retryFailedOnly))
             .collectList()
             .then(updateStatus(request, StorageRestoreRequestStatus.COMPLETED))
             .thenReturn(Map.of("restore_request_id", requestId.toString(), "completed_items", request.totalItems()));
@@ -68,19 +70,30 @@ public class StorageRestoreTaskHandler {
 
     private Mono<Map<String, Object>> restoreAttachment(StorageRestoreRequestEntity request,
         AttachmentEntity attachment, UUID requestId, UUID taskId, String restoreClass) {
-        return restoreAttachment(request, attachment, requestId, taskId, restoreClass, true);
+        return restoreAttachment(request, attachment, requestId, taskId, restoreClass, true, false);
     }
 
     private Mono<Map<String, Object>> restoreAttachment(StorageRestoreRequestEntity request,
         AttachmentEntity attachment, UUID requestId, UUID taskId, String restoreClass, boolean completeRequest) {
+        return restoreAttachment(request, attachment, requestId, taskId, restoreClass, completeRequest, false);
+    }
+
+    private Mono<Map<String, Object>> restoreAttachment(StorageRestoreRequestEntity request,
+        AttachmentEntity attachment, UUID requestId, UUID taskId, String restoreClass, boolean completeRequest,
+        boolean retryFailedOnly) {
         return blobs.findById(attachment.blobId())
             .switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在")))
             .flatMap(blob -> placements.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
                 .filter(p -> p.placementState() != PlacementState.ACTIVE).next()
                 .switchIfEmpty(Mono.error(new ConflictException("Blob 没有可恢复的 Placement")))
                 .flatMap(placement -> operation(request, placement, taskId, restoreClass)
-                    .flatMap(operation -> item(request, placement, operation)
-                        .then(execute(request, requestId, blob, placement, operation, restoreClass, completeRequest)))));
+                    .flatMap(operation -> items.findByRequestIdAndPlacementId(request.id(), placement.id())
+                        .map(existing -> !retryFailedOnly || existing.status() == StorageRestoreRequestItemStatus.FAILED)
+                        .defaultIfEmpty(!retryFailedOnly)
+                        .flatMap(allowed -> allowed
+                            ? item(request, placement, operation)
+                                .then(execute(request, requestId, blob, placement, operation, restoreClass, completeRequest))
+                            : Mono.empty()))));
     }
 
     private Mono<Map<String, Object>> execute(StorageRestoreRequestEntity request, UUID requestId,
