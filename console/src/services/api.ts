@@ -38,7 +38,10 @@ export const api = {
   listRoles: () => request<unknown>('/admin/roles'),
   listPermissions: () => request<unknown>('/admin/permissions'),
   getBackgroundTask: (id: string) => request<BackgroundTaskRecord>(`/background-tasks/${encodeURIComponent(id)}`),
-  cancelBackgroundTask: (id: string) => request<void>(`/background-tasks/${encodeURIComponent(id)}/actions/cancel`, { method: 'POST' })
+  listBackgroundTasks: (status?: string) => request<BackgroundTaskRecord[]>(`/background-tasks${status ? `?status=${encodeURIComponent(status)}` : ''}`),
+  cancelBackgroundTask: (id: string) => request<void>(`/background-tasks/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  changeUserStatus: (id: string, status: string, actorId: string) => request<UserRecord>(`/admin/users/${encodeURIComponent(id)}/status/${encodeURIComponent(status)}`, { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId } }),
+  assignRole: (userId: string, roleId: string, actorId: string) => request<void>(`/admin/users/${encodeURIComponent(userId)}/roles/${encodeURIComponent(roleId)}`, { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId } })
 }
 
 export function unwrapPage<T>(value: Page<T> | T[]): T[] {

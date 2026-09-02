@@ -22,7 +22,7 @@ const groups: Group[] = [
   { label: '系统运维', icon: '♨', items: [{ label: '系统健康与告警', path: 'ops/health', icon: '♥' }, { label: '定时任务', path: 'ops/jobs', icon: '◷' }, { label: '后台任务', path: 'ops/background', icon: '⇄' }] }
 ]
 const expanded = ref<string[]>([]); const drawer = ref(false); const dialog = ref(''); const toast = ref(''); const query = ref(''); const selectedTab = ref('概览'); const loading = ref(false); const apiConnected = ref(false)
-const currentPath = computed(() => String(route.params.pathMatch || 'dashboard'))
+const currentPath = computed(() => Array.isArray(route.params.pathMatch) ? route.params.pathMatch.join('/') : String(route.params.pathMatch || 'dashboard'))
 const current = computed(() => groups.flatMap(g => g.items).find(i => i.path === currentPath.value) || groups[0].items[0])
 const currentGroup = computed(() => groups.find(g => g.items.some(i => i.path === currentPath.value)) || groups[0])
 const pageTitle = computed(() => current.value.label)
@@ -35,14 +35,23 @@ const kpis = [{ label: '资源', value: '12,486', trend: '+8.4%', icon: '◈', t
 const activities = [{ icon: '✦', text: '完成了媒体资源的元数据同步', target: '《星际穿越》', time: '12 分钟前', color: 'purple' }, { icon: '✓', text: '完成任务', target: '整理本周阅读清单', time: '1 小时前', color: 'teal' }, { icon: '↗', text: '更新了项目', target: 'Ikaros V2 产品设计', time: '昨天 18:24', color: 'orange' }, { icon: '♧', text: '收藏了资源', target: 'Material Design 3', time: '昨天 15:08', color: 'blue' }]
 const resources = [{ name: '《星际穿越》', type: '电影', tags: ['科幻', '收藏'], status: '进行中', progress: 72, updated: '12 分钟前' }, { name: 'Ikaros V2 产品设计', type: '文档', tags: ['项目'], status: '已更新', progress: 100, updated: '昨天' }, { name: 'Material Design 3', type: '网页', tags: ['设计系统'], status: '收藏', progress: 34, updated: '3 天前' }, { name: '2026 年读书计划', type: '集合', tags: ['计划'], status: '草稿', progress: 18, updated: '5 天前' }]
 const rows = ref([{ name: '媒体资源索引', owner: '系统', status: '已启用', updated: '刚刚' }, { name: '每周资料备份', owner: '你', status: '运行中', updated: '8 分钟前' }, { name: '阅读进度同步', owner: '你', status: '已暂停', updated: '昨天' }, { name: '存储健康检查', owner: '系统', status: '已启用', updated: '昨天' }, { name: '活动周报', owner: '你', status: '失败', updated: '2 天前' }])
+const demoRows = rows.value
 async function loadResources() {
-  if (isDashboard.value || currentPath.value !== 'library') return
+  if (isDashboard.value) return
   loading.value = true
   try {
-    const result = unwrapPage(await api.listResources('?limit=5'))
-    if (result.length) rows.value = result.map(item => ({ name: item.title || `Resource ${item.id.slice(0, 8)}`, owner: '当前用户', status: item.lifecycle || '已启用', updated: item.updated_at ? new Date(item.updated_at).toLocaleString('zh-CN') : '刚刚' }))
+    if (currentPath.value === 'library') {
+      const result = unwrapPage(await api.listResources('?limit=5'))
+      if (result.length) rows.value = result.map(item => ({ name: item.title || `Resource ${item.id.slice(0, 8)}`, owner: '当前用户', status: item.lifecycle || '已启用', updated: item.updated_at ? new Date(item.updated_at).toLocaleString('zh-CN') : '刚刚' }))
+    } else if (currentPath.value === 'security/users') {
+      const result = unwrapPage(await api.listUsers('?page=0&size=5'))
+      if (result.length) rows.value = result.map(item => ({ name: item.display_name || item.username || item.id.slice(0, 8), owner: item.username || '平台用户', status: item.status || 'ACTIVE', updated: item.last_active_at ? new Date(item.last_active_at).toLocaleString('zh-CN') : '暂无记录' }))
+    } else if (currentPath.value === 'ops/background') {
+      const result = await api.listBackgroundTasks()
+      if (result.length) rows.value = result.slice(0, 5).map(item => ({ name: item.task_type || item.id.slice(0, 8), owner: item.owning_subsystem || '系统', status: item.state || '排队中', updated: item.created_at ? new Date(item.created_at).toLocaleString('zh-CN') : '刚刚' }))
+    } else return
     apiConnected.value = true
-  } catch { apiConnected.value = false; notify('后端暂不可用，已保留演示数据') } finally { loading.value = false }
+  } catch { apiConnected.value = false; rows.value = demoRows; notify('后端暂不可用，已保留演示数据') } finally { loading.value = false }
 }
 onMounted(loadResources); watch(currentPath, loadResources)
 function genericTitle() { return current.value.label }
