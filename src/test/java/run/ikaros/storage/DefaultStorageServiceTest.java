@@ -91,4 +91,38 @@ class DefaultStorageServiceTest {
         assertThat(attachmentCaptor.getValue().blobId()).isEqualTo(blobId);
         verify(blobRepository).findBySha256("a".repeat(64));
     }
+
+    @Test
+    void recordsDerivedAttachmentSourceWithoutChangingOriginalKind() {
+        UUID ownerId = UUID.randomUUID(); UUID resourceId = UUID.randomUUID();
+        UUID sourceId = UUID.randomUUID(); UUID derivedId = UUID.randomUUID(); UUID blobId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity resource = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO, ResourceLifecycle.ACTIVE,
+            now, now, null, 0L);
+        AttachmentEntity source = new AttachmentEntity(sourceId, resourceId, UUID.randomUUID(), "source.mp4",
+            AttachmentKind.ORIGINAL, now, null, 0L);
+        BlobEntity blob = new BlobEntity(blobId, "b".repeat(64), 100L, "image/jpeg", BlobAvailability.AVAILABLE, now, 0L);
+        AttachmentEntity derived = new AttachmentEntity(derivedId, resourceId, blobId, "cover.jpg",
+            AttachmentKind.DERIVED, now, null, 0L);
+        BlobPlacementEntity placement = new BlobPlacementEntity(UUID.randomUUID(), blobId, "nas", StorageTier.HOT,
+            "derived/cover.jpg", PlacementState.ACTIVE, now, now, 0L);
+        AttachBlobRequest content = new AttachBlobRequest("B".repeat(64), 100L, "image/jpeg", "cover.jpg",
+            AttachmentKind.ORIGINAL, "nas", StorageTier.HOT, "derived/cover.jpg");
+        when(attachmentRepository.findById(sourceId)).thenReturn(Mono.just(source));
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource));
+        when(blobRepository.findBySha256("b".repeat(64))).thenReturn(Mono.just(blob));
+        when(placementRepository.findByProviderAndObjectKey("nas", "derived/cover.jpg")).thenReturn(Mono.just(placement));
+        when(attachmentRepository.save(any(AttachmentEntity.class))).thenReturn(Mono.just(derived));
+        when(placementRepository.findAllByBlobIdOrderByCreatedAtAsc(blobId)).thenReturn(Flux.just(placement));
+        when(derivedAttachmentRepository.save(any())).thenReturn(Mono.just(new DerivedAttachmentEntity(UUID.randomUUID(),
+            sourceId, derivedId, now, 0L)));
+        when(auditService.record(eq(ownerId), eq("attachment.create"), eq("ATTACHMENT"), eq(derivedId), eq("{}")))
+            .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.attachDerived(ownerId, resourceId,
+                new CreateDerivedAttachmentRequest(sourceId, content)))
+            .assertNext(view -> assertThat(view.kind()).isEqualTo(AttachmentKind.DERIVED))
+            .verifyComplete();
+        verify(derivedAttachmentRepository).save(any(DerivedAttachmentEntity.class));
+    }
 }

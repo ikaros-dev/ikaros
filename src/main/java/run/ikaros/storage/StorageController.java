@@ -67,6 +67,32 @@ public class StorageController {
     }
 
     /**
+     * 登记一个来源明确的派生 Attachment。
+     *
+     * @param actorId 当前登录用户标识
+     * @param resourceId Resource 标识
+     * @param request 来源附件与派生内容
+     * @return 新建派生 Attachment 视图
+     */
+    @Operation(summary = "登记派生附件", description = "创建 DERIVED Attachment，并记录其来源 Attachment。"
+        + "清理可重建派生内容时不会误删原始附件。")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "派生附件登记成功"),
+        @ApiResponse(responseCode = "404", description = "资源或来源附件不存在", content = @Content),
+        @ApiResponse(responseCode = "409", description = "派生附件关系冲突", content = @Content)
+    })
+    @PostMapping("/derived")
+    public Mono<ResponseEntity<AttachmentView>> attachDerived(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID resourceId,
+        @Valid @RequestBody CreateDerivedAttachmentRequest request
+    ) {
+        return storageService.attachDerived(actorId, resourceId, request)
+            .map(attachment -> ResponseEntity.created(URI.create("/api/resources/" + resourceId + "/attachments/"
+                + attachment.id())).body(attachment));
+    }
+
+    /**
      * 获取资源附件及其可理解的可用状态与存储位置。
      *
      * @param actorId 当前登录用户标识
