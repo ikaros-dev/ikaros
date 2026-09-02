@@ -21,7 +21,10 @@ const groups: Group[] = [
   { label: '沟通与审计', icon: '✉', items: [{ label: '公告', path: 'communications/announcements', icon: '▰' }, { label: '通知中心', path: 'communications/notifications', icon: '♧' }, { label: '审计日志', path: 'communications/audit', icon: '≡' }] },
   { label: '系统运维', icon: '♨', items: [{ label: '系统健康与告警', path: 'ops/health', icon: '♥' }, { label: '定时任务', path: 'ops/jobs', icon: '◷' }, { label: '后台任务', path: 'ops/background', icon: '⇄' }] }
 ]
-const expanded = ref<string[]>([]); const drawer = ref(false); const dialog = ref(''); const toast = ref(''); const query = ref(''); const selectedTab = ref('概览'); const loading = ref(false); const apiConnected = ref(false)
+const preferenceKey = 'ikaros-console-preferences'
+const storedPreferences = (() => { try { return JSON.parse(localStorage.getItem(preferenceKey) || '{}') as { expanded?: string[]; theme?: Theme } } catch { return {} } })()
+type Theme = 'system' | 'light' | 'dark'
+const expanded = ref<string[]>(storedPreferences.expanded || []); const theme = ref<Theme>(storedPreferences.theme || 'system'); const drawer = ref(false); const dialog = ref(''); const toast = ref(''); const query = ref(''); const selectedTab = ref('概览'); const loading = ref(false); const apiConnected = ref(false)
 const currentPath = computed(() => Array.isArray(route.params.pathMatch) ? route.params.pathMatch.join('/') : String(route.params.pathMatch || 'dashboard'))
 const current = computed(() => groups.flatMap(g => g.items).find(i => i.path === currentPath.value) || groups[0].items[0])
 const currentGroup = computed(() => groups.find(g => g.items.some(i => i.path === currentPath.value)) || groups[0])
@@ -30,6 +33,8 @@ function go(path: string) { router.push('/console/' + path); drawer.value = fals
 function toggle(label: string) { expanded.value = expanded.value.includes(label) ? expanded.value.filter(v => v !== label) : [...expanded.value, label] }
 function notify(message: string) { toast.value = message; setTimeout(() => toast.value = '', 2800) }
 function openDialog(kind: string) { dialog.value = kind }
+function applyTheme(value: Theme) { document.documentElement.dataset.theme = value; document.documentElement.classList.toggle('dark', value === 'dark'); localStorage.setItem(preferenceKey, JSON.stringify({ expanded: expanded.value, theme: value })) }
+function cycleTheme() { theme.value = theme.value === 'system' ? 'light' : theme.value === 'light' ? 'dark' : 'system'; applyTheme(theme.value); notify(`主题：${theme.value === 'system' ? '跟随系统' : theme.value === 'light' ? '浅色' : '深色'}`) }
 const isDashboard = computed(() => currentPath.value === 'dashboard'); const isSearch = computed(() => currentPath.value === 'search')
 const kpis = [{ label: '资源', value: '12,486', trend: '+8.4%', icon: '◈', tone: 'primary' }, { label: '存储', value: '68.4 GB', trend: '已配置 100 GB', icon: '▥', tone: 'teal' }, { label: '今天', value: '8 / 12', trend: '4 项待完成', icon: '✓', tone: 'orange' }, { label: '后台任务', value: '3', trend: '1 项失败', icon: '⇄', tone: 'purple' }, { label: '通知', value: '6', trend: '2 条重要', icon: '✉', tone: 'pink' }]
 const activities = [{ icon: '✦', text: '完成了媒体资源的元数据同步', target: '《星际穿越》', time: '12 分钟前', color: 'purple' }, { icon: '✓', text: '完成任务', target: '整理本周阅读清单', time: '1 小时前', color: 'teal' }, { icon: '↗', text: '更新了项目', target: 'Ikaros V2 产品设计', time: '昨天 18:24', color: 'orange' }, { icon: '♧', text: '收藏了资源', target: 'Material Design 3', time: '昨天 15:08', color: 'blue' }]
@@ -54,6 +59,7 @@ async function loadResources() {
   } catch { apiConnected.value = false; rows.value = demoRows; notify('后端暂不可用，已保留演示数据') } finally { loading.value = false }
 }
 onMounted(loadResources); watch(currentPath, loadResources)
+onMounted(() => applyTheme(theme.value)); watch(expanded, () => applyTheme(theme.value), { deep: true })
 function genericTitle() { return current.value.label }
 </script>
 
@@ -70,7 +76,7 @@ function genericTitle() { return current.value.label }
           </div>
         </div>
       </nav>
-      <div class="sidebar-bottom"><button class="bottom-link" @click="notify('帮助中心即将开放')">? <span>帮助中心</span></button><button class="bottom-link" @click="notify('主题已切换为跟随系统')">◐ <span>主题</span></button><div class="profile" @click="openDialog('profile')"><div class="avatar">陈</div><div><b>陈昊</b><small>管理员</small></div><span>•••</span></div></div>
+      <div class="sidebar-bottom"><button class="bottom-link" @click="notify('帮助中心即将开放')">? <span>帮助中心</span></button><button class="bottom-link" @click="cycleTheme">◐ <span>主题：{{ theme === 'system' ? '跟随系统' : theme === 'light' ? '浅色' : '深色' }}</span></button><div class="profile" @click="openDialog('profile')"><div class="avatar">陈</div><div><b>陈昊</b><small>管理员</small></div><span>•••</span></div></div>
     </aside>
     <main class="main-content">
       <header class="topbar"><button class="menu-button icon-button" @click="drawer = !drawer">☰</button><div class="breadcrumbs"><span>Ikaros Console</span><span>/</span><b>{{ currentGroup.label }}</b><span>/</span><strong>{{ pageTitle }}</strong></div><div class="top-actions"><button class="icon-button" @click="openDialog('tasks')" aria-label="后台任务">⇄<i class="badge">3</i></button><button class="icon-button" @click="openDialog('notifications')" aria-label="通知">♧<i class="badge pink">6</i></button><button class="icon-button" @click="notify('这是当前页面的帮助提示')">?</button><div class="mini-avatar">陈</div></div></header>
