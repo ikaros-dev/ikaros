@@ -1,6 +1,7 @@
 package run.ikaros.identity;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * 由平台核心显式声明的管理能力；角色只能引用这些能力，不能任意创造权限字符串。
@@ -58,5 +59,10 @@ public enum PlatformPermission {
             .filter(permission -> permission.key.equals(key))
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("未声明的平台权限: " + key));
+    }
+
+    /** 返回权限注册表快照，避免调用方自行拼接权限键。 */
+    public static List<String> registeredKeys() {
+        return Arrays.stream(values()).map(PlatformPermission::key).toList();
     }
 }

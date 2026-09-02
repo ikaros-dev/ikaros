@@ -107,4 +107,14 @@ public class CollectionController {
         return collectionService.addResource(actorId, collectionId, resourceId, position)
             .thenReturn(ResponseEntity.noContent().build());
     }
+
+    @Operation(summary = "移动资源集合", description = "移动集合到新的父集合；系统会拒绝自引用和任意深度循环。")
+    @PostMapping("/{collectionId}/move")
+    public Mono<CollectionView> move(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID collectionId,
+        @RequestParam(required = false) UUID parentId
+    ) {
+        return collectionService.move(actorId, collectionId, parentId);
+    }
 }

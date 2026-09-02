@@ -139,6 +139,20 @@ public class ResourceController {
         return resourceService.trash(actorId, resourceId).thenReturn(ResponseEntity.noContent().build());
     }
 
+    @Operation(summary = "归档资源", description = "通过显式生命周期命令归档活动 Resource，不删除任何 Attachment 或 Blob。")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "资源已归档"),
+        @ApiResponse(responseCode = "404", description = "资源不存在或无权访问", content = @Content),
+        @ApiResponse(responseCode = "409", description = "资源当前状态不允许归档", content = @Content)
+    })
+    @PostMapping("/{resourceId}/archive")
+    public Mono<ResourceView> archive(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID resourceId
+    ) {
+        return resourceService.archive(actorId, resourceId);
+    }
+
     /**
      * 从回收站恢复资源。
      *

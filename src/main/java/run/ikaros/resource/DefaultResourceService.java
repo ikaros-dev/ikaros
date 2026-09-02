@@ -92,9 +92,34 @@ public class DefaultResourceService implements ResourceService {
     }
 
     @Override
+    public Mono<ResourceView> archive(UUID ownerId, UUID resourceId) {
+        return owned(ownerId, resourceId)
+            .flatMap(resource -> {
+                if (resource.lifecycle() == ResourceLifecycle.ARCHIVED) {
+                    return toView(resource);
+                }
+                if (resource.lifecycle() != ResourceLifecycle.ACTIVE) {
+                    return Mono.error(new ConflictException("只有活动 Resource 才能归档"));
+                }
+                ResourceEntity archived = new ResourceEntity(
+                    resource.id(), resource.ownerId(), resource.resourceType(), ResourceLifecycle.ARCHIVED,
+                    resource.createdAt(), Instant.now(), resource.deletedAt(), resource.version()
+                );
+                return resourceRepository.save(archived)
+                    .flatMap(saved -> auditService.record(ownerId, "resource.archive", "RESOURCE", resourceId, "{}")
+                        .then(toView(saved)));
+            })
+            .as(transactionalOperator::transactional);
+    }
+
+    @Override
     public Mono<ResourceView> restore(UUID ownerId, UUID resourceId) {
         return owned(ownerId, resourceId)
             .flatMap(resource -> {
+                if (resource.lifecycle() != ResourceLifecycle.TRASHED
+                    && resource.lifecycle() != ResourceLifecycle.ARCHIVED) {
+                    return Mono.error(new ConflictException("只有已归档或已移入回收站的 Resource 才能恢复"));
+                }
                 ResourceEntity restored = new ResourceEntity(
                     resource.id(), resource.ownerId(), resource.resourceType(), ResourceLifecycle.ACTIVE,
                     resource.createdAt(), Instant.now(), null, resource.version()

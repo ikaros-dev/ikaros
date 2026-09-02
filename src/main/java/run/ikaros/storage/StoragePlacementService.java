@@ -8,6 +8,9 @@ import reactor.core.publisher.Mono;
  */
 public interface StoragePlacementService {
 
+    /** 选择一个当前可读的副本；不会把 Object Key 暴露为 Blob 身份。 */
+    Mono<PlacementView> resolveReadable(UUID blobId);
+
     /**
      * 检查 Blob 是否满足目标层级与最小副本数要求。
      *

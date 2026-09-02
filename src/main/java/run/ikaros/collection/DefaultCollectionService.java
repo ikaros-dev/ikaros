@@ -47,8 +47,9 @@ public class DefaultCollectionService implements CollectionService {
     @Override
     public Mono<CollectionView> create(UUID ownerId, CreateCollectionRequest request) {
         Instant now = Instant.now();
-        return collectionRepository.save(new CollectionEntity(null, ownerId, request.name(), request.description(),
-                now, now, null))
+        return parent(ownerId, request.parentId()).then(collectionRepository.save(new CollectionEntity(
+                null, ownerId, request.parentId(), request.name(), request.description(),
+                now, now, null)))
             .flatMap(collection -> auditService.record(ownerId, "collection.create", "COLLECTION", collection.id(), "{}")
                 .thenReturn(toView(collection)));
     }
@@ -73,13 +74,44 @@ public class DefaultCollectionService implements CollectionService {
                 "{\"resourceId\":\"" + resourceId + "\"}")));
     }
 
+    @Override
+    public Mono<CollectionView> move(UUID ownerId, UUID collectionId, UUID parentId) {
+        return transactionalOperator.transactional(ownedCollection(ownerId, collectionId)
+            .flatMap(collection -> parent(ownerId, parentId)
+                .then(validateNoCycle(collection.id(), parentId))
+                .then(Mono.defer(() -> collectionRepository.save(new CollectionEntity(
+                    collection.id(), collection.ownerId(), parentId, collection.name(), collection.description(),
+                    collection.createdAt(), Instant.now(), collection.version())))))
+            .map(this::toView));
+    }
+
+    private Mono<Void> parent(UUID ownerId, UUID parentId) {
+        if (parentId == null) {
+            return Mono.empty();
+        }
+        return ownedCollection(ownerId, parentId).then();
+    }
+
+    private Mono<Void> validateNoCycle(UUID collectionId, UUID parentId) {
+        if (parentId == null) {
+            return Mono.empty();
+        }
+        if (collectionId.equals(parentId)) {
+            return Mono.error(new ConflictException("集合不能将自身作为父集合"));
+        }
+        return collectionRepository.findById(parentId)
+            .flatMap(parent -> validateNoCycle(collectionId, parent.parentId()))
+            .switchIfEmpty(Mono.error(new NotFoundException("父集合不存在")))
+            .then();
+    }
+
     private Mono<CollectionEntity> ownedCollection(UUID ownerId, UUID collectionId) {
         return collectionRepository.findByIdAndOwnerId(collectionId, ownerId)
             .switchIfEmpty(Mono.error(new NotFoundException("集合不存在或无权访问")));
     }
 
     private CollectionView toView(CollectionEntity collection) {
-        return new CollectionView(collection.id(), collection.name(), collection.description(), collection.createdAt(),
+        return new CollectionView(collection.id(), collection.parentId(), collection.name(), collection.description(), collection.createdAt(),
             collection.updatedAt());
     }
 }

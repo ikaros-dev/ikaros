@@ -115,13 +115,14 @@ public class DefaultStorageService implements StorageService {
     private Mono<BlobEntity> findOrCreateBlob(AttachBlobRequest request) {
         return blobRepository.findBySha256(request.sha256().toLowerCase())
             .flatMap(existing -> {
-                if (existing.sizeBytes() != request.sizeBytes()) {
+                if (!"SHA-256".equalsIgnoreCase(existing.hashAlgorithm())
+                    || existing.sizeBytes() != request.sizeBytes()) {
                     return Mono.error(new ConflictException("相同 SHA-256 的 Blob 大小不一致"));
                 }
                 return Mono.just(existing);
             })
             .switchIfEmpty(Mono.defer(() -> blobRepository.save(new BlobEntity(
-                null, request.sha256().toLowerCase(), request.sizeBytes(), request.mediaType(),
+                null, "SHA-256", request.sha256().toLowerCase(), request.sizeBytes(), request.mediaType(),
                 BlobAvailability.AVAILABLE, Instant.now(), null
             ))));
     }

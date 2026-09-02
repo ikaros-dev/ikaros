@@ -48,6 +48,9 @@ public interface ResourceService {
      */
     Mono<Void> trash(UUID ownerId, UUID resourceId);
 
+    /** 将 Resource 显式归档。 */
+    Mono<ResourceView> archive(UUID ownerId, UUID resourceId);
+
     /**
      * 从回收站恢复 Resource。
      *
