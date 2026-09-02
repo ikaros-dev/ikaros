@@ -31,6 +31,7 @@ public class PersistentPlanningTaskService implements PlanningTaskService {
     validateDuration(req.estimatedDurationMinutes());
     return requireProjectRole(actor, req.projectId(), PlanningProjectMemberRole.EDIT_TASK)
         .then(validSection(req.projectId(), req.sectionId()))
+        .then(validParent(actor, req.projectId(), req.parentTaskId()))
         .then(Mono.defer(() -> {
           Instant now = Instant.now();
           return repository.save(new PlanningTaskEntity(null, actor, req.title().trim(), req.description(),
@@ -141,6 +142,26 @@ public class PersistentPlanningTaskService implements PlanningTaskService {
     if (sectionId == null) return Mono.empty();
     return sections.findById(sectionId).filter(s -> projectId != null && s.projectId().equals(projectId))
         .switchIfEmpty(Mono.error(new ConflictException("Section 不属于该 Project"))).then();
+  }
+
+  private Mono<Void> validParent(UUID actor, UUID projectId, UUID parentTaskId) {
+    if (parentTaskId == null) return Mono.empty();
+    return repository.findById(parentTaskId)
+        .switchIfEmpty(Mono.error(new ConflictException("Parent Task 不存在")))
+        .flatMap(parent -> {
+          if (projectId == null || !projectId.equals(parent.projectId())) {
+            return Mono.error(new ConflictException("Parent Task 必须属于同一 Project"));
+          }
+          return parent.ownerId().equals(actor) ? Mono.empty() : requireProjectMember(actor, projectId);
+        });
+  }
+
+  private Mono<Void> requireProjectMember(UUID actor, UUID projectId) {
+    return projects.findById(projectId)
+        .flatMap(project -> project.ownerId().equals(actor)
+            ? Mono.just(project)
+            : members.findByProjectIdAndUserId(projectId, actor).map(member -> project))
+        .switchIfEmpty(Mono.error(new NotFoundException("Project 不存在或无权访问"))).then();
   }
 
   private void check(PlanningTaskEntity t, long expected) {
