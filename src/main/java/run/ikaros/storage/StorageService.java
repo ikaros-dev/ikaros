@@ -4,6 +4,7 @@ import java.util.List;
 import java.time.Duration;
 import java.util.UUID;
 import reactor.core.publisher.Mono;
+import run.ikaros.task.BackgroundTask;
 
 /**
  * Attachment、Blob 与持久化 Placement 的公开业务能力。
@@ -56,4 +57,6 @@ public interface StorageService {
      * @return 审计写入完成信号
      */
     Mono<Void> recordGarbageCollectionDecision(UUID actorId, UUID blobId, boolean approved);
+
+    Mono<BackgroundTask> requestGarbageCollection(UUID actorId, int limit, Duration minimumAge);
 }

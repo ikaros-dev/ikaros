@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+import run.ikaros.task.BackgroundTask;
 
 /**
  * 提供 Blob 物理清理前的候选扫描与人工决策审计接口。
@@ -85,5 +86,15 @@ public class BlobGarbageCollectionController {
     ) {
         return storageService.recordGarbageCollectionDecision(actorId, blobId, request.approved())
             .thenReturn(ResponseEntity.noContent().build());
+    }
+
+    @PostMapping("/request")
+    public Mono<ResponseEntity<BackgroundTask>> request(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @RequestParam(defaultValue = "100") int limit,
+        @RequestParam(defaultValue = "86400") long minimumAgeSeconds
+    ) {
+        return storageService.requestGarbageCollection(actorId, limit, Duration.ofSeconds(minimumAgeSeconds))
+            .map(task -> ResponseEntity.accepted().body(task));
     }
 }

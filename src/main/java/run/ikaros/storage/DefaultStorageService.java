@@ -3,6 +3,7 @@ package run.ikaros.storage;
 import java.time.Instant;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -11,6 +12,8 @@ import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.resource.ResourceRepository;
+import run.ikaros.task.BackgroundTask;
+import run.ikaros.task.BackgroundTaskService;
 
 /**
  * 默认存储服务实现，严格保持 Attachment、Blob 与物理 Placement 三层分离。
@@ -25,6 +28,7 @@ public class DefaultStorageService implements StorageService {
     private final AuditService auditService;
     private final TransactionalOperator transactionalOperator;
     private final StorageProviderRegistry providerRegistry;
+    private final BackgroundTaskService taskService;
 
     /**
      * 创建存储服务。
@@ -56,6 +60,20 @@ public class DefaultStorageService implements StorageService {
                                  AuditService auditService,
                                  TransactionalOperator transactionalOperator,
                                  StorageProviderRegistry providerRegistry) {
+        this(resourceRepository, attachmentRepository, blobRepository, placementRepository,
+            derivedAttachmentRepository, auditService, transactionalOperator, providerRegistry, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public DefaultStorageService(ResourceRepository resourceRepository,
+                                 AttachmentRepository attachmentRepository,
+                                 BlobRepository blobRepository,
+                                 BlobPlacementRepository placementRepository,
+                                 DerivedAttachmentRepository derivedAttachmentRepository,
+                                 AuditService auditService,
+                                 TransactionalOperator transactionalOperator,
+                                 StorageProviderRegistry providerRegistry,
+                                 BackgroundTaskService taskService) {
         this.resourceRepository = resourceRepository;
         this.attachmentRepository = attachmentRepository;
         this.blobRepository = blobRepository;
@@ -64,6 +82,7 @@ public class DefaultStorageService implements StorageService {
         this.auditService = auditService;
         this.transactionalOperator = transactionalOperator;
         this.providerRegistry = providerRegistry;
+        this.taskService = taskService;
     }
 
     @Override
@@ -125,6 +144,16 @@ public class DefaultStorageService implements StorageService {
             .switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在")))
             .flatMap(blob -> auditService.record(actorId, approved ? "blob.gc.approve" : "blob.gc.reject",
                 "BLOB", blob.id(), "{}"));
+    }
+
+    @Override
+    public Mono<BackgroundTask> requestGarbageCollection(UUID actorId, int limit, Duration minimumAge) {
+        if (taskService == null) {
+            return Mono.error(new IllegalStateException("Background Task Runtime 未配置"));
+        }
+        return taskService.submit("storage.blob-gc", Map.of("limit", limit,
+            "minimum_age_seconds", minimumAge.getSeconds(), "requested_by", actorId.toString()),
+            "storage.blob-gc:" + actorId + ":" + limit + ":" + minimumAge.getSeconds());
     }
 
     private Mono<BlobEntity> findOrCreateBlob(AttachBlobRequest request) {
