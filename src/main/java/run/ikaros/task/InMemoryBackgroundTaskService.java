@@ -100,6 +100,15 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
     }
 
     @Override
+    public Mono<BackgroundTask> fail(UUID taskId, UUID leaseToken, Map<String, Object> error) {
+        return leased(taskId, leaseToken).map(task -> {
+            BackgroundTask updated = copy(task, TaskStatus.FAILED, task.leaseOwner(), task.leaseToken(),
+                task.leaseExpiresAt(), task.attempt(), task.cancelRequestedAt(), task.progress(), error);
+            tasks.replace(task.id(), task, updated); return updated;
+        });
+    }
+
+    @Override
     public Mono<BackgroundTask> cancel(UUID taskId) {
         return get(taskId).map(task -> {
             if (task.status() == TaskStatus.SUCCEEDED || task.status() == TaskStatus.FAILED) {

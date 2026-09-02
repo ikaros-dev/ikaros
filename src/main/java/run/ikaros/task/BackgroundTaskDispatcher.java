@@ -27,9 +27,16 @@ public class BackgroundTaskDispatcher {
     public Mono<BackgroundTask> dispatchOnce(String runnerId, Duration leaseDuration) {
         return tasks.claim(runnerId, leaseDuration).flatMap(task -> {
             BackgroundTaskHandler handler = handlers.get(task.taskType());
-            if (handler == null) return Mono.error(new ConflictException("未注册 Task Handler: " + task.taskType()));
+            if (handler == null) {
+                return tasks.fail(task.id(), task.leaseToken(), Map.of("code", "HANDLER_NOT_FOUND",
+                    "message", "未注册 Task Handler: " + task.taskType(), "retryable", false))
+                    .then(Mono.error(new ConflictException("未注册 Task Handler: " + task.taskType())));
+            }
             return handler.handle(task).defaultIfEmpty(Map.of())
-                .flatMap(result -> tasks.complete(task.id(), task.leaseToken(), result));
+                .flatMap(result -> tasks.complete(task.id(), task.leaseToken(), result))
+                .onErrorResume(error -> tasks.fail(task.id(), task.leaseToken(), Map.of(
+                    "code", error.getClass().getSimpleName(), "message", error.getMessage() == null ? "Task Handler 执行失败" : error.getMessage(),
+                    "retryable", true)).then(Mono.error(error)));
         });
     }
 }

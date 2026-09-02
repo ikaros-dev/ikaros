@@ -16,5 +16,6 @@ public interface BackgroundTaskService {
     Mono<BackgroundTask> claim(String runnerId, Duration leaseDuration);
     Mono<BackgroundTask> heartbeat(UUID taskId, UUID leaseToken, Duration leaseDuration);
     Mono<BackgroundTask> complete(UUID taskId, UUID leaseToken, Map<String, Object> result);
+    Mono<BackgroundTask> fail(UUID taskId, UUID leaseToken, Map<String, Object> error);
     Mono<BackgroundTask> cancel(UUID taskId);
 }
