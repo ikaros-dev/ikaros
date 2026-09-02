@@ -398,6 +398,30 @@ Payload 与 attached 相同 identity key。
 }
 ```
 
+### `storage.delivery-provider.created@1`
+
+```json
+{ "provider_id": "uuid", "provider_type": "DIRECT|CDN|SERVER_PROXY" }
+```
+
+### `storage.delivery-provider.updated@1`
+
+```json
+{ "provider_id": "uuid" }
+```
+
+### `storage.delivery-provider.probe-requested@1`
+
+```json
+{ "provider_id": "uuid", "task_id": "uuid" }
+```
+
+### `storage.delivery-provider.signing-key-rotation-requested@1`
+
+```json
+{ "provider_id": "uuid", "task_id": "uuid" }
+```
+
 ### `storage.restore.reconcile-requested@1`
 
 ```json

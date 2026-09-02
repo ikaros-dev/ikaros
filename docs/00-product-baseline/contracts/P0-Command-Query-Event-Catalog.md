@@ -200,6 +200,10 @@ Cursor 对客户端 opaque。
 | `storage.enable-provider` | `storage.provider.manage` | NATURAL | no | `storage.provider.enabled` |
 | `storage.disable-provider` | `storage.provider.manage` | NATURAL | maybe drain precondition | `storage.provider.disabled` |
 | `storage.request-provider-drain` | `storage.provider.manage` | REQUIRED | yes | `storage.provider.drain-requested` |
+| `storage.create-delivery-provider` | `storage.provider.manage` | REQUIRED | no | `storage.delivery-provider.created` |
+| `storage.update-delivery-provider` | `storage.provider.manage` | REQUIRED | no | `storage.delivery-provider.updated` |
+| `storage.probe-delivery-provider` | `storage.provider.manage` | REQUIRED | yes | `storage.delivery-provider.probe-requested` |
+| `storage.rotate-delivery-signing-key` | `storage.provider.manage` | REQUIRED | yes | `storage.delivery-provider.signing-key-rotation-requested` |
 | `storage.request-blob-gc` | `storage.blob.gc` | REQUIRED | yes | `storage.blob.gc-requested` |
 
 ### 4.1 Create Attachment Boundary
