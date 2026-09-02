@@ -15,6 +15,7 @@ import run.ikaros.common.PageResponse;
 
 @Service
 public class InMemoryBackgroundTaskService implements BackgroundTaskService {
+    private static final int MAX_ATTEMPTS = 3;
     private final Map<UUID, BackgroundTask> tasks = new ConcurrentHashMap<>();
 
     @Override
@@ -102,7 +103,7 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
     @Override
     public Mono<BackgroundTask> fail(UUID taskId, UUID leaseToken, Map<String, Object> error) {
         return leased(taskId, leaseToken).map(task -> {
-            boolean retryable = Boolean.TRUE.equals(error == null ? null : error.get("retryable"));
+            boolean retryable = Boolean.TRUE.equals(error == null ? null : error.get("retryable")) && task.attempt() < MAX_ATTEMPTS;
             Instant availableAt = retryable ? Instant.now().plus(backoff(task.attempt())) : task.availableAt();
             BackgroundTask updated = new BackgroundTask(task.id(), task.taskType(), retryable ? TaskStatus.PENDING : TaskStatus.FAILED,
                 task.payload(), task.idempotencyKey(), availableAt, retryable ? null : task.leaseOwner(),

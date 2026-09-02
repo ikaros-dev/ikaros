@@ -18,6 +18,7 @@ import run.ikaros.common.PageResponse;
 @Primary
 @Service
 public class PersistentBackgroundTaskService implements BackgroundTaskService {
+    private static final int MAX_ATTEMPTS = 3;
     private final BackgroundTaskRepository tasks;
     private final BackgroundTaskAttemptRepository attempts;
     private final ObjectMapper mapper;
@@ -108,7 +109,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     public Mono<BackgroundTask> fail(UUID taskId, UUID leaseToken, Map<String, Object> error) {
         return leased(taskId, leaseToken)
             .flatMap(task -> encode(error).flatMap(json -> {
-                boolean retryable = Boolean.TRUE.equals(error == null ? null : error.get("retryable"));
+                boolean retryable = Boolean.TRUE.equals(error == null ? null : error.get("retryable")) && task.attempt() < MAX_ATTEMPTS;
                 Instant availableAt = retryable ? Instant.now().plus(backoff(task.attempt())) : task.availableAt();
                 BackgroundTaskEntity failed = new BackgroundTaskEntity(task.id(), task.taskType(),
                     retryable ? TaskStatus.PENDING.name() : TaskStatus.FAILED.name(), task.payload(), task.idempotencyKey(),
