@@ -1,0 +1,1 @@
+package run.ikaros.music; import java.time.Instant; import java.util.UUID; public record MusicPlaybackHistoryView(UUID id,UUID trackId,UUID sourceId,Instant startedAt,Instant endedAt,long listenedMillis,MusicPlaybackState outcome) {}
