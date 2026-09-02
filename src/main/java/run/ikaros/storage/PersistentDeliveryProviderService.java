@@ -59,7 +59,7 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
                 return providers.save(new DeliveryProviderEntity(old.id(), request.providerKey().trim(), request.providerType(),
                     request.displayName().trim(), request.credentialRef(), config, old.capabilities(), old.grantRevocationMode(),
                     old.signingKeyVersion(), old.healthStatus(), request.enabled() == null ? old.enabled() : request.enabled(),
-                    old.createdAt(), Instant.now(), old.version())); })
+                    old.createdAt(), Instant.now(), old.version(), old.idempotencyKey())); })
             .flatMap(saved -> emit("storage.delivery-provider.updated", saved,
                 "{\"delivery_provider_id\":\"" + saved.id() + "\",\"changed_fields\":[\"config\",\"enabled\"],\"version\":"
                     + (saved.version() == null ? 0 : saved.version()) + "}").thenReturn(view(saved))));

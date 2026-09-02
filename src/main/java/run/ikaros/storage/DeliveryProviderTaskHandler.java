@@ -38,7 +38,7 @@ public class DeliveryProviderTaskHandler {
                 .map(p -> p.probe(provider)).orElseGet(() -> Mono.just(DeliveryProviderHealthStatus.UNKNOWN))
                 .flatMap(status -> providers.save(new DeliveryProviderEntity(provider.id(), provider.providerKey(), provider.providerType(),
                     provider.displayName(), provider.credentialRef(), provider.config(), provider.capabilities(), provider.grantRevocationMode(),
-                    provider.signingKeyVersion(), status, provider.enabled(), provider.createdAt(), Instant.now(), provider.version())))
+                    provider.signingKeyVersion(), status, provider.enabled(), provider.createdAt(), Instant.now(), provider.version(), provider.idempotencyKey())))
                 .flatMap(saved -> events.append("storage.delivery-provider.probed", 1, "delivery_provider", saved.id(),
                     "{\"delivery_provider_id\":\"" + saved.id() + "\",\"health_status\":\"" + saved.healthStatus()
                         + "\",\"capability_changes\":[]}").then(saved.healthStatus() == DeliveryProviderHealthStatus.DEGRADED
@@ -56,7 +56,7 @@ public class DeliveryProviderTaskHandler {
             .flatMap(provider -> providers.save(new DeliveryProviderEntity(provider.id(), provider.providerKey(), provider.providerType(),
                 provider.displayName(), credentialRef.isBlank() ? provider.credentialRef() : credentialRef, provider.config(), provider.capabilities(),
                 provider.grantRevocationMode(), provider.signingKeyVersion() + 1, provider.healthStatus(), provider.enabled(), provider.createdAt(),
-                Instant.now(), provider.version())))
+                Instant.now(), provider.version(), provider.idempotencyKey())))
             .flatMap(saved -> events.append("storage.delivery-provider.signing-key-rotated", 1, "delivery_provider", saved.id(),
                 "{\"delivery_provider_id\":\"" + saved.id() + "\",\"previous_key_version\":"
                     + (saved.signingKeyVersion() - 1) + ",\"new_key_version\":" + saved.signingKeyVersion() + "}").thenReturn(saved))
