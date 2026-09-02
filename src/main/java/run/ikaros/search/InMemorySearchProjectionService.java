@@ -24,7 +24,7 @@ public class InMemorySearchProjectionService implements SearchProjectionService 
             SearchDocument candidate = new SearchDocument(sourceId, sourceId, sourceVersion,
                 projectorVersion, rebuildGeneration, fields, Instant.now());
             documents.compute(sourceId, (ignored, current) -> current == null
-                || current.sourceVersion() <= sourceVersion ? candidate : current);
+                || !isOlder(current, candidate) ? candidate : current);
             return documents.get(sourceId);
         });
     }
@@ -44,5 +44,15 @@ public class InMemorySearchProjectionService implements SearchProjectionService 
                                                   long rebuildGeneration, String reason) {
         return Mono.just(new ProjectionFailure(sourceId, sourceVersion, rebuildGeneration,
             reason == null ? "unknown" : reason, Instant.now()));
+    }
+
+    private boolean isOlder(SearchDocument current, SearchDocument candidate) {
+        if (current.sourceVersion() != candidate.sourceVersion()) {
+            return current.sourceVersion() > candidate.sourceVersion();
+        }
+        if (current.rebuildGeneration() != candidate.rebuildGeneration()) {
+            return current.rebuildGeneration() > candidate.rebuildGeneration();
+        }
+        return java.util.Objects.equals(current.projectorVersion(), candidate.projectorVersion());
     }
 }

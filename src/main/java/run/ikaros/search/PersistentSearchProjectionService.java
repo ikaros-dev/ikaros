@@ -41,7 +41,8 @@ public class PersistentSearchProjectionService implements SearchProjectionServic
         if (sourceVersion < 0 || rebuildGeneration < 0) {
             return Mono.error(new IllegalArgumentException("投影版本不能为负数"));
         }
-        return repository.findById(sourceId).flatMap(current -> current.sourceVersion() > sourceVersion
+        return repository.findById(sourceId).flatMap(current -> isOlder(current, sourceVersion,
+                projectorVersion, rebuildGeneration)
             ? fromEntity(current) : save(sourceId, sourceVersion, fields, projectorVersion, rebuildGeneration))
             .switchIfEmpty(save(sourceId, sourceVersion, fields, projectorVersion, rebuildGeneration));
     }
@@ -90,6 +91,17 @@ public class PersistentSearchProjectionService implements SearchProjectionServic
         } catch (JsonProcessingException error) {
             return Mono.error(new IllegalArgumentException("搜索投影字段无法序列化", error));
         }
+    }
+
+    private boolean isOlder(SearchDocumentEntity current, long sourceVersion,
+                            String projectorVersion, long rebuildGeneration) {
+        if (current.sourceVersion() != sourceVersion) {
+            return current.sourceVersion() > sourceVersion;
+        }
+        if (current.rebuildGeneration() != rebuildGeneration) {
+            return current.rebuildGeneration() > rebuildGeneration;
+        }
+        return java.util.Objects.equals(current.projectorVersion(), projectorVersion);
     }
 
     private Mono<SearchDocument> fromEntity(SearchDocumentEntity entity) {
