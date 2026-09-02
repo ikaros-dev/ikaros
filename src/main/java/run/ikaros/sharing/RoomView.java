@@ -1,0 +1,1 @@
+package run.ikaros.sharing; import java.time.Instant; import java.util.UUID; public record RoomView(UUID id,UUID ownerId,String kind,String targetType,UUID targetId,String visibility,RoomStatus status,long stateVersion,long sequence,Instant expiresAt,Instant createdAt) {}
