@@ -1,0 +1,1 @@
+package run.ikaros.reading; import java.util.UUID; public record ReadingChapterView(UUID id,UUID workId,UUID editionId,UUID volumeId,UUID resourceId,String structuredNumber,String displayLabel,String title,int sortOrder,String contentKind,Integer pageCount,Integer textLength,String availability) {}

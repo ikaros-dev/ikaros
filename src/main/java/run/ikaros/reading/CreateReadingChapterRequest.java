@@ -1,0 +1,1 @@
+package run.ikaros.reading; import jakarta.validation.constraints.NotBlank; public record CreateReadingChapterRequest(String structuredNumber,@NotBlank String displayLabel,String title,int sortOrder,String contentKind,Integer pageCount,Integer textLength) {}
