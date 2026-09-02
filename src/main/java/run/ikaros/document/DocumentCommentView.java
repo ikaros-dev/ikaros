@@ -1,0 +1,1 @@
+package run.ikaros.document; import java.time.Instant; import java.util.UUID; public record DocumentCommentView(UUID id,UUID documentId,UUID authorId,UUID parentCommentId,UUID anchorRevisionId,String anchor,String body,DocumentCommentStatus status,Instant createdAt,Instant updatedAt) {}
