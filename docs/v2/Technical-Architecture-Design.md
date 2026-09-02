@@ -242,7 +242,7 @@ api -> impl
 每个业务模块推荐结构：
 
 ```text
-run.ikaros.v2.<module>
+run.ikaros.<module>
 ├── api
 ├── application
 │   ├── command
@@ -342,7 +342,7 @@ V2 稳定 HTTP API 默认使用 Spring WebFlux Annotation Controller：
 
 ```text
 @RestController
-@RequestMapping("/api/v2/...")
+@RequestMapping("/api/...")
 ```
 
 默认选择 Annotation Controller 的原因：与 OpenAPI operationId 映射直接、Bean Validation 清晰、Security / ProblemDetail 生态成熟，并且对大量业务 Endpoint 更容易保持一致。
@@ -369,7 +369,7 @@ HTTP Response DTO
 
 ### 7.3 OpenAPI First
 
-`api/openapi-v2-*.yaml` 是稳定 HTTP 契约的机器可读 Source of Truth。
+`api/openapi-*.yaml` 是稳定 HTTP 契约的机器可读 Source of Truth。
 
 CI 必须验证 operationId 唯一、Endpoint 实现覆盖、Schema 兼容性、Error / Problem 结构、snake_case、UUID / RFC3339 格式，以及 ETag / Idempotency / Range 等专项契约。
 
@@ -1240,7 +1240,7 @@ sequenceDiagram
     participant O as Outbox
     participant DB as PostgreSQL
 
-    C->>W: POST /api/v2/...
+    C->>W: POST /api/...
     W->>S: authenticate / build principal
     W->>H: command + execution context
     H->>S: authorize action/object
