@@ -24,12 +24,15 @@ public class DefaultDriveService implements DriveService {
     private record Binding(UUID id, UUID user, UUID device, UUID space, UUID root, String scope, String displayPath,
         SyncSourceKind sourceKind, SyncMode mode, DeletePolicy deletePolicy, ConflictPolicy conflictPolicy,
         boolean enabled, SyncBindingState state, long cursor, Instant created, Instant updated) {}
+    private record Conflict(UUID id, UUID binding, UUID node, UUID baseRevision, UUID remoteRevision,
+        String localFingerprint, SyncConflictState state, Instant detected, Instant resolved, UUID resolvedBy) {}
     private final UuidV7Generator ids = new UuidV7Generator();
     private final ConcurrentMap<UUID, Space> spaces = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Node> nodes = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Device> devices = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Reservation> reservations = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Binding> bindings = new ConcurrentHashMap<>();
+    private final ConcurrentMap<UUID, Conflict> conflicts = new ConcurrentHashMap<>();
 
     @Override public Mono<DriveSpaceView> createSpace(UUID actorId, CreateDriveSpaceRequest request) {
         return Mono.fromSupplier(() -> {
@@ -163,9 +166,32 @@ public class DefaultDriveService implements DriveService {
                 enabled ? SyncBindingState.ACTIVE : SyncBindingState.PAUSED, binding.cursor(), binding.created(), Instant.now());
                 bindings.put(bindingId, updated); return bindingView(updated); });
     }
-    @Override public Mono<SyncConflictView> createConflict(UUID actorId, CreateSyncConflictRequest request) { return Mono.error(new UnsupportedOperationException("内存 Drive 未实现 Conflict")); }
-    @Override public Flux<SyncConflictView> conflicts(UUID actorId, UUID bindingId) { return Flux.empty(); }
-    @Override public Mono<SyncConflictView> resolveConflict(UUID actorId, UUID conflictId, SyncConflictState state) { return Mono.error(new NotFoundException("Conflict 不存在")); }
+    @Override public Mono<SyncConflictView> createConflict(UUID actorId, CreateSyncConflictRequest request) {
+        return ownedBinding(actorId, request.bindingId()).flatMap(binding -> ownedNode(actorId, request.nodeId())
+            .flatMap(node -> {
+                if (!node.space().equals(binding.space())) return Mono.error(new ConflictException("冲突节点不属于同步空间"));
+                Conflict conflict = new Conflict(ids.next(), binding.id(), node.id(), request.baseRevisionId(),
+                    request.remoteRevisionId(), request.localFingerprint(), SyncConflictState.OPEN, Instant.now(), null, null);
+                conflicts.put(conflict.id(), conflict);
+                return Mono.just(conflictView(conflict));
+            }));
+    }
+    @Override public Flux<SyncConflictView> conflicts(UUID actorId, UUID bindingId) {
+        return ownedBinding(actorId, bindingId).flatMapMany(binding -> Flux.fromIterable(conflicts.values())
+            .filter(conflict -> conflict.binding().equals(binding.id())).sort(java.util.Comparator.comparing(Conflict::detected).reversed())
+            .map(this::conflictView));
+    }
+    @Override public Mono<SyncConflictView> resolveConflict(UUID actorId, UUID conflictId, SyncConflictState state) {
+        if (state != SyncConflictState.RESOLVED && state != SyncConflictState.DISMISSED)
+            return Mono.error(new ConflictException("Conflict 只能进入 RESOLVED 或 DISMISSED"));
+        return Mono.justOrEmpty(conflicts.get(conflictId)).switchIfEmpty(Mono.error(new NotFoundException("Conflict 不存在")))
+            .flatMap(conflict -> ownedBinding(actorId, conflict.binding()).map(binding -> {
+                Conflict updated = new Conflict(conflict.id(), conflict.binding(), conflict.node(), conflict.baseRevision(),
+                    conflict.remoteRevision(), conflict.localFingerprint(), state, conflict.detected(), Instant.now(), actorId);
+                conflicts.put(conflictId, updated);
+                return conflictView(updated);
+            }));
+    }
     @Override public Mono<DeviceView> registerDevice(UUID actorId, RegisterDeviceRequest request) {
         return Mono.fromSupplier(() -> {
             boolean duplicate = devices.values().stream().anyMatch(d -> d.user().equals(actorId)
@@ -239,4 +265,10 @@ public class DefaultDriveService implements DriveService {
         binding.space(), binding.root(), binding.scope(), binding.displayPath(), binding.sourceKind(), binding.mode(),
         binding.deletePolicy(), binding.conflictPolicy(), binding.enabled(), binding.state(), binding.cursor(),
         binding.created(), binding.updated()); }
+    private Mono<Binding> ownedBinding(UUID actorId, UUID id) { return Mono.justOrEmpty(bindings.get(id))
+        .filter(binding -> binding.user().equals(actorId))
+        .switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在"))); }
+    private SyncConflictView conflictView(Conflict conflict) { return new SyncConflictView(conflict.id(), conflict.binding(),
+        conflict.node(), conflict.baseRevision(), conflict.remoteRevision(), conflict.localFingerprint(), conflict.state(),
+        conflict.detected(), conflict.resolved(), conflict.resolvedBy()); }
 }
