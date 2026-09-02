@@ -16,9 +16,20 @@ public class StorageRestoreSeasonController {
         @RequestBody(required=false) RequestAttachmentRestore options) {
         return service.requestSeason(actorId, seasonId, options == null ? null : options.providerRestoreClass(), idempotencyKey)
             .map(view -> ResponseEntity.accepted().header("Location", "/api/v2/restore-requests/" + view.id()).body(
-                new RestoreRequestContractView(view.id(), view.scope().name(), view.scopeId(), view.status(), view.totalItems(),
+                new RestoreRequestContractView(view.id(), view.scope().name(), view.scopeId(), status(view.status()), view.totalItems(),
                     view.totalBytes(), view.completedItems(), view.status() == StorageRestoreRequestStatus.FAILED
                         || view.status() == StorageRestoreRequestStatus.PARTIAL_FAILURE ? view.totalItems() - view.completedItems() : 0,
                     "ACCEPTED", view.createdAt())));
+    }
+
+    private String status(StorageRestoreRequestStatus value) {
+        return switch (value) {
+            case REQUESTED -> "PENDING";
+            case IN_PROGRESS -> "ACTIVE";
+            case COMPLETED -> "SUCCEEDED";
+            case PARTIAL_FAILURE -> "PARTIAL";
+            case FAILED -> "FAILED";
+            case CANCELLED -> "CANCELLED";
+        };
     }
 }
