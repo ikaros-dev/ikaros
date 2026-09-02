@@ -11,6 +11,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -116,6 +117,21 @@ public class ResourceController {
         @PathVariable UUID resourceId
     ) {
         return resourceService.get(actorId, resourceId);
+    }
+
+    @Operation(summary = "更新资源", description = "按 expected_version 执行乐观并发更新，更新成功后写入可靠 Resource Event。")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "资源更新成功"),
+        @ApiResponse(responseCode = "404", description = "资源不存在或无权访问", content = @Content),
+        @ApiResponse(responseCode = "409", description = "资源版本冲突", content = @Content)
+    })
+    @PatchMapping("/{resourceId}")
+    public Mono<ResourceView> update(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID resourceId,
+        @Valid @RequestBody UpdateResourceRequest request
+    ) {
+        return resourceService.update(actorId, resourceId, request);
     }
 
     /**
