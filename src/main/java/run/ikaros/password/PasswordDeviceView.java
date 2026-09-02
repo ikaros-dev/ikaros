@@ -1,0 +1,1 @@
+package run.ikaros.password; import java.time.Instant; import java.util.UUID; public record PasswordDeviceView(UUID id,String name,String deviceType,DeviceTrustState trustState,Instant lastSyncAt,Instant lastUnlockAt,Instant createdAt) {}
