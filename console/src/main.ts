@@ -18,6 +18,7 @@ import DriveWorkspace from './DriveWorkspace.vue'
 import DriveHome from './DriveHome.vue'
 import DomainWorkspace from './DomainWorkspace.vue'
 import PlanningWorkspace from './PlanningWorkspace.vue'
+import GoalWorkspace from './GoalWorkspace.vue'
 import AccessDenied from './AccessDenied.vue'
 import { getRouteMeta } from './config/route-meta'
 import './styles.css'
@@ -35,6 +36,7 @@ const routes = [
 const router = createRouter({ history: createWebHistory(), routes })
 for (const path of ['/console/media', '/console/sharing', '/console/attachments', '/console/storage/tiers', '/console/storage/cache', '/console/storage/archive', '/console/storage/backup', '/console/planning/today', '/console/planning/projects', '/console/planning/calendar', '/console/planning/goals', '/console/planning/focus', '/console/finance', '/console/finance/accounts', '/console/finance/transactions', '/console/finance/budgets', '/console/finance/reconcile', '/console/private-notes', '/console/private-notes/conflicts', '/console/private-notes/recovery', '/console/passwords', '/console/passwords/generator', '/console/passwords/health', '/console/passwords/devices', '/console/ai/assistant', '/console/ai/models', '/console/ai/personas', '/console/ai/privacy', '/console/ai/jobs', '/console/analytics', '/console/analytics/content', '/console/analytics/storage', '/console/analytics/planning', '/console/analytics/system', '/console/analytics/metrics', '/console/analytics/reports', '/console/integration/automation', '/console/integration/executions', '/console/integration/events', '/console/integration/sync', '/console/integration/plugins', '/console/communications/announcements', '/console/communications/notifications', '/console/ops/health', '/console/ops/background']) router.addRoute({ path, component: DomainWorkspace })
 router.addRoute({ path: '/console/planning/projects', component: PlanningWorkspace })
+router.addRoute({ path: '/console/planning/goals', component: GoalWorkspace })
 router.beforeEach((to) => {
   if (!to.path.startsWith('/console/') || to.path === '/console/403') return true
   let capabilities: string[] = []

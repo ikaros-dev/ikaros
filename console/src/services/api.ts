@@ -34,6 +34,7 @@ export type StorageProviderRecord = { id: string; providerKey?: string; provider
 export type DriveSpaceRecord = { id: string; name?: string; displayName?: string; status?: string; quota_bytes?: number; quotaBytes?: number; used_bytes?: number; usedBytes?: number; updated_at?: string; updatedAt?: string }
 export type PlanningTaskRecord = { id: string; title?: string; status?: string; priority?: string; due_at?: string; updated_at?: string }
 export type PlanningProjectRecord = { id: string; name?: string; description?: string; status?: string; createdAt?: string; updatedAt?: string; version?: number }
+export type PlanningGoalRecord = { id: string; title?: string; description?: string; type?: string; status?: string; progress?: number; deadline?: string; updatedAt?: string }
 export type SessionRecord = { id: string; userId?: string; loginMethod?: string; currentSvl?: string; verifiedAt?: string; verificationExpiresAt?: string; expiresAt?: string; lastActiveAt?: string }
 export type CollectionRecord = { id: string; name: string; description?: string; updatedAt?: string }
 export type MediaHistoryRecord = { id: string; resourceId?: string; sessionId?: string; startedAt?: string; endedAt?: string; watchedSeconds?: number }
@@ -56,6 +57,8 @@ export const api = {
   listTodayTasks: (actorId: string, timeZone = 'Asia/Shanghai') => request<PlanningTaskRecord[]>(`/planning/tasks/today?timeZone=${encodeURIComponent(timeZone)}`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   listPlanningProjects: (actorId: string) => request<PlanningProjectRecord[]>('/planning/projects', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   createPlanningProject: (body: { name: string; description?: string }, actorId: string) => request<PlanningProjectRecord>('/planning/projects', { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId, 'Idempotency-Key': requestId() }, body: JSON.stringify(body) }),
+  listPlanningGoals: (actorId: string) => request<PlanningGoalRecord[]>('/planning/goals', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
+  createPlanningGoal: (body: { title: string; description?: string; type?: string }, actorId: string) => request<PlanningGoalRecord>('/planning/goals', { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId, 'Idempotency-Key': requestId() }, body: JSON.stringify(body) }),
   listMediaHistory: (actorId: string) => request<MediaHistoryRecord[]>('/media/playback/history', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   listSessions: (userId: string) => request<SessionRecord[]>(`/users/${encodeURIComponent(userId)}/sessions`),
   revokeSession: (userId: string, sessionId: string, actorId: string) => request<void>(`/users/${encodeURIComponent(userId)}/sessions/${encodeURIComponent(sessionId)}`, { method: 'DELETE', headers: { 'X-Ikaros-Actor-Id': actorId } }),
