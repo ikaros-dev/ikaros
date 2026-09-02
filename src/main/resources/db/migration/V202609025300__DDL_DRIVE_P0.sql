@@ -264,6 +264,16 @@ CREATE TABLE planning_habit_check_in (
 CREATE INDEX idx_planning_habit_owner_created ON planning_habit (owner_id, created_at DESC);
 CREATE INDEX idx_planning_habit_check_in_habit_occurred ON planning_habit_check_in (owner_id, habit_id, occurred_at DESC);
 
+CREATE TABLE planning_milestone (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, title VARCHAR(512) NOT NULL, description TEXT,
+    goal_id UUID NOT NULL, project_id UUID, due_at TIMESTAMPTZ, status VARCHAR(16) NOT NULL DEFAULT 'OPEN', achieved_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    version BIGINT NOT NULL DEFAULT 0, CHECK (status IN ('OPEN','ACHIEVED','MISSED','ARCHIVED')), CHECK (version >= 0),
+    FOREIGN KEY (goal_id) REFERENCES planning_goal(id) ON DELETE CASCADE, FOREIGN KEY (project_id) REFERENCES planning_project(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_planning_milestone_owner_due ON planning_milestone (owner_id, due_at);
+CREATE INDEX idx_planning_milestone_goal_due ON planning_milestone (goal_id, due_at);
+
 CREATE TABLE offline_download_manifest (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), intent_id UUID NOT NULL, manifest_version BIGINT NOT NULL,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (intent_id, manifest_version),
