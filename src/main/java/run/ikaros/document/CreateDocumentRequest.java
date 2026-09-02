@@ -1,0 +1,1 @@
+package run.ikaros.document; import jakarta.validation.constraints.NotBlank; import jakarta.validation.constraints.NotNull; public record CreateDocumentRequest(@NotBlank String title,@NotNull DocumentKind kind,String locale,String content) {}
