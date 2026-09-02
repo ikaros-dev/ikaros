@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
@@ -45,11 +46,13 @@ public class AttachmentController {
         @RequestHeader(value = "X-Ikaros-Actor-Id", required = false) UUID actorId,
         @PathVariable UUID attachmentId,
         @RequestHeader(value = "Range", required = false) String range,
-        @RequestHeader(value = "X-Ikaros-Delivery-Grant", required = false) String deliveryGrant
+        @RequestHeader(value = "X-Ikaros-Delivery-Grant", required = false) String deliveryGrant,
+        @RequestParam(value = "delivery_grant", required = false) String deliveryGrantQuery
     ) {
-        Mono<UUID> authorizedActor = deliveryGrant == null || deliveryGrant.isBlank()
+        String effectiveGrant = deliveryGrant == null || deliveryGrant.isBlank() ? deliveryGrantQuery : deliveryGrant;
+        Mono<UUID> authorizedActor = effectiveGrant == null || effectiveGrant.isBlank()
             ? (actorId == null ? Mono.error(new run.ikaros.common.NotFoundException("需要 Actor 或 Delivery Grant")) : Mono.just(actorId))
-            : deliveryGrantService.authorize(actorId, attachmentId, deliveryGrant, range);
+            : deliveryGrantService.authorize(actorId, attachmentId, effectiveGrant, range);
         return authorizedActor.flatMap(a -> storageService.readContent(a, attachmentId, range)).map(content -> {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(content.mediaType()));

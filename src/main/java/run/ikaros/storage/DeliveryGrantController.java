@@ -15,12 +15,29 @@ import run.ikaros.common.IfMatchVersion;
 @RequestMapping({"/api/attachments/{attachmentId}/delivery-grants", "/api/v2/attachments/{attachmentId}/delivery-grants"})
 public class DeliveryGrantController {
     private final DeliveryGrantService service;
-    public DeliveryGrantController(DeliveryGrantService service) { this.service = service; }
+    private final DeliveryLeaseService leases;
+    private final BlobRepository blobs;
+    private final MediaDeliveryBindingRepository bindings;
+    private final DeliveryProviderRepository providers;
+
+    public DeliveryGrantController(DeliveryGrantService service, DeliveryLeaseService leases, BlobRepository blobs,
+                                   MediaDeliveryBindingRepository bindings, DeliveryProviderRepository providers) {
+        this.service = service; this.leases = leases; this.blobs = blobs; this.bindings = bindings; this.providers = providers;
+    }
 
     @PostMapping
-    public Mono<DeliveryGrantView> issue(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+    public Mono<DeliveryGrantContractView> issue(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @PathVariable UUID attachmentId, @Valid @RequestBody DeliveryGrantRequest request) {
-        return service.issue(actorId, attachmentId, request);
+        return service.issue(actorId, attachmentId, request).flatMap(grant ->
+            leases.create(actorId, attachmentId, new DeliveryLeaseRequest(grant.token(), request == null ? null : request.ttlSeconds()))
+                .flatMap(lease -> bindings.findById(lease.bindingId())
+                    .flatMap(binding -> providers.findByProviderKey(binding.deliveryProviderKey())
+                        .zipWith(blobs.findById(lease.blobId()))
+                        .map(providerAndBlob -> new DeliveryGrantContractView(grant.id(), grant.attachmentId(), lease.id(),
+                            providerAndBlob.getT1().id(), grant.method(), "/api/v2/attachments/" + attachmentId
+                                + "/content?delivery_grant=" + grant.token(), grant.expiresAt(),
+                            binding.rangePolicy() != DeliveryBindingRangePolicy.UNSUPPORTED,
+                            providerAndBlob.getT2().mediaType(), providerAndBlob.getT2().sizeBytes(), grant.revocationLevel())))));
     }
 
     @PostMapping("/{grantId}/actions/revoke")
