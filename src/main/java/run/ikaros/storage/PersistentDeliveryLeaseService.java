@@ -125,12 +125,14 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
     private Mono<Selection> select(UUID blobId) {
         return placements.findAllByBlobIdOrderByCreatedAtAsc(blobId)
             .filter(p -> p.placementState() == PlacementState.ACTIVE)
-            .concatMap(p -> providerRegistry.getByKey(p.provider())
+            .index()
+            .concatMap(indexed -> providerRegistry.getByKey(indexed.getT2().provider())
                 .filter(provider -> provider.status() != StorageProviderStatus.DISABLED
                     && provider.status() != StorageProviderStatus.FAILED)
                 .flatMap(provider -> bindings.findAllByStorageProviderIdOrderByPriorityAsc(provider.id())
                     .filter(MediaDeliveryBindingEntity::enabled).next()
-                    .map(binding -> new Selection(binding.id(), "PRIMARY", 0, provider.updatedAt().toString()))))
+                    .map(binding -> new Selection(binding.id(), indexed.getT1() == 0 ? "PRIMARY" : "FAILOVER",
+                        indexed.getT1().intValue(), provider.updatedAt().toString()))))
             .next()
             .switchIfEmpty(Mono.error(new StorageUnavailableException("附件没有可用 Delivery Binding")));
     }
