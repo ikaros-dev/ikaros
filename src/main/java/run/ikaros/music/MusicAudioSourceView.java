@@ -1,0 +1,1 @@
+package run.ikaros.music; import java.util.UUID; public record MusicAudioSourceView(UUID id,UUID trackId,UUID attachmentId,String codec,String container,Long durationMillis,Integer sampleRate,Integer bitDepth,Integer channels,Integer bitrate,boolean lossless,String availability,int preferenceWeight) {}
