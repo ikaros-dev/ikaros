@@ -1,0 +1,1 @@
+package run.ikaros.finance; import jakarta.validation.constraints.NotNull; import java.time.LocalDate; import java.util.UUID; public record CreateBalanceSnapshotRequest(@NotNull UUID accountId,@NotNull LocalDate snapshotDate) {}
