@@ -24,4 +24,6 @@ public interface AttachmentRepository extends ReactiveCrudRepository<AttachmentE
                                                                                  String idempotencyKey);
 
     Mono<Long> countByBlobIdAndDeletedAtIsNull(UUID blobId);
+
+    Mono<AttachmentEntity> findFirstByBlobIdAndDeletedAtIsNullOrderByCreatedAtAsc(UUID blobId);
 }
