@@ -161,12 +161,21 @@ public class ResourceController {
         @ApiResponse(responseCode = "204", description = "资源已移入回收站"),
         @ApiResponse(responseCode = "404", description = "资源不存在或无权访问", content = @Content)
     })
-    @DeleteMapping({"/{resourceId}", "/{resourceId}/actions/trash"})
+    @DeleteMapping("/{resourceId}")
     public Mono<ResponseEntity<Void>> trash(
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @PathVariable UUID resourceId
     ) {
         return resourceService.trash(actorId, resourceId).thenReturn(ResponseEntity.noContent().build());
+    }
+
+    @Operation(summary = "将资源移入回收站并返回资源", description = "以 P0 Action 契约执行逻辑删除，并返回更新后的 Resource。")
+    @PostMapping("/{resourceId}/actions/trash")
+    public Mono<ResourceView> trashAction(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID resourceId
+    ) {
+        return resourceService.trash(actorId, resourceId).then(resourceService.get(actorId, resourceId));
     }
 
     @Operation(summary = "归档资源", description = "通过显式生命周期命令归档活动 Resource，不删除任何 Attachment 或 Blob。")
