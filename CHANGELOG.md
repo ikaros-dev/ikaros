@@ -2,6 +2,11 @@
 
 更新日志文档，版本顺序从新到旧，最新版本在最前(上)面。
 
+# 2.0.0
+
+
+
+
 # 1.2.6
 
 
@@ -138,10 +143,10 @@
 - 合并同一附件驱动的并发刷新请求，避免重复执行目录扫描
 - 新增音乐模块后端 API，支持音乐专辑和歌曲的增删改查
 - 新增 Subsonic API 核心支持，兼容 Subsonic 协议
-  - 浏览：getArtists / getArtist / getAlbum / getSong / getAlbumList2
-  - 播放：stream（音频流） / getCoverArt（封面）
-  - 歌单：getPlaylists / getPlaylist / createPlaylist / deletePlaylist
-  - 其他：search2 / scrobble / ping
+    - 浏览：getArtists / getArtist / getAlbum / getSong / getAlbumList2
+    - 播放：stream（音频流） / getCoverArt（封面）
+    - 歌单：getPlaylists / getPlaylist / createPlaylist / deletePlaylist
+    - 其他：search2 / scrobble / ping
 
 ### 优化
 
@@ -208,9 +213,9 @@
 
 ### 新功能
 - TOTP 二步验证（2FA）完整支持（后端 + 前端）
-  - TOTP 核心服务（RFC 6238，HMAC-SHA1，30s，6位）
-  - 登录分步认证：凭据 → TOTP 验证码
-  - TOTP 管理页面：开启/关闭/重绑定/Authenticator 二维码
+    - TOTP 核心服务（RFC 6238，HMAC-SHA1，30s，6位）
+    - 登录分步认证：凭据 → TOTP 验证码
+    - TOTP 管理页面：开启/关闭/重绑定/Authenticator 二维码
 - 新增插件附件访问地址抽象接口 AttachmentAccessUrlProvider
 - 新增附件 URL 条件参数查询和带条件 URL 获取端点
 
@@ -928,9 +933,9 @@ PS: 从v1.0.x无法无缝升级到v1.1，请升级到v1.0.9配置新数据库进
 ## 新特性
 
 - 新增剧集相关服务端接口
-  - 根据剧集ID查询剧集元数据
-  - 根据剧集ID查询剧集完整信息
-  - 根据剧集ID查询当前剧集所引用的所有附件
+    - 根据剧集ID查询剧集元数据
+    - 根据剧集ID查询剧集完整信息
+    - 根据剧集ID查询当前剧集所引用的所有附件
 - 新增附件关系管理功能，目前主要用于手动绑定视频附件和字幕附件。
 
 ## 优化
@@ -963,9 +968,9 @@ PS: 从v1.0.x无法无缝升级到v1.1，请升级到v1.0.9配置新数据库进
 ## 优化
 
 - 静态文件加载逻辑，通过URL访问`/static/**`，支持在下列三种目录加载静态文件：
-  1. 用户工作目录下的静态目录`statics`目录下
-  2. `ClassPath`的`static`目录下
-  3. `ClassPath`的`templates/static`目录下
+    1. 用户工作目录下的静态目录`statics`目录下
+    2. `ClassPath`的`static`目录下
+    3. `ClassPath`的`templates/static`目录下
 - 条目收藏形式优化，提交条目收藏时同时提交条目收藏类型 #521
 
 ## 主題
@@ -982,16 +987,16 @@ PS: 从v1.0.x无法无缝升级到v1.1，请升级到v1.0.9配置新数据库进
 ## 新特性
 
 - 标签功能 #429
-  - [X] 服务端接口
-  - [X] 控制台条目详情页
+    - [X] 服务端接口
+    - [X] 控制台条目详情页
 
 ## 优化
 
 - 条目详情页，给番组集合平台加上对应的条目详情URL前缀
 - 列表接口排序优化 #506 指定默认排序规则
-  - 附件列表接口，按类型、名称、大小、更新时间依次升序
-  - 条目剧集列表接口，按分组降序，序号、放送时间、创建时间依次升序
-  - 剧集附件引用列表接口，在根据参数放送时间排序后，按名称、类型、NSFW依次升序
+    - 附件列表接口，按类型、名称、大小、更新时间依次升序
+    - 条目剧集列表接口，按分组降序，序号、放送时间、创建时间依次升序
+    - 剧集附件引用列表接口，在根据参数放送时间排序后，按名称、类型、NSFW依次升序
 
 # 0.11.5
 
