@@ -29,7 +29,7 @@ import reactor.core.publisher.Mono;
  */
 @Validated
 @RestController
-@RequestMapping("/api/collections")
+@RequestMapping({"/api/collections", "/api/v2/collections"})
 public class CollectionController {
     private final CollectionService collectionService;
 

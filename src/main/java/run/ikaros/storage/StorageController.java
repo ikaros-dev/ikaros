@@ -24,7 +24,7 @@ import reactor.core.publisher.Mono;
  * 提供 Resource Attachment 与 Blob 存储边界的 HTTP 接口。
  */
 @RestController
-@RequestMapping("/api/resources/{resourceId}/attachments")
+@RequestMapping({"/api/resources/{resourceId}/attachments", "/api/v2/resources/{resourceId}/attachments"})
 public class StorageController {
     private final StorageService storageService;
 

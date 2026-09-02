@@ -32,7 +32,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
  */
 @Validated
 @RestController
-@RequestMapping("/api/resources")
+@RequestMapping({"/api/resources", "/api/v2/resources"})
 public class ResourceController {
     private final ResourceService resourceService;
 

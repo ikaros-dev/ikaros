@@ -21,7 +21,7 @@ import reactor.core.publisher.Mono;
  * 提供 Resource 收藏状态的 HTTP-first 接口。
  */
 @RestController
-@RequestMapping("/api/resources/{resourceId}/favorite")
+@RequestMapping({"/api/resources/{resourceId}/favorite", "/api/v2/resources/{resourceId}/favorite"})
 public class FavoriteController {
     private final FavoriteService favoriteService;
 
