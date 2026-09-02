@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 import run.ikaros.progress.ProgressType;
 import run.ikaros.progress.ResourceProgressService;
 import run.ikaros.progress.ResourceProgressView;
@@ -48,6 +49,14 @@ public class PersistentMediaPlaybackService implements MediaPlaybackService {
         }).map(this::sessionView);
     }
 
+    @Override public Mono<PlaybackSessionView> update(UUID ownerId, UUID sessionId, UpdatePlaybackProgressRequest request,
+                                                      long expectedVersion) {
+        return ownedActive(ownerId, sessionId).flatMap(old -> {
+            checkVersion(old.version(), expectedVersion);
+            return update(ownerId, sessionId, request);
+        });
+    }
+
     @Override public Mono<PlaybackSessionView> end(UUID ownerId, UUID sessionId) {
         return ownedActive(ownerId, sessionId).flatMap(old -> {
             Instant now = Instant.now();
@@ -57,9 +66,17 @@ public class PersistentMediaPlaybackService implements MediaPlaybackService {
         }).map(this::sessionView);
     }
 
+    @Override public Mono<PlaybackSessionView> end(UUID ownerId, UUID sessionId, long expectedVersion) {
+        return ownedActive(ownerId, sessionId).flatMap(old -> {
+            checkVersion(old.version(), expectedVersion);
+            return end(ownerId, sessionId);
+        });
+    }
+
     @Override public Mono<ResourceProgressView> progress(UUID ownerId, UUID resourceId) { return progress.get(ownerId, resourceId, ProgressType.VIDEO_SECONDS); }
     @Override public Flux<PlaybackHistoryView> history(UUID ownerId) { return history.findAllByOwnerIdOrderByEndedAtDesc(ownerId).map(this::historyView); }
     private Mono<MediaPlaybackSessionEntity> ownedActive(UUID ownerId, UUID id) { return sessions.findById(id).filter(s -> s.ownerId().equals(ownerId)).switchIfEmpty(Mono.error(new NotFoundException("Playback Session 不存在"))).flatMap(s -> s.state() == PlaybackSessionState.ACTIVE ? Mono.just(s) : Mono.error(new ConflictException("Playback Session 已结束"))); }
-    private PlaybackSessionView sessionView(MediaPlaybackSessionEntity e) { return new PlaybackSessionView(e.id(), e.resourceId(), e.releaseId(), e.state(), e.startedAt(), e.endedAt(), e.lastPositionSeconds()); }
+    private void checkVersion(Long actual, long expected) { if ((actual == null ? 0 : actual) != expected) throw new PreconditionFailedException("If-Match 与 Playback Session 当前版本不匹配"); }
+    private PlaybackSessionView sessionView(MediaPlaybackSessionEntity e) { return new PlaybackSessionView(e.id(), e.resourceId(), e.releaseId(), e.state(), e.startedAt(), e.endedAt(), e.lastPositionSeconds(), e.version()); }
     private PlaybackHistoryView historyView(MediaPlaybackHistoryEntity e) { return new PlaybackHistoryView(e.id(), e.resourceId(), e.sessionId(), e.startedAt(), e.endedAt(), e.watchedSeconds()); }
 }
