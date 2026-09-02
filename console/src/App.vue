@@ -92,7 +92,7 @@ async function loadResources() {
       if (result.length) rows.value = result.map(item => ({ name: item.title || `Resource ${item.id.slice(0, 8)}`, owner: '当前用户', status: item.lifecycle || '已启用', updated: item.updated_at ? new Date(item.updated_at).toLocaleString('zh-CN') : '刚刚' }))
     } else if (currentPath.value === 'security/users') {
       const result = unwrapPage(await api.listUsers('?page=0&size=5'))
-      if (result.length) rows.value = result.map(item => ({ name: item.display_name || item.username || item.id.slice(0, 8), owner: item.username || '平台用户', status: item.status || 'ACTIVE', updated: item.last_active_at ? new Date(item.last_active_at).toLocaleString('zh-CN') : '暂无记录' }))
+      if (result.length) rows.value = result.map(item => ({ id: item.id, name: item.display_name || item.username || item.id.slice(0, 8), owner: item.username || '平台用户', status: item.status || 'ACTIVE', updated: item.last_active_at ? new Date(item.last_active_at).toLocaleString('zh-CN') : '暂无记录' }))
     } else if (currentPath.value === 'ops/background') {
       const result = await api.listBackgroundTasks()
       if (result.length) rows.value = result.slice(0, 5).map(item => ({ id: item.id, name: item.task_type || item.id.slice(0, 8), owner: item.owning_subsystem || '系统', status: item.state || '排队中', updated: item.created_at ? new Date(item.created_at).toLocaleString('zh-CN') : '刚刚' }))
@@ -143,6 +143,11 @@ async function revokeSelectedSessions() {
   const targets = rows.value.filter(row => selectedRows.value.includes(row.name) && row.id)
   try { await Promise.all(targets.map(row => api.revokeSession(actorId, row.id!, actorId))); clearSelection(); await loadResources(); notify(`${targets.length} 个会话已撤销`) } catch (error) { notify(error instanceof Error ? error.message : '撤销会话失败') }
 }
+async function changeSelectedUserStatus(status: 'ACTIVE' | 'DISABLED') {
+  if (!actorId) { notify('请先配置 VITE_ACTOR_ID'); return }
+  const targets = rows.value.filter(row => selectedRows.value.includes(row.name) && row.id)
+  try { await Promise.all(targets.map(row => api.changeUserStatus(row.id!, status, actorId))); clearSelection(); await loadResources(); notify(`${targets.length} 个账户已${status === 'ACTIVE' ? '启用' : '禁用'}`) } catch (error) { notify(error instanceof Error ? error.message : '账户状态更新失败') }
+}
 </script>
 
 <template>
@@ -191,4 +196,5 @@ async function revokeSelectedSessions() {
     <div v-if="dialog === 'permission-review'" class="review-scrim" @click.self="dialog = ''"><section class="review-dialog"><div class="dialog-title"><div><p class="eyebrow">权限变更审阅</p><h2>确认权限修改</h2></div><button class="icon-button" @click="dialog = ''">×</button></div><p class="review-copy">以下修改将应用到当前角色，并写入安全审计日志。</p><div class="review-list"><div v-for="(value, key) in stagedPermissions" :key="key" class="review-item"><span :class="value ? 'grant' : 'revoke'">{{ value ? '+' : '−' }}</span><div><b>{{ value ? '新增权限' : '撤销权限' }}</b><code>{{ key }}</code></div><span class="status-chip" :class="value ? 'success' : 'danger'">{{ value ? '授予' : '移除' }}</span></div></div><div class="dialog-actions"><button class="outlined-button" @click="discardPermissions; dialog = ''">返回修改</button><button class="filled-button" @click="applyPermissions">确认提交</button></div></section></div><div v-if="dialog === 'notifications'" class="notification-scrim" @click.self="dialog = ''"><aside class="notification-sheet"><div class="notification-head"><div><p class="eyebrow">通知中心</p><h2>最近通知</h2></div><button class="text-button" @click="notify('已全部标为已读'); dialog = ''">全部已读</button></div><div class="notification-list"><div v-for="item in notifications" :key="item.title" class="notification-row"><span class="notification-icon" :class="item.type">{{ item.type === 'error' ? '!' : item.type === 'success' ? '✓' : 'i' }}</span><div><b>{{ item.title }}<i v-if="item.unread"></i></b><p>{{ item.text }}</p><small>{{ item.time }}</small></div></div></div><button class="outlined-button notification-all" @click="dialog = ''; go('communications/notifications')">查看全部通知</button></aside></div><div v-if="toast" class="snackbar">✓ {{ toast }}<button @click="toast = ''">×</button></div>
   </div>
   <div v-if="currentPath === 'security/sessions' && selectedRows.length" class="session-action-bar"><span>已选择 {{ selectedRows.length }} 个会话</span><button class="outlined-button small" @click="clearSelection">取消选择</button><button class="filled-button small" @click="revokeSelectedSessions">撤销会话</button></div>
+  <div v-if="currentPath === 'security/users' && selectedRows.length" class="session-action-bar user-action-bar"><span>已选择 {{ selectedRows.length }} 个账户</span><button class="outlined-button small" @click="clearSelection">取消选择</button><button class="outlined-button small" @click="changeSelectedUserStatus('DISABLED')">禁用</button><button class="filled-button small" @click="changeSelectedUserStatus('ACTIVE')">启用</button></div>
 </template>
