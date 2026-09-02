@@ -1,0 +1,2 @@
+package run.ikaros.planning; import java.time.Instant; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.relational.core.mapping.Column; import org.springframework.data.relational.core.mapping.Table;
+@Table("planning_task_assignment") public record PlanningTaskAssignmentEntity(@Id UUID id,@Column("task_id") UUID taskId,@Column("assignee_id") UUID assigneeId,@Column("assigned_by") UUID assignedBy,@Column("created_at") Instant createdAt) {}

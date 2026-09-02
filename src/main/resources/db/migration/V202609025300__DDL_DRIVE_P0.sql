@@ -326,6 +326,13 @@ CREATE TABLE planning_project_member (
 );
 CREATE INDEX idx_planning_project_member_user ON planning_project_member (user_id, project_id);
 
+CREATE TABLE planning_task_assignment (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), task_id UUID NOT NULL, assignee_id UUID NOT NULL,
+    assigned_by UUID NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    UNIQUE (task_id, assignee_id), FOREIGN KEY (task_id) REFERENCES planning_task(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_planning_task_assignment_assignee ON planning_task_assignment (assignee_id, task_id);
+
 CREATE TABLE offline_download_manifest (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), intent_id UUID NOT NULL, manifest_version BIGINT NOT NULL,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (intent_id, manifest_version),
