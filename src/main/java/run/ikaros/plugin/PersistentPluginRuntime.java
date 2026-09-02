@@ -35,6 +35,9 @@ public class PersistentPluginRuntime implements PluginRuntime {
 
     @Override
     public Mono<PluginDescriptor> install(PluginManifest manifest, Set<String> grantedPermissions) {
+        if (!compatible(manifest)) {
+            return Mono.error(new ConflictException("插件与当前 Server 版本不兼容"));
+        }
         Set<String> grants = grantedPermissions == null ? Set.of() : Set.copyOf(grantedPermissions);
         if (!manifest.permissions().containsAll(grants)) {
             return Mono.error(new ConflictException("不能授予插件未声明的权限"));
@@ -122,4 +125,10 @@ public class PersistentPluginRuntime implements PluginRuntime {
     }
 
     private record Encoded(String manifest, String permissions) { }
+
+    private boolean compatible(PluginManifest manifest) {
+        return serverVersion.compareTo(manifest.minimumServerVersion()) >= 0
+            && (manifest.maximumServerVersion() == null
+                || serverVersion.compareTo(manifest.maximumServerVersion()) <= 0);
+    }
 }
