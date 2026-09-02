@@ -10,6 +10,7 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
+import run.ikaros.common.PreconditionFailedException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;
 import run.ikaros.event.DurableEventService;
@@ -134,8 +135,18 @@ public class DefaultResourceService implements ResourceService {
 
     @Override
     public Mono<Void> trash(UUID ownerId, UUID resourceId) {
+        return trash(ownerId, resourceId, null);
+    }
+
+    @Override
+    public Mono<Void> trash(UUID ownerId, UUID resourceId, long expectedVersion) {
+        return trash(ownerId, resourceId, Long.valueOf(expectedVersion));
+    }
+
+    private Mono<Void> trash(UUID ownerId, UUID resourceId, Long expectedVersion) {
         return owned(ownerId, resourceId)
             .flatMap(resource -> {
+                checkVersion(resource.version(), expectedVersion);
                 if (resource.lifecycle() == ResourceLifecycle.TRASHED) {
                     return Mono.empty();
                 }
@@ -152,8 +163,18 @@ public class DefaultResourceService implements ResourceService {
 
     @Override
     public Mono<ResourceView> archive(UUID ownerId, UUID resourceId) {
+        return archive(ownerId, resourceId, null);
+    }
+
+    @Override
+    public Mono<ResourceView> archive(UUID ownerId, UUID resourceId, long expectedVersion) {
+        return archive(ownerId, resourceId, Long.valueOf(expectedVersion));
+    }
+
+    private Mono<ResourceView> archive(UUID ownerId, UUID resourceId, Long expectedVersion) {
         return owned(ownerId, resourceId)
             .flatMap(resource -> {
+                checkVersion(resource.version(), expectedVersion);
                 if (resource.lifecycle() == ResourceLifecycle.ARCHIVED) {
                     return toView(resource);
                 }
@@ -175,8 +196,18 @@ public class DefaultResourceService implements ResourceService {
 
     @Override
     public Mono<ResourceView> restore(UUID ownerId, UUID resourceId) {
+        return restore(ownerId, resourceId, null);
+    }
+
+    @Override
+    public Mono<ResourceView> restore(UUID ownerId, UUID resourceId, long expectedVersion) {
+        return restore(ownerId, resourceId, Long.valueOf(expectedVersion));
+    }
+
+    private Mono<ResourceView> restore(UUID ownerId, UUID resourceId, Long expectedVersion) {
         return owned(ownerId, resourceId)
             .flatMap(resource -> {
+                checkVersion(resource.version(), expectedVersion);
                 if (resource.lifecycle() != ResourceLifecycle.TRASHED
                     && resource.lifecycle() != ResourceLifecycle.ARCHIVED) {
                     return Mono.error(new ConflictException("只有已归档或已移入回收站的 Resource 才能恢复"));
@@ -191,6 +222,12 @@ public class DefaultResourceService implements ResourceService {
                         .then(auditService.record(ownerId, "resource.restore", "RESOURCE", resourceId, "{}"))
                         .then(toView(saved)));
             });
+    }
+
+    private void checkVersion(Long actualVersion, Long expectedVersion) {
+        if (expectedVersion != null && (actualVersion == null ? 0 : actualVersion) != expectedVersion) {
+            throw new PreconditionFailedException("If-Match 与 Resource 当前版本不匹配");
+        }
     }
 
     @Override

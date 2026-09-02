@@ -53,8 +53,12 @@ public interface ResourceService {
      */
     Mono<Void> trash(UUID ownerId, UUID resourceId);
 
+    Mono<Void> trash(UUID ownerId, UUID resourceId, long expectedVersion);
+
     /** 将 Resource 显式归档。 */
     Mono<ResourceView> archive(UUID ownerId, UUID resourceId);
+
+    Mono<ResourceView> archive(UUID ownerId, UUID resourceId, long expectedVersion);
 
     /**
      * 从回收站恢复 Resource。
@@ -64,6 +68,8 @@ public interface ResourceService {
      * @return 已恢复的 Resource
      */
     Mono<ResourceView> restore(UUID ownerId, UUID resourceId);
+
+    Mono<ResourceView> restore(UUID ownerId, UUID resourceId, long expectedVersion);
 
     /**
      * 为 Resource 添加稳定外部身份映射。

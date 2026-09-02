@@ -170,18 +170,22 @@ public class ResourceController {
     @DeleteMapping("/{resourceId}")
     public Mono<ResponseEntity<Void>> trash(
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
-        @PathVariable UUID resourceId
+        @PathVariable UUID resourceId,
+        @RequestHeader(value = "If-Match", required = false) String ifMatch
     ) {
-        return resourceService.trash(actorId, resourceId).thenReturn(ResponseEntity.noContent().build());
+        return resourceService.trash(actorId, resourceId, IfMatchVersion.parse(ifMatch))
+            .thenReturn(ResponseEntity.noContent().build());
     }
 
     @Operation(summary = "将资源移入回收站并返回资源", description = "以 P0 Action 契约执行逻辑删除，并返回更新后的 Resource。")
     @PostMapping("/{resourceId}/actions/trash")
     public Mono<ResponseEntity<ResourceView>> trashAction(
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
-        @PathVariable UUID resourceId
+        @PathVariable UUID resourceId,
+        @RequestHeader(value = "If-Match", required = false) String ifMatch
     ) {
-        return resourceService.trash(actorId, resourceId).then(resourceService.get(actorId, resourceId))
+        return resourceService.trash(actorId, resourceId, IfMatchVersion.parse(ifMatch))
+            .then(resourceService.get(actorId, resourceId))
             .map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view));
     }
 
@@ -194,9 +198,10 @@ public class ResourceController {
     @PostMapping({"/{resourceId}/archive", "/{resourceId}/actions/archive"})
     public Mono<ResourceView> archive(
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
-        @PathVariable UUID resourceId
+        @PathVariable UUID resourceId,
+        @RequestHeader(value = "If-Match", required = false) String ifMatch
     ) {
-        return resourceService.archive(actorId, resourceId);
+        return resourceService.archive(actorId, resourceId, IfMatchVersion.parse(ifMatch));
     }
 
     /**
@@ -215,9 +220,10 @@ public class ResourceController {
     @PostMapping({"/{resourceId}/restore", "/{resourceId}/actions/restore"})
     public Mono<ResourceView> restore(
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
-        @PathVariable UUID resourceId
+        @PathVariable UUID resourceId,
+        @RequestHeader(value = "If-Match", required = false) String ifMatch
     ) {
-        return resourceService.restore(actorId, resourceId);
+        return resourceService.restore(actorId, resourceId, IfMatchVersion.parse(ifMatch));
     }
 
     /**
