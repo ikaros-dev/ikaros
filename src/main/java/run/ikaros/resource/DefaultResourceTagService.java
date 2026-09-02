@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PageResponse;
 
 /**
  * 默认用户标签服务实现，标签权限始终绑定当前用户和 Resource。
@@ -49,6 +50,24 @@ public class DefaultResourceTagService implements ResourceTagService {
             .thenMany(tagRepository.findAllByOwnerIdAndResourceIdOrderByNameAsc(ownerId, resourceId))
             .map(this::toView)
             .collectList();
+    }
+
+    @Override
+    public Mono<PageResponse<ResourceTagView>> listCatalog(UUID ownerId, int page, int size) {
+        if (page < 0 || size < 1 || size > 100) {
+            return Mono.error(new IllegalArgumentException("分页参数不合法"));
+        }
+        return tagRepository.findAllByOwnerIdOrderByNameAsc(ownerId)
+            .map(this::toView)
+            .collectList()
+            .map(all -> {
+                List<ResourceTagView> unique = all.stream()
+                    .collect(java.util.stream.Collectors.toMap(ResourceTagView::name, value -> value,
+                        (first, ignored) -> first, java.util.LinkedHashMap::new))
+                    .values().stream().toList();
+                return new PageResponse<>(unique.stream().skip((long) page * size).limit(size).toList(),
+                    unique.size(), page, size);
+            });
     }
 
     @Override

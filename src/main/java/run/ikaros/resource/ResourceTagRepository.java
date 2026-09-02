@@ -12,6 +12,8 @@ public interface ResourceTagRepository extends ReactiveCrudRepository<ResourceTa
     /** 查询指定资源的用户标签。 */
     Flux<ResourceTagEntity> findAllByOwnerIdAndResourceIdOrderByNameAsc(UUID ownerId, UUID resourceId);
 
+    Flux<ResourceTagEntity> findAllByOwnerIdOrderByNameAsc(UUID ownerId);
+
     /** 按名称查询指定资源标签，用于保证添加幂等。 */
     Mono<ResourceTagEntity> findByOwnerIdAndResourceIdAndName(UUID ownerId, UUID resourceId, String name);
 
