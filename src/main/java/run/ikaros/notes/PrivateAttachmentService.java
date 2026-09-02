@@ -1,1 +1,25 @@
-package run.ikaros.notes; import java.time.Instant; import java.util.UUID; import org.springframework.stereotype.Service; import reactor.core.publisher.Flux; import reactor.core.publisher.Mono; import run.ikaros.common.NotFoundException; @Service public class PrivateAttachmentService{private final PrivateNoteRepository notes;private final PrivateAttachmentRepository attachments;public PrivateAttachmentService(PrivateNoteRepository n,PrivateAttachmentRepository a){notes=n;attachments=a;}public Mono<PrivateAttachmentView> attach(UUID a,UUID noteId,AttachPrivateFileRequest q){return note(a,noteId).flatMap(n->attachments.save(new PrivateAttachmentEntity(null,noteId,n.vaultId(),a,q.attachmentId(),q.encryptedFileName(),Instant.now()))).map(this::view);}public Flux<PrivateAttachmentView> list(UUID a,UUID noteId){return note(a,noteId).flatMapMany(n->attachments.findAllByNoteIdAndOwnerIdOrderByCreatedAtAsc(noteId,a).map(this::view));}private Mono<PrivateNoteEntity> note(UUID a,UUID id){return notes.findById(id).filter(n->n.ownerId().equals(a)&&!n.tombstone()).switchIfEmpty(Mono.error(new NotFoundException("Private Note 不存在或无权访问")));}private PrivateAttachmentView view(PrivateAttachmentEntity x){return new PrivateAttachmentView(x.id(),x.noteId(),x.attachmentId(),x.encryptedFileName(),x.createdAt());}}
+package run.ikaros.notes;
+
+import java.time.Instant;
+import java.util.UUID;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import run.ikaros.common.ConflictException;
+import run.ikaros.common.NotFoundException;
+
+@Service
+public class PrivateAttachmentService {
+  private final PrivateNoteRepository notes;
+  private final PrivateAttachmentRepository attachments;
+  private final PrivateVaultRepository vaults;
+
+  public PrivateAttachmentService(PrivateNoteRepository n, PrivateAttachmentRepository a, PrivateVaultRepository v) { notes = n; attachments = a; vaults = v; }
+  public Mono<PrivateAttachmentView> attach(UUID actorId, UUID noteId, AttachPrivateFileRequest q) {
+    return note(actorId, noteId).flatMap(n -> unlocked(actorId, n.vaultId()).then(attachments.save(new PrivateAttachmentEntity(null, noteId, n.vaultId(), actorId, q.attachmentId(), q.encryptedFileName(), Instant.now())))).map(this::view);
+  }
+  public Flux<PrivateAttachmentView> list(UUID actorId, UUID noteId) { return note(actorId, noteId).flatMapMany(n -> unlocked(actorId, n.vaultId()).flatMapMany(v -> attachments.findAllByNoteIdAndOwnerIdOrderByCreatedAtAsc(noteId, actorId).map(this::view))); }
+  private Mono<PrivateNoteEntity> note(UUID actorId, UUID id) { return notes.findById(id).filter(n -> n.ownerId().equals(actorId) && !n.tombstone()).switchIfEmpty(Mono.error(new NotFoundException("Private Note 不存在或无权访问"))); }
+  private Mono<PrivateVaultEntity> unlocked(UUID actorId, UUID id) { return vaults.findById(id).filter(v -> v.ownerId().equals(actorId)).switchIfEmpty(Mono.error(new NotFoundException("Private Vault 不存在或无权访问"))).flatMap(v -> v.status() == VaultStatus.UNLOCKED ? Mono.just(v) : Mono.error(new ConflictException("Private Vault 尚未解锁"))); }
+  private PrivateAttachmentView view(PrivateAttachmentEntity x) { return new PrivateAttachmentView(x.id(), x.noteId(), x.attachmentId(), x.encryptedFileName(), x.createdAt()); }
+}
