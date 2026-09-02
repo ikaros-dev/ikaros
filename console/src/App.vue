@@ -75,7 +75,7 @@ const announcements = [{ title: 'Ikaros Console 维护通知', audience: '全部
 const announcementTab = ref('全部')
 const visibleAnnouncements = computed(() => announcements.filter(item => announcementTab.value === '全部' || item.status === announcementTab.value))
 const isLogin = computed(() => route.path === '/login'); const loginEmail = ref(''); const loginPassword = ref(''); const rememberLogin = ref(true); const loginError = ref('')
-function submitLogin() { loginError.value = ''; if (!loginEmail.value.trim()) { loginError.value = '请输入用户名或邮箱'; return } if (loginPassword.value.length < 6) { loginError.value = '密码至少需要 6 位'; return } router.push('/console/dashboard'); notify('登录成功，欢迎回来') }
+function submitLogin() { loginError.value = ''; if (!loginEmail.value.trim()) { loginError.value = '请输入用户名或邮箱'; return } if (loginPassword.value.length < 6) { loginError.value = '密码至少需要 6 位'; return } const target = String(route.query.returnTo || '/console/dashboard'); router.push(target.startsWith('/console/') ? target : '/console/dashboard'); notify('登录成功，欢迎回来') }
 const kpis = [{ label: '资源', value: '12,486', trend: '+8.4%', icon: '◈', tone: 'primary' }, { label: '存储', value: '68.4 GB', trend: '已配置 100 GB', icon: '▥', tone: 'teal' }, { label: '今天', value: '8 / 12', trend: '4 项待完成', icon: '✓', tone: 'orange' }, { label: '后台任务', value: '3', trend: '1 项失败', icon: '⇄', tone: 'purple' }, { label: '通知', value: '6', trend: '2 条重要', icon: '✉', tone: 'pink' }]
 const activities = [{ icon: '✦', text: '完成了媒体资源的元数据同步', target: '《星际穿越》', time: '12 分钟前', color: 'purple' }, { icon: '✓', text: '完成任务', target: '整理本周阅读清单', time: '1 小时前', color: 'teal' }, { icon: '↗', text: '更新了项目', target: 'Ikaros V2 产品设计', time: '昨天 18:24', color: 'orange' }, { icon: '♧', text: '收藏了资源', target: 'Material Design 3', time: '昨天 15:08', color: 'blue' }]
 const resources = [{ name: '《星际穿越》', type: '电影', tags: ['科幻', '收藏'], status: '进行中', progress: 72, updated: '12 分钟前' }, { name: 'Ikaros V2 产品设计', type: '文档', tags: ['项目'], status: '已更新', progress: 100, updated: '昨天' }, { name: 'Material Design 3', type: '网页', tags: ['设计系统'], status: '收藏', progress: 34, updated: '3 天前' }, { name: '2026 年读书计划', type: '集合', tags: ['计划'], status: '草稿', progress: 18, updated: '5 天前' }]
@@ -117,6 +117,7 @@ async function loadResources() {
     apiConnected.value = true
   } catch (error) {
     apiConnected.value = false
+    if (error instanceof ApiError && error.status === 401) { router.push({ path: '/login', query: { returnTo: route.fullPath } }); return }
     if (error instanceof ApiError && [401, 403, 404, 409, 412].includes(error.status)) {
       errorState.value = { status: error.status, title: error.status === 401 ? '会话已失效' : error.status === 403 ? '你没有权限访问此页面' : error.status === 404 ? '页面或资源不存在' : '数据发生并发冲突', detail: error.problem?.detail || error.message }
     } else { rows.value = demoRows; notify('后端暂不可用，已保留演示数据') }
