@@ -1,0 +1,1 @@
+package run.ikaros.finance; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.annotation.Version; import org.springframework.data.relational.core.mapping.Table; @Table("finance_tag") public record FinanceTagEntity(@Id UUID id,UUID ledgerId,UUID ownerId,String name,@Version Long version) {}

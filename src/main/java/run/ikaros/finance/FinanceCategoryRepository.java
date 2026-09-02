@@ -1,0 +1,1 @@
+package run.ikaros.finance; import java.util.UUID; import org.springframework.data.repository.reactive.ReactiveCrudRepository; import reactor.core.publisher.Flux; public interface FinanceCategoryRepository extends ReactiveCrudRepository<FinanceCategoryEntity,UUID>{Flux<FinanceCategoryEntity> findAllByLedgerIdAndOwnerIdOrderByNameAsc(UUID ledgerId,UUID ownerId);}
