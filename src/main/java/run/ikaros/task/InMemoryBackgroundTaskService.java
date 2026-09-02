@@ -169,7 +169,8 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
     @Override
     public Mono<BackgroundTask> cancel(UUID taskId) {
         return get(taskId).map(task -> {
-            if (task.status() == TaskStatus.SUCCEEDED || task.status() == TaskStatus.FAILED) {
+            if (task.status() == TaskStatus.SUCCEEDED || task.status() == TaskStatus.FAILED
+                || task.status() == TaskStatus.TIMED_OUT) {
                 throw new ConflictException("终态 Task 不能取消");
             }
             TaskStatus status = task.status() == TaskStatus.RUNNING ? TaskStatus.RUNNING : TaskStatus.CANCELLED;
