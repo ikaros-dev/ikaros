@@ -76,10 +76,10 @@ const announcementTab = ref('全部')
 const visibleAnnouncements = computed(() => announcements.filter(item => announcementTab.value === '全部' || item.status === announcementTab.value))
 const isLogin = computed(() => route.path === '/login'); const loginEmail = ref(''); const loginPassword = ref(''); const rememberLogin = ref(true); const loginError = ref('')
 function submitLogin() { loginError.value = ''; if (!loginEmail.value.trim()) { loginError.value = '请输入用户名或邮箱'; return } if (loginPassword.value.length < 6) { loginError.value = '密码至少需要 6 位'; return } const target = String(route.query.returnTo || '/console/dashboard'); router.push(target.startsWith('/console/') ? target : '/console/dashboard'); notify('演示登录成功；后端认证接口尚未接入') }
-const kpis = [{ label: '资源', value: '12,486', trend: '+8.4%', icon: '◈', tone: 'primary' }, { label: '存储', value: '68.4 GB', trend: '已配置 100 GB', icon: '▥', tone: 'teal' }, { label: '今天', value: '8 / 12', trend: '4 项待完成', icon: '✓', tone: 'orange' }, { label: '后台任务', value: '3', trend: '1 项失败', icon: '⇄', tone: 'purple' }, { label: '通知', value: '6', trend: '2 条重要', icon: '✉', tone: 'pink' }]
+const kpis = ref([{ label: '资源', value: '12,486', trend: '+8.4%', icon: '◈', tone: 'primary' }, { label: '存储', value: '68.4 GB', trend: '已配置 100 GB', icon: '▥', tone: 'teal' }, { label: '今天', value: '8 / 12', trend: '4 项待完成', icon: '✓', tone: 'orange' }, { label: '后台任务', value: '3', trend: '1 项失败', icon: '⇄', tone: 'purple' }, { label: '通知', value: '6', trend: '2 条重要', icon: '✉', tone: 'pink' }])
 type ActivityItem = { icon: string; text: string; target: string; time: string; color: string }
 const activities = ref<ActivityItem[]>([{ icon: '✦', text: '完成了媒体资源的元数据同步', target: '《星际穿越》', time: '12 分钟前', color: 'purple' }, { icon: '✓', text: '完成任务', target: '整理本周阅读清单', time: '1 小时前', color: 'teal' }, { icon: '↗', text: '更新了项目', target: 'Ikaros V2 产品设计', time: '昨天 18:24', color: 'orange' }, { icon: '♧', text: '收藏了资源', target: 'Material Design 3', time: '昨天 15:08', color: 'blue' }])
-const resources = [{ name: '《星际穿越》', type: '电影', tags: ['科幻', '收藏'], status: '进行中', progress: 72, updated: '12 分钟前' }, { name: 'Ikaros V2 产品设计', type: '文档', tags: ['项目'], status: '已更新', progress: 100, updated: '昨天' }, { name: 'Material Design 3', type: '网页', tags: ['设计系统'], status: '收藏', progress: 34, updated: '3 天前' }, { name: '2026 年读书计划', type: '集合', tags: ['计划'], status: '草稿', progress: 18, updated: '5 天前' }]
+const resources = ref([{ name: '《星际穿越》', type: '电影', tags: ['科幻', '收藏'], status: '进行中', progress: 72, updated: '12 分钟前' }, { name: 'Ikaros V2 产品设计', type: '文档', tags: ['项目'], status: '已更新', progress: 100, updated: '昨天' }, { name: 'Material Design 3', type: '网页', tags: ['设计系统'], status: '收藏', progress: 34, updated: '3 天前' }, { name: '2026 年读书计划', type: '集合', tags: ['计划'], status: '草稿', progress: 18, updated: '5 天前' }])
 type TableRow = { id?: string; name: string; owner: string; status: string; updated: string }
 const rows = ref<TableRow[]>([{ id: 'demo-backup', name: '媒体资源索引', owner: '系统', status: '已启用', updated: '刚刚' }, { id: 'demo-weekly-backup', name: '每周资料备份', owner: '你', status: '运行中', updated: '8 分钟前' }, { id: 'demo-reading-sync', name: '阅读进度同步', owner: '你', status: '已暂停', updated: '昨天' }, { id: 'demo-storage-health', name: '存储健康检查', owner: '系统', status: '已启用', updated: '昨天' }, { id: 'demo-weekly-report', name: '活动周报', owner: '你', status: '失败', updated: '2 天前' }])
 const demoRows = rows.value
@@ -138,6 +138,20 @@ async function loadResources() {
     } else { rows.value = fallbackRows.map(row => ({ ...row })); notify('后端暂不可用，已保留当前页面演示数据') }
   } finally { loading.value = false }
 }
+function formatBytes(value: number) { if (value >= 1024 ** 3) return `${(value / 1024 ** 3).toFixed(1)} GB`; if (value >= 1024 ** 2) return `${(value / 1024 ** 2).toFixed(1)} MB`; return `${value} B` }
+async function loadDashboard() {
+  if (!actorId || !isDashboard.value) return
+  const [resourceResult, spaceResult, todayResult, taskResult] = await Promise.allSettled([api.listResources('?limit=1'), api.listDriveSpaces(actorId), api.listTodayTasks(actorId), api.listBackgroundTasks()])
+  const resourceCount = resourceResult.status === 'fulfilled' ? (Array.isArray(resourceResult.value) ? resourceResult.value.length : resourceResult.value.total || unwrapPage(resourceResult.value).length) : 0
+  const spaces = spaceResult.status === 'fulfilled' ? spaceResult.value : []
+  const today = todayResult.status === 'fulfilled' ? todayResult.value : []
+  const tasks = taskResult.status === 'fulfilled' ? taskResult.value : []
+  if (resourceCount) kpis.value[0] = { ...kpis.value[0], value: String(resourceCount), trend: '当前用户授权范围' }
+  const firstSpace = spaces[0]
+  if (firstSpace) { const used = firstSpace.usedBytes || firstSpace.used_bytes || 0; const quota = firstSpace.quotaBytes || firstSpace.quota_bytes || 0; kpis.value[1] = { ...kpis.value[1], value: formatBytes(used), trend: `已配置 ${formatBytes(quota)}` } }
+  if (today.length) { const completed = today.filter(item => ['DONE', 'COMPLETED'].includes(String(item.status || '').toUpperCase())).length; kpis.value[2] = { ...kpis.value[2], value: `${completed} / ${today.length}`, trend: `${today.length - completed} 项待完成` } }
+  if (tasks.length) { const failed = tasks.filter(item => ['FAILED', 'ERROR'].includes(String(item.status || item.state || '').toUpperCase())).length; kpis.value[3] = { ...kpis.value[3], value: String(tasks.length), trend: `${failed} 项失败` } }
+}
 function activityPresentation(type = ''): Pick<ActivityItem, 'icon' | 'text' | 'color'> {
   const normalized = type.toUpperCase()
   if (normalized.includes('FAVOR')) return { icon: '♧', text: '收藏了资源', color: 'blue' }
@@ -166,7 +180,7 @@ async function loadActivities() {
     if (error instanceof ApiError && [401, 403].includes(error.status)) notify('活动列表暂不可用：当前会话没有访问权限')
   }
 }
-onMounted(() => { loadResources(); loadActivities() }); watch(currentPath, () => { loadResources(); loadActivities() })
+onMounted(() => { loadResources(); loadActivities(); loadDashboard() }); watch(currentPath, () => { loadResources(); loadActivities(); loadDashboard() })
 onMounted(() => applyTheme(theme.value)); watch(expanded, () => applyTheme(theme.value), { deep: true })
 watch(() => route.query.q, value => { query.value = String(value || '') })
 onMounted(() => window.addEventListener('keydown', handleShortcut)); onBeforeUnmount(() => window.removeEventListener('keydown', handleShortcut))
