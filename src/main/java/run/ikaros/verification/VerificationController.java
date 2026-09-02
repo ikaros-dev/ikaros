@@ -22,7 +22,7 @@ import reactor.core.publisher.Mono;
  * 提供当前用户 Email OTP 挑战的发起、验证和取消接口。
  */
 @RestController
-@RequestMapping("/api/security/verification-challenges")
+@RequestMapping({"/api/security/verification-challenges", "/api/v2/security/verification-challenges"})
 public class VerificationController {
     private final VerificationProvider emailOtpProvider;
 
