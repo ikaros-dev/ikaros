@@ -19,7 +19,7 @@
         "resource.collection.created", "resource.collection.member-added", "resource.collection.member-removed", "resource.user-state.changed",
         "storage.attachment.created", "storage.attachment.archived", "storage.attachment.trashed", "storage.blob.verified", "storage.blob.integrity-failed",
         "storage.provider.created", "storage.provider.updated", "storage.provider.enabled", "storage.provider.disabled", "storage.provider.drain-requested",
-        "storage.blob.gc-requested", "storage.blob.purged",
+        "storage.blob.gc-requested", "storage.blob.purged", "storage.restore.reconcile-requested", "storage.restore.reconciled",
         "operations.background-task.created", "operations.background-task.started", "operations.background-task.succeeded", "operations.background-task.failed",
         "operations.background-task.cancel-requested", "operations.background-task.cancelled", "operations.background-task.retry-requested", "operations.background-task.timed-out",
         "identity.user.created", "identity.user.disabled", "identity.user.enabled", "identity.user.sessions-revoked", "identity.role.created",

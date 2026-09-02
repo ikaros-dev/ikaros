@@ -398,6 +398,23 @@ Payload 与 attached 相同 identity key。
 }
 ```
 
+### `storage.restore.reconcile-requested@1`
+
+```json
+{
+  "operation_id": "uuid"
+}
+```
+
+### `storage.restore.reconciled@1`
+
+```json
+{
+  "operation_id": "uuid",
+  "status": "SUCCEEDED | FAILED | REQUESTED | IN_PROGRESS"
+}
+```
+
 ## 6. Compatibility Rules
 
 P0 payload compatibility baseline：
