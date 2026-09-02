@@ -1,0 +1,1 @@
+package run.ikaros.finance; import java.math.BigDecimal; import java.time.Instant; import java.util.UUID; public record AccountView(UUID id,UUID ledgerId,String name,AccountType type,String currency,BigDecimal openingBalance,BigDecimal currentBalance,String institution,String maskedIdentifier,String credentialRef,boolean archived,Instant createdAt) {}

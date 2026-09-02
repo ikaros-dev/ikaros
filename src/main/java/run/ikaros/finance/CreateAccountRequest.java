@@ -1,0 +1,1 @@
+package run.ikaros.finance; import jakarta.validation.constraints.NotBlank; import jakarta.validation.constraints.NotNull; import java.math.BigDecimal; public record CreateAccountRequest(@NotBlank String name,@NotNull AccountType type,@NotBlank String currency,BigDecimal openingBalance,String institution,String maskedIdentifier,String credentialRef) {}
