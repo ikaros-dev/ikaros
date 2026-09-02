@@ -9,4 +9,6 @@ public interface PlanningProjectService {
     Flux<PlanningProjectView> list(UUID ownerId);
     Mono<PlanningProjectView> update(UUID ownerId, UUID projectId, UpdatePlanningProjectRequest request);
     Mono<PlanningProjectView> changeStatus(UUID ownerId, UUID projectId, PlanningProjectStatus status);
+    Mono<PlanningProjectView> changeStatus(UUID ownerId, UUID projectId, PlanningProjectStatus status,
+                                            long expectedVersion);
 }

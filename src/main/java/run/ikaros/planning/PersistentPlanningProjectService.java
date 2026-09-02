@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 
 @Service
 public class PersistentPlanningProjectService implements PlanningProjectService {
@@ -45,7 +46,20 @@ public class PersistentPlanningProjectService implements PlanningProjectService 
     }
 
     @Override public Mono<PlanningProjectView> changeStatus(UUID ownerId, UUID projectId, PlanningProjectStatus status) {
+        return changeStatus(ownerId, projectId, status, null);
+    }
+
+    @Override public Mono<PlanningProjectView> changeStatus(UUID ownerId, UUID projectId, PlanningProjectStatus status,
+                                                              long expectedVersion) {
+        return changeStatus(ownerId, projectId, status, Long.valueOf(expectedVersion));
+    }
+
+    private Mono<PlanningProjectView> changeStatus(UUID ownerId, UUID projectId, PlanningProjectStatus status,
+                                                    Long expectedVersion) {
         return owned(ownerId, projectId).flatMap(old -> {
+            if (expectedVersion != null && (old.version() == null ? 0 : old.version()) != expectedVersion) {
+                return Mono.error(new PreconditionFailedException("If-Match 与 Project 当前版本不匹配"));
+            }
             if (old.status() == PlanningProjectStatus.ARCHIVED && status != PlanningProjectStatus.ARCHIVED) {
                 return Mono.error(new ConflictException("已归档项目不能恢复"));
             }

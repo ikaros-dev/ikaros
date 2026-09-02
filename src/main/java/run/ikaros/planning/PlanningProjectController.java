@@ -22,6 +22,8 @@ public class PlanningProjectController {
         @Valid @RequestBody UpdatePlanningProjectRequest request) { long version=IfMatchVersion.parse(ifMatch); return service.update(ownerId, projectId,
         new UpdatePlanningProjectRequest(request.name(), request.description(), version)).map(view -> ResponseEntity.ok()
         .eTag(IfMatchVersion.etag(view.version())).body(view)); }
-    @PostMapping("/{projectId}/status/{status}") public Mono<PlanningProjectView> status(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,
-        @PathVariable UUID projectId, @PathVariable PlanningProjectStatus status) { return service.changeStatus(ownerId, projectId, status); }
+    @PostMapping("/{projectId}/status/{status}") public Mono<ResponseEntity<PlanningProjectView>> status(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,
+        @PathVariable UUID projectId, @PathVariable PlanningProjectStatus status,
+        @RequestHeader(value="If-Match", required=false) String ifMatch) { return service.changeStatus(ownerId, projectId, status,
+        IfMatchVersion.parse(ifMatch)).map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view)); }
 }
