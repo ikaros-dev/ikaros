@@ -5,8 +5,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 
 @Service
 public class PersistentPlanningProjectSectionService implements PlanningProjectSectionService {
@@ -40,7 +40,7 @@ public class PersistentPlanningProjectSectionService implements PlanningProjectS
   public Mono<PlanningProjectSectionView> update(UUID actor, UUID id, UpdatePlanningProjectSectionRequest request) {
     return section(id).flatMap(old -> requireManage(actor, old.projectId()).then(Mono.defer(() -> {
       if ((old.version() == null ? 0 : old.version()) != request.expectedVersion()) {
-        return Mono.error(new ConflictException("Section 版本冲突"));
+        return Mono.error(new PreconditionFailedException("If-Match 与 Section 当前版本不匹配"));
       }
       return sections.save(new PlanningProjectSectionEntity(old.id(), old.projectId(), request.name().trim(),
           request.position() == null ? old.position() : request.position(), old.createdAt(), Instant.now(), old.version()));
@@ -50,6 +50,16 @@ public class PersistentPlanningProjectSectionService implements PlanningProjectS
   @Override
   public Mono<Void> delete(UUID actor, UUID id) {
     return section(id).flatMap(section -> requireManage(actor, section.projectId()).then(sections.delete(section))).then();
+  }
+
+  @Override
+  public Mono<Void> delete(UUID actor, UUID id, long expectedVersion) {
+    return section(id).flatMap(section -> requireManage(actor, section.projectId()).then(Mono.defer(() -> {
+      if ((section.version() == null ? 0 : section.version()) != expectedVersion) {
+        return Mono.error(new PreconditionFailedException("If-Match 与 Section 当前版本不匹配"));
+      }
+      return sections.delete(section);
+    }))).then();
   }
 
   private Mono<PlanningProjectSectionEntity> section(UUID id) {
