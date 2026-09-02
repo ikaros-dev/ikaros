@@ -44,6 +44,7 @@ export const api = {
   restoreResource: (id: string, etag?: string) => request<ResourceRecord>(`/resources/${encodeURIComponent(id)}/actions/restore`, { method: 'POST', headers: etag ? { 'If-Match': etag } : undefined }),
   listUsers: (params = '') => request<Page<UserRecord> | UserRecord[]>(`/admin/users${params}`),
   listRoles: () => request<RoleRecord[]>('/admin/roles'),
+  createRole: (body: { code: string; name: string; description?: string }, actorId: string) => request<RoleRecord>('/admin/roles', { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId, 'Idempotency-Key': requestId() }, body: JSON.stringify(body) }),
   listPermissions: () => request<string[]>('/admin/permissions'),
   listStorageProviders: () => request<StorageProviderRecord[]>('/admin/storage-providers'),
   listDriveSpaces: (actorId: string) => request<DriveSpaceRecord[]>('/drive/spaces', { headers: { 'X-Ikaros-Actor-Id': actorId } }),

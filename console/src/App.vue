@@ -36,7 +36,7 @@ const pageTitle = computed(() => current.value.label)
 function go(path: string) { router.push(path === 'login' ? '/login' : '/console/' + path); drawer.value = false }
 function toggle(label: string) { expanded.value = expanded.value.includes(label) ? expanded.value.filter(v => v !== label) : [...expanded.value, label] }
 function notify(message: string) { if (message === '已全部标为已读') notifications.value = notifications.value.map(item => ({ ...item, unread: false })); if (message === '账号恢复流程即将开放') { router.push('/recovery'); return } toast.value = message; setTimeout(() => toast.value = '', 2800) }
-function openDialog(kind: string) { dialog.value = kind }
+function openDialog(kind: string) { dialog.value = kind === 'create' && currentPath.value === 'security/permissions' ? 'role-create' : kind }
 const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
 function applyTheme(value: Theme) { const dark = value === 'dark' || (value === 'system' && systemThemeQuery.matches); document.documentElement.dataset.theme = value; document.documentElement.classList.toggle('dark', dark); localStorage.setItem(preferenceKey, JSON.stringify({ expanded: expanded.value, theme: value })) }
 function handleSystemThemeChange() { if (theme.value === 'system') applyTheme('system') }
@@ -82,6 +82,7 @@ type TableRow = { id?: string; name: string; owner: string; status: string; upda
 const rows = ref<TableRow[]>([{ id: 'demo-backup', name: '媒体资源索引', owner: '系统', status: '已启用', updated: '刚刚' }, { id: 'demo-weekly-backup', name: '每周资料备份', owner: '你', status: '运行中', updated: '8 分钟前' }, { id: 'demo-reading-sync', name: '阅读进度同步', owner: '你', status: '已暂停', updated: '昨天' }, { id: 'demo-storage-health', name: '存储健康检查', owner: '系统', status: '已启用', updated: '昨天' }, { id: 'demo-weekly-report', name: '活动周报', owner: '你', status: '失败', updated: '2 天前' }])
 const demoRows = rows.value
 const actorId = String(import.meta.env.VITE_ACTOR_ID || '')
+const roleCode = ref(''); const roleName = ref(''); const roleDescription = ref(''); const roleSubmitting = ref(false)
 async function loadResources() {
   if (isDashboard.value) return
   loading.value = true
@@ -148,6 +149,14 @@ async function changeSelectedUserStatus(status: 'ACTIVE' | 'DISABLED') {
   const targets = rows.value.filter(row => selectedRows.value.includes(row.name) && row.id)
   try { await Promise.all(targets.map(row => api.changeUserStatus(row.id!, status, actorId))); clearSelection(); await loadResources(); notify(`${targets.length} 个账户已${status === 'ACTIVE' ? '启用' : '禁用'}`) } catch (error) { notify(error instanceof Error ? error.message : '账户状态更新失败') }
 }
+async function createRole() {
+  const code = roleCode.value.trim().toUpperCase(); const name = roleName.value.trim()
+  if (!/^[A-Z][A-Z0-9_]*$/.test(code)) { notify('角色编码需以大写字母开头，只能包含大写字母、数字和下划线'); return }
+  if (!name) { notify('请输入角色名称'); return }
+  if (!actorId) { notify('请先配置 VITE_ACTOR_ID'); return }
+  roleSubmitting.value = true
+  try { await api.createRole({ code, name, description: roleDescription.value.trim() || undefined }, actorId); roleCode.value = ''; roleName.value = ''; roleDescription.value = ''; dialog.value = ''; await loadResources(); notify('自定义角色已创建并写入审计') } catch (error) { notify(error instanceof Error ? error.message : '角色创建失败') } finally { roleSubmitting.value = false }
+}
 </script>
 
 <template>
@@ -197,4 +206,5 @@ async function changeSelectedUserStatus(status: 'ACTIVE' | 'DISABLED') {
   </div>
   <div v-if="currentPath === 'security/sessions' && selectedRows.length" class="session-action-bar"><span>已选择 {{ selectedRows.length }} 个会话</span><button class="outlined-button small" @click="clearSelection">取消选择</button><button class="filled-button small" @click="revokeSelectedSessions">撤销会话</button></div>
   <div v-if="currentPath === 'security/users' && selectedRows.length" class="session-action-bar user-action-bar"><span>已选择 {{ selectedRows.length }} 个账户</span><button class="outlined-button small" @click="clearSelection">取消选择</button><button class="outlined-button small" @click="changeSelectedUserStatus('DISABLED')">禁用</button><button class="filled-button small" @click="changeSelectedUserStatus('ACTIVE')">启用</button></div>
+  <div v-if="dialog === 'role-create'" class="role-create-scrim" @click.self="dialog = ''"><section class="role-create-dialog"><div class="dialog-title"><div><p class="eyebrow">身份与安全</p><h2>创建自定义角色</h2></div><button class="icon-button" @click="dialog = ''">×</button></div><p class="review-copy">角色只能绑定平台已声明的 Capability，创建后可在权限矩阵中继续授权。</p><label>角色编码<input v-model="roleCode" placeholder="CONTENT_EDITOR" maxlength="96" /></label><label>角色名称<input v-model="roleName" placeholder="内容编辑者" maxlength="128" /></label><label>描述（可选）<textarea v-model="roleDescription" placeholder="说明该角色的职责范围…" maxlength="2000"></textarea></label><div class="dialog-actions"><button class="outlined-button" @click="dialog = ''">取消</button><button class="filled-button" :disabled="roleSubmitting" @click="createRole">{{ roleSubmitting ? '创建中…' : '创建角色' }}</button></div></section></div>
 </template>
