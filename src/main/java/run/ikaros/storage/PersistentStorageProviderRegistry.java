@@ -12,6 +12,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.event.DurableEventService;
 
 /** PostgreSQL-backed provider registry; secrets remain references, never plaintext. */
 @Primary
@@ -19,11 +20,14 @@ import run.ikaros.common.NotFoundException;
 public class PersistentStorageProviderRegistry implements StorageProviderRegistry {
     private final StorageProviderRepository repository;
     private final ObjectMapper mapper;
+    private final DurableEventService events;
 
     @Autowired
-    public PersistentStorageProviderRegistry(StorageProviderRepository repository, ObjectMapper mapper) {
+    public PersistentStorageProviderRegistry(StorageProviderRepository repository, ObjectMapper mapper,
+                                             DurableEventService events) {
         this.repository = repository;
         this.mapper = mapper;
+        this.events = events;
     }
 
     @Override
@@ -41,7 +45,10 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
             .switchIfEmpty(Mono.defer(() -> encode(metadata).flatMap(json -> {
                 Instant now = Instant.now();
                 return repository.save(new StorageProviderEntity(null, providerKey, providerType, tier.name(),
-                    StorageProviderStatus.ENABLED.name(), secretReference, json, now, now)).map(this::toModel);
+                    StorageProviderStatus.ENABLED.name(), secretReference, json, now, now)).map(this::toModel)
+                    .flatMap(provider -> emit("storage.provider.created", provider,
+                        "{\"provider_id\":\"" + provider.id() + "\",\"provider_type\":\"" + provider.providerType()
+                            + "\",\"tier\":\"" + provider.tier() + "\"}").thenReturn(provider));
             })));
     }
 
@@ -87,7 +94,11 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
             .map(current -> new StorageProviderEntity(current.id(), current.providerKey(), current.providerType(),
                 current.tier(), status.name(), current.secretReference(), current.providerMetadata(),
                 current.createdAt(), Instant.now()))
-            .flatMap(repository::save).map(this::toModel);
+            .flatMap(repository::save).map(this::toModel)
+            .flatMap(provider -> {
+                String event = status == StorageProviderStatus.ENABLED ? "storage.provider.enabled" : "storage.provider.disabled";
+                return emit(event, provider, "{\"provider_id\":\"" + provider.id() + "\"}").thenReturn(provider);
+            });
     }
 
     private Mono<Void> checkWritable(StorageProvider provider) {
@@ -101,6 +112,10 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
         } catch (JsonProcessingException error) {
             return Mono.error(new IllegalArgumentException("Provider metadata 无法序列化", error));
         }
+    }
+
+    private Mono<Void> emit(String eventType, StorageProvider provider, String payload) {
+        return events.append(eventType, 1, "storage_provider", provider.id(), payload).then();
     }
 
     private StorageProvider toModel(StorageProviderEntity entity) {
