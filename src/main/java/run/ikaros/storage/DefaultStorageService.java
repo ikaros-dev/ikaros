@@ -183,12 +183,19 @@ public class DefaultStorageService implements StorageService {
             .flatMap(attachment -> owned(ownerId, attachment.resourceId())
                 .then(blobRepository.findById(attachment.blobId())
                     .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
-                    .flatMap(blob -> placementRepository.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
-                        .filter(placement -> placement.placementState() == PlacementState.ACTIVE)
-                        .next()
-                        .switchIfEmpty(Mono.error(new StorageUnavailableException("附件当前没有可读副本")))
-                        .flatMap(placement -> providerRegistry.getByKey(placement.provider())
-                            .flatMap(provider -> contentReader.read(provider, placement, blob, range))))));
+                    .flatMap(blob -> readFromAvailablePlacements(blob, range))));
+    }
+
+    private Mono<StorageContent> readFromAvailablePlacements(BlobEntity blob, String range) {
+        return placementRepository.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
+            .filter(placement -> placement.placementState() == PlacementState.ACTIVE)
+            .concatMap(placement -> providerRegistry.getByKey(placement.provider())
+                .filter(provider -> provider.status() != StorageProviderStatus.DISABLED
+                    && provider.status() != StorageProviderStatus.FAILED)
+                .flatMap(provider -> contentReader.read(provider, placement, blob, range))
+                .onErrorResume(error -> Mono.empty()))
+            .next()
+            .switchIfEmpty(Mono.error(new StorageUnavailableException("附件当前没有可读副本")));
     }
 
     @Override
