@@ -23,6 +23,6 @@ public class PlanningTimeBlockController {
         @Valid @RequestBody UpdatePlanningTimeBlockRequest request) { long version=IfMatchVersion.parse(ifMatch); return service.update(ownerId, blockId,
         new UpdatePlanningTimeBlockRequest(request.startAt(),request.endAt(),request.kind(),request.timeZone(),version))
         .map(view->ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view)); }
-    @DeleteMapping("/{blockId}") public Mono<PlanningTimeBlockView> cancel(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,
-        @PathVariable UUID blockId) { return service.cancel(ownerId, blockId); }
+    @DeleteMapping("/{blockId}") public Mono<ResponseEntity<PlanningTimeBlockView>> cancel(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,
+        @PathVariable UUID blockId, @RequestHeader(value="If-Match",required=false) String ifMatch) { return service.cancel(ownerId, blockId, IfMatchVersion.parse(ifMatch)).map(view->ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view)); }
 }

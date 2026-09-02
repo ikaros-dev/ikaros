@@ -10,4 +10,5 @@ public interface PlanningTimeBlockService {
     Flux<PlanningTimeBlockView> list(UUID ownerId, Instant from, Instant to);
     Mono<PlanningTimeBlockView> update(UUID ownerId, UUID blockId, UpdatePlanningTimeBlockRequest request);
     Mono<PlanningTimeBlockView> cancel(UUID ownerId, UUID blockId);
+    Mono<PlanningTimeBlockView> cancel(UUID ownerId, UUID blockId, long expectedVersion);
 }

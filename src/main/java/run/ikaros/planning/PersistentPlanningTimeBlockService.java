@@ -51,9 +51,16 @@ public class PersistentPlanningTimeBlockService implements PlanningTimeBlockServ
         }).map(this::view);
     }
 
-    @Override public Mono<PlanningTimeBlockView> cancel(UUID ownerId, UUID blockId) {
-        return owned(ownerId, blockId).flatMap(old -> blocks.save(new PlanningTimeBlockEntity(old.id(), old.ownerId(), old.title(), old.taskId(),
-            old.startAt(), old.endAt(), old.kind(), PlanningTimeBlockStatus.CANCELLED, old.timeZone(), old.createdAt(), Instant.now(), old.version()))).map(this::view);
+    @Override public Mono<PlanningTimeBlockView> cancel(UUID ownerId, UUID blockId) { return cancelInternal(ownerId, blockId, null); }
+    @Override public Mono<PlanningTimeBlockView> cancel(UUID ownerId, UUID blockId, long expectedVersion) { return cancelInternal(ownerId, blockId, expectedVersion); }
+    private Mono<PlanningTimeBlockView> cancelInternal(UUID ownerId, UUID blockId, Long expectedVersion) {
+        return owned(ownerId, blockId).flatMap(old -> {
+            if (expectedVersion != null && (old.version() == null ? 0 : old.version()) != expectedVersion) {
+                return Mono.error(new PreconditionFailedException("If-Match 与 Time Block 当前版本不匹配"));
+            }
+            return blocks.save(new PlanningTimeBlockEntity(old.id(), old.ownerId(), old.title(), old.taskId(),
+                old.startAt(), old.endAt(), old.kind(), PlanningTimeBlockStatus.CANCELLED, old.timeZone(), old.createdAt(), Instant.now(), old.version()));
+        }).map(this::view);
     }
 
     private Mono<PlanningTaskEntity> task(UUID ownerId, UUID taskId) {
