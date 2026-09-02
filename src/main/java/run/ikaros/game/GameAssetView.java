@@ -1,0 +1,1 @@
+package run.ikaros.game; import java.util.UUID; public record GameAssetView(UUID id,UUID gameId,UUID versionId,UUID attachmentId,GameAssetCategory category,String displayName,String checksumAlgorithm,String checksumValue,GameAssetAvailability availability) {}

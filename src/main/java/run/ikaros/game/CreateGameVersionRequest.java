@@ -1,0 +1,1 @@
+package run.ikaros.game; import jakarta.validation.constraints.NotBlank; import java.time.Instant; import java.util.UUID; public record CreateGameVersionRequest(@NotBlank String versionLabel,UUID platformId,Instant releaseDate) {}

@@ -1,0 +1,1 @@
+package run.ikaros.game; import jakarta.validation.constraints.NotNull; import java.util.UUID; public record CreateGameAssetRequest(@NotNull UUID attachmentId,UUID versionId,@NotNull GameAssetCategory category,String displayName,String checksumAlgorithm,String checksumValue) {}
