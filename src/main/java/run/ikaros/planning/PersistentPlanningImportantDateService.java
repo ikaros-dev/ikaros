@@ -43,10 +43,14 @@ public class PersistentPlanningImportantDateService implements PlanningImportant
         }).map(this::view);
     }
 
-    public Mono<PlanningImportantDateView> archive(UUID owner, UUID id) {
-        return owned(owner, id).flatMap(old -> dates.save(new PlanningImportantDateEntity(old.id(), old.ownerId(),
+    public Mono<PlanningImportantDateView> archive(UUID owner, UUID id) { return archiveInternal(owner, id, null); }
+
+    public Mono<PlanningImportantDateView> archive(UUID owner, UUID id, long expectedVersion) { return archiveInternal(owner, id, expectedVersion); }
+
+    private Mono<PlanningImportantDateView> archiveInternal(UUID owner, UUID id, Long expectedVersion) {
+        return owned(owner, id).flatMap(old -> { if (expectedVersion != null && (old.version() == null ? 0 : old.version()) != expectedVersion) return Mono.error(new PreconditionFailedException("If-Match 与 Important Date 当前版本不匹配")); return dates.save(new PlanningImportantDateEntity(old.id(), old.ownerId(),
             old.title(), old.description(), old.occursAt(), old.timeZone(), old.kind(), PlanningImportantDateStatus.ARCHIVED,
-            old.createdAt(), Instant.now(), old.version()))).map(this::view);
+            old.createdAt(), Instant.now(), old.version())); }).map(this::view);
     }
 
     private Mono<PlanningImportantDateEntity> owned(UUID owner, UUID id) {
