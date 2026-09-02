@@ -13,6 +13,10 @@ import reactor.core.publisher.Mono;
 public class PrincipalContextWebFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        String requestId = headerOrNew(exchange, "X-Request-Id");
+        String correlationId = headerOrNew(exchange, "X-Correlation-Id");
+        exchange.getResponse().getHeaders().set("X-Request-Id", requestId);
+        exchange.getResponse().getHeaders().set("X-Correlation-Id", correlationId);
         String actor = exchange.getRequest().getHeaders().getFirst("X-Ikaros-Actor-Id");
         if (actor == null || actor.isBlank()) {
             return chain.filter(exchange);
@@ -21,12 +25,9 @@ public class PrincipalContextWebFilter implements WebFilter {
             UUID actorId = UUID.fromString(actor);
             String session = exchange.getRequest().getHeaders().getFirst("X-Ikaros-Session-Id");
             UUID sessionId = session == null || session.isBlank() ? null : UUID.fromString(session);
-            String requestId = headerOrNew(exchange, "X-Request-Id");
-            String correlationId = headerOrNew(exchange, "X-Correlation-Id");
             String causationId = exchange.getRequest().getHeaders().getFirst("X-Causation-Id");
             PrincipalContext context = new PrincipalContext(actorId, sessionId, requestId, correlationId,
                 causationId, false);
-            exchange.getResponse().getHeaders().set("X-Request-Id", requestId);
             return chain.filter(exchange).contextWrite(ctx -> ctx.put(PrincipalContext.CONTEXT_KEY, context));
         } catch (IllegalArgumentException invalidIdentity) {
             exchange.getResponse().setStatusCode(HttpStatus.BAD_REQUEST);
