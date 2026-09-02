@@ -1,0 +1,1 @@
+package run.ikaros.sharing; import java.time.Instant; import java.util.UUID; public record InviteView(UUID id,UUID roomId,UUID issuerId,UUID inviteeId,RoomRole role,String idempotencyKey,InviteStatus status,Instant expiresAt,Instant createdAt) {}
