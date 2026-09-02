@@ -1,0 +1,1 @@
+package run.ikaros.notes; import java.time.Instant; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.relational.core.mapping.Table; @Table("private_note_attachment") public record PrivateAttachmentEntity(@Id UUID id,UUID noteId,UUID vaultId,UUID ownerId,UUID attachmentId,String encryptedFileName,Instant createdAt) {}
