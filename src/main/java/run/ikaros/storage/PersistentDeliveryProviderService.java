@@ -54,15 +54,26 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
         validate(request);
         return encode(request.config()).flatMap(config -> providers.findById(id)
             .switchIfEmpty(Mono.error(new NotFoundException("Delivery Provider 不存在")))
-            .flatMap(old -> { if ((old.version() == null ? 0 : old.version()) != expectedVersion)
+            .flatMap(old -> {
+                long actualVersion = old.version() == null ? 0 : old.version();
+                if (actualVersion != expectedVersion) {
                     return Mono.error(new PreconditionFailedException("If-Match 与 Delivery Provider 当前版本不匹配"));
-                return providers.save(new DeliveryProviderEntity(old.id(), request.providerKey().trim(), request.providerType(),
-                    request.displayName().trim(), request.credentialRef(), config, old.capabilities(), old.grantRevocationMode(),
-                    old.signingKeyVersion(), old.healthStatus(), request.enabled() == null ? old.enabled() : request.enabled(),
-                    old.createdAt(), Instant.now(), old.version(), old.idempotencyKey())); })
-            .flatMap(saved -> emit("storage.delivery-provider.updated", saved,
-                "{\"delivery_provider_id\":\"" + saved.id() + "\",\"changed_fields\":[\"config\",\"enabled\"],\"version\":"
-                    + (saved.version() == null ? 0 : saved.version()) + "}").thenReturn(view(saved))));
+                }
+                DeliveryProviderEntity replacement = new DeliveryProviderEntity(
+                    old.id(), request.providerKey().trim(), request.providerType(), request.displayName().trim(),
+                    request.credentialRef(), config, old.capabilities(), old.grantRevocationMode(), old.signingKeyVersion(),
+                    old.healthStatus(), request.enabled() == null ? old.enabled() : request.enabled(), old.createdAt(),
+                    Instant.now(), old.version(), old.idempotencyKey());
+                return providers.save(replacement).flatMap(saved -> {
+                    Mono<Void> stateEvent = old.enabled() == saved.enabled() ? Mono.<Void>empty()
+                        : emit(saved.enabled() ? "storage.delivery-provider.enabled" : "storage.delivery-provider.disabled", saved,
+                            "{\"delivery_provider_id\":\"" + saved.id() + "\"}");
+                    return emit("storage.delivery-provider.updated", saved,
+                        "{\"delivery_provider_id\":\"" + saved.id() + "\",\"changed_fields\":[\"config\",\"enabled\"],\"version\":"
+                            + (saved.version() == null ? 0 : saved.version()) + "}")
+                        .then(stateEvent).thenReturn(view(saved));
+                });
+            }));
     }
 
     private void validate(DeliveryProviderWriteRequest request) {
@@ -74,6 +85,7 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
     private Mono<Void> emit(String type, DeliveryProviderEntity provider, String payload) {
         return events.append(type, 1, "delivery_provider", provider.id(), payload).then();
     }
+    private record ProviderChange(DeliveryProviderEntity old, DeliveryProviderEntity saved) {}
     private DeliveryProviderView view(DeliveryProviderEntity e) { return new DeliveryProviderView(e.id(), e.providerKey(), e.providerType(), e.displayName(),
         e.credentialRef(), decode(e.config()), decode(e.capabilities()), e.grantRevocationMode(), e.signingKeyVersion(), e.healthStatus(), e.enabled(),
         e.createdAt(), e.updatedAt(), e.version() == null ? 0 : e.version()); }

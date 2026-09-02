@@ -410,6 +410,12 @@ Payload 与 attached 相同 identity key。
 { "delivery_provider_id": "uuid", "changed_fields": ["config", "enabled"], "version": 2 }
 ```
 
+### `storage.delivery-provider.enabled@1` / `storage.delivery-provider.disabled@1`
+
+```json
+{ "delivery_provider_id": "uuid" }
+```
+
 ### `storage.delivery-provider.probe-requested@1`
 
 ```json
