@@ -51,7 +51,6 @@ public class DefaultStorageService implements StorageService {
             derivedAttachmentRepository, auditService, transactionalOperator, null);
     }
 
-    @org.springframework.beans.factory.annotation.Autowired
     public DefaultStorageService(ResourceRepository resourceRepository,
                                  AttachmentRepository attachmentRepository,
                                  BlobRepository blobRepository,
