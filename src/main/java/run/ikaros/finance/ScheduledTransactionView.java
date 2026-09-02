@@ -1,0 +1,1 @@
+package run.ikaros.finance; import java.math.BigDecimal; import java.time.Instant; import java.util.UUID; public record ScheduledTransactionView(UUID id,UUID ledgerId,String rule,Instant nextRun,TransactionType type,UUID accountId,UUID targetAccountId,BigDecimal amount,String currency,UUID categoryId,String payee,String note,boolean active) {}
