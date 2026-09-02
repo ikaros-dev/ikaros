@@ -191,7 +191,7 @@ public class StorageRestoreTaskHandler {
         return requests.save(new StorageRestoreRequestEntity(request.id(), request.actorId(), request.scope(), request.scopeId(),
             status, request.totalItems(), completedItems,
             request.totalBytes(), request.errorSummary(), request.idempotencyKey(), request.backgroundTaskId(), request.createdAt(),
-            Instant.now(), request.version()))
+            Instant.now(), request.budgetDecision(), request.version()))
             .flatMap(saved -> status == StorageRestoreRequestStatus.COMPLETED
                 || status == StorageRestoreRequestStatus.PARTIAL_FAILURE
                 || status == StorageRestoreRequestStatus.FAILED

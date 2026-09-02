@@ -54,7 +54,7 @@ public class StorageRestoreContractController {
         int failed = view.status() == StorageRestoreRequestStatus.FAILED || view.status() == StorageRestoreRequestStatus.PARTIAL_FAILURE
             ? Math.max(0, view.totalItems() - view.completedItems()) : 0;
         return new RestoreRequestContractView(view.id(), view.scope().name(), view.scopeId(), status(view.status()), view.totalItems(),
-            view.totalBytes(), view.completedItems(), failed, "ACCEPTED", view.createdAt());
+            view.totalBytes(), view.completedItems(), failed, view.budgetDecision(), view.createdAt());
     }
 
     private String status(StorageRestoreRequestStatus value) {

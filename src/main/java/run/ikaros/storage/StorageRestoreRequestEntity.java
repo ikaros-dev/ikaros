@@ -13,4 +13,12 @@ public record StorageRestoreRequestEntity(@Id UUID id, @Column("actor_id") UUID 
     @Column("total_items") int totalItems, @Column("completed_items") int completedItems,
     @Column("total_bytes") long totalBytes, @Column("error_summary") String errorSummary,
     @Column("idempotency_key") String idempotencyKey, @Column("background_task_id") UUID backgroundTaskId,
-    @Column("created_at") Instant createdAt, @Column("updated_at") Instant updatedAt, @Version Long version) {}
+    @Column("created_at") Instant createdAt, @Column("updated_at") Instant updatedAt,
+    @Column("budget_decision") String budgetDecision, @Version Long version) {
+    public StorageRestoreRequestEntity(UUID id, UUID actorId, StorageRestoreScope scope, UUID scopeId,
+        StorageRestoreRequestStatus status, int totalItems, int completedItems, long totalBytes, String errorSummary,
+        String idempotencyKey, UUID backgroundTaskId, Instant createdAt, Instant updatedAt, Long version) {
+        this(id, actorId, scope, scopeId, status, totalItems, completedItems, totalBytes, errorSummary,
+            idempotencyKey, backgroundTaskId, createdAt, updatedAt, "ACCEPTED", version);
+    }
+}

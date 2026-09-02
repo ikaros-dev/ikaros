@@ -53,9 +53,11 @@ public class StorageRestoreRequestService {
                     .flatMap(readable -> {
                         if (readable) return Mono.error(new ConflictException("附件已经存在可读副本"));
                         Instant now = Instant.now();
+                        String decision = request.budgetConfirmationToken() == null || request.budgetConfirmationToken().isBlank()
+                            ? "ACCEPTED" : "CONFIRMED";
                         return requests.save(new StorageRestoreRequestEntity(null, actorId, StorageRestoreScope.ATTACHMENT,
                             request.attachmentId(), StorageRestoreRequestStatus.REQUESTED, 1, 0, blob.sizeBytes(), null,
-                            idempotencyKey, null, now, now, null));
+                            idempotencyKey, null, now, now, decision, null));
                     })))
                 .flatMap(saved -> tasks.submit("storage.restore", Map.of("restore_request_id", saved.id().toString(),
                     "attachment_id", request.attachmentId().toString(), "provider_restore_class",
@@ -63,7 +65,7 @@ public class StorageRestoreRequestService {
                     "storage.restore:" + saved.id()).flatMap(task -> requests.save(new StorageRestoreRequestEntity(
                         saved.id(), saved.actorId(), saved.scope(), saved.scopeId(), saved.status(), saved.totalItems(),
                         saved.completedItems(), saved.totalBytes(), saved.errorSummary(), saved.idempotencyKey(), task.id(),
-                        saved.createdAt(), Instant.now(), saved.version()))))
+                        saved.createdAt(), Instant.now(), saved.budgetDecision(), saved.version()))))
                 .flatMap(this::emitRequested)
                 )))
             .map(this::view);
@@ -90,15 +92,19 @@ public class StorageRestoreRequestService {
                     long totalBytes = candidates.stream().mapToLong(RestoreCandidate::bytes).sum();
                     return budget.check(candidates.size(), totalBytes, budgetConfirmationToken).then(Mono.defer(() -> {
                         Instant now = Instant.now();
+                        String decision = budgetConfirmationToken == null || budgetConfirmationToken.isBlank()
+                            ? "ACCEPTED" : "CONFIRMED";
                         return requests.save(new StorageRestoreRequestEntity(null, actorId, StorageRestoreScope.SEASON, seasonId,
-                            StorageRestoreRequestStatus.REQUESTED, candidates.size(), 0, totalBytes, null, idempotencyKey, null, now, now, null));
+                            StorageRestoreRequestStatus.REQUESTED, candidates.size(), 0, totalBytes, null, idempotencyKey, null,
+                            now, now, decision, null));
                     }));
                 })
                 .flatMap(saved -> tasks.submit("storage.restore", Map.of("restore_request_id", saved.id().toString(),
                     "season_id", seasonId.toString(), "provider_restore_class", providerRestoreClass == null ? "STANDARD" : providerRestoreClass),
                     "storage.restore:" + saved.id()).flatMap(task -> requests.save(new StorageRestoreRequestEntity(saved.id(), saved.actorId(),
                         saved.scope(), saved.scopeId(), saved.status(), saved.totalItems(), saved.completedItems(), saved.totalBytes(),
-                        saved.errorSummary(), saved.idempotencyKey(), task.id(), saved.createdAt(), Instant.now(), saved.version()))))
+                        saved.errorSummary(), saved.idempotencyKey(), task.id(), saved.createdAt(), Instant.now(),
+                        saved.budgetDecision(), saved.version()))))
                 .flatMap(this::emitRequested)
                 ))
             .map(this::view);
@@ -153,7 +159,7 @@ public class StorageRestoreRequestService {
                 Mono<Void> stop = old.backgroundTaskId() == null ? Mono.empty() : tasks.cancel(old.backgroundTaskId()).then();
                 return stop.then(emitCancelled(requests.save(new StorageRestoreRequestEntity(old.id(), old.actorId(), old.scope(), old.scopeId(),
                     StorageRestoreRequestStatus.CANCELLED, old.totalItems(), old.completedItems(), old.totalBytes(), old.errorSummary(),
-                    old.idempotencyKey(), old.backgroundTaskId(), old.createdAt(), Instant.now(), old.version()))));
+                    old.idempotencyKey(), old.backgroundTaskId(), old.createdAt(), Instant.now(), old.budgetDecision(), old.version()))));
             }).map(this::view);
     }
 
@@ -177,7 +183,7 @@ public class StorageRestoreRequestService {
                     .flatMap(task -> requests.save(new StorageRestoreRequestEntity(request.id(), request.actorId(), request.scope(),
                         request.scopeId(), StorageRestoreRequestStatus.REQUESTED, request.totalItems(), request.completedItems(),
                         request.totalBytes(), request.errorSummary(), request.idempotencyKey(), task.id(), request.createdAt(),
-                        Instant.now(), request.version())))
+                        Instant.now(), request.budgetDecision(), request.version())))
                     .flatMap(updated -> events.append("storage.restore-request.retry-requested", 1, "restore_request", updated.id(),
                         "{\"request_id\":\"" + updated.id() + "\",\"failed_item_count\":"
                             + Math.max(0, updated.totalItems() - updated.completedItems()) + "}").thenReturn(updated));
@@ -193,14 +199,15 @@ public class StorageRestoreRequestService {
 
     private StorageRestoreRequestView view(StorageRestoreRequestEntity r) {
         return new StorageRestoreRequestView(r.id(), r.actorId(), r.scope(), r.scopeId(), r.status(), r.totalItems(),
-            r.completedItems(), r.totalBytes(), r.errorSummary(), r.backgroundTaskId(), r.createdAt(), r.updatedAt());
+            r.completedItems(), r.totalBytes(), r.errorSummary(), r.backgroundTaskId(), r.createdAt(), r.updatedAt(),
+            r.budgetDecision() == null ? "ACCEPTED" : r.budgetDecision());
     }
 
     private Mono<StorageRestoreRequestEntity> emitRequested(Mono<StorageRestoreRequestEntity> saved) {
         return saved.flatMap(request -> events.append("storage.restore-request.requested", 1, "restore_request", request.id(),
             "{\"request_id\":\"" + request.id() + "\",\"scope_type\":\"" + request.scope()
                 + "\",\"scope_id\":\"" + request.scopeId() + "\",\"item_count\":" + request.totalItems()
-                + ",\"total_bytes\":" + request.totalBytes() + ",\"budget_decision\":\"ACCEPTED\"}")
+                + ",\"total_bytes\":" + request.totalBytes() + ",\"budget_decision\":\"" + request.budgetDecision() + "\"}")
             .thenReturn(request));
     }
 
