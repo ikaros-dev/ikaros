@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import java.util.Set;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
@@ -17,11 +18,19 @@ import run.ikaros.common.NotFoundException;
 public class PersistentPluginRuntime implements PluginRuntime {
     private final PluginRepository repository;
     private final ObjectMapper mapper;
+    private final PluginExtensionRegistry extensionRegistry;
     private final String serverVersion = "2.0.0";
 
     public PersistentPluginRuntime(PluginRepository repository, ObjectMapper mapper) {
+        this(repository, mapper, null);
+    }
+
+    @Autowired
+    public PersistentPluginRuntime(PluginRepository repository, ObjectMapper mapper,
+                                   PluginExtensionRegistry extensionRegistry) {
         this.repository = repository;
         this.mapper = mapper;
+        this.extensionRegistry = extensionRegistry;
     }
 
     @Override
@@ -50,7 +59,8 @@ public class PersistentPluginRuntime implements PluginRuntime {
     public Mono<Void> uninstall(String pluginId) {
         return repository.findByPluginId(pluginId).switchIfEmpty(Mono.error(new NotFoundException("插件不存在")))
             .flatMap(entity -> PluginLifecycle.ENABLED.name().equals(entity.status())
-                ? Mono.error(new ConflictException("启用中的插件必须先禁用")) : repository.delete(entity));
+                ? Mono.error(new ConflictException("启用中的插件必须先禁用")) : repository.delete(entity)
+                    .doOnSuccess(ignored -> unregister(pluginId)));
     }
 
     @Override
@@ -73,9 +83,23 @@ public class PersistentPluginRuntime implements PluginRuntime {
                 if (!allowed) return Mono.error(new ConflictException("插件当前状态不允许执行该操作"));
                 PluginEntity updated = new PluginEntity(entity.id(), entity.pluginId(), entity.manifestJson(),
                     next.name(), entity.grantedPermissionsJson(), entity.createdAt(), Instant.now());
-                return repository.save(updated).map(saved -> new PluginDescriptor(current.manifest(), next,
-                    current.grantedPermissions()));
+                return repository.save(updated).map(saved -> {
+                    if (next == PluginLifecycle.ENABLED) {
+                        register(current.manifest());
+                    } else {
+                        unregister(pluginId);
+                    }
+                    return new PluginDescriptor(current.manifest(), next, current.grantedPermissions());
+                });
             }));
+    }
+
+    private void register(PluginManifest manifest) {
+        if (extensionRegistry != null) extensionRegistry.register(manifest);
+    }
+
+    private void unregister(String pluginId) {
+        if (extensionRegistry != null) extensionRegistry.unregister(pluginId);
     }
 
     private Mono<PluginDescriptor> descriptor(PluginEntity entity) {
