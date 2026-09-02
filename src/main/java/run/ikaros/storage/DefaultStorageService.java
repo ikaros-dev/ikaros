@@ -99,22 +99,31 @@ public class DefaultStorageService implements StorageService {
 
     @Override
     public Mono<AttachmentView> attach(UUID ownerId, UUID resourceId, AttachBlobRequest request) {
+        return attachInternal(ownerId, resourceId, request, null);
+    }
+
+    private Mono<AttachmentView> attachInternal(UUID ownerId, UUID resourceId, AttachBlobRequest request,
+                                                String idempotencyKey) {
         return owned(ownerId, resourceId).then(transactionalOperator.transactional(
-            findOrCreateBlob(request)
-                .flatMap(blob -> ensurePlacement(blob, request)
-                    .then(markAvailable(blob))
-                    .then(attachmentRepository.save(new AttachmentEntity(
-                        null, resourceId, blob.id(), request.fileName(), request.kind(), Instant.now(), null, null
-                    )))
-                    .flatMap(attachment -> auditService.record(ownerId, "attachment.create", "ATTACHMENT",
-                        attachment.id(), "{}").then(toView(attachment, blob)))
-                )
+            existingAttachment(resourceId, idempotencyKey)
+                .flatMap(existing -> blobRepository.findById(existing.blobId())
+                    .switchIfEmpty(Mono.error(new ConflictException("幂等提交引用了不存在的 Blob")))
+                    .flatMap(blob -> toView(existing, blob)))
+                .switchIfEmpty(Mono.defer(() -> findOrCreateBlob(request)
+                    .flatMap(blob -> ensurePlacement(blob, request)
+                        .then(markAvailable(blob))
+                        .then(attachmentRepository.save(new AttachmentEntity(
+                            null, resourceId, blob.id(), request.fileName(), request.kind(), Instant.now(), null, null,
+                            idempotencyKey
+                        )))
+                        .flatMap(attachment -> auditService.record(ownerId, "attachment.create", "ATTACHMENT",
+                            attachment.id(), "{}").then(toView(attachment, blob))))))
         ));
     }
 
     @Override
     public Mono<AttachmentView> commitUpload(UUID ownerId, UUID resourceId, CommitUploadRequest request) {
-        return attach(ownerId, resourceId, request.asAttachment());
+        return attachInternal(ownerId, resourceId, request.asAttachment(), request.idempotencyKey());
     }
 
     @Override
@@ -187,6 +196,11 @@ public class DefaultStorageService implements StorageService {
                 null, "SHA-256", request.sha256().toLowerCase(), request.sizeBytes(), request.mediaType(),
                 BlobAvailability.PROCESSING, Instant.now(), null
             ))));
+    }
+
+    private Mono<AttachmentEntity> existingAttachment(UUID resourceId, String idempotencyKey) {
+        return idempotencyKey == null ? Mono.empty()
+            : attachmentRepository.findByResourceIdAndIdempotencyKeyAndDeletedAtIsNull(resourceId, idempotencyKey);
     }
 
     private Mono<Void> ensurePlacement(BlobEntity blob, AttachBlobRequest request) {

@@ -19,6 +19,11 @@ public record AttachmentEntity(
     @Column("attachment_kind") AttachmentKind attachmentKind,
     @Column("created_at") Instant createdAt,
     @Column("deleted_at") Instant deletedAt,
-    @Version Long version
+    @Version Long version,
+    @Column("idempotency_key") String idempotencyKey
 ) {
+    public AttachmentEntity(UUID id, UUID resourceId, UUID blobId, String fileName,
+                            AttachmentKind attachmentKind, Instant createdAt, Instant deletedAt, Long version) {
+        this(id, resourceId, blobId, fileName, attachmentKind, createdAt, deletedAt, version, null);
+    }
 }
