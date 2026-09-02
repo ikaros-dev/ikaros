@@ -1,0 +1,1 @@
+package run.ikaros.music; import java.time.Instant; import java.util.UUID; public record MusicQueueView(UUID id,boolean shuffleEnabled,MusicRepeatMode repeatMode,UUID currentEntryId,Instant updatedAt,long version) {}
