@@ -25,5 +25,7 @@ public interface AttachmentRepository extends ReactiveCrudRepository<AttachmentE
 
     Mono<Long> countByBlobIdAndDeletedAtIsNull(UUID blobId);
 
+    Flux<AttachmentEntity> findAllByBlobIdAndDeletedAtIsNull(UUID blobId);
+
     Mono<AttachmentEntity> findFirstByBlobIdAndDeletedAtIsNullOrderByCreatedAtAsc(UUID blobId);
 }
