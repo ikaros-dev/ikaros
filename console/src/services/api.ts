@@ -55,6 +55,7 @@ export const api = {
   createDriveSpace: (displayName: string, actorId: string) => request<DriveSpaceRecord>('/drive/spaces', { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId, 'Idempotency-Key': requestId() }, body: JSON.stringify({ displayName }) }),
   listTodayTasks: (actorId: string, timeZone = 'Asia/Shanghai') => request<PlanningTaskRecord[]>(`/planning/tasks/today?timeZone=${encodeURIComponent(timeZone)}`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   listPlanningProjects: (actorId: string) => request<PlanningProjectRecord[]>('/planning/projects', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
+  createPlanningProject: (body: { name: string; description?: string }, actorId: string) => request<PlanningProjectRecord>('/planning/projects', { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId, 'Idempotency-Key': requestId() }, body: JSON.stringify(body) }),
   listMediaHistory: (actorId: string) => request<MediaHistoryRecord[]>('/media/playback/history', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   listSessions: (userId: string) => request<SessionRecord[]>(`/users/${encodeURIComponent(userId)}/sessions`),
   revokeSession: (userId: string, sessionId: string, actorId: string) => request<void>(`/users/${encodeURIComponent(userId)}/sessions/${encodeURIComponent(sessionId)}`, { method: 'DELETE', headers: { 'X-Ikaros-Actor-Id': actorId } }),
