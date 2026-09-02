@@ -4,12 +4,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { ApiError, api } from './services/api'
 
 const route = useRoute(); const router = useRouter(); const tab = ref('概览'); const loading = ref(false); const toast = ref(''); const favorite = ref(false); const lifecycle = ref('正常')
-const resourceId = computed(() => String(route.params.id || 'demo-resource')); const title = ref('《星际穿越》'); const type = ref('电影'); const description = ref('一部关于时间、家庭与人类探索的科幻作品。')
+const resourceId = computed(() => String(route.params.id || 'demo-resource')); const actorId = String(import.meta.env.VITE_ACTOR_ID || ''); const title = ref('《星际穿越》'); const type = ref('电影'); const description = ref('一部关于时间、家庭与人类探索的科幻作品。')
 const metadata = ref([{ key: '标题', value: '《星际穿越》', source: '人工', locked: true }, { key: '上映年份', value: '2014', source: '提供方', locked: false }, { key: '导演', value: 'Christopher Nolan', source: '提供方', locked: false }])
 const activity = [{ text: '完成元数据同步', time: '12 分钟前', actor: '系统' }, { text: '添加到收藏', time: '昨天 15:08', actor: '陈昊' }, { text: '创建资源', time: '2026-08-20', actor: '陈昊' }]
 function notify(message: string) { toast.value = message; window.setTimeout(() => toast.value = '', 2400) }
 async function load() { loading.value = true; try { const result = await api.getResource(resourceId.value); title.value = result.title || title.value; type.value = result.resource_type || type.value; lifecycle.value = result.lifecycle || lifecycle.value } catch (error) { if (!(error instanceof ApiError && import.meta.env.DEV && error.status === 404)) notify('后端暂不可用，当前显示演示详情') } finally { loading.value = false } }
-async function archive() { lifecycle.value = '已归档'; notify('资源已归档，操作已写入审计') }
+async function archive() { if (lifecycle.value === '已归档') return; if (!actorId || resourceId.value === 'demo-resource') { lifecycle.value = '已归档'; notify('演示资源已标记为已归档（未提交后端）'); return } loading.value = true; try { await api.archiveResource(resourceId.value, actorId); lifecycle.value = '已归档'; notify('资源已归档，操作已写入审计') } catch (error) { notify(error instanceof ApiError && error.status === 409 ? '资源当前状态不允许归档' : '资源归档失败，请稍后重试') } finally { loading.value = false } }
 load()
 </script>
 

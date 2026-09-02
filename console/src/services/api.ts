@@ -46,7 +46,7 @@ export const api = {
   getResource: (id: string) => request<ResourceRecord>(`/resources/${encodeURIComponent(id)}`),
   createResource: (body: Record<string, unknown>) => request<ResourceRecord>('/resources', { method: 'POST', headers: { 'Idempotency-Key': requestId() }, body: JSON.stringify(body) }),
   updateResource: (id: string, body: Record<string, unknown>, etag: string) => request<ResourceRecord>(`/resources/${encodeURIComponent(id)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/merge-patch+json', 'If-Match': etag }, body: JSON.stringify(body) }),
-  archiveResource: (id: string, etag?: string) => request<void>(`/resources/${encodeURIComponent(id)}/actions/archive`, { method: 'POST', headers: etag ? { 'If-Match': etag } : undefined }),
+  archiveResource: (id: string, actorId: string, etag?: string) => request<void>(`/resources/${encodeURIComponent(id)}/actions/archive`, { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId, ...(etag ? { 'If-Match': etag } : {}) } }),
   restoreResource: (id: string, etag?: string) => request<ResourceRecord>(`/resources/${encodeURIComponent(id)}/actions/restore`, { method: 'POST', headers: etag ? { 'If-Match': etag } : undefined }),
   listUsers: (params = '') => request<Page<UserRecord> | UserRecord[]>(`/admin/users${params}`),
   listRoles: () => request<RoleRecord[]>('/admin/roles'),
