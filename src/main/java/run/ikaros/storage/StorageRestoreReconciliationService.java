@@ -8,6 +8,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.resource.ResourceRepository;
+import run.ikaros.event.DurableEventService;
 
 @Service
 public class StorageRestoreReconciliationService {
@@ -18,12 +19,13 @@ public class StorageRestoreReconciliationService {
     private final ResourceRepository resources;
     private final StorageProviderRegistry providers;
     private final List<StorageRestoreStatusQuery> queries;
+    private final DurableEventService events;
 
     public StorageRestoreReconciliationService(StorageRestoreOperationRepository operations, BlobPlacementRepository placements,
         BlobRepository blobs, AttachmentRepository attachments, ResourceRepository resources, StorageProviderRegistry providers,
-        List<StorageRestoreStatusQuery> queries) {
+        List<StorageRestoreStatusQuery> queries, DurableEventService events) {
         this.operations = operations; this.placements = placements; this.blobs = blobs; this.attachments = attachments;
-        this.resources = resources; this.providers = providers; this.queries = queries;
+        this.resources = resources; this.providers = providers; this.queries = queries; this.events = events;
     }
 
     public Mono<StorageRestoreOperationView> reconcile(UUID actorId, UUID operationId) {
@@ -33,7 +35,15 @@ public class StorageRestoreReconciliationService {
                 .flatMap(placement -> blobs.findById(placement.blobId())
                     .switchIfEmpty(Mono.error(new NotFoundException("Restore Blob 不存在")))
                     .flatMap(blob -> ownerCanAccess(actorId, blob.id()).thenReturn(new Context(operation, placement, blob)))))
-            .flatMap(this::queryAndApply).map(this::view);
+            .flatMap(context -> events.append("storage.restore.reconcile-requested", 1,
+                    "STORAGE_RESTORE_OPERATION", context.operation.id(),
+                    "{\"operation_id\":\"" + context.operation.id() + "\"}")
+                .then(queryAndApply(context)))
+            .flatMap(context -> events.append("storage.restore.reconciled", 1,
+                    "STORAGE_RESTORE_OPERATION", context.operation.id(),
+                    "{\"operation_id\":\"" + context.operation.id() + "\",\"status\":\""
+                        + context.operation.status() + "\"}").thenReturn(context))
+            .map(this::view);
     }
 
     private Mono<Context> queryAndApply(Context context) {
@@ -77,7 +87,7 @@ public class StorageRestoreReconciliationService {
     private StorageRestoreOperationView view(Context c) {
         var o = c.operation;
         return new StorageRestoreOperationView(o.id(), o.placementId(), o.providerRestoreClass(), o.restoreGeneration(), o.status(),
-            o.providerOperationId(), o.restoreExpiresAt(), o.errorSummary(), o.createdAt(), o.updatedAt());
+            o.providerOperationId(), o.restoreExpiresAt(), o.errorSummary(), o.createdAt(), o.updatedAt(), o.version());
     }
 
     private record Context(StorageRestoreOperationEntity operation, BlobPlacementEntity placement, BlobEntity blob) {}
