@@ -51,6 +51,11 @@ public class BackgroundTaskController {
         return service.cancel(taskId).then(service.get(taskId));
     }
 
+    @org.springframework.web.bind.annotation.PostMapping("/{taskId}/actions/retry")
+    public Mono<BackgroundTask> retry(@PathVariable UUID taskId) {
+        return service.retry(taskId);
+    }
+
     @GetMapping("/{taskId}/attempts")
     public Flux<BackgroundTaskAttemptEntity> attempts(@PathVariable UUID taskId) {
         return service.attempts(taskId);

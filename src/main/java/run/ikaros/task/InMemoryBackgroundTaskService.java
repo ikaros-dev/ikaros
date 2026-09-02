@@ -58,7 +58,7 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
             }
             Instant now = Instant.now();
             BackgroundTask task = new BackgroundTask(UUID.randomUUID(), taskType, TaskStatus.PENDING, payload,
-                idempotencyKey, now, null, null, null, 0, null, Map.of(), Map.of(), now, now);
+                idempotencyKey, now, null, null, null, 0, null, Map.of(), Map.of(), now, now, null);
             tasks.put(task.id(), task);
             return task;
         });
@@ -109,6 +109,20 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
     }
 
     @Override
+    public Mono<BackgroundTask> retry(UUID taskId) {
+        return get(taskId).flatMap(old -> {
+            if (old.status() != TaskStatus.FAILED && old.status() != TaskStatus.TIMED_OUT) {
+                return Mono.error(new ConflictException("只有失败或超时 Task 可以人工重试"));
+            }
+            Instant now = Instant.now();
+            BackgroundTask retry = new BackgroundTask(UUID.randomUUID(), old.taskType(), TaskStatus.PENDING, old.payload(),
+                null, now, null, null, null, 0, null, Map.of(), Map.of(), now, now, old.id());
+            tasks.put(retry.id(), retry);
+            return Mono.just(retry);
+        });
+    }
+
+    @Override
     public Mono<BackgroundTask> cancel(UUID taskId) {
         return get(taskId).map(task -> {
             if (task.status() == TaskStatus.SUCCEEDED || task.status() == TaskStatus.FAILED) {
@@ -129,6 +143,6 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
     private BackgroundTask copy(BackgroundTask old, TaskStatus status, String owner, UUID token, Instant expires,
                                 int attempt, Instant cancelled, Map<String, Object> progress, Map<String, Object> result) {
         return new BackgroundTask(old.id(), old.taskType(), status, old.payload(), old.idempotencyKey(), old.availableAt(),
-            owner, token, expires, attempt, cancelled, progress, result, old.createdAt(), Instant.now());
+            owner, token, expires, attempt, cancelled, progress, result, old.createdAt(), Instant.now(), old.parentTaskId());
     }
 }

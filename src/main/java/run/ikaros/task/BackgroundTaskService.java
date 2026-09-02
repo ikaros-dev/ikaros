@@ -17,5 +17,6 @@ public interface BackgroundTaskService {
     Mono<BackgroundTask> heartbeat(UUID taskId, UUID leaseToken, Duration leaseDuration);
     Mono<BackgroundTask> complete(UUID taskId, UUID leaseToken, Map<String, Object> result);
     Mono<BackgroundTask> fail(UUID taskId, UUID leaseToken, Map<String, Object> error);
+    Mono<BackgroundTask> retry(UUID taskId);
     Mono<BackgroundTask> cancel(UUID taskId);
 }

@@ -26,4 +26,15 @@ class BackgroundTaskDispatcherTest {
             () -> dispatcher.dispatchOnce("runner", Duration.ofMinutes(1)).block());
         assertEquals(TaskStatus.FAILED, tasks.get(submitted.id()).block().status());
     }
+
+    @org.junit.jupiter.api.Test
+    void manualRetryCreatesChildPendingTask() {
+        InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
+        BackgroundTask submitted = tasks.submit("broken", Map.of(), "original").block();
+        BackgroundTask running = tasks.claim("runner", Duration.ofMinutes(1)).block();
+        tasks.fail(running.id(), running.leaseToken(), Map.of("code", "BOOM")).block();
+        BackgroundTask retry = tasks.retry(submitted.id()).block();
+        assertEquals(TaskStatus.PENDING, retry.status());
+        assertEquals(submitted.id(), retry.parentTaskId());
+    }
 }

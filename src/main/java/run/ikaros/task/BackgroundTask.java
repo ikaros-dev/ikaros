@@ -8,7 +8,7 @@ public record BackgroundTask(UUID id, String taskType, TaskStatus status, Map<St
                              String idempotencyKey, Instant availableAt, String leaseOwner,
                              UUID leaseToken, Instant leaseExpiresAt, int attempt, Instant cancelRequestedAt,
                              Map<String, Object> progress, Map<String, Object> result,
-                             Instant createdAt, Instant updatedAt) {
+                             Instant createdAt, Instant updatedAt, UUID parentTaskId) {
     public BackgroundTask {
         payload = Map.copyOf(payload == null ? Map.of() : payload);
         progress = Map.copyOf(progress == null ? Map.of() : progress);

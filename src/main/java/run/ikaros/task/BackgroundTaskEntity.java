@@ -13,5 +13,6 @@ public record BackgroundTaskEntity(@Id UUID id, @Column("task_type") String task
     @Column("lease_token") UUID leaseToken, @Column("lease_expires_at") Instant leaseExpiresAt,
     int attempt, @Column("cancel_requested_at") Instant cancelRequestedAt,
     @Column("progress") String progress, @Column("result_summary") String result,
-    @Column("created_at") Instant createdAt, @Column("updated_at") Instant updatedAt) {
+    @Column("created_at") Instant createdAt, @Column("updated_at") Instant updatedAt,
+    @Column("parent_task_id") UUID parentTaskId) {
 }

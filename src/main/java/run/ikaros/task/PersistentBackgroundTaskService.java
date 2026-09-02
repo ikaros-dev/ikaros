@@ -68,7 +68,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
         return existing.switchIfEmpty(Mono.defer(() -> encode(payload).flatMap(json -> {
             Instant now = Instant.now();
             return tasks.save(new BackgroundTaskEntity(null, taskType, TaskStatus.PENDING.name(), json,
-                idempotencyKey, now, null, null, null, 0, null, "{}", "{}", now, now));
+                idempotencyKey, now, null, null, null, 0, null, "{}", "{}", now, now, null));
         }))).flatMap(this::view);
     }
 
@@ -114,6 +114,20 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     }
 
     @Override
+    public Mono<BackgroundTask> retry(UUID taskId) {
+        return tasks.findById(taskId).switchIfEmpty(Mono.error(new NotFoundException("Task 不存在")))
+            .flatMap(old -> {
+                TaskStatus status = TaskStatus.valueOf(old.status());
+                if (status != TaskStatus.FAILED && status != TaskStatus.TIMED_OUT) {
+                    return Mono.error(new ConflictException("只有失败或超时 Task 可以人工重试"));
+                }
+                Instant now = Instant.now();
+                return tasks.save(new BackgroundTaskEntity(null, old.taskType(), TaskStatus.PENDING.name(), old.payload(), null,
+                    now, null, null, null, 0, null, "{}", "{}", now, now, old.id()));
+            }).flatMap(this::view);
+    }
+
+    @Override
     public Mono<BackgroundTask> cancel(UUID taskId) {
         return tasks.findById(taskId).switchIfEmpty(Mono.error(new NotFoundException("Task 不存在")))
             .flatMap(task -> tasks.save(copy(task, TaskStatus.CANCELLED, task.leaseOwner(), task.leaseToken(),
@@ -134,7 +148,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
                 mapper.readValue(entity.payload(), new TypeReference<>() { }), entity.idempotencyKey(), entity.availableAt(),
                 entity.leaseOwner(), entity.leaseToken(), entity.leaseExpiresAt(), entity.attempt(),
                 entity.cancelRequestedAt(), mapper.readValue(entity.progress(), new TypeReference<>() { }),
-                mapper.readValue(entity.result(), new TypeReference<>() { }), entity.createdAt(), entity.updatedAt()));
+                mapper.readValue(entity.result(), new TypeReference<>() { }), entity.createdAt(), entity.updatedAt(), entity.parentTaskId()));
         } catch (JsonProcessingException | IllegalArgumentException error) {
             return Mono.error(new IllegalStateException("Task 数据损坏", error));
         }
@@ -148,6 +162,6 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     private BackgroundTaskEntity copy(BackgroundTaskEntity old, TaskStatus status, String owner, UUID token,
                                       Instant expires, int attempt, Instant cancelled, String progress, String result) {
         return new BackgroundTaskEntity(old.id(), old.taskType(), status.name(), old.payload(), old.idempotencyKey(),
-            old.availableAt(), owner, token, expires, attempt, cancelled, progress, result, old.createdAt(), Instant.now());
+            old.availableAt(), owner, token, expires, attempt, cancelled, progress, result, old.createdAt(), Instant.now(), old.parentTaskId());
     }
 }
