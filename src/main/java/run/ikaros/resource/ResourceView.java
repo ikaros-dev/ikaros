@@ -17,12 +17,13 @@ public record ResourceView(
     List<ResourceTitleView> titles,
     List<ExternalIdentityView> externalIdentities,
     Instant createdAt,
-    Instant updatedAt
+    Instant updatedAt,
+    Long version
 ) {
     public ResourceView(UUID id, ResourceType type, ResourceLifecycle lifecycle,
                         List<ResourceTitleView> titles, List<ExternalIdentityView> externalIdentities,
                         Instant createdAt, Instant updatedAt) {
         this(id, type, null, null, ResourceClassification.PRIVATE, lifecycle, titles, externalIdentities,
-            createdAt, updatedAt);
+            createdAt, updatedAt, null);
     }
 }

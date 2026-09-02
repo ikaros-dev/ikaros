@@ -245,7 +245,7 @@ public class DefaultResourceService implements ResourceService {
         return Mono.zip(titles, identities)
             .map(parts -> new ResourceView(resource.id(), resource.resourceType(), resource.primaryTitle(),
                 resource.summary(), resource.dataClassification(), resource.lifecycle(), parts.getT1(), parts.getT2(),
-                resource.createdAt(), resource.updatedAt()));
+                resource.createdAt(), resource.updatedAt(), resource.version()));
     }
 
     private ExternalIdentityView toIdentityView(ExternalIdentityEntity identity) {

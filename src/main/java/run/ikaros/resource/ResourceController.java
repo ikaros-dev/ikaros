@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.PageResponse;
+import run.ikaros.common.IfMatchVersion;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -126,11 +127,12 @@ public class ResourceController {
         @ApiResponse(responseCode = "404", description = "资源不存在或无权访问", content = @Content)
     })
     @GetMapping("/{resourceId}")
-    public Mono<ResourceView> get(
+    public Mono<ResponseEntity<ResourceView>> get(
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @PathVariable UUID resourceId
     ) {
-        return resourceService.get(actorId, resourceId);
+        return resourceService.get(actorId, resourceId)
+            .map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view));
     }
 
     @Operation(summary = "更新资源", description = "按 expected_version 执行乐观并发更新，更新成功后写入可靠 Resource Event。")
@@ -140,12 +142,16 @@ public class ResourceController {
         @ApiResponse(responseCode = "409", description = "资源版本冲突", content = @Content)
     })
     @PatchMapping("/{resourceId}")
-    public Mono<ResourceView> update(
+    public Mono<ResponseEntity<ResourceView>> update(
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @PathVariable UUID resourceId,
+        @RequestHeader(value = "If-Match", required = false) String ifMatch,
         @Valid @RequestBody UpdateResourceRequest request
     ) {
-        return resourceService.update(actorId, resourceId, request);
+        long version = IfMatchVersion.parse(ifMatch);
+        return resourceService.update(actorId, resourceId,
+            new UpdateResourceRequest(version, request.primaryTitle(), request.summary()))
+            .map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view));
     }
 
     /**
@@ -171,11 +177,12 @@ public class ResourceController {
 
     @Operation(summary = "将资源移入回收站并返回资源", description = "以 P0 Action 契约执行逻辑删除，并返回更新后的 Resource。")
     @PostMapping("/{resourceId}/actions/trash")
-    public Mono<ResourceView> trashAction(
+    public Mono<ResponseEntity<ResourceView>> trashAction(
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @PathVariable UUID resourceId
     ) {
-        return resourceService.trash(actorId, resourceId).then(resourceService.get(actorId, resourceId));
+        return resourceService.trash(actorId, resourceId).then(resourceService.get(actorId, resourceId))
+            .map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view));
     }
 
     @Operation(summary = "归档资源", description = "通过显式生命周期命令归档活动 Resource，不删除任何 Attachment 或 Blob。")

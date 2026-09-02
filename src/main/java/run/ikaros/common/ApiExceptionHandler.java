@@ -35,6 +35,16 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.CONFLICT, exception.code(), exception.getMessage());
     }
 
+    @ExceptionHandler(PreconditionRequiredException.class)
+    public ProblemDetail handlePreconditionRequired(PreconditionRequiredException exception) {
+        return problem(HttpStatus.PRECONDITION_REQUIRED, "precondition.required", exception.getMessage());
+    }
+
+    @ExceptionHandler(PreconditionFailedException.class)
+    public ProblemDetail handlePreconditionFailed(PreconditionFailedException exception) {
+        return problem(HttpStatus.PRECONDITION_FAILED, "precondition.failed", exception.getMessage());
+    }
+
     @ExceptionHandler(StorageUnavailableException.class)
     public ProblemDetail handleStorageUnavailable(StorageUnavailableException exception) {
         return problem(HttpStatus.SERVICE_UNAVAILABLE, "storage.unavailable", exception.getMessage());
