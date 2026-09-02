@@ -318,6 +318,14 @@ CREATE TABLE planning_okr_check_in (
 );
 CREATE INDEX idx_planning_okr_check_in_key_result ON planning_okr_check_in (owner_id, key_result_id, created_at DESC);
 
+CREATE TABLE planning_project_member (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), project_id UUID NOT NULL, user_id UUID NOT NULL,
+    role VARCHAR(24) NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    UNIQUE (project_id, user_id), CHECK (role IN ('VIEW','COMMENT','EDIT_TASK','ASSIGN','MANAGE_PROJECT')),
+    FOREIGN KEY (project_id) REFERENCES planning_project(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_planning_project_member_user ON planning_project_member (user_id, project_id);
+
 CREATE TABLE offline_download_manifest (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), intent_id UUID NOT NULL, manifest_version BIGINT NOT NULL,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (intent_id, manifest_version),

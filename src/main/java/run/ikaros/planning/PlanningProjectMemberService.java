@@ -1,0 +1,2 @@
+package run.ikaros.planning; import java.util.UUID; import reactor.core.publisher.Flux; import reactor.core.publisher.Mono;
+public interface PlanningProjectMemberService {Mono<PlanningProjectMemberView> add(UUID ownerId,UUID projectId,AddPlanningProjectMemberRequest request); Flux<PlanningProjectMemberView> list(UUID ownerId,UUID projectId); Mono<Void> remove(UUID ownerId,UUID projectId,UUID userId);}
