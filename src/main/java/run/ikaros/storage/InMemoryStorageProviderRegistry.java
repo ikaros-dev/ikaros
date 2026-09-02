@@ -45,6 +45,9 @@ public class InMemoryStorageProviderRegistry implements StorageProviderRegistry 
     public Mono<StorageProvider> disable(UUID providerId) { return change(providerId, StorageProviderStatus.DISABLED); }
 
     @Override
+    public Mono<StorageProvider> drain(UUID providerId) { return change(providerId, StorageProviderStatus.DRAINING); }
+
+    @Override
     public Mono<StorageProvider> get(UUID providerId) {
         return Mono.justOrEmpty(providers.get(providerId)).switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")));
     }

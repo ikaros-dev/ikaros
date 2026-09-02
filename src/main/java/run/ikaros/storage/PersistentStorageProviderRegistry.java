@@ -52,6 +52,9 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
     public Mono<StorageProvider> disable(UUID providerId) { return change(providerId, StorageProviderStatus.DISABLED); }
 
     @Override
+    public Mono<StorageProvider> drain(UUID providerId) { return change(providerId, StorageProviderStatus.DRAINING); }
+
+    @Override
     public Mono<StorageProvider> get(UUID providerId) {
         return repository.findById(providerId).switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
             .map(this::toModel);

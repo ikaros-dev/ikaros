@@ -10,6 +10,7 @@ public interface StorageProviderRegistry {
                                     String secretReference, Map<String, Object> metadata);
     Mono<StorageProvider> enable(UUID providerId);
     Mono<StorageProvider> disable(UUID providerId);
+    Mono<StorageProvider> drain(UUID providerId);
     Mono<StorageProvider> get(UUID providerId);
     Mono<StorageProvider> getByKey(String providerKey);
     Flux<StorageProvider> list();
