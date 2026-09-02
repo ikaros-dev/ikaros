@@ -138,6 +138,17 @@ CREATE TABLE backup_restore_point (
 );
 CREATE INDEX idx_backup_restore_point_created ON backup_restore_point (state, created_at DESC);
 
+CREATE TABLE planning_task (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, title VARCHAR(512) NOT NULL,
+    description TEXT, status VARCHAR(24) NOT NULL DEFAULT 'INBOX', priority VARCHAR(24) NOT NULL DEFAULT 'NONE',
+    deadline TIMESTAMPTZ, project_id UUID, parent_task_id UUID, completed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    version BIGINT NOT NULL DEFAULT 0, CHECK (status IN ('INBOX','PLANNED','IN_PROGRESS','COMPLETED','BLOCKED','CANCELLED','ARCHIVED')),
+    CHECK (priority IN ('NONE','LOW','MEDIUM','HIGH','URGENT')), CHECK (version >= 0),
+    CHECK (parent_task_id IS NULL OR parent_task_id <> id), FOREIGN KEY (parent_task_id) REFERENCES planning_task(id)
+);
+CREATE INDEX idx_planning_task_owner_status ON planning_task (owner_id, status, updated_at DESC);
+
 CREATE TABLE offline_download_manifest (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), intent_id UUID NOT NULL, manifest_version BIGINT NOT NULL,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (intent_id, manifest_version),
