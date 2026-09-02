@@ -77,8 +77,15 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     public Mono<BackgroundTask> claim(String runnerId, Duration leaseDuration) {
         if (runnerId == null || runnerId.isBlank() || leaseDuration == null || leaseDuration.isZero()
             || leaseDuration.isNegative()) return Mono.error(new IllegalArgumentException("Lease 参数不合法"));
+        Instant observedAt = Instant.now();
         return tasks.findTop1ByStatusAndAvailableAtLessThanEqualOrderByAvailableAtAscCreatedAtAsc(
-                TaskStatus.PENDING.name(), Instant.now())
+                TaskStatus.PENDING.name(), observedAt)
+            .switchIfEmpty(tasks.findTop1ByStatusAndLeaseExpiresAtLessThanEqualOrderByLeaseExpiresAtAsc(
+                TaskStatus.RUNNING.name(), observedAt)
+                .flatMap(expired -> tasks.save(new BackgroundTaskEntity(expired.id(), expired.taskType(),
+                    TaskStatus.PENDING.name(), expired.payload(), expired.idempotencyKey(), observedAt, null, null, null,
+                    expired.attempt(), expired.cancelRequestedAt(), expired.progress(), expired.result(), expired.createdAt(),
+                    Instant.now(), expired.parentTaskId()))))
             .switchIfEmpty(Mono.error(new NotFoundException("没有可执行的 Task")))
             .flatMap(task -> {
                 Instant now = Instant.now(); UUID token = UUID.randomUUID();

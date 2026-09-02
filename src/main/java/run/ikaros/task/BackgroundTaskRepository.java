@@ -11,4 +11,6 @@ public interface BackgroundTaskRepository extends ReactiveCrudRepository<Backgro
     Mono<BackgroundTaskEntity> findByTaskTypeAndIdempotencyKey(String taskType, String idempotencyKey);
     Mono<BackgroundTaskEntity> findTop1ByStatusAndAvailableAtLessThanEqualOrderByAvailableAtAscCreatedAtAsc(
         String status, Instant now);
+    Mono<BackgroundTaskEntity> findTop1ByStatusAndLeaseExpiresAtLessThanEqualOrderByLeaseExpiresAtAsc(
+        String status, Instant now);
 }

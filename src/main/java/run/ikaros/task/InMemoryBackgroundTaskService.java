@@ -69,8 +69,17 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
     public Mono<BackgroundTask> claim(String runnerId, Duration leaseDuration) {
         if (runnerId == null || runnerId.isBlank() || leaseDuration == null || leaseDuration.isNegative()
             || leaseDuration.isZero()) return Mono.error(new IllegalArgumentException("Lease 参数不合法"));
-        return Mono.defer(() -> tasks.values().stream()
-            .filter(task -> task.status() == TaskStatus.PENDING && !task.availableAt().isAfter(Instant.now()))
+        return Mono.defer(() -> {
+            Instant observedAt = Instant.now();
+            tasks.values().stream()
+                .filter(task -> task.status() == TaskStatus.RUNNING && task.leaseExpiresAt() != null
+                    && !task.leaseExpiresAt().isAfter(observedAt))
+                .findFirst()
+                .ifPresent(task -> tasks.replace(task.id(), task, new BackgroundTask(task.id(), task.taskType(), TaskStatus.PENDING,
+                    task.payload(), task.idempotencyKey(), observedAt, null, null, null, task.attempt(), task.cancelRequestedAt(),
+                    task.progress(), task.result(), task.createdAt(), observedAt, task.parentTaskId())));
+            return tasks.values().stream()
+            .filter(task -> task.status() == TaskStatus.PENDING && !task.availableAt().isAfter(observedAt))
             .sorted(Comparator.comparing(BackgroundTask::availableAt).thenComparing(BackgroundTask::createdAt))
             .findFirst()
             .map(task -> {
@@ -79,7 +88,8 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
                     now.plus(leaseDuration), task.attempt() + 1, task.cancelRequestedAt(), task.progress(), task.result());
                 tasks.replace(task.id(), task, claimed);
                 return Mono.just(claimed);
-            }).orElseGet(Mono::empty));
+            }).orElseGet(Mono::empty);
+        });
     }
 
     @Override

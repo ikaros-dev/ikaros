@@ -48,4 +48,15 @@ class BackgroundTaskDispatcherTest {
         assertEquals(TaskStatus.PENDING, retry.status());
         assertEquals(submitted.id(), retry.parentTaskId());
     }
+
+    @org.junit.jupiter.api.Test
+    void expiredLeaseIsReclaimedOnNextClaim() throws InterruptedException {
+        InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
+        tasks.submit("recoverable", Map.of(), "lease-recovery").block();
+        tasks.claim("crashed-runner", Duration.ofMillis(1)).block();
+        Thread.sleep(10);
+        BackgroundTask reclaimed = tasks.claim("healthy-runner", Duration.ofMinutes(1)).block();
+        assertEquals(TaskStatus.RUNNING, reclaimed.status());
+        assertEquals(2, reclaimed.attempt());
+    }
 }
