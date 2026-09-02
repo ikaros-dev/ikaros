@@ -37,7 +37,9 @@ function go(path: string) { router.push('/console/' + path); drawer.value = fals
 function toggle(label: string) { expanded.value = expanded.value.includes(label) ? expanded.value.filter(v => v !== label) : [...expanded.value, label] }
 function notify(message: string) { toast.value = message; setTimeout(() => toast.value = '', 2800) }
 function openDialog(kind: string) { dialog.value = kind }
-function applyTheme(value: Theme) { document.documentElement.dataset.theme = value; document.documentElement.classList.toggle('dark', value === 'dark'); localStorage.setItem(preferenceKey, JSON.stringify({ expanded: expanded.value, theme: value })) }
+const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+function applyTheme(value: Theme) { const dark = value === 'dark' || (value === 'system' && systemThemeQuery.matches); document.documentElement.dataset.theme = value; document.documentElement.classList.toggle('dark', dark); localStorage.setItem(preferenceKey, JSON.stringify({ expanded: expanded.value, theme: value })) }
+function handleSystemThemeChange() { if (theme.value === 'system') applyTheme('system') }
 function cycleTheme() { theme.value = theme.value === 'system' ? 'light' : theme.value === 'light' ? 'dark' : 'system'; applyTheme(theme.value); notify(`主题：${theme.value === 'system' ? '跟随系统' : theme.value === 'light' ? '浅色' : '深色'}`) }
 function submitSearch() { if (!isSearch.value) go('search'); router.replace({ query: query.value ? { q: query.value } : {} }); notify(query.value ? `已搜索：${query.value}` : '已恢复全部结果') }
 function handleShortcut(event: KeyboardEvent) { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); go('search'); requestAnimationFrame(() => document.querySelector<HTMLInputElement>('.search-box input')?.focus()) } }
@@ -88,6 +90,7 @@ onMounted(loadResources); watch(currentPath, loadResources)
 onMounted(() => applyTheme(theme.value)); watch(expanded, () => applyTheme(theme.value), { deep: true })
 watch(() => route.query.q, value => { query.value = String(value || '') })
 onMounted(() => window.addEventListener('keydown', handleShortcut)); onBeforeUnmount(() => window.removeEventListener('keydown', handleShortcut))
+onMounted(() => systemThemeQuery.addEventListener('change', handleSystemThemeChange)); onBeforeUnmount(() => systemThemeQuery.removeEventListener('change', handleSystemThemeChange))
 let refreshTimer: number | undefined
 watch(currentPath, value => {
   if (refreshTimer) window.clearInterval(refreshTimer)
