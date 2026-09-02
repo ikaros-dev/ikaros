@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 
 @Service
 public class PersistentPlanningReminderService implements PlanningReminderService {
@@ -25,22 +26,42 @@ public class PersistentPlanningReminderService implements PlanningReminderServic
     @Override public Flux<PlanningReminderView> list(UUID ownerId) { return reminders.findAllByOwnerIdOrderByTriggerAt(ownerId).map(this::view); }
 
     @Override public Mono<PlanningReminderView> acknowledge(UUID ownerId, UUID reminderId) {
+        return acknowledgeInternal(ownerId, reminderId, null);
+    }
+    @Override public Mono<PlanningReminderView> acknowledge(UUID ownerId, UUID reminderId, long expectedVersion) {
+        return acknowledgeInternal(ownerId, reminderId, expectedVersion);
+    }
+    private Mono<PlanningReminderView> acknowledgeInternal(UUID ownerId, UUID reminderId, Long expectedVersion) {
         return owned(ownerId, reminderId).flatMap(old -> {
+            checkVersion(old, expectedVersion);
             if (old.status() == PlanningReminderStatus.CANCELLED) return Mono.error(new ConflictException("已取消的提醒不能确认"));
             return save(old, PlanningReminderStatus.ACKNOWLEDGED, old.snoozedUntil(), old.firedAt(), Instant.now());
         });
     }
 
     @Override public Mono<PlanningReminderView> snooze(UUID ownerId, UUID reminderId, Instant until) {
+        return snoozeInternal(ownerId, reminderId, until, null);
+    }
+    @Override public Mono<PlanningReminderView> snooze(UUID ownerId, UUID reminderId, Instant until, long expectedVersion) {
+        return snoozeInternal(ownerId, reminderId, until, expectedVersion);
+    }
+    private Mono<PlanningReminderView> snoozeInternal(UUID ownerId, UUID reminderId, Instant until, Long expectedVersion) {
         if (until == null || !until.isAfter(Instant.now())) return Mono.error(new ConflictException("延后时间必须晚于当前时间"));
         return owned(ownerId, reminderId).flatMap(old -> {
+            checkVersion(old, expectedVersion);
             if (old.status() == PlanningReminderStatus.ACKNOWLEDGED || old.status() == PlanningReminderStatus.CANCELLED) return Mono.error(new ConflictException("当前提醒不能延后"));
             return save(old, PlanningReminderStatus.SNOOZED, until, old.firedAt(), old.acknowledgedAt());
         });
     }
 
     @Override public Mono<PlanningReminderView> cancel(UUID ownerId, UUID reminderId) {
-        return owned(ownerId, reminderId).flatMap(old -> save(old, PlanningReminderStatus.CANCELLED, old.snoozedUntil(), old.firedAt(), old.acknowledgedAt()));
+        return cancelInternal(ownerId, reminderId, null);
+    }
+    @Override public Mono<PlanningReminderView> cancel(UUID ownerId, UUID reminderId, long expectedVersion) {
+        return cancelInternal(ownerId, reminderId, expectedVersion);
+    }
+    private Mono<PlanningReminderView> cancelInternal(UUID ownerId, UUID reminderId, Long expectedVersion) {
+        return owned(ownerId, reminderId).flatMap(old -> { checkVersion(old, expectedVersion); return save(old, PlanningReminderStatus.CANCELLED, old.snoozedUntil(), old.firedAt(), old.acknowledgedAt()); });
     }
 
     private Mono<PlanningReminderView> saveNew(UUID ownerId, CreatePlanningReminderRequest request) {
@@ -58,4 +79,5 @@ public class PersistentPlanningReminderService implements PlanningReminderServic
         old.triggerAt(), old.timeZone(), old.channel(), status, snoozedUntil, firedAt, acknowledgedAt, old.createdAt(), Instant.now(), old.version())).map(this::view); }
     private PlanningReminderView view(PlanningReminderEntity reminder) { return new PlanningReminderView(reminder.id(), reminder.ownerId(), reminder.targetType(), reminder.targetId(),
         reminder.triggerAt(), reminder.timeZone(), reminder.channel(), reminder.status(), reminder.snoozedUntil(), reminder.firedAt(), reminder.acknowledgedAt(), reminder.createdAt(), reminder.updatedAt(), reminder.version() == null ? 0 : reminder.version()); }
+    private void checkVersion(PlanningReminderEntity reminder, Long expectedVersion) { if (expectedVersion != null && (reminder.version() == null ? 0 : reminder.version()) != expectedVersion) throw new PreconditionFailedException("If-Match 与 Reminder 当前版本不匹配"); }
 }
