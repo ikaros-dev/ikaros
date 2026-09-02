@@ -15,4 +15,7 @@ public class ImportPlanController {
     @GetMapping("/plans/{planId}/items")
     public Mono<List<ImportPlanItemEntity>> items(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @PathVariable UUID planId) { return service.items(actorId, planId); }
+    @PostMapping("/plans/{planId}/approve")
+    public Mono<ImportPlanView> approve(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId, @PathVariable UUID planId,
+        @Valid @RequestBody ApproveImportPlanRequest request) { return service.approve(actorId, planId, request); }
 }

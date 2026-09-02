@@ -25,7 +25,8 @@ public class DefaultImportRunService implements ImportRunService {
     }
     public Mono<ImportRunView> start(UUID ownerId, UUID planId, StartImportRequest request) {
         return plans.findByIdAndOwnerId(planId, ownerId).switchIfEmpty(Mono.error(new NotFoundException("Import Plan 不存在或无权访问")))
-            .flatMap(plan -> { if (plan.version()!=null && request.expectedPlanVersion()!=plan.version())
+            .flatMap(plan -> { if (!"APPROVED".equals(plan.status())) return Mono.<ImportPlanEntity>error(new ConflictException("Import Plan 尚未审批"));
+                if (plan.version()!=null && request.expectedPlanVersion()!=plan.version())
                 return Mono.<ImportPlanEntity>error(new ConflictException("Import Plan 版本已过期")); return Mono.just(plan); })
             .flatMap(plan -> tasks.submit("ingestion.import", Map.of("plan_id", planId.toString(), "actor_id", ownerId.toString()),
                 "ingestion.import:"+planId+":"+request.expectedPlanVersion()))
