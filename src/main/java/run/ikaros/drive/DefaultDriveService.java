@@ -125,7 +125,18 @@ public class DefaultDriveService implements DriveService {
     @Override public Flux<DriveRevisionView> revisions(UUID actorId, UUID nodeId) { return ownedNode(actorId,nodeId)
         .flatMapMany(n -> Flux.fromIterable(revisionLog.getOrDefault(nodeId, List.of()))); }
     @Override public Flux<DriveChangeView> changes(UUID actorId, UUID spaceId, long afterSequence) { return ownedSpace(actorId,spaceId).flatMapMany(s -> Flux.fromIterable(changeLog.values()).filter(c -> c.space().equals(spaceId) && c.sequence() > afterSequence).sort(java.util.Comparator.comparing(Change::sequence)).map(this::changeView)); }
-    @Override public Mono<DriveQuotaView> quota(UUID actorId, UUID spaceId) { return ownedSpace(actorId,spaceId).map(s -> new DriveQuotaView(spaceId,Long.MAX_VALUE,0,0,Long.MAX_VALUE)); }
+    @Override public Mono<DriveQuotaView> quota(UUID actorId, UUID spaceId) {
+        return ownedSpace(actorId, spaceId).map(s -> {
+            Instant now = Instant.now();
+            long used = reservations.values().stream().filter(r -> r.space().equals(spaceId)
+                && r.state() == QuotaReservationState.COMMITTED).mapToLong(Reservation::bytes).sum();
+            long reserved = reservations.values().stream().filter(r -> r.space().equals(spaceId)
+                && r.state() == QuotaReservationState.ACTIVE && r.expires().isAfter(now)).mapToLong(Reservation::bytes).sum();
+            long available = Long.MAX_VALUE - used;
+            available = available < reserved ? 0 : available - reserved;
+            return new DriveQuotaView(spaceId, Long.MAX_VALUE, used, reserved, available);
+        });
+    }
     @Override public Mono<DriveQuotaReservationView> beginUpload(UUID actorId, UUID spaceId, BeginDriveUploadRequest request) {
         return ownedSpace(actorId, spaceId).flatMap(s -> Mono.defer(() -> {
             Reservation existing = reservations.values().stream().filter(r -> r.space().equals(spaceId)
