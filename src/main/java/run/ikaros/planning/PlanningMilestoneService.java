@@ -9,4 +9,6 @@ public interface PlanningMilestoneService {
     Flux<PlanningMilestoneView> list(UUID ownerId, UUID goalId);
     Mono<PlanningMilestoneView> update(UUID ownerId, UUID milestoneId, UpdatePlanningMilestoneRequest request);
     Mono<PlanningMilestoneView> changeStatus(UUID ownerId, UUID milestoneId, PlanningMilestoneStatus status);
+    Mono<PlanningMilestoneView> changeStatus(UUID ownerId, UUID milestoneId, PlanningMilestoneStatus status,
+                                             long expectedVersion);
 }
