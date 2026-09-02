@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ikaros.run/schemas/v2/p0-event-v1.schema.json",
-  "title": "Ikaros V2 P0 Durable Event v1",
-  "description": "Machine-readable P0 event envelope/type baseline. Payload field compatibility remains governed by P0-Event-Payload-Schema-Registry.md and is expanded into per-event schemas during Phase 0 implementation.",
+  "title": "Ikaros V2 P0 持久事件 v1",
+  "description": "P0 事件 Envelope / Type 的机器可读基线。Payload 字段兼容性仍由 P0-Event-Payload-Schema-Registry.md 管理，并在 Phase 0 实现阶段逐步扩展为每种事件对应的 Schema。",
   "type": "object",
   "required": ["event_id", "event_type", "schema_version", "occurred_at", "producer_subsystem", "payload"],
   "properties": {
