@@ -9,6 +9,7 @@ import org.springframework.data.relational.core.mapping.Table;
 public record PlanningTaskEntity(@Id UUID id, @Column("owner_id") UUID ownerId, String title,
     String description, PlanningTaskStatus status, PlanningTaskPriority priority,
     @Column("scheduled_start") Instant scheduledStart, @Column("scheduled_end") Instant scheduledEnd, Instant deadline,
+    @Column("estimated_duration_minutes") Integer estimatedDurationMinutes,
     @Column("project_id") UUID projectId, @Column("parent_task_id") UUID parentTaskId,
     @Column("completed_at") Instant completedAt, @Column("created_at") Instant createdAt,
     @Column("updated_at") Instant updatedAt, @Version Long version) {}
