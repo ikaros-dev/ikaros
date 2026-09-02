@@ -158,6 +158,19 @@ CREATE TABLE planning_project (
 CREATE INDEX idx_planning_project_owner_updated ON planning_project (owner_id, updated_at DESC);
 ALTER TABLE planning_task ADD CONSTRAINT fk_planning_task_project FOREIGN KEY (project_id) REFERENCES planning_project(id);
 
+CREATE TABLE planning_tag (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, name VARCHAR(128) NOT NULL,
+    color VARCHAR(32), created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    UNIQUE (owner_id, name)
+);
+CREATE TABLE planning_task_tag (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), task_id UUID NOT NULL, tag_id UUID NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    UNIQUE (task_id, tag_id), FOREIGN KEY (task_id) REFERENCES planning_task(id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES planning_tag(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_planning_task_tag_tag ON planning_task_tag (tag_id, task_id);
+
 CREATE TABLE offline_download_manifest (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), intent_id UUID NOT NULL, manifest_version BIGINT NOT NULL,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (intent_id, manifest_version),
