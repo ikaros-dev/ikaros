@@ -20,7 +20,7 @@ public class StorageRestoreSeasonController {
                 new RestoreRequestContractView(view.id(), view.scope().name(), view.scopeId(), status(view.status()), view.totalItems(),
                     view.totalBytes(), view.completedItems(), view.status() == StorageRestoreRequestStatus.FAILED
                         || view.status() == StorageRestoreRequestStatus.PARTIAL_FAILURE ? view.totalItems() - view.completedItems() : 0,
-                    "ACCEPTED", view.createdAt())));
+                    view.budgetDecision(), view.createdAt())));
     }
 
     private String status(StorageRestoreRequestStatus value) {
