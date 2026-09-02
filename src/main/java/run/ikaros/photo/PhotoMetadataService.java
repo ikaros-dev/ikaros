@@ -1,0 +1,1 @@
+package run.ikaros.photo; import java.util.UUID; import reactor.core.publisher.Mono; public interface PhotoMetadataService{Mono<PhotoView> update(UUID owner,UUID photoId,UpdatePhotoMetadataRequest request);Mono<PhotoView> get(UUID owner,UUID photoId);}
