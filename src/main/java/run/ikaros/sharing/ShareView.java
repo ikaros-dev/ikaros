@@ -1,0 +1,1 @@
+package run.ikaros.sharing; import java.time.Instant; import java.util.UUID; public record ShareView(UUID id,UUID issuerId,String targetType,UUID targetId,ShareGranteeType granteeType,UUID granteeId,String capabilities,Instant expiresAt,ShareStatus status,Instant createdAt,String token) {}

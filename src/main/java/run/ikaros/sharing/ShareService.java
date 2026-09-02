@@ -1,0 +1,1 @@
+package run.ikaros.sharing; import java.util.UUID; import reactor.core.publisher.Flux; import reactor.core.publisher.Mono; public interface ShareService{Mono<ShareView> create(UUID issuer,CreateShareRequest request);Flux<ShareView> list(UUID issuer);Mono<ShareView> revoke(UUID issuer,UUID shareId);Mono<ShareView> redeem(String token);}
