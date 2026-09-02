@@ -26,6 +26,12 @@ public class DurableEventService {
         if (eventType == null || eventType.isBlank() || schemaVersion < 1 || payloadJson == null) {
             return Mono.error(new IllegalArgumentException("事件类型、版本和 Payload 不合法"));
         }
+        String normalized = payloadJson.toLowerCase();
+        if (normalized.contains("password") || normalized.contains("secret")
+            || normalized.contains("private_key") || normalized.contains("access_token")
+            || normalized.contains("refresh_token")) {
+            return Mono.error(new IllegalArgumentException("事件 Payload 不得包含 Secret 或 Token"));
+        }
         return outbox.save(new OutboxEventEntity(null, eventType, schemaVersion, aggregateType,
             aggregateId, payloadJson, Instant.now(), 0, null, null));
     }
