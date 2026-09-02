@@ -48,14 +48,16 @@ public class StorageRestoreTaskHandler {
         boolean retryFailedOnly = Boolean.TRUE.equals(task.payload().get("retry_failed_only"));
         return requests.findById(requestId)
             .switchIfEmpty(Mono.error(new NotFoundException("Restore Request 不存在")))
-            .flatMap(request -> updateStatus(request, StorageRestoreRequestStatus.IN_PROGRESS).then(
-                task.payload().containsKey("season_id")
-                    ? restoreSeason(request, requestId, task.id(), restoreClass, uuid(task.payload(), "season_id"), retryFailedOnly)
-                    : attachments.findById(uuid(task.payload(), "attachment_id"))
-                        .filter(attachment -> attachment.deletedAt() == null)
-                        .switchIfEmpty(Mono.error(new NotFoundException("附件不存在")))
-                        .flatMap(attachment -> restoreAttachment(request, attachment, requestId, task.id(), restoreClass, true,
-                            retryFailedOnly))));
+            .flatMap(request -> request.status() == StorageRestoreRequestStatus.CANCELLED
+                ? Mono.just(Map.<String, Object>of("restore_request_id", requestId.toString(), "cancelled", true))
+                : updateStatus(request, StorageRestoreRequestStatus.IN_PROGRESS).then(
+                    task.payload().containsKey("season_id")
+                        ? restoreSeason(request, requestId, task.id(), restoreClass, uuid(task.payload(), "season_id"), retryFailedOnly)
+                        : attachments.findById(uuid(task.payload(), "attachment_id"))
+                            .filter(attachment -> attachment.deletedAt() == null)
+                            .switchIfEmpty(Mono.error(new NotFoundException("附件不存在")))
+                            .flatMap(attachment -> restoreAttachment(request, attachment, requestId, task.id(), restoreClass, true,
+                                retryFailedOnly))));
     }
 
     private Mono<Map<String, Object>> restoreSeason(StorageRestoreRequestEntity request, UUID requestId, UUID taskId,
