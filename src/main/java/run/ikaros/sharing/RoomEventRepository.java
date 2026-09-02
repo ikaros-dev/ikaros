@@ -1,0 +1,1 @@
+package run.ikaros.sharing; import java.util.UUID; import org.springframework.data.repository.reactive.ReactiveCrudRepository; import reactor.core.publisher.Flux; public interface RoomEventRepository extends ReactiveCrudRepository<RoomEventEntity,UUID>{Flux<RoomEventEntity> findAllByRoomIdAndSequenceGreaterThanOrderBySequenceAsc(UUID roomId,long sequence);}
