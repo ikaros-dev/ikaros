@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.event.DurableEventService;
 import run.ikaros.resource.ResourceRepository;
 import run.ikaros.task.BackgroundTaskService;
 import run.ikaros.media.MediaEpisodeRepository;
@@ -24,15 +25,16 @@ public class StorageRestoreRequestService {
     private final StorageRestoreBudgetService budget;
     private final MediaSeasonRepository seasons;
     private final MediaEpisodeRepository episodes;
+    private final DurableEventService events;
 
     public StorageRestoreRequestService(AttachmentRepository attachments, ResourceRepository resources,
         BlobRepository blobs, BlobPlacementRepository placements, StorageRestoreRequestRepository requests,
         BackgroundTaskService tasks, StorageRestoreBudgetService budget, MediaSeasonRepository seasons,
-        MediaEpisodeRepository episodes) {
+        MediaEpisodeRepository episodes, DurableEventService events) {
         this.attachments = attachments; this.resources = resources; this.blobs = blobs;
         this.placements = placements; this.requests = requests; this.tasks = tasks;
         this.budget = budget;
-        this.seasons = seasons; this.episodes = episodes;
+        this.seasons = seasons; this.episodes = episodes; this.events = events;
     }
 
     public Mono<StorageRestoreRequestView> requestAttachment(UUID actorId, RequestAttachmentRestore request,
@@ -61,7 +63,9 @@ public class StorageRestoreRequestService {
                     "storage.restore:" + saved.id()).flatMap(task -> requests.save(new StorageRestoreRequestEntity(
                         saved.id(), saved.actorId(), saved.scope(), saved.scopeId(), saved.status(), saved.totalItems(),
                         saved.completedItems(), saved.totalBytes(), saved.errorSummary(), saved.idempotencyKey(), task.id(),
-                        saved.createdAt(), Instant.now(), saved.version())))))))
+                        saved.createdAt(), Instant.now(), saved.version()))))
+                .flatMap(this::emitRequested)
+                )))
             .map(this::view);
     }
 
@@ -89,7 +93,9 @@ public class StorageRestoreRequestService {
                     "season_id", seasonId.toString(), "provider_restore_class", providerRestoreClass == null ? "STANDARD" : providerRestoreClass),
                     "storage.restore:" + saved.id()).flatMap(task -> requests.save(new StorageRestoreRequestEntity(saved.id(), saved.actorId(),
                         saved.scope(), saved.scopeId(), saved.status(), saved.totalItems(), saved.completedItems(), saved.totalBytes(),
-                        saved.errorSummary(), saved.idempotencyKey(), task.id(), saved.createdAt(), Instant.now(), saved.version()))))))
+                        saved.errorSummary(), saved.idempotencyKey(), task.id(), saved.createdAt(), Instant.now(), saved.version()))))
+                .flatMap(this::emitRequested)
+                ))
             .map(this::view);
     }
 
@@ -111,9 +117,9 @@ public class StorageRestoreRequestService {
                     || old.status() == StorageRestoreRequestStatus.PARTIAL_FAILURE
                     || old.status() == StorageRestoreRequestStatus.CANCELLED) return Mono.just(old);
                 Mono<Void> stop = old.backgroundTaskId() == null ? Mono.empty() : tasks.cancel(old.backgroundTaskId()).then();
-                return stop.then(requests.save(new StorageRestoreRequestEntity(old.id(), old.actorId(), old.scope(), old.scopeId(),
+                return stop.then(emitCancelled(requests.save(new StorageRestoreRequestEntity(old.id(), old.actorId(), old.scope(), old.scopeId(),
                     StorageRestoreRequestStatus.CANCELLED, old.totalItems(), old.completedItems(), old.totalBytes(), old.errorSummary(),
-                    old.idempotencyKey(), old.backgroundTaskId(), old.createdAt(), Instant.now(), old.version())));
+                    old.idempotencyKey(), old.backgroundTaskId(), old.createdAt(), Instant.now(), old.version()))));
             }).map(this::view);
     }
 
@@ -127,6 +133,23 @@ public class StorageRestoreRequestService {
     private StorageRestoreRequestView view(StorageRestoreRequestEntity r) {
         return new StorageRestoreRequestView(r.id(), r.actorId(), r.scope(), r.scopeId(), r.status(), r.totalItems(),
             r.completedItems(), r.totalBytes(), r.errorSummary(), r.backgroundTaskId(), r.createdAt(), r.updatedAt());
+    }
+
+    private Mono<StorageRestoreRequestEntity> emitRequested(Mono<StorageRestoreRequestEntity> saved) {
+        return saved.flatMap(request -> events.append("storage.restore-request.requested", 1, "restore_request", request.id(),
+            "{\"request_id\":\"" + request.id() + "\",\"scope_type\":\"" + request.scope()
+                + "\",\"scope_id\":\"" + request.scopeId() + "\",\"item_count\":" + request.totalItems()
+                + ",\"total_bytes\":" + request.totalBytes() + ",\"budget_decision\":\"ACCEPTED\"}")
+            .thenReturn(request));
+    }
+
+    private Mono<StorageRestoreRequestEntity> emitRequested(StorageRestoreRequestEntity saved) {
+        return emitRequested(Mono.just(saved));
+    }
+
+    private Mono<StorageRestoreRequestEntity> emitCancelled(Mono<StorageRestoreRequestEntity> saved) {
+        return saved.flatMap(request -> events.append("storage.restore-request.cancel-requested", 1, "restore_request", request.id(),
+            "{\"request_id\":\"" + request.id() + "\"}").thenReturn(request));
     }
 
     private record RestoreCandidate(UUID attachmentId, long bytes) {}
