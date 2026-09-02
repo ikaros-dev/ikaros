@@ -17,9 +17,12 @@ public class DefaultDriveService implements DriveService {
     private record Space(UUID id, UUID owner, String name, UUID root, long generation, Instant created, Instant updated, long version) {}
     private record Node(UUID id, UUID space, UUID parent, DriveNodeType type, String name, String normalized,
         DriveLifecycle lifecycle, UUID revision, long version, Instant created, Instant updated) {}
+    private record Device(UUID id, UUID user, String installation, String displayName, String platform,
+        String appVersion, DeviceTrustState trust, Instant registered, Instant lastSeen, Instant revoked) {}
     private final UuidV7Generator ids = new UuidV7Generator();
     private final ConcurrentMap<UUID, Space> spaces = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Node> nodes = new ConcurrentHashMap<>();
+    private final ConcurrentMap<UUID, Device> devices = new ConcurrentHashMap<>();
 
     @Override public Mono<DriveSpaceView> createSpace(UUID actorId, CreateDriveSpaceRequest request) {
         return Mono.fromSupplier(() -> {
@@ -105,9 +108,27 @@ public class DefaultDriveService implements DriveService {
     @Override public Mono<SyncConflictView> createConflict(UUID actorId, CreateSyncConflictRequest request) { return Mono.error(new UnsupportedOperationException("内存 Drive 未实现 Conflict")); }
     @Override public Flux<SyncConflictView> conflicts(UUID actorId, UUID bindingId) { return Flux.empty(); }
     @Override public Mono<SyncConflictView> resolveConflict(UUID actorId, UUID conflictId, SyncConflictState state) { return Mono.error(new NotFoundException("Conflict 不存在")); }
-    @Override public Mono<DeviceView> registerDevice(UUID actorId, RegisterDeviceRequest request) { return Mono.error(new UnsupportedOperationException("内存 Drive 未实现 Device")); }
-    @Override public Flux<DeviceView> devices(UUID actorId) { return Flux.empty(); }
-    @Override public Mono<DeviceView> revokeDevice(UUID actorId, UUID deviceId) { return Mono.error(new NotFoundException("Device 不存在")); }
+    @Override public Mono<DeviceView> registerDevice(UUID actorId, RegisterDeviceRequest request) {
+        return Mono.fromSupplier(() -> {
+            boolean duplicate = devices.values().stream().anyMatch(d -> d.user().equals(actorId)
+                && d.installation().equals(request.installationId()) && d.revoked() == null);
+            if (duplicate) throw new ConflictException("Device installation 已注册");
+            Instant now = Instant.now();
+            Device device = new Device(ids.next(), actorId, request.installationId().trim(), request.displayName().trim(),
+                request.platform().trim(), request.appVersion(), DeviceTrustState.ACTIVE, now, now, null);
+            devices.put(device.id(), device);
+            return deviceView(device);
+        });
+    }
+    @Override public Flux<DeviceView> devices(UUID actorId) { return Flux.fromIterable(devices.values())
+        .filter(d -> d.user().equals(actorId) && d.revoked() == null).map(this::deviceView); }
+    @Override public Mono<DeviceView> revokeDevice(UUID actorId, UUID deviceId) {
+        return Mono.justOrEmpty(devices.get(deviceId)).filter(d -> d.user().equals(actorId))
+            .switchIfEmpty(Mono.error(new NotFoundException("Device 不存在")))
+            .map(d -> { Device revoked = new Device(d.id(), d.user(), d.installation(), d.displayName(), d.platform(),
+                d.appVersion(), DeviceTrustState.REVOKED, d.registered(), d.lastSeen(), Instant.now());
+                devices.put(deviceId, revoked); return deviceView(revoked); });
+    }
     @Override public Mono<SyncMappingView> upsertMapping(UUID actorId, UUID bindingId, UpsertSyncMappingRequest request) { return Mono.error(new NotFoundException("Sync Binding 不存在")); }
     @Override public Flux<SyncMappingView> mappings(UUID actorId, UUID bindingId) { return Flux.empty(); }
     @Override public Flux<DriveTombstoneView> tombstones(UUID actorId, UUID spaceId, long afterSequence) { return ownedSpace(actorId,spaceId).flatMapMany(s->Flux.empty()); }
@@ -128,4 +149,6 @@ public class DefaultDriveService implements DriveService {
     private String normalize(String name) { return Normalizer.normalize(name.trim(), Normalizer.Form.NFKC).toLowerCase(java.util.Locale.ROOT); }
     private DriveSpaceView view(Space s) { return new DriveSpaceView(s.id(),s.owner(),s.name(),s.root(),s.generation(),s.created(),s.updated(),s.version()); }
     private DriveNodeView view(Node n) { return new DriveNodeView(n.id(),n.space(),n.parent(),n.type(),n.name(),n.normalized(),n.lifecycle(),n.revision(),n.version(),n.created(),n.updated()); }
+    private DeviceView deviceView(Device d) { return new DeviceView(d.id(), d.user(), d.installation(), d.displayName(), d.platform(),
+        d.appVersion(), d.trust(), d.registered(), d.lastSeen(), d.revoked()); }
 }
