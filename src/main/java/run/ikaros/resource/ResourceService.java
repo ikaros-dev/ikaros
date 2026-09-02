@@ -41,6 +41,9 @@ public interface ResourceService {
      */
     Mono<PageResponse<ResourceView>> list(UUID ownerId, ResourceType type, String query, int page, int size);
 
+    Mono<ResourceView> findByExternalIdentity(UUID ownerId, String provider, String externalType,
+                                               String externalId);
+
     /**
      * 将 Resource 移入回收站，不直接删除其 Attachment 或 Blob。
      *

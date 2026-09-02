@@ -124,6 +124,15 @@ public class DefaultResourceService implements ResourceService {
     }
 
     @Override
+    public Mono<ResourceView> findByExternalIdentity(UUID ownerId, String provider, String externalType,
+                                                      String externalId) {
+        return identityRepository.findByProviderAndExternalTypeAndExternalId(provider, externalType, externalId)
+            .switchIfEmpty(Mono.error(new NotFoundException("外部身份对应的资源不存在")))
+            .flatMap(identity -> owned(ownerId, identity.resourceId()))
+            .flatMap(this::toView);
+    }
+
+    @Override
     public Mono<Void> trash(UUID ownerId, UUID resourceId) {
         return owned(ownerId, resourceId)
             .flatMap(resource -> {

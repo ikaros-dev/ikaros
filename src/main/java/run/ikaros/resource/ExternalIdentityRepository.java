@@ -19,4 +19,8 @@ public interface ExternalIdentityRepository extends ReactiveCrudRepository<Exter
     Flux<ExternalIdentityEntity> findAllByResourceIdOrderByProviderAsc(UUID resourceId);
 
     Mono<ExternalIdentityEntity> findByIdAndResourceId(UUID id, UUID resourceId);
+
+    Mono<ExternalIdentityEntity> findByProviderAndExternalTypeAndExternalId(String provider,
+                                                                               String externalType,
+                                                                               String externalId);
 }

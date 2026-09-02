@@ -98,6 +98,20 @@ public class ResourceController {
         return resourceService.list(actorId, type, query, page, size);
     }
 
+    @Operation(summary = "按外部身份查找资源", description = "使用 Provider、类型和外部 ID 查找当前用户拥有的 Resource。")
+    @GetMapping(":by-external-identity")
+    public Mono<ResourceView> findByExternalIdentity(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @RequestParam String provider,
+        @RequestParam(name = "object_type") String objectType,
+        @RequestParam(name = "external_id") String externalId,
+        @RequestParam(name = "namespace", required = false) String namespace
+    ) {
+        String canonicalProvider = namespace == null || namespace.isBlank()
+            ? provider : provider + ":" + namespace;
+        return resourceService.findByExternalIdentity(actorId, canonicalProvider, objectType, externalId);
+    }
+
     /**
      * 读取一个当前用户可访问的资源。
      *
