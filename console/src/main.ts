@@ -27,12 +27,15 @@ for (const path of ['/console/media', '/console/sharing', '/console/attachments'
 router.addRoute({ path: '/console/403', component: AccessDenied })
 router.addRoute({ path: '/console/account/security', component: AccountSecurity })
 router.addRoute({ path: '/console/account/notifications', component: AccountNotifications })
+router.addRoute({ path: '/console/drive/spaces/:spaceId', component: DriveWorkspace })
+router.addRoute({ path: '/console/drive/nodes/:nodeId', component: DriveWorkspace })
 router.beforeEach((to) => {
   if (!to.path.startsWith('/console/') || to.path === '/console/403') return true
   let capabilities: string[] = []
   try { capabilities = JSON.parse(localStorage.getItem('ikaros-console-capabilities') || '[]') as string[] } catch { capabilities = [] }
   if (!capabilities.length) return true
-  const required = getRouteMeta(to.path.replace(/^\/console\//, '')).requiredCapability
+  const routeKey = to.path.replace(/^\/console\//, '').replace(/^drive\/spaces\/[^/]+$/, 'drive/spaces').replace(/^drive\/nodes\/[^/]+$/, 'drive/nodes')
+  const required = getRouteMeta(routeKey).requiredCapability
   return capabilities.includes('*') || capabilities.includes(required) ? true : { path: '/console/403', query: { capability: required, from: to.fullPath } }
 })
 createApp(Root).use(router).mount('#app')
