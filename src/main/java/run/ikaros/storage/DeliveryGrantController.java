@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+import run.ikaros.common.IfMatchVersion;
 
 @RestController
 @RequestMapping({"/api/attachments/{attachmentId}/delivery-grants", "/api/v2/attachments/{attachmentId}/delivery-grants"})
@@ -24,5 +25,7 @@ public class DeliveryGrantController {
 
     @PostMapping("/{grantId}/actions/revoke")
     public Mono<Void> revoke(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
-        @PathVariable UUID grantId) { return service.revoke(actorId, grantId); }
+        @PathVariable UUID grantId, @RequestHeader(value = "If-Match", required = false) String ifMatch) {
+        return service.revoke(actorId, grantId, IfMatchVersion.parse(ifMatch));
+    }
 }

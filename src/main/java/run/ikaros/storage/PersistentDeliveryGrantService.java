@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.InvalidRangeException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 import run.ikaros.resource.ResourceRepository;
 
 @Service
@@ -44,7 +45,7 @@ public class PersistentDeliveryGrantService implements DeliveryGrantService {
                 hash(token), "GET", value.rangeStart(), value.rangeEnd(), now.plusSeconds(ttl),
                 DeliveryGrantRevocationLevel.IMMEDIATE, null, now, null);
             return grants.save(entity).map(saved -> new DeliveryGrantView(saved.id(), saved.attachmentId(), token,
-                saved.method(), saved.expiresAt(), saved.rangeStart(), saved.rangeEnd(), saved.revocationLevel()));
+                saved.method(), saved.expiresAt(), saved.rangeStart(), saved.rangeEnd(), saved.revocationLevel(), saved.version()));
         });
     }
 
@@ -63,12 +64,27 @@ public class PersistentDeliveryGrantService implements DeliveryGrantService {
 
     @Override
     public Mono<Void> revoke(UUID actorId, UUID grantId) {
+        return revokeInternal(actorId, grantId, null);
+    }
+
+    @Override
+    public Mono<Void> revoke(UUID actorId, UUID grantId, long expectedVersion) {
+        return revokeInternal(actorId, grantId, expectedVersion);
+    }
+
+    private Mono<Void> revokeInternal(UUID actorId, UUID grantId, Long expectedVersion) {
         return grants.findByIdAndOwnerId(grantId, actorId)
             .switchIfEmpty(Mono.error(new NotFoundException("Delivery Grant 不存在或无权访问")))
-            .flatMap(g -> g.revocationLevel() == DeliveryGrantRevocationLevel.IMMEDIATE
+            .flatMap(g -> {
+                long actualVersion = g.version() == null ? 0 : g.version();
+                if (expectedVersion != null && actualVersion != expectedVersion) {
+                    return Mono.error(new PreconditionFailedException("If-Match 与 Delivery Grant 当前版本不匹配"));
+                }
+                return g.revocationLevel() == DeliveryGrantRevocationLevel.IMMEDIATE
                 ? grants.save(new MediaDeliveryGrantEntity(g.id(), g.attachmentId(), g.ownerId(), g.tokenHash(), g.method(),
                     g.rangeStart(), g.rangeEnd(), g.expiresAt(), g.revocationLevel(), Instant.now(), g.createdAt(), g.version())).then()
-                : Mono.error(new ConflictException("当前 Provider 不支持 Grant 立即撤销")));
+                : Mono.error(new ConflictException("当前 Provider 不支持 Grant 立即撤销"));
+            });
     }
 
     private Mono<AttachmentEntity> ownedAttachment(UUID actorId, UUID id) {
