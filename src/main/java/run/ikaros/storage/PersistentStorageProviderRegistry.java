@@ -66,10 +66,10 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
     }
 
     @Override
-    public Mono<Void> requireWritableByKey(String providerKey) {
+    public Mono<StorageProvider> requireWritableByKey(String providerKey) {
         return repository.findByProviderKey(providerKey)
             .switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
-            .map(this::toModel).flatMap(this::checkWritable);
+            .map(this::toModel).flatMap(provider -> checkWritable(provider).thenReturn(provider));
     }
 
     private Mono<StorageProvider> change(UUID id, StorageProviderStatus status) {

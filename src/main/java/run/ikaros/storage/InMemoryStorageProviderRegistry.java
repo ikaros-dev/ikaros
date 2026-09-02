@@ -59,10 +59,11 @@ public class InMemoryStorageProviderRegistry implements StorageProviderRegistry 
     }
 
     @Override
-    public Mono<Void> requireWritableByKey(String providerKey) {
+    public Mono<StorageProvider> requireWritableByKey(String providerKey) {
         return providers.values().stream().filter(provider -> provider.providerKey().equals(providerKey)).findFirst()
-            .map(provider -> requireWritable(provider.id()))
-            .orElseGet(() -> Mono.error(new NotFoundException("Storage Provider 不存在")));
+            .map(provider -> provider.status() == StorageProviderStatus.ENABLED ? Mono.just(provider)
+                : Mono.<StorageProvider>error(new ConflictException("Storage Provider 当前不可写入")))
+            .orElseGet(() -> Mono.<StorageProvider>error(new NotFoundException("Storage Provider 不存在")));
     }
 
     private Mono<StorageProvider> change(UUID id, StorageProviderStatus status) {

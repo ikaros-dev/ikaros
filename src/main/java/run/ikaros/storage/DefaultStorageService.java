@@ -204,7 +204,9 @@ public class DefaultStorageService implements StorageService {
 
     private Mono<Void> ensurePlacement(BlobEntity blob, AttachBlobRequest request) {
         Mono<Void> writable = providerRegistry == null ? Mono.empty()
-            : providerRegistry.requireWritableByKey(request.provider());
+            : providerRegistry.requireWritableByKey(request.provider())
+                .flatMap(provider -> provider.tier() == request.tier() ? Mono.empty()
+                    : Mono.error(new ConflictException("Placement tier 与 Storage Provider 配置不一致")));
         return writable.then(placementRepository.findByProviderAndObjectKey(request.provider(), request.objectKey()))
             .flatMap(existing -> {
                 if (!existing.blobId().equals(blob.id())) {
