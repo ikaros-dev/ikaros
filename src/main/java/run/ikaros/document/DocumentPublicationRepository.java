@@ -1,0 +1,1 @@
+package run.ikaros.document; import java.util.UUID; import org.springframework.data.repository.reactive.ReactiveCrudRepository; import reactor.core.publisher.Mono; public interface DocumentPublicationRepository extends ReactiveCrudRepository<DocumentPublicationEntity,UUID>{Mono<DocumentPublicationEntity> findByDocumentId(UUID documentId);}

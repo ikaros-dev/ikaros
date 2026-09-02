@@ -1,0 +1,1 @@
+package run.ikaros.document; import java.util.UUID; import org.springframework.data.repository.reactive.ReactiveCrudRepository; import reactor.core.publisher.Flux; public interface DocumentRepository extends ReactiveCrudRepository<DocumentEntity,UUID>{Flux<DocumentEntity> findAllByOwnerIdOrderByUpdatedAtDesc(UUID ownerId);}
