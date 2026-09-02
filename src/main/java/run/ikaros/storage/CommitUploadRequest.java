@@ -3,11 +3,12 @@ package run.ikaros.storage;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /** Provider 上传完成后提交的内容身份与物理位置确认。 */
 public record CommitUploadRequest(
-    @NotBlank @Size(max = 128) String sha256,
+    @NotBlank @Pattern(regexp = "^[A-Fa-f0-9]{64}$") String sha256,
     @PositiveOrZero long sizeBytes,
     @NotBlank @Size(max = 256) String mediaType,
     @NotBlank @Size(max = 512) String fileName,
