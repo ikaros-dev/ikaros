@@ -16,14 +16,21 @@ import run.ikaros.common.NotFoundException;
 public class InMemoryPluginRuntime implements PluginRuntime {
     private final Map<String, PluginDescriptor> plugins = new ConcurrentHashMap<>();
     private final String serverVersion;
+    private final String pluginApiVersion;
     private final PluginExtensionRegistry extensionRegistry;
 
     public InMemoryPluginRuntime(@Value("${ikaros.server.version:2.0.0}") String serverVersion) {
-        this(serverVersion, null);
+        this(serverVersion, "1", null);
     }
 
     public InMemoryPluginRuntime(String serverVersion, PluginExtensionRegistry extensionRegistry) {
+        this(serverVersion, "1", extensionRegistry);
+    }
+
+    public InMemoryPluginRuntime(String serverVersion, String pluginApiVersion,
+                                 PluginExtensionRegistry extensionRegistry) {
         this.serverVersion = serverVersion;
+        this.pluginApiVersion = pluginApiVersion;
         this.extensionRegistry = extensionRegistry;
     }
 
@@ -109,7 +116,8 @@ public class InMemoryPluginRuntime implements PluginRuntime {
     }
 
     private boolean compatible(PluginManifest manifest) {
-        return serverVersion.compareTo(manifest.minimumServerVersion()) >= 0
+        return pluginApiVersion.equals(manifest.pluginApiVersion())
+            && serverVersion.compareTo(manifest.minimumServerVersion()) >= 0
             && (manifest.maximumServerVersion() == null
                 || serverVersion.compareTo(manifest.maximumServerVersion()) <= 0);
     }

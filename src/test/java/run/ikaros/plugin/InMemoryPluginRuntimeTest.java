@@ -26,4 +26,10 @@ class InMemoryPluginRuntimeTest {
         assertThrows(RuntimeException.class,
             () -> runtime.install(manifest, Set.of("resource.write")).block());
     }
+
+    @Test
+    void rejectsUnsupportedPluginApiVersion() {
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0", "2", null);
+        assertThrows(RuntimeException.class, () -> runtime.install(manifest, Set.of()).block());
+    }
 }

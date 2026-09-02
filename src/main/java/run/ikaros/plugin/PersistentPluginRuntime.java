@@ -8,6 +8,7 @@ import java.util.Set;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
@@ -19,18 +20,23 @@ public class PersistentPluginRuntime implements PluginRuntime {
     private final PluginRepository repository;
     private final ObjectMapper mapper;
     private final PluginExtensionRegistry extensionRegistry;
-    private final String serverVersion = "2.0.0";
+    private final String serverVersion;
+    private final String pluginApiVersion;
 
     public PersistentPluginRuntime(PluginRepository repository, ObjectMapper mapper) {
-        this(repository, mapper, null);
+        this(repository, mapper, null, "2.0.0", "1");
     }
 
     @Autowired
     public PersistentPluginRuntime(PluginRepository repository, ObjectMapper mapper,
-                                   PluginExtensionRegistry extensionRegistry) {
+                                   PluginExtensionRegistry extensionRegistry,
+                                   @Value("${ikaros.server.version:2.0.0}") String serverVersion,
+                                   @Value("${ikaros.plugin.api-version:1}") String pluginApiVersion) {
         this.repository = repository;
         this.mapper = mapper;
         this.extensionRegistry = extensionRegistry;
+        this.serverVersion = serverVersion;
+        this.pluginApiVersion = pluginApiVersion;
     }
 
     @Override
@@ -135,7 +141,8 @@ public class PersistentPluginRuntime implements PluginRuntime {
     private record Encoded(String manifest, String permissions) { }
 
     private boolean compatible(PluginManifest manifest) {
-        return serverVersion.compareTo(manifest.minimumServerVersion()) >= 0
+        return pluginApiVersion.equals(manifest.pluginApiVersion())
+            && serverVersion.compareTo(manifest.minimumServerVersion()) >= 0
             && (manifest.maximumServerVersion() == null
                 || serverVersion.compareTo(manifest.maximumServerVersion()) <= 0);
     }
