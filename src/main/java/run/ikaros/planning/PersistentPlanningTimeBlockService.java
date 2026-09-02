@@ -12,9 +12,12 @@ import run.ikaros.common.NotFoundException;
 public class PersistentPlanningTimeBlockService implements PlanningTimeBlockService {
     private final PlanningTimeBlockRepository blocks;
     private final PlanningTaskRepository tasks;
+    private final PlanningProjectRepository projects;
+    private final PlanningProjectMemberRepository members;
 
-    public PersistentPlanningTimeBlockService(PlanningTimeBlockRepository blocks, PlanningTaskRepository tasks) {
-        this.blocks = blocks; this.tasks = tasks;
+    public PersistentPlanningTimeBlockService(PlanningTimeBlockRepository blocks, PlanningTaskRepository tasks,
+        PlanningProjectRepository projects, PlanningProjectMemberRepository members) {
+        this.blocks = blocks; this.tasks = tasks; this.projects = projects; this.members = members;
     }
 
     @Override public Mono<PlanningTimeBlockView> create(UUID ownerId, CreatePlanningTimeBlockRequest request) {
@@ -53,8 +56,14 @@ public class PersistentPlanningTimeBlockService implements PlanningTimeBlockServ
     }
 
     private Mono<PlanningTaskEntity> task(UUID ownerId, UUID taskId) {
-        return taskId == null ? Mono.empty() : tasks.findById(taskId).filter(t -> t.ownerId().equals(ownerId))
-            .switchIfEmpty(Mono.error(new NotFoundException("Task 不存在")));
+        if (taskId == null) return Mono.empty();
+        return tasks.findById(taskId).switchIfEmpty(Mono.error(new NotFoundException("Task 不存在"))).flatMap(task -> {
+            if (task.ownerId().equals(ownerId)) return Mono.just(task);
+            if (task.projectId() == null) return Mono.error(new NotFoundException("Task 不存在或无权访问"));
+            return projects.findById(task.projectId()).flatMap(project -> project.ownerId().equals(ownerId)
+                ? Mono.just(task) : members.findByProjectIdAndUserId(task.projectId(), ownerId).map(member -> task))
+                .switchIfEmpty(Mono.error(new NotFoundException("Task 不存在或无权访问")));
+        });
     }
     private Mono<PlanningTimeBlockEntity> owned(UUID ownerId, UUID blockId) { return blocks.findById(blockId)
         .filter(block -> block.ownerId().equals(ownerId)).switchIfEmpty(Mono.error(new NotFoundException("Time Block 不存在"))); }
