@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 
 @Service
 public class PersistentPlanningTimeBlockService implements PlanningTimeBlockService {
@@ -42,7 +43,7 @@ public class PersistentPlanningTimeBlockService implements PlanningTimeBlockServ
         validateRange(request.startAt(), request.endAt());
         return owned(ownerId, blockId).flatMap(old -> {
             if (old.status() == PlanningTimeBlockStatus.CANCELLED) return Mono.error(new ConflictException("已取消的 Time Block 不能修改"));
-            if ((old.version() == null ? 0 : old.version()) != request.expectedVersion()) return Mono.error(new ConflictException("Time Block 版本冲突"));
+            if ((old.version() == null ? 0 : old.version()) != request.expectedVersion()) return Mono.error(new PreconditionFailedException("If-Match 与 Time Block 当前版本不匹配"));
             return overlap(ownerId, request.startAt(), request.endAt(), blockId).flatMap(conflict -> Mono.<PlanningTimeBlockEntity>error(new ConflictException("Time Block 与已有安排重叠")))
                 .switchIfEmpty(Mono.defer(() -> blocks.save(new PlanningTimeBlockEntity(old.id(), old.ownerId(), old.title(), old.taskId(),
                     request.startAt(), request.endAt(), request.kind() == null ? old.kind() : request.kind(), old.status(),
