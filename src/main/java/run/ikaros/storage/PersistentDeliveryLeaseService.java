@@ -22,17 +22,20 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
     private final BlobPlacementRepository placements;
     private final StorageProviderRegistry providerRegistry;
     private final MediaDeliveryBindingRepository bindings;
+    private final DeliveryProviderRepository deliveryProviders;
     private final DurableEventService events;
 
     public PersistentDeliveryLeaseService(AttachmentRepository attachments, ResourceRepository resources,
                                           MediaDeliveryGrantRepository grants, MediaDeliveryLeaseRepository leases,
                                           BlobPlacementRepository placements, StorageProviderRegistry providerRegistry,
-                                          MediaDeliveryBindingRepository bindings, DurableEventService events) {
+                                          MediaDeliveryBindingRepository bindings, DeliveryProviderRepository deliveryProviders,
+                                          DurableEventService events) {
         this.attachments = attachments;
         this.resources = resources;
         this.grants = grants;
         this.leases = leases;
-        this.placements = placements; this.providerRegistry = providerRegistry; this.bindings = bindings; this.events = events;
+        this.placements = placements; this.providerRegistry = providerRegistry; this.bindings = bindings;
+        this.deliveryProviders = deliveryProviders; this.events = events;
     }
 
     @Override
@@ -149,8 +152,11 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
                     .filter(binding -> binding.enabled()
                         && (indexed.getT1() == 0 || binding.fallbackParticipation()))
                     .next()
-                    .map(binding -> new Selection(binding.id(), indexed.getT1() == 0 ? "PRIMARY" : "FAILOVER",
-                        indexed.getT1().intValue(), provider.updatedAt().toString()))))
+                    .flatMap(binding -> deliveryProviders.findByProviderKey(binding.deliveryProviderKey())
+                        .filter(deliveryProvider -> deliveryProvider.enabled()
+                            && deliveryProvider.healthStatus() != DeliveryProviderHealthStatus.UNHEALTHY)
+                        .map(deliveryProvider -> new Selection(binding.id(), indexed.getT1() == 0 ? "PRIMARY" : "FAILOVER",
+                            indexed.getT1().intValue(), provider.updatedAt().toString())))))
             .next()
             .switchIfEmpty(Mono.error(new StorageUnavailableException("附件没有可用 Delivery Binding")));
     }
