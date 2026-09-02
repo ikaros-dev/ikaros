@@ -1,0 +1,1 @@
+package run.ikaros.game; import java.util.UUID; import org.springframework.data.repository.reactive.ReactiveCrudRepository; import reactor.core.publisher.Flux; public interface GameVersionRepository extends ReactiveCrudRepository<GameVersionEntity,UUID>{Flux<GameVersionEntity> findAllByOwnerIdAndGameId(UUID ownerId,UUID gameId);}
