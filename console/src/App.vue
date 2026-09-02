@@ -132,7 +132,7 @@ async function loadResources() {
   } catch (error) {
     apiConnected.value = false
     if (error instanceof ApiError && error.status === 401) { router.push({ path: '/login', query: { returnTo: route.fullPath } }); return }
-    if (error instanceof ApiError && [401, 403, 404, 409, 412].includes(error.status)) {
+    if (error instanceof ApiError && [401, 403, 409, 412].includes(error.status) || error instanceof ApiError && error.status === 404 && !import.meta.env.DEV) {
       errorState.value = { status: error.status, title: error.status === 401 ? '会话已失效' : error.status === 403 ? '你没有权限访问此页面' : error.status === 404 ? '页面或资源不存在' : '数据发生并发冲突', detail: error.problem?.detail || error.message }
     } else { rows.value = fallbackRows.map(row => ({ ...row })); notify('后端暂不可用，已保留当前页面演示数据') }
   } finally { loading.value = false }
