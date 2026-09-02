@@ -401,13 +401,13 @@ Payload 与 attached 相同 identity key。
 ### `storage.delivery-provider.created@1`
 
 ```json
-{ "provider_id": "uuid", "provider_type": "DIRECT|CDN|SERVER_PROXY" }
+{ "delivery_provider_id": "uuid", "provider_type": "DIRECT|CDN|SERVER_PROXY" }
 ```
 
 ### `storage.delivery-provider.updated@1`
 
 ```json
-{ "provider_id": "uuid" }
+{ "delivery_provider_id": "uuid", "changed_fields": ["config", "enabled"], "version": 2 }
 ```
 
 ### `storage.delivery-provider.probe-requested@1`
@@ -420,6 +420,24 @@ Payload 与 attached 相同 identity key。
 
 ```json
 { "provider_id": "uuid", "task_id": "uuid" }
+```
+
+### `storage.delivery-lease.created@1`
+
+```json
+{ "lease_id": "uuid", "attachment_id": "uuid", "purpose": "DELIVERY", "expires_at": "timestamp" }
+```
+
+### `storage.delivery-lease.released@1`
+
+```json
+{ "lease_id": "uuid", "attachment_id": "uuid" }
+```
+
+### `storage.delivery-lease.expired@1`
+
+```json
+{ "lease_id": "uuid", "attachment_id": "uuid" }
 ```
 
 ### `storage.restore.reconcile-requested@1`
