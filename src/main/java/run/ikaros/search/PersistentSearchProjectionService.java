@@ -18,18 +18,21 @@ import reactor.core.publisher.Mono;
 public class PersistentSearchProjectionService implements SearchProjectionService {
     private final SearchDocumentRepository repository;
     private final SearchProjectionFailureRepository failureRepository;
+    private final SearchRebuildGenerationRepository generationRepository;
     private final ObjectMapper mapper;
     private final AtomicLong generation = new AtomicLong();
 
     public PersistentSearchProjectionService(SearchDocumentRepository repository, ObjectMapper mapper) {
-        this(repository, null, mapper);
+        this(repository, null, null, mapper);
     }
 
     @Autowired
     public PersistentSearchProjectionService(SearchDocumentRepository repository,
                                              SearchProjectionFailureRepository failureRepository,
+                                             SearchRebuildGenerationRepository generationRepository,
                                              ObjectMapper mapper) {
-        this.repository = repository; this.failureRepository = failureRepository; this.mapper = mapper;
+        this.repository = repository; this.failureRepository = failureRepository;
+        this.generationRepository = generationRepository; this.mapper = mapper;
     }
 
     @Override
@@ -44,7 +47,16 @@ public class PersistentSearchProjectionService implements SearchProjectionServic
     }
 
     @Override
-    public Mono<Long> startRebuild() { return Mono.fromSupplier(generation::incrementAndGet); }
+    public Mono<Long> startRebuild() {
+        if (generationRepository == null) {
+            return Mono.fromSupplier(generation::incrementAndGet);
+        }
+        return generationRepository.findById("global")
+            .defaultIfEmpty(new SearchRebuildGenerationEntity("global", 0, Instant.now()))
+            .flatMap(current -> generationRepository.save(new SearchRebuildGenerationEntity(
+                "global", current.generation() + 1, Instant.now())))
+            .map(SearchRebuildGenerationEntity::generation);
+    }
 
     @Override
     public Mono<SearchDocument> get(UUID sourceId) {
