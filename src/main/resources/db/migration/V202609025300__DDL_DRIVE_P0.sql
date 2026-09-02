@@ -347,6 +347,15 @@ CREATE TABLE planning_comment (
 );
 CREATE INDEX idx_planning_comment_target_created ON planning_comment (target_type, target_id, created_at);
 
+CREATE TABLE planning_important_date (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, title VARCHAR(512) NOT NULL, description TEXT,
+    occurs_at TIMESTAMPTZ NOT NULL, time_zone VARCHAR(64) NOT NULL DEFAULT 'UTC', kind VARCHAR(64),
+    status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE', created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, version BIGINT NOT NULL DEFAULT 0,
+    CHECK (status IN ('ACTIVE','ARCHIVED')), CHECK (version >= 0)
+);
+CREATE INDEX idx_planning_important_date_owner_occurs ON planning_important_date (owner_id, occurs_at);
+
 CREATE TABLE offline_download_manifest (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), intent_id UUID NOT NULL, manifest_version BIGINT NOT NULL,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (intent_id, manifest_version),

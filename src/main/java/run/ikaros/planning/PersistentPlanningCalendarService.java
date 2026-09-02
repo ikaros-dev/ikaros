@@ -10,9 +10,10 @@ public class PersistentPlanningCalendarService implements PlanningCalendarServic
     private final PlanningTaskRepository tasks;
     private final PlanningTimeBlockRepository blocks;
     private final PlanningReminderRepository reminders;
+    private final PlanningImportantDateRepository importantDates;
 
     public PersistentPlanningCalendarService(PlanningTaskRepository tasks, PlanningTimeBlockRepository blocks,
-        PlanningReminderRepository reminders) { this.tasks = tasks; this.blocks = blocks; this.reminders = reminders; }
+        PlanningReminderRepository reminders, PlanningImportantDateRepository importantDates) { this.tasks = tasks; this.blocks = blocks; this.reminders = reminders; this.importantDates = importantDates; }
 
     @Override public Flux<PlanningCalendarItemView> list(UUID ownerId, Instant from, Instant to) {
         if (from == null || to == null || !to.isAfter(from)) return Flux.error(new IllegalArgumentException("Calendar 时间范围无效"));
@@ -34,6 +35,9 @@ public class PersistentPlanningCalendarService implements PlanningCalendarServic
                 && !reminder.triggerAt().isBefore(from) && reminder.triggerAt().isBefore(to))
             .map(reminder -> new PlanningCalendarItemView(PlanningCalendarItemType.REMINDER, reminder.id(), reminder.targetId(),
                 "Reminder", reminder.triggerAt(), reminder.triggerAt(), reminder.timeZone()));
-        return Flux.merge(scheduled, deadlines, timeBlocks, reminderItems).sort(java.util.Comparator.comparing(PlanningCalendarItemView::startAt));
+        Flux<PlanningCalendarItemView> dateItems = importantDates.findAllByOwnerIdOrderByOccursAtAsc(ownerId)
+            .filter(date -> date.status() == PlanningImportantDateStatus.ACTIVE && !date.occursAt().isBefore(from) && date.occursAt().isBefore(to))
+            .map(date -> new PlanningCalendarItemView(PlanningCalendarItemType.IMPORTANT_DATE, date.id(), date.id(), date.title(), date.occursAt(), date.occursAt(), date.timeZone()));
+        return Flux.merge(scheduled, deadlines, timeBlocks, reminderItems, dateItems).sort(java.util.Comparator.comparing(PlanningCalendarItemView::startAt));
     }
 }
