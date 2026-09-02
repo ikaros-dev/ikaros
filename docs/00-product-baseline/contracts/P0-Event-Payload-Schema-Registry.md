@@ -415,6 +415,45 @@ Payload 与 attached 相同 identity key。
 }
 ```
 
+### `attachment.purged@1`
+
+```json
+{
+  "attachment_id": "uuid",
+  "resource_id": "uuid",
+  "blob_id": "uuid",
+  "purged_at": "date-time"
+}
+```
+
+### `ingestion.import.started@1`
+
+```json
+{
+  "run_id": "uuid",
+  "plan_id": "uuid"
+}
+```
+
+### `ingestion.plan.generated@1`
+
+```json
+{
+  "plan_id": "uuid",
+  "scan_run_id": "uuid"
+}
+```
+
+### `source.item.unavailable@1`
+
+```json
+{
+  "item_id": "uuid",
+  "source_id": "uuid",
+  "reason": "string"
+}
+```
+
 ## 6. Compatibility Rules
 
 P0 payload compatibility baseline：
