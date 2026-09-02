@@ -30,6 +30,8 @@ public class DefaultDriveService implements DriveService {
         String fingerprint, long remoteVersion, SyncMappingState state, Instant updated) {}
     private record CameraBackup(UUID id, UUID binding, String sourceItem, CameraBackupState state, UUID remoteNode,
         UUID remoteRevision, String fingerprint, String error, Instant updated) {}
+    private record Change(UUID id, UUID space, long sequence, UUID node, DriveMutationKind kind, long nodeVersion,
+        UUID revision, Instant occurred) {}
     private final UuidV7Generator ids = new UuidV7Generator();
     private final ConcurrentMap<UUID, Space> spaces = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Node> nodes = new ConcurrentHashMap<>();
@@ -39,6 +41,8 @@ public class DefaultDriveService implements DriveService {
     private final ConcurrentMap<UUID, Conflict> conflicts = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, Mapping> mappings = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, CameraBackup> cameraBackups = new ConcurrentHashMap<>();
+    private final ConcurrentMap<UUID, Change> changeLog = new ConcurrentHashMap<>();
+    private final ConcurrentMap<UUID, DriveTombstoneView> tombstoneLog = new ConcurrentHashMap<>();
 
     @Override public Mono<DriveSpaceView> createSpace(UUID actorId, CreateDriveSpaceRequest request) {
         return Mono.fromSupplier(() -> {
@@ -69,7 +73,9 @@ public class DefaultDriveService implements DriveService {
                 if (duplicate) return Mono.error(new ConflictException("同目录下名称已存在"));
                 Instant now = Instant.now(); UUID id = ids.next();
                 Node node = new Node(id, spaceId, parent, request.nodeType(), request.name().trim(), normalized,
-                    DriveLifecycle.ACTIVE, null, 0, now, now); nodes.put(id, node); advance(space); return Mono.just(view(node));
+                    DriveLifecycle.ACTIVE, null, 0, now, now); nodes.put(id, node); advance(space);
+                recordChange(spaceId, id, DriveMutationKind.NODE_CREATED, node.version(), null);
+                return Mono.just(view(node));
             });
         });
     }
@@ -82,7 +88,8 @@ public class DefaultDriveService implements DriveService {
             if (duplicate) return Mono.error(new ConflictException("同目录下名称已存在"));
             Node changed = new Node(node.id(), node.space(), node.parent(), node.type(), request.name().trim(), normalized,
                 node.lifecycle(), node.revision(), node.version() + 1, node.created(), Instant.now()); nodes.put(nodeId, changed);
-            advance(spaces.get(node.space())); return Mono.just(view(changed));
+            advance(spaces.get(node.space())); recordChange(node.space(), node.id(), DriveMutationKind.NODE_RENAMED, changed.version(), null);
+            return Mono.just(view(changed));
         });
     }
     @Override public Mono<DriveNodeView> move(UUID actorId, UUID nodeId, MoveDriveNodeRequest request) {
@@ -98,7 +105,8 @@ public class DefaultDriveService implements DriveService {
             if (duplicate) return Mono.error(new ConflictException("目标目录下名称已存在"));
             Node changed = new Node(node.id(), node.space(), parent.id(), node.type(), node.name(), node.normalized(),
                 node.lifecycle(), node.revision(), node.version() + 1, node.created(), Instant.now());
-            nodes.put(node.id(), changed); advance(spaces.get(node.space())); return Mono.just(view(changed));
+            nodes.put(node.id(), changed); advance(spaces.get(node.space())); recordChange(node.space(), node.id(), DriveMutationKind.NODE_MOVED, changed.version(), null);
+            return Mono.just(view(changed));
         }));
     }
     private boolean isDescendant(UUID candidate, UUID ancestor) {
@@ -111,9 +119,9 @@ public class DefaultDriveService implements DriveService {
     }
     @Override public Mono<DriveNodeView> trash(UUID actorId, UUID nodeId, long expectedVersion) { return changeLifecycle(actorId,nodeId,expectedVersion,DriveLifecycle.TRASHED); }
     @Override public Mono<DriveNodeView> restore(UUID actorId, UUID nodeId, long expectedVersion) { return changeLifecycle(actorId,nodeId,expectedVersion,DriveLifecycle.ACTIVE); }
-    @Override public Mono<DriveRevisionView> createRevision(UUID actorId, UUID nodeId, CreateDriveRevisionRequest request) { return ownedNode(actorId,nodeId).flatMap(n->{ if(n.type()!=DriveNodeType.FILE)return Mono.error(new ConflictException("只有文件节点可以创建版本")); checkVersion(n,request.expectedNodeVersion()); UUID rid=ids.next(); Node changed=new Node(n.id(),n.space(),n.parent(),n.type(),n.name(),n.normalized(),n.lifecycle(),rid,n.version()+1,n.created(),Instant.now()); nodes.put(nodeId,changed); advance(spaces.get(n.space())); return Mono.just(new DriveRevisionView(rid,nodeId,n.version()+1,request.attachmentId(),request.contentFingerprint(),Instant.now(),Instant.now(),actorId)); }); }
+    @Override public Mono<DriveRevisionView> createRevision(UUID actorId, UUID nodeId, CreateDriveRevisionRequest request) { return ownedNode(actorId,nodeId).flatMap(n->{ if(n.type()!=DriveNodeType.FILE)return Mono.error(new ConflictException("只有文件节点可以创建版本")); checkVersion(n,request.expectedNodeVersion()); UUID rid=ids.next(); Node changed=new Node(n.id(),n.space(),n.parent(),n.type(),n.name(),n.normalized(),n.lifecycle(),rid,n.version()+1,n.created(),Instant.now()); nodes.put(nodeId,changed); advance(spaces.get(n.space())); recordChange(n.space(), n.id(), DriveMutationKind.CONTENT_REVISION_CREATED, changed.version(), rid); return Mono.just(new DriveRevisionView(rid,nodeId,n.version()+1,request.attachmentId(),request.contentFingerprint(),Instant.now(),Instant.now(),actorId)); }); }
     @Override public Flux<DriveRevisionView> revisions(UUID actorId, UUID nodeId) { return ownedNode(actorId,nodeId).flatMapMany(n -> n.revision()==null ? Flux.empty() : Flux.just(new DriveRevisionView(n.revision(),nodeId,1,UUID.randomUUID(),null,null,n.updated(),actorId))); }
-    @Override public Flux<DriveChangeView> changes(UUID actorId, UUID spaceId, long afterSequence) { return ownedSpace(actorId,spaceId).flatMapMany(s -> Flux.empty()); }
+    @Override public Flux<DriveChangeView> changes(UUID actorId, UUID spaceId, long afterSequence) { return ownedSpace(actorId,spaceId).flatMapMany(s -> Flux.fromIterable(changeLog.values()).filter(c -> c.space().equals(spaceId) && c.sequence() > afterSequence).sort(java.util.Comparator.comparing(Change::sequence)).map(this::changeView)); }
     @Override public Mono<DriveQuotaView> quota(UUID actorId, UUID spaceId) { return ownedSpace(actorId,spaceId).map(s -> new DriveQuotaView(spaceId,Long.MAX_VALUE,0,0,Long.MAX_VALUE)); }
     @Override public Mono<DriveQuotaReservationView> beginUpload(UUID actorId, UUID spaceId, BeginDriveUploadRequest request) {
         return ownedSpace(actorId, spaceId).flatMap(s -> Mono.defer(() -> {
@@ -240,7 +248,7 @@ public class DefaultDriveService implements DriveService {
             .filter(mapping -> mapping.binding().equals(binding.id())).sort(java.util.Comparator.comparing(Mapping::updated))
             .map(this::mappingView));
     }
-    @Override public Flux<DriveTombstoneView> tombstones(UUID actorId, UUID spaceId, long afterSequence) { return ownedSpace(actorId,spaceId).flatMapMany(s->Flux.empty()); }
+    @Override public Flux<DriveTombstoneView> tombstones(UUID actorId, UUID spaceId, long afterSequence) { return ownedSpace(actorId,spaceId).flatMapMany(s -> Flux.fromIterable(tombstoneLog.values()).filter(t -> t.spaceId().equals(spaceId) && t.sequence() > afterSequence).sort(java.util.Comparator.comparing(DriveTombstoneView::sequence))); }
     @Override public Flux<SyncMutationResult> applyMutations(UUID actorId, UUID bindingId, java.util.List<SyncMutationRequest> requests) { return Flux.fromIterable(requests).concatMap(request -> { Mono<DriveNodeView> action = switch (request.kind()) { case RENAME -> rename(actorId,request.nodeId(),new RenameDriveNodeRequest(request.name(),request.expectedVersion())); case MOVE -> move(actorId,request.nodeId(),new MoveDriveNodeRequest(request.parentId(),request.expectedVersion())); case TRASH -> trash(actorId,request.nodeId(),request.expectedVersion()); case RESTORE -> restore(actorId,request.nodeId(),request.expectedVersion()); }; return action.map(node->new SyncMutationResult(request.operationId(),true,node,null,null)).onErrorResume(error->Mono.just(new SyncMutationResult(request.operationId(),false,null,error.getClass().getSimpleName(),error.getMessage()))); }); }
     @Override public Mono<SyncBindingView> advanceCursor(UUID actorId, UUID bindingId, long cursor) {
         if (cursor < 0) return Mono.error(new IllegalArgumentException("Sync Cursor 不能为负数"));
@@ -289,16 +297,27 @@ public class DefaultDriveService implements DriveService {
     }
     private Mono<DriveNodeView> changeLifecycle(UUID actor, UUID id, long expected, DriveLifecycle target) {
         return ownedNode(actor,id).flatMap(node -> { checkVersion(node, expected); if (node.lifecycle()==DriveLifecycle.PURGED) return Mono.error(new ConflictException("已永久删除的节点不能恢复"));
-            Node changed = new Node(node.id(),node.space(),node.parent(),node.type(),node.name(),node.normalized(),target,node.revision(),node.version()+1,node.created(),Instant.now()); nodes.put(id,changed); advance(spaces.get(node.space())); return Mono.just(view(changed)); });
+            Instant now = Instant.now(); Node changed = new Node(node.id(),node.space(),node.parent(),node.type(),node.name(),node.normalized(),target,node.revision(),node.version()+1,node.created(),now); nodes.put(id,changed); advance(spaces.get(node.space()));
+            DriveMutationKind kind = target == DriveLifecycle.TRASHED ? DriveMutationKind.NODE_TRASHED : DriveMutationKind.NODE_RESTORED;
+            recordChange(node.space(), node.id(), kind, changed.version(), null);
+            if (target == DriveLifecycle.TRASHED) tombstoneLog.put(node.id(), new DriveTombstoneView(ids.next(), node.space(), node.id(), spaces.get(node.space()).generation(),
+                changed.version(), TombstoneLifecycle.TRASHED, node.parent(), node.name(), now, now.plusSeconds(30L * 24 * 3600)));
+            return Mono.just(view(changed)); });
     }
     private Mono<Space> ownedSpace(UUID actor, UUID id) { return Mono.justOrEmpty(spaces.get(id)).filter(s -> s.owner().equals(actor)).switchIfEmpty(Mono.error(new NotFoundException("Drive Space 不存在"))); }
     private Mono<Node> ownedNode(UUID actor, UUID id) { return Mono.justOrEmpty(nodes.get(id)).flatMap(n -> ownedSpace(actor,n.space()).thenReturn(n)).switchIfEmpty(Mono.error(new NotFoundException("Drive Node 不存在"))); }
     private Mono<Node> requiredNode(UUID id) { return Mono.justOrEmpty(nodes.get(id)).switchIfEmpty(Mono.error(new NotFoundException("父节点不存在"))); }
     private void checkVersion(Node n,long expected) { if (expected != n.version()) throw new ConflictException("Drive Node 版本冲突"); }
     private void advance(Space s) { if (s != null) spaces.replace(s.id(), new Space(s.id(),s.owner(),s.name(),s.root(),s.generation()+1, s.created(),Instant.now(),s.version()+1)); }
+    private void recordChange(UUID spaceId, UUID nodeId, DriveMutationKind kind, long nodeVersion, UUID revisionId) {
+        Space space = spaces.get(spaceId); if (space == null) return;
+        Change change = new Change(ids.next(), spaceId, space.generation(), nodeId, kind, nodeVersion, revisionId, Instant.now());
+        changeLog.put(change.id(), change);
+    }
     private String normalize(String name) { return Normalizer.normalize(name.trim(), Normalizer.Form.NFKC).toLowerCase(java.util.Locale.ROOT); }
     private DriveSpaceView view(Space s) { return new DriveSpaceView(s.id(),s.owner(),s.name(),s.root(),s.generation(),s.created(),s.updated(),s.version()); }
     private DriveNodeView view(Node n) { return new DriveNodeView(n.id(),n.space(),n.parent(),n.type(),n.name(),n.normalized(),n.lifecycle(),n.revision(),n.version(),n.created(),n.updated()); }
+    private DriveChangeView changeView(Change c) { return new DriveChangeView(c.id(), c.space(), c.sequence(), c.node(), c.kind(), c.nodeVersion(), c.revision(), c.occurred()); }
     private DeviceView deviceView(Device d) { return new DeviceView(d.id(), d.user(), d.installation(), d.displayName(), d.platform(),
         d.appVersion(), d.trust(), d.registered(), d.lastSeen(), d.revoked()); }
     private Mono<DriveQuotaReservationView> settleReservation(UUID actor, UUID spaceId, UUID id,
