@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+import org.springframework.http.ResponseEntity;
+import run.ikaros.common.IfMatchVersion;
 
 @RestController
 @RequestMapping("/api/v2/attachments/{attachmentId}/delivery-leases")
@@ -23,12 +25,16 @@ public class DeliveryLeaseController {
     }
 
     @PostMapping("/{leaseId}/actions/renew")
-    public Mono<DeliveryLeaseView> renew(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
-        @PathVariable UUID leaseId, @RequestBody(required = false) DeliveryLeaseRequest request) {
-        return service.renew(actorId, leaseId, request == null ? null : request.ttlSeconds());
+    public Mono<ResponseEntity<DeliveryLeaseView>> renew(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID leaseId, @RequestHeader(value = "If-Match", required = false) String ifMatch,
+        @RequestBody(required = false) DeliveryLeaseRequest request) {
+        return service.renew(actorId, leaseId, request == null ? null : request.ttlSeconds(), IfMatchVersion.parse(ifMatch))
+            .map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view));
     }
 
     @PostMapping("/{leaseId}/actions/release")
     public Mono<Void> release(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
-        @PathVariable UUID leaseId) { return service.release(actorId, leaseId); }
+        @PathVariable UUID leaseId, @RequestHeader(value = "If-Match", required = false) String ifMatch) {
+        return service.release(actorId, leaseId, IfMatchVersion.parse(ifMatch));
+    }
 }

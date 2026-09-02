@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 import run.ikaros.resource.ResourceRepository;
 
 @Service
@@ -43,17 +44,42 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
 
     @Override
     public Mono<DeliveryLeaseView> renew(UUID actorId, UUID leaseId, Integer requestedTtl) {
+        return renewInternal(actorId, leaseId, requestedTtl, null);
+    }
+
+    @Override
+    public Mono<DeliveryLeaseView> renew(UUID actorId, UUID leaseId, Integer requestedTtl, long expectedVersion) {
+        return renewInternal(actorId, leaseId, requestedTtl, expectedVersion);
+    }
+
+    private Mono<DeliveryLeaseView> renewInternal(UUID actorId, UUID leaseId, Integer requestedTtl,
+                                                  Long expectedVersion) {
         int ttl = ttl(requestedTtl);
         Instant now = Instant.now();
-        return ownedActive(actorId, leaseId).flatMap(old -> leases.save(new MediaDeliveryLeaseEntity(old.id(), old.attachmentId(),
-            old.blobId(), old.ownerId(), old.grantId(), now.plusSeconds(ttl), null, now, old.createdAt(), old.version())))
+        return ownedActive(actorId, leaseId).flatMap(old -> {
+            checkVersion(old.version(), expectedVersion);
+            return leases.save(new MediaDeliveryLeaseEntity(old.id(), old.attachmentId(), old.blobId(), old.ownerId(),
+                old.grantId(), now.plusSeconds(ttl), null, now, old.createdAt(), old.version()));
+        })
             .map(this::view);
     }
 
     @Override
     public Mono<Void> release(UUID actorId, UUID leaseId) {
-        return ownedActive(actorId, leaseId).flatMap(old -> leases.save(new MediaDeliveryLeaseEntity(old.id(), old.attachmentId(),
-            old.blobId(), old.ownerId(), old.grantId(), old.leaseExpiresAt(), Instant.now(), old.lastHeartbeatAt(), old.createdAt(), old.version())).then());
+        return releaseInternal(actorId, leaseId, null);
+    }
+
+    @Override
+    public Mono<Void> release(UUID actorId, UUID leaseId, long expectedVersion) {
+        return releaseInternal(actorId, leaseId, expectedVersion);
+    }
+
+    private Mono<Void> releaseInternal(UUID actorId, UUID leaseId, Long expectedVersion) {
+        return ownedActive(actorId, leaseId).flatMap(old -> {
+            checkVersion(old.version(), expectedVersion);
+            return leases.save(new MediaDeliveryLeaseEntity(old.id(), old.attachmentId(), old.blobId(), old.ownerId(),
+                old.grantId(), old.leaseExpiresAt(), Instant.now(), old.lastHeartbeatAt(), old.createdAt(), old.version())).then();
+        });
     }
 
     @Override
@@ -82,7 +108,13 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
 
     private DeliveryLeaseView view(MediaDeliveryLeaseEntity l) {
         return new DeliveryLeaseView(l.id(), l.attachmentId(), l.blobId(), l.leaseExpiresAt(), l.lastHeartbeatAt(),
-            l.releasedAt() == null && l.leaseExpiresAt().isAfter(Instant.now()));
+            l.releasedAt() == null && l.leaseExpiresAt().isAfter(Instant.now()), l.version());
+    }
+
+    private void checkVersion(Long actual, Long expected) {
+        if (expected != null && (actual == null ? 0 : actual) != expected) {
+            throw new PreconditionFailedException("If-Match 与 Delivery Lease 当前版本不匹配");
+        }
     }
 
     private String hash(String value) {
