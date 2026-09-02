@@ -19,7 +19,7 @@ public class DeliveryGrantController {
 
     @PostMapping
     public Mono<DeliveryGrantView> issue(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
-        @PathVariable UUID attachmentId, @Valid @RequestBody(required = false) DeliveryGrantRequest request) {
+        @PathVariable UUID attachmentId, @Valid @RequestBody DeliveryGrantRequest request) {
         return service.issue(actorId, attachmentId, request);
     }
 
