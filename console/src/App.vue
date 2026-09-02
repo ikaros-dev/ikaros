@@ -35,7 +35,7 @@ const currentMeta = computed(() => getRouteMeta(currentPath.value))
 const pageTitle = computed(() => current.value.label)
 function go(path: string) { router.push(path === 'login' ? '/login' : '/console/' + path); drawer.value = false }
 function toggle(label: string) { expanded.value = expanded.value.includes(label) ? expanded.value.filter(v => v !== label) : [...expanded.value, label] }
-function notify(message: string) { toast.value = message; setTimeout(() => toast.value = '', 2800) }
+function notify(message: string) { if (message === '已全部标为已读') notifications.value = notifications.value.map(item => ({ ...item, unread: false })); toast.value = message; setTimeout(() => toast.value = '', 2800) }
 function openDialog(kind: string) { dialog.value = kind }
 const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
 function applyTheme(value: Theme) { const dark = value === 'dark' || (value === 'system' && systemThemeQuery.matches); document.documentElement.dataset.theme = value; document.documentElement.classList.toggle('dark', dark); localStorage.setItem(preferenceKey, JSON.stringify({ expanded: expanded.value, theme: value })) }
