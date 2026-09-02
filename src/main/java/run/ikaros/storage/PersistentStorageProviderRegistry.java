@@ -96,6 +96,7 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
                 current.createdAt(), Instant.now()))
             .flatMap(repository::save).map(this::toModel)
             .flatMap(provider -> {
+                if (status == StorageProviderStatus.DRAINING) return Mono.just(provider);
                 String event = status == StorageProviderStatus.ENABLED ? "storage.provider.enabled" : "storage.provider.disabled";
                 return emit(event, provider, "{\"provider_id\":\"" + provider.id() + "\"}").thenReturn(provider);
             });
