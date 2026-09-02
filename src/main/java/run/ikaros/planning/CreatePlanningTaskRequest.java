@@ -3,4 +3,5 @@ import jakarta.validation.constraints.NotBlank;
 import java.time.Instant;
 import java.util.UUID;
 public record CreatePlanningTaskRequest(@NotBlank String title, String description,
-    PlanningTaskPriority priority, Instant deadline, UUID projectId, UUID parentTaskId) {}
+    PlanningTaskPriority priority, Instant scheduledStart, Instant scheduledEnd, Instant deadline,
+    UUID projectId, UUID parentTaskId) {}
