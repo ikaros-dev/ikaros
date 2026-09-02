@@ -190,7 +190,9 @@ public class StorageRestoreTaskHandler {
             status, request.totalItems(), completedItems,
             request.totalBytes(), request.errorSummary(), request.idempotencyKey(), request.backgroundTaskId(), request.createdAt(),
             Instant.now(), request.version()))
-            .flatMap(saved -> status == StorageRestoreRequestStatus.COMPLETED || status == StorageRestoreRequestStatus.PARTIAL_FAILURE
+            .flatMap(saved -> status == StorageRestoreRequestStatus.COMPLETED
+                || status == StorageRestoreRequestStatus.PARTIAL_FAILURE
+                || status == StorageRestoreRequestStatus.FAILED
                 ? events.append("storage.restore-request.completed", 1, "restore_request", saved.id(),
                     "{\"request_id\":\"" + saved.id() + "\",\"status\":\"" + saved.status()
                         + "\",\"ready_items\":" + saved.completedItems() + ",\"failed_items\":"
