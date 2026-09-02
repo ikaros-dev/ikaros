@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 
 @Service
 public class PersistentPlanningCommentService implements PlanningCommentService {
@@ -46,7 +47,7 @@ public class PersistentPlanningCommentService implements PlanningCommentService 
     return owned(author, id).flatMap(old -> {
       if (old.deletedAt() != null) return Mono.error(new ConflictException("已删除评论不能修改"));
       if ((old.version() == null ? 0 : old.version()) != request.expectedVersion()) {
-        return Mono.error(new ConflictException("Comment 版本冲突"));
+        return Mono.error(new PreconditionFailedException("If-Match 与 Comment 当前版本不匹配"));
       }
       return comments.save(new PlanningCommentEntity(old.id(), old.authorId(), old.targetType(), old.targetId(),
           request.content().trim(), old.createdAt(), Instant.now(), null, old.version()));
