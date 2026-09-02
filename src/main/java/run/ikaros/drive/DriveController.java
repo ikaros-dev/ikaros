@@ -1,9 +1,11 @@
 package run.ikaros.drive;
 import jakarta.validation.Valid;
 import java.util.UUID;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.common.IfMatchVersion;
 @RestController
 @RequestMapping("/api/v2/drive")
 public class DriveController {
@@ -13,10 +15,10 @@ public class DriveController {
     @GetMapping("/spaces") public Flux<DriveSpaceView> list(@RequestHeader("X-Ikaros-Actor-Id") UUID actor){return service.listSpaces(actor);}
     @GetMapping("/spaces/{spaceId}/children") public Flux<DriveNodeView> children(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID spaceId,@RequestParam(required=false) UUID parentId){return service.children(actor,spaceId,parentId);}
     @PostMapping("/spaces/{spaceId}/nodes") public Mono<DriveNodeView> createNode(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID spaceId,@Valid @RequestBody CreateDriveNodeRequest request){return service.createNode(actor,spaceId,request);}
-    @PatchMapping("/nodes/{nodeId}") public Mono<DriveNodeView> rename(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID nodeId,@Valid @RequestBody RenameDriveNodeRequest request){return service.rename(actor,nodeId,request);}
-    @PostMapping("/nodes/{nodeId}/move") public Mono<DriveNodeView> move(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID nodeId,@Valid @RequestBody MoveDriveNodeRequest request){return service.move(actor,nodeId,request);}
-    @PostMapping("/nodes/{nodeId}/trash") public Mono<DriveNodeView> trash(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID nodeId,@RequestParam long expectedVersion){return service.trash(actor,nodeId,expectedVersion);}
-    @PostMapping("/nodes/{nodeId}/restore") public Mono<DriveNodeView> restore(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID nodeId,@RequestParam long expectedVersion){return service.restore(actor,nodeId,expectedVersion);}
+    @PatchMapping("/nodes/{nodeId}") public Mono<ResponseEntity<DriveNodeView>> rename(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID nodeId,@RequestHeader(value="If-Match",required=false) String ifMatch,@Valid @RequestBody RenameDriveNodeRequest request){long version=IfMatchVersion.parse(ifMatch);return service.rename(actor,nodeId,new RenameDriveNodeRequest(request.name(),version)).map(view->withEtag(view));}
+    @PostMapping("/nodes/{nodeId}/move") public Mono<ResponseEntity<DriveNodeView>> move(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID nodeId,@RequestHeader(value="If-Match",required=false) String ifMatch,@Valid @RequestBody MoveDriveNodeRequest request){long version=IfMatchVersion.parse(ifMatch);return service.move(actor,nodeId,new MoveDriveNodeRequest(request.parentId(),version)).map(view->withEtag(view));}
+    @PostMapping("/nodes/{nodeId}/trash") public Mono<ResponseEntity<DriveNodeView>> trash(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID nodeId,@RequestHeader(value="If-Match",required=false) String ifMatch){return service.trash(actor,nodeId,IfMatchVersion.parse(ifMatch)).map(view->withEtag(view));}
+    @PostMapping("/nodes/{nodeId}/restore") public Mono<ResponseEntity<DriveNodeView>> restore(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID nodeId,@RequestHeader(value="If-Match",required=false) String ifMatch){return service.restore(actor,nodeId,IfMatchVersion.parse(ifMatch)).map(view->withEtag(view));}
     @PostMapping("/nodes/{nodeId}/revisions") public Mono<DriveRevisionView> revision(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID nodeId,@Valid @RequestBody CreateDriveRevisionRequest request){return service.createRevision(actor,nodeId,request);}
     @GetMapping("/nodes/{nodeId}/revisions") public Flux<DriveRevisionView> revisions(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID nodeId){return service.revisions(actor,nodeId);}
     @GetMapping("/spaces/{spaceId}/changes") public Flux<DriveChangeView> changes(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID spaceId,@RequestParam(defaultValue="0") long afterSequence){return service.changes(actor,spaceId,afterSequence);}
@@ -42,4 +44,5 @@ public class DriveController {
     @PostMapping("/bindings/{bindingId}/full-resync") public Mono<SyncBindingView> fullResync(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID bindingId){return service.requestFullResync(actor,bindingId);}
     @PutMapping("/bindings/{bindingId}/camera-backups") public Mono<CameraBackupView> cameraBackup(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID bindingId,@Valid @RequestBody CameraBackupRequest request){return service.updateCameraBackup(actor,bindingId,request);}
     @GetMapping("/bindings/{bindingId}/camera-backups") public Flux<CameraBackupView> cameraBackups(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID bindingId){return service.cameraBackups(actor,bindingId);}
+    private ResponseEntity<DriveNodeView> withEtag(DriveNodeView view){return ResponseEntity.ok().eTag(IfMatchVersion.etag(view.nodeVersion())).body(view);}
 }
