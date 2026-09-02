@@ -40,12 +40,11 @@ public class StorageRestoreRequestService {
 
     public Mono<StorageRestoreRequestView> requestAttachment(UUID actorId, RequestAttachmentRestore request,
         String idempotencyKey) {
-        if (idempotencyKey != null && idempotencyKey.isBlank()) {
-            return Mono.error(new IllegalArgumentException("Idempotency-Key 不能为空字符串"));
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            return Mono.error(new IllegalArgumentException("缺少 Idempotency-Key"));
         }
-        Mono<StorageRestoreRequestEntity> existing = idempotencyKey == null ? Mono.empty()
-            : requests.findByActorIdAndScopeAndScopeIdAndIdempotencyKey(actorId, StorageRestoreScope.ATTACHMENT,
-                request.attachmentId(), idempotencyKey);
+        Mono<StorageRestoreRequestEntity> existing = requests.findByActorIdAndScopeAndScopeIdAndIdempotencyKey(
+            actorId, StorageRestoreScope.ATTACHMENT, request.attachmentId(), idempotencyKey);
         return existing.switchIfEmpty(Mono.defer(() -> authorizedAttachment(actorId, request.attachmentId())
             .flatMap(attachment -> blobs.findById(attachment.blobId())
                 .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
