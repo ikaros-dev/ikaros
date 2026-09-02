@@ -21,7 +21,7 @@ public class DeliveryProviderController {
         @RequestHeader(value="Idempotency-Key", required=false) String idempotencyKey,
         @Valid @RequestBody DeliveryProviderWriteRequest request) {
         if (idempotencyKey == null || idempotencyKey.isBlank()) return Mono.error(new IllegalArgumentException("缺少 Idempotency-Key"));
-        return service.create(request).map(view -> ResponseEntity.created(URI.create("/api/v2/admin/delivery-providers/" + view.id())).body(view));
+        return service.create(request, idempotencyKey).map(view -> ResponseEntity.created(URI.create("/api/v2/admin/delivery-providers/" + view.id())).body(view));
     }
     @GetMapping("/{providerId}") public Mono<DeliveryProviderView> get(@PathVariable UUID providerId) { return service.get(providerId); }
     @PatchMapping("/{providerId}") public Mono<ResponseEntity<DeliveryProviderView>> update(@PathVariable UUID providerId,

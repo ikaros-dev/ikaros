@@ -6,4 +6,5 @@ import reactor.core.publisher.Mono;
 
 public interface DeliveryProviderRepository extends ReactiveCrudRepository<DeliveryProviderEntity, UUID> {
     Mono<DeliveryProviderEntity> findByProviderKey(String providerKey);
+    Mono<DeliveryProviderEntity> findByIdempotencyKey(String idempotencyKey);
 }

@@ -25,14 +25,21 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
         DurableEventService events) { this.providers = providers; this.mapper = mapper; this.events = events; }
 
     @Override public Mono<DeliveryProviderView> create(DeliveryProviderWriteRequest request) {
+        return create(request, null);
+    }
+
+    @Override public Mono<DeliveryProviderView> create(DeliveryProviderWriteRequest request, String idempotencyKey) {
         validate(request);
-        return encode(request.config()).flatMap(config -> providers.findByProviderKey(request.providerKey().trim())
+        Mono<DeliveryProviderEntity> byIdempotency = idempotencyKey == null || idempotencyKey.isBlank()
+            ? Mono.empty() : providers.findByIdempotencyKey(idempotencyKey);
+        return encode(request.config()).flatMap(config -> byIdempotency
+            .switchIfEmpty(providers.findByProviderKey(request.providerKey().trim())
             .flatMap(old -> Mono.<DeliveryProviderEntity>error(new ConflictException("Delivery Provider 标识已存在")))
             .switchIfEmpty(Mono.defer(() -> { Instant now = Instant.now(); return providers.save(new DeliveryProviderEntity(null,
                 request.providerKey().trim(), request.providerType(), request.displayName().trim(), request.credentialRef(), config,
                 "{}", DeliveryGrantRevocationLevel.IMMEDIATE, 1, DeliveryProviderHealthStatus.UNKNOWN,
-                request.enabled() == null || request.enabled(), now, now, null)); }))
-            .onErrorMap(DuplicateKeyException.class, e -> new ConflictException("Delivery Provider 标识已存在")))
+                request.enabled() == null || request.enabled(), now, now, null, idempotencyKey)); }))
+             .onErrorMap(DuplicateKeyException.class, e -> new ConflictException("Delivery Provider 标识已存在"))))
             .flatMap(saved -> emit("storage.delivery-provider.created", saved,
                 "{\"delivery_provider_id\":\"" + saved.id() + "\",\"provider_type\":\"" + saved.providerType() + "\"}")
                 .thenReturn(view(saved)));
