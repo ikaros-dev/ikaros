@@ -27,7 +27,8 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String path = exchange.getRequest().getPath().value();
-        if (!(path.startsWith("/api/v2/resources") || path.startsWith("/api/resources"))) {
+        if (!(path.startsWith("/api/v2/resources") || path.startsWith("/api/resources")
+            || path.startsWith("/api/v2/storage/providers") || path.startsWith("/api/storage/providers"))) {
             return chain.filter(exchange);
         }
         PlatformPermission permission = permission(exchange.getRequest().getMethod().name(), path);
@@ -45,6 +46,7 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
     }
 
     private PlatformPermission permission(String method, String path) {
+        if (path.contains("/storage/providers")) return PlatformPermission.STORAGE_PROVIDER_MANAGE;
         if ("GET".equals(method)) return PlatformPermission.RESOURCE_READ;
         if ("DELETE".equals(method)) return PlatformPermission.RESOURCE_DELETE;
         return PlatformPermission.RESOURCE_WRITE;
