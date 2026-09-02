@@ -13,4 +13,5 @@ public interface StorageProviderRegistry {
     Mono<StorageProvider> get(UUID providerId);
     Collection<StorageProvider> list();
     Mono<Void> requireWritable(UUID providerId);
+    Mono<Void> requireWritableByKey(String providerKey);
 }

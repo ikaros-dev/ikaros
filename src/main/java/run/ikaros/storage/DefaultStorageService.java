@@ -24,6 +24,7 @@ public class DefaultStorageService implements StorageService {
     private final DerivedAttachmentRepository derivedAttachmentRepository;
     private final AuditService auditService;
     private final TransactionalOperator transactionalOperator;
+    private final StorageProviderRegistry providerRegistry;
 
     /**
      * 创建存储服务。
@@ -42,6 +43,19 @@ public class DefaultStorageService implements StorageService {
                                  DerivedAttachmentRepository derivedAttachmentRepository,
                                  AuditService auditService,
                                  TransactionalOperator transactionalOperator) {
+        this(resourceRepository, attachmentRepository, blobRepository, placementRepository,
+            derivedAttachmentRepository, auditService, transactionalOperator, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public DefaultStorageService(ResourceRepository resourceRepository,
+                                 AttachmentRepository attachmentRepository,
+                                 BlobRepository blobRepository,
+                                 BlobPlacementRepository placementRepository,
+                                 DerivedAttachmentRepository derivedAttachmentRepository,
+                                 AuditService auditService,
+                                 TransactionalOperator transactionalOperator,
+                                 StorageProviderRegistry providerRegistry) {
         this.resourceRepository = resourceRepository;
         this.attachmentRepository = attachmentRepository;
         this.blobRepository = blobRepository;
@@ -49,6 +63,7 @@ public class DefaultStorageService implements StorageService {
         this.derivedAttachmentRepository = derivedAttachmentRepository;
         this.auditService = auditService;
         this.transactionalOperator = transactionalOperator;
+        this.providerRegistry = providerRegistry;
     }
 
     @Override
@@ -128,7 +143,9 @@ public class DefaultStorageService implements StorageService {
     }
 
     private Mono<Void> ensurePlacement(BlobEntity blob, AttachBlobRequest request) {
-        return placementRepository.findByProviderAndObjectKey(request.provider(), request.objectKey())
+        Mono<Void> writable = providerRegistry == null ? Mono.empty()
+            : providerRegistry.requireWritableByKey(request.provider());
+        return writable.then(placementRepository.findByProviderAndObjectKey(request.provider(), request.objectKey()))
             .flatMap(existing -> {
                 if (!existing.blobId().equals(blob.id())) {
                     return Mono.error(new ConflictException("该存储对象键已指向其他 Blob"));
