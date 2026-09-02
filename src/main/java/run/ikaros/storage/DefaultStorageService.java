@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.event.DurableEventService;
 import run.ikaros.resource.ResourceRepository;
 import run.ikaros.task.BackgroundTask;
 import run.ikaros.task.BackgroundTaskService;
@@ -29,6 +30,7 @@ public class DefaultStorageService implements StorageService {
     private final TransactionalOperator transactionalOperator;
     private final StorageProviderRegistry providerRegistry;
     private final BackgroundTaskService taskService;
+    private final DurableEventService eventService;
 
     /**
      * 创建存储服务。
@@ -48,7 +50,7 @@ public class DefaultStorageService implements StorageService {
                                  AuditService auditService,
                                  TransactionalOperator transactionalOperator) {
         this(resourceRepository, attachmentRepository, blobRepository, placementRepository,
-            derivedAttachmentRepository, auditService, transactionalOperator, null);
+            derivedAttachmentRepository, auditService, transactionalOperator, null, null, null);
     }
 
     public DefaultStorageService(ResourceRepository resourceRepository,
@@ -60,7 +62,20 @@ public class DefaultStorageService implements StorageService {
                                  TransactionalOperator transactionalOperator,
                                  StorageProviderRegistry providerRegistry) {
         this(resourceRepository, attachmentRepository, blobRepository, placementRepository,
-            derivedAttachmentRepository, auditService, transactionalOperator, providerRegistry, null);
+            derivedAttachmentRepository, auditService, transactionalOperator, providerRegistry, null, null);
+    }
+
+    public DefaultStorageService(ResourceRepository resourceRepository,
+                                 AttachmentRepository attachmentRepository,
+                                 BlobRepository blobRepository,
+                                 BlobPlacementRepository placementRepository,
+                                 DerivedAttachmentRepository derivedAttachmentRepository,
+                                 AuditService auditService,
+                                 TransactionalOperator transactionalOperator,
+                                 StorageProviderRegistry providerRegistry,
+                                 BackgroundTaskService taskService) {
+        this(resourceRepository, attachmentRepository, blobRepository, placementRepository, derivedAttachmentRepository,
+            auditService, transactionalOperator, providerRegistry, taskService, null);
     }
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -72,7 +87,8 @@ public class DefaultStorageService implements StorageService {
                                  AuditService auditService,
                                  TransactionalOperator transactionalOperator,
                                  StorageProviderRegistry providerRegistry,
-                                 BackgroundTaskService taskService) {
+                                 BackgroundTaskService taskService,
+                                 DurableEventService eventService) {
         this.resourceRepository = resourceRepository;
         this.attachmentRepository = attachmentRepository;
         this.blobRepository = blobRepository;
@@ -82,6 +98,7 @@ public class DefaultStorageService implements StorageService {
         this.transactionalOperator = transactionalOperator;
         this.providerRegistry = providerRegistry;
         this.taskService = taskService;
+        this.eventService = eventService;
     }
 
     @Override
@@ -116,7 +133,8 @@ public class DefaultStorageService implements StorageService {
                             idempotencyKey
                         )))
                         .flatMap(attachment -> auditService.record(ownerId, "attachment.create", "ATTACHMENT",
-                            attachment.id(), "{}").then(toView(attachment, blob))))))
+                            attachment.id(), "{}").then(emit("attachment.created", attachment))
+                            .then(toView(attachment, blob))))))
         ));
     }
 
@@ -143,7 +161,8 @@ public class DefaultStorageService implements StorageService {
                 .flatMap(attachment -> attachmentRepository.save(new AttachmentEntity(
                     attachment.id(), attachment.resourceId(), attachment.blobId(), attachment.fileName(),
                     attachment.attachmentKind(), attachment.createdAt(), Instant.now(), attachment.version()
-                )).then(auditService.record(ownerId, "attachment.delete", "ATTACHMENT", attachment.id(), "{}"))))
+                )).then(auditService.record(ownerId, "attachment.delete", "ATTACHMENT", attachment.id(), "{}"))
+                    .then(emit("attachment.deleted", attachment))))
             .then();
     }
 
@@ -227,6 +246,15 @@ public class DefaultStorageService implements StorageService {
         }
         return blobRepository.save(new BlobEntity(blob.id(), blob.hashAlgorithm(), blob.sha256(), blob.sizeBytes(),
             blob.mediaType(), BlobAvailability.AVAILABLE, blob.createdAt(), blob.version())).then();
+    }
+
+    private Mono<Void> emit(String eventType, AttachmentEntity attachment) {
+        if (eventService == null) {
+            return Mono.empty();
+        }
+        String payload = "{\"attachment_id\":\"" + attachment.id() + "\",\"resource_id\":\""
+            + attachment.resourceId() + "\",\"blob_id\":\"" + attachment.blobId() + "\"}";
+        return eventService.append(eventType, 1, "attachment", attachment.id(), payload).then();
     }
 
     private Mono<AttachmentView> toView(AttachmentEntity attachment, BlobEntity blob) {
