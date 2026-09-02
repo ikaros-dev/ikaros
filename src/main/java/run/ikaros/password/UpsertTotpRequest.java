@@ -1,0 +1,1 @@
+package run.ikaros.password; import jakarta.validation.constraints.NotBlank; public record UpsertTotpRequest(@NotBlank String encryptedSecret,TotpAlgorithm algorithm,Integer digits,Integer periodSeconds) {}
