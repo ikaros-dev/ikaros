@@ -84,10 +84,24 @@ const rows = ref<TableRow[]>([{ id: 'demo-backup', name: '媒体资源索引', o
 const demoRows = rows.value
 const actorId = String(import.meta.env.VITE_ACTOR_ID || '')
 const roleCode = ref(''); const roleName = ref(''); const roleDescription = ref(''); const roleSubmitting = ref(false)
+const routeDemoRows: Record<string, TableRow[]> = {
+  collections: [{ name: '阅读清单', owner: '陈昊', status: '已启用', updated: '今天' }, { name: '设计参考', owner: '陈昊', status: '已启用', updated: '昨天' }, { name: '待整理资源', owner: '系统', status: '草稿', updated: '3 天前' }],
+  documents: [{ name: 'Ikaros V2 产品设计', owner: '陈昊', status: '已更新', updated: '昨天' }, { name: 'API 契约备忘', owner: '陈昊', status: '草稿', updated: '2 天前' }, { name: '发布说明', owner: '团队', status: '已启用', updated: '5 天前' }],
+  sharing: [{ name: '设计评审链接', owner: '陈昊', status: '已启用', updated: '今天' }, { name: '媒体样片分享', owner: '陈昊', status: '即将过期', updated: '3 天后' }],
+  'drive/transfers': [{ name: '资料备份.zip', owner: '上传中', status: '运行中', updated: '68%' }, { name: '媒体缩略图', owner: '下载中', status: '运行中', updated: '42%' }, { name: '旧项目归档', owner: '系统', status: '已完成', updated: '昨天' }],
+  'drive/conflicts': [{ name: 'Ikaros V2 产品设计', owner: '本地版本', status: '待处理', updated: '昨天' }, { name: '阅读进度', owner: '云端版本', status: '待处理', updated: '2 天前' }],
+  'planning/today': [{ name: '完成 Console 权限审阅', owner: '高优先级', status: '进行中', updated: '今天 16:00' }, { name: '整理本周阅读清单', owner: '普通', status: '待开始', updated: '今天 18:00' }, { name: '提交活动周报', owner: '低优先级', status: '已完成', updated: '今天 09:30' }],
+  'planning/projects': [{ name: 'Ikaros V2', owner: '5 个任务', status: '进行中', updated: '今天' }, { name: '家庭资料整理', owner: '8 个任务', status: '进行中', updated: '昨天' }],
+  'finance/transactions': [{ name: '云存储订阅', owner: '支出 · ¥68', status: '已确认', updated: '今天' }, { name: '工资收入', owner: '收入 · ¥12,000', status: '已确认', updated: '昨天' }],
+  'integration/automation': [{ name: '新资源 → 创建待办', owner: '3 个动作', status: '已启用', updated: '今天' }, { name: '任务失败 → 通知管理员', owner: '2 个动作', status: '已暂停', updated: '昨天' }]
+}
 async function loadResources() {
   if (isDashboard.value) return
   loading.value = true
   errorState.value = null
+  const fallbackRows = routeDemoRows[currentPath.value] || demoRows
+  rows.value = fallbackRows.map(row => ({ ...row }))
+  selectedRows.value = []
   try {
     if (currentPath.value === 'library') {
       const result = unwrapPage(await api.listResources('?limit=5'))
@@ -120,7 +134,7 @@ async function loadResources() {
     if (error instanceof ApiError && error.status === 401) { router.push({ path: '/login', query: { returnTo: route.fullPath } }); return }
     if (error instanceof ApiError && [401, 403, 404, 409, 412].includes(error.status)) {
       errorState.value = { status: error.status, title: error.status === 401 ? '会话已失效' : error.status === 403 ? '你没有权限访问此页面' : error.status === 404 ? '页面或资源不存在' : '数据发生并发冲突', detail: error.problem?.detail || error.message }
-    } else { rows.value = demoRows; notify('后端暂不可用，已保留演示数据') }
+    } else { rows.value = fallbackRows.map(row => ({ ...row })); notify('后端暂不可用，已保留当前页面演示数据') }
   } finally { loading.value = false }
 }
 onMounted(loadResources); watch(currentPath, loadResources)
