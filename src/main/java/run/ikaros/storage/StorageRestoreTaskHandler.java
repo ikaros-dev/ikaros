@@ -63,9 +63,16 @@ public class StorageRestoreTaskHandler {
         return episodes.findAllByOwnerIdAndSeasonIdOrderByEpisodeNumberAsc(request.actorId(), seasonId)
             .flatMap(episode -> attachments.findAllByResourceIdAndDeletedAtIsNullOrderByCreatedAtAsc(episode.resourceId()))
             .concatMap(attachment -> restoreAttachment(request, attachment, requestId, taskId, restoreClass, false, retryFailedOnly))
-            .collectList()
-            .then(updateStatus(request, StorageRestoreRequestStatus.COMPLETED))
-            .thenReturn(Map.of("restore_request_id", requestId.toString(), "completed_items", request.totalItems()));
+            .then(items.findAllByRequestId(request.id()).collectList())
+            .flatMap(result -> {
+                int ready = (int) result.stream().filter(item -> item.status() == StorageRestoreRequestItemStatus.READY
+                    || item.status() == StorageRestoreRequestItemStatus.READY_TEMPORARILY).count();
+                int failed = (int) result.stream().filter(item -> item.status() == StorageRestoreRequestItemStatus.FAILED).count();
+                StorageRestoreRequestStatus status = failed == 0 ? StorageRestoreRequestStatus.COMPLETED
+                    : ready == 0 ? StorageRestoreRequestStatus.FAILED : StorageRestoreRequestStatus.PARTIAL_FAILURE;
+                return updateStatus(request, status, ready)
+                    .thenReturn(Map.of("restore_request_id", requestId.toString(), "completed_items", ready));
+            });
     }
 
     private Mono<Map<String, Object>> restoreAttachment(StorageRestoreRequestEntity request,
@@ -134,8 +141,8 @@ public class StorageRestoreTaskHandler {
                 "{\"operation_id\":\"" + failed.id() + "\",\"placement_id\":\"" + failed.placementId()
                     + "\",\"error_code\":\"restore-failed\",\"retryable\":false}").then())
             .then(updateItem(request.id(), placement.id(), StorageRestoreRequestItemStatus.FAILED, error.getMessage()))
-            .then(updateStatus(request, StorageRestoreRequestStatus.FAILED))
-            .then(Mono.error(error)));
+            .then(completeRequest ? updateStatus(request, StorageRestoreRequestStatus.FAILED).then() : Mono.empty())
+            .thenReturn(Map.<String, Object>of("restore_request_id", requestId.toString(), "completed_items", 0)));
     }
 
     private Mono<StorageRestoreOperationEntity> operation(StorageRestoreRequestEntity request,
@@ -173,8 +180,14 @@ public class StorageRestoreTaskHandler {
 
     private Mono<StorageRestoreRequestEntity> updateStatus(StorageRestoreRequestEntity request,
         StorageRestoreRequestStatus status) {
+        return updateStatus(request, status, status == StorageRestoreRequestStatus.COMPLETED
+            ? request.totalItems() : request.completedItems());
+    }
+
+    private Mono<StorageRestoreRequestEntity> updateStatus(StorageRestoreRequestEntity request,
+        StorageRestoreRequestStatus status, int completedItems) {
         return requests.save(new StorageRestoreRequestEntity(request.id(), request.actorId(), request.scope(), request.scopeId(),
-            status, request.totalItems(), status == StorageRestoreRequestStatus.COMPLETED ? request.totalItems() : request.completedItems(),
+            status, request.totalItems(), completedItems,
             request.totalBytes(), request.errorSummary(), request.idempotencyKey(), request.backgroundTaskId(), request.createdAt(),
             Instant.now(), request.version()))
             .flatMap(saved -> status == StorageRestoreRequestStatus.COMPLETED || status == StorageRestoreRequestStatus.PARTIAL_FAILURE
