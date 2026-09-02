@@ -69,12 +69,14 @@ public class PersistentPluginRuntime implements PluginRuntime {
     @Override
     public Mono<PluginDescriptor> get(String pluginId) {
         return repository.findByPluginId(pluginId).switchIfEmpty(Mono.error(new NotFoundException("插件不存在")))
-            .flatMap(this::descriptor);
+            .flatMap(this::descriptor)
+            .doOnNext(this::restoreExtension);
     }
 
     @Override
     public Flux<PluginDescriptor> list() {
-        return repository.findAll().flatMap(this::descriptor);
+        return repository.findAll().flatMap(this::descriptor)
+            .doOnNext(this::restoreExtension);
     }
 
     private Mono<PluginDescriptor> change(String pluginId, PluginLifecycle next) {
@@ -103,6 +105,12 @@ public class PersistentPluginRuntime implements PluginRuntime {
 
     private void unregister(String pluginId) {
         if (extensionRegistry != null) extensionRegistry.unregister(pluginId);
+    }
+
+    private void restoreExtension(PluginDescriptor descriptor) {
+        if (descriptor.lifecycle() == PluginLifecycle.ENABLED) {
+            register(descriptor.manifest());
+        }
     }
 
     private Mono<PluginDescriptor> descriptor(PluginEntity entity) {
