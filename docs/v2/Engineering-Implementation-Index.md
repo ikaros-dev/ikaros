@@ -2,7 +2,7 @@
 
 > 本文档作为 V2 从“领域设计”进入“工程实现”的入口索引。
 >
-> 产品与领域语义仍以 `Product-Requirements-Document.md`、`System-Overview-Design.md`、`Database-Overview-Design.md`、`API-Convention-Design.md` 及各 Subsystem Design 为准；本文档不重新定义业务规则。
+> 产品与领域语义仍以 `Product-Requirements-Document.md`、`System-Overview-Design.md`、`Database-Overview-Design.md`、`API-Convention-Design.md` 及各 Subsystem Design 为准；`Technical-Architecture-Design.md` 负责把这些边界进一步落实为 Java / Spring / Reactor / PostgreSQL 工程约束。本文档本身不重新定义业务规则。
 
 ---
 
@@ -10,22 +10,44 @@
 
 1. [`Product-Requirements-Document.md`](./Product-Requirements-Document.md)
 2. [`System-Overview-Design.md`](./System-Overview-Design.md)
-3. [`Database-Overview-Design.md`](./Database-Overview-Design.md)
-4. [`API-Convention-Design.md`](./API-Convention-Design.md)
-5. [`Implementation-Roadmap-and-Dependency-Graph.md`](./Implementation-Roadmap-and-Dependency-Graph.md)
-6. [`Module-Package-Ownership-Design.md`](./Module-Package-Ownership-Design.md)
-7. [`Plugin-Runtime-SDK-Lifecycle-Design.md`](./Plugin-Runtime-SDK-Lifecycle-Design.md)
-8. [`database/P0-Database-Schema-Design.md`](./database/P0-Database-Schema-Design.md)
-9. [`contracts/P0-Command-Query-Event-Catalog.md`](./contracts/P0-Command-Query-Event-Catalog.md)
-10. [`contracts/P0-Event-Payload-Schema-Registry.md`](./contracts/P0-Event-Payload-Schema-Registry.md)
-11. [`api/openapi-v2-p0.yaml`](./api/openapi-v2-p0.yaml)
-12. [`testing/P0-Acceptance-Invariant-Test-Matrix.md`](./testing/P0-Acceptance-Invariant-Test-Matrix.md)
-13. 目标业务对应的 Subsystem Design
-14. App / CMS Interaction Design
+3. [`Technical-Architecture-Design.md`](./Technical-Architecture-Design.md)
+4. [`Database-Overview-Design.md`](./Database-Overview-Design.md)
+5. [`API-Convention-Design.md`](./API-Convention-Design.md)
+6. [`Implementation-Roadmap-and-Dependency-Graph.md`](./Implementation-Roadmap-and-Dependency-Graph.md)
+7. [`Module-Package-Ownership-Design.md`](./Module-Package-Ownership-Design.md)
+8. [`Plugin-Runtime-SDK-Lifecycle-Design.md`](./Plugin-Runtime-SDK-Lifecycle-Design.md)
+9. [`database/P0-Database-Schema-Design.md`](./database/P0-Database-Schema-Design.md)
+10. [`contracts/P0-Command-Query-Event-Catalog.md`](./contracts/P0-Command-Query-Event-Catalog.md)
+11. [`contracts/P0-Event-Payload-Schema-Registry.md`](./contracts/P0-Event-Payload-Schema-Registry.md)
+12. [`api/openapi-v2-p0.yaml`](./api/openapi-v2-p0.yaml)
+13. [`testing/P0-Acceptance-Invariant-Test-Matrix.md`](./testing/P0-Acceptance-Invariant-Test-Matrix.md)
+14. 目标业务对应的 Subsystem Design
+15. App / CMS Interaction Design
 
 ---
 
 ## 2. 工程基线文档职责
+
+### Technical Architecture Design
+
+负责：
+
+- Java 21 / Spring Boot 4.x / WebFlux / Reactor / R2DBC 的默认技术路径；
+- Server / Worker 运行时拓扑；
+- Gradle API / Impl 编译期隔离；
+- Spring Composition Root 与 Bean 可见性；
+- Reactive Event Loop / Blocking Adapter 规则；
+- Reactive Transaction 与 PostgreSQL Schema Ownership；
+- Flyway + JDBC Migration 与 R2DBC Runtime 分离；
+- Outbox / Inbox、Background Task / Lease 的工程落地；
+- Cache / Search / Analytics / AI Projection 边界；
+- Blob Streaming / Range、大文件内存约束；
+- Security / Configuration / Observability / Resilience；
+- Architecture Test、CI Gate 与 ADR 触发条件。
+
+它回答：
+
+> “这些系统与模块边界，在 Java / Spring / PostgreSQL 的真实代码和运行时里到底怎么实现？”
 
 ### Implementation Roadmap and Dependency Graph
 
@@ -136,6 +158,8 @@ Product Requirements
       ↓
 System Overview
       ↓
+Technical Architecture
+      ↓
 Subsystem Design
       ↓
 Implementation Roadmap
@@ -167,16 +191,17 @@ Automated Contract / Integration / E2E Tests
 
 ---
 
-## 4. 当前六项工程设计完成状态
+## 4. 当前七项工程设计完成状态
 
 | # | 工程设计事项 | 文档状态 |
 |---|---|---|
-| 1 | Implementation Roadmap + Dependency Graph | ✅ 已定义 |
-| 2 | Module / Package Ownership + Allowed Dependency Matrix | ✅ 已定义 |
-| 3 | Plugin Runtime / SDK / Lifecycle Design | ✅ 已定义 |
-| 4 | 首批 P0 Database Schema | ✅ 已定义 |
-| 5 | Command / Query / Event Catalog + OpenAPI | ✅ 已定义 |
-| 6 | P0 Acceptance / Invariant Test Matrix | ✅ 已定义 |
+| 1 | Technical Architecture Design | ✅ 已定义 |
+| 2 | Implementation Roadmap + Dependency Graph | ✅ 已定义 |
+| 3 | Module / Package Ownership + Allowed Dependency Matrix | ✅ 已定义 |
+| 4 | Plugin Runtime / SDK / Lifecycle Design | ✅ 已定义 |
+| 5 | 首批 P0 Database Schema | ✅ 已定义 |
+| 6 | Command / Query / Event Catalog + OpenAPI | ✅ 已定义 |
+| 7 | P0 Acceptance / Invariant Test Matrix | ✅ 已定义 |
 
 这里的“已定义”表示设计和工程契约已经进入仓库，不表示对应生产代码、Migration 和自动化测试已经全部实现。
 
@@ -188,13 +213,14 @@ Automated Contract / Integration / E2E Tests
 
 - Platform Foundation module skeleton；
 - Resource / Storage / Identity / Integration / Operations module skeleton；
+- Gradle `api` / `impl` 编译隔离和 ArchUnit 边界测试；
 - 首批 Flyway V2 migrations；
 - Permission Registry / Built-in Role deterministic seed；
 - Resource / Storage Application Command / Query handlers；
+- Reactive transaction executor；
 - Event Outbox dispatcher / Consumer Inbox infrastructure；
 - Background Task claim / attempt / lease runtime；
 - HTTP Controller / DTO 与 OpenAPI contract implementation；
-- architecture boundary tests；
 - Testcontainers PostgreSQL constraint tests；
 - Event replay / crash recovery tests；
 - P0 E2E acceptance scenarios。
@@ -215,12 +241,14 @@ Automated Contract / Integration / E2E Tests
 
 - Owner 明确；
 - Invariant 明确；
+- 技术架构允许的依赖方向明确；
 - Schema Contract 存在；
 - Command / Query 存在；
 - Event Producer / Consumer 已登记；
 - Permission 已登记；
 - API Contract 已确定；
 - 并发 / 幂等 / 重试语义明确；
+- Blocking / Background Task 边界明确；
 - Acceptance Test ID 可追踪。
 
-如果实现过程中出现无法在上述契约中解释的新业务规则，应先回到对应设计文档修正，而不是把规则只写进 Controller、Service 或 Repository。
+如果实现过程中出现无法在上述契约中解释的新业务规则或新的技术基础设施边界，应先回到对应设计文档 / ADR 修正，而不是把规则只写进 Controller、Service、Repository 或临时配置。

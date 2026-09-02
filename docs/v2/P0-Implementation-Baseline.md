@@ -26,6 +26,7 @@ Phase 0 实现至少应以下列文档作为输入：
 
 - `Product-Requirements-Document.md`
 - `System-Overview-Design.md`
+- `Technical-Architecture-Design.md`
 - `Database-Overview-Design.md`
 - `API-Convention-Design.md`
 - `Implementation-Roadmap-and-Dependency-Graph.md`
