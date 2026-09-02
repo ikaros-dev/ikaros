@@ -1,0 +1,96 @@
+package run.ikaros.storage;
+
+import java.time.Instant;
+import java.util.UUID;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
+import run.ikaros.common.ConflictException;
+import run.ikaros.common.NotFoundException;
+import run.ikaros.resource.ResourceRepository;
+
+@Service
+public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
+    private static final int DEFAULT_TTL_SECONDS = 120;
+    private static final int MAX_TTL_SECONDS = 1800;
+    private final AttachmentRepository attachments;
+    private final ResourceRepository resources;
+    private final MediaDeliveryGrantRepository grants;
+    private final MediaDeliveryLeaseRepository leases;
+
+    public PersistentDeliveryLeaseService(AttachmentRepository attachments, ResourceRepository resources,
+                                          MediaDeliveryGrantRepository grants, MediaDeliveryLeaseRepository leases) {
+        this.attachments = attachments;
+        this.resources = resources;
+        this.grants = grants;
+        this.leases = leases;
+    }
+
+    @Override
+    public Mono<DeliveryLeaseView> create(UUID actorId, UUID attachmentId, DeliveryLeaseRequest request) {
+        if (request == null || request.deliveryGrant() == null || request.deliveryGrant().isBlank())
+            return Mono.error(new ConflictException("创建 Delivery Lease 必须提供有效 Grant"));
+        int ttl = ttl(request.ttlSeconds());
+        return grants.findByTokenHash(hash(request.deliveryGrant()))
+            .filter(g -> g.attachmentId().equals(attachmentId) && g.ownerId().equals(actorId)
+                && g.revokedAt() == null && g.expiresAt().isAfter(Instant.now()))
+            .switchIfEmpty(Mono.error(new NotFoundException("Delivery Grant 不存在或已失效")))
+            .flatMap(grant -> ownedAttachment(actorId, attachmentId).flatMap(attachment -> {
+                Instant now = Instant.now();
+                return leases.save(new MediaDeliveryLeaseEntity(null, attachment.id(), attachment.blobId(), actorId,
+                    grant.id(), now.plusSeconds(ttl), null, now, now, null)).map(this::view);
+            }));
+    }
+
+    @Override
+    public Mono<DeliveryLeaseView> renew(UUID actorId, UUID leaseId, Integer requestedTtl) {
+        int ttl = ttl(requestedTtl);
+        Instant now = Instant.now();
+        return ownedActive(actorId, leaseId).flatMap(old -> leases.save(new MediaDeliveryLeaseEntity(old.id(), old.attachmentId(),
+            old.blobId(), old.ownerId(), old.grantId(), now.plusSeconds(ttl), null, now, old.createdAt(), old.version())))
+            .map(this::view);
+    }
+
+    @Override
+    public Mono<Void> release(UUID actorId, UUID leaseId) {
+        return ownedActive(actorId, leaseId).flatMap(old -> leases.save(new MediaDeliveryLeaseEntity(old.id(), old.attachmentId(),
+            old.blobId(), old.ownerId(), old.grantId(), old.leaseExpiresAt(), Instant.now(), old.lastHeartbeatAt(), old.createdAt(), old.version())).then());
+    }
+
+    @Override
+    public Mono<Boolean> protectsBlob(UUID blobId) {
+        return leases.existsByBlobIdAndReleasedAtIsNullAndLeaseExpiresAtAfter(blobId, Instant.now());
+    }
+
+    private Mono<AttachmentEntity> ownedAttachment(UUID actorId, UUID id) {
+        return attachments.findById(id).filter(a -> a.deletedAt() == null)
+            .flatMap(a -> resources.findByIdAndOwnerId(a.resourceId(), actorId).thenReturn(a))
+            .switchIfEmpty(Mono.error(new NotFoundException("Attachment 不存在或无权访问")));
+    }
+
+    private Mono<MediaDeliveryLeaseEntity> ownedActive(UUID actorId, UUID id) {
+        return leases.findByIdAndOwnerId(id, actorId)
+            .filter(l -> l.releasedAt() == null && l.leaseExpiresAt().isAfter(Instant.now()))
+            .switchIfEmpty(Mono.error(new NotFoundException("Delivery Lease 不存在、已释放或已过期")));
+    }
+
+    private int ttl(Integer value) {
+        int result = value == null ? DEFAULT_TTL_SECONDS : value;
+        if (result < 1 || result > MAX_TTL_SECONDS)
+            throw new IllegalArgumentException("Lease TTL 必须在 1 到 1800 秒之间");
+        return result;
+    }
+
+    private DeliveryLeaseView view(MediaDeliveryLeaseEntity l) {
+        return new DeliveryLeaseView(l.id(), l.attachmentId(), l.blobId(), l.leaseExpiresAt(), l.lastHeartbeatAt(),
+            l.releasedAt() == null && l.leaseExpiresAt().isAfter(Instant.now()));
+    }
+
+    private String hash(String value) {
+        try {
+            return java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(
+                java.security.MessageDigest.getInstance("SHA-256").digest(value.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        } catch (java.security.NoSuchAlgorithmException ex) {
+            throw new IllegalStateException("SHA-256 不可用", ex);
+        }
+    }
+}
