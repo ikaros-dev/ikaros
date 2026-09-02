@@ -21,6 +21,7 @@ import PlanningWorkspace from './PlanningWorkspace.vue'
 import GoalWorkspace from './GoalWorkspace.vue'
 import CalendarWorkspace from './CalendarWorkspace.vue'
 import FocusWorkspace from './FocusWorkspace.vue'
+import TodayWorkspace from './TodayWorkspace.vue'
 import FinanceWorkspace from './FinanceWorkspace.vue'
 import AccessDenied from './AccessDenied.vue'
 import { getRouteMeta } from './config/route-meta'
@@ -36,6 +37,7 @@ const routes = [
   { path: '/console/ops/subsystems', component: OpsCatalog }, { path: '/console/ops/storage-health', component: OpsCatalog }, { path: '/console/ops/jobs', component: OpsCatalog }, { path: '/console/ops/plugins', component: OpsCatalog }, { path: '/console/security/authentication', component: AuthenticationPolicy }, { path: '/console/account/profile', component: AccountPage }, { path: '/console/account/preferences', component: AccountPage }, { path: '/console/account/security', component: AccountSecurity }, { path: '/console/account/notifications', component: AccountNotifications }, { path: '/console/403', component: AccessDenied },
   { path: '/console/:pathMatch(.*)*', component: App }, { path: '/:pathMatch(.*)*', redirect: '/console/dashboard' }
 ]
+routes.unshift({ path: '/console/planning/today', component: TodayWorkspace })
 const router = createRouter({ history: createWebHistory(), routes })
 for (const path of ['/console/media', '/console/sharing', '/console/attachments', '/console/storage/tiers', '/console/storage/cache', '/console/storage/archive', '/console/storage/backup', '/console/planning/today', '/console/planning/projects', '/console/planning/calendar', '/console/planning/goals', '/console/planning/focus', '/console/finance', '/console/finance/accounts', '/console/finance/transactions', '/console/finance/budgets', '/console/finance/reconcile', '/console/private-notes', '/console/private-notes/conflicts', '/console/private-notes/recovery', '/console/passwords', '/console/passwords/generator', '/console/passwords/health', '/console/passwords/devices', '/console/ai/assistant', '/console/ai/models', '/console/ai/personas', '/console/ai/privacy', '/console/ai/jobs', '/console/analytics', '/console/analytics/content', '/console/analytics/storage', '/console/analytics/planning', '/console/analytics/system', '/console/analytics/metrics', '/console/analytics/reports', '/console/integration/automation', '/console/integration/executions', '/console/integration/events', '/console/integration/sync', '/console/integration/plugins', '/console/communications/announcements', '/console/communications/notifications', '/console/ops/health', '/console/ops/background']) router.addRoute({ path, component: DomainWorkspace })
 router.addRoute({ path: '/console/planning/projects', component: PlanningWorkspace })

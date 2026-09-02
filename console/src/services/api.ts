@@ -77,6 +77,7 @@ export const api = {
   listDriveConflicts: (bindingId: string, actorId: string) => request<SyncConflictRecord[]>(`/drive/bindings/${encodeURIComponent(bindingId)}/conflicts`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   createDriveSpace: (displayName: string, actorId: string) => request<DriveSpaceRecord>('/drive/spaces', { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId, 'Idempotency-Key': requestId() }, body: JSON.stringify({ displayName }) }),
   listTodayTasks: (actorId: string, timeZone = 'Asia/Shanghai') => request<PlanningTaskRecord[]>(`/planning/tasks/today?timeZone=${encodeURIComponent(timeZone)}`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
+  createPlanningTask: (body: { title: string; description?: string; priority?: string; deadline?: string }, actorId: string) => request<PlanningTaskRecord>('/planning/tasks', { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId, 'Content-Type': 'application/json', 'Idempotency-Key': requestId() }, body: JSON.stringify(body) }),
   listPlanningProjects: (actorId: string) => request<PlanningProjectRecord[]>('/planning/projects', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   createPlanningProject: (body: { name: string; description?: string }, actorId: string) => request<PlanningProjectRecord>('/planning/projects', { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId, 'Idempotency-Key': requestId() }, body: JSON.stringify(body) }),
   listPlanningGoals: (actorId: string) => request<PlanningGoalRecord[]>('/planning/goals', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
