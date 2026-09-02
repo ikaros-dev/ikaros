@@ -1,0 +1,25 @@
+server:
+  port: 10000
+
+spring:
+  application:
+    name: ikaros
+  r2dbc:
+    url: ${IKAROS_R2DBC_URL:r2dbc:postgresql://localhost:5432/ikaros}
+    username: ${IKAROS_DB_USERNAME:ikaros}
+    password: ${IKAROS_DB_PASSWORD:openpostgresql}
+
+r2dbc:
+  migrate:
+    resources-paths: classpath:/db/migration
+
+springdoc:
+  api-docs:
+    path: /openapi.json
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  charset:
+    console: UTF-8
+    file: UTF-8
