@@ -45,6 +45,7 @@ export const api = {
   listUsers: (params = '') => request<Page<UserRecord> | UserRecord[]>(`/admin/users${params}`),
   listRoles: () => request<RoleRecord[]>('/admin/roles'),
   createRole: (body: { code: string; name: string; description?: string }, actorId: string) => request<RoleRecord>('/admin/roles', { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId, 'Idempotency-Key': requestId() }, body: JSON.stringify(body) }),
+  grantRolePermission: (roleId: string, permission: string, actorId: string) => request<RoleRecord>(`/admin/roles/${encodeURIComponent(roleId)}/permissions/${encodeURIComponent(permission)}`, { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId } }),
   listPermissions: () => request<string[]>('/admin/permissions'),
   listStorageProviders: () => request<StorageProviderRecord[]>('/admin/storage-providers'),
   listDriveSpaces: (actorId: string) => request<DriveSpaceRecord[]>('/drive/spaces', { headers: { 'X-Ikaros-Actor-Id': actorId } }),

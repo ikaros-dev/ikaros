@@ -57,12 +57,13 @@ const isNotifications = computed(() => currentPath.value === 'communications/not
 const isAnnouncements = computed(() => currentPath.value === 'communications/announcements')
 const securityStats = [{ label: '活跃用户', value: '24', detail: '最近 7 天有活动', tone: 'teal' }, { label: '已启用 MFA', value: '21', detail: '覆盖率 87.5%', tone: 'primary' }, { label: '待激活', value: '2', detail: '需要发送邀请', tone: 'orange' }, { label: '安全提醒', value: '1', detail: '建议及时处理', tone: 'pink' }]
 const permissionGroups = [{ name: '内容与创作', items: [{ key: 'resource.read', label: '读取资源', enabled: true }, { key: 'resource.write', label: '编辑资源', enabled: true }, { key: 'resource.delete', label: '删除资源', enabled: false }] }, { name: '身份与安全', items: [{ key: 'system.user.read', label: '查看用户', enabled: true }, { key: 'system.role.manage', label: '管理角色', enabled: false }, { key: 'system.session.manage', label: '管理会话', enabled: false }] }, { name: '存储管理', items: [{ key: 'storage.provider.manage', label: '管理存储 Provider', enabled: false }, { key: 'resource.download', label: '下载资源', enabled: true }] }]
+const activeRoleId = ref('')
 const stagedPermissions = ref<Record<string, boolean>>({})
 const hasStagedPermissions = computed(() => Object.keys(stagedPermissions.value).length > 0)
 function togglePermission(key: string, current: boolean) { stagedPermissions.value = { ...stagedPermissions.value, [key]: !current } }
 function discardPermissions() { stagedPermissions.value = {}; notify('已放弃权限修改') }
 function reviewPermissions() { dialog.value = 'permission-review' }
-function applyPermissions() { stagedPermissions.value = {}; dialog.value = ''; notify('权限修改已提交并写入审计') }
+async function applyPermissions() { if (!actorId || !activeRoleId.value) { stagedPermissions.value = {}; dialog.value = ''; notify('当前未连接角色权限 API，已保留本地变更预览'); return } const grants = Object.entries(stagedPermissions.value).filter(([, enabled]) => enabled).map(([key]) => api.grantRolePermission(activeRoleId.value, key, actorId)); try { await Promise.all(grants); stagedPermissions.value = {}; dialog.value = ''; await loadResources(); notify('权限授予已提交并写入审计') } catch (error) { notify(error instanceof Error ? error.message : '权限变更提交失败') } }
 const services = [{ name: 'Application / API', status: '健康', latency: '42 ms', icon: '◇' }, { name: 'PostgreSQL', status: '健康', latency: '8 ms', icon: '▣' }, { name: '持久化存储', status: '健康', latency: '116 ms', icon: '▥' }, { name: 'Scheduler / Worker', status: '降级', latency: '队列 12', icon: '◷' }]
 const alerts = [{ severity: 'warning', name: '备份任务延迟', component: 'Scheduler / Worker', condition: '队列深度 > 10', time: '2 小时前' }, { severity: 'info', name: '存储容量提醒', component: '持久化存储', condition: '使用率 68%', time: '昨天' }]
 const notifications = ref([{ title: '备份任务执行失败', text: '每周资料备份需要你的关注', time: '2 小时前', type: 'error', unread: true }, { title: '资源同步完成', text: '12 个资源的元数据已更新', time: '昨天', type: 'success', unread: true }, { title: '系统健康检查', text: '所有核心服务运行正常', time: '昨天', type: 'info', unread: false }])
@@ -99,7 +100,7 @@ async function loadResources() {
       if (result.length) rows.value = result.slice(0, 5).map(item => ({ id: item.id, name: item.task_type || item.id.slice(0, 8), owner: item.owning_subsystem || '系统', status: item.state || '排队中', updated: item.created_at ? new Date(item.created_at).toLocaleString('zh-CN') : '刚刚' }))
     } else if (currentPath.value === 'security/permissions') {
       const result = await api.listRoles()
-      if (result.length) rows.value = result.slice(0, 5).map(item => ({ name: item.name || item.code || item.id.slice(0, 8), owner: `${item.permissions?.length || 0} 项权限`, status: item.builtIn ? '系统角色' : '自定义角色', updated: '权限注册表' }))
+      if (result.length) { activeRoleId.value = result[0].id; rows.value = result.slice(0, 5).map(item => ({ id: item.id, name: item.name || item.code || item.id.slice(0, 8), owner: `${item.permissions?.length || 0} 项权限`, status: item.builtIn ? '系统角色' : '自定义角色', updated: '权限注册表' })) }
     } else if (currentPath.value === 'storage/tiers') {
       const result = await api.listStorageProviders()
       if (result.length) rows.value = result.slice(0, 5).map(item => ({ name: item.providerKey || item.id.slice(0, 8), owner: `${item.providerType || '存储'} · ${item.tier || '默认层'}`, status: item.status || 'DISABLED', updated: item.updatedAt ? new Date(item.updatedAt).toLocaleString('zh-CN') : '刚刚' }))
