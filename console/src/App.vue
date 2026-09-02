@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ApiError, api, unwrapPage } from './services/api'
 
@@ -24,7 +24,7 @@ const groups: Group[] = [
 const preferenceKey = 'ikaros-console-preferences'
 const storedPreferences = (() => { try { return JSON.parse(localStorage.getItem(preferenceKey) || '{}') as { expanded?: string[]; theme?: Theme } } catch { return {} } })()
 type Theme = 'system' | 'light' | 'dark'
-const expanded = ref<string[]>(storedPreferences.expanded || []); const theme = ref<Theme>(storedPreferences.theme || 'system'); const drawer = ref(false); const dialog = ref(''); const toast = ref(''); const query = ref(''); const selectedTab = ref('概览'); const loading = ref(false); const apiConnected = ref(false); const errorState = ref<{ status: number; title: string; detail: string } | null>(null)
+const expanded = ref<string[]>(storedPreferences.expanded || []); const theme = ref<Theme>(storedPreferences.theme || 'system'); const drawer = ref(false); const dialog = ref(''); const toast = ref(''); const query = ref(String(route.query.q || '')); const selectedTab = ref('概览'); const loading = ref(false); const apiConnected = ref(false); const errorState = ref<{ status: number; title: string; detail: string } | null>(null)
 const currentPath = computed(() => Array.isArray(route.params.pathMatch) ? route.params.pathMatch.join('/') : String(route.params.pathMatch || 'dashboard'))
 const current = computed(() => groups.flatMap(g => g.items).find(i => i.path === currentPath.value) || groups[0].items[0])
 const currentGroup = computed(() => groups.find(g => g.items.some(i => i.path === currentPath.value)) || groups[0])
@@ -35,6 +35,8 @@ function notify(message: string) { toast.value = message; setTimeout(() => toast
 function openDialog(kind: string) { dialog.value = kind }
 function applyTheme(value: Theme) { document.documentElement.dataset.theme = value; document.documentElement.classList.toggle('dark', value === 'dark'); localStorage.setItem(preferenceKey, JSON.stringify({ expanded: expanded.value, theme: value })) }
 function cycleTheme() { theme.value = theme.value === 'system' ? 'light' : theme.value === 'light' ? 'dark' : 'system'; applyTheme(theme.value); notify(`主题：${theme.value === 'system' ? '跟随系统' : theme.value === 'light' ? '浅色' : '深色'}`) }
+function submitSearch() { if (!isSearch.value) go('search'); router.replace({ query: query.value ? { q: query.value } : {} }); notify(query.value ? `已搜索：${query.value}` : '已恢复全部结果') }
+function handleShortcut(event: KeyboardEvent) { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); go('search'); requestAnimationFrame(() => document.querySelector<HTMLInputElement>('.search-box input')?.focus()) } }
 const isDashboard = computed(() => currentPath.value === 'dashboard'); const isSearch = computed(() => currentPath.value === 'search')
 const kpis = [{ label: '资源', value: '12,486', trend: '+8.4%', icon: '◈', tone: 'primary' }, { label: '存储', value: '68.4 GB', trend: '已配置 100 GB', icon: '▥', tone: 'teal' }, { label: '今天', value: '8 / 12', trend: '4 项待完成', icon: '✓', tone: 'orange' }, { label: '后台任务', value: '3', trend: '1 项失败', icon: '⇄', tone: 'purple' }, { label: '通知', value: '6', trend: '2 条重要', icon: '✉', tone: 'pink' }]
 const activities = [{ icon: '✦', text: '完成了媒体资源的元数据同步', target: '《星际穿越》', time: '12 分钟前', color: 'purple' }, { icon: '✓', text: '完成任务', target: '整理本周阅读清单', time: '1 小时前', color: 'teal' }, { icon: '↗', text: '更新了项目', target: 'Ikaros V2 产品设计', time: '昨天 18:24', color: 'orange' }, { icon: '♧', text: '收藏了资源', target: 'Material Design 3', time: '昨天 15:08', color: 'blue' }]
@@ -66,6 +68,8 @@ async function loadResources() {
 }
 onMounted(loadResources); watch(currentPath, loadResources)
 onMounted(() => applyTheme(theme.value)); watch(expanded, () => applyTheme(theme.value), { deep: true })
+watch(() => route.query.q, value => { query.value = String(value || '') })
+onMounted(() => window.addEventListener('keydown', handleShortcut)); onBeforeUnmount(() => window.removeEventListener('keydown', handleShortcut))
 function genericTitle() { return current.value.label }
 </script>
 
@@ -97,7 +101,7 @@ function genericTitle() { return current.value.label }
         </div>
         <div v-else class="generic-page">
           <section class="hero-row"><div><p class="eyebrow">{{ currentGroup.label }}</p><h1>{{ genericTitle() }}</h1><p class="subtitle">管理和查看你的{{ genericTitle() }}，所有变更都会记录并支持恢复。</p></div><div class="title-actions"><button class="filled-button" @click="openDialog('create')">＋ 新建</button><button class="icon-button elevated" :disabled="loading" @click="loadResources">{{ loading ? '…' : '⟳' }}</button></div></section>
-          <div v-if="isSearch" class="search-hero"><div class="search-box"><span>⌕</span><input v-model="query" placeholder="搜索资源、文档、任务和活动…" @keyup.enter="notify('已搜索：' + (query || '全部'))"/><button v-if="query" @click="query = ''">×</button><kbd>⌘ K</kbd></div><div class="filter-row"><span class="filter-chip active">全部类型</span><span class="filter-chip">最近更新</span><span class="filter-chip">仅收藏</span><button class="filter-more" @click="openDialog('filters')">＋ 更多筛选</button></div></div>
+          <div v-if="isSearch" class="search-hero"><div class="search-box"><span>⌕</span><input v-model="query" placeholder="搜索资源、文档、任务和活动…" @keyup.enter="submitSearch"/><button v-if="query" @click="query = ''; submitSearch()">×</button><kbd>⌘ K</kbd></div><div class="filter-row"><span class="filter-chip active">全部类型</span><span class="filter-chip">最近更新</span><span class="filter-chip">仅收藏</span><button class="filter-more" @click="openDialog('filters')">＋ 更多筛选</button></div></div>
           <section class="mini-kpi-row"><div class="mini-kpi"><span>总条目</span><b>1,284</b><small>较上月 +12%</small></div><div class="mini-kpi"><span>活跃中</span><b>86</b><small>7 天内更新</small></div><div class="mini-kpi"><span>待处理</span><b class="warning-text">12</b><small>需要关注</small></div><div class="mini-kpi"><span>同步状态</span><b class="success-text">正常</b><small>刚刚检查</small></div></section>
           <section class="surface-card table-card"><div class="table-toolbar"><div class="search-inline"><span>⌕</span><input placeholder="筛选当前列表" v-model="query"/></div><div class="filter-row"><span class="filter-chip active">全部状态</span><span class="filter-chip">最近更新</span><button class="outlined-button small" @click="openDialog('filters')">筛选</button><button class="icon-button compact">⋮</button></div></div><div class="bulk-bar" v-if="query">正在筛选 <b>“{{ query }}”</b><button class="text-button" @click="query=''">清除</button></div><table><thead><tr><th class="check"><input type="checkbox" /></th><th>名称</th><th>所有者</th><th>状态</th><th>最近更新</th><th>操作</th></tr></thead><tbody><tr v-for="row in rows" :key="row.name" @click="openDialog('detail')"><td class="check"><input type="checkbox" @click.stop /></td><td><div class="table-name"><span class="row-icon">◈</span><b>{{ row.name }}</b></div></td><td>{{ row.owner }}</td><td><span class="status-chip" :class="row.status === '失败' ? 'danger' : row.status === '运行中' ? 'warning' : row.status === '已暂停' ? 'neutral' : 'success'">● {{ row.status }}</span></td><td class="muted-text">{{ row.updated }}</td><td><button class="icon-button compact" @click.stop="openDialog('detail')">⋮</button></td></tr></tbody></table><div class="table-footer"><span>显示 1–5，共 28 项</span><div><button class="icon-button compact">‹</button><button class="icon-button compact">›</button></div></div></section>
           <section class="empty-hint"><span>✦</span><div><b>需要了解更多？</b><p>查看该模块的帮助文档，了解状态、权限和操作规则。</p></div><button class="text-button" @click="notify('帮助文档即将开放')">查看文档 →</button></section>
