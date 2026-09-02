@@ -4,6 +4,7 @@ import java.util.UUID;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import org.springframework.http.ResponseEntity;
 
 /** OpenAPI-compatible aliases for restore request routes. */
 @RestController
@@ -12,11 +13,15 @@ public class StorageRestoreContractController {
     public StorageRestoreContractController(StorageRestoreRequestService service) { this.service = service; }
 
     @PostMapping("/api/v2/attachments/{attachmentId}/restore-requests")
-    public Mono<StorageRestoreRequestView> requestAttachment(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+    public Mono<ResponseEntity<StorageRestoreRequestView>> requestAttachment(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @RequestHeader(value="Idempotency-Key", required=false) String idempotencyKey, @PathVariable UUID attachmentId,
         @RequestBody(required=false) RequestAttachmentRestore options) {
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            return Mono.error(new IllegalArgumentException("缺少 Idempotency-Key"));
+        }
         return service.requestAttachment(actorId, new RequestAttachmentRestore(attachmentId,
-            options == null ? null : options.providerRestoreClass()), idempotencyKey);
+            options == null ? null : options.providerRestoreClass()), idempotencyKey)
+            .map(view -> ResponseEntity.accepted().header("Location", "/api/v2/restore-requests/" + view.id()).body(view));
     }
 
     @GetMapping("/api/v2/restore-requests/{requestId}")
