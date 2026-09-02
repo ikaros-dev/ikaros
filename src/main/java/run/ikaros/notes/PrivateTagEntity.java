@@ -1,0 +1,1 @@
+package run.ikaros.notes; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.annotation.Version; import org.springframework.data.relational.core.mapping.Table; @Table("private_tag") public record PrivateTagEntity(@Id UUID id,UUID vaultId,UUID ownerId,String encryptedName,@Version Long version) {}

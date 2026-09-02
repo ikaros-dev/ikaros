@@ -1,0 +1,1 @@
+package run.ikaros.notes; import java.util.UUID; import org.springframework.data.repository.reactive.ReactiveCrudRepository; import reactor.core.publisher.Flux; public interface PrivateTagRepository extends ReactiveCrudRepository<PrivateTagEntity,UUID>{Flux<PrivateTagEntity> findAllByVaultIdAndOwnerIdOrderByIdAsc(UUID vaultId,UUID ownerId);}
