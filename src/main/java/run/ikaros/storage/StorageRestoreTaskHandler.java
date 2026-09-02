@@ -163,7 +163,13 @@ public class StorageRestoreTaskHandler {
         return requests.save(new StorageRestoreRequestEntity(request.id(), request.actorId(), request.scope(), request.scopeId(),
             status, request.totalItems(), status == StorageRestoreRequestStatus.COMPLETED ? request.totalItems() : request.completedItems(),
             request.totalBytes(), request.errorSummary(), request.idempotencyKey(), request.backgroundTaskId(), request.createdAt(),
-            Instant.now(), request.version()));
+            Instant.now(), request.version()))
+            .flatMap(saved -> status == StorageRestoreRequestStatus.COMPLETED || status == StorageRestoreRequestStatus.PARTIAL_FAILURE
+                ? events.append("storage.restore-request.completed", 1, "restore_request", saved.id(),
+                    "{\"request_id\":\"" + saved.id() + "\",\"status\":\"" + saved.status()
+                        + "\",\"ready_items\":" + saved.completedItems() + ",\"failed_items\":"
+                        + Math.max(0, saved.totalItems() - saved.completedItems()) + "}").thenReturn(saved)
+                : Mono.just(saved));
     }
 
     private UUID uuid(Map<String, Object> payload, String key) {
