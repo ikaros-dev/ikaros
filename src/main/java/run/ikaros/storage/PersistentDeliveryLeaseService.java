@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PreconditionFailedException;
+import run.ikaros.common.StorageUnavailableException;
 import run.ikaros.resource.ResourceRepository;
 
 @Service
@@ -17,13 +18,19 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
     private final ResourceRepository resources;
     private final MediaDeliveryGrantRepository grants;
     private final MediaDeliveryLeaseRepository leases;
+    private final BlobPlacementRepository placements;
+    private final StorageProviderRegistry providerRegistry;
+    private final MediaDeliveryBindingRepository bindings;
 
     public PersistentDeliveryLeaseService(AttachmentRepository attachments, ResourceRepository resources,
-                                          MediaDeliveryGrantRepository grants, MediaDeliveryLeaseRepository leases) {
+                                          MediaDeliveryGrantRepository grants, MediaDeliveryLeaseRepository leases,
+                                          BlobPlacementRepository placements, StorageProviderRegistry providerRegistry,
+                                          MediaDeliveryBindingRepository bindings) {
         this.attachments = attachments;
         this.resources = resources;
         this.grants = grants;
         this.leases = leases;
+        this.placements = placements; this.providerRegistry = providerRegistry; this.bindings = bindings;
     }
 
     @Override
@@ -35,11 +42,12 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
             .filter(g -> g.attachmentId().equals(attachmentId) && g.ownerId().equals(actorId)
                 && g.revokedAt() == null && g.expiresAt().isAfter(Instant.now()))
             .switchIfEmpty(Mono.error(new NotFoundException("Delivery Grant 不存在或已失效")))
-            .flatMap(grant -> ownedAttachment(actorId, attachmentId).flatMap(attachment -> {
+            .flatMap(grant -> ownedAttachment(actorId, attachmentId).flatMap(attachment -> select(attachment.blobId()).flatMap(selection -> {
                 Instant now = Instant.now();
                 return leases.save(new MediaDeliveryLeaseEntity(null, attachment.id(), attachment.blobId(), actorId,
-                    grant.id(), now.plusSeconds(ttl), null, now, now, null)).map(this::view);
-            }));
+                    grant.id(), selection.bindingId(), 1, now, selection.reason(), selection.fallbackIndex(),
+                    selection.healthSnapshotVersion(), now.plusSeconds(ttl), null, now, now, null)).map(this::view);
+            })));
     }
 
     @Override
@@ -59,7 +67,8 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
         return ownedActive(actorId, leaseId).flatMap(old -> {
             checkVersion(old.version(), expectedVersion);
             return leases.save(new MediaDeliveryLeaseEntity(old.id(), old.attachmentId(), old.blobId(), old.ownerId(),
-                old.grantId(), now.plusSeconds(ttl), null, now, old.createdAt(), old.version()));
+                old.grantId(), old.bindingId(), old.selectionEpoch(), old.selectedAt(), old.selectionReason(), old.fallbackIndex(),
+                old.healthSnapshotVersion(), now.plusSeconds(ttl), null, now, old.createdAt(), old.version()));
         })
             .map(this::view);
     }
@@ -78,7 +87,8 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
         return ownedActive(actorId, leaseId).flatMap(old -> {
             checkVersion(old.version(), expectedVersion);
             return leases.save(new MediaDeliveryLeaseEntity(old.id(), old.attachmentId(), old.blobId(), old.ownerId(),
-                old.grantId(), old.leaseExpiresAt(), Instant.now(), old.lastHeartbeatAt(), old.createdAt(), old.version())).then();
+                old.grantId(), old.bindingId(), old.selectionEpoch(), old.selectedAt(), old.selectionReason(), old.fallbackIndex(),
+                old.healthSnapshotVersion(), old.leaseExpiresAt(), Instant.now(), old.lastHeartbeatAt(), old.createdAt(), old.version())).then();
         });
     }
 
@@ -108,8 +118,24 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
 
     private DeliveryLeaseView view(MediaDeliveryLeaseEntity l) {
         return new DeliveryLeaseView(l.id(), l.attachmentId(), l.blobId(), l.leaseExpiresAt(), l.lastHeartbeatAt(),
-            l.releasedAt() == null && l.leaseExpiresAt().isAfter(Instant.now()), l.version());
+            l.releasedAt() == null && l.leaseExpiresAt().isAfter(Instant.now()), l.bindingId(), l.selectionEpoch(),
+            l.selectedAt(), l.selectionReason(), l.fallbackIndex(), l.healthSnapshotVersion(), l.version());
     }
+
+    private Mono<Selection> select(UUID blobId) {
+        return placements.findAllByBlobIdOrderByCreatedAtAsc(blobId)
+            .filter(p -> p.placementState() == PlacementState.ACTIVE)
+            .concatMap(p -> providerRegistry.getByKey(p.provider())
+                .filter(provider -> provider.status() != StorageProviderStatus.DISABLED
+                    && provider.status() != StorageProviderStatus.FAILED)
+                .flatMap(provider -> bindings.findAllByStorageProviderIdOrderByPriorityAsc(provider.id())
+                    .filter(MediaDeliveryBindingEntity::enabled).next()
+                    .map(binding -> new Selection(binding.id(), "PRIMARY", 0, provider.updatedAt().toString()))))
+            .next()
+            .switchIfEmpty(Mono.error(new StorageUnavailableException("附件没有可用 Delivery Binding")));
+    }
+
+    private record Selection(UUID bindingId, String reason, int fallbackIndex, String healthSnapshotVersion) {}
 
     private void checkVersion(Long actual, Long expected) {
         if (expected != null && (actual == null ? 0 : actual) != expected) {
