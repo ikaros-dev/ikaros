@@ -35,6 +35,11 @@ public class BackgroundTaskController {
         return service.cancel(taskId).thenReturn(ResponseEntity.noContent().build());
     }
 
+    @org.springframework.web.bind.annotation.PostMapping("/{taskId}/actions/cancel")
+    public Mono<ResponseEntity<Void>> cancelAction(@PathVariable UUID taskId) {
+        return service.cancel(taskId).thenReturn(ResponseEntity.noContent().build());
+    }
+
     @GetMapping("/{taskId}/attempts")
     public Flux<BackgroundTaskAttemptEntity> attempts(@PathVariable UUID taskId) {
         return service.attempts(taskId);
