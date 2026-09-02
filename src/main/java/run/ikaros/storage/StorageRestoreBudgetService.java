@@ -51,7 +51,9 @@ public class StorageRestoreBudgetService {
                     long activeCount = values.getT1().getT1();
                     long activeBytes = values.getT1().getT2();
                     long dailyBytes = values.getT2();
-                    if (activeCount >= budget.maxConcurrentOperations() || activeBytes > budget.maxConcurrentBytes()
+                    boolean exceedsConcurrentBytes = activeBytes > budget.maxConcurrentBytes()
+                        || bytes > budget.maxConcurrentBytes() - activeBytes;
+                    if (activeCount >= budget.maxConcurrentOperations() || exceedsConcurrentBytes
                         || dailyBytes > budget.dailyRequestedBytes() - bytes)
                         return reject(budget, "Restore 请求超过并发或每日预算");
                     return Mono.empty();
