@@ -78,7 +78,7 @@ public class StorageRestoreRequestService {
             "storage.restore:" + saved.id()).flatMap(task -> requests.save(new StorageRestoreRequestEntity(
                 saved.id(), saved.actorId(), saved.scope(), saved.scopeId(), saved.status(), saved.totalItems(),
                 saved.completedItems(), saved.totalBytes(), saved.errorSummary(), saved.idempotencyKey(), task.id(),
-                saved.createdAt(), Instant.now(), saved.budgetDecision(), saved.version())));
+                saved.createdAt(), Instant.now(), saved.budgetDecision(), saved.selectedAttachmentIds(), saved.version())));
     }
 
     public Mono<StorageRestoreRequestView> requestSeason(UUID actorId, UUID seasonId, String providerRestoreClass,
@@ -108,28 +108,58 @@ public class StorageRestoreRequestService {
             .collectList()
             .flatMap(candidates -> {
                 if (candidates.isEmpty()) return Mono.error(new ConflictException("Season 没有可恢复附件"));
-                long totalBytes = candidates.stream().mapToLong(RestoreCandidate::bytes).sum();
-                return budget.evaluate(candidates.size(), totalBytes, budgetConfirmationToken)
-                    .flatMap(decision -> {
+                return selectSeasonCandidates(candidates, budgetConfirmationToken).flatMap(selection -> {
                         Instant now = Instant.now();
-                        StorageRestoreRequestStatus status = decision == StorageRestoreBudgetDecision.QUEUED
+                        StorageRestoreRequestStatus status = selection.budgetDecision() == StorageRestoreBudgetDecision.QUEUED
                             ? StorageRestoreRequestStatus.QUEUED : StorageRestoreRequestStatus.REQUESTED;
                         return requests.save(new StorageRestoreRequestEntity(null, actorId, StorageRestoreScope.SEASON, seasonId,
-                            status, candidates.size(), 0, totalBytes, null, idempotencyKey, null, now, now, decision.name(), null));
+                            status, selection.attachmentIds().size(), 0, selection.totalBytes(), null, idempotencyKey, null,
+                            now, now, selection.budgetDecision().name(), String.join(",", selection.attachmentIds()), null));
                     });
             });
+    }
+
+    private Mono<StorageRestorePartialSelection> selectSeasonCandidates(List<RestoreCandidate> candidates,
+        String confirmationToken) {
+        long totalBytes = candidates.stream().mapToLong(RestoreCandidate::bytes).sum();
+        return budget.get().flatMap(policy -> {
+            if (policy.overBudgetAction() != StorageRestoreBudgetAction.PARTIAL_ACCEPT
+                || (candidates.size() <= policy.maxItemsPerRequest() && totalBytes <= policy.maxBytesPerRequest())) {
+                return budget.evaluate(candidates.size(), totalBytes, confirmationToken)
+                    .map(decision -> new StorageRestorePartialSelection(candidates.stream().map(c -> c.attachmentId().toString()).toList(),
+                        totalBytes, decision));
+            }
+            List<String> selected = new java.util.ArrayList<>();
+            long selectedBytes = 0;
+            for (RestoreCandidate candidate : candidates) {
+                if (selected.size() >= policy.maxItemsPerRequest()) break;
+                if (candidate.bytes() > policy.maxBytesPerRequest() - selectedBytes) continue;
+                selected.add(candidate.attachmentId().toString());
+                selectedBytes += candidate.bytes();
+            }
+            if (selected.isEmpty()) return Mono.error(new ConflictException("没有附件落在当前预算内"));
+            final long acceptedBytes = selectedBytes;
+            return budget.evaluate(selected.size(), acceptedBytes, confirmationToken)
+                .map(decision -> new StorageRestorePartialSelection(selected, acceptedBytes,
+                    StorageRestoreBudgetDecision.PARTIAL));
+        });
     }
 
     private Mono<StorageRestoreRequestEntity> submitSeasonIfNeeded(StorageRestoreRequestEntity saved, UUID seasonId,
         String providerRestoreClass) {
         if (saved.status() == StorageRestoreRequestStatus.QUEUED) return Mono.just(saved);
-        return tasks.submit("storage.restore", Map.of("restore_request_id", saved.id().toString(),
-            "season_id", seasonId.toString(), "provider_restore_class",
-            providerRestoreClass == null ? "STANDARD" : providerRestoreClass), "storage.restore:" + saved.id())
+        Map<String, Object> payload = new java.util.HashMap<>();
+        payload.put("restore_request_id", saved.id().toString());
+        payload.put("season_id", seasonId.toString());
+        payload.put("provider_restore_class", providerRestoreClass == null ? "STANDARD" : providerRestoreClass);
+        if (saved.selectedAttachmentIds() != null && !saved.selectedAttachmentIds().isBlank()) {
+            payload.put("selected_attachment_ids", saved.selectedAttachmentIds());
+        }
+        return tasks.submit("storage.restore", payload, "storage.restore:" + saved.id())
             .flatMap(task -> requests.save(new StorageRestoreRequestEntity(saved.id(), saved.actorId(), saved.scope(),
                 saved.scopeId(), saved.status(), saved.totalItems(), saved.completedItems(), saved.totalBytes(),
                 saved.errorSummary(), saved.idempotencyKey(), task.id(), saved.createdAt(), Instant.now(),
-                saved.budgetDecision(), saved.version())));
+                saved.budgetDecision(), saved.selectedAttachmentIds(), saved.version())));
     }
 
     public Mono<StorageRestoreRequestView> get(UUID actorId, UUID id) {
@@ -181,7 +211,8 @@ public class StorageRestoreRequestService {
                 Mono<Void> stop = old.backgroundTaskId() == null ? Mono.empty() : tasks.cancel(old.backgroundTaskId()).then();
                 return stop.then(emitCancelled(requests.save(new StorageRestoreRequestEntity(old.id(), old.actorId(), old.scope(), old.scopeId(),
                     StorageRestoreRequestStatus.CANCELLED, old.totalItems(), old.completedItems(), old.totalBytes(), old.errorSummary(),
-                    old.idempotencyKey(), old.backgroundTaskId(), old.createdAt(), Instant.now(), old.budgetDecision(), old.version()))));
+                    old.idempotencyKey(), old.backgroundTaskId(), old.createdAt(), Instant.now(), old.budgetDecision(),
+                    old.selectedAttachmentIds(), old.version()))));
             }).map(this::view);
     }
 
@@ -205,7 +236,7 @@ public class StorageRestoreRequestService {
                     .flatMap(task -> requests.save(new StorageRestoreRequestEntity(request.id(), request.actorId(), request.scope(),
                         request.scopeId(), StorageRestoreRequestStatus.REQUESTED, request.totalItems(), request.completedItems(),
                         request.totalBytes(), request.errorSummary(), request.idempotencyKey(), task.id(), request.createdAt(),
-                        Instant.now(), request.budgetDecision(), request.version())))
+                        Instant.now(), request.budgetDecision(), request.selectedAttachmentIds(), request.version())))
                     .flatMap(updated -> events.append("storage.restore-request.retry-requested", 1, "restore_request", updated.id(),
                         "{\"request_id\":\"" + updated.id() + "\",\"failed_item_count\":"
                             + Math.max(0, updated.totalItems() - updated.completedItems()) + "}").thenReturn(updated));

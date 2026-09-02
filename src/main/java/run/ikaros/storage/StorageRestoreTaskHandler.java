@@ -46,13 +46,16 @@ public class StorageRestoreTaskHandler {
         UUID requestId = uuid(task.payload(), "restore_request_id");
         String restoreClass = String.valueOf(task.payload().getOrDefault("provider_restore_class", "STANDARD"));
         boolean retryFailedOnly = Boolean.TRUE.equals(task.payload().get("retry_failed_only"));
+        String selectedAttachmentIds = task.payload().get("selected_attachment_ids") == null ? null
+            : task.payload().get("selected_attachment_ids").toString();
         return requests.findById(requestId)
             .switchIfEmpty(Mono.error(new NotFoundException("Restore Request 不存在")))
             .flatMap(request -> request.status() == StorageRestoreRequestStatus.CANCELLED
                 ? Mono.just(Map.<String, Object>of("restore_request_id", requestId.toString(), "cancelled", true))
                 : updateStatus(request, StorageRestoreRequestStatus.IN_PROGRESS).then(
                     task.payload().containsKey("season_id")
-                        ? restoreSeason(request, requestId, task.id(), restoreClass, uuid(task.payload(), "season_id"), retryFailedOnly)
+                        ? restoreSeason(request, requestId, task.id(), restoreClass, uuid(task.payload(), "season_id"), retryFailedOnly,
+                            selectedAttachmentIds)
                         : attachments.findById(uuid(task.payload(), "attachment_id"))
                             .filter(attachment -> attachment.deletedAt() == null)
                             .switchIfEmpty(Mono.error(new NotFoundException("附件不存在")))
@@ -61,9 +64,11 @@ public class StorageRestoreTaskHandler {
     }
 
     private Mono<Map<String, Object>> restoreSeason(StorageRestoreRequestEntity request, UUID requestId, UUID taskId,
-        String restoreClass, UUID seasonId, boolean retryFailedOnly) {
+        String restoreClass, UUID seasonId, boolean retryFailedOnly, String selectedAttachmentIds) {
         return episodes.findAllByOwnerIdAndSeasonIdOrderByEpisodeNumberAsc(request.actorId(), seasonId)
             .flatMap(episode -> attachments.findAllByResourceIdAndDeletedAtIsNullOrderByCreatedAtAsc(episode.resourceId()))
+            .filter(attachment -> selectedAttachmentIds == null || java.util.Set.of(selectedAttachmentIds.split(","))
+                .contains(attachment.id().toString()))
             .concatMap(attachment -> restoreAttachment(request, attachment, requestId, taskId, restoreClass, false, retryFailedOnly))
             .then(items.findAllByRequestId(request.id()).collectList())
             .flatMap(result -> {
@@ -191,7 +196,7 @@ public class StorageRestoreTaskHandler {
         return requests.save(new StorageRestoreRequestEntity(request.id(), request.actorId(), request.scope(), request.scopeId(),
             status, request.totalItems(), completedItems,
             request.totalBytes(), request.errorSummary(), request.idempotencyKey(), request.backgroundTaskId(), request.createdAt(),
-            Instant.now(), request.budgetDecision(), request.version()))
+            Instant.now(), request.budgetDecision(), request.selectedAttachmentIds(), request.version()))
             .flatMap(saved -> status == StorageRestoreRequestStatus.COMPLETED
                 || status == StorageRestoreRequestStatus.PARTIAL_FAILURE
                 || status == StorageRestoreRequestStatus.FAILED

@@ -37,13 +37,19 @@ public class StorageRestoreQueueScheduler {
             .flatMap(task -> requests.save(new StorageRestoreRequestEntity(request.id(), request.actorId(), request.scope(),
                 request.scopeId(), StorageRestoreRequestStatus.REQUESTED, request.totalItems(), request.completedItems(),
                 request.totalBytes(), request.errorSummary(), request.idempotencyKey(), task.id(), request.createdAt(),
-                Instant.now(), request.budgetDecision(), request.version())))
+                Instant.now(), request.budgetDecision(), request.selectedAttachmentIds(), request.version())))
             .then();
     }
 
     private Map<String, Object> payload(StorageRestoreRequestEntity request) {
         String scopeKey = request.scope() == StorageRestoreScope.SEASON ? "season_id" : "attachment_id";
-        return Map.of("restore_request_id", request.id().toString(), scopeKey, request.scopeId().toString(),
-            "provider_restore_class", "STANDARD");
+        Map<String, Object> payload = new java.util.HashMap<>();
+        payload.put("restore_request_id", request.id().toString());
+        payload.put(scopeKey, request.scopeId().toString());
+        payload.put("provider_restore_class", "STANDARD");
+        if (request.selectedAttachmentIds() != null && !request.selectedAttachmentIds().isBlank()) {
+            payload.put("selected_attachment_ids", request.selectedAttachmentIds());
+        }
+        return payload;
     }
 }

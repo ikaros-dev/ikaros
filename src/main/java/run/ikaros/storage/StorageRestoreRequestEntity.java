@@ -14,11 +14,20 @@ public record StorageRestoreRequestEntity(@Id UUID id, @Column("actor_id") UUID 
     @Column("total_bytes") long totalBytes, @Column("error_summary") String errorSummary,
     @Column("idempotency_key") String idempotencyKey, @Column("background_task_id") UUID backgroundTaskId,
     @Column("created_at") Instant createdAt, @Column("updated_at") Instant updatedAt,
-    @Column("budget_decision") String budgetDecision, @Version Long version) {
+    @Column("budget_decision") String budgetDecision,
+    @Column("selected_attachment_ids") String selectedAttachmentIds, @Version Long version) {
     public StorageRestoreRequestEntity(UUID id, UUID actorId, StorageRestoreScope scope, UUID scopeId,
         StorageRestoreRequestStatus status, int totalItems, int completedItems, long totalBytes, String errorSummary,
         String idempotencyKey, UUID backgroundTaskId, Instant createdAt, Instant updatedAt, Long version) {
         this(id, actorId, scope, scopeId, status, totalItems, completedItems, totalBytes, errorSummary,
-            idempotencyKey, backgroundTaskId, createdAt, updatedAt, "ACCEPTED", version);
+            idempotencyKey, backgroundTaskId, createdAt, updatedAt, "ACCEPTED", null, version);
+    }
+
+    public StorageRestoreRequestEntity(UUID id, UUID actorId, StorageRestoreScope scope, UUID scopeId,
+        StorageRestoreRequestStatus status, int totalItems, int completedItems, long totalBytes, String errorSummary,
+        String idempotencyKey, UUID backgroundTaskId, Instant createdAt, Instant updatedAt, String budgetDecision,
+        Long version) {
+        this(id, actorId, scope, scopeId, status, totalItems, completedItems, totalBytes, errorSummary,
+            idempotencyKey, backgroundTaskId, createdAt, updatedAt, budgetDecision, null, version);
     }
 }
