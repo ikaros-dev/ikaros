@@ -111,10 +111,15 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     private Mono<Void> requeueExpired(Instant observedAt) {
         return tasks.findTop1ByStatusAndLeaseExpiresAtLessThanEqualOrderByLeaseExpiresAtAsc(TaskStatus.RUNNING.name(), observedAt)
             .flatMap(expired -> tasks.save(new BackgroundTaskEntity(expired.id(), expired.taskType(),
-                TaskStatus.PENDING.name(), expired.payload(), expired.idempotencyKey(), observedAt, expired.timeoutAt(), null, null, null,
+                expired.cancelRequestedAt() == null ? TaskStatus.PENDING.name() : TaskStatus.CANCELLED.name(),
+                expired.payload(), expired.idempotencyKey(), observedAt, expired.timeoutAt(), null, null, null,
                 expired.attempt(), expired.cancelRequestedAt(), expired.progress(), expired.result(), expired.createdAt(),
                 Instant.now(), expired.parentTaskId()))
-                .flatMap(requeued -> finishAttempt(expired, "LEASE_LOST", "Lease 已过期").then()))
+                .flatMap(requeued -> finishAttempt(expired,
+                    expired.cancelRequestedAt() == null ? "LEASE_LOST" : TaskStatus.CANCELLED.name(), "Lease 已过期")
+                    .then(expired.cancelRequestedAt() == null ? Mono.empty()
+                        : events.append("operations.background-task.cancelled", 1, "background_task", requeued.id(),
+                            "{\"task_id\":\"" + requeued.id() + "\",\"attempt_no\":" + requeued.attempt() + "}"))))
             .then();
     }
 
@@ -123,7 +128,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
             with candidate as (
                 select id
                   from background_task
-                 where status = 'PENDING' and available_at <= :now
+                 where status = 'PENDING' and cancel_requested_at is null and available_at <= :now
                  order by available_at asc, created_at asc, id asc
                  for update skip locked
                  limit 1
