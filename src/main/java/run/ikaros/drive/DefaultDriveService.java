@@ -21,11 +21,15 @@ public class DefaultDriveService implements DriveService {
         String appVersion, DeviceTrustState trust, Instant registered, Instant lastSeen, Instant revoked) {}
     private record Reservation(UUID id, UUID space, UUID upload, long bytes, QuotaReservationState state,
         Instant expires) {}
+    private record Binding(UUID id, UUID user, UUID device, UUID space, UUID root, String scope, String displayPath,
+        SyncSourceKind sourceKind, SyncMode mode, DeletePolicy deletePolicy, ConflictPolicy conflictPolicy,
+        boolean enabled, SyncBindingState state, long cursor, Instant created, Instant updated) {}
     private final UuidV7Generator ids = new UuidV7Generator();
     private final ConcurrentMap<UUID, Space> spaces = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Node> nodes = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Device> devices = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Reservation> reservations = new ConcurrentHashMap<>();
+    private final ConcurrentMap<UUID, Binding> bindings = new ConcurrentHashMap<>();
 
     @Override public Mono<DriveSpaceView> createSpace(UUID actorId, CreateDriveSpaceRequest request) {
         return Mono.fromSupplier(() -> {
@@ -121,9 +125,44 @@ public class DefaultDriveService implements DriveService {
     @Override public Mono<DriveQuotaReservationView> abortUpload(UUID actorId, UUID spaceId, UUID reservationId) {
         return settleReservation(actorId, spaceId, reservationId, QuotaReservationState.RELEASED);
     }
-    @Override public Mono<SyncBindingView> createBinding(UUID actorId, CreateSyncBindingRequest request) { return Mono.error(new UnsupportedOperationException("内存 Drive 未实现同步 Binding")); }
-    @Override public Flux<SyncBindingView> bindings(UUID actorId) { return Flux.empty(); }
-    @Override public Mono<SyncBindingView> setBindingEnabled(UUID actorId, UUID bindingId, boolean enabled) { return Mono.error(new NotFoundException("Sync Binding 不存在")); }
+    @Override public Mono<SyncBindingView> createBinding(UUID actorId, CreateSyncBindingRequest request) {
+        return ownedSpace(actorId, request.driveSpaceId()).flatMap(space -> {
+            Device device = devices.get(request.deviceId());
+            if (device == null || !device.user().equals(actorId) || device.trust() == DeviceTrustState.REVOKED)
+                return Mono.error(new ConflictException("Device 不存在或已撤销"));
+            Node root = nodes.get(request.remoteRootNodeId());
+            if (root == null || !root.space().equals(space.id()) || root.type() != DriveNodeType.FOLDER
+                || root.lifecycle() != DriveLifecycle.ACTIVE)
+                return Mono.error(new ConflictException("远端同步根目录无效"));
+            String scope = normalizeScope(request.localScopeId());
+            boolean write = request.mode() == SyncMode.TWO_WAY || request.mode() == SyncMode.UPLOAD_ONLY
+                || request.mode() == SyncMode.BACKUP;
+            boolean overlap = bindings.values().stream().anyMatch(binding -> binding.user().equals(actorId)
+                && binding.device().equals(request.deviceId()) && binding.enabled() && write
+                && isWrite(binding.mode()) && scopesOverlap(scope, normalizeScope(binding.scope())));
+            if (overlap) return Mono.error(new ConflictException("设备本地同步 Scope 重叠"));
+            Instant now = Instant.now();
+            Binding binding = new Binding(ids.next(), actorId, request.deviceId(), space.id(), request.remoteRootNodeId(),
+                request.localScopeId().trim(), request.localDisplayPath(), request.sourceKind(), request.mode(),
+                request.deletePolicy() == null ? DeletePolicy.KEEP_REMOTE : request.deletePolicy(),
+                request.conflictPolicy() == null ? ConflictPolicy.PRESERVE_BOTH : request.conflictPolicy(), true,
+                SyncBindingState.ACTIVE, 0, now, now);
+            bindings.put(binding.id(), binding);
+            return Mono.just(bindingView(binding));
+        });
+    }
+    @Override public Flux<SyncBindingView> bindings(UUID actorId) { return Flux.fromIterable(bindings.values())
+        .filter(binding -> binding.user().equals(actorId)).sort(java.util.Comparator.comparing(Binding::created))
+        .map(this::bindingView); }
+    @Override public Mono<SyncBindingView> setBindingEnabled(UUID actorId, UUID bindingId, boolean enabled) {
+        return Mono.justOrEmpty(bindings.get(bindingId)).filter(binding -> binding.user().equals(actorId))
+            .switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在")))
+            .map(binding -> { Binding updated = new Binding(binding.id(), binding.user(), binding.device(), binding.space(),
+                binding.root(), binding.scope(), binding.displayPath(), binding.sourceKind(), binding.mode(),
+                binding.deletePolicy(), binding.conflictPolicy(), enabled,
+                enabled ? SyncBindingState.ACTIVE : SyncBindingState.PAUSED, binding.cursor(), binding.created(), Instant.now());
+                bindings.put(bindingId, updated); return bindingView(updated); });
+    }
     @Override public Mono<SyncConflictView> createConflict(UUID actorId, CreateSyncConflictRequest request) { return Mono.error(new UnsupportedOperationException("内存 Drive 未实现 Conflict")); }
     @Override public Flux<SyncConflictView> conflicts(UUID actorId, UUID bindingId) { return Flux.empty(); }
     @Override public Mono<SyncConflictView> resolveConflict(UUID actorId, UUID conflictId, SyncConflictState state) { return Mono.error(new NotFoundException("Conflict 不存在")); }
@@ -190,4 +229,14 @@ public class DefaultDriveService implements DriveService {
         return new DriveQuotaReservationView(reservation.id(), reservation.space(), reservation.upload(),
             reservation.bytes(), reservation.state(), reservation.expires());
     }
+    private boolean isWrite(SyncMode mode) { return mode == SyncMode.TWO_WAY || mode == SyncMode.UPLOAD_ONLY
+        || mode == SyncMode.BACKUP; }
+    private String normalizeScope(String value) { return Normalizer.normalize(value.trim().replace('\\', '/'), Normalizer.Form.NFKC)
+        .replaceAll("/+", "/").toLowerCase(java.util.Locale.ROOT); }
+    private boolean scopesOverlap(String a, String b) { return a.equals(b) || a.startsWith(b.endsWith("/") ? b : b + "/")
+        || b.startsWith(a.endsWith("/") ? a : a + "/"); }
+    private SyncBindingView bindingView(Binding binding) { return new SyncBindingView(binding.id(), binding.user(), binding.device(),
+        binding.space(), binding.root(), binding.scope(), binding.displayPath(), binding.sourceKind(), binding.mode(),
+        binding.deletePolicy(), binding.conflictPolicy(), binding.enabled(), binding.state(), binding.cursor(),
+        binding.created(), binding.updated()); }
 }
