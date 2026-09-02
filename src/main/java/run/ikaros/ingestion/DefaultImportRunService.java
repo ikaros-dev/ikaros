@@ -14,13 +14,14 @@ import run.ikaros.event.DurableEventService;
 public class DefaultImportRunService implements ImportRunService {
     private final ImportPlanRepository plans; private final ImportRunRepository runs;
     private final BackgroundTaskService tasks; private final AuditService audit; private final DurableEventService events;
+    private final ImportPlanItemRepository planItems; private final ImportRunItemRepository runItems;
     public DefaultImportRunService(ImportPlanRepository plans, ImportRunRepository runs, BackgroundTaskService tasks, AuditService audit) {
-        this(plans,runs,tasks,audit,null);
+        this(plans,runs,tasks,audit,null,null,null);
     }
     @org.springframework.beans.factory.annotation.Autowired
     public DefaultImportRunService(ImportPlanRepository plans, ImportRunRepository runs, BackgroundTaskService tasks,
-        AuditService audit, DurableEventService events) {
-        this.plans=plans; this.runs=runs; this.tasks=tasks; this.audit=audit; this.events=events;
+        AuditService audit, DurableEventService events, ImportPlanItemRepository planItems, ImportRunItemRepository runItems) {
+        this.plans=plans; this.runs=runs; this.tasks=tasks; this.audit=audit; this.events=events; this.planItems=planItems; this.runItems=runItems;
     }
     public Mono<ImportRunView> start(UUID ownerId, UUID planId, StartImportRequest request) {
         return plans.findByIdAndOwnerId(planId, ownerId).switchIfEmpty(Mono.error(new NotFoundException("Import Plan 不存在或无权访问")))
@@ -30,11 +31,17 @@ public class DefaultImportRunService implements ImportRunService {
                 "ingestion.import:"+planId+":"+request.expectedPlanVersion()))
             .flatMap(task -> { Instant now=Instant.now(); return runs.save(new ImportRunEntity(null, planId, ownerId, ownerId,
                 ImportRunStatus.PENDING.name(), null, 0, 0, 0, task.id(), now, null, now, null)); })
+            .flatMap(run -> planItems == null ? Mono.just(run) : planItems.findAllByPlanIdOrderByCreatedAtAsc(planId)
+                .flatMap(item -> runItems.save(new ImportRunItemEntity(null, run.id(), item.id(), ImportItemStatus.PENDING.name(), 0, null,
+                    run.id()+":"+item.id(), Instant.now(), null))).then(Mono.just(run)))
             .flatMap(run -> (events == null ? Mono.empty() : events.append("ingestion.import.started", 1,
                 "ingestion_import_run", run.id(), "{\"run_id\":\"" + run.id() + "\",\"plan_id\":\""
                     + run.planId() + "\"}").then()).then(audit.record(ownerId,"ingestion.import.start",
                         "INGESTION_IMPORT_RUN",run.id(),"{}")).thenReturn(view(run)));
     }
+    public Mono<List<ImportRunItemView>> items(UUID ownerId, UUID runId) { return owned(ownerId,runId).thenMany(runItems.findAllByRunIdOrderByUpdatedAtAsc(runId)).map(this::itemView).collectList(); }
+    public Mono<ImportRunItemView> retryItem(UUID ownerId,UUID runId,UUID itemId) { return owned(ownerId,runId).then(runItems.findById(itemId).switchIfEmpty(Mono.error(new NotFoundException("导入项不存在")))).flatMap(item -> { if(!item.runId().equals(runId)) return Mono.error(new NotFoundException("导入项不存在")); return runItems.save(new ImportRunItemEntity(item.id(),item.runId(),item.planItemId(),ImportItemStatus.PENDING.name(),item.attemptCount()+1,null,item.idempotencyKey(),Instant.now(),item.version())); }).map(this::itemView); }
+    private ImportRunItemView itemView(ImportRunItemEntity i){return new ImportRunItemView(i.id(),i.runId(),i.planItemId(),ImportItemStatus.valueOf(i.status()),i.attemptCount(),i.errorMessage(),i.idempotencyKey(),i.updatedAt());}
     public Mono<List<ImportRunView>> list(UUID ownerId) { return runs.findAllByOwnerIdOrderByCreatedAtDesc(ownerId).map(this::view).collectList(); }
     public Mono<ImportRunView> get(UUID ownerId, UUID runId) { return owned(ownerId,runId).map(this::view); }
     public Mono<ImportRunView> cancel(UUID ownerId, UUID runId) { return owned(ownerId,runId).flatMap(run -> {

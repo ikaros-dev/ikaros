@@ -14,4 +14,6 @@ public class ImportRunController {
     @GetMapping("/runs") public Mono<List<ImportRunView>> list(@RequestHeader("X-Ikaros-Actor-Id") UUID actor){return service.list(actor);}
     @GetMapping("/runs/{runId}") public Mono<ImportRunView> get(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID runId){return service.get(actor,runId);}
     @DeleteMapping("/runs/{runId}") public Mono<ImportRunView> cancel(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID runId){return service.cancel(actor,runId);}
+    @GetMapping("/runs/{runId}/items") public Mono<List<ImportRunItemView>> items(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID runId){return service.items(actor,runId);}
+    @PostMapping("/runs/{runId}/items/{itemId}/retry") public Mono<ImportRunItemView> retry(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID runId,@PathVariable UUID itemId){return service.retryItem(actor,runId,itemId);}
 }

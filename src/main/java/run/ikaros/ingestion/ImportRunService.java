@@ -8,4 +8,6 @@ public interface ImportRunService {
     Mono<ImportRunView> get(UUID ownerId, UUID runId);
     Mono<ImportRunView> cancel(UUID ownerId, UUID runId);
     Mono<ImportRunView> checkpoint(UUID runId, String checkpoint, long completed, long failed, long skipped);
+    Mono<List<ImportRunItemView>> items(UUID ownerId, UUID runId);
+    Mono<ImportRunItemView> retryItem(UUID ownerId, UUID runId, UUID itemId);
 }
