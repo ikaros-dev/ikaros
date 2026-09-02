@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { api, unwrapPage } from './services/api'
+import { ApiError, api, unwrapPage } from './services/api'
 
 type Item = { label: string; path: string; icon: string; capability?: string }
 type Group = { label: string; icon: string; items: Item[] }
@@ -24,7 +24,7 @@ const groups: Group[] = [
 const preferenceKey = 'ikaros-console-preferences'
 const storedPreferences = (() => { try { return JSON.parse(localStorage.getItem(preferenceKey) || '{}') as { expanded?: string[]; theme?: Theme } } catch { return {} } })()
 type Theme = 'system' | 'light' | 'dark'
-const expanded = ref<string[]>(storedPreferences.expanded || []); const theme = ref<Theme>(storedPreferences.theme || 'system'); const drawer = ref(false); const dialog = ref(''); const toast = ref(''); const query = ref(''); const selectedTab = ref('概览'); const loading = ref(false); const apiConnected = ref(false)
+const expanded = ref<string[]>(storedPreferences.expanded || []); const theme = ref<Theme>(storedPreferences.theme || 'system'); const drawer = ref(false); const dialog = ref(''); const toast = ref(''); const query = ref(''); const selectedTab = ref('概览'); const loading = ref(false); const apiConnected = ref(false); const errorState = ref<{ status: number; title: string; detail: string } | null>(null)
 const currentPath = computed(() => Array.isArray(route.params.pathMatch) ? route.params.pathMatch.join('/') : String(route.params.pathMatch || 'dashboard'))
 const current = computed(() => groups.flatMap(g => g.items).find(i => i.path === currentPath.value) || groups[0].items[0])
 const currentGroup = computed(() => groups.find(g => g.items.some(i => i.path === currentPath.value)) || groups[0])
@@ -44,6 +44,7 @@ const demoRows = rows.value
 async function loadResources() {
   if (isDashboard.value) return
   loading.value = true
+  errorState.value = null
   try {
     if (currentPath.value === 'library') {
       const result = unwrapPage(await api.listResources('?limit=5'))
@@ -56,7 +57,12 @@ async function loadResources() {
       if (result.length) rows.value = result.slice(0, 5).map(item => ({ name: item.task_type || item.id.slice(0, 8), owner: item.owning_subsystem || '系统', status: item.state || '排队中', updated: item.created_at ? new Date(item.created_at).toLocaleString('zh-CN') : '刚刚' }))
     } else return
     apiConnected.value = true
-  } catch { apiConnected.value = false; rows.value = demoRows; notify('后端暂不可用，已保留演示数据') } finally { loading.value = false }
+  } catch (error) {
+    apiConnected.value = false
+    if (error instanceof ApiError && [401, 403, 404, 409, 412].includes(error.status)) {
+      errorState.value = { status: error.status, title: error.status === 401 ? '会话已失效' : error.status === 403 ? '你没有权限访问此页面' : error.status === 404 ? '页面或资源不存在' : '数据发生并发冲突', detail: error.problem?.detail || error.message }
+    } else { rows.value = demoRows; notify('后端暂不可用，已保留演示数据') }
+  } finally { loading.value = false }
 }
 onMounted(loadResources); watch(currentPath, loadResources)
 onMounted(() => applyTheme(theme.value)); watch(expanded, () => applyTheme(theme.value), { deep: true })
@@ -81,7 +87,8 @@ function genericTitle() { return current.value.label }
     <main class="main-content">
       <header class="topbar"><button class="menu-button icon-button" @click="drawer = !drawer">☰</button><div class="breadcrumbs"><span>Ikaros Console</span><span>/</span><b>{{ currentGroup.label }}</b><span>/</span><strong>{{ pageTitle }}</strong></div><div class="top-actions"><button class="icon-button" @click="openDialog('tasks')" aria-label="后台任务">⇄<i class="badge">3</i></button><button class="icon-button" @click="openDialog('notifications')" aria-label="通知">♧<i class="badge pink">6</i></button><button class="icon-button" @click="notify('这是当前页面的帮助提示')">?</button><div class="mini-avatar">陈</div></div></header>
       <div class="page-wrap">
-        <div v-if="isDashboard" class="dashboard">
+        <section v-if="errorState" class="error-state surface-card"><div class="error-state-icon">{{ errorState.status === 403 ? '♢' : errorState.status === 401 ? '⌁' : errorState.status === 409 || errorState.status === 412 ? '↻' : '!' }}</div><p class="eyebrow">错误 {{ errorState.status }}</p><h1>{{ errorState.title }}</h1><p>{{ errorState.detail }}</p><div class="error-actions"><button class="outlined-button" @click="go('dashboard')">返回概览</button><button v-if="errorState.status !== 403" class="filled-button" @click="loadResources">重新加载</button></div></section>
+        <div v-else-if="isDashboard" class="dashboard">
           <section class="hero-row"><div><p class="eyebrow">星期三，2026 年 9 月 2 日</p><h1>概览</h1><p class="subtitle">快速了解你的 Ikaros 工作空间。</p></div><div class="title-actions"><button class="outlined-button" @click="openDialog('customize')">⊞ 自定义</button><button class="icon-button elevated" @click="notify('工作台已刷新')">⟳</button></div></section>
           <section class="welcome-card"><div><h2>下午好，陈昊 <span class="wave">✦</span></h2><p>你的空间运行良好，今天也有一些值得继续的事情。</p><div class="chips"><span class="status-chip success">● 系统健康</span><span class="status-chip neutral">本地环境</span><span class="muted-text">上次刷新：刚刚</span></div></div><div class="welcome-art"><div class="orb orb-a"></div><div class="orb orb-b"></div><div class="spark">✦</div></div></section>
           <section class="kpi-grid"><article v-for="item in kpis" :key="item.label" class="kpi-card" @click="notify(item.label + '详情已准备')"><div class="kpi-top"><span class="kpi-icon" :class="item.tone">{{ item.icon }}</span><span class="more">•••</span></div><p>{{ item.label }}</p><strong>{{ item.value }}</strong><small :class="{ positive: item.tone === 'primary' }">{{ item.trend }}</small><div v-if="item.label === '存储'" class="progress"><span style="width:68%"></span></div></article></section>
