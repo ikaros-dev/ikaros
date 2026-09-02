@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import run.ikaros.audit.AuditService;
@@ -31,6 +32,7 @@ public class DefaultStorageService implements StorageService {
     private final StorageProviderRegistry providerRegistry;
     private final BackgroundTaskService taskService;
     private final DurableEventService eventService;
+    private StorageContentReader contentReader;
 
     /**
      * 创建存储服务。
@@ -101,6 +103,11 @@ public class DefaultStorageService implements StorageService {
         this.eventService = eventService;
     }
 
+    @Autowired(required = false)
+    public void setContentReader(StorageContentReader contentReader) {
+        this.contentReader = contentReader;
+    }
+
     @Override
     public Mono<AttachmentView> attachDerived(UUID ownerId, UUID resourceId, CreateDerivedAttachmentRequest request) {
         return attachmentRepository.findById(request.sourceAttachmentId())
@@ -162,6 +169,25 @@ public class DefaultStorageService implements StorageService {
                 .then(blobRepository.findById(attachment.blobId())
                     .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
                     .flatMap(blob -> toView(attachment, blob))));
+    }
+
+    @Override
+    public Mono<StorageContent> readContent(UUID ownerId, UUID attachmentId, String range) {
+        if (contentReader == null || providerRegistry == null) {
+            return Mono.error(new ConflictException("Storage Provider 内容读取能力未配置"));
+        }
+        return attachmentRepository.findById(attachmentId)
+            .filter(attachment -> attachment.deletedAt() == null)
+            .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或已删除")))
+            .flatMap(attachment -> owned(ownerId, attachment.resourceId())
+                .then(blobRepository.findById(attachment.blobId())
+                    .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
+                    .flatMap(blob -> placementRepository.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
+                        .filter(placement -> placement.placementState() == PlacementState.ACTIVE)
+                        .next()
+                        .switchIfEmpty(Mono.error(new ConflictException("附件当前没有可读副本")))
+                        .flatMap(placement -> providerRegistry.getByKey(placement.provider())
+                            .flatMap(provider -> contentReader.read(provider, placement, blob, range))))));
     }
 
     @Override

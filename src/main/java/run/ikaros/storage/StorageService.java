@@ -51,6 +51,8 @@ public interface StorageService {
      */
     Mono<AttachmentView> get(UUID ownerId, UUID attachmentId);
 
+    Mono<StorageContent> readContent(UUID ownerId, UUID attachmentId, String range);
+
     Mono<Void> remove(UUID ownerId, UUID resourceId, UUID attachmentId);
 
     /**

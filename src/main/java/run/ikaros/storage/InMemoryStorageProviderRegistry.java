@@ -50,6 +50,12 @@ public class InMemoryStorageProviderRegistry implements StorageProviderRegistry 
     }
 
     @Override
+    public Mono<StorageProvider> getByKey(String providerKey) {
+        return providers.values().stream().filter(provider -> provider.providerKey().equals(providerKey)).findFirst()
+            .map(Mono::just).orElseGet(() -> Mono.error(new NotFoundException("Storage Provider 不存在")));
+    }
+
+    @Override
     public Flux<StorageProvider> list() { return Flux.fromIterable(List.copyOf(providers.values())); }
 
     @Override

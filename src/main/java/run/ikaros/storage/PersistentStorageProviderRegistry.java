@@ -58,6 +58,13 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
     }
 
     @Override
+    public Mono<StorageProvider> getByKey(String providerKey) {
+        return repository.findByProviderKey(providerKey)
+            .switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
+            .map(this::toModel);
+    }
+
+    @Override
     public Flux<StorageProvider> list() { return repository.findAll().map(this::toModel); }
 
     @Override

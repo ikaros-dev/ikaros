@@ -11,6 +11,7 @@ public interface StorageProviderRegistry {
     Mono<StorageProvider> enable(UUID providerId);
     Mono<StorageProvider> disable(UUID providerId);
     Mono<StorageProvider> get(UUID providerId);
+    Mono<StorageProvider> getByKey(String providerKey);
     Flux<StorageProvider> list();
     Mono<Void> requireWritable(UUID providerId);
     Mono<StorageProvider> requireWritableByKey(String providerKey);

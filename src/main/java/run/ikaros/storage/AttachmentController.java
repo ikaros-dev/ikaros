@@ -10,6 +10,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 /** Attachment 身份级读取接口。 */
 @RestController
@@ -30,5 +35,24 @@ public class AttachmentController {
     public Mono<AttachmentView> get(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
                                     @PathVariable UUID attachmentId) {
         return storageService.get(actorId, attachmentId);
+    }
+
+    @Operation(summary = "读取附件内容", description = "通过 Storage Provider 读取附件内容，支持单一 bytes Range。")
+    @GetMapping("/{attachmentId}/content")
+    public Mono<ResponseEntity<Flux<DataBuffer>>> content(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID attachmentId,
+        @RequestHeader(value = "Range", required = false) String range
+    ) {
+        return storageService.readContent(actorId, attachmentId, range).map(content -> {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType(content.mediaType()));
+            headers.setContentLength(content.length());
+            if (content.partial()) {
+                headers.set(HttpHeaders.CONTENT_RANGE, "bytes " + content.start() + "-" + content.end()
+                    + "/" + content.totalLength());
+            }
+            return ResponseEntity.status(content.partial() ? 206 : 200).headers(headers).body(content.body());
+        });
     }
 }
