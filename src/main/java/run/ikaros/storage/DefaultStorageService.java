@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.StorageUnavailableException;
 import run.ikaros.event.DurableEventService;
 import run.ikaros.resource.ResourceRepository;
 import run.ikaros.task.BackgroundTask;
@@ -185,7 +186,7 @@ public class DefaultStorageService implements StorageService {
                     .flatMap(blob -> placementRepository.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
                         .filter(placement -> placement.placementState() == PlacementState.ACTIVE)
                         .next()
-                        .switchIfEmpty(Mono.error(new ConflictException("附件当前没有可读副本")))
+                        .switchIfEmpty(Mono.error(new StorageUnavailableException("附件当前没有可读副本")))
                         .flatMap(placement -> providerRegistry.getByKey(placement.provider())
                             .flatMap(provider -> contentReader.read(provider, placement, blob, range))))));
     }

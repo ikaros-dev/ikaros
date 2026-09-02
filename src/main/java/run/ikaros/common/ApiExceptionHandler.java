@@ -35,6 +35,16 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.CONFLICT, exception.code(), exception.getMessage());
     }
 
+    @ExceptionHandler(StorageUnavailableException.class)
+    public ProblemDetail handleStorageUnavailable(StorageUnavailableException exception) {
+        return problem(HttpStatus.SERVICE_UNAVAILABLE, "storage.unavailable", exception.getMessage());
+    }
+
+    @ExceptionHandler(InvalidRangeException.class)
+    public ProblemDetail handleInvalidRange(InvalidRangeException exception) {
+        return problem(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE, "range.invalid", exception.getMessage());
+    }
+
     /**
      * 处理参数校验失败。
      *
