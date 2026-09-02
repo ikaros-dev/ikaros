@@ -99,7 +99,17 @@ public class PersistentPlanningTaskService implements PlanningTaskService {
 
   @Override
   public Mono<PlanningTaskView> changeStatus(UUID actor, UUID id, PlanningTaskStatus status) {
+    return changeStatusInternal(actor, id, status, null);
+  }
+
+  @Override
+  public Mono<PlanningTaskView> changeStatus(UUID actor, UUID id, PlanningTaskStatus status, long expectedVersion) {
+    return changeStatusInternal(actor, id, status, expectedVersion);
+  }
+
+  private Mono<PlanningTaskView> changeStatusInternal(UUID actor, UUID id, PlanningTaskStatus status, Long expectedVersion) {
     return editable(actor, id).flatMap(old -> {
+      if (expectedVersion != null) check(old, expectedVersion);
       if (old.status() == PlanningTaskStatus.ARCHIVED) {
         return Mono.error(new ConflictException("已归档任务不能修改"));
       }

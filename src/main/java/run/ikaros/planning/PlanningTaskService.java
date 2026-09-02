@@ -14,4 +14,5 @@ public interface PlanningTaskService {
     Flux<PlanningTaskView> eisenhower(UUID ownerId, boolean important, boolean urgent);
     Mono<PlanningTaskView> update(UUID ownerId, UUID taskId, UpdatePlanningTaskRequest request);
     Mono<PlanningTaskView> changeStatus(UUID ownerId, UUID taskId, PlanningTaskStatus status);
+    Mono<PlanningTaskView> changeStatus(UUID ownerId, UUID taskId, PlanningTaskStatus status, long expectedVersion);
 }
