@@ -27,6 +27,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export type ResourceRecord = { id: string; title?: string; resource_type?: string; lifecycle?: string; updated_at?: string }
 export type FavoriteRecord = { resourceId?: string; resource_id?: string; favorite?: boolean; favorited?: boolean }
+export type DocumentRecord = { id: string; resourceId?: string; resource_id?: string; kind?: string; currentRevisionId?: string; current_revision_id?: string }
 export type Page<T> = { items?: T[]; content?: T[]; next_cursor?: string | null; total?: number }
 export type UserRecord = { id: string; display_name?: string; username?: string; status?: string; roles?: string[]; mfa_enabled?: boolean; last_active_at?: string }
 export type BackgroundTaskRecord = { id: string; taskType?: string; task_type?: string; status?: string; state?: string; progress?: Record<string, unknown>; owning_subsystem?: string; current_stage?: string; createdAt?: string; created_at?: string }
@@ -52,6 +53,7 @@ export const api = {
   getFavorite: (id: string, actorId: string) => request<FavoriteRecord>(`/resources/${encodeURIComponent(id)}/favorite`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   addFavorite: (id: string, actorId: string) => request<FavoriteRecord>(`/resources/${encodeURIComponent(id)}/favorite`, { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId } }),
   removeFavorite: (id: string, actorId: string) => request<void>(`/resources/${encodeURIComponent(id)}/favorite`, { method: 'DELETE', headers: { 'X-Ikaros-Actor-Id': actorId } }),
+  listDocuments: (actorId: string) => request<DocumentRecord[]>('/documents', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   createResource: (body: Record<string, unknown>) => request<ResourceRecord>('/resources', { method: 'POST', headers: { 'Idempotency-Key': requestId() }, body: JSON.stringify(body) }),
   updateResource: (id: string, body: Record<string, unknown>, etag: string) => request<ResourceRecord>(`/resources/${encodeURIComponent(id)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/merge-patch+json', 'If-Match': etag }, body: JSON.stringify(body) }),
   archiveResource: (id: string, actorId: string, etag?: string) => request<void>(`/resources/${encodeURIComponent(id)}/actions/archive`, { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId, ...(etag ? { 'If-Match': etag } : {}) } }),
