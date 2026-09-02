@@ -64,7 +64,9 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
                     request.credentialRef(), config, old.capabilities(), old.grantRevocationMode(), old.signingKeyVersion(),
                     old.healthStatus(), request.enabled() == null ? old.enabled() : request.enabled(), old.createdAt(),
                     Instant.now(), old.version(), old.idempotencyKey());
-                return providers.save(replacement).flatMap(saved -> {
+                return providers.save(replacement)
+                    .onErrorMap(DuplicateKeyException.class, error -> new ConflictException("Delivery Provider 标识已存在"))
+                    .flatMap(saved -> {
                     Mono<Void> stateEvent = old.enabled() == saved.enabled() ? Mono.<Void>empty()
                         : emit(saved.enabled() ? "storage.delivery-provider.enabled" : "storage.delivery-provider.disabled", saved,
                             "{\"delivery_provider_id\":\"" + saved.id() + "\"}");
