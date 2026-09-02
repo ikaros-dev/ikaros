@@ -3,6 +3,7 @@ package run.ikaros.resource;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -11,6 +12,7 @@ import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;
+import run.ikaros.event.DurableEventService;
 
 /**
  * 默认 Resource 服务实现，负责维护聚合内一致性并发布可审计的状态变化。
@@ -22,6 +24,7 @@ public class DefaultResourceService implements ResourceService {
     private final ExternalIdentityRepository identityRepository;
     private final AuditService auditService;
     private final TransactionalOperator transactionalOperator;
+    private final DurableEventService eventService;
 
     /**
      * 创建 Resource 服务。
@@ -37,11 +40,22 @@ public class DefaultResourceService implements ResourceService {
                                   ExternalIdentityRepository identityRepository,
                                   AuditService auditService,
                                   TransactionalOperator transactionalOperator) {
+        this(resourceRepository, titleRepository, identityRepository, auditService, transactionalOperator, null);
+    }
+
+    @Autowired
+    public DefaultResourceService(ResourceRepository resourceRepository,
+                                  ResourceTitleRepository titleRepository,
+                                  ExternalIdentityRepository identityRepository,
+                                  AuditService auditService,
+                                  TransactionalOperator transactionalOperator,
+                                  DurableEventService eventService) {
         this.resourceRepository = resourceRepository;
         this.titleRepository = titleRepository;
         this.identityRepository = identityRepository;
         this.auditService = auditService;
         this.transactionalOperator = transactionalOperator;
+        this.eventService = eventService;
     }
 
     @Override
@@ -53,7 +67,8 @@ public class DefaultResourceService implements ResourceService {
         return transactionalOperator.transactional(resourceRepository.save(resource)
             .flatMap(saved -> titleRepository.save(new ResourceTitleEntity(
                 null, saved.id(), request.locale(), request.title(), true, now, now, null
-            )).then(auditService.record(ownerId, "resource.create", "RESOURCE", saved.id(), "{}"))
+            )).then(emit("resource.resource.created", saved))
+                .then(auditService.record(ownerId, "resource.create", "RESOURCE", saved.id(), "{}"))
                 .then(toView(saved))));
     }
 
@@ -87,6 +102,7 @@ public class DefaultResourceService implements ResourceService {
                     resource.createdAt(), Instant.now(), Instant.now(), resource.version()
                 );
                 return resourceRepository.save(trashed)
+                    .then(emit("resource.resource.trashed", trashed))
                     .then(auditService.record(ownerId, "resource.trash", "RESOURCE", resourceId, "{}"));
             });
     }
@@ -106,7 +122,8 @@ public class DefaultResourceService implements ResourceService {
                     resource.createdAt(), Instant.now(), resource.deletedAt(), resource.version()
                 );
                 return resourceRepository.save(archived)
-                    .flatMap(saved -> auditService.record(ownerId, "resource.archive", "RESOURCE", resourceId, "{}")
+                    .flatMap(saved -> emit("resource.resource.archived", saved)
+                        .then(auditService.record(ownerId, "resource.archive", "RESOURCE", resourceId, "{}"))
                         .then(toView(saved)));
             })
             .as(transactionalOperator::transactional);
@@ -125,7 +142,8 @@ public class DefaultResourceService implements ResourceService {
                     resource.createdAt(), Instant.now(), null, resource.version()
                 );
                 return resourceRepository.save(restored)
-                    .flatMap(saved -> auditService.record(ownerId, "resource.restore", "RESOURCE", resourceId, "{}")
+                    .flatMap(saved -> emit("resource.resource.restored", saved)
+                        .then(auditService.record(ownerId, "resource.restore", "RESOURCE", resourceId, "{}"))
                         .then(toView(saved)));
             });
     }
@@ -145,9 +163,29 @@ public class DefaultResourceService implements ResourceService {
                 .thenReturn(toIdentityView(identity)));
     }
 
+    @Override
+    public Mono<Void> detachExternalIdentity(UUID ownerId, UUID resourceId, UUID identityId) {
+        return transactionalOperator.transactional(owned(ownerId, resourceId)
+            .then(identityRepository.findByIdAndResourceId(identityId, resourceId)
+                .switchIfEmpty(Mono.error(new NotFoundException("外部身份不存在或无权访问")))
+                .flatMap(identity -> identityRepository.deleteById(identity.id())
+                    .then(auditService.record(ownerId, "resource.external-identity.delete",
+                        "RESOURCE", resourceId, "{}"))))
+            .then());
+    }
+
     private Mono<ResourceEntity> owned(UUID ownerId, UUID resourceId) {
         return resourceRepository.findByIdAndOwnerId(resourceId, ownerId)
             .switchIfEmpty(Mono.error(new NotFoundException("资源不存在或无权访问")));
+    }
+
+    private Mono<Void> emit(String eventType, ResourceEntity resource) {
+        if (eventService == null) {
+            return Mono.empty();
+        }
+        String payload = "{\"resource_id\":\"" + resource.id() + "\",\"lifecycle\":\""
+            + resource.lifecycle() + "\",\"version\":" + resource.version() + "}";
+        return eventService.append(eventType, 1, "resource", resource.id(), payload).then();
     }
 
     private Mono<ResourceView> toView(ResourceEntity resource) {

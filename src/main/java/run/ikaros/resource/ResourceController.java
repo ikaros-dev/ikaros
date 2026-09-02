@@ -198,4 +198,14 @@ public class ResourceController {
         return resourceService.addExternalIdentity(actorId, resourceId, request)
             .map(identity -> ResponseEntity.status(201).body(identity));
     }
+
+    @DeleteMapping("/{resourceId}/external-identities/{identityId}")
+    public Mono<ResponseEntity<Void>> detachExternalIdentity(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID resourceId,
+        @PathVariable UUID identityId
+    ) {
+        return resourceService.detachExternalIdentity(actorId, resourceId, identityId)
+            .thenReturn(ResponseEntity.noContent().build());
+    }
 }

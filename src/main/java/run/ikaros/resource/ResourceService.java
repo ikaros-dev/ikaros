@@ -70,4 +70,6 @@ public interface ResourceService {
      */
     Mono<ExternalIdentityView> addExternalIdentity(UUID ownerId, UUID resourceId,
                                                    CreateExternalIdentityRequest request);
+
+    Mono<Void> detachExternalIdentity(UUID ownerId, UUID resourceId, UUID identityId);
 }

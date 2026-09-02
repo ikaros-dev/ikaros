@@ -85,6 +85,16 @@ public class DefaultCollectionService implements CollectionService {
             .map(this::toView));
     }
 
+    @Override
+    public Mono<Void> removeResource(UUID ownerId, UUID collectionId, UUID resourceId) {
+        return transactionalOperator.transactional(ownedCollection(ownerId, collectionId)
+            .then(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)
+                .switchIfEmpty(Mono.error(new NotFoundException("资源不存在或无权访问"))))
+            .then(collectionResourceRepository.deleteByCollectionIdAndResourceId(collectionId, resourceId))
+            .then(auditService.record(ownerId, "collection.resource.remove", "COLLECTION", collectionId,
+                "{\"resourceId\":\"" + resourceId + "\"}")));
+    }
+
     private Mono<Void> parent(UUID ownerId, UUID parentId) {
         if (parentId == null) {
             return Mono.empty();

@@ -21,7 +21,7 @@ public class ApiExceptionHandler {
      */
     @ExceptionHandler(NotFoundException.class)
     public ProblemDetail handleNotFound(NotFoundException exception) {
-        return problem(HttpStatus.NOT_FOUND, exception.getMessage());
+        return problem(HttpStatus.NOT_FOUND, exception.code(), exception.getMessage());
     }
 
     /**
@@ -32,7 +32,7 @@ public class ApiExceptionHandler {
      */
     @ExceptionHandler(ConflictException.class)
     public ProblemDetail handleConflict(ConflictException exception) {
-        return problem(HttpStatus.CONFLICT, exception.getMessage());
+        return problem(HttpStatus.CONFLICT, exception.code(), exception.getMessage());
     }
 
     /**
@@ -43,7 +43,7 @@ public class ApiExceptionHandler {
      */
     @ExceptionHandler(ConstraintViolationException.class)
     public ProblemDetail handleValidation(ConstraintViolationException exception) {
-        return problem(HttpStatus.BAD_REQUEST, exception.getMessage());
+        return problem(HttpStatus.BAD_REQUEST, "validation.failed", exception.getMessage());
     }
 
     /**
@@ -54,12 +54,13 @@ public class ApiExceptionHandler {
      */
     @ExceptionHandler(IllegalArgumentException.class)
     public ProblemDetail handleIllegalArgument(IllegalArgumentException exception) {
-        return problem(HttpStatus.BAD_REQUEST, exception.getMessage());
+        return problem(HttpStatus.BAD_REQUEST, "request.invalid", exception.getMessage());
     }
 
-    private ProblemDetail problem(HttpStatus status, String detail) {
+    private ProblemDetail problem(HttpStatus status, String code, String detail) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
         problem.setProperty("timestamp", Instant.now());
+        problem.setProperty("code", code);
         return problem;
     }
 }

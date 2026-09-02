@@ -39,4 +39,6 @@ public interface CollectionService {
 
     /** 移动集合并拒绝自引用及任意深度祖先循环。 */
     Mono<CollectionView> move(UUID ownerId, UUID collectionId, UUID parentId);
+
+    Mono<Void> removeResource(UUID ownerId, UUID collectionId, UUID resourceId);
 }
