@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
+import run.ikaros.common.PreconditionFailedException;
 
 @Service
 public class StorageRestoreBudgetService {
@@ -20,11 +21,16 @@ public class StorageRestoreBudgetService {
     }
 
     public Mono<StorageRestoreBudgetView> update(StorageRestoreBudgetRequest request) {
+        return update(request, null);
+    }
+
+    public Mono<StorageRestoreBudgetView> update(StorageRestoreBudgetRequest request, Long expectedVersion) {
         Instant now = Instant.now();
-        return budgets.findById(DEFAULT_ID).flatMap(old -> budgets.save(new StorageRestoreBudgetEntity(DEFAULT_ID,
+        return budgets.findById(DEFAULT_ID).flatMap(old -> { if (expectedVersion != null && (old.version() == null ? 0 : old.version()) != expectedVersion)
+            return Mono.error(new PreconditionFailedException("If-Match 与 Restore Budget 当前版本不匹配")); return budgets.save(new StorageRestoreBudgetEntity(DEFAULT_ID,
             request.maxBytesPerRequest(), request.maxItemsPerRequest(), request.maxConcurrentOperations(),
             request.maxConcurrentBytes(), request.dailyRequestedBytes(), request.dailyProviderRestoreBytes(),
-            request.overBudgetAction(), now, old.version()))).map(this::view);
+            request.overBudgetAction(), now, old.version())); }).map(this::view);
     }
 
     public Mono<Void> check(int items, long bytes) {
@@ -56,6 +62,6 @@ public class StorageRestoreBudgetService {
     private StorageRestoreBudgetView view(StorageRestoreBudgetEntity b) {
         return new StorageRestoreBudgetView(b.id(), b.maxBytesPerRequest(), b.maxItemsPerRequest(),
             b.maxConcurrentOperations(), b.maxConcurrentBytes(), b.dailyRequestedBytes(),
-            b.dailyProviderRestoreBytes(), b.overBudgetAction(), b.updatedAt());
+            b.dailyProviderRestoreBytes(), b.overBudgetAction(), b.updatedAt(), b.version() == null ? 0 : b.version());
     }
 }
