@@ -30,7 +30,7 @@ Ikaros V2 的工程实现不能只做到“代码能运行”，还必须让系�
 3. HTTP / Realtime 请求如何进入 Application Command / Query。
 4. Domain、Application、Persistence、Infrastructure 的职责如何在代码中落地。
 5. WebFlux / Reactor 下哪些代码可以运行在 Event Loop，哪些必须隔离。
-6. R2DBC 事务、PostgreSQL Schema Ownership、Flyway Migration 如何组织。
+6. R2DBC 事务、PostgreSQL Schema Ownership、R2DBC Migration 如何组织。
 7. 跨模块状态传播如何通过 Outbox / Inbox 保证至少一次投递与消费者幂等。
 8. Background Task、Scheduler、Worker 如何避免和 HTTP 请求线程混在一起。
 9. Cache、Search、Analytics、AI Projection 如何保持“可丢失、可重建、不是真相源”。
@@ -54,7 +54,7 @@ Ikaros V2 的默认工程架构冻结为：
 | Reactive Runtime | Project Reactor |
 | DB | PostgreSQL 18+ |
 | DB Access | R2DBC，禁止业务运行时 JPA/JDBC 作为第二套持久化模型 |
-| Migration | Flyway + JDBC，仅用于启动 / 运维迁移，不作为业务访问栈 |
+| Migration | `r2dbc-migrate`（R2DBC），启动阶段执行版本化 SQL；不引入 JDBC/Flyway 第二访问栈 |
 | Transaction | Reactive Transaction，Application Command 边界统一管理 |
 | Internal Integration | Command / Query API + Durable Event |
 | Durable Event | PostgreSQL Outbox + Consumer Inbox |
@@ -572,33 +572,106 @@ Persistence Record / Entity 默认不直接等同于 Domain Aggregate。尤其�
 
 ---
 
-## 13. Flyway Migration 架构
+## 13. r2dbc-migrate Migration 架构
 
-### 13.1 Migration 与业务访问栈分离
+### 13.1 迁移组件与业务访问栈统一
 
-V2 业务运行时使用 R2DBC，但数据库迁移使用 Flyway + PostgreSQL JDBC Driver。
+R2DBC 规范本身不包含数据库 Schema Migration 能力；Ikaros 使用独立的 **`r2dbc-migrate`** 组件在 R2DBC 之上完成版本化 SQL 迁移。
+
+V1 当前已经使用：
 
 ```text
-Application Startup
-   -> Flyway JDBC Migration
-   -> Schema Validation
-   -> R2DBC Runtime Ready
+name.nkonev.r2dbc-migrate:r2dbc-migrate-spring-boot-starter
+```
+
+当前 V1 Gradle Platform 管理的版本为 `4.0.1`。V2 继续以该组件作为默认 Migration 基线，但具体 Patch Version 仍由 Gradle Platform / Version Catalog 集中管理，并在升级时验证 Spring Boot 4.x、R2DBC SPI 与 PostgreSQL Driver 的兼容性，本文档不长期冻结具体版本。
+
+因此 V2 不再为了数据库迁移额外引入 Flyway + PostgreSQL JDBC Driver，也不建立“业务 R2DBC、迁移 JDBC”两套数据库访问栈。
+
+```text
+Application Bootstrap
+   -> PostgreSQL R2DBC ConnectionFactory
+   -> r2dbc-migrate
+      -> discover versioned SQL
+      -> check applied migration state
+      -> execute pending migrations
+   -> Schema / Constraint Validation
+   -> Application R2DBC Runtime Ready
    -> Readiness = UP
 ```
 
-JDBC Driver 的存在不意味着业务代码可以使用 JDBC 绕过 R2DBC 架构。
+Migration 和业务 Persistence 可以共享同一套 PostgreSQL 连接参数与 R2DBC Driver，但职责必须分离：Migration 只负责版本化 Schema Evolution；业务 Repository / `DatabaseClient` 不得自行模拟 Migration History 或在运行期偷偷修改 Schema。
 
-### 13.2 Migration Ownership
+### 13.2 Migration Script Contract
 
-Migration 按领域 Owner 组织，并由统一版本序列发布。P0 可以采用统一目录，但文件命名必须能追踪 Owner。具体顺序以 `database/P0-Database-Schema-Design.md` 为准。
+V1 已验证的脚本组织方式继续作为 V2 的默认起点：
 
-### 13.3 Migration Rule
+```text
+server/src/main/resources/db/migration/
+V<monotonic-version>__<description>.sql
+```
 
-生产 Migration 必须前向可重复部署验证、不依赖开发机本地状态、明确长锁风险；大表变更采用 expand / migrate / contract；禁止 Application Startup 自动执行不可控的大数据重写；数据回填量大时提交 Background Migration Task。
+例如 V1 当前存在 `V202601101915__DDL_ATTACHMENT.sql` 这类版本化脚本。V2 可以继续采用相同的 `V...__...sql` 命名习惯，但这是 **Ikaros 的 Migration Script Contract**，不代表依赖 Flyway。
 
-### 13.4 多节点
+P0 默认采用统一 Migration 目录和全局单调版本序列，避免不同 Gradle Module 各自产生相同版本号。文件名或描述必须能够识别 Owner Domain，例如：
 
-未来 Server / Worker 多节点时，Schema Migration 只能由一个受控 Migration Actor 执行。其他节点必须等待 Schema 达到兼容版本后进入 Ready。
+```text
+V202609020001__PLATFORM_OUTBOX_BASELINE.sql
+V202609020002__SECURITY_IDENTITY_BASELINE.sql
+V202609020003__RESOURCE_BASELINE.sql
+```
+
+已经进入共享环境或正式环境的版本化 Migration **MUST NOT 原地修改**。需要修正时追加新的 Migration，保证不同环境可以从任意已发布版本确定性升级到当前版本。
+
+具体 P0 Schema 顺序以 `database/P0-Database-Schema-Design.md` 为准。
+
+### 13.3 Bootstrap、失败与 Readiness
+
+Schema Migration 属于 Application Bootstrap Gate。
+
+在迁移完成以前：
+
+- 普通业务 HTTP Endpoint 不得进入 Ready；
+- Outbox Dispatcher 不得开始消费；
+- Background Task Worker 不得开始 Claim；
+- Scheduler 不得提交依赖新 Schema 的任务；
+- Plugin 不得假设目标 Core Schema 已升级完成。
+
+Migration 失败时启动必须失败或保持 `Readiness = DOWN`，禁止以旧 Schema 继续提供部分业务能力后等待运行期随机报错。
+
+开发、测试和单机 Docker Compose 可以在 Server Startup 自动执行 `r2dbc-migrate`。生产环境仍必须保留 Migration Switch / Deployment Policy，使运维可以选择由受控启动节点或独立 Migration Job 执行。
+
+### 13.4 Migration Rule
+
+生产 Migration 必须满足：
+
+- 可从空 PostgreSQL 完整执行；
+- 可从所有受支持的历史 Schema Version 顺序升级；
+- 不依赖开发机本地状态或手工先执行某条 SQL；
+- 明确 DDL Lock、Table Rewrite、Index Build 和长事务风险；
+- 大表结构变化采用 expand → migrate → contract；
+- 新代码与前一阶段 Schema 在滚动发布窗口内保持必要兼容；
+- 禁止在 Application Startup 中执行不可控的大规模数据扫描和数据重写。
+
+大规模数据回填、媒体重算、索引重建、JSON 结构重写等属于 **Background Data Migration Task**，而不是 Schema Migration。Schema Migration 只负责建立新结构、约束和允许后台回填继续执行所需的最小数据库变化。
+
+### 13.5 多节点与 Migration Actor
+
+未来 Server / Worker 多节点部署时，不得简单让所有实例同时启动后“各自跑一遍迁移”，也不得把正确性建立在对第三方 Starter 并发行为的隐含假设上。
+
+生产部署必须明确一个受控 **Migration Actor**：
+
+```text
+Release
+   -> Migration Actor / Migration Job
+      -> r2dbc-migrate
+      -> target schema version reached
+   -> Server / Worker instances become Ready
+```
+
+Migration Actor 可以是部署系统中的独立 Migration Job，也可以是明确选出的单一 Server Bootstrap Actor。其他节点必须等待目标 Schema Version 达到兼容状态后才进入 Ready。
+
+如果未来需要由 `r2dbc-migrate` 之外的工具承担在线 DDL、跨数据库编排或其他当前组件不支持的能力，必须通过 ADR 明确引入原因和边界；不得因为某个 Migration 方便就重新把 JDBC/Flyway 作为第二套常驻数据库访问栈引入业务工程。
 
 ---
 
@@ -1066,7 +1139,7 @@ CI 必须执行 Architecture Boundary Test，至少验证：
 
 ### 28.6 Contract Test
 
-必须覆盖 OpenAPI、Event Schema、Permission Registry、Flyway Migration、Outbox / Inbox Replay、Task Crash Recovery、Idempotency、Optimistic Concurrency、Range / Streaming 和 Security leakage。
+必须覆盖 OpenAPI、Event Schema、Permission Registry、R2DBC Migration、Outbox / Inbox Replay、Task Crash Recovery、Idempotency、Optimistic Concurrency、Range / Streaming 和 Security leakage。
 
 ---
 
@@ -1212,7 +1285,7 @@ Phase 0 的首批代码可以按以下顺序落地：
    - security filter
    - health / metrics
 
-8. Flyway
+8. r2dbc-migrate
    - foundation schema
    - outbox/inbox
    - task/attempt
@@ -1315,7 +1388,7 @@ P0 实现合并前至少具备以下自动化检查：
 | `ARCH-005` | API Project 不依赖 Impl Project |
 | `ARCH-006` | Server 是 Composition Root |
 | `REACT-001` | 关键 Runtime Package 无 `.block*()` |
-| `DB-001` | Flyway 可在空 PostgreSQL 完整升级 |
+| `DB-001` | `r2dbc-migrate` 可在空 PostgreSQL 完整升级 |
 | `DB-002` | P0 Constraint Test 使用 PostgreSQL Testcontainers |
 | `EVT-001` | State + Outbox 原子提交 |
 | `EVT-002` | Duplicate Event 不产生重复 Side Effect |
