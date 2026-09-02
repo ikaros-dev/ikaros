@@ -56,9 +56,23 @@ public class PersistentPlanningCommentService implements PlanningCommentService 
 
   @Override
   public Mono<Void> delete(UUID author, UUID id) {
+    return deleteInternal(author, id, null);
+  }
+
+  @Override
+  public Mono<Void> delete(UUID author, UUID id, long expectedVersion) {
+    return deleteInternal(author, id, expectedVersion);
+  }
+
+  private Mono<Void> deleteInternal(UUID author, UUID id, Long expectedVersion) {
     return owned(author, id)
-        .flatMap(old -> comments.save(new PlanningCommentEntity(old.id(), old.authorId(), old.targetType(),
-            old.targetId(), old.content(), old.createdAt(), old.updatedAt(), Instant.now(), old.version())))
+        .flatMap(old -> {
+          if (expectedVersion != null && (old.version() == null ? 0 : old.version()) != expectedVersion) {
+            return Mono.error(new PreconditionFailedException("If-Match 与 Comment 当前版本不匹配"));
+          }
+          return comments.save(new PlanningCommentEntity(old.id(), old.authorId(), old.targetType(),
+              old.targetId(), old.content(), old.createdAt(), old.updatedAt(), Instant.now(), old.version()));
+        })
         .then();
   }
 
