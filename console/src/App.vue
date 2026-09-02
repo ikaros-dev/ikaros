@@ -9,7 +9,7 @@ type Group = { label: string; icon: string; items: Item[] }
 const router = useRouter(); const route = useRoute()
 const groups: Group[] = [
   { label: '工作台', icon: '⌂', items: [{ label: '概览', path: 'dashboard', icon: '▦' }, { label: '全局搜索', path: 'search', icon: '⌕' }, { label: '我的活动与收藏', path: 'activity', icon: '◷' }] },
-  { label: '内容与创作', icon: '▤', items: [{ label: '统一资源库', path: 'library', icon: '◈' }, { label: '集合与标签', path: 'collections', icon: '▧' }, { label: '文章与文档', path: 'documents', icon: '□' }, { label: '媒体消费', path: 'media', icon: '▶' }, { label: '分享与协作', path: 'sharing', icon: '♧' }] },
+  { label: '内容与创作', icon: '▤', items: [{ label: '统一资源库', path: 'resources', icon: '◈' }, { label: '集合与标签', path: 'collections', icon: '▧' }, { label: '文章与文档', path: 'documents', icon: '□' }, { label: '媒体消费', path: 'media', icon: '▶' }, { label: '分享与协作', path: 'sharing', icon: '♧' }] },
   { label: '个人网盘', icon: '☁', items: [{ label: '文件空间', path: 'drive', icon: '▰' }, { label: '空间治理', path: 'drive/spaces', icon: '◫' }, { label: '传输中心', path: 'drive/transfers', icon: '⇄' }, { label: '同步关系', path: 'drive/sync', icon: '⟳' }, { label: '冲突处理', path: 'drive/conflicts', icon: '⚠' }, { label: '版本历史', path: 'drive/revisions', icon: '↶' }, { label: '回收站', path: 'drive/trash', icon: '⌫' }, { label: '配额与策略', path: 'drive/quota', icon: '◫' }, { label: 'Drive Policies', path: 'drive/policies', icon: '⚙' }] },
   { label: '附件与存储', icon: '▣', items: [{ label: '附件与 Blob', path: 'attachments', icon: '⊙' }, { label: '存储层', path: 'storage/tiers', icon: '▥' }, { label: '缓存与下载', path: 'storage/cache', icon: '⇩' }, { label: '归档与恢复', path: 'storage/archive', icon: '↶' }, { label: '备份与恢复', path: 'storage/backup', icon: '⟳' }] },
   { label: '效率与计划', icon: '✓', items: [{ label: '收集箱与今天', path: 'planning/today', icon: '☀' }, { label: '项目与任务', path: 'planning/projects', icon: '▤' }, { label: '日历与时间块', path: 'planning/calendar', icon: '▦' }, { label: '目标与 OKR', path: 'planning/goals', icon: '↗' }, { label: '习惯与专注', path: 'planning/focus', icon: '◉' }] },
@@ -33,7 +33,7 @@ const current = computed(() => groups.flatMap(g => g.items).find(i => i.path ===
 const currentGroup = computed(() => groups.find(g => g.items.some(i => i.path === currentPath.value)) || groups[0])
 const currentMeta = computed(() => getRouteMeta(currentPath.value))
 const pageTitle = computed(() => current.value.label)
-function go(path: string) { router.push(path === 'login' ? '/login' : '/console/' + path); drawer.value = false }
+function go(path: string) { const target = path === 'library' ? 'resources' : path; router.push(target === 'login' ? '/login' : '/console/' + target); drawer.value = false }
 function toggle(label: string) { expanded.value = expanded.value.includes(label) ? expanded.value.filter(v => v !== label) : [...expanded.value, label] }
 function notify(message: string) { if (message === '已全部标为已读') notifications.value = notifications.value.map(item => ({ ...item, unread: false })); if (message === '账号恢复流程即将开放') { router.push('/recovery'); return } if (message === '个人资料页面即将开放') { router.push('/console/account/profile'); return } if (message === '偏好设置即将开放') { router.push('/console/account/preferences'); return } toast.value = message; setTimeout(() => toast.value = '', 2800) }
 function openDialog(kind: string) { dialog.value = kind === 'create' && currentPath.value === 'security/permissions' ? 'role-create' : kind }
@@ -103,7 +103,7 @@ async function loadResources() {
   rows.value = fallbackRows.map(row => ({ ...row }))
   selectedRows.value = []
   try {
-    if (currentPath.value === 'library') {
+    if (currentPath.value === 'resources') {
       const result = unwrapPage(await api.listResources('?limit=5'))
       if (result.length) rows.value = result.map(item => ({ name: item.title || `Resource ${item.id.slice(0, 8)}`, owner: '当前用户', status: item.lifecycle || '已启用', updated: item.updated_at ? new Date(item.updated_at).toLocaleString('zh-CN') : '刚刚' }))
     } else if (currentPath.value === 'security/users') {
