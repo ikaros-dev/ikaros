@@ -1,0 +1,1 @@
+package run.ikaros.finance; import java.time.Instant; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.relational.core.mapping.Table; @Table("finance_transaction_tag") public record TransactionTagEntity(@Id UUID id,UUID transactionId,UUID tagId,UUID ledgerId,UUID ownerId,Instant createdAt) {}
