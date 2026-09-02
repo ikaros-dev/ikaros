@@ -1,0 +1,35 @@
+version: '0.2'
+baseline: v2-p0-foundation-0.2
+base_path: /api/v2
+sources:
+  - api/openapi-v2-p0.yaml
+  - api/openapi-v2-p0-contract-convergence.yaml
+operations:
+  - { method: POST, path: /resources, operation_id: createResource, contract_id: resource.create-resource, source: api/openapi-v2-p0.yaml }
+  - { method: GET, path: /resources, operation_id: listResources, contract_id: resource.list-resources, source: api/openapi-v2-p0.yaml }
+  - { method: GET, path: '/resources/{resource_id}', operation_id: getResource, contract_id: resource.get-resource, source: api/openapi-v2-p0.yaml }
+  - { method: PATCH, path: '/resources/{resource_id}', operation_id: updateResource, contract_id: resource.update-resource, source: api/openapi-v2-p0.yaml }
+  - { method: POST, path: '/resources/{resource_id}/actions/archive', operation_id: archiveResource, contract_id: resource.archive-resource, source: api/openapi-v2-p0.yaml }
+  - { method: POST, path: '/resources/{resource_id}/actions/restore', operation_id: restoreResource, contract_id: resource.restore-resource, source: api/openapi-v2-p0.yaml }
+  - { method: GET, path: '/attachments/{attachment_id}', operation_id: getAttachment, contract_id: storage.get-attachment, source: api/openapi-v2-p0.yaml }
+  - { method: GET, path: '/attachments/{attachment_id}/content', operation_id: getAttachmentContent, contract_id: storage.get-attachment-content, source: api/openapi-v2-p0.yaml }
+  - { method: GET, path: '/background-tasks/{task_id}', operation_id: getBackgroundTask, contract_id: operations.get-background-task, source: api/openapi-v2-p0.yaml }
+  - { method: POST, path: '/background-tasks/{task_id}/actions/cancel', operation_id: cancelBackgroundTask, contract_id: operations.cancel-background-task, source: api/openapi-v2-p0.yaml }
+  - { method: GET, path: /admin/storage-providers, operation_id: listStorageProviders, contract_id: storage.list-providers, source: api/openapi-v2-p0.yaml }
+  - { method: POST, path: /admin/storage-providers, operation_id: createStorageProvider, contract_id: storage.create-provider, source: api/openapi-v2-p0.yaml }
+  - { method: GET, path: /admin/users, operation_id: listUsers, contract_id: identity.list-users, source: api/openapi-v2-p0.yaml }
+  - { method: POST, path: /admin/users, operation_id: createUser, contract_id: identity.create-user, source: api/openapi-v2-p0.yaml }
+  - { method: GET, path: /admin/roles, operation_id: listRoles, contract_id: identity.list-roles, source: api/openapi-v2-p0.yaml }
+  - { method: GET, path: /admin/permissions, operation_id: listPermissions, contract_id: identity.list-permissions, source: api/openapi-v2-p0.yaml }
+  - { method: GET, path: '/resources:by-external-identity', operation_id: findResourceByExternalIdentity, contract_id: resource.find-by-external-identity, source: api/openapi-v2-p0-contract-convergence.yaml }
+  - { method: POST, path: '/resources/{resource_id}/actions/trash', operation_id: trashResource, contract_id: resource.trash-resource, source: api/openapi-v2-p0-contract-convergence.yaml }
+  - { method: GET, path: '/resources/{resource_id}/user-state', operation_id: getResourceUserState, contract_id: resource.get-user-state, source: api/openapi-v2-p0-contract-convergence.yaml }
+  - { method: GET, path: /tags, operation_id: listTags, contract_id: resource.list-tags, source: api/openapi-v2-p0-contract-convergence.yaml }
+  - { method: GET, path: /collections, operation_id: listCollections, contract_id: resource.list-collections, source: api/openapi-v2-p0-contract-convergence.yaml }
+  - { method: GET, path: /background-tasks, operation_id: listBackgroundTasks, contract_id: operations.list-background-tasks, source: api/openapi-v2-p0-contract-convergence.yaml }
+  - { method: GET, path: '/background-tasks/{task_id}/attempts', operation_id: listBackgroundTaskAttempts, contract_id: operations.list-task-attempts, source: api/openapi-v2-p0-contract-convergence.yaml }
+  - { method: GET, path: '/admin/blobs/{blob_id}/placements', operation_id: listBlobPlacements, contract_id: storage.list-blob-placements, source: api/openapi-v2-p0-contract-convergence.yaml }
+  - { method: GET, path: '/admin/storage-providers/{provider_id}', operation_id: getStorageProvider, contract_id: storage.get-provider, source: api/openapi-v2-p0-contract-convergence.yaml }
+  - { method: GET, path: /me, operation_id: getCurrentUser, contract_id: identity.get-current-user, source: api/openapi-v2-p0-contract-convergence.yaml }
+  - { method: GET, path: /me/sessions, operation_id: listSessions, contract_id: identity.list-sessions, source: api/openapi-v2-p0-contract-convergence.yaml }
+  - { method: GET, path: '/admin/users/{user_id}', operation_id: getUser, contract_id: identity.get-user, source: api/openapi-v2-p0-contract-convergence.yaml }
