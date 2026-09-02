@@ -14,6 +14,7 @@ import reactor.core.publisher.Flux;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;
+import run.ikaros.event.DurableEventService;
 
 @Primary
 @Service
@@ -22,10 +23,11 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     private final BackgroundTaskRepository tasks;
     private final BackgroundTaskAttemptRepository attempts;
     private final ObjectMapper mapper;
+    private final DurableEventService events;
 
     public PersistentBackgroundTaskService(BackgroundTaskRepository tasks, BackgroundTaskAttemptRepository attempts,
-                                           ObjectMapper mapper) {
-        this.tasks = tasks; this.attempts = attempts; this.mapper = mapper;
+                                           ObjectMapper mapper, DurableEventService events) {
+        this.tasks = tasks; this.attempts = attempts; this.mapper = mapper; this.events = events;
     }
 
     @Override
@@ -70,7 +72,9 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
             Instant now = Instant.now();
             return tasks.save(new BackgroundTaskEntity(null, taskType, TaskStatus.PENDING.name(), json,
                 idempotencyKey, now, timeoutAt(payload, now), null, null, null, 0, null, "{}", "{}", now, now, null));
-        }))).flatMap(this::view);
+        }))).flatMap(saved -> events.append("operations.background-task.created", 1, "background_task", saved.id(),
+            "{\"task_id\":\"" + saved.id() + "\",\"task_type\":\"" + saved.taskType()
+                + "\",\"status\":\"" + saved.status() + "\"}").then(view(saved)));
     }
 
     @Override
@@ -95,6 +99,8 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
                 return tasks.save(claimed)
                     .then(attempts.save(new BackgroundTaskAttemptEntity(null, task.id(), task.attempt() + 1,
                         TaskStatus.RUNNING.name(), runnerId, claimed.leaseExpiresAt(), now, now, null, null, now)))
+                    .then(events.append("operations.background-task.started", 1, "background_task", claimed.id(),
+                        "{\"task_id\":\"" + claimed.id() + "\",\"attempt_no\":" + claimed.attempt() + "}"))
                     .then(view(claimed));
             }));
     }
@@ -122,7 +128,10 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
         return leased(taskId, leaseToken).flatMap(task -> encode(result).flatMap(json -> tasks.save(copy(task,
             TaskStatus.SUCCEEDED, task.leaseOwner(), task.leaseToken(), task.leaseExpiresAt(), task.attempt(),
             task.cancelRequestedAt(), task.progress(), json))
-            .flatMap(saved -> finishAttempt(task, TaskStatus.SUCCEEDED.name(), null).then(view(saved)))));
+            .flatMap(saved -> finishAttempt(task, TaskStatus.SUCCEEDED.name(), null)
+                .then(events.append("operations.background-task.succeeded", 1, "background_task", saved.id(),
+                    "{\"task_id\":\"" + saved.id() + "\",\"attempt_no\":" + saved.attempt() + "}"))
+                .then(view(saved)))));
     }
 
     @Override
@@ -136,7 +145,12 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
                     availableAt, task.timeoutAt(), retryable ? null : task.leaseOwner(), retryable ? null : task.leaseToken(),
                     retryable ? null : task.leaseExpiresAt(), task.attempt(), task.cancelRequestedAt(), task.progress(), json,
                     task.createdAt(), Instant.now(), task.parentTaskId());
-                return tasks.save(failed).flatMap(saved -> finishAttempt(task, TaskStatus.FAILED.name(), message(error)).then(view(saved)));
+                return tasks.save(failed).flatMap(saved -> finishAttempt(task, TaskStatus.FAILED.name(), message(error))
+                    .then(events.append("operations.background-task.failed", 1, "background_task", saved.id(),
+                        "{\"task_id\":\"" + saved.id() + "\",\"attempt_no\":" + saved.attempt()
+                            + ",\"error_classification\":\"" + safe(error == null ? null : error.get("code"))
+                            + "\",\"retryable\":" + retryable + "}"))
+                    .then(view(saved)));
             }));
     }
 
@@ -150,6 +164,10 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     private String message(Map<String, Object> error) {
         Object value = error == null ? null : error.get("message");
         return value == null ? null : value.toString();
+    }
+
+    private String safe(Object value) {
+        return value == null ? "unknown" : value.toString().replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     private Duration backoff(int attempt) { return Duration.ofSeconds(Math.min(3600L, 30L * (1L << Math.min(attempt, 7)))); }
