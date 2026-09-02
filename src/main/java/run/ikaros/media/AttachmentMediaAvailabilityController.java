@@ -9,6 +9,8 @@ import run.ikaros.storage.BlobAvailability;
 import run.ikaros.storage.BlobPlacementRepository;
 import run.ikaros.storage.BlobRepository;
 import run.ikaros.storage.PlacementState;
+import run.ikaros.storage.StorageProviderRegistry;
+import run.ikaros.storage.StorageProviderStatus;
 
 /** Attachment-shaped alias required by the media delivery contract. */
 @RestController
@@ -18,9 +20,11 @@ public class AttachmentMediaAvailabilityController {
     private final MediaAvailabilityService availability;
     private final BlobRepository blobs;
     private final BlobPlacementRepository placements;
+    private final StorageProviderRegistry providerRegistry;
     public AttachmentMediaAvailabilityController(AttachmentRepository attachments, MediaAvailabilityService availability,
-        BlobRepository blobs, BlobPlacementRepository placements) {
+        BlobRepository blobs, BlobPlacementRepository placements, StorageProviderRegistry providerRegistry) {
         this.attachments = attachments; this.availability = availability; this.blobs = blobs; this.placements = placements;
+        this.providerRegistry = providerRegistry;
     }
     @GetMapping
     public Mono<MediaAvailabilityResponse> get(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,
@@ -45,7 +49,11 @@ public class AttachmentMediaAvailabilityController {
             case CORRUPTED -> Mono.just(new MediaAvailabilityResponse(attachmentId, MediaContractAvailability.UNAVAILABLE,
                 null, null, null, null));
             case AVAILABLE, REMOTE -> placements.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
-                .any(placement -> placement.placementState() == PlacementState.ACTIVE)
+                .filter(placement -> placement.placementState() == PlacementState.ACTIVE)
+                .concatMap(placement -> providerRegistry.getByKey(placement.provider())
+                    .map(provider -> provider.status() != StorageProviderStatus.DISABLED
+                        && provider.status() != StorageProviderStatus.FAILED))
+                .any(Boolean::booleanValue)
                 .map(readable -> new MediaAvailabilityResponse(attachmentId,
                     readable ? MediaContractAvailability.READY : MediaContractAvailability.MISSING,
                     null, null, null, null));

@@ -10,6 +10,8 @@ import run.ikaros.storage.BlobEntity;
 import run.ikaros.storage.BlobRepository;
 import run.ikaros.storage.BlobPlacementRepository;
 import run.ikaros.storage.PlacementState;
+import run.ikaros.storage.StorageProviderRegistry;
+import run.ikaros.storage.StorageProviderStatus;
 
 @Service
 public class PersistentMediaAvailabilityService implements MediaAvailabilityService {
@@ -18,11 +20,13 @@ public class PersistentMediaAvailabilityService implements MediaAvailabilityServ
     private final AttachmentRepository attachments;
     private final BlobRepository blobs;
     private final BlobPlacementRepository placements;
+    private final StorageProviderRegistry providerRegistry;
 
     public PersistentMediaAvailabilityService(ResourceService resources, MediaReleaseRepository releases,
-        AttachmentRepository attachments, BlobRepository blobs, BlobPlacementRepository placements) {
+        AttachmentRepository attachments, BlobRepository blobs, BlobPlacementRepository placements,
+        StorageProviderRegistry providerRegistry) {
         this.resources = resources; this.releases = releases; this.attachments = attachments;
-        this.blobs = blobs; this.placements = placements;
+        this.blobs = blobs; this.placements = placements; this.providerRegistry = providerRegistry;
     }
 
     @Override
@@ -58,7 +62,11 @@ public class PersistentMediaAvailabilityService implements MediaAvailabilityServ
             case MISSING -> Mono.just(new MediaAvailabilityView(release.playableResourceId(), MediaAvailability.MISSING, release.id(), "Blob 不存在"));
             case CORRUPTED -> Mono.just(new MediaAvailabilityView(release.playableResourceId(), MediaAvailability.CORRUPTED, release.id(), "Blob 校验失败"));
             case AVAILABLE, REMOTE -> placements.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
-                .any(placement -> placement.placementState() == PlacementState.ACTIVE)
+                .filter(placement -> placement.placementState() == PlacementState.ACTIVE)
+                .concatMap(placement -> providerRegistry.getByKey(placement.provider())
+                    .map(provider -> provider.status() != StorageProviderStatus.DISABLED
+                        && provider.status() != StorageProviderStatus.FAILED))
+                .any(Boolean::booleanValue)
                 .map(readable -> readable
                     ? new MediaAvailabilityView(release.playableResourceId(), MediaAvailability.AVAILABLE, release.id(), "存在可读 Storage Placement")
                     : new MediaAvailabilityView(release.playableResourceId(), MediaAvailability.MISSING, release.id(), "Blob 没有可读 Storage Placement"));
