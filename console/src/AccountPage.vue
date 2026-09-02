@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute(); const saved = ref(false); const language = ref('简体中文'); const density = ref('舒适'); const displayName = ref('陈昊'); const email = ref('name@example.com')
+const preferences = computed(() => route.path.endsWith('/preferences'))
+function save() { saved.value = true; window.setTimeout(() => saved.value = false, 2400) }
+</script>
+
+<template><div class="account-shell"><header class="catalog-topbar"><div class="catalog-brand"><span class="brand-mark">i</span><strong>Ikaros <small>Console</small></strong></div><span class="catalog-context">账户设置</span><span class="mini-avatar">陈</span></header><main class="account-main"><p class="eyebrow">个人账户</p><h1>{{ preferences ? '偏好设置' : '个人资料' }}</h1><p class="account-subtitle">{{ preferences ? '管理 Console 的显示、语言与工作习惯。' : '管理你的公开资料和登录身份信息。' }}</p><nav class="account-tabs"><RouterLink to="/console/account/profile" :class="{ active: !preferences }">个人资料</RouterLink><RouterLink to="/console/account/preferences" :class="{ active: preferences }">偏好设置</RouterLink></nav><section class="account-card surface-card"><template v-if="!preferences"><div class="account-avatar">陈</div><label>显示名称<input v-model="displayName" /></label><label>登录邮箱<input v-model="email" type="email" /></label><label>账户角色<input value="管理员" disabled /></label><p class="account-note">登录身份变更可能需要重新验证；敏感凭据不会在此页面展示。</p></template><template v-else><label>语言<select v-model="language"><option>简体中文</option><option>English</option></select></label><label>列表密度<select v-model="density"><option>舒适</option><option>紧凑</option></select></label><label class="switch-line"><span><b>操作后显示确认提示</b><small>重要操作完成后显示 Snackbar 反馈</small></span><input type="checkbox" checked /></label><label class="switch-line"><span><b>跟随系统主题</b><small>也可通过侧边栏主题按钮切换</small></span><input type="checkbox" checked /></label></template><div class="account-actions"><span v-if="saved" class="success-text">✓ 已保存</span><button class="filled-button" @click="save">保存设置</button></div></section></main></div></template>
