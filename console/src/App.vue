@@ -72,6 +72,12 @@ onMounted(loadResources); watch(currentPath, loadResources)
 onMounted(() => applyTheme(theme.value)); watch(expanded, () => applyTheme(theme.value), { deep: true })
 watch(() => route.query.q, value => { query.value = String(value || '') })
 onMounted(() => window.addEventListener('keydown', handleShortcut)); onBeforeUnmount(() => window.removeEventListener('keydown', handleShortcut))
+let refreshTimer: number | undefined
+watch(currentPath, value => {
+  if (refreshTimer) window.clearInterval(refreshTimer)
+  if (value === 'ops/background') refreshTimer = window.setInterval(loadResources, 30000)
+}, { immediate: true })
+onBeforeUnmount(() => { if (refreshTimer) window.clearInterval(refreshTimer) })
 function genericTitle() { return current.value.label }
 </script>
 
