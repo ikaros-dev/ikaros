@@ -146,7 +146,9 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
                 .filter(provider -> provider.status() != StorageProviderStatus.DISABLED
                     && provider.status() != StorageProviderStatus.FAILED)
                 .flatMap(provider -> bindings.findAllByStorageProviderIdOrderByPriorityAsc(provider.id())
-                    .filter(MediaDeliveryBindingEntity::enabled).next()
+                    .filter(binding -> binding.enabled()
+                        && (indexed.getT1() == 0 || binding.fallbackParticipation()))
+                    .next()
                     .map(binding -> new Selection(binding.id(), indexed.getT1() == 0 ? "PRIMARY" : "FAILOVER",
                         indexed.getT1().intValue(), provider.updatedAt().toString()))))
             .next()
