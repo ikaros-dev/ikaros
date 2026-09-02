@@ -35,6 +35,7 @@ export type StorageProviderRecord = { id: string; providerKey?: string; provider
 export type DriveSpaceRecord = { id: string; name?: string; displayName?: string; status?: string; quota_bytes?: number; quotaBytes?: number; used_bytes?: number; usedBytes?: number; updated_at?: string; updatedAt?: string }
 export type DriveNodeRecord = { id: string; name?: string; nodeType?: string; node_type?: string; lifecycle?: string; nodeVersion?: number; node_version?: number; updatedAt?: string; updated_at?: string }
 export type SyncBindingRecord = { id: string; deviceId?: string; device_id?: string; driveSpaceId?: string; drive_space_id?: string; localDisplayPath?: string; local_display_path?: string; enabled?: boolean; state?: string; cursor?: number; updatedAt?: string; updated_at?: string }
+export type DriveQuotaRecord = { spaceId?: string; space_id?: string; limitBytes?: number; limit_bytes?: number; usedBytes?: number; used_bytes?: number; reservedBytes?: number; reserved_bytes?: number; availableBytes?: number; available_bytes?: number }
 export type PlanningTaskRecord = { id: string; title?: string; status?: string; priority?: string; due_at?: string; updated_at?: string }
 export type PlanningProjectRecord = { id: string; name?: string; description?: string; status?: string; createdAt?: string; updatedAt?: string; version?: number }
 export type PlanningGoalRecord = { id: string; title?: string; description?: string; type?: string; status?: string; progress?: number; deadline?: string; updatedAt?: string }
@@ -63,6 +64,7 @@ export const api = {
   listDriveSpaces: (actorId: string) => request<DriveSpaceRecord[]>('/drive/spaces', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   listDriveChildren: (spaceId: string, actorId: string) => request<DriveNodeRecord[]>(`/drive/spaces/${encodeURIComponent(spaceId)}/children`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   listDriveBindings: (actorId: string) => request<SyncBindingRecord[]>('/drive/bindings', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
+  getDriveQuota: (spaceId: string, actorId: string) => request<DriveQuotaRecord>(`/drive/spaces/${encodeURIComponent(spaceId)}/quota`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   createDriveSpace: (displayName: string, actorId: string) => request<DriveSpaceRecord>('/drive/spaces', { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId, 'Idempotency-Key': requestId() }, body: JSON.stringify({ displayName }) }),
   listTodayTasks: (actorId: string, timeZone = 'Asia/Shanghai') => request<PlanningTaskRecord[]>(`/planning/tasks/today?timeZone=${encodeURIComponent(timeZone)}`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   listPlanningProjects: (actorId: string) => request<PlanningProjectRecord[]>('/planning/projects', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
