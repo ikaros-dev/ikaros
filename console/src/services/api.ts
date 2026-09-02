@@ -28,7 +28,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export type ResourceRecord = { id: string; title?: string; resource_type?: string; lifecycle?: string; updated_at?: string }
 export type Page<T> = { items?: T[]; content?: T[]; next_cursor?: string | null; total?: number }
 export type UserRecord = { id: string; display_name?: string; username?: string; status?: string; roles?: string[]; mfa_enabled?: boolean; last_active_at?: string }
-export type BackgroundTaskRecord = { id: string; task_type?: string; owning_subsystem?: string; state?: string; progress?: number; current_stage?: string; created_at?: string }
+export type BackgroundTaskRecord = { id: string; taskType?: string; task_type?: string; status?: string; state?: string; progress?: Record<string, unknown>; owning_subsystem?: string; current_stage?: string; createdAt?: string; created_at?: string }
 export type RoleRecord = { id: string; code?: string; name?: string; description?: string; builtIn?: boolean; permissions?: string[] }
 export type StorageProviderRecord = { id: string; providerKey?: string; providerType?: string; tier?: string; status?: string; updatedAt?: string }
 export type DriveSpaceRecord = { id: string; name?: string; displayName?: string; status?: string; quota_bytes?: number; quotaBytes?: number; used_bytes?: number; usedBytes?: number; updated_at?: string; updatedAt?: string }
