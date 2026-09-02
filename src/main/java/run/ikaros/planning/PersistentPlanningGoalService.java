@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 
 @Service
 public class PersistentPlanningGoalService implements PlanningGoalService {
@@ -58,7 +59,7 @@ public class PersistentPlanningGoalService implements PlanningGoalService {
         .switchIfEmpty(Mono.error(new NotFoundException("Goal 不存在"))); }
     private Mono<PlanningTaskEntity> task(UUID ownerId, UUID taskId) { return tasks.findById(taskId).filter(task -> task.ownerId().equals(ownerId))
         .switchIfEmpty(Mono.error(new NotFoundException("Task 不存在"))); }
-    private void check(PlanningGoalEntity goal, long expected) { if ((goal.version() == null ? 0 : goal.version()) != expected) throw new ConflictException("Goal 版本冲突"); }
+    private void check(PlanningGoalEntity goal, long expected) { if ((goal.version() == null ? 0 : goal.version()) != expected) throw new PreconditionFailedException("If-Match 与 Goal 当前版本不匹配"); }
     private void validateDates(Instant start, Instant deadline) { if (start != null && deadline != null && !deadline.isAfter(start)) throw new ConflictException("目标截止时间必须晚于开始时间"); }
     private PlanningGoalView view(PlanningGoalEntity goal) { return new PlanningGoalView(goal.id(), goal.ownerId(), goal.title(), goal.description(), goal.type(), goal.status(),
         goal.progress() == null ? 0 : goal.progress(), goal.startAt(), goal.deadline(), goal.completedAt(), goal.createdAt(), goal.updatedAt(), goal.version() == null ? 0 : goal.version()); }
