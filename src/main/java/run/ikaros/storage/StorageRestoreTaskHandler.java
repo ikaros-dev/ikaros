@@ -47,6 +47,7 @@ public class StorageRestoreTaskHandler {
                 task.payload().containsKey("season_id")
                     ? restoreSeason(request, requestId, task.id(), restoreClass, uuid(task.payload(), "season_id"))
                     : attachments.findById(uuid(task.payload(), "attachment_id"))
+                        .filter(attachment -> attachment.deletedAt() == null)
                         .switchIfEmpty(Mono.error(new NotFoundException("附件不存在")))
                         .flatMap(attachment -> restoreAttachment(request, attachment, requestId, task.id(), restoreClass, true))));
     }
