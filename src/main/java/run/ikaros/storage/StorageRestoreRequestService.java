@@ -108,6 +108,12 @@ public class StorageRestoreRequestService {
         return requests.findAllByActorIdOrderByCreatedAtDesc(actorId).map(this::view);
     }
 
+    public Flux<StorageRestoreRequestView> list(UUID actorId, StorageRestoreRequestStatus status) {
+        return requests.findAllByActorIdOrderByCreatedAtDesc(actorId)
+            .filter(request -> status == null || request.status() == status)
+            .map(this::view);
+    }
+
     public Mono<StorageRestoreRequestView> cancel(UUID actorId, UUID id) {
         return requests.findById(id).filter(r -> r.actorId().equals(actorId))
             .switchIfEmpty(Mono.error(new NotFoundException("Restore Request 不存在或无权访问")))

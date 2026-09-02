@@ -31,7 +31,8 @@ public class StorageRestoreContractController {
     @GetMapping("/api/v2/restore-requests")
     public Mono<RestoreRequestContractListView> list(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @RequestParam(required=false) String cursor, @RequestParam(required=false) String status) {
-        return service.list(actorId).map(this::contract).collectList().map(items -> new RestoreRequestContractListView(items, null));
+        return service.list(actorId, internalStatus(status)).map(this::contract).collectList()
+            .map(items -> new RestoreRequestContractListView(items, null));
     }
 
     @DeleteMapping("/api/v2/restore-requests/{requestId}")
@@ -56,6 +57,19 @@ public class StorageRestoreContractController {
             case PARTIAL_FAILURE -> "PARTIAL";
             case FAILED -> "FAILED";
             case CANCELLED -> "CANCELLED";
+        };
+    }
+
+    private StorageRestoreRequestStatus internalStatus(String value) {
+        if (value == null || value.isBlank()) return null;
+        return switch (value.toUpperCase()) {
+            case "PENDING" -> StorageRestoreRequestStatus.REQUESTED;
+            case "ACTIVE" -> StorageRestoreRequestStatus.IN_PROGRESS;
+            case "PARTIAL" -> StorageRestoreRequestStatus.PARTIAL_FAILURE;
+            case "SUCCEEDED" -> StorageRestoreRequestStatus.COMPLETED;
+            case "FAILED" -> StorageRestoreRequestStatus.FAILED;
+            case "CANCELLED" -> StorageRestoreRequestStatus.CANCELLED;
+            default -> throw new IllegalArgumentException("Restore Request status 无效");
         };
     }
 }
