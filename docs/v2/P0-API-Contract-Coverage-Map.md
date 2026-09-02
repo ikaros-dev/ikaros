@@ -1,47 +1,47 @@
-# Ikaros V2 P0 API / Contract Coverage Map
+# Ikaros V2 P0 API / 契约覆盖映射
 
 | 项目 | 内容 |
 |---|---|
-| Baseline | `v2-p0-foundation-0.2` |
-| Base OpenAPI | `api/openapi-v2-p0.yaml` |
-| Convergence Addendum | `api/openapi-v2-p0-contract-convergence.yaml` |
-| Machine Registry | `contracts/P0-HTTP-Operation-Registry.yaml` |
-| Event Schema | `contracts/schema/p0-event-v1.schema.json` |
+| 基线 | `v2-p0-foundation-0.2` |
+| 基础 OpenAPI | `api/openapi-v2-p0.yaml` |
+| 契约收敛补充 | `api/openapi-v2-p0-contract-convergence.yaml` |
+| 机器可读注册表 | `contracts/P0-HTTP-Operation-Registry.yaml` |
+| 事件 Schema | `contracts/schema/p0-event-v1.schema.json` |
 
-> Application Contract exists ≠ public HTTP endpoint exists. Controller-first changes are prohibited.
+> 存在应用契约 ≠ 必须存在公开 HTTP 端点。禁止先写 Controller、后补契约。
 
-## Contract Files
+## 契约文件
 
-- `P0-Implementation-Baseline.md` — Phase 0 engineering GO / frozen boundary.
-- `P0-Requirement-Traceability-Matrix.md` — Requirement → Contract → DB → API → Event → Test traceability.
-- `contracts/P0-Command-Query-Event-Catalog.md` — Application Command / Query / Event authority.
-- `contracts/P0-Event-Payload-Schema-Registry.md` — human-readable event payload compatibility contract.
-- `contracts/schema/p0-event-v1.schema.json` — machine-readable Event Envelope / Type / Version baseline.
-- `contracts/P0-HTTP-Operation-Registry.yaml` — complete public P0 HTTP operation mapping.
-- `api/openapi-v2-p0.yaml` — original P0 OpenAPI baseline.
-- `api/openapi-v2-p0-contract-convergence.yaml` — additive coverage for Catalog-declared HTTP operations missing from the original spec.
-- `testing/P0-Acceptance-Invariant-Test-Matrix.md` — REQUIRED engineering gates.
+- `P0-Implementation-Baseline.md` — Phase 0 工程实现准入与冻结边界。
+- `P0-Requirement-Traceability-Matrix.md` — 需求 → 契约 → 数据库 → API → 事件 → 测试的可追溯关系。
+- `contracts/P0-Command-Query-Event-Catalog.md` — 应用层 Command / Query / Event 的权威目录。
+- `contracts/P0-Event-Payload-Schema-Registry.md` — 面向人的事件 Payload 兼容性契约。
+- `contracts/schema/p0-event-v1.schema.json` — 机器可读的事件 Envelope / Type / Version 基线。
+- `contracts/P0-HTTP-Operation-Registry.yaml` — 完整的 P0 公开 HTTP 操作映射。
+- `api/openapi-v2-p0.yaml` — 原始 P0 OpenAPI 基线。
+- `api/openapi-v2-p0-contract-convergence.yaml` — 对原始规范中缺失、但已由 Catalog 声明的 HTTP 操作进行增量补充。
+- `testing/P0-Acceptance-Invariant-Test-Matrix.md` — **必须满足**的工程验收门禁。
 
-## P0 Public API Rule
+## P0 公开 API 规则
 
 ```text
-Subsystem capability
-  -> Command or Query ID
-  -> Permission / authorization policy
+子系统能力
+  -> Command 或 Query ID
+  -> 权限 / 授权策略
   -> HTTP operationId
   -> HTTP Operation Registry
-  -> OpenAPI request/response schema
-  -> Event type/version (when durable fact exists)
-  -> Acceptance/invariant test
+  -> OpenAPI 请求 / 响应 Schema
+  -> Event type/version（产生持久事实时）
+  -> 验收 / 不变量测试
 ```
 
-CI should verify operationId uniqueness, method/path uniqueness, Registry → OpenAPI existence, Registry contract IDs → Catalog existence, and OpenAPI reference validity.
+CI 应校验：`operationId` 唯一性、method/path 唯一性、Registry → OpenAPI 的存在性、Registry 中的 contract ID → Catalog 的存在性，以及 OpenAPI 引用有效性。
 
-## Coverage After Convergence
+## 契约收敛后的覆盖情况
 
-The original OpenAPI baseline has **16** public operations. The convergence addendum adds **12** missing mappings, for **28** public P0 operations total.
+原始 OpenAPI 基线包含 **16** 个公开操作；契约收敛补充新增 **12** 个缺失映射，因此当前共有 **28** 个 P0 公开操作。
 
-Newly covered contracts:
+本轮新增覆盖的契约：
 
 - `resource.find-by-external-identity`
 - `resource.trash-resource`
@@ -56,31 +56,31 @@ Newly covered contracts:
 - `identity.list-sessions`
 - `identity.get-user`
 
-The exact machine list is `contracts/P0-HTTP-Operation-Registry.yaml`.
+精确的机器可读列表见 `contracts/P0-HTTP-Operation-Registry.yaml`。
 
-## Intentionally Not Public Yet
+## 当前明确不公开的能力
 
-The following Application Contracts remain internal or `contract-deferred` until route/request/response, authorization/step-up, idempotency and concurrency semantics are frozen:
+以下应用契约继续保持内部使用或 `contract-deferred` 状态，直到路由、请求/响应模型、授权/二次验证、幂等与并发语义完成冻结：
 
-- Resource mutation contracts for external identities, tags, collections and user-state;
-- Storage attachment lifecycle, blob verify/GC, provider update/enable/disable/drain;
-- `operations.retry-background-task`;
-- Identity user/role/session mutation commands not already in the base OpenAPI.
+- External Identity、Tag、Collection、User State 相关的 Resource 变更契约；
+- Storage Attachment 生命周期、Blob 校验/GC、Provider 更新/启用/禁用/排空；
+- `operations.retry-background-task`；
+- 基础 OpenAPI 尚未公开的 Identity 用户/角色/会话变更命令。
 
-Do not invent Controller routes for these capabilities.
+禁止为这些能力自行臆造 Controller 路由。
 
-## Event Machine Contract
+## 事件机器契约
 
-`contracts/schema/p0-event-v1.schema.json` locks the P0 event envelope, UUIDv7 event ID, schema version, producer namespace and the current **43 P0 v1 Event Types**. Per-event payload field constraints remain governed by `P0-Event-Payload-Schema-Registry.md` and must be expanded into machine compatibility checks during Phase 0 implementation (`P0-EVT-004/013/014`).
+`contracts/schema/p0-event-v1.schema.json` 冻结 P0 事件 Envelope、UUIDv7 Event ID、Schema Version、Producer Namespace，以及当前 **43 个 P0 v1 Event Type**。每种事件的 Payload 字段级约束仍由 `P0-Event-Payload-Schema-Registry.md` 管理，并应在 Phase 0 实现阶段扩展为机器可执行的兼容性检查（`P0-EVT-004/013/014`）。
 
-## Change Checklist
+## 变更检查清单
 
-- [ ] Catalog Command / Query exists.
-- [ ] Permission / object authorization is explicit.
-- [ ] OpenAPI operationId exists.
-- [ ] HTTP Operation Registry entry exists.
-- [ ] New/changed operation carries `x-ikaros-contract-id`.
-- [ ] Idempotency / concurrency semantics are explicit.
-- [ ] Event schema / payload registry is synchronized when applicable.
-- [ ] Acceptance Test ID exists.
-- [ ] Traceability Matrix is synchronized.
+- [ ] Catalog 中存在对应 Command / Query。
+- [ ] 权限 / 对象级授权规则明确。
+- [ ] OpenAPI 中存在对应 `operationId`。
+- [ ] HTTP Operation Registry 中存在对应条目。
+- [ ] 新增/变更操作携带 `x-ikaros-contract-id`。
+- [ ] 幂等 / 并发语义明确。
+- [ ] 适用时已同步 Event Schema / Payload Registry。
+- [ ] 存在对应 Acceptance Test ID。
+- [ ] 已同步 Traceability Matrix。
