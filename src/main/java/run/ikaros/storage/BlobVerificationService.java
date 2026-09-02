@@ -2,10 +2,11 @@ package run.ikaros.storage;
 
 import java.time.Instant;
 import java.util.UUID;
-import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.event.DurableEventService;
 import run.ikaros.resource.ResourceRepository;
 
 @Service
@@ -17,12 +18,15 @@ public class BlobVerificationService {
     private final StorageProviderRegistry providers;
     private final StorageContentReader reader;
     private final BlobIntegrityService integrity;
+    private final DurableEventService events;
+    private final TransactionalOperator transaction;
 
     public BlobVerificationService(BlobRepository blobs, BlobPlacementRepository placements, AttachmentRepository attachments,
         ResourceRepository resources, StorageProviderRegistry providers, StorageContentReader reader,
-        BlobIntegrityService integrity) {
+        BlobIntegrityService integrity, DurableEventService events, TransactionalOperator transaction) {
         this.blobs = blobs; this.placements = placements; this.attachments = attachments; this.resources = resources;
         this.providers = providers; this.reader = reader; this.integrity = integrity;
+        this.events = events; this.transaction = transaction;
     }
 
     public Mono<BlobVerificationView> verify(UUID actorId, UUID blobId) {
@@ -46,8 +50,13 @@ public class BlobVerificationService {
             result.status() == BlobIntegrityStatus.VERIFIED ? now : placement.verifiedAt(), placement.createdAt(), placement.version());
         BlobEntity updatedBlob = new BlobEntity(blob.id(), blob.hashAlgorithm(), blob.sha256(), blob.sizeBytes(), blob.mediaType(),
             availability, blob.createdAt(), blob.version());
-        return placements.save(updatedPlacement).then(blobs.save(updatedBlob))
-            .thenReturn(new BlobVerificationView(blob.id(), placement.id(), result.status(), result.actualSha256(), result.actualSize(), now));
+        String eventType = result.status() == BlobIntegrityStatus.VERIFIED
+            ? "storage.blob.verified" : "storage.blob.integrity-failed";
+        String payload = "{\"blob_id\":\"" + blob.id() + "\",\"placement_id\":\"" + placement.id()
+            + "\",\"actual_sha256\":\"" + result.actualSha256() + "\",\"actual_size\":" + result.actualSize() + "}";
+        return transaction.transactional(placements.save(updatedPlacement).then(blobs.save(updatedBlob))
+            .then(events.append(eventType, 1, "blob", blob.id(), payload)).thenReturn(
+                new BlobVerificationView(blob.id(), placement.id(), result.status(), result.actualSha256(), result.actualSize(), now)));
     }
 
     private Mono<BlobEntity> ownedBlob(UUID actorId, UUID blobId) {
