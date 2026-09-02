@@ -333,6 +333,13 @@ CREATE TABLE planning_task_assignment (
 );
 CREATE INDEX idx_planning_task_assignment_assignee ON planning_task_assignment (assignee_id, task_id);
 
+CREATE TABLE planning_comment (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), author_id UUID NOT NULL, target_type VARCHAR(16) NOT NULL, target_id UUID NOT NULL,
+    content TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    deleted_at TIMESTAMPTZ, version BIGINT NOT NULL DEFAULT 0, CHECK (target_type IN ('TASK','PROJECT','GOAL')), CHECK (version >= 0)
+);
+CREATE INDEX idx_planning_comment_target_created ON planning_comment (target_type, target_id, created_at);
+
 CREATE TABLE offline_download_manifest (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), intent_id UUID NOT NULL, manifest_version BIGINT NOT NULL,
     generated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, UNIQUE (intent_id, manifest_version),
