@@ -16,12 +16,14 @@ public class BlobGarbageCollector {
     private final TransactionalOperator transaction;
     private final BlobRetentionHoldRepository holds;
     private final DeliveryLeaseService leases;
+    private final StorageProviderRegistry providers;
+    private final StorageContentDeleter deleter;
 
     public BlobGarbageCollector(BlobRepository blobs, AttachmentRepository attachments,
                                 BlobPlacementRepository placements, TransactionalOperator transaction, BlobRetentionHoldRepository holds,
-                                DeliveryLeaseService leases) {
+                                DeliveryLeaseService leases, StorageProviderRegistry providers, StorageContentDeleter deleter) {
         this.blobs = blobs; this.attachments = attachments; this.placements = placements; this.transaction = transaction; this.holds = holds;
-        this.leases = leases;
+        this.leases = leases; this.providers = providers; this.deleter = deleter;
     }
 
     public Mono<Void> purge(UUID blobId) {
@@ -34,6 +36,12 @@ public class BlobGarbageCollector {
                 .flatMap(active -> active ? Mono.error(new ConflictException("Blob 存在有效 Retention Hold")) : Mono.empty())
                 .then(leases.protectsBlob(blob.id()))
                 .flatMap(active -> active ? Mono.error(new ConflictException("Blob 正被 Delivery Lease 保护")) : Mono.empty())
+                .then(placements.findAllByBlobIdOrderByCreatedAtAsc(blob.id()).concatMap(placement ->
+                    providers.getByKey(placement.provider()).switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
+                        .flatMap(provider -> deleter.supports(provider)
+                            ? deleter.delete(provider, placement, blob)
+                            : Mono.error(new run.ikaros.common.StorageUnavailableException("Provider 不支持物理删除"))))
+                    .then())
                 .then(placements.deleteByBlobId(blob.id()))
                 .then(blobs.deleteById(blob.id())))
             .then());
