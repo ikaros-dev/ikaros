@@ -108,6 +108,9 @@ async function loadResources() {
     } else if (currentPath.value === 'planning/today') {
       const result = await api.listTodayTasks(actorId)
       if (result.length) rows.value = result.slice(0, 5).map(item => ({ id: item.id, name: item.title || `Task ${item.id.slice(0, 8)}`, owner: item.priority || '普通', status: item.status || 'OPEN', updated: item.due_at ? new Date(item.due_at).toLocaleString('zh-CN') : '今天' }))
+    } else if (currentPath.value === 'security/sessions' && actorId) {
+      const result = await api.listSessions(actorId)
+      if (result.length) rows.value = result.slice(0, 5).map(item => ({ id: item.id, name: `${item.loginMethod || '登录'} · ${item.id.slice(0, 8)}`, owner: item.currentSvl || '标准认证', status: item.expiresAt && new Date(item.expiresAt) > new Date() ? '活跃' : '已过期', updated: item.lastActiveAt ? new Date(item.lastActiveAt).toLocaleString('zh-CN') : '暂无记录' }))
     } else return
     apiConnected.value = true
   } catch (error) {
