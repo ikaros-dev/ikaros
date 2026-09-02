@@ -32,4 +32,12 @@ class InMemoryPluginRuntimeTest {
         InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0", "2", null);
         assertThrows(RuntimeException.class, () -> runtime.install(manifest, Set.of()).block());
     }
+
+    @Test
+    void comparesServerVersionsNumerically() {
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("10.0.0");
+        PluginManifest minimumTen = new PluginManifest("versioned.plugin", "Versioned", "1.0.0",
+            "Example", "1", "2.0.0", null, "example.Entry", List.of(), List.of(), List.of());
+        assertEquals(PluginLifecycle.INSTALLED, runtime.install(minimumTen, Set.of()).block().lifecycle());
+    }
 }

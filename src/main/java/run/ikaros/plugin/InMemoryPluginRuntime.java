@@ -117,8 +117,7 @@ public class InMemoryPluginRuntime implements PluginRuntime {
 
     private boolean compatible(PluginManifest manifest) {
         return pluginApiVersion.equals(manifest.pluginApiVersion())
-            && serverVersion.compareTo(manifest.minimumServerVersion()) >= 0
-            && (manifest.maximumServerVersion() == null
-                || serverVersion.compareTo(manifest.maximumServerVersion()) <= 0);
+            && PluginVersionCompatibility.supports(serverVersion, manifest.minimumServerVersion(),
+                manifest.maximumServerVersion());
     }
 }
