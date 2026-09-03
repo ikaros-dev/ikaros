@@ -1638,10 +1638,10 @@ Secret Service / Secure Data Foundation
 建议能力：
 
 ```text
-GET  /api/v2/background-tasks
-GET  /api/v2/background-tasks/{taskId}
-POST /api/v2/background-tasks/{taskId}/cancel
-POST /api/v2/background-tasks/{taskId}/retry
+GET  /api/background-tasks
+GET  /api/background-tasks/{taskId}
+POST /api/background-tasks/{taskId}/cancel
+POST /api/background-tasks/{taskId}/retry
 ```
 
 筛选至少支持：
@@ -1660,14 +1660,14 @@ POST /api/v2/background-tasks/{taskId}/retry
 建议能力：
 
 ```text
-GET    /api/v2/scheduled-jobs
-POST   /api/v2/scheduled-jobs
-GET    /api/v2/scheduled-jobs/{jobId}
-PATCH  /api/v2/scheduled-jobs/{jobId}
-POST   /api/v2/scheduled-jobs/{jobId}/enable
-POST   /api/v2/scheduled-jobs/{jobId}/disable
-POST   /api/v2/scheduled-jobs/{jobId}/run-now
-GET    /api/v2/scheduled-jobs/{jobId}/runs
+GET    /api/scheduled-jobs
+POST   /api/scheduled-jobs
+GET    /api/scheduled-jobs/{jobId}
+PATCH  /api/scheduled-jobs/{jobId}
+POST   /api/scheduled-jobs/{jobId}/enable
+POST   /api/scheduled-jobs/{jobId}/disable
+POST   /api/scheduled-jobs/{jobId}/run-now
+GET    /api/scheduled-jobs/{jobId}/runs
 ```
 
 是否使用 Action Subresource、RPC-style Action 或其他统一风格，后续由 API Convention 最终规范；行为语义以本文为准。

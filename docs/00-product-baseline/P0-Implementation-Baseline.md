@@ -57,7 +57,7 @@ Media Delivery / Restore 的独立 P0 Addendum 继续作为专项规范性扩展
 - Background Task / Attempt 分离；
 - Permission Registry 的权威性与对象级授权边界；
 - Secret Reference 边界；
-- `/api/v2`、Problem、snake_case、Idempotency、ETag/If-Match、Range 等 API 规则；
+- `/api`、Problem、snake_case、Idempotency、ETag/If-Match、Range 等 API 规则；
 - Plugin 私有持久化边界。
 
 ## 4. 尚未冻结的内容

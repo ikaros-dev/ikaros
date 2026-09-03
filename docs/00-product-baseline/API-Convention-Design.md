@@ -84,7 +84,7 @@ API Convention 需要解决的是“所有 V2 API 应遵循哪些共同规则”
 例如，若 Task 完成需要检查依赖、权限、重复任务、Activity、Event 等业务规则，则禁止把完成动作定义成：
 
 ```http
-PATCH /api/v2/tasks/{task_id}
+PATCH /api/tasks/{task_id}
 Content-Type: application/json
 
 {
@@ -95,7 +95,7 @@ Content-Type: application/json
 更合适的表达是显式业务动作：
 
 ```http
-POST /api/v2/tasks/{task_id}/actions/complete
+POST /api/tasks/{task_id}/actions/complete
 ```
 
 调用链逻辑上应保持：
@@ -165,7 +165,7 @@ V2 默认不是 SaaS 多租户系统，因此：
 Ikaros V2 稳定 HTTP API 使用：
 
 ```text
-/api/v2
+/api
 ```
 
 作为 Major API Version 前缀。
@@ -173,11 +173,11 @@ Ikaros V2 稳定 HTTP API 使用：
 示例：
 
 ```text
-/api/v2/resources
-/api/v2/attachments
-/api/v2/tasks
-/api/v2/analytics/metrics
-/api/v2/admin/users
+/api/resources
+/api/attachments
+/api/tasks
+/api/analytics/metrics
+/api/admin/users
 ```
 
 Major Version 只在发生无法通过兼容演进解决的公共契约变更时提升。
@@ -199,10 +199,10 @@ Server 产品版本、Database Schema Version、Plugin API Version、Event Contr
 示例：
 
 ```text
-GET  /api/v2/resources/{resource_id}
-GET  /api/v2/background-tasks/{task_id}
-POST /api/v2/resources/{resource_id}/actions/archive
-POST /api/v2/background-tasks/{task_id}/actions/cancel
+GET  /api/resources/{resource_id}
+GET  /api/background-tasks/{task_id}
+POST /api/resources/{resource_id}/actions/archive
+POST /api/background-tasks/{task_id}/actions/cancel
 ```
 
 ### 4.3 Admin API 独立命名空间
@@ -210,7 +210,7 @@ POST /api/v2/background-tasks/{task_id}/actions/cancel
 平台管理能力使用明确的 Admin Namespace，例如：
 
 ```text
-/api/v2/admin/...
+/api/admin/...
 ```
 
 这样做只用于表达产品与权限边界，不表示部署成独立服务。
@@ -222,13 +222,13 @@ POST /api/v2/background-tasks/{task_id}/actions/cancel
 禁止将易变化的状态直接编码为资源身份，例如：
 
 ```text
-/api/v2/completed-tasks/{id}
+/api/completed-tasks/{id}
 ```
 
 如果 Completed 只是 Task 的查询视图，应使用：
 
 ```text
-/api/v2/tasks?status=COMPLETED
+/api/tasks?status=COMPLETED
 ```
 
 或对应领域定义的 Smart View / Saved Query。
@@ -253,7 +253,7 @@ POST /api/v2/background-tasks/{task_id}/actions/cancel
 
 ```http
 HTTP/1.1 201 Created
-Location: /api/v2/resources/019...
+Location: /api/resources/019...
 ```
 
 响应可以返回创建后的完整 Representation。
@@ -784,7 +784,7 @@ V2 不采用全局强制：
 
 ```http
 202 Accepted
-Location: /api/v2/background-tasks/{id}
+Location: /api/background-tasks/{id}
 ```
 
 `202` 不表示业务已经执行成功。
@@ -805,7 +805,7 @@ Location: /api/v2/background-tasks/{id}
   "title": "Request validation failed",
   "status": 422,
   "detail": "One or more fields are invalid.",
-  "instance": "/api/v2/tasks",
+  "instance": "/api/tasks",
   "code": "validation.failed",
   "request_id": "req_...",
   "trace_id": "...",
@@ -884,7 +884,7 @@ rate_limit.exceeded
 对于持续变化、数据量可能增长的业务集合，默认采用 Cursor Pagination：
 
 ```http
-GET /api/v2/resources?limit=50&cursor=opaque_cursor
+GET /api/resources?limit=50&cursor=opaque_cursor
 ```
 
 响应：
@@ -1159,7 +1159,7 @@ ETag / If-Match
 
 ```http
 202 Accepted
-Location: /api/v2/background-tasks/{task_id}
+Location: /api/background-tasks/{task_id}
 ```
 
 ### 18.2 Async Response
@@ -1173,7 +1173,7 @@ Location: /api/v2/background-tasks/{task_id}
   "status": "PENDING",
   "created_at": "2026-08-31T00:00:00Z",
   "links": {
-    "self": "/api/v2/background-tasks/019c..."
+    "self": "/api/background-tasks/019c..."
   }
 }
 ```
@@ -1248,7 +1248,7 @@ Retry 必须继承原始：
 取消使用显式 Action：
 
 ```http
-POST /api/v2/background-tasks/{task_id}/actions/cancel
+POST /api/background-tasks/{task_id}/actions/cancel
 ```
 
 如果底层不能立即终止，可以先进入：
@@ -1776,7 +1776,7 @@ HTTP API Version 与 Event Contract Version 独立。
 例如：
 
 ```text
-POST /api/v2/tasks/{id}/actions/complete
+POST /api/tasks/{id}/actions/complete
 ```
 
 成功后可能产生：
@@ -1952,7 +1952,7 @@ HTTP Access Log 可以记录：
 Metric / Log 应记录：
 
 ```text
-/api/v2/resources/{resource_id}
+/api/resources/{resource_id}
 ```
 
 而不是把每个实际 UUID 当作独立 Metric Label，避免高基数。
@@ -2188,7 +2188,7 @@ Self-hosted 场景下 CORS 必须由 Instance 明确配置，不默认允许任�
 ### 35.1 List
 
 ```http
-GET /api/v2/resources?limit=50&sort=-updated_at
+GET /api/resources?limit=50&sort=-updated_at
 Authorization: Bearer ...
 X-Request-ID: req_example
 ```
@@ -2215,7 +2215,7 @@ X-Request-ID: req_example
 ### 35.2 Conditional Update
 
 ```http
-PATCH /api/v2/resources/019c5f1a-7a2b-7abc-8def-0123456789ab
+PATCH /api/resources/019c5f1a-7a2b-7abc-8def-0123456789ab
 Content-Type: application/merge-patch+json
 If-Match: "resource-version-7"
 
@@ -2234,7 +2234,7 @@ Content-Type: application/problem+json
 ### 35.3 Business Action
 
 ```http
-POST /api/v2/tasks/019c5f1a-7a2b-7abc-8def-0123456789ab/actions/complete
+POST /api/tasks/019c5f1a-7a2b-7abc-8def-0123456789ab/actions/complete
 Idempotency-Key: d3b0c5a0-...
 ```
 
@@ -2248,7 +2248,7 @@ HTTP/1.1 200 OK
 
 ```http
 HTTP/1.1 202 Accepted
-Location: /api/v2/background-tasks/019c...
+Location: /api/background-tasks/019c...
 ```
 
 ### 35.4 Validation Error

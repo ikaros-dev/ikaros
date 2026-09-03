@@ -476,22 +476,22 @@ P0 Operation ID 必须映射到 Catalog：
 
 | HTTP | operationId | Application Contract |
 |---|---|---|
-| `POST /api/v2/resources` | `createResource` | `resource.create-resource` |
-| `GET /api/v2/resources` | `listResources` | `resource.list-resources` |
-| `GET /api/v2/resources/{resource_id}` | `getResource` | `resource.get-resource` |
-| `PATCH /api/v2/resources/{resource_id}` | `updateResource` | `resource.update-resource` |
-| `POST /api/v2/resources/{resource_id}/actions/archive` | `archiveResource` | `resource.archive-resource` |
-| `POST /api/v2/resources/{resource_id}/actions/restore` | `restoreResource` | `resource.restore-resource` |
-| `GET /api/v2/attachments/{attachment_id}` | `getAttachment` | `storage.get-attachment` |
-| `GET /api/v2/attachments/{attachment_id}/content` | `getAttachmentContent` | `storage.get-attachment-content` |
-| `GET /api/v2/background-tasks/{task_id}` | `getBackgroundTask` | `operations.get-background-task` |
-| `POST /api/v2/background-tasks/{task_id}/actions/cancel` | `cancelBackgroundTask` | `operations.cancel-background-task` |
-| `GET /api/v2/admin/storage-providers` | `listStorageProviders` | `storage.list-providers` |
-| `POST /api/v2/admin/storage-providers` | `createStorageProvider` | `storage.create-provider` |
-| `GET /api/v2/admin/users` | `listUsers` | `identity.list-users` |
-| `POST /api/v2/admin/users` | `createUser` | `identity.create-user` |
-| `GET /api/v2/admin/roles` | `listRoles` | `identity.list-roles` |
-| `GET /api/v2/admin/permissions` | `listPermissions` | `identity.list-permissions` |
+| `POST /api/resources` | `createResource` | `resource.create-resource` |
+| `GET /api/resources` | `listResources` | `resource.list-resources` |
+| `GET /api/resources/{resource_id}` | `getResource` | `resource.get-resource` |
+| `PATCH /api/resources/{resource_id}` | `updateResource` | `resource.update-resource` |
+| `POST /api/resources/{resource_id}/actions/archive` | `archiveResource` | `resource.archive-resource` |
+| `POST /api/resources/{resource_id}/actions/restore` | `restoreResource` | `resource.restore-resource` |
+| `GET /api/attachments/{attachment_id}` | `getAttachment` | `storage.get-attachment` |
+| `GET /api/attachments/{attachment_id}/content` | `getAttachmentContent` | `storage.get-attachment-content` |
+| `GET /api/background-tasks/{task_id}` | `getBackgroundTask` | `operations.get-background-task` |
+| `POST /api/background-tasks/{task_id}/actions/cancel` | `cancelBackgroundTask` | `operations.cancel-background-task` |
+| `GET /api/admin/storage-providers` | `listStorageProviders` | `storage.list-providers` |
+| `POST /api/admin/storage-providers` | `createStorageProvider` | `storage.create-provider` |
+| `GET /api/admin/users` | `listUsers` | `identity.list-users` |
+| `POST /api/admin/users` | `createUser` | `identity.create-user` |
+| `GET /api/admin/roles` | `listRoles` | `identity.list-roles` |
+| `GET /api/admin/permissions` | `listPermissions` | `identity.list-permissions` |
 
 后续增加 endpoint 时必须先存在对应 Query / Command Contract，禁止 Controller-first。
 
@@ -591,7 +591,7 @@ If-Match: "v:12"
 
 ```http
 HTTP/1.1 202 Accepted
-Location: /api/v2/background-tasks/{task_id}
+Location: /api/background-tasks/{task_id}
 ```
 
 Body：
