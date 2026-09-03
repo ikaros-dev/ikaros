@@ -72,7 +72,8 @@ public class DefaultRoleService implements RoleService {
                 )).thenReturn(true)))
             .flatMap(changed -> requiredRole(roleId).flatMap(this::toView)
                 .flatMap(view -> (changed ? emit("identity.role.permissions-replaced", roleId,
-                    "{\"role_id\":\"" + roleId + "\",\"permission_keys\":[\"" + permission.key() + "\"]}")
+                    "{\"role_id\":\"" + roleId + "\",\"permission_keys\":"
+                        + permissionKeysPayload(view.permissions()) + "}")
                     : Mono.empty()).then(auditService.record(actorId, "identity.role.permission.grant", "ROLE", roleId, "{}"))
                     .thenReturn(view)));
     }
@@ -100,6 +101,10 @@ public class DefaultRoleService implements RoleService {
 
     private Mono<Void> emit(String type, UUID roleId, String payload) {
         return eventService == null ? Mono.empty() : eventService.append(type, 1, "role", roleId, payload).then();
+    }
+
+    private String permissionKeysPayload(List<String> permissions) {
+        return "[\"" + String.join("\",\"", permissions) + "\"]";
     }
 
     private Mono<PlatformRoleEntity> requiredRole(UUID roleId) {
