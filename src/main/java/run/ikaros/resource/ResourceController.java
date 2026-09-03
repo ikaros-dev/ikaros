@@ -150,12 +150,7 @@ public class ResourceController {
         @RequestHeader(value = "If-Match", required = false) String ifMatch,
         @RequestBody JsonNode body
     ) {
-        JsonNode expectedVersionNode = body.has("expected_version")
-            ? body.get("expected_version") : body.get("expectedVersion");
-        if (expectedVersionNode == null || !expectedVersionNode.canConvertToLong()) {
-            throw new IllegalArgumentException("expected_version 不能为空");
-        }
-        long expectedVersion = expectedVersionNode.asLong();
+        long expectedVersion = IfMatchVersion.parse(ifMatch);
         JsonNode primaryTitleNode = body.has("primary_title") ? body.get("primary_title") : body.get("primaryTitle");
         JsonNode summaryNode = body.get("summary");
         boolean primaryTitlePresent = primaryTitleNode != null;
@@ -169,9 +164,8 @@ public class ResourceController {
             throw new IllegalArgumentException("summary 长度不能超过 4000");
         }
         UpdateResourceRequest request = new UpdateResourceRequest(expectedVersion, primaryTitle, summary);
-        long version = IfMatchVersion.parse(ifMatch);
         return resourceService.update(actorId, resourceId,
-            new UpdateResourceRequest(version, request.primaryTitle(), request.summary()),
+            new UpdateResourceRequest(expectedVersion, request.primaryTitle(), request.summary()),
             primaryTitlePresent, summaryPresent)
             .map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view));
     }
