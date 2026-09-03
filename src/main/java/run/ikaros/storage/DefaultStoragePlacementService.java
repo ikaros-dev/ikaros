@@ -30,7 +30,7 @@ public class DefaultStoragePlacementService implements StoragePlacementService {
     public reactor.core.publisher.Flux<PlacementView> list(UUID blobId) {
         return blobRepository.findById(blobId)
             .switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在")))
-            .thenMany(placementRepository.findAllByBlobIdOrderByCreatedAtAsc(blobId))
+            .thenMany(placementRepository.findAllByBlobIdOrderByCreatedAtAsc(blobId).take(100))
             .map(placement -> new PlacementView(placement.id(), placement.provider(), placement.storageTier(),
                 placement.objectKey(), placement.placementState()));
     }
