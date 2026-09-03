@@ -23,6 +23,7 @@ class ResourceAuthorizationWebFilterTest {
         WebFilterChain chain = mock(WebFilterChain.class);
         new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
         assertEquals(401, exchange.getResponse().getStatusCode().value());
+        assertEquals("application/problem+json", exchange.getResponse().getHeaders().getFirst("Content-Type"));
     }
 
     @Test

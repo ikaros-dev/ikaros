@@ -4,6 +4,7 @@ import java.util.UUID;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
@@ -117,6 +118,11 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
 
     private Mono<Void> reject(ServerWebExchange exchange, HttpStatus status) {
         exchange.getResponse().setStatusCode(status);
-        return exchange.getResponse().setComplete();
+        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_PROBLEM_JSON);
+        String body = "{\"type\":\"about:blank\",\"title\":\"" + status.getReasonPhrase()
+            + "\",\"status\":" + status.value() + ",\"code\":\""
+            + (status == HttpStatus.UNAUTHORIZED ? "authentication.required" : "authorization.denied") + "\"}";
+        return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory()
+            .wrap(body.getBytes(java.nio.charset.StandardCharsets.UTF_8))));
     }
 }
