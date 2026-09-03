@@ -4,11 +4,11 @@ import { useRoute } from 'vue-router'
 import { ElButton, ElForm, ElFormItem, ElInput, ElOption, ElSelect, ElSwitch } from 'element-plus'
 import { api } from './services/api'
 
-const route = useRoute(); const saved = ref(false); const storageKey = 'ikaros-console-account-preferences'; const stored = (() => { try { return JSON.parse(localStorage.getItem(storageKey) || '{}') as Partial<{ language: string; density: string; displayName: string; email: string }> } catch { return {} } })(); const language = ref(stored.language || '简体中文'); const density = ref(stored.density || '舒适'); const displayName = ref(stored.displayName || '陈昊'); const email = ref(stored.email || 'name@example.com')
+const route = useRoute(); const saved = ref(false); const storageKey = 'ikaros-console-account-preferences'; const stored = (() => { try { return JSON.parse(localStorage.getItem(storageKey) || '{}') as Partial<{ language: string; density: string; displayName: string; email: string }> } catch { return {} } })(); const language = ref(stored.language || '简体中文'); const density = ref(stored.density || '舒适'); const displayName = ref(''); const email = ref('')
 const preferences = computed(() => route.path.endsWith('/preferences'))
 const actorId = String(import.meta.env.VITE_ACTOR_ID || '')
 const loading = ref(false)
-async function loadProfile() { if (!actorId || preferences.value) return; loading.value = true; try { const user = await api.getCurrentUser(actorId); displayName.value = user.displayName || user.display_name || user.username || displayName.value; email.value = user.email || email.value } catch { /* 未配置 actor 时保留本地编辑值 */ } finally { loading.value = false } }
+async function loadProfile() { if (!actorId || preferences.value) return; loading.value = true; try { const user = await api.getCurrentUser(actorId); displayName.value = user.displayName || user.display_name || user.username || ''; email.value = user.email || '' } catch { displayName.value = ''; email.value = '' } finally { loading.value = false } }
 loadProfile()
 function save() { localStorage.setItem(storageKey, JSON.stringify({ language: language.value, density: density.value, displayName: displayName.value, email: email.value })); saved.value = true; window.setTimeout(() => saved.value = false, 2400) }
 </script>
