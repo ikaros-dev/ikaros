@@ -150,10 +150,12 @@ public class ResourceController {
         @RequestHeader(value = "If-Match", required = false) String ifMatch,
         @RequestBody JsonNode body
     ) {
-        long expectedVersion = body.path("expected_version").asLong(Long.MIN_VALUE);
-        if (expectedVersion == Long.MIN_VALUE) {
+        JsonNode expectedVersionNode = body.has("expected_version")
+            ? body.get("expected_version") : body.get("expectedVersion");
+        if (expectedVersionNode == null || !expectedVersionNode.canConvertToLong()) {
             throw new IllegalArgumentException("expected_version 不能为空");
         }
+        long expectedVersion = expectedVersionNode.asLong();
         JsonNode primaryTitleNode = body.has("primary_title") ? body.get("primary_title") : body.get("primaryTitle");
         JsonNode summaryNode = body.get("summary");
         boolean primaryTitlePresent = primaryTitleNode != null;
