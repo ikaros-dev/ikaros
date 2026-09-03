@@ -56,6 +56,35 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
     public Mono<StorageProvider> enable(UUID providerId) { return change(providerId, StorageProviderStatus.ENABLED); }
 
     @Override
+    public Mono<StorageProvider> update(UUID providerId, UpdateStorageProviderRequest request) {
+        if (request == null) return Mono.error(new IllegalArgumentException("更新请求不能为空"));
+        return repository.findById(providerId)
+            .switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
+            .flatMap(current -> {
+                String secret = request.secretReference() == null ? current.secretReference() : request.secretReference();
+                if (request.secretReference() != null && !secret.startsWith("secret://")) {
+                    return Mono.error(new ConflictException("Provider secret reference 必须使用 secret:// URI"));
+                }
+                String type = request.providerType() == null ? current.providerType() : request.providerType();
+                String tier = request.tier() == null ? current.tier() : request.tier().name();
+                Map<String, Object> requestedMetadata = request.metadata();
+                if (requestedMetadata != null && requestedMetadata.values().stream().anyMatch(value -> value instanceof String valueString
+                    && (valueString.toLowerCase().contains("password")
+                        || valueString.toLowerCase().contains("secret")))) {
+                    return Mono.error(new ConflictException("Provider metadata 不得保存明文凭据"));
+                }
+                return encode(requestedMetadata == null ? readMetadata(current.providerMetadata()) : requestedMetadata)
+                    .flatMap(metadata -> repository.save(new StorageProviderEntity(current.id(), current.providerKey(),
+                        type, tier, current.status(), secret, metadata, current.createdAt(), Instant.now())))
+                    .map(this::toModel)
+                    .flatMap(provider -> emit("storage.provider.updated", provider,
+                        "{\"provider_id\":\"" + provider.id()
+                            + "\",\"changed_fields\":" + changedFields(request) + "}")
+                        .thenReturn(provider));
+            });
+    }
+
+    @Override
     public Mono<StorageProvider> disable(UUID providerId) { return change(providerId, StorageProviderStatus.DISABLED); }
 
     @Override
@@ -113,6 +142,24 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
         } catch (JsonProcessingException error) {
             return Mono.error(new IllegalArgumentException("Provider metadata 无法序列化", error));
         }
+    }
+
+    private Map<String, Object> readMetadata(String json) {
+        try {
+            return mapper.readValue(json, mapper.getTypeFactory()
+                .constructMapType(Map.class, String.class, Object.class));
+        } catch (JsonProcessingException error) {
+            throw new ConflictException("Provider metadata 数据损坏");
+        }
+    }
+
+    private String changedFields(UpdateStorageProviderRequest request) {
+        java.util.List<String> fields = new java.util.ArrayList<>();
+        if (request.providerType() != null) fields.add("\"provider_type\"");
+        if (request.tier() != null) fields.add("\"tier\"");
+        if (request.secretReference() != null) fields.add("\"secret_reference\"");
+        if (request.metadata() != null) fields.add("\"metadata\"");
+        return "[" + String.join(",", fields) + "]";
     }
 
     private Mono<Void> emit(String eventType, StorageProvider provider, String payload) {

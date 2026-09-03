@@ -10,10 +10,20 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.event.DurableEventService;
 
 @Service
 public class InMemoryStorageProviderRegistry implements StorageProviderRegistry {
     private final Map<UUID, StorageProvider> providers = new ConcurrentHashMap<>();
+    private final DurableEventService events;
+
+    public InMemoryStorageProviderRegistry() {
+        this(null);
+    }
+
+    public InMemoryStorageProviderRegistry(DurableEventService events) {
+        this.events = events;
+    }
 
     @Override
     public Mono<StorageProvider> register(String providerKey, String providerType, StorageTier tier,
@@ -40,6 +50,28 @@ public class InMemoryStorageProviderRegistry implements StorageProviderRegistry 
 
     @Override
     public Mono<StorageProvider> enable(UUID providerId) { return change(providerId, StorageProviderStatus.ENABLED); }
+
+    @Override
+    public Mono<StorageProvider> update(UUID providerId, UpdateStorageProviderRequest request) {
+        if (request == null) return Mono.error(new IllegalArgumentException("更新请求不能为空"));
+        return get(providerId).flatMap(current -> {
+            String secret = request.secretReference() == null ? current.secretReference() : request.secretReference();
+            if (request.secretReference() != null && !secret.startsWith("secret://")) {
+                return Mono.error(new ConflictException("Provider secret reference 必须使用 secret:// URI"));
+            }
+            Map<String, Object> metadata = request.metadata() == null ? current.metadata() : request.metadata();
+            if (metadata.values().stream().anyMatch(value -> value instanceof String string
+                && (string.toLowerCase().contains("password") || string.toLowerCase().contains("secret")))) {
+                return Mono.error(new ConflictException("Provider metadata 不得保存明文凭据"));
+            }
+            StorageProvider updated = new StorageProvider(current.id(), current.providerKey(),
+                request.providerType() == null ? current.providerType() : request.providerType(),
+                request.tier() == null ? current.tier() : request.tier(), current.status(), secret, metadata,
+                current.createdAt(), Instant.now());
+            providers.replace(providerId, current, updated);
+            return emitUpdated(updated, request).thenReturn(updated);
+        });
+    }
 
     @Override
     public Mono<StorageProvider> disable(UUID providerId) { return change(providerId, StorageProviderStatus.DISABLED); }
@@ -82,5 +114,21 @@ public class InMemoryStorageProviderRegistry implements StorageProviderRegistry 
             providers.replace(id, current, updated);
             return updated;
         });
+    }
+
+    private Mono<Void> emitUpdated(StorageProvider current, UpdateStorageProviderRequest request) {
+        if (events == null) return Mono.empty();
+        String payload = "{\"provider_id\":\"" + current.id() + "\",\"changed_fields\":"
+            + changedFields(request) + "}";
+        return events.append("storage.provider.updated", 1, "storage_provider", current.id(), payload).then();
+    }
+
+    private String changedFields(UpdateStorageProviderRequest request) {
+        java.util.List<String> fields = new java.util.ArrayList<>();
+        if (request.providerType() != null) fields.add("\"provider_type\"");
+        if (request.tier() != null) fields.add("\"tier\"");
+        if (request.secretReference() != null) fields.add("\"secret_reference\"");
+        if (request.metadata() != null) fields.add("\"metadata\"");
+        return "[" + String.join(",", fields) + "]";
     }
 }
