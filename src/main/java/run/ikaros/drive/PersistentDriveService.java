@@ -53,7 +53,7 @@ public class PersistentDriveService implements DriveService {
     @Override public Mono<DriveNodeView> restore(UUID actor, UUID id, long expected) { return lifecycle(actor,id,expected,DriveLifecycle.ACTIVE); }
     @Override
     public Mono<DriveRevisionView> createRevision(UUID actor, UUID id, CreateDriveRevisionRequest req) {
-        return ownedNode(actor, id).flatMap(node -> {
+        return transactionalOperator.transactional(ownedNode(actor, id).flatMap(node -> {
             if (node.nodeType() != DriveNodeType.FILE) {
                 return Mono.error(new ConflictException("只有文件节点可以创建版本"));
             }
@@ -78,7 +78,7 @@ public class PersistentDriveService implements DriveService {
                         node.version());
                     return nodes.save(changed).thenReturn(view(saved));
                 });
-        });
+        }));
     }
     @Override public Flux<DriveRevisionView> revisions(UUID actor, UUID id) { return ownedNode(actor,id).flatMapMany(n->revisions.findAllByFileNodeIdOrderByRevisionNoDesc(id).map(this::view)); }
     @Override public Flux<DriveChangeView> changes(UUID actor, UUID sid, long afterSequence) { return ownedSpace(actor,sid).flatMapMany(s->changes.findAllByDriveSpaceIdAndSequenceGreaterThanOrderBySequenceAsc(sid,afterSequence).map(this::changeView)); }
