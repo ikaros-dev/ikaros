@@ -13,6 +13,7 @@ import run.ikaros.task.BackgroundTaskService;
 
 @Service
 public class DefaultScanRunService implements ScanRunService {
+    private static final int MAX_UNPAGED_RESULTS = 100;
     private final IngestionSourceRepository sourceRepository;
     private final ScanRunRepository repository;
     private final BackgroundTaskService taskService;
@@ -46,7 +47,8 @@ public class DefaultScanRunService implements ScanRunService {
     }
 
     @Override public Mono<List<ScanRunView>> list(UUID ownerId) {
-        return repository.findAllByOwnerIdOrderByCreatedAtDesc(ownerId).map(this::toView).collectList();
+        return repository.findAllByOwnerIdOrderByCreatedAtDesc(ownerId).take(MAX_UNPAGED_RESULTS)
+            .map(this::toView).collectList();
     }
 
     @Override public Mono<ScanRunView> get(UUID ownerId, UUID scanId) {
