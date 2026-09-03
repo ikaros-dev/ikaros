@@ -148,16 +148,25 @@ public class DefaultResourceService implements ResourceService {
 
     @Override
     public Mono<ResourceView> update(UUID ownerId, UUID resourceId, UpdateResourceRequest request) {
+        return update(ownerId, resourceId, request, request.primaryTitle() != null, request.summary() != null);
+    }
+
+    @Override
+    public Mono<ResourceView> update(UUID ownerId, UUID resourceId, UpdateResourceRequest request,
+                                     boolean primaryTitlePresent, boolean summaryPresent) {
+        if (primaryTitlePresent && request.primaryTitle() == null) {
+            return Mono.error(new IllegalArgumentException("primaryTitle 不能为 null"));
+        }
         return transactionalOperator.transactional(owned(ownerId, resourceId).flatMap(resource -> {
             if (resource.version() == null || resource.version() != request.expectedVersion()) {
                 return Mono.error(new ConflictException("resource.version-conflict", "Resource 版本已过期"));
             }
             ResourceEntity updated = new ResourceEntity(resource.id(), resource.ownerId(), resource.resourceType(),
-                request.primaryTitle() == null ? resource.primaryTitle() : request.primaryTitle(),
-                request.summary() == null ? resource.summary() : request.summary(), resource.dataClassification(),
+                primaryTitlePresent ? request.primaryTitle() : resource.primaryTitle(),
+                summaryPresent ? request.summary() : resource.summary(), resource.dataClassification(),
                 resource.lifecycle(), resource.createdAt(), Instant.now(), resource.deletedAt(), resource.version());
             return resourceRepository.save(updated)
-                .flatMap(saved -> syncPrimaryTitle(resource, saved, request)
+                .flatMap(saved -> syncPrimaryTitle(resource, saved, request, primaryTitlePresent)
                     .then(emit("resource.resource.updated", saved))
                     .then(auditService.record(ownerId, "resource.update", "RESOURCE", resourceId, "{}"))
                     .then(toView(saved)));
@@ -165,8 +174,8 @@ public class DefaultResourceService implements ResourceService {
     }
 
     private Mono<Void> syncPrimaryTitle(ResourceEntity previous, ResourceEntity updated,
-                                         UpdateResourceRequest request) {
-        if (request.primaryTitle() == null || request.primaryTitle().equals(previous.primaryTitle())) {
+                                         UpdateResourceRequest request, boolean primaryTitlePresent) {
+        if (!primaryTitlePresent || request.primaryTitle().equals(previous.primaryTitle())) {
             return Mono.empty();
         }
         return titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(updated.id())

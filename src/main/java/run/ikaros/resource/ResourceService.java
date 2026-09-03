@@ -2,6 +2,7 @@ package run.ikaros.resource;
 
 import java.util.UUID;
 import reactor.core.publisher.Mono;
+import com.fasterxml.jackson.databind.JsonNode;
 import run.ikaros.common.PageResponse;
 
 /**
@@ -30,6 +31,8 @@ public interface ResourceService {
     Mono<ResourceView> get(UUID ownerId, UUID resourceId);
 
     Mono<ResourceView> update(UUID ownerId, UUID resourceId, UpdateResourceRequest request);
+    Mono<ResourceView> update(UUID ownerId, UUID resourceId, UpdateResourceRequest request,
+                              boolean primaryTitlePresent, boolean summaryPresent);
 
     /**
      * 按标题关键词与类型分页浏览活动 Resource。

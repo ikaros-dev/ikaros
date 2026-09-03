@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.net.URI;
 import java.util.UUID;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -147,11 +148,21 @@ public class ResourceController {
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @PathVariable UUID resourceId,
         @RequestHeader(value = "If-Match", required = false) String ifMatch,
-        @Valid @RequestBody UpdateResourceRequest request
+        @RequestBody JsonNode body
     ) {
+        long expectedVersion = body.path("expected_version").asLong(Long.MIN_VALUE);
+        if (expectedVersion == Long.MIN_VALUE) {
+            throw new IllegalArgumentException("expected_version 不能为空");
+        }
+        String primaryTitle = body.has("primary_title") && !body.get("primary_title").isNull()
+            ? body.get("primary_title").asText() : null;
+        String summary = body.has("summary") && !body.get("summary").isNull()
+            ? body.get("summary").asText() : null;
+        UpdateResourceRequest request = new UpdateResourceRequest(expectedVersion, primaryTitle, summary);
         long version = IfMatchVersion.parse(ifMatch);
         return resourceService.update(actorId, resourceId,
-            new UpdateResourceRequest(version, request.primaryTitle(), request.summary()))
+            new UpdateResourceRequest(version, request.primaryTitle(), request.summary()),
+            body.has("primary_title"), body.has("summary"))
             .map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view));
     }
 
