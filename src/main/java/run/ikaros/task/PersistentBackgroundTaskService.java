@@ -173,6 +173,9 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
 
     @Override
     public Mono<BackgroundTask> heartbeat(UUID taskId, UUID leaseToken, Duration leaseDuration) {
+        if (leaseDuration == null || leaseDuration.isZero() || leaseDuration.isNegative()) {
+            return Mono.error(new IllegalArgumentException("Lease 参数不合法"));
+        }
         return leased(taskId, leaseToken).flatMap(task -> tasks.save(copy(task, TaskStatus.RUNNING,
             task.leaseOwner(), task.leaseToken(), Instant.now().plus(leaseDuration), task.attempt(),
             task.cancelRequestedAt(), task.progress(), task.result()))).flatMap(this::view);

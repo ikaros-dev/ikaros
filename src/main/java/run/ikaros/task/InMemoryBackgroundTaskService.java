@@ -113,6 +113,9 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
 
     @Override
     public Mono<BackgroundTask> heartbeat(UUID taskId, UUID leaseToken, Duration leaseDuration) {
+        if (leaseDuration == null || leaseDuration.isZero() || leaseDuration.isNegative()) {
+            return Mono.error(new IllegalArgumentException("Lease 参数不合法"));
+        }
         return leased(taskId, leaseToken).map(task -> {
             BackgroundTask updated = copy(task, task.status(), task.leaseOwner(), task.leaseToken(),
                 Instant.now().plus(leaseDuration), task.attempt(), task.cancelRequestedAt(), task.progress(), task.result());
