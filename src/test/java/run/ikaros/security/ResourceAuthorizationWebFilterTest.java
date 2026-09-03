@@ -2,6 +2,7 @@ package run.ikaros.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
@@ -82,5 +83,18 @@ class ResourceAuthorizationWebFilterTest {
         new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
 
         assertEquals(401, exchange.getResponse().getStatusCode().value());
+    }
+
+    @Test
+    void letsDeliveryGrantContentReachGrantAuthorizationWithoutSession() {
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
+            "/api/v2/attachments/" + UUID.randomUUID() + "/content")
+            .header("X-Ikaros-Delivery-Grant", "opaque-grant").build());
+        WebFilterChain chain = mock(WebFilterChain.class);
+        when(chain.filter(exchange)).thenReturn(Mono.empty());
+
+        new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
+
+        assertEquals(null, exchange.getResponse().getStatusCode());
     }
 }
