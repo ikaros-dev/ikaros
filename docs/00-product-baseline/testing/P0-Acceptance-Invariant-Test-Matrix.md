@@ -373,7 +373,7 @@ P0-ARCH-001 ~ P0-ARCH-010 = PASS
 
 ```text
 Authenticate user
-  -> POST /api/v2/resources + Idempotency-Key
+  -> POST /api/resources + Idempotency-Key
   -> Permission + validation
   -> Resource transaction
        resource row
