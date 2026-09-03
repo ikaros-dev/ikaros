@@ -36,7 +36,7 @@ public class PersistentDriveService implements DriveService {
         Instant now = Instant.now(); UUID sid = ids.next(); UUID root = ids.next();
         DriveSpaceEntity draft = new DriveSpaceEntity(sid,actor,req.displayName().trim(),null,0,"ACTIVE",now,now,null);
         DriveNodeEntity rootNode = new DriveNodeEntity(root,sid,null,DriveNodeType.FOLDER,"My Drive","my drive",DriveLifecycle.ACTIVE,null,actor,now,now,null,0,null);
-        return spaces.save(draft).flatMap(saved -> nodes.save(rootNode).then(spaces.save(new DriveSpaceEntity(sid,actor,saved.displayName(),root,0,"ACTIVE",now,Instant.now(),saved.version()))).then(quotaRepository.save(new DriveQuotaEntity(sid,100L*1024*1024*1024,0,0,null)))).then(spaces.findById(sid)).map(this::view);
+        return transactionalOperator.transactional(spaces.save(draft).flatMap(saved -> nodes.save(rootNode).then(spaces.save(new DriveSpaceEntity(sid,actor,saved.displayName(),root,0,"ACTIVE",now,Instant.now(),saved.version()))).then(quotaRepository.save(new DriveQuotaEntity(sid,100L*1024*1024*1024,0,0,null)))).then(spaces.findById(sid)).map(this::view));
     }
     @Override public Flux<DriveSpaceView> listSpaces(UUID actor) { return spaces.findAllByOwnerUserIdOrderByCreatedAtAsc(actor).map(this::view); }
     @Override public Flux<DriveNodeView> children(UUID actor, UUID sid, UUID parent) { return ownedSpace(actor,sid).flatMapMany(s -> nodes.findAllByDriveSpaceIdAndParentIdAndLifecycleOrderByNormalizedNameAsc(sid,parent,DriveLifecycle.ACTIVE).map(this::view)); }
