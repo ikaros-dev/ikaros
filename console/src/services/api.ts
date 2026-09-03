@@ -105,6 +105,7 @@ export const api = {
   listFinanceLedgers: (actorId: string) => request<FinanceLedgerRecord[]>('/finance/ledgers', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   createFinanceLedger: (body: { name: string; baseCurrency: string }, actorId: string) => request<FinanceLedgerRecord>('/finance/ledgers', { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId, 'Idempotency-Key': requestId() }, body: JSON.stringify(body) }),
   listFinanceAccounts: (ledgerId: string, actorId: string) => request<FinanceAccountRecord[]>(`/finance/ledgers/${encodeURIComponent(ledgerId)}/accounts`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
+  listFinanceTransactions: (ledgerId: string, actorId: string) => request<FinanceTransactionRecord[]>(`/finance/ledgers/${encodeURIComponent(ledgerId)}/transactions`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   searchFinanceTransactions: (ledgerId: string, query: string, actorId: string) => request<FinanceTransactionRecord[]>(`/finance/ledgers/${encodeURIComponent(ledgerId)}/transactions/search?q=${encodeURIComponent(query)}`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   enableStorageProvider: (id: string) => request<StorageProviderRecord>(`/admin/storage-providers/${encodeURIComponent(id)}/enable`, { method: 'POST' }),
   disableStorageProvider: (id: string) => request<void>(`/admin/storage-providers/${encodeURIComponent(id)}`, { method: 'DELETE' }),

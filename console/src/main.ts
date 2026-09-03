@@ -30,6 +30,7 @@ import SecurityWorkspace from './SecurityWorkspace.vue'
 import LoginWorkspace from './LoginWorkspace.vue'
 import NotFoundWorkspace from './NotFoundWorkspace.vue'
 import FinanceWorkspace from './FinanceWorkspace.vue'
+import FinanceTransactionsWorkspace from './FinanceTransactionsWorkspace.vue'
 import AccessDenied from './AccessDenied.vue'
 import { getRouteMeta } from './config/route-meta'
 import './styles.css'
@@ -53,7 +54,7 @@ router.addRoute({ path: '/console/planning/calendar', component: CalendarWorkspa
 router.addRoute({ path: '/console/planning/focus', component: FocusWorkspace })
 router.addRoute({ path: '/console/finance', component: FinanceWorkspace })
 router.addRoute({ path: '/console/finance/accounts', component: FinanceWorkspace })
-router.addRoute({ path: '/console/finance/transactions', component: FinanceWorkspace })
+router.addRoute({ path: '/console/finance/transactions', component: FinanceTransactionsWorkspace })
 router.addRoute({ path: '/console/finance/budgets', component: FinanceWorkspace })
 router.addRoute({ path: '/console/finance/reconcile', component: FinanceWorkspace })
 router.beforeEach((to) => {
