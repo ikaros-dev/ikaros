@@ -54,8 +54,7 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
                 if (context.sessionId() == null) {
                     return reject(exchange, HttpStatus.UNAUTHORIZED);
                 }
-                SecurityPolicy policy = new SecurityPolicy("resource.http", permission,
-                    SecurityVerificationLevel.SVL_0, false);
+                SecurityPolicy policy = policy(permission);
                 return accessControl.require(context.actorId(), context.sessionId(), policy)
                     .then(chain.filter(exchange));
             })
@@ -103,6 +102,19 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
         if ("GET".equals(method)) return PlatformPermission.RESOURCE_READ;
         if ("DELETE".equals(method)) return PlatformPermission.RESOURCE_DELETE;
         return PlatformPermission.RESOURCE_WRITE;
+    }
+
+    private SecurityPolicy policy(PlatformPermission permission) {
+        boolean highRisk = permission == PlatformPermission.SYSTEM_USER_MANAGE
+            || permission == PlatformPermission.SYSTEM_ROLE_MANAGE
+            || permission == PlatformPermission.SYSTEM_SESSION_MANAGE
+            || permission == PlatformPermission.STORAGE_PROVIDER_MANAGE
+            || permission == PlatformPermission.STORAGE_DELIVERY_MANAGE
+            || permission == PlatformPermission.STORAGE_TIERING_MANAGE
+            || permission == PlatformPermission.STORAGE_RESTORE_MANAGE
+            || permission == PlatformPermission.INGESTION_SOURCE_MANAGE;
+        return new SecurityPolicy("resource.http", permission,
+            highRisk ? SecurityVerificationLevel.SVL_2 : SecurityVerificationLevel.SVL_0, highRisk);
     }
 
     private boolean hasDeliveryGrant(ServerWebExchange exchange) {
