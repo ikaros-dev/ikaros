@@ -125,6 +125,15 @@ class DefaultResourceServiceTest {
     }
 
     @Test
+    void rejectsInvalidListPagingBeforeRepositoryQuery() {
+        StepVerifier.create(service.list(UUID.randomUUID(), null, null, -1, 20))
+            .expectError(IllegalArgumentException.class).verify();
+        StepVerifier.create(service.list(UUID.randomUUID(), null, null, 0, 101))
+            .expectError(IllegalArgumentException.class).verify();
+        org.mockito.Mockito.verifyNoInteractions(resourceRepository);
+    }
+
+    @Test
     void publishesExternalIdentityLifecycleEventsWithCanonicalProviderFields() {
         UUID ownerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();
