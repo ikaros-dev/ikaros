@@ -50,4 +50,16 @@ class DefaultDriveServiceTest {
         assertEquals(DriveMutationKind.NODE_MOVED, changes.get(2).mutationKind());
         assertEquals(DriveMutationKind.CONTENT_REVISION_CREATED, changes.get(3).mutationKind());
     }
+
+    @Test void revisionOperationIsIdempotent() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        DriveNodeView file = service.createNode(user, space.id(), new CreateDriveNodeRequest(DriveNodeType.FILE, "a.txt", null)).block();
+        UUID attachment = UUID.randomUUID();
+        CreateDriveRevisionRequest request = new CreateDriveRevisionRequest(attachment, 0L, "sha256:test", "op-1");
+
+        DriveRevisionView first = service.createRevision(user, file.id(), request).block();
+        DriveRevisionView retry = service.createRevision(user, file.id(), request).block();
+        assertEquals(first.id(), retry.id());
+        assertEquals(1, service.revisions(user, file.id()).count().block());
+    }
 }
