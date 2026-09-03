@@ -100,6 +100,17 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
+    void rejectsBackupAdministrationWithoutSession() {
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
+            "/api/admin/backup/restore-points").build());
+        WebFilterChain chain = mock(WebFilterChain.class);
+
+        new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
+
+        assertEquals(401, exchange.getResponse().getStatusCode().value());
+    }
+
+    @Test
     void letsDeliveryGrantContentReachGrantAuthorizationWithoutSession() {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
             "/api/attachments/" + UUID.randomUUID() + "/content")
