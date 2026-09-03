@@ -2,12 +2,13 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElAlert, ElButton, ElForm, ElFormItem, ElInput } from 'element-plus'
+import { api, saveAuthSession } from './services/api'
 
 const route = useRoute(); const router = useRouter()
-const email = ref(''); const code = ref(''); const password = ref(''); const confirmPassword = ref(''); const error = ref(''); const submitted = ref(false)
+const email = ref(''); const code = ref(''); const password = ref(''); const confirmPassword = ref(''); const username = ref(''); const displayName = ref(''); const error = ref(''); const submitted = ref(false); const loading = ref(false)
 const mode = computed(() => route.path.startsWith('/setup') ? 'setup' : route.path.startsWith('/login/verify') ? 'verify' : route.path.startsWith('/recovery') ? 'recovery' : 'login')
 const content = computed(() => mode.value === 'setup' ? { eyebrow: '首次初始化 · 演示', title: '创建工作空间管理员', subtitle: '当前仅演示初始化表单；后端初始化接口尚未接入。' } : mode.value === 'verify' ? { eyebrow: '安全验证 · 演示', title: '输入验证码', subtitle: '当前仅演示验证码流程；后端验证接口尚未接入。' } : mode.value === 'recovery' ? { eyebrow: '账号恢复 · 演示', title: '恢复你的账号', subtitle: '当前仅演示恢复表单；后端恢复接口尚未接入。' } : { eyebrow: '安全访问', title: '欢迎回来', subtitle: '登录你的 Ikaros 工作空间' })
-function submit() { error.value = ''; if (mode.value === 'setup' && password.value.length < 8) { error.value = '管理员密码至少需要 8 位'; return } if (mode.value === 'setup' && password.value !== confirmPassword.value) { error.value = '两次输入的密码不一致'; return } if (mode.value === 'verify' && code.value.length !== 6) { error.value = '请输入 6 位验证码'; return } if (mode.value !== 'setup' && mode.value !== 'verify' && !email.value.trim()) { error.value = '请输入邮箱地址'; return } error.value = '后端当前未提供该认证接口，无法提交操作' }
+async function submit() { error.value = ''; if (mode.value === 'setup') { username.value = email.value.trim(); displayName.value = displayName.value.trim() || username.value; if (!username.value) { error.value = '请输入用户名'; return }; if (password.value.length < 8) { error.value = '管理员密码至少需要 8 位'; return }; if (password.value !== confirmPassword.value) { error.value = '两次输入的密码不一致'; return }; loading.value = true; try { const session = await api.register({ username: username.value, displayName: displayName.value, email: undefined, password: password.value }); saveAuthSession(session); router.replace('/console/dashboard') } catch (e) { error.value = e instanceof Error ? e.message : '注册失败，请稍后重试' } finally { loading.value = false }; return }; if (mode.value === 'verify' && code.value.length !== 6) { error.value = '请输入 6 位验证码'; return }; error.value = '当前认证流程仅支持用户名密码注册和登录' }
 function backToLogin() { router.push('/login') }
 </script>
 

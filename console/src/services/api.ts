@@ -8,12 +8,19 @@ export class ApiError extends Error {
 }
 
 const apiBase = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+const sessionStorageKey = 'ikaros-console-auth-session'
+export type AuthenticationRecord = { userId: string; sessionId: string; sessionToken: string; expiresAt?: string; user?: CurrentUserRecord }
+function authSession() { try { return JSON.parse(localStorage.getItem(sessionStorageKey) || 'null') as AuthenticationRecord | null } catch { return null } }
+export function saveAuthSession(session: AuthenticationRecord, remember = true) { if (remember) localStorage.setItem(sessionStorageKey, JSON.stringify(session)); else sessionStorage.setItem(sessionStorageKey, JSON.stringify(session)) }
+export function clearAuthSession() { localStorage.removeItem(sessionStorageKey); sessionStorage.removeItem(sessionStorageKey) }
+export function currentAuthSession() { return authSession() || (() => { try { return JSON.parse(sessionStorage.getItem(sessionStorageKey) || 'null') as AuthenticationRecord | null } catch { return null } })() }
 function requestId() { return crypto.randomUUID() }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const session = currentAuthSession()
   const response = await fetch(`${apiBase}${path}`, {
     ...init,
-    headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...init?.headers },
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...(session?.sessionToken ? { Authorization: `Bearer ${session.sessionToken}` } : {}), ...init?.headers },
     credentials: 'include'
   })
   if (!response.ok) {
@@ -58,6 +65,8 @@ export type MediaHistoryRecord = { id: string; resourceId?: string; sessionId?: 
 export type ResourceActivityRecord = { id: string; resourceId?: string; resource_id?: string; type?: string; details?: string; occurredAt?: string; occurred_at?: string }
 
 export const api = {
+  register: (body: { username: string; password: string; displayName: string; email?: string }) => request<AuthenticationRecord>('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
+  login: (body: { username: string; password: string }) => request<AuthenticationRecord>('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   listResources: (params = '', actorId = '') => request<Page<ResourceRecord> | ResourceRecord[]>(`/resources${params}`, { headers: actorId ? { 'X-Ikaros-Actor-Id': actorId } : undefined }),
   getResource: (id: string, actorId = '') => request<ResourceRecord>(`/resources/${encodeURIComponent(id)}`, { headers: actorId ? { 'X-Ikaros-Actor-Id': actorId } : undefined }),
   getFavorite: (id: string, actorId: string) => request<FavoriteRecord>(`/resources/${encodeURIComponent(id)}/favorite`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
