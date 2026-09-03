@@ -17,8 +17,9 @@ public class StorageProviderDrainController {
     public StorageProviderDrainController(StorageProviderDrainService service) { this.service = service; }
     @PostMapping("/{providerId}/actions/drain")
     public Mono<ResponseEntity<BackgroundTask>> drain(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @RequestHeader("Idempotency-Key") String idempotencyKey,
         @PathVariable UUID providerId) {
-        return service.request(providerId, actorId).map(task -> ResponseEntity.accepted().header("Location",
+        return service.request(providerId, actorId, idempotencyKey).map(task -> ResponseEntity.accepted().header("Location",
             "/api/v2/background-tasks/" + task.id()).body(task));
     }
 }

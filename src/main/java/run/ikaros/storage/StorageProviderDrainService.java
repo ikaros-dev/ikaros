@@ -19,9 +19,16 @@ public class StorageProviderDrainService {
     }
 
     public Mono<BackgroundTask> request(UUID providerId, UUID actorId) {
+        return request(providerId, actorId, "storage.provider-drain:" + providerId);
+    }
+
+    public Mono<BackgroundTask> request(UUID providerId, UUID actorId, String idempotencyKey) {
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            return Mono.error(new IllegalArgumentException("缺少 Idempotency-Key"));
+        }
         return providers.drain(providerId)
             .then(tasks.submit("storage.provider-drain", Map.of("provider_id", providerId.toString(),
-                "requested_by", actorId.toString()), "storage.provider-drain:" + providerId))
+                "requested_by", actorId.toString()), "storage.provider-drain:" + providerId + ":" + idempotencyKey))
             .flatMap(task -> events.append("storage.provider.drain-requested", 1, "storage_provider", providerId,
                 "{\"provider_id\":\"" + providerId + "\",\"task_id\":\"" + task.id() + "\"}").thenReturn(task));
     }
