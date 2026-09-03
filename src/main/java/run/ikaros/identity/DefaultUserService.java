@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.audit.AuditService;
@@ -37,6 +38,7 @@ public class DefaultUserService implements UserService {
         this(userRepository, roleRepository, userRoleRepository, auditService, null);
     }
 
+    @Autowired
     public DefaultUserService(PlatformUserRepository userRepository, PlatformRoleRepository roleRepository,
                               UserRoleRepository userRoleRepository, AuditService auditService,
                               DurableEventService eventService) {
