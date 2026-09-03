@@ -30,7 +30,7 @@ public class PersistentMediaCatalogService implements MediaCatalogService {
                 Instant.now(), Instant.now(), null))).map(this::subjectView);
     }
 
-    @Override public Flux<MediaSubjectView> listSubjects(UUID ownerId) { return subjects.findAllByOwnerIdOrderByCreatedAtDesc(ownerId).map(this::subjectView); }
+    @Override public Flux<MediaSubjectView> listSubjects(UUID ownerId) { return subjects.findAllByOwnerIdOrderByCreatedAtDesc(ownerId).take(100).map(this::subjectView); }
 
     @Override public Mono<MediaSeasonView> createSeason(UUID ownerId, UUID subjectId, CreateMediaSeasonRequest request) {
         return ownedSubject(ownerId, subjectId).flatMap(subject -> {
@@ -42,7 +42,7 @@ public class PersistentMediaCatalogService implements MediaCatalogService {
     }
 
     @Override public Flux<MediaSeasonView> listSeasons(UUID ownerId, UUID subjectId) {
-        return ownedSubject(ownerId, subjectId).flatMapMany(s -> seasons.findAllByOwnerIdAndSubjectIdOrderBySeasonNumberAsc(ownerId, subjectId).map(this::seasonView));
+        return ownedSubject(ownerId, subjectId).flatMapMany(s -> seasons.findAllByOwnerIdAndSubjectIdOrderBySeasonNumberAsc(ownerId, subjectId).take(100).map(this::seasonView));
     }
 
     @Override public Mono<MediaEpisodeView> createEpisode(UUID ownerId, UUID subjectId, UUID seasonId, CreateMediaEpisodeRequest request) {
@@ -57,10 +57,10 @@ public class PersistentMediaCatalogService implements MediaCatalogService {
 
     @Override public Flux<MediaEpisodeView> listEpisodes(UUID ownerId, UUID subjectId, UUID seasonId) {
         return ownedSubject(ownerId, subjectId).flatMapMany(s -> {
-            if (seasonId == null) return episodes.findAllByOwnerIdAndSubjectIdOrderByEpisodeNumberAsc(ownerId, subjectId).map(this::episodeView);
+            if (seasonId == null) return episodes.findAllByOwnerIdAndSubjectIdOrderByEpisodeNumberAsc(ownerId, subjectId).take(100).map(this::episodeView);
             return ownedSeason(ownerId, seasonId).flatMapMany(season -> {
                 if (!season.subjectId().equals(subjectId)) return Flux.error(new ConflictException("Season 不属于该 Media Subject"));
-                return episodes.findAllByOwnerIdAndSeasonIdOrderByEpisodeNumberAsc(ownerId, seasonId).map(this::episodeView);
+                return episodes.findAllByOwnerIdAndSeasonIdOrderByEpisodeNumberAsc(ownerId, seasonId).take(100).map(this::episodeView);
             });
         });
     }

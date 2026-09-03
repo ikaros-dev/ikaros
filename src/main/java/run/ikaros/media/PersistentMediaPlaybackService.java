@@ -74,7 +74,7 @@ public class PersistentMediaPlaybackService implements MediaPlaybackService {
     }
 
     @Override public Mono<ResourceProgressView> progress(UUID ownerId, UUID resourceId) { return progress.get(ownerId, resourceId, ProgressType.VIDEO_SECONDS); }
-    @Override public Flux<PlaybackHistoryView> history(UUID ownerId) { return history.findAllByOwnerIdOrderByEndedAtDesc(ownerId).map(this::historyView); }
+    @Override public Flux<PlaybackHistoryView> history(UUID ownerId) { return history.findAllByOwnerIdOrderByEndedAtDesc(ownerId).take(100).map(this::historyView); }
     private Mono<MediaPlaybackSessionEntity> ownedActive(UUID ownerId, UUID id) { return sessions.findById(id).filter(s -> s.ownerId().equals(ownerId)).switchIfEmpty(Mono.error(new NotFoundException("Playback Session 不存在"))).flatMap(s -> s.state() == PlaybackSessionState.ACTIVE ? Mono.just(s) : Mono.error(new ConflictException("Playback Session 已结束"))); }
     private void checkVersion(Long actual, long expected) { if ((actual == null ? 0 : actual) != expected) throw new PreconditionFailedException("If-Match 与 Playback Session 当前版本不匹配"); }
     private PlaybackSessionView sessionView(MediaPlaybackSessionEntity e) { return new PlaybackSessionView(e.id(), e.resourceId(), e.releaseId(), e.state(), e.startedAt(), e.endedAt(), e.lastPositionSeconds(), e.version()); }
