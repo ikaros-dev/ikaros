@@ -17,7 +17,7 @@ public class PersistentSearchReconciliationService implements SearchReconciliati
 
     @Override
     public Flux<ProjectionFailureView> pendingFailures() {
-        return repository.findByResolvedAtIsNullOrderByFailedAtAsc().map(this::view);
+        return repository.findByResolvedAtIsNullOrderByFailedAtAsc().take(100).map(this::view);
     }
 
     @Override
