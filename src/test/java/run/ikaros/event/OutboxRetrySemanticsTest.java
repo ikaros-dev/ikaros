@@ -3,6 +3,7 @@ package run.ikaros.event;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.inOrder;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import org.mockito.InOrder;
 
 class OutboxRetrySemanticsTest {
     @Test
@@ -25,7 +27,10 @@ class OutboxRetrySemanticsTest {
         TransactionalOperator transaction = mock(TransactionalOperator.class);
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
         DurableEventService service = new DurableEventService(outbox, inbox, transaction);
-        StepVerifier.create(service.dispatchOnce("consumer", ignored -> Mono.error(new IllegalStateException())))
+        Mono<Void> handler = Mono.error(new IllegalStateException());
+        StepVerifier.create(service.dispatchOnce("consumer", ignored -> handler))
             .expectError(IllegalStateException.class).verify();
+        InOrder order = inOrder(outbox);
+        order.verify(outbox).recordAttempt(any(), any());
     }
 }
