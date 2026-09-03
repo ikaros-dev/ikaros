@@ -15,6 +15,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.audit.AuditService;
+import run.ikaros.event.DurableEventService;
 
 /** 验证平台用户服务的创建、查询、状态与角色绑定规则。 */
 class DefaultUserServiceTest {
@@ -91,6 +92,32 @@ class DefaultUserServiceTest {
             .assertNext(view -> assertThat(view.status()).isEqualTo(UserStatus.LOCKED))
             .verifyComplete();
         verify(auditService).record(actorId, "identity.user.status.change", "USER", userId, "{}");
+    }
+
+    @Test
+    void emitsNonSensitiveEventWhenUserIsDisabled() {
+        UUID actorId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity user = new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, now, now, null, 1L);
+        PlatformUserEntity disabled = new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.DISABLED, now, now, null, 3L);
+        DurableEventService events = mock(DurableEventService.class);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(user));
+        when(userRepository.save(any())).thenReturn(Mono.just(disabled));
+        when(userRoleRepository.findAllByUserId(userId)).thenReturn(Flux.empty());
+        when(events.append(eq("identity.user.disabled"), eq(1), eq("user"), eq(userId), any(String.class)))
+            .thenReturn(Mono.empty());
+        when(auditService.record(eq(actorId), eq("identity.user.status.change"), eq("USER"), eq(userId), eq("{}")))
+            .thenReturn(Mono.empty());
+        DefaultUserService eventService = new DefaultUserService(userRepository, roleRepository, userRoleRepository,
+            auditService, events);
+
+        StepVerifier.create(eventService.changeStatus(actorId, userId, UserStatus.DISABLED))
+            .assertNext(view -> assertThat(view.status()).isEqualTo(UserStatus.DISABLED))
+            .verifyComplete();
+        verify(events).append(eq("identity.user.disabled"), eq(1), eq("user"), eq(userId), any(String.class));
     }
 
     @Test

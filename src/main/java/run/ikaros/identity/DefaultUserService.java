@@ -11,6 +11,7 @@ import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;
+import run.ikaros.event.DurableEventService;
 
 /**
  * 默认用户服务，维护用户状态、角色绑定与对应审计记录。
@@ -21,6 +22,7 @@ public class DefaultUserService implements UserService {
     private final PlatformRoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
     private final AuditService auditService;
+    private final DurableEventService eventService;
 
     /**
      * 创建用户服务。
@@ -32,10 +34,17 @@ public class DefaultUserService implements UserService {
      */
     public DefaultUserService(PlatformUserRepository userRepository, PlatformRoleRepository roleRepository,
                               UserRoleRepository userRoleRepository, AuditService auditService) {
+        this(userRepository, roleRepository, userRoleRepository, auditService, null);
+    }
+
+    public DefaultUserService(PlatformUserRepository userRepository, PlatformRoleRepository roleRepository,
+                              UserRoleRepository userRoleRepository, AuditService auditService,
+                              DurableEventService eventService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userRoleRepository = userRoleRepository;
         this.auditService = auditService;
+        this.eventService = eventService;
     }
 
     @Override
@@ -76,9 +85,17 @@ public class DefaultUserService implements UserService {
                 status, user.createdAt(), Instant.now(), user.lastLoginAt(),
                 status == user.status() ? user.securityVersion() : user.securityVersion() + 1, user.version());
             return userRepository.save(changed)
-                .flatMap(saved -> auditService.record(actorId, "identity.user.status.change", "USER", userId, "{}")
+                .flatMap(saved -> emitStatusChanged(saved)
+                    .then(auditService.record(actorId, "identity.user.status.change", "USER", userId, "{}"))
                     .then(toView(saved)));
         });
+    }
+
+    private Mono<Void> emitStatusChanged(PlatformUserEntity user) {
+        if (eventService == null || user.status() != UserStatus.DISABLED) return Mono.empty();
+        return eventService.append("identity.user.disabled", 1, "user", user.id(),
+            "{\"user_id\":\"" + user.id() + "\",\"security_version\":"
+                + user.securityVersion() + "}").then();
     }
 
     @Override
