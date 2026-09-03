@@ -6,12 +6,16 @@ import java.util.function.Function;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import run.ikaros.security.PrincipalContexts;
 import run.ikaros.security.PrincipalContext;
 
 /** Outbox 写入与 Inbox 幂等消费边界。 */
 @Service
 public class DurableEventService {
+    private static final ObjectMapper JSON = new ObjectMapper();
     private final OutboxEventRepository outbox;
     private final InboxEntryRepository inbox;
     private final TransactionalOperator transaction;
@@ -27,6 +31,14 @@ public class DurableEventService {
                                          UUID aggregateId, String payloadJson) {
         if (eventType == null || eventType.isBlank() || schemaVersion < 1 || payloadJson == null) {
             return Mono.error(new IllegalArgumentException("事件类型、版本和 Payload 不合法"));
+        }
+        try {
+            JsonNode payload = JSON.readTree(payloadJson);
+            if (payload == null || !payload.isObject()) {
+                return Mono.error(new IllegalArgumentException("事件 Payload 必须是 JSON object"));
+            }
+        } catch (JacksonException exception) {
+            return Mono.error(new IllegalArgumentException("事件 Payload 必须是合法 JSON", exception));
         }
         String normalized = payloadJson.toLowerCase();
         if (normalized.contains("password") || normalized.contains("secret")

@@ -14,4 +14,14 @@ class DurableEventServiceTest {
         assertThrows(RuntimeException.class, () -> service.append("resource.resource.created", 1,
             "resource", UUID.randomUUID(), "{\"access_token\":\"x\"}").block());
     }
+
+    @Test
+    void rejectsMalformedOrNonObjectPayloadsBeforePersistence() {
+        DurableEventService service = new DurableEventService(mock(OutboxEventRepository.class),
+            mock(InboxEntryRepository.class), mock(TransactionalOperator.class));
+        assertThrows(RuntimeException.class, () -> service.append("resource.resource.created", 1,
+            "resource", UUID.randomUUID(), "not-json").block());
+        assertThrows(RuntimeException.class, () -> service.append("resource.resource.created", 1,
+            "resource", UUID.randomUUID(), "[]").block());
+    }
 }
