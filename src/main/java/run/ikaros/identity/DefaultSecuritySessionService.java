@@ -99,6 +99,34 @@ public class DefaultSecuritySessionService implements SecuritySessionService {
             .then(auditService.record(actorId, "identity.session.revoke", "SESSION", sessionId, "{}"));
     }
 
+    @Override
+    public Mono<Void> revokeAll(UUID actorId, UUID userId) {
+        Instant now = Instant.now();
+        return userRepository.findById(userId)
+            .switchIfEmpty(Mono.error(new NotFoundException("用户不存在")))
+            .flatMap(user -> {
+                PlatformUserEntity changed = new PlatformUserEntity(user.id(), user.username(), user.displayName(),
+                    user.email(), user.status(), user.createdAt(), now, user.lastLoginAt(),
+                    user.securityVersion() + 1, user.version());
+                return userRepository.save(changed)
+                    .then(sessionRepository.findAllByUserIdAndRevokedAtIsNullAndExpiresAtAfter(userId, now)
+                        .flatMap(session -> sessionRepository.save(new SecuritySessionEntity(session.id(), session.userId(),
+                            session.securityVersion(), session.loginMethod(), session.currentSvl(), session.verifiedAt(),
+                            session.verificationExpiresAt(), session.expiresAt(), now, session.lastActiveAt(),
+                            session.createdAt(), session.version())))
+                        .then())
+                    .then(emitAllRevoked(changed));
+            })
+            .then(auditService.record(actorId, "identity.session.revoke-all", "USER", userId, "{}"));
+    }
+
+    private Mono<Void> emitAllRevoked(PlatformUserEntity user) {
+        if (eventService == null) return Mono.empty();
+        return eventService.append("identity.user.sessions-revoked", 1, "user", user.id(),
+            "{\"user_id\":\"" + user.id() + "\",\"security_version\":"
+                + user.securityVersion() + "}").then();
+    }
+
     private Mono<Void> emitRevoked(SecuritySessionEntity session) {
         if (eventService == null) return Mono.empty();
         return eventService.append("identity.session.revoked", 1, "session", session.id(),

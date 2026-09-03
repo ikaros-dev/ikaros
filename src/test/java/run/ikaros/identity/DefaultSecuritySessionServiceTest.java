@@ -2,6 +2,7 @@ package run.ikaros.identity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -117,5 +118,27 @@ class DefaultSecuritySessionServiceTest {
 
         StepVerifier.create(eventService.revoke(actorId, userId, sessionId)).verifyComplete();
         verify(events).append(eq("identity.session.revoked"), eq(1), eq("session"), eq(sessionId), any(String.class));
+    }
+
+    @Test
+    void revokesAllSessionsAndRaisesSecurityVersion() {
+        UUID actorId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity user = new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, now, now, null, 4L, 0L);
+        SecuritySessionEntity session = new SecuritySessionEntity(UUID.randomUUID(), userId, 4L, "EMAIL_OTP", 0,
+            null, null, now.plusSeconds(3600), null, now, now, 0L);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(user));
+        when(userRepository.save(any())).thenReturn(Mono.just(user));
+        when(sessionRepository.findAllByUserIdAndRevokedAtIsNullAndExpiresAtAfter(eq(userId), any()))
+            .thenReturn(Flux.just(session));
+        when(sessionRepository.save(any())).thenReturn(Mono.just(session));
+        when(auditService.record(eq(actorId), eq("identity.session.revoke-all"), eq("USER"), eq(userId), eq("{}")))
+            .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.revokeAll(actorId, userId)).verifyComplete();
+        verify(userRepository).save(argThat(saved -> saved.securityVersion() == 5L));
+        verify(sessionRepository).save(any(SecuritySessionEntity.class));
     }
 }
