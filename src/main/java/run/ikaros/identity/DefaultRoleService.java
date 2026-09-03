@@ -3,6 +3,7 @@ package run.ikaros.identity;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -34,6 +35,7 @@ public class DefaultRoleService implements RoleService {
         this(roleRepository, permissionRepository, auditService, null);
     }
 
+    @Autowired
     public DefaultRoleService(PlatformRoleRepository roleRepository, RolePermissionRepository permissionRepository,
                               AuditService auditService, DurableEventService eventService) {
         this.roleRepository = roleRepository;

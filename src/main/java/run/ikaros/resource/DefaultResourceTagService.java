@@ -3,6 +3,7 @@ package run.ikaros.resource;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -30,6 +31,7 @@ public class DefaultResourceTagService implements ResourceTagService {
         this(resourceRepository, tagRepository, auditService, transactionalOperator, null);
     }
 
+    @Autowired
     public DefaultResourceTagService(ResourceRepository resourceRepository, ResourceTagRepository tagRepository,
                                      AuditService auditService, TransactionalOperator transactionalOperator,
                                      DurableEventService eventService) {
