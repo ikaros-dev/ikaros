@@ -35,4 +35,19 @@ class DefaultDriveServiceTest {
         DriveNodeView b = service.createNode(user, space.id(), new CreateDriveNodeRequest(DriveNodeType.FOLDER, "b", a.id())).block();
         assertThrows(ConflictException.class, () -> service.move(user, a.id(), new MoveDriveNodeRequest(b.id(), 0)).block());
     }
+
+    @Test void moveAndRevisionArePublishedToChangeLog() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        DriveNodeView folder = service.createNode(user, space.id(), new CreateDriveNodeRequest(DriveNodeType.FOLDER, "docs", null)).block();
+        DriveNodeView file = service.createNode(user, space.id(), new CreateDriveNodeRequest(DriveNodeType.FILE, "a.txt", null)).block();
+
+        service.move(user, file.id(), new MoveDriveNodeRequest(folder.id(), 0)).block();
+        service.createRevision(user, file.id(), new CreateDriveRevisionRequest(
+            UUID.randomUUID(), 1L, "sha256:test", null)).block();
+
+        var changes = service.changes(user, space.id(), 0).collectList().block();
+        assertEquals(4, changes.size());
+        assertEquals(DriveMutationKind.NODE_MOVED, changes.get(2).mutationKind());
+        assertEquals(DriveMutationKind.CONTENT_REVISION_CREATED, changes.get(3).mutationKind());
+    }
 }
