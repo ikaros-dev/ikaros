@@ -24,6 +24,7 @@ class OutboxRetrySemanticsTest {
         when(outbox.findTop100ByDispatchedAtIsNullOrderByOccurredAtAsc()).thenReturn(Flux.just(event));
         when(inbox.existsByConsumerIdAndEventId("consumer", id)).thenReturn(Mono.just(false));
         when(outbox.recordAttempt(any(), any())).thenReturn(Mono.just(1));
+        when(inbox.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
         TransactionalOperator transaction = mock(TransactionalOperator.class);
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
         DurableEventService service = new DurableEventService(outbox, inbox, transaction);

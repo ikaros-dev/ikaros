@@ -55,8 +55,8 @@ public class DurableEventService {
                 .flatMap(processed -> processed
                     ? Mono.defer(() -> mark(event))
                     : outbox.recordAttempt(event.id(), Instant.now())
-                        .then(transaction.transactional(handler.apply(event)
-                            .then(Mono.defer(() -> inbox.save(new InboxEntryEntity(null, consumerId, event.id(), Instant.now()))))
+                        .then(transaction.transactional(Mono.defer(() -> inbox.save(new InboxEntryEntity(null, consumerId, event.id(), Instant.now())))
+                            .then(handler.apply(event))
                             .then(Mono.defer(() -> mark(event)))))
                 )
             )
