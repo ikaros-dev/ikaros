@@ -11,7 +11,7 @@ public class PersistentBackupRestoreService implements BackupRestoreService {
     private final RestorePointRepository repository;
     public PersistentBackupRestoreService(RestorePointRepository repository){this.repository=repository;}
     @Override public Mono<RestorePointView> create(CreateRestorePointRequest req){Instant now=Instant.now();return repository.save(new RestorePointEntity(null,req.formatVersion(),req.sourceInstanceId(),req.schemaVersion(),req.manifestDigest(),RestorePointState.PREPARING,req.level(),VerificationStatus.NOT_VERIFIED,null,0,0,now,null,null)).map(this::view);}
-    @Override public Flux<RestorePointView> list(){return repository.findAllByOrderByCreatedAtDesc().map(this::view);}
+    @Override public Flux<RestorePointView> list(){return repository.findAllByOrderByCreatedAtDesc().take(100).map(this::view);}
     @Override public Mono<RestorePointView> verify(UUID id,VerifyRestorePointRequest req){
         if (req.checkedObjects() < 0 || req.failedObjects() < 0 || req.failedObjects() > req.checkedObjects())
             return Mono.error(new IllegalArgumentException("验证对象计数不合法"));
