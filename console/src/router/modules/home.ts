@@ -1,5 +1,6 @@
 const Layout = () => import("@/layout/index.vue");
 const ModulePage = () => import("@/views/modules/ModulePage.vue");
+const DashboardPage = () => import("@/views/dashboard/index.vue");
 
 type ModuleOptions = {
   path: string;
@@ -33,9 +34,10 @@ export default {
   path: "/",
   name: "IkarosConsole",
   component: Layout,
-  redirect: "/resources",
+  redirect: "/dashboard",
   meta: { title: "Ikaros 管理控制台", icon: "ep:menu" },
   children: [
+    { path: "/dashboard", name: "Dashboard", component: DashboardPage, meta: { title: "仪表盘", icon: "ep:data-analysis" } },
     subsystem("/resource-center", "ResourceCenter", "资源中心", "ep:files", [
       moduleRoute({ path: "/resources", name: "Resources", title: "资源管理", description: "管理资源、标题、标签和生命周期。", endpoint: "/resources", createEndpoint: "/resources", deleteEndpoint: "/resources", actions: [{ name: "archive", label: "归档", path: "/resources/{id}/actions/archive", confirm: "确定归档此资源吗？" }, { name: "restore", label: "恢复", path: "/resources/{id}/actions/restore" }], createFields: [{ name: "type", label: "类型", required: true, defaultValue: "OTHER" }, { name: "title", label: "标题", required: true }, { name: "locale", label: "语言", required: true, defaultValue: "zh-CN" }], columns: ["id", "resourceType", "status", "createdAt"], icon: "ep:files" }),
       moduleRoute({ path: "/documents", name: "Documents", title: "文档管理", description: "管理个人文档和工作副本。", endpoint: "/documents", createEndpoint: "/documents", createFields: [{ name: "title", label: "标题", required: true }, { name: "kind", label: "类型", required: true, defaultValue: "DOCUMENT" }, { name: "locale", label: "语言", defaultValue: "zh-CN" }, { name: "content", label: "内容" }], columns: ["id", "title", "status", "updatedAt"], icon: "ep:document" }),
