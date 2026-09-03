@@ -8,24 +8,24 @@ const router = useRouter()
 const actorId = String(import.meta.env.VITE_ACTOR_ID || '')
 const loading = ref(true)
 const error = ref('')
-const resourceCount = ref(12486)
-const storageUsed = ref(68.4)
-const storageQuota = ref(100)
-const todayTotal = ref(12)
-const todayDone = ref(8)
-const taskTotal = ref(3)
-const taskFailed = ref(1)
+const resourceCount = ref(0)
+const storageUsed = ref(0)
+const storageQuota = ref(0)
+const todayTotal = ref(0)
+const todayDone = ref(0)
+const taskTotal = ref(0)
+const taskFailed = ref(0)
 
 async function load() {
   loading.value = true; error.value = ''
-  if (!actorId) { loading.value = false; return }
+  if (!actorId) { error.value = '未配置当前用户身份，无法加载实时统计'; loading.value = false; return }
   const results = await Promise.allSettled([api.listResources('?limit=1'), api.listDriveSpaces(actorId), api.listTodayTasks(actorId), api.listBackgroundTasks()])
   const resources = results[0]; const spaces = results[1]; const today = results[2]; const tasks = results[3]
   if (resources.status === 'fulfilled') resourceCount.value = Array.isArray(resources.value) ? resources.value.length : resources.value.total || unwrapPage(resources.value).length
   if (spaces.status === 'fulfilled' && spaces.value[0]) { const space = spaces.value[0]; storageUsed.value = Number(((space.usedBytes || space.used_bytes || 0) / 1024 ** 3).toFixed(1)); storageQuota.value = Math.max(1, Number(((space.quotaBytes || space.quota_bytes || 0) / 1024 ** 3).toFixed(1))) }
   if (today.status === 'fulfilled') { todayTotal.value = today.value.length; todayDone.value = today.value.filter(item => ['DONE', 'COMPLETED'].includes(String(item.status || '').toUpperCase())).length }
   if (tasks.status === 'fulfilled') { taskTotal.value = tasks.value.length; taskFailed.value = tasks.value.filter(item => ['FAILED', 'ERROR'].includes(String(item.status || item.state || '').toUpperCase())).length }
-  if (results.every(item => item.status === 'rejected')) error.value = '后端暂不可用，当前显示演示统计'
+  if (results.some(item => item.status === 'rejected')) error.value = '部分后端统计加载失败，当前仅显示已成功返回的数据'
   loading.value = false
 }
 onMounted(load)
@@ -38,7 +38,7 @@ onMounted(load)
     <el-skeleton v-if="loading && !actorId" :rows="3" animated />
     <section class="dashboard-stat-grid">
       <el-card shadow="never"><el-statistic title="资源" :value="resourceCount" /><el-tag type="info">当前授权范围</el-tag></el-card>
-      <el-card shadow="never"><el-statistic title="存储（GB）" :value="storageUsed" :precision="1" /><el-progress :percentage="Math.min(100, Math.round(storageUsed / storageQuota * 100))" :show-text="false" /></el-card>
+      <el-card shadow="never"><el-statistic title="存储（GB）" :value="storageUsed" :precision="1" /><el-progress :percentage="storageQuota ? Math.min(100, Math.round(storageUsed / storageQuota * 100)) : 0" :show-text="false" /></el-card>
       <el-card shadow="never"><el-statistic title="今天完成" :value="todayDone" /><span class="dashboard-muted">/ {{ todayTotal }} 项任务</span></el-card>
       <el-card shadow="never"><el-statistic title="后台任务" :value="taskTotal" /><el-tag :type="taskFailed ? 'danger' : 'success'">{{ taskFailed }} 项失败</el-tag></el-card>
     </section>
