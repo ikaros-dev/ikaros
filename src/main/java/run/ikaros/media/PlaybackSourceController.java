@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v2/media/resources/{resourceId}/playback-source")
+@RequestMapping("/api/media/resources/{resourceId}/playback-source")
 public class PlaybackSourceController {
     private final PlaybackSourceService service;
     public PlaybackSourceController(PlaybackSourceService service) { this.service = service; }

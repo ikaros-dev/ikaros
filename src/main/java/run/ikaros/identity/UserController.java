@@ -30,7 +30,7 @@ import run.ikaros.common.PageResponse;
  */
 @Validated
 @RestController
-@RequestMapping({"/api/users", "/api/v2/admin/users"})
+@RequestMapping({"/api/users", "/api/admin/users"})
 public class UserController {
     private final UserService userService;
 

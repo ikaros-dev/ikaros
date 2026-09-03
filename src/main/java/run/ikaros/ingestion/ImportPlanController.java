@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 @RestController
-@RequestMapping({"/api/ingestion/scans", "/api/v2/ingestion/scans"})
+@RequestMapping({"/api/ingestion/scans"})
 public class ImportPlanController {
     private final ImportPlanService service;
     public ImportPlanController(ImportPlanService service) { this.service=service; }

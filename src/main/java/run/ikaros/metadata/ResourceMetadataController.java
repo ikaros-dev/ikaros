@@ -18,7 +18,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /** 提供 Resource 元数据来源和人工覆盖的接口。 */
-@RestController @RequestMapping({"/api/resources/{resourceId}/metadata", "/api/v2/resources/{resourceId}/metadata"})
+@RestController @RequestMapping({"/api/resources/{resourceId}/metadata"})
 public class ResourceMetadataController {
     private final ResourceMetadataService service;
     public ResourceMetadataController(ResourceMetadataService service) { this.service=service; }

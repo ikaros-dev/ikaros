@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping({"/api/ingestion/scans", "/api/v2/ingestion/scans"})
+@RequestMapping({"/api/ingestion/scans"})
 public class DiscoveredItemController {
     private final DiscoveredItemService service;
     public DiscoveredItemController(DiscoveredItemService service) { this.service = service; }

@@ -22,7 +22,7 @@ import reactor.core.publisher.Mono;
  * 提供 Resource 多语言标题的 HTTP-first 管理接口。
  */
 @RestController
-@RequestMapping({"/api/resources/{resourceId}/titles", "/api/v2/resources/{resourceId}/titles"})
+@RequestMapping({"/api/resources/{resourceId}/titles"})
 public class ResourceTitleController {
     private final ResourceTitleService titleService;
 

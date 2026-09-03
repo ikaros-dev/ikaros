@@ -26,7 +26,7 @@ import run.ikaros.task.BackgroundTask;
  * 提供 Blob 物理清理前的候选扫描与人工决策审计接口。
  */
 @RestController
-@RequestMapping({"/api/storage/gc", "/api/v2/storage/gc"})
+@RequestMapping({"/api/storage/gc"})
 public class BlobGarbageCollectionController {
     private final StorageService storageService;
 

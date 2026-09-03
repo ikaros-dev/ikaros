@@ -21,7 +21,7 @@ import reactor.core.publisher.Mono;
  * 提供当前会话的 Email OTP Step-up 接口。
  */
 @RestController
-@RequestMapping({"/api/security/sessions/{sessionId}/step-up", "/api/v2/security/sessions/{sessionId}/step-up"})
+@RequestMapping({"/api/security/sessions/{sessionId}/step-up"})
 public class StepUpVerificationController {
     private final StepUpVerificationService stepUpService;
 

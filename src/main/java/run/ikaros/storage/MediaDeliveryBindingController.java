@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.common.IfMatchVersion;
 
 @RestController
-@RequestMapping("/api/v2/storage/providers/{providerId}/delivery-bindings")
+@RequestMapping("/api/storage/providers/{providerId}/delivery-bindings")
 public class MediaDeliveryBindingController {
     private final MediaDeliveryBindingService service;
     public MediaDeliveryBindingController(MediaDeliveryBindingService service) { this.service = service; }

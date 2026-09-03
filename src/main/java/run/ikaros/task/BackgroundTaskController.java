@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.common.PageResponse;
 
 @RestController
-@RequestMapping({"/api/background-tasks", "/api/v2/background-tasks"})
+@RequestMapping({"/api/background-tasks"})
 public class BackgroundTaskController {
     private final BackgroundTaskService service;
 

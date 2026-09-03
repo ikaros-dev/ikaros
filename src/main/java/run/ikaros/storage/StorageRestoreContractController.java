@@ -12,7 +12,7 @@ public class StorageRestoreContractController {
     private final StorageRestoreRequestService service;
     public StorageRestoreContractController(StorageRestoreRequestService service) { this.service = service; }
 
-    @PostMapping("/api/v2/attachments/{attachmentId}/restore-requests")
+    @PostMapping("/api/attachments/{attachmentId}/restore-requests")
     public Mono<ResponseEntity<RestoreRequestContractView>> requestAttachment(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @RequestHeader(value="Idempotency-Key", required=false) String idempotencyKey, @PathVariable UUID attachmentId,
         @RequestBody(required=false) RequestAttachmentRestore options) {
@@ -22,28 +22,28 @@ public class StorageRestoreContractController {
         return service.requestAttachment(actorId, new RequestAttachmentRestore(attachmentId,
             options == null ? null : options.providerRestoreClass(),
             options == null ? null : options.budgetConfirmationToken()), idempotencyKey)
-            .map(view -> ResponseEntity.accepted().header("Location", "/api/v2/restore-requests/" + view.id()).body(contract(view)));
+            .map(view -> ResponseEntity.accepted().header("Location", "/api/restore-requests/" + view.id()).body(contract(view)));
     }
 
-    @GetMapping("/api/v2/restore-requests/{requestId}")
+    @GetMapping("/api/restore-requests/{requestId}")
     public Mono<RestoreRequestContractView> get(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @PathVariable UUID requestId) { return service.get(actorId, requestId).map(this::contract); }
 
-    @GetMapping("/api/v2/restore-requests")
+    @GetMapping("/api/restore-requests")
     public Mono<RestoreRequestContractListView> list(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @RequestParam(required=false) String cursor, @RequestParam(required=false) String status) {
         return service.listPage(actorId, internalStatus(status), cursor)
             .map(page -> new RestoreRequestContractListView(page.items().stream().map(this::contract).toList(), page.nextCursor()));
     }
 
-    @DeleteMapping("/api/v2/restore-requests/{requestId}")
+    @DeleteMapping("/api/restore-requests/{requestId}")
     public Mono<ResponseEntity<RestoreRequestContractView>> cancel(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @PathVariable UUID requestId) {
         return service.cancel(actorId, requestId)
             .map(view -> ResponseEntity.accepted().body(contract(view)));
     }
 
-    @PostMapping("/api/v2/restore-requests/{requestId}/actions/retry")
+    @PostMapping("/api/restore-requests/{requestId}/actions/retry")
     public Mono<ResponseEntity<RestoreRequestContractView>> retry(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @RequestHeader(value="Idempotency-Key", required=false) String idempotencyKey, @PathVariable UUID requestId) {
         return service.retry(actorId, requestId, idempotencyKey)

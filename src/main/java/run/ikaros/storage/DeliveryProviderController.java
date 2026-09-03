@@ -11,7 +11,7 @@ import run.ikaros.common.IfMatchVersion;
 import run.ikaros.task.BackgroundTask;
 
 @RestController
-@RequestMapping("/api/v2/admin/delivery-providers")
+@RequestMapping("/api/admin/delivery-providers")
 public class DeliveryProviderController {
     private final DeliveryProviderService service;
     private final DeliveryProviderOperationsService operations;
@@ -21,7 +21,7 @@ public class DeliveryProviderController {
         @RequestHeader(value="Idempotency-Key", required=false) String idempotencyKey,
         @Valid @RequestBody DeliveryProviderWriteRequest request) {
         if (idempotencyKey == null || idempotencyKey.isBlank()) return Mono.error(new IllegalArgumentException("缺少 Idempotency-Key"));
-        return service.create(request, idempotencyKey).map(view -> ResponseEntity.created(URI.create("/api/v2/admin/delivery-providers/" + view.id())).body(view));
+        return service.create(request, idempotencyKey).map(view -> ResponseEntity.created(URI.create("/api/admin/delivery-providers/" + view.id())).body(view));
     }
     @GetMapping("/{providerId}") public Mono<DeliveryProviderView> get(@PathVariable UUID providerId) { return service.get(providerId); }
     @PatchMapping("/{providerId}") public Mono<ResponseEntity<DeliveryProviderView>> update(@PathVariable UUID providerId,
@@ -39,8 +39,8 @@ public class DeliveryProviderController {
         @RequestBody(required=false) RotateDeliverySigningKeyRequest request) {
         if (idempotencyKey == null || idempotencyKey.isBlank()) return Mono.error(new IllegalArgumentException("缺少 Idempotency-Key"));
         return operations.rotate(providerId, actorId, idempotencyKey, request).map(task -> ResponseEntity.accepted()
-            .header("Location", "/api/v2/background-tasks/" + task.id()).build());
+            .header("Location", "/api/background-tasks/" + task.id()).build());
     }
     private ResponseEntity<BackgroundTask> accepted(BackgroundTask task) { return ResponseEntity.accepted()
-        .header("Location", "/api/v2/background-tasks/" + task.id()).body(task); }
+        .header("Location", "/api/background-tasks/" + task.id()).body(task); }
 }

@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 @RestController
-@RequestMapping({"/api/ingestion/conflicts","/api/v2/ingestion/conflicts"})
+@RequestMapping({"/api/ingestion/conflicts"})
 public class ImportConflictController {
     private final ImportConflictService service;
     public ImportConflictController(ImportConflictService service){this.service=service;}

@@ -30,7 +30,7 @@ import run.ikaros.common.PageResponse;
  */
 @Validated
 @RestController
-@RequestMapping({"/api/collections", "/api/v2/collections"})
+@RequestMapping({"/api/collections"})
 public class CollectionController {
     private final CollectionService collectionService;
 

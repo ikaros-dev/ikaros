@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v2/media/resources/{resourceId}/availability")
+@RequestMapping("/api/media/resources/{resourceId}/availability")
 public class MediaAvailabilityController {
     private final MediaAvailabilityService service;
 

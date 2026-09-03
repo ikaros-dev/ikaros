@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v2/storage/blobs")
+@RequestMapping("/api/storage/blobs")
 public class BlobVerificationController {
     private final BlobVerificationService service;
     public BlobVerificationController(BlobVerificationService service) { this.service = service; }

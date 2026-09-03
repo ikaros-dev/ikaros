@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v2/planning/tasks/{taskId}/recurrence")
+@RequestMapping("/api/planning/tasks/{taskId}/recurrence")
 public class PlanningRecurrenceController {
     private final PlanningRecurrenceService service;
     public PlanningRecurrenceController(PlanningRecurrenceService service) { this.service = service; }

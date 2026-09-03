@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 @RestController
-@RequestMapping("/api/v2/offline/downloads")
+@RequestMapping("/api/offline/downloads")
 public class DownloadController {
     private final DownloadService service;
     public DownloadController(DownloadService service, DownloadManifestService manifests){this.service=service;this.manifests=manifests;}

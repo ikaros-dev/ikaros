@@ -7,7 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.IfMatchVersion;
 @RestController
-@RequestMapping("/api/v2/drive")
+@RequestMapping("/api/drive")
 public class DriveController {
     private final DriveService service;
     public DriveController(DriveService service) { this.service = service; }

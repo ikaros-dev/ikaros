@@ -1,6 +1,6 @@
 package run.ikaros.music;
 import jakarta.validation.Valid; import java.util.UUID; import org.springframework.web.bind.annotation.*; import reactor.core.publisher.Flux; import reactor.core.publisher.Mono;
-@RestController @RequestMapping("/api/v2/music/playlists") public class MusicPlaylistController {
+@RestController @RequestMapping("/api/music/playlists") public class MusicPlaylistController {
     private final MusicPlaylistService service; public MusicPlaylistController(MusicPlaylistService service){this.service=service;}
     @PostMapping public Mono<MusicPlaylistView> create(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,@Valid @RequestBody CreateMusicPlaylistRequest r){return service.create(owner,r);}
     @GetMapping public Flux<MusicPlaylistView> list(@RequestHeader("X-Ikaros-Actor-Id") UUID owner){return service.list(owner);}

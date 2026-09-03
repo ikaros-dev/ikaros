@@ -17,7 +17,7 @@ import run.ikaros.common.PageResponse;
 /** 当前用户 Resource 标签目录。 */
 @Validated
 @RestController
-@RequestMapping({"/api/tags", "/api/v2/tags"})
+@RequestMapping({"/api/tags"})
 public class ResourceTagCatalogController {
     private final ResourceTagService service;
 

@@ -28,24 +28,24 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String path = exchange.getRequest().getPath().value();
         if (isAttachmentContentPath(path) && hasDeliveryGrant(exchange)) return chain.filter(exchange);
-        if (!(path.startsWith("/api/v2/resources") || path.startsWith("/api/resources")
-            || path.startsWith("/api/v2/storage/providers") || path.startsWith("/api/storage/providers")
-            || path.startsWith("/api/v2/admin/storage-providers")
-            || path.startsWith("/api/v2/admin/blobs")
-            || path.startsWith("/api/v2/admin/delivery-providers")
-            || path.startsWith("/api/v2/admin/restore-budget-policy")
-            || path.startsWith("/api/v2/storage/restore-budget")
-            || path.startsWith("/api/v2/storage/placements")
-            || path.startsWith("/api/v2/attachments/") && (path.contains("/restore-requests")
+        if (!(path.startsWith("/api/resources") || path.startsWith("/api/resources")
+            || path.startsWith("/api/storage/providers") || path.startsWith("/api/storage/providers")
+            || path.startsWith("/api/admin/storage-providers")
+            || path.startsWith("/api/admin/blobs")
+            || path.startsWith("/api/admin/delivery-providers")
+            || path.startsWith("/api/admin/restore-budget-policy")
+            || path.startsWith("/api/storage/restore-budget")
+            || path.startsWith("/api/storage/placements")
+            || path.startsWith("/api/attachments/") && (path.contains("/restore-requests")
                 || path.contains("/availability") || path.contains("/delivery-grants") || path.contains("/content"))
-            || path.startsWith("/api/v2/media/seasons/") && path.contains("/restore-requests")
-            || path.startsWith("/api/v2/restore-requests")
-            || path.startsWith("/api/v2/storage/restore-requests")
-            || path.startsWith("/api/v2/delivery-leases")
-            || path.startsWith("/api/v2/ingestion/sources") || path.startsWith("/api/ingestion/sources")
-            || path.startsWith("/api/users") || path.startsWith("/api/v2/admin/users")
-            || path.startsWith("/api/roles") || path.startsWith("/api/v2/admin/roles")
-            || path.startsWith("/api/permissions") || path.startsWith("/api/v2/admin/permissions"))) {
+            || path.startsWith("/api/media/seasons/") && path.contains("/restore-requests")
+            || path.startsWith("/api/restore-requests")
+            || path.startsWith("/api/storage/restore-requests")
+            || path.startsWith("/api/delivery-leases")
+            || path.startsWith("/api/ingestion/sources") || path.startsWith("/api/ingestion/sources")
+            || path.startsWith("/api/users") || path.startsWith("/api/admin/users")
+            || path.startsWith("/api/roles") || path.startsWith("/api/admin/roles")
+            || path.startsWith("/api/permissions") || path.startsWith("/api/admin/permissions"))) {
             return chain.filter(exchange);
         }
         PlatformPermission permission = permission(exchange.getRequest().getMethod().name(), path);
@@ -127,7 +127,7 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
     }
 
     private boolean isAttachmentContentPath(String path) {
-        return (path.startsWith("/api/v2/attachments/") || path.startsWith("/api/attachments/"))
+        return (path.startsWith("/api/attachments/") || path.startsWith("/api/attachments/"))
             && path.endsWith("/content");
     }
 

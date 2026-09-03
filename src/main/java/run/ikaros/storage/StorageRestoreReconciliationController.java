@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import run.ikaros.common.IfMatchVersion;
 
 @RestController
-@RequestMapping("/api/v2/storage/restore-operations")
+@RequestMapping("/api/storage/restore-operations")
 public class StorageRestoreReconciliationController {
     private final StorageRestoreReconciliationService service;
     public StorageRestoreReconciliationController(StorageRestoreReconciliationService service) { this.service = service; }

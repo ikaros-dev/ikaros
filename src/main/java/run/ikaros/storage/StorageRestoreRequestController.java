@@ -13,7 +13,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v2/storage/restore-requests")
+@RequestMapping("/api/storage/restore-requests")
 public class StorageRestoreRequestController {
     private final StorageRestoreRequestService service;
     public StorageRestoreRequestController(StorageRestoreRequestService service) { this.service = service; }

@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.common.IfMatchVersion;
 
 @RestController
-@RequestMapping({"/api/attachments/{attachmentId}/delivery-grants", "/api/v2/attachments/{attachmentId}/delivery-grants"})
+@RequestMapping({"/api/attachments/{attachmentId}/delivery-grants"})
 public class DeliveryGrantController {
     private final DeliveryGrantService service;
     private final DeliveryLeaseService leases;
@@ -53,7 +53,7 @@ public class DeliveryGrantController {
             .flatMap(binding -> providers.findByProviderKey(binding.deliveryProviderKey())
                 .zipWith(blobs.findById(lease.blobId()))
                 .map(providerAndBlob -> new DeliveryGrantContractView(grant.id(), grant.attachmentId(), lease.id(),
-                    providerAndBlob.getT1().id(), grant.method(), "/api/v2/attachments/" + attachmentId
+                    providerAndBlob.getT1().id(), grant.method(), "/api/attachments/" + attachmentId
                         + "/content?delivery_grant=" + grant.token(), grant.expiresAt(),
                     binding.rangePolicy() != DeliveryBindingRangePolicy.UNSUPPORTED,
                     providerAndBlob.getT2().mediaType(), providerAndBlob.getT2().sizeBytes(), grant.revocationLevel())));

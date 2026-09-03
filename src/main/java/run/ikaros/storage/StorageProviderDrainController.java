@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.task.BackgroundTask;
 
 @RestController
-@RequestMapping("/api/v2/storage/providers")
+@RequestMapping("/api/storage/providers")
 public class StorageProviderDrainController {
     private final StorageProviderDrainService service;
     public StorageProviderDrainController(StorageProviderDrainService service) { this.service = service; }
@@ -20,6 +20,6 @@ public class StorageProviderDrainController {
         @RequestHeader("Idempotency-Key") String idempotencyKey,
         @PathVariable UUID providerId) {
         return service.request(providerId, actorId, idempotencyKey).map(task -> ResponseEntity.accepted().header("Location",
-            "/api/v2/background-tasks/" + task.id()).body(task));
+            "/api/background-tasks/" + task.id()).body(task));
     }
 }

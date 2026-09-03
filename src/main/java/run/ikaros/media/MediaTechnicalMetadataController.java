@@ -7,7 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v2/media/releases/{releaseId}")
+@RequestMapping("/api/media/releases/{releaseId}")
 public class MediaTechnicalMetadataController {
     private final MediaTechnicalMetadataService service;
     public MediaTechnicalMetadataController(MediaTechnicalMetadataService service) { this.service = service; }

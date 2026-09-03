@@ -7,7 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v2/media")
+@RequestMapping("/api/media")
 public class MediaCatalogController {
     private final MediaCatalogService service;
     public MediaCatalogController(MediaCatalogService service) { this.service = service; }

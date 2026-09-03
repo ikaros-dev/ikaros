@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 @RestController
-@RequestMapping({"/api/permissions", "/api/v2/admin/permissions"})
+@RequestMapping({"/api/permissions", "/api/admin/permissions"})
 public class PermissionController {
     @GetMapping
     public Flux<String> list() {

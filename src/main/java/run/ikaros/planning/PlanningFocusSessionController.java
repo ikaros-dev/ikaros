@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import run.ikaros.common.IfMatchVersion;
 
 @RestController
-@RequestMapping("/api/v2/planning/focus-sessions")
+@RequestMapping("/api/planning/focus-sessions")
 public class PlanningFocusSessionController {
     private final PlanningFocusSessionService service;
     public PlanningFocusSessionController(PlanningFocusSessionService service) { this.service = service; }

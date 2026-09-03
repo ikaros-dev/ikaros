@@ -7,7 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v2/planning")
+@RequestMapping("/api/planning")
 public class PlanningTagController {
     private final PlanningTagService service;
     public PlanningTagController(PlanningTagService service) { this.service = service; }

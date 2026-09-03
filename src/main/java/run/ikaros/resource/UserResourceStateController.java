@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.common.IfMatchVersion;
 
 @RestController
-@RequestMapping({"/api/resources/{resourceId}/user-state", "/api/v2/resources/{resourceId}/user-state"})
+@RequestMapping({"/api/resources/{resourceId}/user-state"})
 public class UserResourceStateController {
     private final UserResourceStateService service;
 

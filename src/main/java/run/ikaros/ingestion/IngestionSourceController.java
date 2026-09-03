@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping({"/api/ingestion/sources", "/api/v2/ingestion/sources"})
+@RequestMapping({"/api/ingestion/sources"})
 public class IngestionSourceController {
     private final IngestionSourceService service;
 
@@ -26,7 +26,7 @@ public class IngestionSourceController {
     public Mono<ResponseEntity<IngestionSourceView>> create(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
                                                               @Valid @RequestBody CreateIngestionSourceRequest request) {
         return service.create(actorId, request).map(view -> ResponseEntity.created(
-            URI.create("/api/v2/ingestion/sources/" + view.id())).body(view));
+            URI.create("/api/ingestion/sources/" + view.id())).body(view));
     }
 
     @GetMapping

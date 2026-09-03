@@ -18,6 +18,6 @@ public class PersistentPlaybackSourceService implements PlaybackSourceService {
             .switchIfEmpty(Mono.error(new NotFoundException("没有可播放的 Media Release")))
             .map(r -> new PlaybackSourceView(r.id(), r.attachmentId(), PlaybackSourceMode.DIRECT_PLAY,
                 preferredReleaseId == null ? "选择最近创建的可用 Release" : "使用请求指定的可用 Release",
-                "/api/v2/attachments/" + r.attachmentId() + "/content"));
+                "/api/attachments/" + r.attachmentId() + "/content"));
     }
 }

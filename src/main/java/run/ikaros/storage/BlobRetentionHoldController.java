@@ -14,7 +14,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v2/storage/blobs/{blobId}/retention-holds")
+@RequestMapping("/api/storage/blobs/{blobId}/retention-holds")
 public class BlobRetentionHoldController {
     private final BlobRetentionHoldService service;
     public BlobRetentionHoldController(BlobRetentionHoldService service) { this.service = service; }

@@ -10,7 +10,7 @@ import run.ikaros.common.IfMatchVersion;
 import run.ikaros.progress.ResourceProgressView;
 
 @RestController
-@RequestMapping("/api/v2/media/playback")
+@RequestMapping("/api/media/playback")
 public class MediaPlaybackController {
     private final MediaPlaybackService service;
     public MediaPlaybackController(MediaPlaybackService service) { this.service = service; }

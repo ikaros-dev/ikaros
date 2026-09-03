@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import run.ikaros.common.IfMatchVersion;
 
 @RestController
-@RequestMapping("/api/v2/planning/time-blocks")
+@RequestMapping("/api/planning/time-blocks")
 public class PlanningTimeBlockController {
     private final PlanningTimeBlockService service;
     public PlanningTimeBlockController(PlanningTimeBlockService service) { this.service = service; }

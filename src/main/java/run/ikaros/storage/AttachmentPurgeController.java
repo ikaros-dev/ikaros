@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v2/resources/{resourceId}/attachments")
+@RequestMapping("/api/resources/{resourceId}/attachments")
 public class AttachmentPurgeController {
     private final AttachmentPurgeService service;
     public AttachmentPurgeController(AttachmentPurgeService service) { this.service = service; }

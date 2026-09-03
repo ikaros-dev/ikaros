@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping({"/api/ingestion/sources", "/api/v2/ingestion/sources"})
+@RequestMapping({"/api/ingestion/sources"})
 public class ScanRunController {
     private final ScanRunService service;
     public ScanRunController(ScanRunService service) { this.service = service; }

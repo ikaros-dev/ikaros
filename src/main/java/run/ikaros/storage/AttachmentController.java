@@ -19,7 +19,7 @@ import org.springframework.http.ResponseEntity;
 
 /** Attachment 身份级读取接口。 */
 @RestController
-@RequestMapping({"/api/attachments", "/api/v2/attachments"})
+@RequestMapping({"/api/attachments"})
 public class AttachmentController {
     private final StorageService storageService;
     private final DeliveryGrantService deliveryGrantService;

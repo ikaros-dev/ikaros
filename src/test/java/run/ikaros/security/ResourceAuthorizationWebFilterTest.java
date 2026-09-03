@@ -18,7 +18,7 @@ class ResourceAuthorizationWebFilterTest {
     @Test
     void rejectsResourceRequestWithoutSession() {
         UUID actor = UUID.randomUUID();
-        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/v2/resources")
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/resources")
             .header("X-Ikaros-Actor-Id", actor.toString()).build());
         WebFilterChain chain = mock(WebFilterChain.class);
         new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
@@ -29,7 +29,7 @@ class ResourceAuthorizationWebFilterTest {
     void rejectsDeliveryAdminRequestWithoutSession() {
         UUID actor = UUID.randomUUID();
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
-            "/api/v2/admin/delivery-providers").header("X-Ikaros-Actor-Id", actor.toString()).build());
+            "/api/admin/delivery-providers").header("X-Ikaros-Actor-Id", actor.toString()).build());
         WebFilterChain chain = mock(WebFilterChain.class);
 
         new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
@@ -41,7 +41,7 @@ class ResourceAuthorizationWebFilterTest {
     void rejectsStorageProviderAdminAliasWithoutSession() {
         UUID actor = UUID.randomUUID();
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
-            "/api/v2/admin/storage-providers").header("X-Ikaros-Actor-Id", actor.toString()).build());
+            "/api/admin/storage-providers").header("X-Ikaros-Actor-Id", actor.toString()).build());
         WebFilterChain chain = mock(WebFilterChain.class);
 
         new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
@@ -53,7 +53,7 @@ class ResourceAuthorizationWebFilterTest {
     void rejectsRestoreRequestWithoutSession() {
         UUID actor = UUID.randomUUID();
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(
-            "/api/v2/attachments/" + UUID.randomUUID() + "/restore-requests")
+            "/api/attachments/" + UUID.randomUUID() + "/restore-requests")
             .header("X-Ikaros-Actor-Id", actor.toString()).build());
         WebFilterChain chain = mock(WebFilterChain.class);
 
@@ -66,7 +66,7 @@ class ResourceAuthorizationWebFilterTest {
     void rejectsDeliveryGrantWithoutSession() {
         UUID actor = UUID.randomUUID();
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(
-            "/api/v2/attachments/" + UUID.randomUUID() + "/delivery-grants")
+            "/api/attachments/" + UUID.randomUUID() + "/delivery-grants")
             .header("X-Ikaros-Actor-Id", actor.toString()).build());
         WebFilterChain chain = mock(WebFilterChain.class);
 
@@ -79,7 +79,7 @@ class ResourceAuthorizationWebFilterTest {
     void rejectsBlobPlacementAdminQueryWithoutSession() {
         UUID actor = UUID.randomUUID();
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
-            "/api/v2/admin/blobs/" + UUID.randomUUID() + "/placements")
+            "/api/admin/blobs/" + UUID.randomUUID() + "/placements")
             .header("X-Ikaros-Actor-Id", actor.toString()).build());
         WebFilterChain chain = mock(WebFilterChain.class);
 
@@ -90,7 +90,7 @@ class ResourceAuthorizationWebFilterTest {
 
     @Test
     void rejectsIdentityAdministrationWithoutSession() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/v2/admin/users")
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/admin/users")
             .header("X-Ikaros-Actor-Id", UUID.randomUUID().toString()).build());
         WebFilterChain chain = mock(WebFilterChain.class);
 
@@ -102,7 +102,7 @@ class ResourceAuthorizationWebFilterTest {
     @Test
     void letsDeliveryGrantContentReachGrantAuthorizationWithoutSession() {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
-            "/api/v2/attachments/" + UUID.randomUUID() + "/content")
+            "/api/attachments/" + UUID.randomUUID() + "/content")
             .header("X-Ikaros-Delivery-Grant", "opaque-grant").build());
         WebFilterChain chain = mock(WebFilterChain.class);
         when(chain.filter(exchange)).thenReturn(Mono.empty());
@@ -117,7 +117,7 @@ class ResourceAuthorizationWebFilterTest {
         UUID actor = UUID.randomUUID();
         UUID session = UUID.randomUUID();
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(
-            "/api/v2/admin/roles/" + UUID.randomUUID() + "/permissions/SYSTEM_ROLE_READ")
+            "/api/admin/roles/" + UUID.randomUUID() + "/permissions/SYSTEM_ROLE_READ")
             .build());
         WebFilterChain chain = mock(WebFilterChain.class);
         AccessControlService accessControl = mock(AccessControlService.class);
@@ -138,7 +138,7 @@ class ResourceAuthorizationWebFilterTest {
     @Test
     void doesNotTreatArbitraryContentPathAsGrantOnlyDelivery() {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
-            "/api/v2/resources/" + UUID.randomUUID() + "/content")
+            "/api/resources/" + UUID.randomUUID() + "/content")
             .header("X-Ikaros-Delivery-Grant", "opaque-grant").build());
         WebFilterChain chain = mock(WebFilterChain.class);
 

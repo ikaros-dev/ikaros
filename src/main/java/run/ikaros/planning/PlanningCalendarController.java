@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
 @RestController
-@RequestMapping("/api/v2/planning/calendar")
+@RequestMapping("/api/planning/calendar")
 public class PlanningCalendarController {
     private final PlanningCalendarService service;
     public PlanningCalendarController(PlanningCalendarService service) { this.service = service; }

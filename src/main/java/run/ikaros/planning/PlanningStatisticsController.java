@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v2/planning/statistics")
+@RequestMapping("/api/planning/statistics")
 public class PlanningStatisticsController {
     private final PlanningStatisticsService service;
     public PlanningStatisticsController(PlanningStatisticsService service) { this.service = service; }

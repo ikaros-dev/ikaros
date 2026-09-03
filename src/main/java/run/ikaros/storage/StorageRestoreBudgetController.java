@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.common.IfMatchVersion;
 
 @RestController
-@RequestMapping({"/api/v2/storage/restore-budget", "/api/v2/admin/restore-budget-policy"})
+@RequestMapping({"/api/storage/restore-budget", "/api/admin/restore-budget-policy"})
 public class StorageRestoreBudgetController {
     private final StorageRestoreBudgetService service;
     public StorageRestoreBudgetController(StorageRestoreBudgetService service) { this.service = service; }

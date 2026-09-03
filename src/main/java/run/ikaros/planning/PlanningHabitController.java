@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import run.ikaros.common.IfMatchVersion;
 
 @RestController
-@RequestMapping("/api/v2/planning/habits")
+@RequestMapping("/api/planning/habits")
 public class PlanningHabitController {
     private final PlanningHabitService service;
     public PlanningHabitController(PlanningHabitService service) { this.service = service; }

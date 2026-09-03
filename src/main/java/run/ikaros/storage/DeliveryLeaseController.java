@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import run.ikaros.common.IfMatchVersion;
 
 @RestController
-@RequestMapping("/api/v2/attachments/{attachmentId}/delivery-leases")
+@RequestMapping("/api/attachments/{attachmentId}/delivery-leases")
 public class DeliveryLeaseController {
     private final DeliveryLeaseService service;
     public DeliveryLeaseController(DeliveryLeaseService service) { this.service = service; }

@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 @RestController
-@RequestMapping("/api/v2/offline/cache")
+@RequestMapping("/api/offline/cache")
 public class OfflineCacheController {
     private final OfflineCacheService service;
     public OfflineCacheController(OfflineCacheService service){this.service=service;}

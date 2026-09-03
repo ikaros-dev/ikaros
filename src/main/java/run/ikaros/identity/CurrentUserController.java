@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 
 /** 当前认证主体的身份与会话查询接口。 */
 @RestController
-@RequestMapping({"/api/me", "/api/v2/me"})
+@RequestMapping({"/api/me"})
 public class CurrentUserController {
     private final UserService userService;
     private final SecuritySessionService sessionService;

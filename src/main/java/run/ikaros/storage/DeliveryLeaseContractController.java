@@ -8,7 +8,7 @@ import run.ikaros.common.IfMatchVersion;
 
 /** Top-level lease mutation routes defined by the v2 delivery contract. */
 @RestController
-@RequestMapping("/api/v2/delivery-leases")
+@RequestMapping("/api/delivery-leases")
 public class DeliveryLeaseContractController {
     private final DeliveryLeaseService service;
     public DeliveryLeaseContractController(DeliveryLeaseService service) { this.service = service; }

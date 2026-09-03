@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import run.ikaros.common.IfMatchVersion;
 
 @RestController
-@RequestMapping("/api/v2/planning/reminders")
+@RequestMapping("/api/planning/reminders")
 public class PlanningReminderController {
     private final PlanningReminderService service;
     public PlanningReminderController(PlanningReminderService service) { this.service = service; }

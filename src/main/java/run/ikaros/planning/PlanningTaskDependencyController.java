@@ -7,7 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v2/planning/tasks/{taskId}/dependencies")
+@RequestMapping("/api/planning/tasks/{taskId}/dependencies")
 public class PlanningTaskDependencyController {
     private final PlanningTaskDependencyService service;
     public PlanningTaskDependencyController(PlanningTaskDependencyService service) { this.service = service; }

@@ -19,7 +19,7 @@ import reactor.core.publisher.Flux;
 
 /** Attachment-shaped alias required by the media delivery contract. */
 @RestController
-@RequestMapping("/api/v2/attachments/{attachmentId}/availability")
+@RequestMapping("/api/attachments/{attachmentId}/availability")
 public class AttachmentMediaAvailabilityController {
     private final AttachmentRepository attachments;
     private final MediaAvailabilityService availability;

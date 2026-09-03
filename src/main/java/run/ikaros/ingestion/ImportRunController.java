@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 @RestController
-@RequestMapping({"/api/ingestion","/api/v2/ingestion"})
+@RequestMapping({"/api/ingestion"})
 public class ImportRunController {
     private final ImportRunService service;
     public ImportRunController(ImportRunService service){this.service=service;}

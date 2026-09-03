@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping({"/api/ingestion/scans", "/api/v2/ingestion/scans"})
+@RequestMapping({"/api/ingestion/scans"})
 public class IngestionCandidateController {
     private final IngestionCandidateService service;
     public IngestionCandidateController(IngestionCandidateService service) { this.service = service; }

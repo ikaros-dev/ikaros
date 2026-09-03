@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.task.BackgroundTask;
 
 @RestController
-@RequestMapping("/api/v2/storage/placements")
+@RequestMapping("/api/storage/placements")
 public class StoragePlacementTieringController {
     private final StoragePlacementTieringService service;
 
@@ -35,6 +35,6 @@ public class StoragePlacementTieringController {
     }
 
     private ResponseEntity<BackgroundTask> accepted(BackgroundTask task) {
-        return ResponseEntity.accepted().location(URI.create("/api/v2/background-tasks/" + task.id())).body(task);
+        return ResponseEntity.accepted().location(URI.create("/api/background-tasks/" + task.id())).body(task);
     }
 }

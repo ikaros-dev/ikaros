@@ -24,7 +24,7 @@ import run.ikaros.common.IfMatchVersion;
  * 提供 Resource 统一消费进度的 HTTP-first 接口。
  */
 @RestController
-@RequestMapping({"/api/resources/{resourceId}/progress", "/api/v2/resources/{resourceId}/progress"})
+@RequestMapping({"/api/resources/{resourceId}/progress"})
 public class ResourceProgressController {
     private final ResourceProgressService progressService;
 

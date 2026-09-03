@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v2/media/seasons/{seasonId}/restore-requests")
+@RequestMapping("/api/media/seasons/{seasonId}/restore-requests")
 public class StorageRestoreSeasonController {
     private final StorageRestoreRequestService service;
     public StorageRestoreSeasonController(StorageRestoreRequestService service) { this.service = service; }
@@ -16,7 +16,7 @@ public class StorageRestoreSeasonController {
         @RequestBody(required=false) RequestAttachmentRestore options) {
         return service.requestSeason(actorId, seasonId, options == null ? null : options.providerRestoreClass(),
             options == null ? null : options.budgetConfirmationToken(), idempotencyKey)
-            .map(view -> ResponseEntity.accepted().header("Location", "/api/v2/restore-requests/" + view.id()).body(
+            .map(view -> ResponseEntity.accepted().header("Location", "/api/restore-requests/" + view.id()).body(
                 new RestoreRequestContractView(view.id(), view.scope().name(), view.scopeId(), status(view.status()), view.totalItems(),
                     view.totalBytes(), view.completedItems(), view.status() == StorageRestoreRequestStatus.FAILED
                         || view.status() == StorageRestoreRequestStatus.PARTIAL_FAILURE ? view.totalItems() - view.completedItems() : 0,

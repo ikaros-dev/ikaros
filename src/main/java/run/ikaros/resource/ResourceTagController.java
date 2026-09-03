@@ -24,7 +24,7 @@ import reactor.core.publisher.Mono;
  * 提供 Resource 用户自定义标签的 HTTP-first 接口。
  */
 @RestController
-@RequestMapping({"/api/resources/{resourceId}/tags", "/api/v2/resources/{resourceId}/tags"})
+@RequestMapping({"/api/resources/{resourceId}/tags"})
 public class ResourceTagController {
     private final ResourceTagService tagService;
 

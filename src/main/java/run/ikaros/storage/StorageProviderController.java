@@ -15,7 +15,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping({"/api/storage/providers", "/api/v2/storage/providers", "/api/v2/admin/storage-providers"})
+@RequestMapping({"/api/storage/providers", "/api/admin/storage-providers"})
 public class StorageProviderController {
     private final StorageProviderRegistry registry;
 
@@ -27,7 +27,7 @@ public class StorageProviderController {
     public Mono<ResponseEntity<StorageProvider>> register(@Valid @RequestBody RegisterStorageProviderRequest request) {
         return registry.register(request.providerKey(), request.providerType(), request.tier(),
                 request.secretReference(), request.metadata())
-            .map(provider -> ResponseEntity.created(URI.create("/api/v2/storage/providers/" + provider.id()))
+            .map(provider -> ResponseEntity.created(URI.create("/api/storage/providers/" + provider.id()))
                 .body(provider));
     }
 
