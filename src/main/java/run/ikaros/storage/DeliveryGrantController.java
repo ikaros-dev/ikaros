@@ -16,13 +16,11 @@ import run.ikaros.common.IfMatchVersion;
 public class DeliveryGrantController {
     private final DeliveryGrantService service;
     private final DeliveryLeaseService leases;
-    private final BlobRepository blobs;
-    private final MediaDeliveryBindingRepository bindings;
-    private final DeliveryProviderRepository providers;
+    private final DeliveryGrantContractService contracts;
 
-    public DeliveryGrantController(DeliveryGrantService service, DeliveryLeaseService leases, BlobRepository blobs,
-                                   MediaDeliveryBindingRepository bindings, DeliveryProviderRepository providers) {
-        this.service = service; this.leases = leases; this.blobs = blobs; this.bindings = bindings; this.providers = providers;
+    public DeliveryGrantController(DeliveryGrantService service, DeliveryLeaseService leases,
+                                   DeliveryGrantContractService contracts) {
+        this.service = service; this.leases = leases; this.contracts = contracts;
     }
 
     @PostMapping
@@ -30,7 +28,7 @@ public class DeliveryGrantController {
         @PathVariable UUID attachmentId, @Valid @RequestBody DeliveryGrantRequest request) {
         return service.issue(actorId, attachmentId, request)
             .flatMap(grant -> createOrRenewLease(actorId, attachmentId, request, grant)
-                .flatMap(lease -> contract(attachmentId, grant, lease))
+                .flatMap(lease -> contracts.contract(attachmentId, grant, lease))
                 .onErrorResume(error -> service.revoke(actorId, grant.id())
                     .onErrorResume(revokeError -> Mono.empty())
                     .then(Mono.error(error))));
@@ -45,18 +43,6 @@ public class DeliveryGrantController {
         }
         return leases.create(actorId, attachmentId,
             new DeliveryLeaseRequest(grant.token(), request == null ? null : request.ttlSeconds()));
-    }
-
-    private Mono<DeliveryGrantContractView> contract(UUID attachmentId, DeliveryGrantView grant,
-        DeliveryLeaseView lease) {
-        return bindings.findById(lease.bindingId())
-            .flatMap(binding -> providers.findByProviderKey(binding.deliveryProviderKey())
-                .zipWith(blobs.findById(lease.blobId()))
-                .map(providerAndBlob -> new DeliveryGrantContractView(grant.id(), grant.attachmentId(), lease.id(),
-                    providerAndBlob.getT1().id(), grant.method(), "/api/attachments/" + attachmentId
-                        + "/content?delivery_grant=" + grant.token(), grant.expiresAt(),
-                    binding.rangePolicy() != DeliveryBindingRangePolicy.UNSUPPORTED,
-                    providerAndBlob.getT2().mediaType(), providerAndBlob.getT2().sizeBytes(), grant.revocationLevel())));
     }
 
     @PostMapping("/{grantId}/actions/revoke")
