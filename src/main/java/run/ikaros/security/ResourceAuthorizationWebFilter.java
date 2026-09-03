@@ -30,6 +30,7 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
         if (!(path.startsWith("/api/v2/resources") || path.startsWith("/api/resources")
             || path.startsWith("/api/v2/storage/providers") || path.startsWith("/api/storage/providers")
             || path.startsWith("/api/v2/admin/storage-providers")
+            || path.startsWith("/api/v2/admin/blobs")
             || path.startsWith("/api/v2/admin/delivery-providers")
             || path.startsWith("/api/v2/admin/restore-budget-policy")
             || path.startsWith("/api/v2/storage/restore-budget")
@@ -73,7 +74,11 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             || path.contains("/delivery-leases") || path.contains("/content")) {
             return PlatformPermission.RESOURCE_READ;
         }
-        if (path.contains("/storage/providers")) return PlatformPermission.STORAGE_PROVIDER_MANAGE;
+        if (path.contains("/storage/providers") || path.contains("/admin/storage-providers")) {
+            return "GET".equals(method) ? PlatformPermission.STORAGE_PROVIDER_READ
+                : PlatformPermission.STORAGE_PROVIDER_MANAGE;
+        }
+        if (path.contains("/admin/blobs")) return PlatformPermission.STORAGE_PROVIDER_READ;
         if (path.contains("/ingestion/sources")) return PlatformPermission.INGESTION_SOURCE_MANAGE;
         if ("GET".equals(method)) return PlatformPermission.RESOURCE_READ;
         if ("DELETE".equals(method)) return PlatformPermission.RESOURCE_DELETE;

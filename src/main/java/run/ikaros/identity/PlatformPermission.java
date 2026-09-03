@@ -19,6 +19,7 @@ public enum PlatformPermission {
     RESOURCE_DELETE("resource.delete", "删除资源"),
     RESOURCE_DOWNLOAD("resource.download", "下载资源"),
     RESOURCE_SHARE("resource.share", "分享资源"),
+    STORAGE_PROVIDER_READ("storage.provider.read", "查看存储 Provider"),
     STORAGE_PROVIDER_MANAGE("storage.provider.manage", "管理存储 Provider"),
     STORAGE_DELIVERY_READ("storage.delivery.read", "查看 Delivery Provider 与 Binding"),
     STORAGE_DELIVERY_MANAGE("storage.delivery.manage", "管理 Delivery Provider 与 Binding"),
