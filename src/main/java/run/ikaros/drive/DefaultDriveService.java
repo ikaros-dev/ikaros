@@ -58,12 +58,12 @@ public class DefaultDriveService implements DriveService {
         });
     }
     @Override public Flux<DriveSpaceView> listSpaces(UUID actorId) {
-        return Flux.fromIterable(spaces.values()).filter(s -> s.owner().equals(actorId)).map(this::view);
+        return Flux.fromIterable(spaces.values()).filter(s -> s.owner().equals(actorId)).take(100).map(this::view);
     }
     @Override public Flux<DriveNodeView> children(UUID actorId, UUID spaceId, UUID parentId) {
         return ownedSpace(actorId, spaceId).flatMapMany(s -> Flux.fromIterable(nodes.values())
             .filter(n -> n.space().equals(spaceId) && java.util.Objects.equals(n.parent(), parentId)
-                && n.lifecycle() == DriveLifecycle.ACTIVE).map(this::view));
+                && n.lifecycle() == DriveLifecycle.ACTIVE).take(100).map(this::view));
     }
     @Override public Mono<DriveNodeView> createNode(UUID actorId, UUID spaceId, CreateDriveNodeRequest request) {
         return ownedSpace(actorId, spaceId).flatMap(space -> {
@@ -125,7 +125,7 @@ public class DefaultDriveService implements DriveService {
     @Override public Mono<DriveNodeView> restore(UUID actorId, UUID nodeId, long expectedVersion) { return changeLifecycle(actorId,nodeId,expectedVersion,DriveLifecycle.ACTIVE); }
     @Override public Mono<DriveRevisionView> createRevision(UUID actorId, UUID nodeId, CreateDriveRevisionRequest request) { return ownedNode(actorId,nodeId).flatMap(n->{ if(n.type()!=DriveNodeType.FILE)return Mono.error(new ConflictException("只有文件节点可以创建版本")); if(request.operationId()!=null){DriveRevisionView existing=revisionsByOperation.get(request.operationId()); if(existing!=null)return Mono.just(existing);} checkVersion(n,request.expectedNodeVersion()); UUID rid=ids.next(); Instant now=Instant.now(); Node changed=new Node(n.id(),n.space(),n.parent(),n.type(),n.name(),n.normalized(),n.lifecycle(),rid,n.version()+1,n.created(),now); nodes.put(nodeId,changed); DriveRevisionView revision=new DriveRevisionView(rid,nodeId,n.version()+1,request.attachmentId(),request.contentFingerprint(),now,now,actorId); revisionLog.compute(nodeId,(key,current)->{java.util.ArrayList<DriveRevisionView> values=new java.util.ArrayList<>(current==null?List.of():current); values.add(revision); return List.copyOf(values);}); if(request.operationId()!=null)revisionsByOperation.putIfAbsent(request.operationId(),revision); advance(spaces.get(n.space())); recordChange(n.space(), n.id(), DriveMutationKind.CONTENT_REVISION_CREATED, changed.version(), rid); return Mono.just(revision); }); }
     @Override public Flux<DriveRevisionView> revisions(UUID actorId, UUID nodeId) { return ownedNode(actorId,nodeId)
-        .flatMapMany(n -> Flux.fromIterable(revisionLog.getOrDefault(nodeId, List.of()))); }
+        .flatMapMany(n -> Flux.fromIterable(revisionLog.getOrDefault(nodeId, List.of())).take(100)); }
     @Override public Flux<DriveChangeView> changes(UUID actorId, UUID spaceId, long afterSequence) { return ownedSpace(actorId,spaceId).flatMapMany(s -> Flux.fromIterable(changeLog.values()).filter(c -> c.space().equals(spaceId) && c.sequence() > afterSequence).sort(java.util.Comparator.comparing(Change::sequence)).map(this::changeView)); }
     @Override public Mono<DriveQuotaView> quota(UUID actorId, UUID spaceId) {
         return ownedSpace(actorId, spaceId).map(s -> {
