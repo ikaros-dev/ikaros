@@ -11,7 +11,7 @@ pnpm dev
 
 默认入口：`/console/dashboard`。
 
-需要调用 Drive 与 Planning 用户接口时，在环境中配置 `VITE_ACTOR_ID`；请求会通过 `X-Ikaros-Actor-Id` 传递当前用户主体。
+需要调用受保护的 Resource、Drive、Planning、Finance 等接口时，在环境中配置当前用户 UUID `VITE_ACTOR_ID`；请求会通过 `X-Ikaros-Actor-Id` 传递当前用户主体。开发服务器默认将 `/api` 代理到 `http://localhost:8080`，可通过 `VITE_DEV_API_TARGET` 覆盖。
 
 ## 构建
 
@@ -19,4 +19,4 @@ pnpm dev
 pnpm build
 ```
 
-当前前端使用文档定义的演示数据实现交互骨架。后端接入时，将 `App.vue` 中的演示数据替换为 `/api` 查询，并保留页面状态、权限元数据和危险操作确认流程。
+页面数据优先来自后端 `/api` 接口；后端未提供对应查询能力的模块显示空态，并保留页面权限元数据和危险操作确认流程。
