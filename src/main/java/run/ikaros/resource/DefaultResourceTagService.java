@@ -19,6 +19,7 @@ import run.ikaros.event.DurableEventService;
  */
 @Service
 public class DefaultResourceTagService implements ResourceTagService {
+    private static final int MAX_UNPAGED_RESULTS = 100;
     private final ResourceRepository resourceRepository;
     private final ResourceTagRepository tagRepository;
     private final AuditService auditService;
@@ -60,7 +61,7 @@ public class DefaultResourceTagService implements ResourceTagService {
     @Override
     public Mono<List<ResourceTagView>> list(UUID ownerId, UUID resourceId) {
         return owned(ownerId, resourceId)
-            .thenMany(tagRepository.findAllByOwnerIdAndResourceIdOrderByNameAsc(ownerId, resourceId))
+            .thenMany(tagRepository.findAllByOwnerIdAndResourceIdOrderByNameAsc(ownerId, resourceId).take(MAX_UNPAGED_RESULTS))
             .map(this::toView)
             .collectList();
     }

@@ -23,6 +23,7 @@ import run.ikaros.event.DurableEventService;
  */
 @Service
 public class DefaultResourceService implements ResourceService {
+    private static final int MAX_PAGE_SIZE = 100;
     private final ResourceRepository resourceRepository;
     private final ResourceTitleRepository titleRepository;
     private final ExternalIdentityRepository identityRepository;
@@ -190,6 +191,9 @@ public class DefaultResourceService implements ResourceService {
     @Override
     public Mono<PageResponse<ResourceView>> list(UUID ownerId, ResourceType type, String query,
                                                   int page, int size) {
+        if (page < 0 || size < 1 || size > MAX_PAGE_SIZE) {
+            return Mono.error(new IllegalArgumentException("分页参数不合法"));
+        }
         String typeValue = type == null ? "" : type.name();
         String queryValue = query == null ? "" : query.trim();
         long offset = (long) page * size;
