@@ -19,6 +19,7 @@ import run.ikaros.event.DurableEventService;
 
 @Service
 public class PersistentDeliveryProviderService implements DeliveryProviderService {
+    private static final int MAX_UNPAGED_RESULTS = 100;
     private final DeliveryProviderRepository providers;
     private final ObjectMapper mapper;
     private final DurableEventService events;
@@ -47,7 +48,7 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
                 .thenReturn(view(saved)));
     }
 
-    @Override public Flux<DeliveryProviderView> list() { return providers.findAll().map(this::view); }
+    @Override public Flux<DeliveryProviderView> list() { return providers.findAll().take(MAX_UNPAGED_RESULTS).map(this::view); }
 
     @Override public Mono<DeliveryProviderView> get(UUID id) { return providers.findById(id)
         .switchIfEmpty(Mono.error(new NotFoundException("Delivery Provider 不存在"))).map(this::view); }
