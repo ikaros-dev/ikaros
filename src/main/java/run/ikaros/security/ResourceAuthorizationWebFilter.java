@@ -65,6 +65,9 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
         if (path.contains("/roles/") && path.contains("/permissions/")) {
             return PlatformPermission.SYSTEM_ROLE_MANAGE;
         }
+        if (path.contains("/users/") && path.contains("/roles/")) {
+            return PlatformPermission.SYSTEM_ROLE_MANAGE;
+        }
         if (path.contains("/permissions")) return PlatformPermission.SYSTEM_ROLE_READ;
         if (path.contains("/roles")) {
             return "GET".equals(method) ? PlatformPermission.SYSTEM_ROLE_READ

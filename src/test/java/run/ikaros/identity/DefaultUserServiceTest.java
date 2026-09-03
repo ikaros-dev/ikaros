@@ -172,4 +172,26 @@ class DefaultUserServiceTest {
         StepVerifier.create(service.assignRole(actorId, userId, roleId)).verifyComplete();
         verify(userRoleRepository).save(any(UserRoleEntity.class));
     }
+
+    @Test
+    void removesExistingRoleAndAuditsChange() {
+        UUID actorId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID roleId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity user = new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, now, now, null, 0L);
+        PlatformRoleEntity role = new PlatformRoleEntity(roleId, "NORMAL_USER", "普通用户", null,
+            false, now, now, 0L);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(user));
+        when(roleRepository.findById(roleId)).thenReturn(Mono.just(role));
+        when(userRoleRepository.findByUserIdAndRoleId(userId, roleId))
+            .thenReturn(Mono.just(new UserRoleEntity(UUID.randomUUID(), userId, roleId, now, 0L)));
+        when(userRoleRepository.deleteByUserIdAndRoleId(userId, roleId)).thenReturn(Mono.empty());
+        when(auditService.record(eq(actorId), eq("identity.user.role.remove"), eq("USER"), eq(userId), eq("{}")))
+            .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.removeRole(actorId, userId, roleId)).verifyComplete();
+        verify(userRoleRepository).deleteByUserIdAndRoleId(userId, roleId);
+    }
 }

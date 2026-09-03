@@ -14,6 +14,7 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -140,5 +141,14 @@ public class UserController {
         @PathVariable UUID roleId
     ) {
         return userService.assignRole(actorId, userId, roleId).thenReturn(ResponseEntity.noContent().build());
+    }
+
+    @DeleteMapping("/{userId}/roles/{roleId}")
+    public Mono<ResponseEntity<Void>> removeRole(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID userId,
+        @PathVariable UUID roleId
+    ) {
+        return userService.removeRole(actorId, userId, roleId).thenReturn(ResponseEntity.noContent().build());
     }
 }

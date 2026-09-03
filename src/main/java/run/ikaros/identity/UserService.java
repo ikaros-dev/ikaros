@@ -49,4 +49,7 @@ public interface UserService {
      * @return 完成信号
      */
     Mono<Void> assignRole(UUID actorId, UUID userId, UUID roleId);
+
+    /** 解除用户与平台角色的绑定。 */
+    Mono<Void> removeRole(UUID actorId, UUID userId, UUID roleId);
 }

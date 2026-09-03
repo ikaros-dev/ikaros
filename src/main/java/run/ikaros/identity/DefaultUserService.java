@@ -127,6 +127,22 @@ public class DefaultUserService implements UserService {
             "{\"user_id\":\"" + userId + "\",\"role_id\":\"" + roleId + "\"}").then();
     }
 
+    @Override
+    public Mono<Void> removeRole(UUID actorId, UUID userId, UUID roleId) {
+        return Mono.zip(requiredUser(userId), requiredRole(roleId))
+            .flatMap(ignored -> userRoleRepository.findByUserIdAndRoleId(userId, roleId)
+                .flatMap(binding -> userRoleRepository.deleteByUserIdAndRoleId(userId, roleId)
+                    .then(emitRoleRemoved(userId, roleId)))
+                .switchIfEmpty(Mono.empty()))
+            .then(auditService.record(actorId, "identity.user.role.remove", "USER", userId, "{}"));
+    }
+
+    private Mono<Void> emitRoleRemoved(UUID userId, UUID roleId) {
+        if (eventService == null) return Mono.empty();
+        return eventService.append("identity.user.role-removed", 1, "user", userId,
+            "{\"user_id\":\"" + userId + "\",\"role_id\":\"" + roleId + "\"}").then();
+    }
+
     private Mono<PlatformUserEntity> requiredUser(UUID userId) {
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(new NotFoundException("用户不存在")));
