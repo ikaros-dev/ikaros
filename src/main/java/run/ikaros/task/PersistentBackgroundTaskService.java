@@ -63,7 +63,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     @Override
     public Flux<BackgroundTaskAttemptEntity> attempts(UUID taskId) {
         return tasks.existsById(taskId).flatMapMany(exists -> exists
-            ? attempts.findAllByTaskIdOrderByAttemptNoAsc(taskId)
+            ? attempts.findAllByTaskIdOrderByAttemptNoAsc(taskId).take(MAX_UNPAGED_RESULTS)
             : Flux.error(new NotFoundException("Task 不存在")));
     }
 
