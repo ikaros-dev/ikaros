@@ -38,7 +38,7 @@ public class PersistentPlanningCommentService implements PlanningCommentService 
   @Override
   public Flux<PlanningCommentView> list(UUID actor, PlanningCommentTargetType type, UUID id) {
     return target(actor, type, id, false)
-        .thenMany(comments.findAllByTargetTypeAndTargetIdAndDeletedAtIsNullOrderByCreatedAtAsc(type, id))
+        .thenMany(comments.findAllByTargetTypeAndTargetIdAndDeletedAtIsNullOrderByCreatedAtAsc(type, id).take(100))
         .map(this::view);
   }
 
