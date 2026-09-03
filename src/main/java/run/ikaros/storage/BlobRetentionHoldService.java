@@ -34,7 +34,7 @@ public class BlobRetentionHoldService {
 
     public Flux<BlobRetentionHoldView> list(UUID actorId, UUID blobId) {
         return blobs.findById(blobId).switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在")))
-            .thenMany(holds.findAllByBlobIdAndReleasedAtIsNullOrderByCreatedAtAsc(blobId).filter(h -> h.createdBy().equals(actorId)).map(this::view));
+            .thenMany(holds.findAllByBlobIdAndReleasedAtIsNullOrderByCreatedAtAsc(blobId).take(100).filter(h -> h.createdBy().equals(actorId)).map(this::view));
     }
 
     public Mono<Void> release(UUID actorId, UUID holdId) {
