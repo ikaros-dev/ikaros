@@ -50,7 +50,7 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
     @Override
     public Flux<BackgroundTaskAttemptEntity> attempts(UUID taskId) {
         return get(taskId).thenMany(Flux.defer(() -> Flux.fromIterable(attemptHistory
-            .getOrDefault(taskId, new ConcurrentHashMap<>()).values()).sort(Comparator.comparingInt(BackgroundTaskAttemptEntity::attemptNo))));
+            .getOrDefault(taskId, new ConcurrentHashMap<>()).values()).sort(Comparator.comparingInt(BackgroundTaskAttemptEntity::attemptNo)).take(MAX_UNPAGED_RESULTS)));
     }
 
     @Override
