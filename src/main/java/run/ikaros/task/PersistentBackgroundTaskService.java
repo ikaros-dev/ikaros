@@ -22,6 +22,7 @@ import run.ikaros.event.DurableEventService;
 @Service
 public class PersistentBackgroundTaskService implements BackgroundTaskService {
     private static final int MAX_ATTEMPTS = 3;
+    private static final int MAX_UNPAGED_RESULTS = 100;
     private final BackgroundTaskRepository tasks;
     private final BackgroundTaskAttemptRepository attempts;
     private final ObjectMapper mapper;
@@ -43,7 +44,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     public Flux<BackgroundTask> list(TaskStatus status) {
         Flux<BackgroundTaskEntity> source = status == null ? tasks.findAll() :
             tasks.findAllByStatusOrderByCreatedAtDesc(status.name());
-        return source.flatMap(this::view);
+        return source.take(MAX_UNPAGED_RESULTS).flatMap(this::view);
     }
 
     @Override

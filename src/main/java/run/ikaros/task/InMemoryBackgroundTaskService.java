@@ -17,6 +17,7 @@ import run.ikaros.common.PageResponse;
 @Service
 public class InMemoryBackgroundTaskService implements BackgroundTaskService {
     private static final int MAX_ATTEMPTS = 3;
+    private static final int MAX_UNPAGED_RESULTS = 100;
     private final Map<UUID, BackgroundTask> tasks = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, ConcurrentMap<Integer, BackgroundTaskAttemptEntity>> attemptHistory = new ConcurrentHashMap<>();
 
@@ -27,7 +28,9 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
 
     @Override
     public Flux<BackgroundTask> list(TaskStatus status) {
-        return Flux.fromIterable(tasks.values()).filter(task -> status == null || task.status() == status);
+        return Flux.fromIterable(tasks.values()).filter(task -> status == null || task.status() == status)
+            .sort(Comparator.comparing(BackgroundTask::createdAt).reversed())
+            .take(MAX_UNPAGED_RESULTS);
     }
 
     @Override
