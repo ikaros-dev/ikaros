@@ -38,7 +38,7 @@ public class PersistentPlanningTaskAssignmentService implements PlanningTaskAssi
   }
 
   public Flux<PlanningTaskAssignmentView> list(UUID actor, UUID taskId) {
-    return task(taskId).flatMapMany(task -> visible(actor, task).thenMany(assignments.findAllByTaskId(taskId)))
+    return task(taskId).flatMapMany(task -> visible(actor, task).thenMany(assignments.findAllByTaskId(taskId).take(100)))
         .map(this::view);
   }
 
