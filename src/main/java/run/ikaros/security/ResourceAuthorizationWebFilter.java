@@ -33,6 +33,7 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             || path.startsWith("/api/v2/admin/delivery-providers")
             || path.startsWith("/api/v2/admin/restore-budget-policy")
             || path.startsWith("/api/v2/storage/restore-budget")
+            || path.startsWith("/api/v2/storage/placements")
             || path.startsWith("/api/v2/attachments/") && (path.contains("/restore-requests")
                 || path.contains("/availability") || path.contains("/delivery-grants") || path.contains("/content"))
             || path.startsWith("/api/v2/media/seasons/") && path.contains("/restore-requests")
@@ -62,6 +63,7 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
                 : PlatformPermission.STORAGE_DELIVERY_MANAGE;
         }
         if (path.contains("restore-budget")) return PlatformPermission.STORAGE_TIERING_MANAGE;
+        if (path.contains("/storage/placements")) return PlatformPermission.STORAGE_TIERING_MANAGE;
         if (path.contains("/restore-requests")) {
             return "POST".equals(method) && (path.endsWith("/restore-requests")
                 || path.endsWith("/restore-requests/attachments"))
