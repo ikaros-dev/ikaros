@@ -90,7 +90,8 @@ public class PersistentDriveService implements DriveService {
     public Mono<DriveQuotaReservationView> beginUpload(UUID actor, UUID sid, BeginDriveUploadRequest req) {
         return transactionalOperator.transactional(ownedSpace(actor, sid)
             .then(releaseExpiredReservations(sid, Instant.now()))
-            .then(reservationRepository.findByDriveSpaceIdAndUploadSessionId(sid, req.uploadSessionId())
+            .then(reservationRepository.findByDriveSpaceIdAndUploadSessionIdAndState(sid, req.uploadSessionId(),
+                    QuotaReservationState.ACTIVE)
                 .map(this::reservationView))
             .switchIfEmpty(quotaRepository.findById(sid)
                 .switchIfEmpty(Mono.error(new NotFoundException("Quota 不存在")))

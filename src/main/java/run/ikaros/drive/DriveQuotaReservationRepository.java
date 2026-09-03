@@ -5,7 +5,8 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 import java.time.Instant;
 public interface DriveQuotaReservationRepository extends ReactiveCrudRepository<DriveQuotaReservationEntity, UUID> {
-    Mono<DriveQuotaReservationEntity> findByDriveSpaceIdAndUploadSessionId(UUID spaceId, UUID uploadSessionId);
+    Mono<DriveQuotaReservationEntity> findByDriveSpaceIdAndUploadSessionIdAndState(UUID spaceId, UUID uploadSessionId,
+                                                                                     QuotaReservationState state);
     Flux<DriveQuotaReservationEntity> findAllByDriveSpaceIdAndStateAndExpiresAtLessThanEqual(UUID spaceId,
                                                                                               QuotaReservationState state,
                                                                                               Instant expiresAt);
