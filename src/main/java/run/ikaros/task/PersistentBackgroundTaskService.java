@@ -179,6 +179,15 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     }
 
     @Override
+    public Mono<BackgroundTask> updateProgress(UUID taskId, UUID leaseToken, Map<String, Object> progress) {
+        return leased(taskId, leaseToken)
+            .flatMap(task -> encode(progress).flatMap(json -> tasks.save(copy(task, TaskStatus.valueOf(task.status()),
+                task.leaseOwner(), task.leaseToken(), task.leaseExpiresAt(), task.attempt(),
+                task.cancelRequestedAt(), json, task.result()))))
+            .flatMap(this::view);
+    }
+
+    @Override
     public Mono<BackgroundTask> complete(UUID taskId, UUID leaseToken, Map<String, Object> result) {
         return leased(taskId, leaseToken).flatMap(task -> encode(result).flatMap(json -> tasks.save(copy(task,
             TaskStatus.SUCCEEDED, task.leaseOwner(), task.leaseToken(), task.leaseExpiresAt(), task.attempt(),
