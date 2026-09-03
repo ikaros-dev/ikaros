@@ -1,4 +1,6 @@
 import { createApp } from 'vue'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
 import { createRouter, createWebHistory } from 'vue-router'
 import App from './App.vue'
 import AuthEntry from './AuthEntry.vue'
@@ -54,4 +56,4 @@ router.beforeEach((to) => {
   const required = getRouteMeta(routeKey).requiredCapability
   return capabilities.includes('*') || capabilities.includes(required) ? true : { path: '/console/403', query: { capability: required, from: to.fullPath } }
 })
-createApp(Root).use(router).mount('#app')
+createApp(Root).use(router).use(ElementPlus).mount('#app')
