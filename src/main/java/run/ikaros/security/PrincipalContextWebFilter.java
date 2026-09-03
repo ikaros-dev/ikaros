@@ -18,11 +18,8 @@ public class PrincipalContextWebFilter implements WebFilter {
         exchange.getResponse().getHeaders().set("X-Request-Id", requestId);
         exchange.getResponse().getHeaders().set("X-Correlation-Id", correlationId);
         String actor = exchange.getRequest().getHeaders().getFirst("X-Ikaros-Actor-Id");
-        if (actor == null || actor.isBlank()) {
-            return chain.filter(exchange);
-        }
         try {
-            UUID actorId = UUID.fromString(actor);
+            UUID actorId = actor == null || actor.isBlank() ? null : UUID.fromString(actor);
             String session = exchange.getRequest().getHeaders().getFirst("X-Ikaros-Session-Id");
             UUID sessionId = session == null || session.isBlank() ? null : UUID.fromString(session);
             String causationId = exchange.getRequest().getHeaders().getFirst("X-Causation-Id");
