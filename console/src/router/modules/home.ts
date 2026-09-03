@@ -42,5 +42,7 @@ export default {
     ,{ path: "/permissions", name: "Permissions", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "权限管理", description: "查看系统权限注册表。", endpoint: "/admin/permissions", columns: ["code", "name", "description"], icon: "ep:lock" } }
     ,{ path: "/tasks", name: "BackgroundTasks", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "后台任务", description: "查看后台任务、进度和执行尝试。", endpoint: "/background-tasks", columns: ["id", "type", "status", "createdAt"], icon: "ep:operation" } }
     ,{ path: "/storage", name: "Storage", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "存储管理", description: "管理存储 Provider 和恢复请求。", endpoint: "/admin/storage-providers", columns: ["id", "name", "status", "createdAt"], icon: "ep:box" } }
+    ,{ path: "/account", name: "Account", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "我的账户", description: "查看当前登录用户资料。", endpoint: "/me", columns: ["id", "username", "displayName", "email", "status"], icon: "ep:user-filled" } }
+    ,{ path: "/sessions", name: "Sessions", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "会话安全", description: "查看当前账号的有效登录会话。", endpoint: "/me/sessions", columns: ["id", "createdAt", "expiresAt", "lastSeenAt"], icon: "ep:monitor" } }
   ]
 } satisfies RouteConfigsTable;
