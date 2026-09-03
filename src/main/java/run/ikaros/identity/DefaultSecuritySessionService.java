@@ -8,6 +8,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.event.DurableEventService;
 
 /**
  * 默认安全会话服务，只保存安全状态，不保存任何可复用的令牌原文。
@@ -17,6 +18,7 @@ public class DefaultSecuritySessionService implements SecuritySessionService {
     private final PlatformUserRepository userRepository;
     private final SecuritySessionRepository sessionRepository;
     private final AuditService auditService;
+    private final DurableEventService eventService;
 
     /**
      * 创建安全会话服务。
@@ -28,9 +30,16 @@ public class DefaultSecuritySessionService implements SecuritySessionService {
     public DefaultSecuritySessionService(PlatformUserRepository userRepository,
                                          SecuritySessionRepository sessionRepository,
                                          AuditService auditService) {
+        this(userRepository, sessionRepository, auditService, null);
+    }
+
+    public DefaultSecuritySessionService(PlatformUserRepository userRepository,
+                                         SecuritySessionRepository sessionRepository,
+                                         AuditService auditService, DurableEventService eventService) {
         this.userRepository = userRepository;
         this.sessionRepository = sessionRepository;
         this.auditService = auditService;
+        this.eventService = eventService;
     }
 
     @Override
@@ -84,9 +93,16 @@ public class DefaultSecuritySessionService implements SecuritySessionService {
                     session.securityVersion(), session.loginMethod(), session.currentSvl(), session.verifiedAt(),
                     session.verificationExpiresAt(), session.expiresAt(), Instant.now(), session.lastActiveAt(),
                     session.createdAt(), session.version());
-                return sessionRepository.save(revoked).then();
+                return sessionRepository.save(revoked)
+                    .flatMap(saved -> emitRevoked(saved).then());
             })
             .then(auditService.record(actorId, "identity.session.revoke", "SESSION", sessionId, "{}"));
+    }
+
+    private Mono<Void> emitRevoked(SecuritySessionEntity session) {
+        if (eventService == null) return Mono.empty();
+        return eventService.append("identity.session.revoked", 1, "session", session.id(),
+            "{\"session_id\":\"" + session.id() + "\",\"user_id\":\"" + session.userId() + "\"}").then();
     }
 
     private Mono<PlatformUserEntity> activeUser(UUID userId) {
