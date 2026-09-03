@@ -14,6 +14,7 @@ function authSession() { try { return JSON.parse(localStorage.getItem(sessionSto
 export function saveAuthSession(session: AuthenticationRecord, remember = true) { if (remember) localStorage.setItem(sessionStorageKey, JSON.stringify(session)); else sessionStorage.setItem(sessionStorageKey, JSON.stringify(session)) }
 export function clearAuthSession() { localStorage.removeItem(sessionStorageKey); sessionStorage.removeItem(sessionStorageKey) }
 export function currentAuthSession() { return authSession() || (() => { try { return JSON.parse(sessionStorage.getItem(sessionStorageKey) || 'null') as AuthenticationRecord | null } catch { return null } })() }
+export function syncRuntimeActorId() { const userId = currentAuthSession()?.userId; if (userId) (import.meta.env as Record<string, string>).VITE_ACTOR_ID = userId }
 function requestId() { return crypto.randomUUID() }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {

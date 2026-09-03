@@ -30,6 +30,7 @@ import SecurityWorkspace from './SecurityWorkspace.vue'
 import LoginWorkspace from './LoginWorkspace.vue'
 import NotFoundWorkspace from './NotFoundWorkspace.vue'
 import FinanceWorkspace from './FinanceWorkspace.vue'
+import { syncRuntimeActorId } from './services/api'
 import FinanceTransactionsWorkspace from './FinanceTransactionsWorkspace.vue'
 import FinanceBudgetsWorkspace from './FinanceBudgetsWorkspace.vue'
 import AccessDenied from './AccessDenied.vue'
@@ -37,6 +38,8 @@ import { getRouteMeta } from './config/route-meta'
 import './styles.css'
 import './error-state.css'
 import './auth.css'
+
+syncRuntimeActorId()
 
 const routes = [
   { path: '/login', component: LoginWorkspace }, { path: '/setup', component: AuthEntry }, { path: '/login/verify', component: AuthEntry }, { path: '/recovery/:pathMatch(.*)*', component: AuthEntry },
