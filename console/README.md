@@ -1,22 +1,43 @@
-# Ikaros Console
+<h1>vue-pure-admin精简版（国际化版本）</h1>
 
-基于 Vue 3、Vite、TypeScript 的 Ikaros V2 CMS Console 前端。
+[![license](https://img.shields.io/github/license/pure-admin/vue-pure-admin.svg)](LICENSE)
 
-## 开发
+**中文** | [English](./README.en-US.md)
 
-```bash
-pnpm install
-pnpm dev
-```
+## 介绍
 
-默认入口：`/console/dashboard`。
+精简版是基于 [vue-pure-admin](https://github.com/pure-admin/vue-pure-admin) 提炼出的架子，包含主体功能，更适合实际项目开发，打包后的大小在全局引入 [element-plus](https://element-plus.org) 的情况下仍然低于 `2.3MB`，并且会永久同步完整版的代码。开启 `brotli` 压缩和 `cdn` 替换本地库模式后，打包大小低于 `350kb`
 
-需要调用受保护的 Resource、Drive、Planning、Finance 等接口时，在环境中配置当前用户 UUID `VITE_ACTOR_ID`；请求会通过 `X-Ikaros-Actor-Id` 传递当前用户主体。开发服务器默认将 `/api` 代理到 `http://localhost:8080`，可通过 `VITE_DEV_API_TARGET` 覆盖。
+## 版本选择
 
-## 构建
+当前是国际化版本，如果您需要非国际化版本 [请点击](https://github.com/pure-admin/pure-admin-thin)
 
-```bash
-pnpm build
-```
+## 配套视频
 
-页面数据优先来自后端 `/api` 接口；后端未提供对应查询能力的模块显示空态，并保留页面权限元数据和危险操作确认流程。
+[点我查看 UI 设计](https://www.bilibili.com/video/BV17g411T7rq)  
+[点我查看快速开发教程](https://www.bilibili.com/video/BV1kg411v7QT)
+
+## 配套保姆级文档
+
+[点我查看 vue-pure-admin 文档](https://pure-admin.cn/)  
+[点我查看 @pureadmin/utils 文档](https://pure-admin-utils.netlify.app)
+
+## 高级服务
+
+[点我查看详情](https://pure-admin.cn/pages/service/)
+
+## 预览
+
+[查看预览](https://pure-admin-thin.netlify.app/#/login)
+
+## 维护者
+
+[xiaoxian521](https://github.com/xiaoxian521)
+
+## ⚠️ 注意
+
+精简版不接受任何 `issues` 和 `pr`，如果有问题请到完整版 [issues](https://github.com/pure-admin/vue-pure-admin/issues/new/choose) 去提，谢谢！
+
+## 许可证
+
+[MIT © 2020-present, pure-admin](./LICENSE)

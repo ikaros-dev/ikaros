@@ -1,78 +1,65 @@
-import { createApp } from 'vue'
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
-import { createRouter, createWebHistory } from 'vue-router'
-import AuthEntry from './AuthEntry.vue'
-import Root from './Root.vue'
-import AdminCatalog from './AdminCatalog.vue'
-import AccountPage from './AccountPage.vue'
-import AccountSecurity from './AccountSecurity.vue'
-import AccountNotifications from './AccountNotifications.vue'
-import OpsCatalog from './OpsCatalog.vue'
-import CommunicationCatalog from './CommunicationCatalog.vue'
-import AuthenticationPolicy from './AuthenticationPolicy.vue'
-import ResourceDetail from './ResourceDetail.vue'
-import ResourceLibrary from './ResourceLibrary.vue'
-import CollectionWorkspace from './CollectionWorkspace.vue'
-import DocumentWorkspace from './DocumentWorkspace.vue'
-import DriveWorkspace from './DriveWorkspace.vue'
-import DriveHome from './DriveHome.vue'
-import DomainWorkspace from './DomainWorkspace.vue'
-import PlanningWorkspace from './PlanningWorkspace.vue'
-import GoalWorkspace from './GoalWorkspace.vue'
-import CalendarWorkspace from './CalendarWorkspace.vue'
-import FocusWorkspace from './FocusWorkspace.vue'
-import TodayWorkspace from './TodayWorkspace.vue'
-import DashboardWorkspace from './DashboardWorkspace.vue'
-import ActivityWorkspace from './ActivityWorkspace.vue'
-import SearchWorkspace from './SearchWorkspace.vue'
-import SecurityWorkspace from './SecurityWorkspace.vue'
-import LoginWorkspace from './LoginWorkspace.vue'
-import NotFoundWorkspace from './NotFoundWorkspace.vue'
-import FinanceWorkspace from './FinanceWorkspace.vue'
-import { currentAuthSession, syncRuntimeActorId } from './services/api'
-import FinanceTransactionsWorkspace from './FinanceTransactionsWorkspace.vue'
-import FinanceBudgetsWorkspace from './FinanceBudgetsWorkspace.vue'
-import AccessDenied from './AccessDenied.vue'
-import { getRouteMeta } from './config/route-meta'
-import './styles.css'
-import './error-state.css'
-import './auth.css'
+import App from "./App.vue";
+import router from "./router";
+import { setupStore } from "@/store";
+import { useI18n } from "@/plugins/i18n";
+import { getPlatformConfig } from "./config";
+import { MotionPlugin } from "@vueuse/motion";
+// import { useEcharts } from "@/plugins/echarts";
+import { createApp, type Directive } from "vue";
+import { useElementPlus } from "@/plugins/elementPlus";
+import { injectResponsiveStorage } from "@/utils/responsive";
 
-syncRuntimeActorId()
+import Table from "@pureadmin/table";
+// import PureDescriptions from "@pureadmin/descriptions";
 
-const routes = [
-  { path: '/login', component: LoginWorkspace }, { path: '/setup', component: AuthEntry }, { path: '/login/verify', component: AuthEntry }, { path: '/recovery/:pathMatch(.*)*', component: AuthEntry },
-  { path: '/console/resources', component: ResourceLibrary }, { path: '/console/resources/:id', component: ResourceDetail }, { path: '/console/collections', component: CollectionWorkspace }, { path: '/console/documents', component: DocumentWorkspace },
-  { path: '/console/drive', component: DriveHome }, { path: '/console/drive/spaces', component: DriveWorkspace }, { path: '/console/drive/spaces/:spaceId', component: DriveWorkspace }, { path: '/console/drive/nodes/:nodeId', component: DriveWorkspace }, { path: '/console/drive/transfers', component: DriveWorkspace }, { path: '/console/drive/sync', component: DriveWorkspace }, { path: '/console/drive/conflicts', component: DriveWorkspace }, { path: '/console/drive/revisions', component: DriveWorkspace }, { path: '/console/drive/trash', component: DriveWorkspace }, { path: '/console/drive/quota', component: DriveWorkspace }, { path: '/console/drive/policies', component: DriveWorkspace },
-  { path: '/console/platform/parameters', component: AdminCatalog }, { path: '/console/platform/dictionaries', component: AdminCatalog }, { path: '/console/platform/menus', component: AdminCatalog }, { path: '/console/communications/audit', component: AdminCatalog }, { path: '/console/communications/templates', component: CommunicationCatalog }, { path: '/console/communications/providers', component: CommunicationCatalog }, { path: '/console/communications/login-logs', component: CommunicationCatalog }, { path: '/console/communications/security-events', component: CommunicationCatalog },
-  { path: '/console/ops/subsystems', component: OpsCatalog }, { path: '/console/ops/storage-health', component: OpsCatalog }, { path: '/console/ops/jobs', component: OpsCatalog }, { path: '/console/ops/plugins', component: OpsCatalog }, { path: '/console/security/authentication', component: AuthenticationPolicy }, { path: '/console/account/profile', component: AccountPage }, { path: '/console/account/preferences', component: AccountPage }, { path: '/console/account/security', component: AccountSecurity }, { path: '/console/account/notifications', component: AccountNotifications }, { path: '/console/403', component: AccessDenied },
-  { path: '/console/dashboard', component: DashboardWorkspace }, { path: '/console/activity', component: ActivityWorkspace }, { path: '/console/search', component: SearchWorkspace }, { path: '/console/security/users', component: SecurityWorkspace }, { path: '/console/security/permissions', component: SecurityWorkspace }, { path: '/console/security/sessions', component: SecurityWorkspace }, { path: '/console', redirect: '/console/dashboard' }, { path: '/console/:pathMatch(.*)*', component: NotFoundWorkspace }, { path: '/:pathMatch(.*)*', redirect: '/console/dashboard' }
-]
-routes.unshift({ path: '/console/planning/today', component: TodayWorkspace })
-const router = createRouter({ history: createWebHistory(), routes })
-for (const path of ['/console/media', '/console/sharing', '/console/attachments', '/console/storage/tiers', '/console/storage/cache', '/console/storage/archive', '/console/storage/backup', '/console/planning/today', '/console/planning/projects', '/console/planning/calendar', '/console/planning/goals', '/console/planning/focus', '/console/finance', '/console/finance/accounts', '/console/finance/transactions', '/console/finance/budgets', '/console/finance/reconcile', '/console/private-notes', '/console/private-notes/conflicts', '/console/private-notes/recovery', '/console/passwords', '/console/passwords/generator', '/console/passwords/health', '/console/passwords/devices', '/console/ai/assistant', '/console/ai/models', '/console/ai/personas', '/console/ai/privacy', '/console/ai/jobs', '/console/analytics', '/console/analytics/content', '/console/analytics/storage', '/console/analytics/planning', '/console/analytics/system', '/console/analytics/metrics', '/console/analytics/reports', '/console/integration/automation', '/console/integration/executions', '/console/integration/events', '/console/integration/sync', '/console/integration/plugins', '/console/communications/announcements', '/console/communications/notifications', '/console/ops/health', '/console/ops/background'].filter(path => !path.startsWith('/console/finance'))) router.addRoute({ path, component: DomainWorkspace })
-router.addRoute({ path: '/console/planning/projects', component: PlanningWorkspace })
-router.addRoute({ path: '/console/planning/goals', component: GoalWorkspace })
-router.addRoute({ path: '/console/planning/calendar', component: CalendarWorkspace })
-router.addRoute({ path: '/console/planning/focus', component: FocusWorkspace })
-router.addRoute({ path: '/console/finance', component: FinanceWorkspace })
-router.addRoute({ path: '/console/finance/accounts', component: FinanceWorkspace })
-router.addRoute({ path: '/console/finance/transactions', component: FinanceTransactionsWorkspace })
-router.addRoute({ path: '/console/finance/budgets', component: FinanceBudgetsWorkspace })
-router.addRoute({ path: '/console/finance/reconcile', component: FinanceWorkspace })
-router.beforeEach((to) => {
-  if (!to.path.startsWith('/console/') || to.path === '/console/403') return true
-  const session = currentAuthSession()
-  const expired = Boolean(session?.expiresAt && new Date(session.expiresAt).getTime() <= Date.now())
-  if (!session?.sessionToken || expired) {
-    return { path: '/login', query: { returnUrl: to.fullPath } }
-  }
-  let capabilities: string[] = []
-  try { const stored = JSON.parse(localStorage.getItem('ikaros-console-capabilities') || '[]'); capabilities = Array.isArray(stored) ? stored : [] } catch { capabilities = [] }
-  if (!capabilities.length) return true
-  const routeKey = to.path.replace(/^\/console\//, '').replace(/^drive\/spaces\/[^/]+$/, 'drive/spaces').replace(/^drive\/nodes\/[^/]+$/, 'drive/nodes')
-  const required = getRouteMeta(routeKey).requiredCapability
-  return capabilities.includes('*') || capabilities.includes(required) ? true : { path: '/console/403', query: { capability: required, from: to.fullPath } }
-})
-createApp(Root).use(router).use(ElementPlus).mount('#app')
+// 引入重置样式
+import "./style/reset.scss";
+// 导入公共样式
+import "./style/index.scss";
+// 一定要在main.ts中导入tailwind.css，防止vite每次hmr都会请求src/style/index.scss整体css文件导致热更新慢的问题
+import "./style/tailwind.css";
+import "element-plus/dist/index.css";
+// 导入字体图标
+import "./assets/iconfont/iconfont.js";
+import "./assets/iconfont/iconfont.css";
+
+const app = createApp(App);
+
+// 自定义指令
+import * as directives from "@/directives";
+Object.keys(directives).forEach(key => {
+  app.directive(key, (directives as { [key: string]: Directive })[key]);
+});
+
+// 全局注册@iconify/vue图标库
+import {
+  IconifyIconOffline,
+  IconifyIconOnline,
+  FontIcon
+} from "./components/ReIcon";
+app.component("IconifyIconOffline", IconifyIconOffline);
+app.component("IconifyIconOnline", IconifyIconOnline);
+app.component("FontIcon", FontIcon);
+
+// 全局注册按钮级别权限组件
+import { Auth } from "@/components/ReAuth";
+import { Perms } from "@/components/RePerms";
+app.component("Auth", Auth);
+app.component("Perms", Perms);
+
+// 全局注册vue-tippy
+import "tippy.js/dist/tippy.css";
+import "tippy.js/themes/light.css";
+import VueTippy from "vue-tippy";
+app.use(VueTippy);
+
+getPlatformConfig(app).then(async config => {
+  setupStore(app);
+  app.use(router);
+  await router.isReady();
+  injectResponsiveStorage(app, config);
+  app.use(MotionPlugin).use(useI18n).use(useElementPlus).use(Table);
+  // .use(PureDescriptions)
+  // .use(useEcharts);
+  app.mount("#app");
+});
