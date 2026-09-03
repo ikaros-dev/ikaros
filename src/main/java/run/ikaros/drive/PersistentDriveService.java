@@ -76,7 +76,10 @@ public class PersistentDriveService implements DriveService {
                         node.nodeType(), node.name(), node.normalizedName(), node.lifecycle(), saved.id(),
                         node.createdBy(), node.createdAt(), Instant.now(), node.trashedAt(), node.nodeVersion() + 1,
                         node.version());
-                    return nodes.save(changed).thenReturn(view(saved));
+                    return nodes.save(changed)
+                        .flatMap(updated -> ownedSpace(actor, updated.driveSpaceId())
+                            .flatMap(space -> record(space, updated, DriveMutationKind.CONTENT_REVISION_CREATED, saved.id())
+                                .thenReturn(view(saved))));
                 });
         }));
     }
