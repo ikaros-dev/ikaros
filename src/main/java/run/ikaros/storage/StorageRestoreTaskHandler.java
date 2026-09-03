@@ -66,7 +66,7 @@ public class StorageRestoreTaskHandler {
     private Mono<Map<String, Object>> restoreSeason(StorageRestoreRequestEntity request, UUID requestId, UUID taskId,
         String restoreClass, UUID seasonId, boolean retryFailedOnly, String selectedAttachmentIds) {
         return episodes.findAllByOwnerIdAndSeasonIdOrderByEpisodeNumberAsc(request.actorId(), seasonId)
-            .flatMap(episode -> attachments.findAllByResourceIdAndDeletedAtIsNullOrderByCreatedAtAsc(episode.resourceId()))
+            .flatMap(episode -> attachments.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(episode.resourceId()))
             .filter(attachment -> selectedAttachmentIds == null || java.util.Set.of(selectedAttachmentIds.split(","))
                 .contains(attachment.id().toString()))
             .concatMap(attachment -> restoreAttachment(request, attachment, requestId, taskId, restoreClass, false, retryFailedOnly))

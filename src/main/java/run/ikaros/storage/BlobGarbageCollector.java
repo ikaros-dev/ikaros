@@ -29,7 +29,7 @@ public class BlobGarbageCollector {
     public Mono<Integer> purge(UUID blobId) {
         Mono<Integer> purge = blobs.findById(blobId)
             .switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在")))
-            .flatMap(blob -> attachments.countByBlobIdAndDeletedAtIsNull(blob.id())
+            .flatMap(blob -> attachments.countByBlobIdAndArchivedAtIsNullAndDeletedAtIsNull(blob.id())
                 .filter(count -> count == 0)
                 .switchIfEmpty(Mono.error(new ConflictException("Blob 仍存在有效 Attachment 引用")))
                 .then(holds.existsActiveByBlobId(blob.id(), java.time.Instant.now()))

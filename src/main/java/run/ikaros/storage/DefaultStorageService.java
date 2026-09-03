@@ -154,7 +154,7 @@ public class DefaultStorageService implements StorageService {
     @Override
     public Mono<List<AttachmentView>> list(UUID ownerId, UUID resourceId) {
         return owned(ownerId, resourceId)
-            .thenMany(attachmentRepository.findAllByResourceIdAndDeletedAtIsNullOrderByCreatedAtAsc(resourceId))
+            .thenMany(attachmentRepository.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(resourceId))
             .flatMap(attachment -> blobRepository.findById(attachment.blobId())
                 .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
                 .flatMap(blob -> toView(attachment, blob)))
@@ -201,7 +201,7 @@ public class DefaultStorageService implements StorageService {
     @Override
     public Mono<Void> remove(UUID ownerId, UUID resourceId, UUID attachmentId) {
         return owned(ownerId, resourceId)
-            .then(attachmentRepository.findByIdAndResourceIdAndDeletedAtIsNull(attachmentId, resourceId)
+            .then(attachmentRepository.findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(attachmentId, resourceId)
                 .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或已删除")))
                 .flatMap(attachment -> {
                     AttachmentEntity trashed = new AttachmentEntity(attachment.id(), attachment.resourceId(),
@@ -210,6 +210,22 @@ public class DefaultStorageService implements StorageService {
                     return attachmentRepository.save(trashed)
                         .flatMap(saved -> auditService.record(ownerId, "attachment.delete", "ATTACHMENT", attachment.id(), "{}")
                             .then(emit("storage.attachment.trashed", saved)));
+                }))
+            .then();
+    }
+
+    @Override
+    public Mono<Void> archive(UUID ownerId, UUID resourceId, UUID attachmentId) {
+        return owned(ownerId, resourceId)
+            .then(attachmentRepository.findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(attachmentId, resourceId)
+                .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或已归档/删除")))
+                .flatMap(attachment -> {
+                    AttachmentEntity archived = new AttachmentEntity(attachment.id(), attachment.resourceId(),
+                        attachment.blobId(), attachment.fileName(), attachment.attachmentKind(), attachment.createdAt(),
+                        attachment.deletedAt(), attachment.version(), attachment.idempotencyKey(), Instant.now());
+                    return attachmentRepository.save(archived)
+                        .flatMap(saved -> auditService.record(ownerId, "attachment.archive", "ATTACHMENT",
+                            attachment.id(), "{}").then(emit("storage.attachment.archived", saved)));
                 }))
             .then();
     }
@@ -266,7 +282,7 @@ public class DefaultStorageService implements StorageService {
 
     private Mono<AttachmentEntity> existingAttachment(UUID resourceId, String idempotencyKey) {
         return idempotencyKey == null ? Mono.empty()
-            : attachmentRepository.findByResourceIdAndIdempotencyKeyAndDeletedAtIsNull(resourceId, idempotencyKey);
+            : attachmentRepository.findByResourceIdAndIdempotencyKeyAndArchivedAtIsNullAndDeletedAtIsNull(resourceId, idempotencyKey);
     }
 
     private Mono<Void> ensurePlacement(BlobEntity blob, AttachBlobRequest request) {

@@ -23,7 +23,7 @@ public class PersistentMediaReleaseService implements MediaReleaseService {
     @Override public Mono<MediaReleaseView> add(UUID ownerId, UUID resourceId, CreateMediaReleaseRequest request) {
         return resources.get(ownerId, resourceId).flatMap(resource -> {
             if (resource.type() != ResourceType.VIDEO) return Mono.error(new ConflictException("只有 VIDEO Resource 可以添加 Media Release"));
-            return attachments.findByIdAndResourceIdAndDeletedAtIsNull(request.attachmentId(), resourceId)
+            return attachments.findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(request.attachmentId(), resourceId)
                 .switchIfEmpty(Mono.error(new NotFoundException("Attachment 不属于该 Resource")))
                 .flatMap(attachment -> releases.save(new MediaReleaseEntity(null, ownerId, resourceId, attachment.id(),
                     request.releaseGroup(), request.versionLabel(), MediaReleaseState.AVAILABLE, request.contentFingerprint(),

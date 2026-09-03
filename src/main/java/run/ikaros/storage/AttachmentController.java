@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -38,6 +39,14 @@ public class AttachmentController {
     public Mono<AttachmentView> get(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
                                     @PathVariable UUID attachmentId) {
         return storageService.get(actorId, attachmentId);
+    }
+
+    @PostMapping("/{attachmentId}/archive")
+    public Mono<ResponseEntity<Void>> archive(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+                                              @PathVariable UUID attachmentId,
+                                              @RequestParam UUID resourceId) {
+        return storageService.archive(actorId, resourceId, attachmentId)
+            .thenReturn(ResponseEntity.noContent().build());
     }
 
     @Operation(summary = "读取附件内容", description = "通过 Storage Provider 读取附件内容，支持单一 bytes Range。")

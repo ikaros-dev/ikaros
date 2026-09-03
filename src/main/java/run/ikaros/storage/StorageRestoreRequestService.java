@@ -101,7 +101,7 @@ public class StorageRestoreRequestService {
         return seasons.findById(seasonId).filter(s -> s.ownerId().equals(actorId))
             .switchIfEmpty(Mono.error(new NotFoundException("Season 不存在或无权访问")))
             .thenMany(episodes.findAllByOwnerIdAndSeasonIdOrderByEpisodeNumberAsc(actorId, seasonId))
-            .flatMap(e -> attachments.findAllByResourceIdAndDeletedAtIsNullOrderByCreatedAtAsc(e.resourceId()))
+            .flatMap(e -> attachments.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(e.resourceId()))
             .flatMap(a -> blobs.findById(a.blobId()).flatMap(blob -> placements.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
                 .filter(p -> p.placementState() == PlacementState.ACTIVE).hasElements()
                 .flatMap(readable -> readable ? Mono.empty() : Mono.just(new RestoreCandidate(a.id(), blob.sizeBytes())))))

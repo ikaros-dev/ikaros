@@ -16,16 +16,16 @@ public interface AttachmentRepository extends ReactiveCrudRepository<AttachmentE
      * @param resourceId Resource 标识
      * @return 附件列表
      */
-    Flux<AttachmentEntity> findAllByResourceIdAndDeletedAtIsNullOrderByCreatedAtAsc(UUID resourceId);
+    Flux<AttachmentEntity> findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(UUID resourceId);
 
-    Mono<AttachmentEntity> findByIdAndResourceIdAndDeletedAtIsNull(UUID id, UUID resourceId);
+    Mono<AttachmentEntity> findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(UUID id, UUID resourceId);
 
-    Mono<AttachmentEntity> findByResourceIdAndIdempotencyKeyAndDeletedAtIsNull(UUID resourceId,
+    Mono<AttachmentEntity> findByResourceIdAndIdempotencyKeyAndArchivedAtIsNullAndDeletedAtIsNull(UUID resourceId,
                                                                                  String idempotencyKey);
 
-    Mono<Long> countByBlobIdAndDeletedAtIsNull(UUID blobId);
+    Mono<Long> countByBlobIdAndArchivedAtIsNullAndDeletedAtIsNull(UUID blobId);
 
-    Flux<AttachmentEntity> findAllByBlobIdAndDeletedAtIsNull(UUID blobId);
+    Flux<AttachmentEntity> findAllByBlobIdAndArchivedAtIsNullAndDeletedAtIsNull(UUID blobId);
 
-    Mono<AttachmentEntity> findFirstByBlobIdAndDeletedAtIsNullOrderByCreatedAtAsc(UUID blobId);
+    Mono<AttachmentEntity> findFirstByBlobIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(UUID blobId);
 }

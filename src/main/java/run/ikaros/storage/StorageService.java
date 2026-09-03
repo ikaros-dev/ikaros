@@ -55,6 +55,8 @@ public interface StorageService {
 
     Mono<Void> remove(UUID ownerId, UUID resourceId, UUID attachmentId);
 
+    Mono<Void> archive(UUID ownerId, UUID resourceId, UUID attachmentId);
+
     /**
      * 扫描无有效 Attachment 引用的 Blob；扫描本身不执行物理删除。
      *

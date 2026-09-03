@@ -62,7 +62,7 @@ public class BlobVerificationService {
 
     private Mono<BlobEntity> ownedBlob(UUID actorId, UUID blobId) {
         return blobs.findById(blobId).switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在")))
-            .flatMap(blob -> attachments.findFirstByBlobIdAndDeletedAtIsNullOrderByCreatedAtAsc(blob.id())
+            .flatMap(blob -> attachments.findFirstByBlobIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(blob.id())
                 .flatMap(attachment -> resources.findByIdAndOwnerId(attachment.resourceId(), actorId).thenReturn(blob)))
             .switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在或无权访问")));
     }

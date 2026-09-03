@@ -89,7 +89,7 @@ public class StorageRestoreReconciliationService {
     }
 
     private Mono<Void> ownerCanAccess(UUID actorId, UUID blobId) {
-        return attachments.findAllByBlobIdAndDeletedAtIsNull(blobId)
+        return attachments.findAllByBlobIdAndArchivedAtIsNullAndDeletedAtIsNull(blobId)
             .flatMap(a -> resources.findByIdAndOwnerId(a.resourceId(), actorId))
             .next()
             .switchIfEmpty(Mono.error(new ConflictException("Restore Operation 无权访问"))).then();
