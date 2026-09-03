@@ -154,15 +154,23 @@ public class ResourceController {
         if (expectedVersion == Long.MIN_VALUE) {
             throw new IllegalArgumentException("expected_version 不能为空");
         }
-        String primaryTitle = body.has("primary_title") && !body.get("primary_title").isNull()
-            ? body.get("primary_title").asText() : null;
-        String summary = body.has("summary") && !body.get("summary").isNull()
-            ? body.get("summary").asText() : null;
+        JsonNode primaryTitleNode = body.has("primary_title") ? body.get("primary_title") : body.get("primaryTitle");
+        JsonNode summaryNode = body.get("summary");
+        boolean primaryTitlePresent = primaryTitleNode != null;
+        boolean summaryPresent = summaryNode != null;
+        String primaryTitle = primaryTitlePresent && !primaryTitleNode.isNull() ? primaryTitleNode.asText() : null;
+        String summary = summaryPresent && !summaryNode.isNull() ? summaryNode.asText() : null;
+        if (primaryTitle != null && primaryTitle.length() > 512) {
+            throw new IllegalArgumentException("primary_title 长度不能超过 512");
+        }
+        if (summary != null && summary.length() > 4000) {
+            throw new IllegalArgumentException("summary 长度不能超过 4000");
+        }
         UpdateResourceRequest request = new UpdateResourceRequest(expectedVersion, primaryTitle, summary);
         long version = IfMatchVersion.parse(ifMatch);
         return resourceService.update(actorId, resourceId,
             new UpdateResourceRequest(version, request.primaryTitle(), request.summary()),
-            body.has("primary_title"), body.has("summary"))
+            primaryTitlePresent, summaryPresent)
             .map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view));
     }
 
