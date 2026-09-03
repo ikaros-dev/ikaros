@@ -12,6 +12,7 @@ import run.ikaros.task.BackgroundTaskService;
 import run.ikaros.event.DurableEventService;
 @Service
 public class DefaultImportRunService implements ImportRunService {
+    private static final int MAX_UNPAGED_RESULTS = 100;
     private final ImportPlanRepository plans; private final ImportRunRepository runs;
     private final BackgroundTaskService tasks; private final AuditService audit; private final DurableEventService events;
     private final ImportPlanItemRepository planItems; private final ImportRunItemRepository runItems;
@@ -43,7 +44,8 @@ public class DefaultImportRunService implements ImportRunService {
     public Mono<List<ImportRunItemView>> items(UUID ownerId, UUID runId) { return owned(ownerId,runId).thenMany(runItems.findAllByRunIdOrderByUpdatedAtAsc(runId)).map(this::itemView).collectList(); }
     public Mono<ImportRunItemView> retryItem(UUID ownerId,UUID runId,UUID itemId) { return owned(ownerId,runId).then(runItems.findById(itemId).switchIfEmpty(Mono.error(new NotFoundException("导入项不存在")))).flatMap(item -> { if(!item.runId().equals(runId)) return Mono.error(new NotFoundException("导入项不存在")); return runItems.save(new ImportRunItemEntity(item.id(),item.runId(),item.planItemId(),ImportItemStatus.PENDING.name(),item.attemptCount()+1,null,item.idempotencyKey(),Instant.now(),item.version())); }).map(this::itemView); }
     private ImportRunItemView itemView(ImportRunItemEntity i){return new ImportRunItemView(i.id(),i.runId(),i.planItemId(),ImportItemStatus.valueOf(i.status()),i.attemptCount(),i.errorMessage(),i.idempotencyKey(),i.updatedAt());}
-    public Mono<List<ImportRunView>> list(UUID ownerId) { return runs.findAllByOwnerIdOrderByCreatedAtDesc(ownerId).map(this::view).collectList(); }
+    public Mono<List<ImportRunView>> list(UUID ownerId) { return runs.findAllByOwnerIdOrderByCreatedAtDesc(ownerId)
+        .take(MAX_UNPAGED_RESULTS).map(this::view).collectList(); }
     public Mono<ImportRunView> get(UUID ownerId, UUID runId) { return owned(ownerId,runId).map(this::view); }
     public Mono<ImportRunView> cancel(UUID ownerId, UUID runId) { return owned(ownerId,runId).flatMap(run -> {
         if (ImportRunStatus.SUCCEEDED.name().equals(run.status()) || ImportRunStatus.CANCELLED.name().equals(run.status()))
