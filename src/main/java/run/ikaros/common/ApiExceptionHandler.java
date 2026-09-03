@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.server.ServerWebInputException;
 
 /**
  * 将领域异常收敛为稳定的 RFC 9457 问题响应。
@@ -75,6 +77,16 @@ public class ApiExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ProblemDetail handleIllegalArgument(IllegalArgumentException exception) {
         return problem(HttpStatus.BAD_REQUEST, "request.invalid", exception.getMessage());
+    }
+
+    @ExceptionHandler(WebExchangeBindException.class)
+    public ProblemDetail handleBodyValidation(WebExchangeBindException exception) {
+        return problem(HttpStatus.BAD_REQUEST, "validation.failed", exception.getMessage());
+    }
+
+    @ExceptionHandler(ServerWebInputException.class)
+    public ProblemDetail handleWebInput(ServerWebInputException exception) {
+        return problem(HttpStatus.BAD_REQUEST, "request.invalid", exception.getReason());
     }
 
     private ProblemDetail problem(HttpStatus status, String code, String detail) {
