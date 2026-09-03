@@ -44,5 +44,9 @@ export default {
     ,{ path: "/storage", name: "Storage", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "存储管理", description: "管理存储 Provider 和恢复请求。", endpoint: "/admin/storage-providers", columns: ["id", "name", "status", "createdAt"], icon: "ep:box" } }
     ,{ path: "/account", name: "Account", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "我的账户", description: "查看当前登录用户资料。", endpoint: "/me", columns: ["id", "username", "displayName", "email", "status"], icon: "ep:user-filled" } }
     ,{ path: "/sessions", name: "Sessions", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "会话安全", description: "查看当前账号的有效登录会话。", endpoint: "/me/sessions", columns: ["id", "createdAt", "expiresAt", "lastSeenAt"], icon: "ep:monitor" } }
+    ,{ path: "/reading", name: "Reading", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "阅读库", description: "管理阅读作品、版本和阅读内容。", endpoint: "/reading/works", columns: ["id", "title", "status", "createdAt"], icon: "ep:reading" } }
+    ,{ path: "/music", name: "Music", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "音乐库", description: "查看音乐播放列表和播放记录。", endpoint: "/music/playlists", columns: ["id", "name", "status", "createdAt"], icon: "ep:headset" } }
+    ,{ path: "/collections", name: "Collections", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "收藏集合", description: "管理资源集合及其成员。", endpoint: "/collections", columns: ["id", "name", "description", "createdAt"], icon: "ep:collection" } }
+    ,{ path: "/activity", name: "Activity", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "资源活动", description: "查看资源访问和操作活动。", endpoint: "/activity", columns: ["id", "resourceId", "type", "createdAt"], icon: "ep:histogram" } }
   ]
 } satisfies RouteConfigsTable;
