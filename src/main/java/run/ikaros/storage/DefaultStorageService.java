@@ -141,7 +141,7 @@ public class DefaultStorageService implements StorageService {
                             idempotencyKey
                         )))
                         .flatMap(attachment -> auditService.record(ownerId, "attachment.create", "ATTACHMENT",
-                            attachment.id(), "{}").then(emit("attachment.created", attachment))
+                            attachment.id(), "{}").then(emit("storage.attachment.created", attachment))
                             .then(toView(attachment, blob))))))
         ));
     }
@@ -203,11 +203,14 @@ public class DefaultStorageService implements StorageService {
         return owned(ownerId, resourceId)
             .then(attachmentRepository.findByIdAndResourceIdAndDeletedAtIsNull(attachmentId, resourceId)
                 .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或已删除")))
-                .flatMap(attachment -> attachmentRepository.save(new AttachmentEntity(
-                    attachment.id(), attachment.resourceId(), attachment.blobId(), attachment.fileName(),
-                    attachment.attachmentKind(), attachment.createdAt(), Instant.now(), attachment.version()
-                )).then(auditService.record(ownerId, "attachment.delete", "ATTACHMENT", attachment.id(), "{}"))
-                    .then(emit("attachment.deleted", attachment))))
+                .flatMap(attachment -> {
+                    AttachmentEntity trashed = new AttachmentEntity(attachment.id(), attachment.resourceId(),
+                        attachment.blobId(), attachment.fileName(), attachment.attachmentKind(), attachment.createdAt(),
+                        Instant.now(), attachment.version());
+                    return attachmentRepository.save(trashed)
+                        .flatMap(saved -> auditService.record(ownerId, "attachment.delete", "ATTACHMENT", attachment.id(), "{}")
+                            .then(emit("storage.attachment.trashed", saved)));
+                }))
             .then();
     }
 
