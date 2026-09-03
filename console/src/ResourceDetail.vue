@@ -1,21 +1,18 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ApiError, api } from './services/api'
 
-const favoriteReady = ref(false)
-
 const route = useRoute(); const router = useRouter(); const tab = ref('概览'); const loading = ref(false); const toast = ref(''); const favorite = ref(false); const lifecycle = ref('正常')
-const resourceId = computed(() => String(route.params.id || 'demo-resource')); const actorId = String(import.meta.env.VITE_ACTOR_ID || ''); const title = ref('《星际穿越》'); const type = ref('电影'); const description = ref('一部关于时间、家庭与人类探索的科幻作品。')
+const resourceId = computed(() => String(route.params.id || '')); const actorId = String(import.meta.env.VITE_ACTOR_ID || ''); const title = ref(''); const type = ref(''); const description = ref('')
 const metadata = ref([{ key: '标题', value: '《星际穿越》', source: '人工', locked: true }, { key: '上映年份', value: '2014', source: '提供方', locked: false }, { key: '导演', value: 'Christopher Nolan', source: '提供方', locked: false }])
 const activity = [{ text: '完成元数据同步', time: '12 分钟前', actor: '系统' }, { text: '添加到收藏', time: '昨天 15:08', actor: '陈昊' }, { text: '创建资源', time: '2026-08-20', actor: '陈昊' }]
 function notify(message: string) { toast.value = message; window.setTimeout(() => toast.value = '', 2400) }
-async function load() { loading.value = true; try { const result = await api.getResource(resourceId.value); title.value = result.title || title.value; type.value = result.resource_type || type.value; lifecycle.value = result.lifecycle || lifecycle.value } catch (error) { if (!(error instanceof ApiError && import.meta.env.DEV && error.status === 404)) notify('后端暂不可用，当前显示演示详情') } finally { loading.value = false } }
-async function toggleFavorite() { const next = !favorite.value; if (!actorId || resourceId.value === 'demo-resource') { favorite.value = next; notify(next ? '演示资源已加入本地收藏' : '演示资源已取消本地收藏'); return } try { if (next) { await api.addFavorite(resourceId.value, actorId) } else { await api.removeFavorite(resourceId.value, actorId) }; favorite.value = next; notify(next ? '资源已收藏' : '已取消收藏') } catch { notify('收藏状态更新失败，请稍后重试') } }
+async function load() { if (!resourceId.value) { notify('资源 ID 不存在'); return }; loading.value = true; try { const result = await api.getResource(resourceId.value); title.value = result.title || result.id; type.value = result.resource_type || '其他'; lifecycle.value = result.lifecycle || '未知' } catch (error) { if (!(error instanceof ApiError && import.meta.env.DEV && error.status === 404)) notify('资源详情加载失败，请检查登录状态或后端服务') } finally { loading.value = false } }
+async function toggleFavorite() { if (!actorId || !resourceId.value) { notify('未配置当前用户身份，无法修改收藏'); return }; const next = !favorite.value; try { if (next) { await api.addFavorite(resourceId.value, actorId) } else { await api.removeFavorite(resourceId.value, actorId) }; favorite.value = next; notify(next ? '资源已收藏' : '已取消收藏') } catch { notify('收藏状态更新失败，请稍后重试') } }
 async function loadFavorite() { if (!actorId || resourceId.value === 'demo-resource') return; try { const result = await api.getFavorite(resourceId.value, actorId); favorite.value = Boolean(result.favorite ?? result.favorited) } catch { /* 收藏状态不可用时不影响资源详情 */ } }
-async function archive() { if (lifecycle.value === '已归档') return; if (!actorId || resourceId.value === 'demo-resource') { lifecycle.value = '已归档'; notify('演示资源已标记为已归档（未提交后端）'); return } loading.value = true; try { await api.archiveResource(resourceId.value, actorId); lifecycle.value = '已归档'; notify('资源已归档，操作已写入审计') } catch (error) { notify(error instanceof ApiError && error.status === 409 ? '资源当前状态不允许归档' : '资源归档失败，请稍后重试') } finally { loading.value = false } }
-watch(favorite, async (next, previous) => { if (!favoriteReady.value || next === previous || !actorId || resourceId.value === 'demo-resource') return; try { if (next) await api.addFavorite(resourceId.value, actorId); else await api.removeFavorite(resourceId.value, actorId); notify(next ? '资源已收藏' : '已取消收藏') } catch { favorite.value = previous; notify('收藏状态更新失败，请稍后重试') } })
-load(); loadFavorite().finally(() => { favoriteReady.value = true })
+async function archive() { if (lifecycle.value === '已归档') return; if (!actorId || !resourceId.value) { notify('未配置当前用户身份，无法归档资源'); return } loading.value = true; try { await api.archiveResource(resourceId.value, actorId); lifecycle.value = '已归档'; notify('资源已归档，操作已写入审计') } catch (error) { notify(error instanceof ApiError && error.status === 409 ? '资源当前状态不允许归档' : '资源归档失败，请稍后重试') } finally { loading.value = false } }
+load(); loadFavorite()
 </script>
 
 <template>
