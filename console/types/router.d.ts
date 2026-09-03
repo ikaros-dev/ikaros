@@ -18,6 +18,8 @@ declare global {
     endpoint?: string;
     /** 业务列表展示字段 */
     columns?: string[];
+    createEndpoint?: string;
+    createFields?: Array<{ name: string; label: string; required?: boolean; defaultValue?: string }>;
     /** 菜单名称（兼容国际化、非国际化，如何用国际化的写法就必须在根目录的`locales`文件夹下对应添加） `必填` */
     title: string;
     /** 菜单图标 `可选` */
