@@ -20,6 +20,7 @@ import run.ikaros.resource.ResourceRepository;
  */
 @Service
 public class DefaultCollectionService implements CollectionService {
+    private static final int MAX_UNPAGED_RESULTS = 100;
     private final CollectionRepository collectionRepository;
     private final CollectionResourceRepository collectionResourceRepository;
     private final ResourceRepository resourceRepository;
@@ -84,6 +85,7 @@ public class DefaultCollectionService implements CollectionService {
             return Mono.error(new IllegalArgumentException("分页参数不合法"));
         }
         return collectionRepository.findAllByOwnerIdOrderByUpdatedAtDesc(ownerId)
+            .take(MAX_UNPAGED_RESULTS)
             .map(this::toView)
             .collectList()
             .map(all -> new PageResponse<>(all.stream().skip((long) page * size).limit(size).toList(),
