@@ -36,16 +36,20 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             return chain.filter(exchange);
         }
         PlatformPermission permission = permission(exchange.getRequest().getMethod().name(), path);
-        return PrincipalContexts.current()
-            .flatMap(context -> {
-                if (context.sessionId() == null) {
-                    return reject(exchange, HttpStatus.UNAUTHORIZED);
-                }
-                SecurityPolicy policy = policy(permission);
-                return accessControl.require(context.actorId(), context.sessionId(), policy)
-                    .then(chain.filter(exchange));
-            })
-            .switchIfEmpty(reject(exchange, HttpStatus.UNAUTHORIZED));
+        String actorHeader = exchange.getRequest().getHeaders().getFirst("X-Ikaros-Actor-Id");
+        String sessionHeader = exchange.getRequest().getHeaders().getFirst("X-Ikaros-Session-Id");
+        if (actorHeader == null || actorHeader.isBlank() || sessionHeader == null || sessionHeader.isBlank()) {
+            return reject(exchange, HttpStatus.UNAUTHORIZED);
+        }
+        try {
+            UUID actorId = UUID.fromString(actorHeader);
+            UUID sessionId = UUID.fromString(sessionHeader);
+            SecurityPolicy policy = policy(permission);
+            return accessControl.require(actorId, sessionId, policy)
+                .then(chain.filter(exchange));
+        } catch (IllegalArgumentException invalidIdentity) {
+            return reject(exchange, HttpStatus.BAD_REQUEST);
+        }
     }
 
     private PlatformPermission permission(String method, String path) {
