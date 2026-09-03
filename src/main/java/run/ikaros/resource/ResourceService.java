@@ -18,6 +18,8 @@ public interface ResourceService {
      */
     Mono<ResourceView> create(UUID ownerId, CreateResourceRequest request);
 
+    Mono<ResourceView> create(UUID ownerId, CreateResourceRequest request, String idempotencyKey);
+
     /**
      * 获取当前拥有者可见的 Resource。
      *

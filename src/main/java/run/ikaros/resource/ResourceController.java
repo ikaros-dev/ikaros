@@ -65,9 +65,10 @@ public class ResourceController {
     public Mono<ResponseEntity<ResourceView>> create(
         @Parameter(description = "当前认证用户 UUID，由认证层注入", required = true, in = ParameterIn.HEADER)
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @RequestHeader("Idempotency-Key") String idempotencyKey,
         @Valid @RequestBody CreateResourceRequest request
     ) {
-        return resourceService.create(actorId, request)
+        return resourceService.create(actorId, request, idempotencyKey)
             .map(resource -> ResponseEntity.created(URI.create("/api/resources/" + resource.id())).body(resource));
     }
 

@@ -164,4 +164,45 @@ class DefaultResourceServiceTest {
                 + "\",\"provider\":\"musicbrainz\",\"namespace\":\"subject\","
                 + "\"object_type\":\"recording\",\"external_id\":\"abc\"}"));
     }
+
+    @Test
+    void replaysSameResourceForSameIdempotencyKeyAndRejectsDifferentPayload() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity saved = new ResourceEntity(resourceId, ownerId, ResourceType.BOOK,
+            "测试书籍", null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE, now, now, null, 0L);
+        CreateResourceRequest request = new CreateResourceRequest(ResourceType.BOOK, "测试书籍", "zh-CN");
+        ResourceCreationIdempotencyRepository idempotency = mock(ResourceCreationIdempotencyRepository.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(resourceRepository.save(any(ResourceEntity.class))).thenReturn(Mono.just(saved));
+        when(titleRepository.save(any(ResourceTitleEntity.class))).thenReturn(Mono.just(
+            new ResourceTitleEntity(UUID.randomUUID(), resourceId, "zh-CN", "测试书籍", true, now, now, 0L)));
+        when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.empty());
+        when(identityRepository.findAllByResourceIdOrderByProviderAsc(resourceId)).thenReturn(Flux.empty());
+        when(auditService.record(any(), eq("resource.create"), eq("RESOURCE"), eq(resourceId), eq("{}")))
+            .thenReturn(Mono.empty());
+        when(idempotency.save(any(ResourceCreationIdempotencyEntity.class))).thenAnswer(invocation ->
+            Mono.just(invocation.getArgument(0)));
+        when(idempotency.findByOwnerIdAndIdempotencyKey(ownerId, "create-1")).thenReturn(Mono.empty());
+        DefaultResourceService eventService = new DefaultResourceService(resourceRepository, titleRepository,
+            identityRepository, auditService, transaction, null, idempotency);
+
+        StepVerifier.create(eventService.create(ownerId, request, "create-1"))
+            .expectNextCount(1).verifyComplete();
+        ArgumentCaptor<ResourceCreationIdempotencyEntity> capture =
+            ArgumentCaptor.forClass(ResourceCreationIdempotencyEntity.class);
+        verify(idempotency).save(capture.capture());
+        ResourceCreationIdempotencyEntity record = capture.getValue();
+        when(idempotency.findByOwnerIdAndIdempotencyKey(ownerId, "create-1")).thenReturn(Mono.just(record));
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(saved));
+
+        StepVerifier.create(eventService.create(ownerId, request, "create-1"))
+            .expectNextCount(1).verifyComplete();
+        StepVerifier.create(eventService.create(ownerId,
+                new CreateResourceRequest(ResourceType.BOOK, "另一标题", "zh-CN"), "create-1"))
+            .expectErrorSatisfies(error -> assertThat(error).isInstanceOf(ConflictException.class)
+                .hasMessage("idempotency.key_reused")).verify();
+    }
 }

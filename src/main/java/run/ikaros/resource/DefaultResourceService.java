@@ -1,6 +1,9 @@
 package run.ikaros.resource;
 
 import java.time.Instant;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +29,7 @@ public class DefaultResourceService implements ResourceService {
     private final AuditService auditService;
     private final TransactionalOperator transactionalOperator;
     private final DurableEventService eventService;
+    private final ResourceCreationIdempotencyRepository creationIdempotencyRepository;
 
     /**
      * 创建 Resource 服务。
@@ -41,7 +45,7 @@ public class DefaultResourceService implements ResourceService {
                                   ExternalIdentityRepository identityRepository,
                                   AuditService auditService,
                                   TransactionalOperator transactionalOperator) {
-        this(resourceRepository, titleRepository, identityRepository, auditService, transactionalOperator, null);
+        this(resourceRepository, titleRepository, identityRepository, auditService, transactionalOperator, null, null);
     }
 
     @Autowired
@@ -50,17 +54,52 @@ public class DefaultResourceService implements ResourceService {
                                   ExternalIdentityRepository identityRepository,
                                   AuditService auditService,
                                   TransactionalOperator transactionalOperator,
-                                  DurableEventService eventService) {
+                                  DurableEventService eventService,
+                                  ResourceCreationIdempotencyRepository creationIdempotencyRepository) {
         this.resourceRepository = resourceRepository;
         this.titleRepository = titleRepository;
         this.identityRepository = identityRepository;
         this.auditService = auditService;
         this.transactionalOperator = transactionalOperator;
         this.eventService = eventService;
+        this.creationIdempotencyRepository = creationIdempotencyRepository;
+    }
+
+    public DefaultResourceService(ResourceRepository resourceRepository,
+                                  ResourceTitleRepository titleRepository,
+                                  ExternalIdentityRepository identityRepository,
+                                  AuditService auditService,
+                                  TransactionalOperator transactionalOperator,
+                                  DurableEventService eventService) {
+        this(resourceRepository, titleRepository, identityRepository, auditService, transactionalOperator,
+            eventService, null);
     }
 
     @Override
     public Mono<ResourceView> create(UUID ownerId, CreateResourceRequest request) {
+        return createInternal(ownerId, request, null);
+    }
+
+    public Mono<ResourceView> create(UUID ownerId, CreateResourceRequest request, String idempotencyKey) {
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            return Mono.error(new IllegalArgumentException("缺少 Idempotency-Key"));
+        }
+        if (creationIdempotencyRepository == null) {
+            return Mono.error(new IllegalStateException("Resource 创建幂等仓储未配置"));
+        }
+        String fingerprint = fingerprint(request);
+        return creationIdempotencyRepository.findByOwnerIdAndIdempotencyKey(ownerId, idempotencyKey)
+            .flatMap(existing -> replayOrConflict(ownerId, existing, fingerprint))
+            .switchIfEmpty(Mono.defer(() -> createInternal(ownerId, request,
+                new CreationIdempotency(idempotencyKey, fingerprint))))
+            .onErrorResume(DuplicateKeyException.class, error ->
+                creationIdempotencyRepository.findByOwnerIdAndIdempotencyKey(ownerId, idempotencyKey)
+                    .flatMap(existing -> replayOrConflict(ownerId, existing, fingerprint))
+                    .switchIfEmpty(Mono.error(error)));
+    }
+
+    private Mono<ResourceView> createInternal(UUID ownerId, CreateResourceRequest request,
+                                               CreationIdempotency idempotency) {
         Instant now = Instant.now();
         ResourceEntity resource = new ResourceEntity(
             null, ownerId, request.type(), request.title(), null, ResourceClassification.PRIVATE,
@@ -71,7 +110,35 @@ public class DefaultResourceService implements ResourceService {
                 null, saved.id(), request.locale(), request.title(), true, now, now, null
             )).then(emit("resource.resource.created", saved))
                 .then(auditService.record(ownerId, "resource.create", "RESOURCE", saved.id(), "{}"))
+                .then(idempotency == null ? Mono.empty() : creationIdempotencyRepository.save(
+                    new ResourceCreationIdempotencyEntity(null, ownerId, idempotency.key(),
+                        idempotency.fingerprint(), saved.id(), now)).then())
                 .then(toView(saved))));
+    }
+
+    private Mono<ResourceView> replayOrConflict(UUID ownerId,
+                                                ResourceCreationIdempotencyEntity existing,
+                                                String fingerprint) {
+        if (!existing.requestFingerprint().equals(fingerprint)) {
+            return Mono.error(new ConflictException("idempotency.key_reused"));
+        }
+        return resourceRepository.findByIdAndOwnerId(existing.resourceId(), ownerId)
+            .switchIfEmpty(Mono.error(new NotFoundException("幂等记录对应的资源不存在")))
+            .flatMap(this::toView);
+    }
+
+    private String fingerprint(CreateResourceRequest request) {
+        String canonical = request.type().name() + "\u0000" + request.title() + "\u0000" + request.locale();
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256")
+                .digest(canonical.getBytes(StandardCharsets.UTF_8));
+            return java.util.HexFormat.of().formatHex(digest);
+        } catch (NoSuchAlgorithmException error) {
+            throw new IllegalStateException("SHA-256 不可用", error);
+        }
+    }
+
+    private record CreationIdempotency(String key, String fingerprint) {
     }
 
     @Override
