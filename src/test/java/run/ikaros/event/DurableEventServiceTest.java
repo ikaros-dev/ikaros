@@ -24,4 +24,12 @@ class DurableEventServiceTest {
         assertThrows(RuntimeException.class, () -> service.append("resource.resource.created", 1,
             "resource", UUID.randomUUID(), "[]").block());
     }
+
+    @Test
+    void rejectsUnstableEventTypeNamesBeforePersistence() {
+        DurableEventService service = new DurableEventService(mock(OutboxEventRepository.class),
+            mock(InboxEntryRepository.class), mock(TransactionalOperator.class));
+        assertThrows(RuntimeException.class, () -> service.append("ResourceCreated", 1,
+            "resource", UUID.randomUUID(), "{}").block());
+    }
 }

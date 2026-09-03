@@ -16,6 +16,8 @@ import run.ikaros.security.PrincipalContext;
 @Service
 public class DurableEventService {
     private static final ObjectMapper JSON = new ObjectMapper();
+    private static final java.util.regex.Pattern EVENT_TYPE =
+        java.util.regex.Pattern.compile("[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*");
     private final OutboxEventRepository outbox;
     private final InboxEntryRepository inbox;
     private final TransactionalOperator transaction;
@@ -29,7 +31,7 @@ public class DurableEventService {
 
     public Mono<OutboxEventEntity> append(String eventType, int schemaVersion, String aggregateType,
                                          UUID aggregateId, String payloadJson) {
-        if (eventType == null || eventType.isBlank() || schemaVersion < 1 || payloadJson == null) {
+        if (eventType == null || !EVENT_TYPE.matcher(eventType).matches() || schemaVersion < 1 || payloadJson == null) {
             return Mono.error(new IllegalArgumentException("事件类型、版本和 Payload 不合法"));
         }
         try {
