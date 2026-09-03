@@ -143,7 +143,7 @@ public class ResourceController {
         @ApiResponse(responseCode = "404", description = "资源不存在或无权访问", content = @Content),
         @ApiResponse(responseCode = "409", description = "资源版本冲突", content = @Content)
     })
-    @PatchMapping("/{resourceId}")
+    @PatchMapping(value = "/{resourceId}", consumes = "application/merge-patch+json")
     public Mono<ResponseEntity<ResourceView>> update(
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @PathVariable UUID resourceId,
