@@ -39,7 +39,7 @@ public class TransactionTagService {
   public Flux<TransactionTagView> list(UUID actor, UUID transactionId) {
     return transaction(transactionId)
         .flatMapMany(transaction -> access.access(actor, transaction.ledgerId())
-            .flatMapMany(role -> links.findAllByTransactionId(transactionId).map(this::view)));
+            .flatMapMany(role -> links.findAllByTransactionId(transactionId).take(100).map(this::view)));
   }
 
   public Mono<Void> remove(UUID actor, UUID transactionId, UUID tagId) {
