@@ -50,6 +50,7 @@ export type SessionRecord = { id: string; userId?: string; loginMethod?: string;
 export type CollectionRecord = { id: string; name: string; description?: string; updatedAt?: string }
 export type FinanceLedgerRecord = { id: string; ownerId?: string; owner_id?: string; name?: string; baseCurrency?: string; base_currency?: string; archived?: boolean; createdAt?: string; created_at?: string }
 export type FinanceAccountRecord = { id: string; ledgerId?: string; ledger_id?: string; name?: string; type?: string; currency?: string; openingBalance?: number; opening_balance?: number; currentBalance?: number; current_balance?: number; institution?: string; maskedIdentifier?: string; masked_identifier?: string; archived?: boolean }
+export type FinanceTransactionRecord = { id: string; type?: string; amount?: number; currency?: string; payee?: string; note?: string; occurredAt?: string; occurred_at?: string; status?: string; source?: string }
 export type MediaHistoryRecord = { id: string; resourceId?: string; sessionId?: string; startedAt?: string; endedAt?: string; watchedSeconds?: number }
 export type ResourceActivityRecord = { id: string; resourceId?: string; resource_id?: string; type?: string; details?: string; occurredAt?: string; occurred_at?: string }
 
@@ -101,6 +102,7 @@ export const api = {
   listFinanceLedgers: (actorId: string) => request<FinanceLedgerRecord[]>('/finance/ledgers', { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   createFinanceLedger: (body: { name: string; baseCurrency: string }, actorId: string) => request<FinanceLedgerRecord>('/finance/ledgers', { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId, 'Idempotency-Key': requestId() }, body: JSON.stringify(body) }),
   listFinanceAccounts: (ledgerId: string, actorId: string) => request<FinanceAccountRecord[]>(`/finance/ledgers/${encodeURIComponent(ledgerId)}/accounts`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
+  searchFinanceTransactions: (ledgerId: string, query: string, actorId: string) => request<FinanceTransactionRecord[]>(`/finance/ledgers/${encodeURIComponent(ledgerId)}/transactions/search?q=${encodeURIComponent(query)}`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   enableStorageProvider: (id: string) => request<StorageProviderRecord>(`/admin/storage-providers/${encodeURIComponent(id)}/enable`, { method: 'POST' }),
   disableStorageProvider: (id: string) => request<void>(`/admin/storage-providers/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   getBackgroundTask: (id: string) => request<BackgroundTaskRecord>(`/background-tasks/${encodeURIComponent(id)}`),
