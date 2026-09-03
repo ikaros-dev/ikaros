@@ -95,6 +95,16 @@ class DefaultUserServiceTest {
     }
 
     @Test
+    void rejectsInvalidPagingBeforeQuery() {
+        StepVerifier.create(service.list(null, null, -1, 20))
+            .expectError(IllegalArgumentException.class)
+            .verify();
+        StepVerifier.create(service.list(null, null, 0, 101))
+            .expectError(IllegalArgumentException.class)
+            .verify();
+    }
+
+    @Test
     void emitsNonSensitiveEventWhenUserIsDisabled() {
         UUID actorId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();

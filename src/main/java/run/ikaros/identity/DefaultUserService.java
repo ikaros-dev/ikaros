@@ -19,6 +19,7 @@ import run.ikaros.event.DurableEventService;
  */
 @Service
 public class DefaultUserService implements UserService {
+    private static final int MAX_PAGE_SIZE = 100;
     private final PlatformUserRepository userRepository;
     private final PlatformRoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
@@ -68,6 +69,9 @@ public class DefaultUserService implements UserService {
 
     @Override
     public Mono<PageResponse<UserView>> list(UserStatus status, String query, int page, int size) {
+        if (page < 0 || size < 1 || size > MAX_PAGE_SIZE) {
+            return Mono.error(new IllegalArgumentException("分页参数不合法"));
+        }
         String keyword = query == null ? "" : query.trim();
         return userRepository.findAll()
             .filter(user -> status == null || user.status() == status)
