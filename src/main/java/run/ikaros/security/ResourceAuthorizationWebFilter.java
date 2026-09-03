@@ -3,6 +3,7 @@ package run.ikaros.security;
 import java.util.UUID;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,7 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String path = exchange.getRequest().getPath().value();
+        if (exchange.getRequest().getMethod() == HttpMethod.OPTIONS) return chain.filter(exchange);
         if (isAttachmentContentPath(path) && hasDeliveryGrant(exchange)) return chain.filter(exchange);
         if (!path.startsWith("/api/") || path.equals("/api/health/live") || path.equals("/api/health/ready")
             || path.equals("/api/auth/register") || path.equals("/api/auth/login")) {
