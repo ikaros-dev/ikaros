@@ -18,6 +18,7 @@ import run.ikaros.event.DurableEventService;
  */
 @Service
 public class DefaultRoleService implements RoleService {
+    private static final int MAX_UNPAGED_RESULTS = 100;
     private final PlatformRoleRepository roleRepository;
     private final RolePermissionRepository permissionRepository;
     private final AuditService auditService;
@@ -60,6 +61,7 @@ public class DefaultRoleService implements RoleService {
     @Override
     public Flux<RoleView> list() {
         return roleRepository.findAll().sort(java.util.Comparator.comparing(PlatformRoleEntity::code))
+            .take(MAX_UNPAGED_RESULTS)
             .flatMap(this::toView);
     }
 

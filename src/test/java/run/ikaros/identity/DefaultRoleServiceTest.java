@@ -64,6 +64,18 @@ class DefaultRoleServiceTest {
     }
 
     @Test
+    void unpagedRoleListIsBounded() {
+        Instant now = Instant.now();
+        when(roleRepository.findAll()).thenReturn(Flux.range(0, 101).map(i -> new PlatformRoleEntity(
+            UUID.randomUUID(), "ROLE_" + String.format("%03d", i), "Role " + i, null, false, now, now, 0L)));
+        when(permissionRepository.findAllByRoleId(any())).thenReturn(Flux.empty());
+
+        StepVerifier.create(service.list().count())
+            .expectNext(100L)
+            .verifyComplete();
+    }
+
+    @Test
     void grantsOnlyDeclaredPermissionAndWritesAuditEvent() {
         UUID actorId = UUID.randomUUID();
         UUID roleId = UUID.randomUUID();
