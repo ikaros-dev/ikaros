@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 
 public interface BackgroundTaskRepository extends ReactiveCrudRepository<BackgroundTaskEntity, UUID> {
+    Flux<BackgroundTaskEntity> findAllByOrderByCreatedAtDesc();
     Flux<BackgroundTaskEntity> findAllByStatusOrderByCreatedAtDesc(String status);
     Mono<BackgroundTaskEntity> findByTaskTypeAndIdempotencyKey(String taskType, String idempotencyKey);
     Mono<BackgroundTaskEntity> findTop1ByStatusAndAvailableAtLessThanEqualOrderByAvailableAtAscCreatedAtAsc(

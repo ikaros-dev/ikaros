@@ -42,7 +42,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
 
     @Override
     public Flux<BackgroundTask> list(TaskStatus status) {
-        Flux<BackgroundTaskEntity> source = status == null ? tasks.findAll() :
+        Flux<BackgroundTaskEntity> source = status == null ? tasks.findAllByOrderByCreatedAtDesc() :
             tasks.findAllByStatusOrderByCreatedAtDesc(status.name());
         return source.take(MAX_UNPAGED_RESULTS).flatMap(this::view);
     }
