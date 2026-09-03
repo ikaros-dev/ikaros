@@ -37,5 +37,10 @@ export default {
     ,{ path: "/ingestion", name: "Ingestion", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "内容导入", description: "查看导入来源和扫描任务。", endpoint: "/ingestion/sources", columns: ["id", "name", "status", "createdAt"], icon: "ep:upload" } }
     ,{ path: "/backup", name: "Backup", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "备份恢复", description: "管理恢复点和备份验证。", endpoint: "/admin/backup/restore-points", columns: ["id", "status", "createdAt", "verifiedAt"], icon: "ep:files" } }
     ,{ path: "/security", name: "Security", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "安全中心", description: "查看安全验证挑战和会话状态。", endpoint: "/security/verification-challenges", columns: ["id", "status", "createdAt", "expiresAt"], icon: "ep:warning" } }
+    ,{ path: "/users", name: "Users", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "用户管理", description: "管理用户状态、角色和账号信息。", endpoint: "/admin/users", columns: ["id", "username", "displayName", "status"], icon: "ep:user" } }
+    ,{ path: "/roles", name: "Roles", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "角色管理", description: "查看角色及其权限配置。", endpoint: "/admin/roles", columns: ["id", "code", "name", "description"], icon: "ep:key" } }
+    ,{ path: "/permissions", name: "Permissions", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "权限管理", description: "查看系统权限注册表。", endpoint: "/admin/permissions", columns: ["code", "name", "description"], icon: "ep:lock" } }
+    ,{ path: "/tasks", name: "BackgroundTasks", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "后台任务", description: "查看后台任务、进度和执行尝试。", endpoint: "/background-tasks", columns: ["id", "type", "status", "createdAt"], icon: "ep:operation" } }
+    ,{ path: "/storage", name: "Storage", component: () => import("@/views/modules/ModulePage.vue"), meta: { title: "存储管理", description: "管理存储 Provider 和恢复请求。", endpoint: "/admin/storage-providers", columns: ["id", "name", "status", "createdAt"], icon: "ep:box" } }
   ]
 } satisfies RouteConfigsTable;
