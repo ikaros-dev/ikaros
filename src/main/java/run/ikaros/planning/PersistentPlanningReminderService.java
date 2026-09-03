@@ -23,7 +23,7 @@ public class PersistentPlanningReminderService implements PlanningReminderServic
         return saveNew(ownerId, request);
     }
 
-    @Override public Flux<PlanningReminderView> list(UUID ownerId) { return reminders.findAllByOwnerIdOrderByTriggerAt(ownerId).map(this::view); }
+    @Override public Flux<PlanningReminderView> list(UUID ownerId) { return reminders.findAllByOwnerIdOrderByTriggerAt(ownerId).take(100).map(this::view); }
 
     @Override public Mono<PlanningReminderView> acknowledge(UUID ownerId, UUID reminderId) {
         return acknowledgeInternal(ownerId, reminderId, null);

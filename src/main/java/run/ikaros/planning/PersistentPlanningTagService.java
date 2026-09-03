@@ -24,7 +24,7 @@ public class PersistentPlanningTagService implements PlanningTagService {
             .switchIfEmpty(tags.save(new PlanningTagEntity(null, ownerId, name, request.color(), Instant.now())).map(this::view));
     }
 
-    @Override public Flux<PlanningTagView> list(UUID ownerId) { return tags.findAllByOwnerIdOrderByName(ownerId).map(this::view); }
+    @Override public Flux<PlanningTagView> list(UUID ownerId) { return tags.findAllByOwnerIdOrderByName(ownerId).take(100).map(this::view); }
 
     @Override public Mono<Void> attach(UUID ownerId, UUID taskId, UUID tagId) {
         return ownedTask(ownerId, taskId).then(ownedTag(ownerId, tagId)).then(taskTags.findByTaskIdAndTagId(taskId, tagId)
@@ -38,7 +38,7 @@ public class PersistentPlanningTagService implements PlanningTagService {
     }
 
     @Override public Flux<PlanningTagView> listForTask(UUID ownerId, UUID taskId) {
-        return ownedTask(ownerId, taskId).thenMany(taskTags.findAllByTaskId(taskId).flatMap(link -> ownedTag(ownerId, link.tagId()))).map(this::view);
+        return ownedTask(ownerId, taskId).thenMany(taskTags.findAllByTaskId(taskId).take(100).flatMap(link -> ownedTag(ownerId, link.tagId()))).map(this::view);
     }
 
     private Mono<PlanningTaskEntity> ownedTask(UUID ownerId, UUID taskId) { return tasks.findById(taskId)
