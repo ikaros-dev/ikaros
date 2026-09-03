@@ -42,7 +42,10 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             || path.startsWith("/api/v2/restore-requests")
             || path.startsWith("/api/v2/storage/restore-requests")
             || path.startsWith("/api/v2/delivery-leases")
-            || path.startsWith("/api/v2/ingestion/sources") || path.startsWith("/api/ingestion/sources"))) {
+            || path.startsWith("/api/v2/ingestion/sources") || path.startsWith("/api/ingestion/sources")
+            || path.startsWith("/api/users") || path.startsWith("/api/v2/admin/users")
+            || path.startsWith("/api/roles") || path.startsWith("/api/v2/admin/roles")
+            || path.startsWith("/api/permissions") || path.startsWith("/api/v2/admin/permissions"))) {
             return chain.filter(exchange);
         }
         PlatformPermission permission = permission(exchange.getRequest().getMethod().name(), path);
@@ -60,6 +63,22 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
     }
 
     private PlatformPermission permission(String method, String path) {
+        if (path.contains("/roles/") && path.contains("/permissions/")) {
+            return PlatformPermission.SYSTEM_ROLE_MANAGE;
+        }
+        if (path.contains("/permissions")) return PlatformPermission.SYSTEM_ROLE_READ;
+        if (path.contains("/roles")) {
+            return "GET".equals(method) ? PlatformPermission.SYSTEM_ROLE_READ
+                : PlatformPermission.SYSTEM_ROLE_MANAGE;
+        }
+        if (path.contains("/sessions")) {
+            return "GET".equals(method) ? PlatformPermission.SYSTEM_SESSION_READ
+                : PlatformPermission.SYSTEM_SESSION_MANAGE;
+        }
+        if (path.contains("/users")) {
+            return "GET".equals(method) ? PlatformPermission.SYSTEM_USER_READ
+                : PlatformPermission.SYSTEM_USER_MANAGE;
+        }
         if (path.contains("/admin/delivery-providers")) {
             return "GET".equals(method) ? PlatformPermission.STORAGE_DELIVERY_READ
                 : PlatformPermission.STORAGE_DELIVERY_MANAGE;

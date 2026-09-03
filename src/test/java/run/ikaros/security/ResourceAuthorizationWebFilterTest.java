@@ -86,6 +86,17 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
+    void rejectsIdentityAdministrationWithoutSession() {
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/v2/admin/users")
+            .header("X-Ikaros-Actor-Id", UUID.randomUUID().toString()).build());
+        WebFilterChain chain = mock(WebFilterChain.class);
+
+        new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
+
+        assertEquals(401, exchange.getResponse().getStatusCode().value());
+    }
+
+    @Test
     void letsDeliveryGrantContentReachGrantAuthorizationWithoutSession() {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
             "/api/v2/attachments/" + UUID.randomUUID() + "/content")
