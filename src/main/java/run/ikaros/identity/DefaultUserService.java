@@ -114,10 +114,17 @@ public class DefaultUserService implements UserService {
         return Mono.zip(requiredUser(userId), requiredRole(roleId))
             .flatMap(ignored -> userRoleRepository.findByUserIdAndRoleId(userId, roleId)
                 .hasElement()
-                .flatMap(exists -> exists ? Mono.<Void>empty() : userRoleRepository.save(new UserRoleEntity(
+                .flatMap(exists -> exists ? Mono.just(false) : userRoleRepository.save(new UserRoleEntity(
                     null, userId, roleId, now, null
-                )).then()))
+                )).thenReturn(true)))
+            .flatMap(created -> created ? emitRoleAssigned(userId, roleId) : Mono.empty())
             .then(auditService.record(actorId, "identity.user.role.assign", "USER", userId, "{}"));
+    }
+
+    private Mono<Void> emitRoleAssigned(UUID userId, UUID roleId) {
+        if (eventService == null) return Mono.empty();
+        return eventService.append("identity.user.role-assigned", 1, "user", userId,
+            "{\"user_id\":\"" + userId + "\",\"role_id\":\"" + roleId + "\"}").then();
     }
 
     private Mono<PlatformUserEntity> requiredUser(UUID userId) {
