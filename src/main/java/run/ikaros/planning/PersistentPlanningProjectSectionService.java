@@ -33,7 +33,7 @@ public class PersistentPlanningProjectSectionService implements PlanningProjectS
   @Override
   public Flux<PlanningProjectSectionView> list(UUID actor, UUID projectId) {
     return requireMember(actor, projectId)
-        .thenMany(sections.findAllByProjectIdOrderByPositionAsc(projectId)).map(this::view);
+        .thenMany(sections.findAllByProjectIdOrderByPositionAsc(projectId).take(100)).map(this::view);
   }
 
   @Override

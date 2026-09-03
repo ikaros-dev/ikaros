@@ -39,7 +39,7 @@ public class PersistentPlanningTimeEntryService implements PlanningTimeEntryServ
   @Override
   public Flux<PlanningTimeEntryView> list(UUID actor, UUID taskId) {
     return task(taskId).flatMapMany(task -> visible(actor, task)
-        .thenMany(entries.findAllByTaskIdOrderByCreatedAtDesc(taskId))).map(this::view);
+        .thenMany(entries.findAllByTaskIdOrderByCreatedAtDesc(taskId).take(100))).map(this::view);
   }
 
   private Mono<PlanningTaskEntity> task(UUID taskId) {
