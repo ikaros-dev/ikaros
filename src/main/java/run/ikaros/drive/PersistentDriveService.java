@@ -9,6 +9,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.UuidV7Generator;
@@ -28,8 +29,9 @@ public class PersistentDriveService implements DriveService {
     private final SyncMappingRepository mappingRepository;
     private final DriveTombstoneRepository tombstoneRepository;
     private final CameraBackupRepository cameraBackupRepository;
+    private final TransactionalOperator transactionalOperator;
     private final UuidV7Generator ids = new UuidV7Generator();
-    public PersistentDriveService(DriveSpaceRepository spaces, DriveNodeRepository nodes, DriveFileRevisionRepository revisions, DriveChangeRepository changes, DriveQuotaRepository quotaRepository, DriveQuotaReservationRepository reservationRepository, SyncBindingRepository bindingRepository, SyncConflictRepository conflictRepository, DeviceRepository deviceRepository, SyncMappingRepository mappingRepository, DriveTombstoneRepository tombstoneRepository, CameraBackupRepository cameraBackupRepository) { this.spaces = spaces; this.nodes = nodes; this.revisions = revisions; this.changes = changes; this.quotaRepository = quotaRepository; this.reservationRepository = reservationRepository; this.bindingRepository = bindingRepository; this.conflictRepository = conflictRepository; this.deviceRepository = deviceRepository; this.mappingRepository = mappingRepository; this.tombstoneRepository = tombstoneRepository; this.cameraBackupRepository = cameraBackupRepository; }
+    public PersistentDriveService(DriveSpaceRepository spaces, DriveNodeRepository nodes, DriveFileRevisionRepository revisions, DriveChangeRepository changes, DriveQuotaRepository quotaRepository, DriveQuotaReservationRepository reservationRepository, SyncBindingRepository bindingRepository, SyncConflictRepository conflictRepository, DeviceRepository deviceRepository, SyncMappingRepository mappingRepository, DriveTombstoneRepository tombstoneRepository, CameraBackupRepository cameraBackupRepository, TransactionalOperator transactionalOperator) { this.spaces = spaces; this.nodes = nodes; this.revisions = revisions; this.changes = changes; this.quotaRepository = quotaRepository; this.reservationRepository = reservationRepository; this.bindingRepository = bindingRepository; this.conflictRepository = conflictRepository; this.deviceRepository = deviceRepository; this.mappingRepository = mappingRepository; this.tombstoneRepository = tombstoneRepository; this.cameraBackupRepository = cameraBackupRepository; this.transactionalOperator = transactionalOperator; }
     @Override public Mono<DriveSpaceView> createSpace(UUID actor, CreateDriveSpaceRequest req) {
         Instant now = Instant.now(); UUID sid = ids.next(); UUID root = ids.next();
         DriveSpaceEntity draft = new DriveSpaceEntity(sid,actor,req.displayName().trim(),null,0,"ACTIVE",now,now,null);
@@ -83,7 +85,7 @@ public class PersistentDriveService implements DriveService {
     @Override public Mono<DriveQuotaView> quota(UUID actor, UUID sid) { return ownedSpace(actor,sid).then(quotaRepository.findById(sid).switchIfEmpty(Mono.error(new NotFoundException("Quota 不存在"))).map(q->new DriveQuotaView(sid,q.limitBytes(),q.usedBytes(),q.reservedBytes(),q.limitBytes()-q.usedBytes()-q.reservedBytes()))); }
     @Override
     public Mono<DriveQuotaReservationView> beginUpload(UUID actor, UUID sid, BeginDriveUploadRequest req) {
-        return ownedSpace(actor, sid)
+        return transactionalOperator.transactional(ownedSpace(actor, sid)
             .then(reservationRepository.findByDriveSpaceIdAndUploadSessionId(sid, req.uploadSessionId())
                 .map(this::reservationView))
             .switchIfEmpty(quotaRepository.findById(sid)
@@ -99,13 +101,13 @@ public class PersistentDriveService implements DriveService {
                         q.reservedBytes() + req.reservedBytes(), q.version());
                     return quotaRepository.save(updated).then(reservationRepository.save(reservation))
                         .map(this::reservationView);
-                }));
+                })));
     }
     @Override public Mono<DriveQuotaReservationView> finalizeUpload(UUID actor, UUID sid, UUID rid) { return settle(actor,sid,rid,QuotaReservationState.COMMITTED,true); }
     @Override public Mono<DriveQuotaReservationView> abortUpload(UUID actor, UUID sid, UUID rid) { return settle(actor,sid,rid,QuotaReservationState.RELEASED,false); }
     private Mono<DriveQuotaReservationView> settle(UUID actor, UUID sid, UUID rid,
                                                    QuotaReservationState target, boolean commit) {
-        return ownedSpace(actor, sid)
+        return transactionalOperator.transactional(ownedSpace(actor, sid)
             .then(reservationRepository.findById(rid).filter(r -> r.driveSpaceId().equals(sid))
                 .switchIfEmpty(Mono.error(new NotFoundException("配额 reservation 不存在")))
                 .flatMap(reservation -> {
@@ -122,7 +124,7 @@ public class PersistentDriveService implements DriveService {
                         return quotaRepository.save(updated).then(reservationRepository.save(completed))
                             .map(this::reservationView);
                     });
-                }));
+                })));
     }
     private Mono<DriveNodeView> lifecycle(UUID actor,UUID id,long expected,DriveLifecycle state){return ownedNode(actor,id).flatMap(n->ownedSpace(actor,n.driveSpaceId()).flatMap(space->{check(n.nodeVersion(),expected); if(n.lifecycle()==DriveLifecycle.PURGED)return Mono.error(new ConflictException("节点已永久删除")); Instant now=Instant.now(); DriveNodeEntity c=new DriveNodeEntity(n.id(),n.driveSpaceId(),n.parentId(),n.nodeType(),n.name(),n.normalizedName(),state,n.currentRevisionId(),n.createdBy(),n.createdAt(),now,state==DriveLifecycle.TRASHED?now:null,n.nodeVersion()+1,n.version()); DriveMutationKind kind=state==DriveLifecycle.TRASHED?DriveMutationKind.NODE_TRASHED:DriveMutationKind.NODE_RESTORED; return nodes.save(c).flatMap(saved->advance(space,saved,kind,null).flatMap(updated->state==DriveLifecycle.TRASHED?tombstoneRepository.save(new DriveTombstoneEntity(null,saved.driveSpaceId(),saved.id(),updated.changeGeneration(),saved.nodeVersion(),TombstoneLifecycle.TRASHED,saved.parentId(),saved.name(),now,now.plusSeconds(30L*24*3600))).thenReturn(saved):Mono.just(saved))).map(this::view);}));}
     private Mono<DriveSpaceEntity> ownedSpace(UUID actor,UUID id){return spaces.findById(id).filter(s->s.ownerUserId().equals(actor)).switchIfEmpty(Mono.error(new NotFoundException("Drive Space 不存在")));}
