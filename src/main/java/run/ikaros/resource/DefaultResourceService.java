@@ -234,15 +234,16 @@ public class DefaultResourceService implements ResourceService {
     public Mono<ExternalIdentityView> addExternalIdentity(UUID ownerId, UUID resourceId,
                                                            CreateExternalIdentityRequest request) {
         Instant now = Instant.now();
-        return owned(ownerId, resourceId)
+        return transactionalOperator.transactional(owned(ownerId, resourceId)
             .then(identityRepository.save(new ExternalIdentityEntity(
                 null, resourceId, request.provider(), request.type(), request.value(), now, now, null
             )))
             .onErrorMap(DuplicateKeyException.class,
                 exception -> new ConflictException("该外部身份已绑定到其他资源"))
-            .flatMap(identity -> auditService.record(ownerId, "resource.external-identity.create",
-                    "RESOURCE", resourceId, "{}")
-                .thenReturn(toIdentityView(identity)));
+            .flatMap(identity -> emitExternalIdentity("resource.external-identity.attached", identity)
+                .then(auditService.record(ownerId, "resource.external-identity.create",
+                    "RESOURCE", resourceId, "{}"))
+                .thenReturn(toIdentityView(identity))));
     }
 
     @Override
@@ -251,6 +252,7 @@ public class DefaultResourceService implements ResourceService {
             .then(identityRepository.findByIdAndResourceId(identityId, resourceId)
                 .switchIfEmpty(Mono.error(new NotFoundException("外部身份不存在或无权访问")))
                 .flatMap(identity -> identityRepository.deleteById(identity.id())
+                    .then(emitExternalIdentity("resource.external-identity.detached", identity))
                     .then(auditService.record(ownerId, "resource.external-identity.delete",
                         "RESOURCE", resourceId, "{}"))))
             .then());
@@ -268,6 +270,29 @@ public class DefaultResourceService implements ResourceService {
         String payload = "{\"resource_id\":\"" + resource.id() + "\",\"lifecycle\":\""
             + resource.lifecycle() + "\",\"version\":" + resource.version() + "}";
         return eventService.append(eventType, 1, "resource", resource.id(), payload).then();
+    }
+
+    private Mono<Void> emitExternalIdentity(String eventType, ExternalIdentityEntity identity) {
+        if (eventService == null) {
+            return Mono.empty();
+        }
+        String provider = identity.provider();
+        String namespace = null;
+        int separator = provider == null ? -1 : provider.indexOf(':');
+        if (separator > 0 && separator < provider.length() - 1) {
+            namespace = provider.substring(separator + 1);
+            provider = provider.substring(0, separator);
+        }
+        String payload = "{\"resource_id\":\"" + identity.resourceId()
+            + "\",\"provider\":\"" + escapeJson(provider)
+            + "\"" + (namespace == null ? "" : ",\"namespace\":\"" + escapeJson(namespace) + "\"")
+            + ",\"object_type\":\"" + escapeJson(identity.externalType())
+            + "\",\"external_id\":\"" + escapeJson(identity.externalId()) + "\"}";
+        return eventService.append(eventType, 1, "resource", identity.resourceId(), payload).then();
+    }
+
+    private String escapeJson(String value) {
+        return value == null ? "" : value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     private Mono<ResourceView> toView(ResourceEntity resource) {

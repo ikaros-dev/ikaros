@@ -19,6 +19,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
+import run.ikaros.event.DurableEventService;
 
 /**
  * 验证 Resource 聚合的关键业务规则。
@@ -121,5 +122,46 @@ class DefaultResourceServiceTest {
                 assertThat(error).hasMessage("该外部身份已绑定到其他资源");
             })
             .verify();
+    }
+
+    @Test
+    void publishesExternalIdentityLifecycleEventsWithCanonicalProviderFields() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        UUID identityId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity resource = new ResourceEntity(resourceId, ownerId, ResourceType.MUSIC,
+            ResourceLifecycle.ACTIVE, now, now, null, 0L);
+        ExternalIdentityEntity identity = new ExternalIdentityEntity(identityId, resourceId,
+            "musicbrainz:subject", "recording", "abc", now, now, 0L);
+        DurableEventService events = mock(DurableEventService.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource));
+        when(identityRepository.save(any(ExternalIdentityEntity.class))).thenReturn(Mono.just(identity));
+        when(identityRepository.findByIdAndResourceId(identityId, resourceId)).thenReturn(Mono.just(identity));
+        when(identityRepository.deleteById(identityId)).thenReturn(Mono.empty());
+        when(auditService.record(eq(ownerId), eq("resource.external-identity.create"), eq("RESOURCE"),
+            eq(resourceId), eq("{}"))).thenReturn(Mono.empty());
+        when(auditService.record(eq(ownerId), eq("resource.external-identity.delete"), eq("RESOURCE"),
+            eq(resourceId), eq("{}"))).thenReturn(Mono.empty());
+        when(events.append(any(), eq(1), eq("resource"), eq(resourceId), any())).thenReturn(Mono.empty());
+        DefaultResourceService eventService = new DefaultResourceService(resourceRepository, titleRepository,
+            identityRepository, auditService, transaction, events);
+
+        StepVerifier.create(eventService.addExternalIdentity(ownerId, resourceId,
+                new CreateExternalIdentityRequest("musicbrainz:subject", "recording", "abc")))
+            .expectNextCount(1).verifyComplete();
+        StepVerifier.create(eventService.detachExternalIdentity(ownerId, resourceId, identityId))
+            .verifyComplete();
+
+        verify(events).append(eq("resource.external-identity.attached"), eq(1), eq("resource"),
+            eq(resourceId), eq("{\"resource_id\":\"" + resourceId
+                + "\",\"provider\":\"musicbrainz\",\"namespace\":\"subject\","
+                + "\"object_type\":\"recording\",\"external_id\":\"abc\"}"));
+        verify(events).append(eq("resource.external-identity.detached"), eq(1), eq("resource"),
+            eq(resourceId), eq("{\"resource_id\":\"" + resourceId
+                + "\",\"provider\":\"musicbrainz\",\"namespace\":\"subject\","
+                + "\"object_type\":\"recording\",\"external_id\":\"abc\"}"));
     }
 }
