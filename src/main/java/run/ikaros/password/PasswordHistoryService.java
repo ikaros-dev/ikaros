@@ -30,7 +30,7 @@ public class PasswordHistoryService {
   public Flux<PasswordHistoryView> list(UUID actorId, UUID itemId) {
     return item(actorId, itemId)
         .flatMapMany(i -> unlocked(actorId, i.vaultId())
-            .flatMapMany(v -> history.findAllByItemIdAndOwnerIdOrderByRevisionDesc(itemId, actorId).map(this::view)));
+            .flatMapMany(v -> history.findAllByItemIdAndOwnerIdOrderByRevisionDesc(itemId, actorId).take(100).map(this::view)));
   }
 
   private Mono<PasswordVaultItemEntity> item(UUID actorId, UUID itemId) {

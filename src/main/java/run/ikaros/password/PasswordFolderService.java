@@ -24,7 +24,7 @@ public class PasswordFolderService {
   }
 
   public Flux<PasswordFolderView> list(UUID actorId, UUID vaultId) {
-    return unlocked(actorId, vaultId).flatMapMany(x -> folders.findAllByVaultIdAndOwnerIdOrderByCreatedAtAsc(vaultId, actorId).map(this::view));
+    return unlocked(actorId, vaultId).flatMapMany(x -> folders.findAllByVaultIdAndOwnerIdOrderByCreatedAtAsc(vaultId, actorId).take(100).map(this::view));
   }
 
   public Mono<PasswordFolderView> bind(UUID actorId, UUID itemId, BindPasswordFolderRequest q) {
