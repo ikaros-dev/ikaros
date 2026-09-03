@@ -54,7 +54,8 @@ public class DefaultUserService implements UserService {
             normalizeEmail(request.email()), UserStatus.PENDING, now, now, null, 0L, null);
         return userRepository.save(user)
             .onErrorMap(DuplicateKeyException.class, exception -> new ConflictException("用户名或邮箱已存在"))
-            .flatMap(saved -> auditService.record(actorId, "identity.user.create", "USER", saved.id(), "{}")
+            .flatMap(saved -> emitUserCreated(saved)
+                .then(auditService.record(actorId, "identity.user.create", "USER", saved.id(), "{}"))
                 .then(toView(saved)));
     }
 
@@ -92,10 +93,19 @@ public class DefaultUserService implements UserService {
     }
 
     private Mono<Void> emitStatusChanged(PlatformUserEntity user) {
-        if (eventService == null || user.status() != UserStatus.DISABLED) return Mono.empty();
-        return eventService.append("identity.user.disabled", 1, "user", user.id(),
+        if (eventService == null) return Mono.empty();
+        String eventType = user.status() == UserStatus.DISABLED ? "identity.user.disabled"
+            : user.status() == UserStatus.ACTIVE ? "identity.user.enabled" : null;
+        if (eventType == null) return Mono.empty();
+        return eventService.append(eventType, 1, "user", user.id(),
             "{\"user_id\":\"" + user.id() + "\",\"security_version\":"
                 + user.securityVersion() + "}").then();
+    }
+
+    private Mono<Void> emitUserCreated(PlatformUserEntity user) {
+        if (eventService == null) return Mono.empty();
+        return eventService.append("identity.user.created", 1, "user", user.id(),
+            "{\"user_id\":\"" + user.id() + "\"}").then();
     }
 
     @Override

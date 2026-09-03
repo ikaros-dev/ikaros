@@ -121,6 +121,37 @@ class DefaultUserServiceTest {
     }
 
     @Test
+    void emitsCreatedAndEnabledLifecycleEvents() {
+        UUID actorId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        DurableEventService events = mock(DurableEventService.class);
+        PlatformUserEntity created = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
+            UserStatus.PENDING, now, now, null, 0L);
+        PlatformUserEntity disabled = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
+            UserStatus.DISABLED, now, now, null, 1L);
+        PlatformUserEntity enabled = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
+            UserStatus.ACTIVE, now, now, null, 2L);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(created), Mono.just(disabled));
+        when(userRepository.save(any())).thenReturn(Mono.just(created), Mono.just(disabled), Mono.just(enabled));
+        when(userRoleRepository.findAllByUserId(userId)).thenReturn(Flux.empty());
+        when(events.append(any(String.class), eq(1), eq("user"), eq(userId), any(String.class)))
+            .thenReturn(Mono.empty());
+        when(auditService.record(any(), any(String.class), eq("USER"), eq(userId), eq("{}")))
+            .thenReturn(Mono.empty());
+        DefaultUserService eventService = new DefaultUserService(userRepository, roleRepository, userRoleRepository,
+            auditService, events);
+
+        StepVerifier.create(eventService.create(actorId,
+                new CreateUserRequest("alice", "Alice", "alice@example.com")))
+            .assertNext(view -> assertThat(view.status()).isEqualTo(UserStatus.PENDING)).verifyComplete();
+        StepVerifier.create(eventService.changeStatus(actorId, userId, UserStatus.DISABLED)).expectNextCount(1).verifyComplete();
+        StepVerifier.create(eventService.changeStatus(actorId, userId, UserStatus.ACTIVE)).expectNextCount(1).verifyComplete();
+        verify(events).append(eq("identity.user.created"), eq(1), eq("user"), eq(userId), any(String.class));
+        verify(events).append(eq("identity.user.enabled"), eq(1), eq("user"), eq(userId), any(String.class));
+    }
+
+    @Test
     void assignsMissingRoleIdempotently() {
         UUID actorId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
