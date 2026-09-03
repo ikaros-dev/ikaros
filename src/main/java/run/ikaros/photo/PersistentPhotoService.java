@@ -1,8 +1,51 @@
 package run.ikaros.photo;
-import java.time.Instant; import java.util.UUID; import org.springframework.stereotype.Service; import reactor.core.publisher.Flux; import reactor.core.publisher.Mono; import run.ikaros.common.NotFoundException; import run.ikaros.resource.CreateResourceRequest; import run.ikaros.resource.ResourceService; import run.ikaros.resource.ResourceType; import run.ikaros.storage.AttachmentRepository;
-@Service public class PersistentPhotoService implements PhotoService {private final ResourceService resources;private final PhotoRepository photos;private final PhotoAssetRepository assets;private final PhotoAlbumRepository albums;private final PhotoAlbumMemberRepository members;private final AttachmentRepository attachments;public PersistentPhotoService(ResourceService r,PhotoRepository p,PhotoAssetRepository a,PhotoAlbumRepository l,PhotoAlbumMemberRepository m,AttachmentRepository at){resources=r;photos=p;assets=a;albums=l;members=m;attachments=at;}
- @Override public Mono<PhotoView> create(UUID o,CreatePhotoRequest r){String locale=r.locale()==null||r.locale().isBlank()?"en-US":r.locale();return resources.create(o,new CreateResourceRequest(ResourceType.PHOTO,r.title(),locale)).flatMap(x->attachments.findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(r.attachmentId(),x.id()).switchIfEmpty(Mono.error(new NotFoundException("Photo Attachment 不属于该 Resource"))).flatMap(a->photos.save(new PhotoEntity(null,o,x.id(),null,null,null,null,null,null,null,null,null,null,null,null)).flatMap(p->assets.save(new PhotoAssetEntity(null,o,p.id(),a.id(),PhotoAssetRole.ORIGINAL_PRIMARY,true,"AVAILABLE",null)).thenReturn(p)))).map(this::photoView);}
- @Override public Flux<PhotoView> timeline(UUID o){return photos.findAllByOwnerIdOrderByCaptureTimeDesc(o).map(this::photoView);}@Override public Flux<PhotoTimelineGroupView> timelineByDay(UUID o){return photos.findAllByOwnerIdOrderByCaptureTimeDesc(o).map(this::photoView).collectMultimap(p->p.captureTime()==null?java.time.LocalDate.MIN:p.captureTime().atZone(java.time.ZoneOffset.UTC).toLocalDate(),p->p,()->new java.util.LinkedHashMap<java.time.LocalDate,java.util.Collection<PhotoView>>()).flatMapMany(m->Flux.fromIterable(m.entrySet()).map(e->new PhotoTimelineGroupView(e.getKey(),java.util.List.copyOf(e.getValue()))));}@Override public Flux<PhotoAssetView> assets(UUID o,UUID id){return ownedPhoto(o,id).flatMapMany(p->assets.findAllByPhotoId(id).map(this::assetView));}
- @Override public Mono<PhotoAssetView> setPrimary(UUID o,UUID id,SetPrimaryPhotoAssetRequest r){return ownedPhoto(o,id).then(assets.findById(r.assetId()).filter(a->a.photoId().equals(id)).switchIfEmpty(Mono.error(new NotFoundException("Photo Asset 不存在")))).flatMap(target->assets.findAllByPhotoId(id).flatMap(a->a.primary()?assets.save(new PhotoAssetEntity(a.id(),a.ownerId(),a.photoId(),a.attachmentId(),a.role(),false,a.availability(),a.version())):Mono.just(a)).then(assets.save(new PhotoAssetEntity(target.id(),target.ownerId(),target.photoId(),target.attachmentId(),target.role(),true,target.availability(),target.version())))).map(this::assetView);}
- @Override public Mono<PhotoAlbumView> createAlbum(UUID o,CreatePhotoAlbumRequest r){Instant now=Instant.now();return albums.save(new PhotoAlbumEntity(null,o,r.name().trim(),r.description(),now,now,null)).map(this::albumView);}@Override public Flux<PhotoAlbumView> albums(UUID o){return albums.findAllByOwnerIdOrderByUpdatedAtDesc(o).map(this::albumView);}@Override public Flux<PhotoView> albumPhotos(UUID o,UUID id){return ownedAlbum(o,id).flatMapMany(a->members.findAllByAlbumIdOrderByAddedAtAsc(id).flatMap(m->ownedPhoto(o,m.photoId()).map(this::photoView)));}@Override public Mono<Void> addToAlbum(UUID o,UUID id,AddPhotoAlbumMemberRequest r){return ownedAlbum(o,id).then(ownedPhoto(o,r.photoId())).then(members.save(new PhotoAlbumMemberEntity(null,id,r.photoId(),Instant.now())).then());}@Override public Mono<Void> removeFromAlbum(UUID o,UUID id,UUID photoId){return ownedAlbum(o,id).then(members.findAllByAlbumIdOrderByAddedAtAsc(id).filter(m->m.photoId().equals(photoId)).next().flatMap(members::delete));}
- private Mono<PhotoEntity> ownedPhoto(UUID o,UUID id){return photos.findById(id).filter(p->p.ownerId().equals(o)).switchIfEmpty(Mono.error(new NotFoundException("Photo 不存在或无权访问")));}private Mono<PhotoAlbumEntity> ownedAlbum(UUID o,UUID id){return albums.findById(id).filter(a->a.ownerId().equals(o)).switchIfEmpty(Mono.error(new NotFoundException("Album 不存在或无权访问")));}private PhotoView photoView(PhotoEntity p){return new PhotoView(p.id(),p.resourceId(),p.captureTime(),p.width(),p.height(),p.cameraMake(),p.cameraModel());}private PhotoAssetView assetView(PhotoAssetEntity a){return new PhotoAssetView(a.id(),a.photoId(),a.attachmentId(),a.role(),a.primary(),a.availability());}private PhotoAlbumView albumView(PhotoAlbumEntity a){return new PhotoAlbumView(a.id(),a.name(),a.description(),a.createdAt(),a.updatedAt());}}
+
+import java.time.Instant;
+import java.util.UUID;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import run.ikaros.common.NotFoundException;
+import run.ikaros.resource.CreateResourceRequest;
+import run.ikaros.resource.ResourceService;
+import run.ikaros.resource.ResourceType;
+import run.ikaros.storage.AttachmentRepository;
+
+@Service
+public class PersistentPhotoService implements PhotoService {
+    private final ResourceService resources;
+    private final PhotoRepository photos;
+    private final PhotoAssetRepository assets;
+    private final PhotoAlbumRepository albums;
+    private final PhotoAlbumMemberRepository members;
+    private final AttachmentRepository attachments;
+
+    public PersistentPhotoService(ResourceService r, PhotoRepository p, PhotoAssetRepository a, PhotoAlbumRepository l, PhotoAlbumMemberRepository m, AttachmentRepository at) {
+        resources = r; photos = p; assets = a; albums = l; members = m; attachments = at;
+    }
+
+    @Override public Mono<PhotoView> create(UUID o, CreatePhotoRequest r) {
+        String locale = r.locale() == null || r.locale().isBlank() ? "en-US" : r.locale();
+        return resources.create(o, new CreateResourceRequest(ResourceType.PHOTO, r.title(), locale))
+            .flatMap(x -> attachments.findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(r.attachmentId(), x.id())
+                .switchIfEmpty(Mono.error(new NotFoundException("Photo Attachment 不属于该 Resource")))
+                .flatMap(a -> photos.save(new PhotoEntity(null, o, x.id(), null, null, null, null, null, null, null, null, null, null, null, null))
+                    .flatMap(p -> assets.save(new PhotoAssetEntity(null, o, p.id(), a.id(), PhotoAssetRole.ORIGINAL_PRIMARY, true, "AVAILABLE", null)).thenReturn(p))))
+            .map(this::photoView);
+    }
+
+    @Override public Flux<PhotoView> timeline(UUID o) { return photos.findAllByOwnerIdOrderByCaptureTimeDesc(o).take(100).map(this::photoView); }
+    @Override public Flux<PhotoTimelineGroupView> timelineByDay(UUID o) { return photos.findAllByOwnerIdOrderByCaptureTimeDesc(o).take(100).map(this::photoView).collectMultimap(p -> p.captureTime() == null ? java.time.LocalDate.MIN : p.captureTime().atZone(java.time.ZoneOffset.UTC).toLocalDate(), p -> p, () -> new java.util.LinkedHashMap<java.time.LocalDate, java.util.Collection<PhotoView>>()).flatMapMany(m -> Flux.fromIterable(m.entrySet()).map(e -> new PhotoTimelineGroupView(e.getKey(), java.util.List.copyOf(e.getValue())))); }
+    @Override public Flux<PhotoAssetView> assets(UUID o, UUID id) { return ownedPhoto(o, id).flatMapMany(p -> assets.findAllByPhotoId(id).take(100).map(this::assetView)); }
+    @Override public Mono<PhotoAssetView> setPrimary(UUID o, UUID id, SetPrimaryPhotoAssetRequest r) { return ownedPhoto(o, id).then(assets.findById(r.assetId()).filter(a -> a.photoId().equals(id)).switchIfEmpty(Mono.error(new NotFoundException("Photo Asset 不存在")))).flatMap(target -> assets.findAllByPhotoId(id).flatMap(a -> a.primary() ? assets.save(new PhotoAssetEntity(a.id(), a.ownerId(), a.photoId(), a.attachmentId(), a.role(), false, a.availability(), a.version())) : Mono.just(a)).then(assets.save(new PhotoAssetEntity(target.id(), target.ownerId(), target.photoId(), target.attachmentId(), target.role(), true, target.availability(), target.version())))).map(this::assetView); }
+    @Override public Mono<PhotoAlbumView> createAlbum(UUID o, CreatePhotoAlbumRequest r) { Instant now = Instant.now(); return albums.save(new PhotoAlbumEntity(null, o, r.name().trim(), r.description(), now, now, null)).map(this::albumView); }
+    @Override public Flux<PhotoAlbumView> albums(UUID o) { return albums.findAllByOwnerIdOrderByUpdatedAtDesc(o).take(100).map(this::albumView); }
+    @Override public Flux<PhotoView> albumPhotos(UUID o, UUID id) { return ownedAlbum(o, id).flatMapMany(a -> members.findAllByAlbumIdOrderByAddedAtAsc(id).take(100).flatMap(m -> ownedPhoto(o, m.photoId()).map(this::photoView))); }
+    @Override public Mono<Void> addToAlbum(UUID o, UUID id, AddPhotoAlbumMemberRequest r) { return ownedAlbum(o, id).then(ownedPhoto(o, r.photoId())).then(members.save(new PhotoAlbumMemberEntity(null, id, r.photoId(), Instant.now())).then()); }
+    @Override public Mono<Void> removeFromAlbum(UUID o, UUID id, UUID photoId) { return ownedAlbum(o, id).then(members.findAllByAlbumIdOrderByAddedAtAsc(id).filter(m -> m.photoId().equals(photoId)).next().flatMap(members::delete)); }
+    private Mono<PhotoEntity> ownedPhoto(UUID o, UUID id) { return photos.findById(id).filter(p -> p.ownerId().equals(o)).switchIfEmpty(Mono.error(new NotFoundException("Photo 不存在或无权访问"))); }
+    private Mono<PhotoAlbumEntity> ownedAlbum(UUID o, UUID id) { return albums.findById(id).filter(a -> a.ownerId().equals(o)).switchIfEmpty(Mono.error(new NotFoundException("Album 不存在或无权访问"))); }
+    private PhotoView photoView(PhotoEntity p) { return new PhotoView(p.id(), p.resourceId(), p.captureTime(), p.width(), p.height(), p.cameraMake(), p.cameraModel()); }
+    private PhotoAssetView assetView(PhotoAssetEntity a) { return new PhotoAssetView(a.id(), a.photoId(), a.attachmentId(), a.role(), a.primary(), a.availability()); }
+    private PhotoAlbumView albumView(PhotoAlbumEntity a) { return new PhotoAlbumView(a.id(), a.name(), a.description(), a.createdAt(), a.updatedAt()); }
+}
