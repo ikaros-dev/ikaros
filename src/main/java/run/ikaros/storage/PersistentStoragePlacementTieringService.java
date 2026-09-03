@@ -9,17 +9,20 @@ import run.ikaros.common.NotFoundException;
 import run.ikaros.event.DurableEventService;
 import run.ikaros.task.BackgroundTask;
 import run.ikaros.task.BackgroundTaskService;
+import run.ikaros.task.BackgroundTaskRepository;
 
 @Service
 public class PersistentStoragePlacementTieringService implements StoragePlacementTieringService {
     private final BlobPlacementRepository placements;
     private final BackgroundTaskService tasks;
+    private final BackgroundTaskRepository taskRepository;
     private final DurableEventService events;
 
     public PersistentStoragePlacementTieringService(BlobPlacementRepository placements,
-        BackgroundTaskService tasks, DurableEventService events) {
+        BackgroundTaskService tasks, BackgroundTaskRepository taskRepository, DurableEventService events) {
         this.placements = placements;
         this.tasks = tasks;
+        this.taskRepository = taskRepository;
         this.events = events;
     }
 
@@ -55,10 +58,12 @@ public class PersistentStoragePlacementTieringService implements StoragePlacemen
                 Map<String, Object> payload = Map.of("placement_id", placementId.toString(),
                     "blob_id", placement.blobId().toString(), "direction", direction,
                     "target_tier", targetTier.name());
-                return tasks.submit("storage.placement.tiering", payload, idempotencyKey)
-                    .flatMap(task -> events.append(eventType, 1, "blob_placement", placementId,
-                        "{\"placement_id\":\"" + placementId + "\",\"blob_id\":\"" + placement.blobId()
-                            + "\",\"target_tier\":\"" + targetTier + "\"}").thenReturn(task));
+                return taskRepository.findByTaskTypeAndIdempotencyKey("storage.placement.tiering", idempotencyKey)
+                    .flatMap(existing -> tasks.get(existing.id()))
+                    .switchIfEmpty(Mono.defer(() -> tasks.submit("storage.placement.tiering", payload, idempotencyKey)
+                        .flatMap(task -> events.append(eventType, 1, "blob_placement", placementId,
+                            "{\"placement_id\":\"" + placementId + "\",\"blob_id\":\"" + placement.blobId()
+                                + "\",\"target_tier\":\"" + targetTier + "\"}").thenReturn(task))));
             });
     }
 }
