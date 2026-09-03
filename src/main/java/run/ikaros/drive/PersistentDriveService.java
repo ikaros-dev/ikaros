@@ -57,12 +57,12 @@ public class PersistentDriveService implements DriveService {
             if (node.nodeType() != DriveNodeType.FILE) {
                 return Mono.error(new ConflictException("只有文件节点可以创建版本"));
             }
-            check(node.nodeVersion(), req.expectedNodeVersion());
             Mono<DriveFileRevisionEntity> existing = req.operationId() == null
                 ? Mono.empty() : revisions.findByFileNodeIdAndOperationId(id, req.operationId());
             return existing.switchIfEmpty(Mono.defer(() -> revisions
                 .findAllByFileNodeIdOrderByRevisionNoDesc(id).take(1).collectList()
                 .flatMap(previous -> {
+                    check(node.nodeVersion(), req.expectedNodeVersion());
                     long number = previous.isEmpty() ? 1 : previous.get(0).revisionNo() + 1;
                     Instant now = Instant.now();
                     return revisions.save(new DriveFileRevisionEntity(null, id, number, req.attachmentId(),
