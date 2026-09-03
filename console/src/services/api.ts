@@ -25,7 +25,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return await response.json() as T
 }
 
-export type ResourceRecord = { id: string; type?: string; primaryTitle?: string; title?: string; summary?: string; resource_type?: string; lifecycle?: string; updatedAt?: string; updated_at?: string }
+export type ResourceTitleRecord = { id?: string; locale?: string; value?: string; primary?: boolean; kind?: string }
+export type ExternalIdentityRecord = { id?: string; provider?: string; type?: string; value?: string }
+export type ResourceRecord = { id: string; type?: string; primaryTitle?: string; title?: string; summary?: string; resource_type?: string; lifecycle?: string; titles?: ResourceTitleRecord[]; externalIdentities?: ExternalIdentityRecord[]; createdAt?: string; created_at?: string; updatedAt?: string; updated_at?: string }
 export type FavoriteRecord = { resourceId?: string; resource_id?: string; favorite?: boolean; favorited?: boolean }
 export type DocumentRecord = { id: string; resourceId?: string; resource_id?: string; kind?: string; currentRevisionId?: string; current_revision_id?: string }
 export type WorkingCopyRecord = { documentId?: string; document_id?: string; content?: string; contentSchemaVersion?: string; content_schema_version?: string; baseRevisionId?: string; base_revision_id?: string; updatedAt?: string; updated_at?: string; version?: number }
