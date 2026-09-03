@@ -77,7 +77,7 @@ public class DefaultSecuritySessionService implements SecuritySessionService {
     @Override
     public Flux<SessionView> listActive(UUID userId) {
         return sessionRepository.findAllByUserIdAndRevokedAtIsNullAndExpiresAtAfter(userId, Instant.now())
-            .map(this::toView);
+            .take(100).map(this::toView);
     }
 
     @Override
