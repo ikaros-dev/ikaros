@@ -1,8 +1,6 @@
 import { cdn } from "./cdn";
 import vue from "@vitejs/plugin-vue";
 import { pathResolve } from "./utils";
-import { viteBuildInfo } from "./info";
-import svgLoader from "vite-svg-loader";
 import Icons from "unplugin-icons/vite";
 import type { PluginOption } from "vite";
 import vueJsx from "@vitejs/plugin-vue-jsx";
@@ -37,15 +35,12 @@ export function getPluginsList(
       bundler: "vite",
       hideConsole: true
     }),
-    viteBuildInfo(),
     /**
      * 开发环境下移除非必要的vue-router动态路由警告No match found for location with path
      * 非必要具体看 https://github.com/vuejs/router/issues/521 和 https://github.com/vuejs/router/issues/359
      * vite-plugin-router-warn只在开发环境下启用，只处理vue-router文件并且只在服务启动或重启时运行一次，性能消耗可忽略不计
      */
     removeNoMatch(),
-    // svg组件化支持
-    svgLoader(),
     // 自动按需加载图标
     Icons({
       compiler: "vue3",
