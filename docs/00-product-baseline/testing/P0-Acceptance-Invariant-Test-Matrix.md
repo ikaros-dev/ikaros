@@ -10,7 +10,7 @@
 | Module 基线 | `../Module-Package-Ownership-Design.md` |
 | Database 基线 | `../database/P0-Database-Schema-Design.md` |
 | Contract 基线 | `../contracts/P0-Command-Query-Event-Catalog.md` |
-| OpenAPI 基线 | `../api/openapi-v2-p0.yaml` |
+| OpenAPI 基线 | `../contracts/openapi-v2-p0.yaml` |
 
 > 本文档不是普通测试用例清单，而是 V2 P0 的工程验收门槛：把架构边界、领域不变量、数据库约束、API 契约、事件可靠性、安全边界和故障恢复转换为必须自动验证的测试矩阵。
 >

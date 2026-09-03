@@ -83,7 +83,7 @@ storage.restore_budget_policy
 
 ### OpenAPI
 
-[`api/openapi-v2-p0-media-delivery-restore.yaml`](./api/openapi-v2-p0-media-delivery-restore.yaml)
+[`contracts/openapi-v2-p0-media-delivery-restore.yaml`](./contracts/openapi-v2-p0-media-delivery-restore.yaml)
 
 覆盖：
 

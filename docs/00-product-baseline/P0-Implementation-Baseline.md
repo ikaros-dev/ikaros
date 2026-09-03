@@ -36,8 +36,8 @@ Phase 0 实现至少应以下列文档作为输入：
 - `contracts/P0-Command-Query-Event-Catalog.md`
 - `contracts/P0-Event-Payload-Schema-Registry.md`
 - `contracts/schema/p0-event-v1.schema.json`
-- `api/openapi-v2-p0.yaml`
-- `api/openapi-v2-p0-contract-convergence.yaml`
+- `contracts/openapi-v2-p0.yaml`
+- `contracts/openapi-v2-p0-contract-convergence.yaml`
 - `contracts/P0-HTTP-Operation-Registry.yaml`
 - `P0-Requirement-Traceability-Matrix.md`
 - `testing/P0-Acceptance-Invariant-Test-Matrix.md`

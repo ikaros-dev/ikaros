@@ -3,8 +3,8 @@
 | 项目 | 内容 |
 |---|---|
 | 基线 | `v2-p0-foundation-0.2` |
-| 基础 OpenAPI | `api/openapi-v2-p0.yaml` |
-| 契约收敛补充 | `api/openapi-v2-p0-contract-convergence.yaml` |
+| 基础 OpenAPI | `contracts/openapi-v2-p0.yaml` |
+| 契约收敛补充 | `contracts/openapi-v2-p0-contract-convergence.yaml` |
 | 机器可读注册表 | `contracts/P0-HTTP-Operation-Registry.yaml` |
 | 事件 Schema | `contracts/schema/p0-event-v1.schema.json` |
 
@@ -18,8 +18,8 @@
 - `contracts/P0-Event-Payload-Schema-Registry.md` — 面向人的事件 Payload 兼容性契约。
 - `contracts/schema/p0-event-v1.schema.json` — 机器可读的事件 Envelope / Type / Version 基线。
 - `contracts/P0-HTTP-Operation-Registry.yaml` — 完整的 P0 公开 HTTP 操作映射。
-- `api/openapi-v2-p0.yaml` — 原始 P0 OpenAPI 基线。
-- `api/openapi-v2-p0-contract-convergence.yaml` — 对原始规范中缺失、但已由 Catalog 声明的 HTTP 操作进行增量补充。
+- `contracts/openapi-v2-p0.yaml` — 原始 P0 OpenAPI 基线。
+- `contracts/openapi-v2-p0-contract-convergence.yaml` — 对原始规范中缺失、但已由 Catalog 声明的 HTTP 操作进行增量补充。
 - `testing/P0-Acceptance-Invariant-Test-Matrix.md` — **必须满足**的工程验收门禁。
 
 ## P0 公开 API 规则

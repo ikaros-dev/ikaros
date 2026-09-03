@@ -11,7 +11,7 @@
 | Storage 上位约束 | `Attachment-Blob-Storage-Subsystem-Design.md` |
 | P0 Schema 补充 | `database/P0-Media-Delivery-Restore-Schema-Addendum.md` |
 | P0 Contract 补充 | `contracts/P0-Media-Delivery-Restore-Contract-Addendum.md` |
-| P0 OpenAPI 补充 | `api/openapi-v2-p0-media-delivery-restore.yaml` |
+| P0 OpenAPI 补充 | `../00-product-baseline/contracts/openapi-v2-p0-media-delivery-restore.yaml` |
 | P0 Acceptance 补充 | `testing/P0-Media-Delivery-Restore-Acceptance-Matrix.md` |
 
 > 本文档把 `Media-Delivery-CDN-Archive-Restore-Design.md` 中尚未压实的工程约束补充为可实现、可测试的 P0 契约。

@@ -9,7 +9,7 @@
 | API 基线 | `../API-Convention-Design.md` |
 | Integration 基线 | `../Platform-Integration-Automation-Design.md` |
 | Database 基线 | `../database/P0-Database-Schema-Design.md` |
-| OpenAPI | `../api/openapi-v2-p0.yaml` |
+| OpenAPI | `openapi-v2-p0.yaml` |
 
 > 本文档把 P0 领域能力从“概念上存在 Command / Query / Event”收敛为可编码、可授权、可测试、可映射到 HTTP/OpenAPI 的稳定 Catalog。
 >
@@ -469,7 +469,7 @@ Error Event 只包含可安全公开的 classification / summary，不复制 sta
 OpenAPI Source of Truth：
 
 ```text
-docs/v2/api/openapi-v2-p0.yaml
+docs/00-product-baseline/contracts/openapi-v2-p0.yaml
 ```
 
 P0 Operation ID 必须映射到 Catalog：
