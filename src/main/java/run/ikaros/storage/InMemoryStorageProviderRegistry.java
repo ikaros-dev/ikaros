@@ -14,6 +14,7 @@ import run.ikaros.event.DurableEventService;
 
 @Service
 public class InMemoryStorageProviderRegistry implements StorageProviderRegistry {
+    private static final int MAX_UNPAGED_RESULTS = 100;
     private final Map<UUID, StorageProvider> providers = new ConcurrentHashMap<>();
     private final DurableEventService events;
 
@@ -91,7 +92,7 @@ public class InMemoryStorageProviderRegistry implements StorageProviderRegistry 
     }
 
     @Override
-    public Flux<StorageProvider> list() { return Flux.fromIterable(List.copyOf(providers.values())); }
+    public Flux<StorageProvider> list() { return Flux.fromIterable(List.copyOf(providers.values())).take(MAX_UNPAGED_RESULTS); }
 
     @Override
     public Mono<Void> requireWritable(UUID providerId) {

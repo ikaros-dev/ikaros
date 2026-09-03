@@ -18,6 +18,7 @@ import run.ikaros.event.DurableEventService;
 @Primary
 @Service
 public class PersistentStorageProviderRegistry implements StorageProviderRegistry {
+    private static final int MAX_UNPAGED_RESULTS = 100;
     private final StorageProviderRepository repository;
     private final ObjectMapper mapper;
     private final DurableEventService events;
@@ -104,7 +105,7 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
     }
 
     @Override
-    public Flux<StorageProvider> list() { return repository.findAll().map(this::toModel); }
+    public Flux<StorageProvider> list() { return repository.findAll().take(MAX_UNPAGED_RESULTS).map(this::toModel); }
 
     @Override
     public Mono<Void> requireWritable(UUID providerId) {
