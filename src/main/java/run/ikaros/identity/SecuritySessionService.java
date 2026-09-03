@@ -49,8 +49,6 @@ public interface SecuritySessionService {
      */
     Mono<Void> revoke(UUID actorId, UUID userId, UUID sessionId);
 
-    /** 撤销当前主体持有的会话，用于登出。 */
-    Mono<Void> revokeCurrent(UUID actorId, UUID sessionId);
 
     /** 撤销用户的全部活跃会话，并提升用户安全版本。 */
     Mono<Void> revokeAll(UUID actorId, UUID userId);

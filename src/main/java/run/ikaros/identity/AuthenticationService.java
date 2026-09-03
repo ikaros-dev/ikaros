@@ -76,8 +76,8 @@ public class AuthenticationService {
         }
     }
 
-    public Mono<Void> logout(UUID actorId, UUID sessionId) {
-        return sessions.revokeCurrent(actorId, sessionId);
+    public Mono<Void> logout() {
+        return Mono.empty();
     }
 
     private Mono<Void> assignAdminIfFirstUser(PlatformUserEntity user) {

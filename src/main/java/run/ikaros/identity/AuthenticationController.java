@@ -1,7 +1,6 @@
 package run.ikaros.identity;
 
 import jakarta.validation.Valid;
-import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,10 +34,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/logout")
-    public Mono<ResponseEntity<Void>> logout(
-        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
-        @RequestHeader("X-Ikaros-Session-Id") UUID sessionId
-    ) {
-        return service.logout(actorId, sessionId).thenReturn(ResponseEntity.noContent().build());
+    public Mono<ResponseEntity<Void>> logout() {
+        return service.logout().thenReturn(ResponseEntity.noContent().build());
     }
 }
