@@ -70,12 +70,13 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     @Override
     public Mono<BackgroundTask> submit(String taskType, Map<String, Object> payload, String idempotencyKey) {
         if (taskType == null || taskType.isBlank()) return Mono.error(new IllegalArgumentException("Task 类型不能为空"));
+        String normalizedTaskType = taskType.trim();
         Mono<BackgroundTaskEntity> existing = idempotencyKey == null ? Mono.empty()
-            : tasks.findByTaskTypeAndIdempotencyKey(taskType, idempotencyKey);
+            : tasks.findByTaskTypeAndIdempotencyKey(normalizedTaskType, idempotencyKey);
         Mono<TaskSubmission> reused = existing.map(entity -> new TaskSubmission(entity, false));
         Mono<TaskSubmission> created = Mono.defer(() -> encode(payload).flatMap(json -> {
             Instant now = Instant.now();
-            return tasks.save(new BackgroundTaskEntity(null, taskType, TaskStatus.PENDING.name(), json,
+            return tasks.save(new BackgroundTaskEntity(null, normalizedTaskType, TaskStatus.PENDING.name(), json,
                 idempotencyKey, now, timeoutAt(payload, now), null, null, null, 0, null, "{}", "{}", now, now, null))
                 .onErrorResume(DuplicateKeyException.class, error -> tasks
                     .findByTaskTypeAndIdempotencyKey(taskType, idempotencyKey)

@@ -3,6 +3,7 @@ package run.ikaros.task;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.Duration;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 
@@ -23,5 +24,14 @@ class BackgroundTaskLeaseValidationTest {
         StepVerifier.create(service.list(null).count())
             .expectNext(100L)
             .verifyComplete();
+    }
+
+    @Test
+    void submitNormalizesTaskType() {
+        InMemoryBackgroundTaskService service = new InMemoryBackgroundTaskService();
+        BackgroundTask task = service.submit("  import  ", Map.of(), "same-key").block();
+        BackgroundTask reused = service.submit("import", Map.of("different", true), "same-key").block();
+        org.junit.jupiter.api.Assertions.assertEquals("import", task.taskType());
+        org.junit.jupiter.api.Assertions.assertEquals(task.id(), reused.id());
     }
 }

@@ -56,15 +56,16 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
     @Override
     public Mono<BackgroundTask> submit(String taskType, Map<String, Object> payload, String idempotencyKey) {
         if (taskType == null || taskType.isBlank()) return Mono.error(new IllegalArgumentException("Task 类型不能为空"));
+        String normalizedTaskType = taskType.trim();
         return Mono.fromSupplier(() -> {
             if (idempotencyKey != null) {
                 BackgroundTask existing = tasks.values().stream()
-                    .filter(task -> task.taskType().equals(taskType) && idempotencyKey.equals(task.idempotencyKey()))
+                    .filter(task -> task.taskType().equals(normalizedTaskType) && idempotencyKey.equals(task.idempotencyKey()))
                     .findFirst().orElse(null);
                 if (existing != null) return existing;
             }
             Instant now = Instant.now();
-            BackgroundTask task = new BackgroundTask(UUID.randomUUID(), taskType, TaskStatus.PENDING, payload,
+            BackgroundTask task = new BackgroundTask(UUID.randomUUID(), normalizedTaskType, TaskStatus.PENDING, payload,
                 idempotencyKey, now, timeoutAt(payload, now), null, null, null, 0, null, Map.of(), Map.of(), now, now, null);
             tasks.put(task.id(), task);
             return task;
