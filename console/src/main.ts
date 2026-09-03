@@ -2,7 +2,6 @@ import { createApp } from 'vue'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import { createRouter, createWebHistory } from 'vue-router'
-import App from './App.vue'
 import AuthEntry from './AuthEntry.vue'
 import Root from './Root.vue'
 import AdminCatalog from './AdminCatalog.vue'
@@ -29,6 +28,7 @@ import ActivityWorkspace from './ActivityWorkspace.vue'
 import SearchWorkspace from './SearchWorkspace.vue'
 import SecurityWorkspace from './SecurityWorkspace.vue'
 import LoginWorkspace from './LoginWorkspace.vue'
+import NotFoundWorkspace from './NotFoundWorkspace.vue'
 import FinanceWorkspace from './FinanceWorkspace.vue'
 import AccessDenied from './AccessDenied.vue'
 import { getRouteMeta } from './config/route-meta'
@@ -42,7 +42,7 @@ const routes = [
   { path: '/console/drive', component: DriveHome }, { path: '/console/drive/spaces', component: DriveWorkspace }, { path: '/console/drive/spaces/:spaceId', component: DriveWorkspace }, { path: '/console/drive/nodes/:nodeId', component: DriveWorkspace }, { path: '/console/drive/transfers', component: DriveWorkspace }, { path: '/console/drive/sync', component: DriveWorkspace }, { path: '/console/drive/conflicts', component: DriveWorkspace }, { path: '/console/drive/revisions', component: DriveWorkspace }, { path: '/console/drive/trash', component: DriveWorkspace }, { path: '/console/drive/quota', component: DriveWorkspace }, { path: '/console/drive/policies', component: DriveWorkspace },
   { path: '/console/platform/parameters', component: AdminCatalog }, { path: '/console/platform/dictionaries', component: AdminCatalog }, { path: '/console/platform/menus', component: AdminCatalog }, { path: '/console/communications/audit', component: AdminCatalog }, { path: '/console/communications/templates', component: CommunicationCatalog }, { path: '/console/communications/providers', component: CommunicationCatalog }, { path: '/console/communications/login-logs', component: CommunicationCatalog }, { path: '/console/communications/security-events', component: CommunicationCatalog },
   { path: '/console/ops/subsystems', component: OpsCatalog }, { path: '/console/ops/storage-health', component: OpsCatalog }, { path: '/console/ops/jobs', component: OpsCatalog }, { path: '/console/ops/plugins', component: OpsCatalog }, { path: '/console/security/authentication', component: AuthenticationPolicy }, { path: '/console/account/profile', component: AccountPage }, { path: '/console/account/preferences', component: AccountPage }, { path: '/console/account/security', component: AccountSecurity }, { path: '/console/account/notifications', component: AccountNotifications }, { path: '/console/403', component: AccessDenied },
-  { path: '/console/dashboard', component: DashboardWorkspace }, { path: '/console/activity', component: ActivityWorkspace }, { path: '/console/search', component: SearchWorkspace }, { path: '/console/security/users', component: SecurityWorkspace }, { path: '/console/security/permissions', component: SecurityWorkspace }, { path: '/console/security/sessions', component: SecurityWorkspace }, { path: '/console/:pathMatch(.*)*', component: App }, { path: '/:pathMatch(.*)*', redirect: '/console/dashboard' }
+  { path: '/console/dashboard', component: DashboardWorkspace }, { path: '/console/activity', component: ActivityWorkspace }, { path: '/console/search', component: SearchWorkspace }, { path: '/console/security/users', component: SecurityWorkspace }, { path: '/console/security/permissions', component: SecurityWorkspace }, { path: '/console/security/sessions', component: SecurityWorkspace }, { path: '/console', redirect: '/console/dashboard' }, { path: '/console/:pathMatch(.*)*', component: NotFoundWorkspace }, { path: '/:pathMatch(.*)*', redirect: '/console/dashboard' }
 ]
 routes.unshift({ path: '/console/planning/today', component: TodayWorkspace })
 const router = createRouter({ history: createWebHistory(), routes })
