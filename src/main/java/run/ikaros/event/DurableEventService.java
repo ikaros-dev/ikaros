@@ -54,10 +54,12 @@ public class DurableEventService {
             .concatMap(event -> inbox.existsByConsumerIdAndEventId(consumerId, event.id())
                 .flatMap(processed -> processed
                     ? Mono.defer(() -> mark(event))
-                    : transaction.transactional(outbox.recordAttempt(event.id(), Instant.now()).then()
-                        .then(handler.apply(event))
-                        .then(Mono.defer(() -> inbox.save(new InboxEntryEntity(null, consumerId, event.id(), Instant.now()))))
-                        .then(Mono.defer(() -> mark(event))))))
+                    : outbox.recordAttempt(event.id(), Instant.now())
+                        .then(transaction.transactional(handler.apply(event)
+                            .then(Mono.defer(() -> inbox.save(new InboxEntryEntity(null, consumerId, event.id(), Instant.now()))))
+                            .then(Mono.defer(() -> mark(event)))))
+                )
+            )
             .count();
     }
 
