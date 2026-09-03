@@ -41,7 +41,9 @@ public class DefaultImportRunService implements ImportRunService {
                     + run.planId() + "\"}").then()).then(audit.record(ownerId,"ingestion.import.start",
                         "INGESTION_IMPORT_RUN",run.id(),"{}")).thenReturn(view(run)));
     }
-    public Mono<List<ImportRunItemView>> items(UUID ownerId, UUID runId) { return owned(ownerId,runId).thenMany(runItems.findAllByRunIdOrderByUpdatedAtAsc(runId)).map(this::itemView).collectList(); }
+    public Mono<List<ImportRunItemView>> items(UUID ownerId, UUID runId) { return owned(ownerId,runId)
+        .thenMany(runItems.findAllByRunIdOrderByUpdatedAtAsc(runId).take(MAX_UNPAGED_RESULTS))
+        .map(this::itemView).collectList(); }
     public Mono<ImportRunItemView> retryItem(UUID ownerId,UUID runId,UUID itemId) { return owned(ownerId,runId).then(runItems.findById(itemId).switchIfEmpty(Mono.error(new NotFoundException("导入项不存在")))).flatMap(item -> { if(!item.runId().equals(runId)) return Mono.error(new NotFoundException("导入项不存在")); return runItems.save(new ImportRunItemEntity(item.id(),item.runId(),item.planItemId(),ImportItemStatus.PENDING.name(),item.attemptCount()+1,null,item.idempotencyKey(),Instant.now(),item.version())); }).map(this::itemView); }
     private ImportRunItemView itemView(ImportRunItemEntity i){return new ImportRunItemView(i.id(),i.runId(),i.planItemId(),ImportItemStatus.valueOf(i.status()),i.attemptCount(),i.errorMessage(),i.idempotencyKey(),i.updatedAt());}
     public Mono<List<ImportRunView>> list(UUID ownerId) { return runs.findAllByOwnerIdOrderByCreatedAtDesc(ownerId)
