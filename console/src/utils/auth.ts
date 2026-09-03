@@ -13,6 +13,8 @@ export interface DataInfo<T> {
   avatar?: string;
   /** 用户名 */
   username?: string;
+  /** 后端业务接口使用的当前用户 ID */
+  actorId?: string;
   /** 昵称 */
   nickname?: string;
   /** 当前登录用户的角色 */
@@ -68,7 +70,7 @@ export function setToken(data: DataInfo<Date>) {
       : {}
   );
 
-  function setUserKey({ avatar, username, nickname, roles, permissions }) {
+  function setUserKey({ avatar, username, actorId, nickname, roles, permissions }) {
     useUserStoreHook().SET_AVATAR(avatar);
     useUserStoreHook().SET_USERNAME(username);
     useUserStoreHook().SET_NICKNAME(nickname);
@@ -79,6 +81,7 @@ export function setToken(data: DataInfo<Date>) {
       expires,
       avatar,
       username,
+      actorId,
       nickname,
       roles,
       permissions
@@ -87,9 +90,10 @@ export function setToken(data: DataInfo<Date>) {
 
   if (data.username && data.roles) {
     const { username, roles } = data;
-    setUserKey({
+      setUserKey({
       avatar: data?.avatar ?? "",
       username,
+      actorId: data?.actorId ?? "",
       nickname: data?.nickname ?? "",
       roles,
       permissions: data?.permissions ?? []
@@ -99,6 +103,8 @@ export function setToken(data: DataInfo<Date>) {
       storageLocal().getItem<DataInfo<number>>(userKey)?.avatar ?? "";
     const username =
       storageLocal().getItem<DataInfo<number>>(userKey)?.username ?? "";
+    const actorId =
+      storageLocal().getItem<DataInfo<number>>(userKey)?.actorId ?? "";
     const nickname =
       storageLocal().getItem<DataInfo<number>>(userKey)?.nickname ?? "";
     const roles =
@@ -108,6 +114,7 @@ export function setToken(data: DataInfo<Date>) {
     setUserKey({
       avatar,
       username,
+      actorId,
       nickname,
       roles,
       permissions

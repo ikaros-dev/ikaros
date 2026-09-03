@@ -7,6 +7,7 @@ export type UserResult = {
     avatar: string;
     /** 用户名 */
     username: string;
+    actorId: string;
     /** 昵称 */
     nickname: string;
     /** 当前登录用户的角色 */
@@ -38,7 +39,7 @@ export type RefreshTokenResult = {
 type AuthenticationView = { userId: string; sessionId: string; sessionToken: string; expiresAt: string; user?: { username?: string; displayName?: string; roleCodes?: string[] } };
 
 const toUserResult = (result: AuthenticationView): UserResult => {
-  return { success: true, data: { avatar: "", username: result.user?.username || "", nickname: result.user?.displayName || "", roles: result.user?.roleCodes || [], permissions: [], accessToken: result.sessionToken, refreshToken: result.sessionToken, expires: new Date(result.expiresAt) } };
+  return { success: true, data: { avatar: "", username: result.user?.username || "", actorId: result.userId, nickname: result.user?.displayName || "", roles: result.user?.roleCodes || [], permissions: [], accessToken: result.sessionToken, refreshToken: result.sessionToken, expires: new Date(result.expiresAt) } };
 };
 
 export const getLogin = async (data?: object): Promise<UserResult> => {
