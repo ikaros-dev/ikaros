@@ -1,0 +1,3 @@
+package run.ikaros.music;
+import java.time.Instant; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.annotation.Version; import org.springframework.data.relational.core.mapping.Table; import org.springframework.data.relational.core.mapping.Column;
+@Table("music_queue") public record MusicQueueEntity(@Id UUID id,@Column("owner_id") UUID ownerId,@Column("shuffle_enabled") boolean shuffleEnabled, @Column("shuffle_seed") Long shuffleSeed, MusicRepeatMode repeatMode,@Column("current_entry_id") UUID currentEntryId,Instant createdAt,Instant updatedAt,@Version Long version) {}

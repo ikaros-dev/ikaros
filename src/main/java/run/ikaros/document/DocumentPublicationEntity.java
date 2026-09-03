@@ -1,0 +1,2 @@
+package run.ikaros.document; import java.time.Instant; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.annotation.Version; import org.springframework.data.relational.core.mapping.Table; import org.springframework.data.relational.core.mapping.Column;
+@Table("document_publication") public record DocumentPublicationEntity(@Id UUID id,@Column("document_id") UUID documentId,@Column("revision_id") UUID revisionId,String slug,DocumentPublicationState state,@Column("published_at") Instant publishedAt,@Version Long version) {}

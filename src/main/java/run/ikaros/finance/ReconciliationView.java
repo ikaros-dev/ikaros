@@ -1,0 +1,1 @@
+package run.ikaros.finance; import java.math.BigDecimal; import java.time.Instant; import java.time.LocalDate; import java.util.UUID; public record ReconciliationView(UUID id,UUID accountId,LocalDate statementDate,BigDecimal statementBalance,BigDecimal calculatedBalance,BigDecimal difference,ReconciliationStatus status,String note,Instant createdAt) {}

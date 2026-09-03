@@ -1,0 +1,2 @@
+package run.ikaros.game; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.annotation.Version; import org.springframework.data.relational.core.mapping.Table; import org.springframework.data.relational.core.mapping.Column;
+@Table("game_version") public record GameVersionEntity(@Id UUID id,@Column("owner_id") UUID ownerId,@Column("game_id") UUID gameId,@Column("platform_id") UUID platformId,@Column("version_label") String versionLabel,@Column("release_date") java.time.Instant releaseDate,@Version Long version) {}

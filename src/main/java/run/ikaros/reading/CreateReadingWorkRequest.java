@@ -1,0 +1,1 @@
+package run.ikaros.reading; import jakarta.validation.constraints.NotBlank; import jakarta.validation.constraints.NotNull; public record CreateReadingWorkRequest(@NotBlank String title,@NotNull ReadingWorkKind kind,String locale,String originalLanguage) {}

@@ -369,7 +369,7 @@ HTTP Response DTO
 
 ### 7.3 OpenAPI First
 
-`api/openapi-*.yaml` 是稳定 HTTP 契约的机器可读 Source of Truth。
+`contracts/openapi-*.yaml` 是稳定 HTTP 契约的机器可读 Source of Truth。
 
 CI 必须验证 operationId 唯一、Endpoint 实现覆盖、Schema 兼容性、Error / Problem 结构、snake_case、UUID / RFC3339 格式，以及 ETag / Idempotency / Range 等专项契约。
 

@@ -1,0 +1,1 @@
+package run.ikaros.sharing; import jakarta.validation.constraints.NotBlank; import jakarta.validation.constraints.NotNull; import java.time.Instant; import java.util.UUID; public record CreateShareRequest(@NotBlank String targetType,@NotNull UUID targetId,@NotNull ShareGranteeType granteeType,UUID granteeId,@NotBlank String capabilities,Instant expiresAt) {}

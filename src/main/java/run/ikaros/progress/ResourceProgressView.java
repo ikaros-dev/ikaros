@@ -20,6 +20,11 @@ public record ResourceProgressView(
     /** 是否已完成。 */
     boolean completed,
     /** 最近更新时间。 */
-    Instant updatedAt
+    Instant updatedAt,
+    Long version
 ) {
+    public ResourceProgressView(UUID id, UUID resourceId, ProgressType type, long position, Long total,
+                                boolean completed, Instant updatedAt) {
+        this(id, resourceId, type, position, total, completed, updatedAt, null);
+    }
 }

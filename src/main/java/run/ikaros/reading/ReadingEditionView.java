@@ -1,0 +1,1 @@
+package run.ikaros.reading; import java.util.UUID; public record ReadingEditionView(UUID id,UUID workId,String name,String language,String publisher,String source,int preferenceWeight,String availability) {}

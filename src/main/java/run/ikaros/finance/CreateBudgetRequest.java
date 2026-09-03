@@ -1,0 +1,1 @@
+package run.ikaros.finance; import jakarta.validation.constraints.NotNull; import java.math.BigDecimal; import java.time.YearMonth; import java.util.UUID; public record CreateBudgetRequest(@NotNull UUID categoryId,@NotNull YearMonth month,@NotNull BigDecimal amount) {}

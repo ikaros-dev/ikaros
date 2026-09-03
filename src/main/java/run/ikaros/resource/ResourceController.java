@@ -5,12 +5,14 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.net.URI;
 import java.util.UUID;
+import tools.jackson.databind.JsonNode;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.PageResponse;
+import run.ikaros.common.IfMatchVersion;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -32,7 +35,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
  */
 @Validated
 @RestController
-@RequestMapping("/api/resources")
+@RequestMapping({"/api/resources"})
 public class ResourceController {
     private final ResourceService resourceService;
 
@@ -63,9 +66,10 @@ public class ResourceController {
     public Mono<ResponseEntity<ResourceView>> create(
         @Parameter(description = "当前认证用户 UUID，由认证层注入", required = true, in = ParameterIn.HEADER)
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @RequestHeader("Idempotency-Key") String idempotencyKey,
         @Valid @RequestBody CreateResourceRequest request
     ) {
-        return resourceService.create(actorId, request)
+        return resourceService.create(actorId, request, idempotencyKey)
             .map(resource -> ResponseEntity.created(URI.create("/api/resources/" + resource.id())).body(resource));
     }
 
@@ -97,6 +101,20 @@ public class ResourceController {
         return resourceService.list(actorId, type, query, page, size);
     }
 
+    @Operation(summary = "按外部身份查找资源", description = "使用 Provider、类型和外部 ID 查找当前用户拥有的 Resource。")
+    @GetMapping(":by-external-identity")
+    public Mono<ResourceView> findByExternalIdentity(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @RequestParam String provider,
+        @RequestParam(name = "object_type") String objectType,
+        @RequestParam(name = "external_id") String externalId,
+        @RequestParam(name = "namespace", required = false) String namespace
+    ) {
+        String canonicalProvider = namespace == null || namespace.isBlank()
+            ? provider : provider + ":" + namespace;
+        return resourceService.findByExternalIdentity(actorId, canonicalProvider, objectType, externalId);
+    }
+
     /**
      * 读取一个当前用户可访问的资源。
      *
@@ -111,11 +129,45 @@ public class ResourceController {
         @ApiResponse(responseCode = "404", description = "资源不存在或无权访问", content = @Content)
     })
     @GetMapping("/{resourceId}")
-    public Mono<ResourceView> get(
+    public Mono<ResponseEntity<ResourceView>> get(
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @PathVariable UUID resourceId
     ) {
-        return resourceService.get(actorId, resourceId);
+        return resourceService.get(actorId, resourceId)
+            .map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view));
+    }
+
+    @Operation(summary = "更新资源", description = "按 expected_version 执行乐观并发更新，更新成功后写入可靠 Resource Event。")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "资源更新成功"),
+        @ApiResponse(responseCode = "404", description = "资源不存在或无权访问", content = @Content),
+        @ApiResponse(responseCode = "409", description = "资源版本冲突", content = @Content)
+    })
+    @PatchMapping(value = "/{resourceId}", consumes = "application/merge-patch+json")
+    public Mono<ResponseEntity<ResourceView>> update(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID resourceId,
+        @RequestHeader(value = "If-Match", required = false) String ifMatch,
+        @RequestBody JsonNode body
+    ) {
+        long expectedVersion = IfMatchVersion.parse(ifMatch);
+        JsonNode primaryTitleNode = body.has("primary_title") ? body.get("primary_title") : body.get("primaryTitle");
+        JsonNode summaryNode = body.get("summary");
+        boolean primaryTitlePresent = primaryTitleNode != null;
+        boolean summaryPresent = summaryNode != null;
+        String primaryTitle = primaryTitlePresent && !primaryTitleNode.isNull() ? primaryTitleNode.asText() : null;
+        String summary = summaryPresent && !summaryNode.isNull() ? summaryNode.asText() : null;
+        if (primaryTitle != null && primaryTitle.length() > 512) {
+            throw new IllegalArgumentException("primary_title 长度不能超过 512");
+        }
+        if (summary != null && summary.length() > 4000) {
+            throw new IllegalArgumentException("summary 长度不能超过 4000");
+        }
+        UpdateResourceRequest request = new UpdateResourceRequest(expectedVersion, primaryTitle, summary);
+        return resourceService.update(actorId, resourceId,
+            new UpdateResourceRequest(expectedVersion, request.primaryTitle(), request.summary()),
+            primaryTitlePresent, summaryPresent)
+            .map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view));
     }
 
     /**
@@ -134,9 +186,38 @@ public class ResourceController {
     @DeleteMapping("/{resourceId}")
     public Mono<ResponseEntity<Void>> trash(
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
-        @PathVariable UUID resourceId
+        @PathVariable UUID resourceId,
+        @RequestHeader(value = "If-Match", required = false) String ifMatch
     ) {
-        return resourceService.trash(actorId, resourceId).thenReturn(ResponseEntity.noContent().build());
+        return resourceService.trash(actorId, resourceId, IfMatchVersion.parse(ifMatch))
+            .thenReturn(ResponseEntity.noContent().build());
+    }
+
+    @Operation(summary = "将资源移入回收站并返回资源", description = "以 P0 Action 契约执行逻辑删除，并返回更新后的 Resource。")
+    @PostMapping("/{resourceId}/actions/trash")
+    public Mono<ResponseEntity<ResourceView>> trashAction(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID resourceId,
+        @RequestHeader(value = "If-Match", required = false) String ifMatch
+    ) {
+        return resourceService.trash(actorId, resourceId, IfMatchVersion.parse(ifMatch))
+            .then(resourceService.get(actorId, resourceId))
+            .map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view));
+    }
+
+    @Operation(summary = "归档资源", description = "通过显式生命周期命令归档活动 Resource，不删除任何 Attachment 或 Blob。")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "资源已归档"),
+        @ApiResponse(responseCode = "404", description = "资源不存在或无权访问", content = @Content),
+        @ApiResponse(responseCode = "409", description = "资源当前状态不允许归档", content = @Content)
+    })
+    @PostMapping({"/{resourceId}/archive", "/{resourceId}/actions/archive"})
+    public Mono<ResourceView> archive(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID resourceId,
+        @RequestHeader(value = "If-Match", required = false) String ifMatch
+    ) {
+        return resourceService.archive(actorId, resourceId, IfMatchVersion.parse(ifMatch));
     }
 
     /**
@@ -152,12 +233,13 @@ public class ResourceController {
         @ApiResponse(responseCode = "200", description = "资源恢复成功"),
         @ApiResponse(responseCode = "404", description = "资源不存在或无权访问", content = @Content)
     })
-    @PostMapping("/{resourceId}/restore")
+    @PostMapping({"/{resourceId}/restore", "/{resourceId}/actions/restore"})
     public Mono<ResourceView> restore(
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
-        @PathVariable UUID resourceId
+        @PathVariable UUID resourceId,
+        @RequestHeader(value = "If-Match", required = false) String ifMatch
     ) {
-        return resourceService.restore(actorId, resourceId);
+        return resourceService.restore(actorId, resourceId, IfMatchVersion.parse(ifMatch));
     }
 
     /**
@@ -183,5 +265,15 @@ public class ResourceController {
     ) {
         return resourceService.addExternalIdentity(actorId, resourceId, request)
             .map(identity -> ResponseEntity.status(201).body(identity));
+    }
+
+    @DeleteMapping("/{resourceId}/external-identities/{identityId}")
+    public Mono<ResponseEntity<Void>> detachExternalIdentity(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID resourceId,
+        @PathVariable UUID identityId
+    ) {
+        return resourceService.detachExternalIdentity(actorId, resourceId, identityId)
+            .thenReturn(ResponseEntity.noContent().build());
     }
 }

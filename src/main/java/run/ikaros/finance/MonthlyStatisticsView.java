@@ -1,0 +1,1 @@
+package run.ikaros.finance; import java.math.BigDecimal; import java.time.YearMonth; public record MonthlyStatisticsView(YearMonth month,BigDecimal income,BigDecimal expense,BigDecimal transfer,long transactionCount) {}

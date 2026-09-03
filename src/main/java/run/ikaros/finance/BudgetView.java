@@ -1,0 +1,1 @@
+package run.ikaros.finance; import java.math.BigDecimal; import java.time.YearMonth; import java.util.UUID; public record BudgetView(UUID id,UUID ledgerId,UUID categoryId,YearMonth month,BigDecimal budget,BigDecimal actual,BigDecimal remaining) {}

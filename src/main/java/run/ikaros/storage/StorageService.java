@@ -4,6 +4,7 @@ import java.util.List;
 import java.time.Duration;
 import java.util.UUID;
 import reactor.core.publisher.Mono;
+import run.ikaros.task.BackgroundTask;
 
 /**
  * Attachment、Blob 与持久化 Placement 的公开业务能力。
@@ -19,6 +20,8 @@ public interface StorageService {
      * @return 新建 Attachment 视图
      */
     Mono<AttachmentView> attach(UUID ownerId, UUID resourceId, AttachBlobRequest request);
+
+    Mono<AttachmentView> commitUpload(UUID ownerId, UUID resourceId, CommitUploadRequest request);
 
     /**
      * 登记一个可追溯到原始附件的派生附件。
@@ -40,6 +43,21 @@ public interface StorageService {
     Mono<List<AttachmentView>> list(UUID ownerId, UUID resourceId);
 
     /**
+     * 按附件身份读取元数据，并校验其所属 Resource 的访问权。
+     *
+     * @param ownerId 当前拥有者标识
+     * @param attachmentId Attachment 标识
+     * @return 附件元数据
+     */
+    Mono<AttachmentView> get(UUID ownerId, UUID attachmentId);
+
+    Mono<StorageContent> readContent(UUID ownerId, UUID attachmentId, String range);
+
+    Mono<Void> remove(UUID ownerId, UUID resourceId, UUID attachmentId);
+
+    Mono<Void> archive(UUID ownerId, UUID resourceId, UUID attachmentId);
+
+    /**
      * 扫描无有效 Attachment 引用的 Blob；扫描本身不执行物理删除。
      *
      * @param limit 返回上限
@@ -56,4 +74,6 @@ public interface StorageService {
      * @return 审计写入完成信号
      */
     Mono<Void> recordGarbageCollectionDecision(UUID actorId, UUID blobId, boolean approved);
+
+    Mono<BackgroundTask> requestGarbageCollection(UUID actorId, int limit, Duration minimumAge);
 }

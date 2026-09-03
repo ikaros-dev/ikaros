@@ -2,6 +2,7 @@ package run.ikaros.resource;
 
 import java.util.UUID;
 import reactor.core.publisher.Mono;
+import tools.jackson.databind.JsonNode;
 import run.ikaros.common.PageResponse;
 
 /**
@@ -18,6 +19,8 @@ public interface ResourceService {
      */
     Mono<ResourceView> create(UUID ownerId, CreateResourceRequest request);
 
+    Mono<ResourceView> create(UUID ownerId, CreateResourceRequest request, String idempotencyKey);
+
     /**
      * 获取当前拥有者可见的 Resource。
      *
@@ -26,6 +29,10 @@ public interface ResourceService {
      * @return 完整 Resource
      */
     Mono<ResourceView> get(UUID ownerId, UUID resourceId);
+
+    Mono<ResourceView> update(UUID ownerId, UUID resourceId, UpdateResourceRequest request);
+    Mono<ResourceView> update(UUID ownerId, UUID resourceId, UpdateResourceRequest request,
+                              boolean primaryTitlePresent, boolean summaryPresent);
 
     /**
      * 按标题关键词与类型分页浏览活动 Resource。
@@ -39,6 +46,9 @@ public interface ResourceService {
      */
     Mono<PageResponse<ResourceView>> list(UUID ownerId, ResourceType type, String query, int page, int size);
 
+    Mono<ResourceView> findByExternalIdentity(UUID ownerId, String provider, String externalType,
+                                               String externalId);
+
     /**
      * 将 Resource 移入回收站，不直接删除其 Attachment 或 Blob。
      *
@@ -48,6 +58,13 @@ public interface ResourceService {
      */
     Mono<Void> trash(UUID ownerId, UUID resourceId);
 
+    Mono<Void> trash(UUID ownerId, UUID resourceId, long expectedVersion);
+
+    /** 将 Resource 显式归档。 */
+    Mono<ResourceView> archive(UUID ownerId, UUID resourceId);
+
+    Mono<ResourceView> archive(UUID ownerId, UUID resourceId, long expectedVersion);
+
     /**
      * 从回收站恢复 Resource。
      *
@@ -56,6 +73,8 @@ public interface ResourceService {
      * @return 已恢复的 Resource
      */
     Mono<ResourceView> restore(UUID ownerId, UUID resourceId);
+
+    Mono<ResourceView> restore(UUID ownerId, UUID resourceId, long expectedVersion);
 
     /**
      * 为 Resource 添加稳定外部身份映射。
@@ -67,4 +86,6 @@ public interface ResourceService {
      */
     Mono<ExternalIdentityView> addExternalIdentity(UUID ownerId, UUID resourceId,
                                                    CreateExternalIdentityRequest request);
+
+    Mono<Void> detachExternalIdentity(UUID ownerId, UUID resourceId, UUID identityId);
 }

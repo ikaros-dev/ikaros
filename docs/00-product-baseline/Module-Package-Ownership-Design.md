@@ -432,11 +432,11 @@ Producer = storage
 例如：
 
 ```text
-/api/v2/resources/**      → resource
-/api/v2/attachments/**    → storage
-/api/v2/drive/**          → drive
-/api/v2/media/**          → media
-/api/v2/admin/security/** → security / operations 的明确 owner
+/api/resources/**      → resource
+/api/attachments/**    → storage
+/api/drive/**          → drive
+/api/media/**          → media
+/api/admin/security/** → security / operations 的明确 owner
 ```
 
 Controller 可以位于统一 server adapter，但请求必须进入 Owner 的 Application API，禁止 Controller 横跨多个 Repository 完成业务事务。

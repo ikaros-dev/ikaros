@@ -1,0 +1,1 @@
+package run.ikaros.photo; import jakarta.validation.constraints.NotBlank; import jakarta.validation.constraints.NotNull; import java.util.UUID; public record CreatePhotoRequest(@NotBlank String title,@NotNull UUID attachmentId,String locale) {}

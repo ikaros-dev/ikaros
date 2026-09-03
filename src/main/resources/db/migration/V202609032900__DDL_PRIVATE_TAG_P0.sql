@@ -1,0 +1,1 @@
+CREATE TABLE private_tag (id UUID PRIMARY KEY DEFAULT uuid_v7(),vault_id UUID NOT NULL,owner_id UUID NOT NULL,encrypted_name TEXT NOT NULL,version BIGINT NOT NULL DEFAULT 0,FOREIGN KEY(vault_id) REFERENCES private_vault(id)); CREATE INDEX idx_private_tag_vault ON private_tag(vault_id,owner_id);

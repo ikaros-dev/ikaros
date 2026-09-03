@@ -1,0 +1,1 @@
+package run.ikaros.document; import java.time.Instant; import java.util.UUID; public record DocumentEmbedView(UUID id,UUID documentId,UUID attachmentId,String displayName,String caption,String altText,Instant createdAt) {}

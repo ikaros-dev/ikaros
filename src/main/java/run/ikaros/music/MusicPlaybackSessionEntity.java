@@ -1,0 +1,3 @@
+package run.ikaros.music;
+import java.time.Instant; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.annotation.Version; import org.springframework.data.relational.core.mapping.Table; import org.springframework.data.relational.core.mapping.Column;
+@Table("music_playback_session") public record MusicPlaybackSessionEntity(@Id UUID id,@Column("owner_id") UUID ownerId,@Column("track_id") UUID trackId,@Column("source_id") UUID sourceId,@Column("queue_id") UUID queueId,MusicPlaybackState state,@Column("started_at") Instant startedAt,@Column("last_activity_at") Instant lastActivityAt,@Column("ended_at") Instant endedAt,@Column("position_millis") long positionMillis,@Version Long version) {}

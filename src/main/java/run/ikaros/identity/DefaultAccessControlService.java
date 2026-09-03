@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import run.ikaros.common.ConflictException;
+import run.ikaros.common.ForbiddenException;
 
 /**
  * 默认访问控制服务，禁止高安全验证等级绕过 RBAC 或过期会话的限制。
@@ -43,14 +43,18 @@ public class DefaultAccessControlService implements AccessControlService {
             .flatMap(binding -> permissionRepository.findByRoleIdAndPermissionKey(binding.roleId(), policy.permission().key()))
             .hasElements();
         Mono<Boolean> sessionSatisfiesPolicy = sessionRepository.findById(sessionId)
-            .map(session -> session.userId().equals(userId) && session.revokedAt() == null && session.expiresAt().isAfter(now)
-                && session.currentSvl() >= policy.minimumSvl().value()
-                && (!policy.requireFreshVerification() || (session.verifiedAt() != null
-                    && session.verificationExpiresAt() != null && session.verificationExpiresAt().isAfter(now))))
+            .zipWith(userRepository.findById(userId))
+            .map(pair -> pair.getT1().userId().equals(userId)
+                && pair.getT1().securityVersion() == pair.getT2().securityVersion()
+                && pair.getT1().revokedAt() == null && pair.getT1().expiresAt().isAfter(now)
+                && pair.getT1().currentSvl() >= policy.minimumSvl().value()
+                && (!policy.requireFreshVerification() || (pair.getT1().verifiedAt() != null
+                    && pair.getT1().verificationExpiresAt() != null
+                    && pair.getT1().verificationExpiresAt().isAfter(now))))
             .defaultIfEmpty(false);
         return Mono.zip(userIsActive, permitted, sessionSatisfiesPolicy)
             .flatMap(result -> result.getT1() && result.getT2() && result.getT3()
                 ? Mono.<Void>empty()
-                : Mono.error(new ConflictException("当前身份、权限或安全验证等级不满足操作要求")));
+                : Mono.error(new ForbiddenException("当前身份、权限或安全验证等级不满足操作要求")));
     }
 }

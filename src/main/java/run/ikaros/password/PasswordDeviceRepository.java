@@ -1,0 +1,1 @@
+package run.ikaros.password; import java.util.UUID; import org.springframework.data.repository.reactive.ReactiveCrudRepository; import reactor.core.publisher.Flux; public interface PasswordDeviceRepository extends ReactiveCrudRepository<PasswordDeviceEntity,UUID>{Flux<PasswordDeviceEntity> findAllByOwnerIdOrderByCreatedAtDesc(UUID ownerId);}

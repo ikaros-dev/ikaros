@@ -1,6 +1,7 @@
 package run.ikaros.identity;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * 由平台核心显式声明的管理能力；角色只能引用这些能力，不能任意创造权限字符串。
@@ -17,7 +18,16 @@ public enum PlatformPermission {
     RESOURCE_WRITE("resource.write", "编辑资源"),
     RESOURCE_DELETE("resource.delete", "删除资源"),
     RESOURCE_DOWNLOAD("resource.download", "下载资源"),
-    RESOURCE_SHARE("resource.share", "分享资源");
+    RESOURCE_SHARE("resource.share", "分享资源"),
+    STORAGE_PROVIDER_READ("storage.provider.read", "查看存储 Provider"),
+    STORAGE_PROVIDER_MANAGE("storage.provider.manage", "管理存储 Provider"),
+    STORAGE_DELIVERY_READ("storage.delivery.read", "查看 Delivery Provider 与 Binding"),
+    STORAGE_DELIVERY_MANAGE("storage.delivery.manage", "管理 Delivery Provider 与 Binding"),
+    STORAGE_TIERING_MANAGE("storage.tiering.manage", "管理存储分层与恢复预算"),
+    STORAGE_RESTORE_REQUEST("storage.restore.request", "请求媒体恢复"),
+    STORAGE_RESTORE_READ("storage.restore.read", "查看媒体恢复状态"),
+    STORAGE_RESTORE_MANAGE("storage.restore.manage", "管理媒体恢复任务"),
+    INGESTION_SOURCE_MANAGE("ingestion.source.manage", "管理导入来源");
 
     /** 权限的稳定标识。 */
     private final String key;
@@ -58,5 +68,10 @@ public enum PlatformPermission {
             .filter(permission -> permission.key.equals(key))
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("未声明的平台权限: " + key));
+    }
+
+    /** 返回权限注册表快照，避免调用方自行拼接权限键。 */
+    public static List<String> registeredKeys() {
+        return Arrays.stream(values()).map(PlatformPermission::key).toList();
     }
 }

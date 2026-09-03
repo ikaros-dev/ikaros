@@ -19,7 +19,7 @@
 9. [`database/P0-Database-Schema-Design.md`](./database/P0-Database-Schema-Design.md)
 10. [`contracts/P0-Command-Query-Event-Catalog.md`](./contracts/P0-Command-Query-Event-Catalog.md)
 11. [`contracts/P0-Event-Payload-Schema-Registry.md`](./contracts/P0-Event-Payload-Schema-Registry.md)
-12. [`api/openapi-v2-p0.yaml`](./api/openapi-v2-p0.yaml)
+12. [`contracts/openapi-v2-p0.yaml`](./contracts/openapi-v2-p0.yaml)
 13. [`testing/P0-Acceptance-Invariant-Test-Matrix.md`](./testing/P0-Acceptance-Invariant-Test-Matrix.md)
 14. 目标业务对应的 Subsystem Design
 15. App / CMS Interaction Design

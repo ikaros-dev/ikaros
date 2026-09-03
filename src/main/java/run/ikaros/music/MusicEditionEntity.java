@@ -1,0 +1,3 @@
+package run.ikaros.music;
+import java.time.Instant; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.annotation.Version; import org.springframework.data.relational.core.mapping.Table; import org.springframework.data.relational.core.mapping.Column;
+@Table("music_edition") public record MusicEditionEntity(@Id UUID id,@Column("owner_id") UUID ownerId,@Column("album_id") UUID albumId,@Column("edition_name") String editionName,Instant releaseDate,String country,String label,@Column("catalog_number") String catalogNumber,@Column("medium_type") String mediumType,@Version Long version) {}

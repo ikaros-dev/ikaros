@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.server.ServerWebInputException;
 
 /**
  * 将领域异常收敛为稳定的 RFC 9457 问题响应。
@@ -21,7 +23,7 @@ public class ApiExceptionHandler {
      */
     @ExceptionHandler(NotFoundException.class)
     public ProblemDetail handleNotFound(NotFoundException exception) {
-        return problem(HttpStatus.NOT_FOUND, exception.getMessage());
+        return problem(HttpStatus.NOT_FOUND, exception.code(), exception.getMessage());
     }
 
     /**
@@ -32,7 +34,32 @@ public class ApiExceptionHandler {
      */
     @ExceptionHandler(ConflictException.class)
     public ProblemDetail handleConflict(ConflictException exception) {
-        return problem(HttpStatus.CONFLICT, exception.getMessage());
+        return problem(HttpStatus.CONFLICT, exception.code(), exception.getMessage());
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ProblemDetail handleForbidden(ForbiddenException exception) {
+        return problem(HttpStatus.FORBIDDEN, exception.code(), exception.getMessage());
+    }
+
+    @ExceptionHandler(PreconditionRequiredException.class)
+    public ProblemDetail handlePreconditionRequired(PreconditionRequiredException exception) {
+        return problem(HttpStatus.PRECONDITION_REQUIRED, "precondition.required", exception.getMessage());
+    }
+
+    @ExceptionHandler(PreconditionFailedException.class)
+    public ProblemDetail handlePreconditionFailed(PreconditionFailedException exception) {
+        return problem(HttpStatus.PRECONDITION_FAILED, "precondition.failed", exception.getMessage());
+    }
+
+    @ExceptionHandler(StorageUnavailableException.class)
+    public ProblemDetail handleStorageUnavailable(StorageUnavailableException exception) {
+        return problem(HttpStatus.SERVICE_UNAVAILABLE, "storage.unavailable", exception.getMessage());
+    }
+
+    @ExceptionHandler(InvalidRangeException.class)
+    public ProblemDetail handleInvalidRange(InvalidRangeException exception) {
+        return problem(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE, "range.invalid", exception.getMessage());
     }
 
     /**
@@ -43,7 +70,7 @@ public class ApiExceptionHandler {
      */
     @ExceptionHandler(ConstraintViolationException.class)
     public ProblemDetail handleValidation(ConstraintViolationException exception) {
-        return problem(HttpStatus.BAD_REQUEST, exception.getMessage());
+        return problem(HttpStatus.BAD_REQUEST, "validation.failed", exception.getMessage());
     }
 
     /**
@@ -54,12 +81,23 @@ public class ApiExceptionHandler {
      */
     @ExceptionHandler(IllegalArgumentException.class)
     public ProblemDetail handleIllegalArgument(IllegalArgumentException exception) {
-        return problem(HttpStatus.BAD_REQUEST, exception.getMessage());
+        return problem(HttpStatus.BAD_REQUEST, "request.invalid", exception.getMessage());
     }
 
-    private ProblemDetail problem(HttpStatus status, String detail) {
+    @ExceptionHandler(WebExchangeBindException.class)
+    public ProblemDetail handleBodyValidation(WebExchangeBindException exception) {
+        return problem(HttpStatus.BAD_REQUEST, "validation.failed", exception.getMessage());
+    }
+
+    @ExceptionHandler(ServerWebInputException.class)
+    public ProblemDetail handleWebInput(ServerWebInputException exception) {
+        return problem(HttpStatus.BAD_REQUEST, "request.invalid", exception.getReason());
+    }
+
+    private ProblemDetail problem(HttpStatus status, String code, String detail) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
         problem.setProperty("timestamp", Instant.now());
+        problem.setProperty("code", code);
         return problem;
     }
 }

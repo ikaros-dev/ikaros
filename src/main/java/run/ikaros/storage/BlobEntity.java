@@ -13,6 +13,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Table("blob")
 public record BlobEntity(
     @Id UUID id,
+    @Column("hash_algorithm") String hashAlgorithm,
     String sha256,
     @Column("size_bytes") long sizeBytes,
     @Column("media_type") String mediaType,
@@ -20,4 +21,8 @@ public record BlobEntity(
     @Column("created_at") Instant createdAt,
     @Version Long version
 ) {
+    public BlobEntity(UUID id, String sha256, long sizeBytes, String mediaType,
+                      BlobAvailability availability, Instant createdAt, Long version) {
+        this(id, "SHA-256", sha256, sizeBytes, mediaType, availability, createdAt, version);
+    }
 }

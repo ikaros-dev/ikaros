@@ -1,0 +1,1 @@
+package run.ikaros.reading; import jakarta.validation.constraints.NotNull; import java.util.UUID; public record StartReadingSessionRequest(@NotNull UUID editionId,@NotNull UUID chapterId,String locatorKind,String locatorValue,boolean offline) {}

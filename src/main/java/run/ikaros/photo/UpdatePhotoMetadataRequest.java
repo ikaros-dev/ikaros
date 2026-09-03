@@ -1,0 +1,1 @@
+package run.ikaros.photo; import java.time.Instant; public record UpdatePhotoMetadataRequest(Instant captureTime,String captureTimeLocal,String timeZone,Integer width,Integer height,Integer orientation,String cameraMake,String cameraModel,String lensModel,String latitude,String longitude) {}

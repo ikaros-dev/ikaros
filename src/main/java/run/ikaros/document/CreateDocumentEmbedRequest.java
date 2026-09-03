@@ -1,0 +1,1 @@
+package run.ikaros.document; import jakarta.validation.constraints.NotNull; import java.util.UUID; public record CreateDocumentEmbedRequest(@NotNull UUID attachmentId,String displayName,String caption,String altText) {}

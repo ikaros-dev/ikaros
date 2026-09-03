@@ -3,6 +3,7 @@ package run.ikaros.resource;
 import java.util.List;
 import java.util.UUID;
 import reactor.core.publisher.Mono;
+import run.ikaros.common.PageResponse;
 
 /**
  * 用户自定义 Resource 标签的业务能力。
@@ -13,6 +14,8 @@ public interface ResourceTagService {
 
     /** 查询资源的全部用户标签。 */
     Mono<List<ResourceTagView>> list(UUID ownerId, UUID resourceId);
+
+    Mono<PageResponse<ResourceTagView>> listCatalog(UUID ownerId, int page, int size);
 
     /** 删除资源上的指定用户标签。 */
     Mono<Void> remove(UUID ownerId, UUID resourceId, UUID tagId);

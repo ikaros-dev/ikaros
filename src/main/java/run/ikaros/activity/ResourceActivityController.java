@@ -29,7 +29,7 @@ import reactor.core.publisher.Mono;
  */
 @Validated
 @RestController
-@RequestMapping("/api/activity")
+@RequestMapping({"/api/activity"})
 public class ResourceActivityController {
     private final ResourceActivityService activityService;
 

@@ -27,6 +27,27 @@ public class DefaultStoragePlacementService implements StoragePlacementService {
     }
 
     @Override
+    public reactor.core.publisher.Flux<PlacementView> list(UUID blobId) {
+        return blobRepository.findById(blobId)
+            .switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在")))
+            .thenMany(placementRepository.findAllByBlobIdOrderByCreatedAtAsc(blobId).take(100))
+            .map(placement -> new PlacementView(placement.id(), placement.provider(), placement.storageTier(),
+                placement.objectKey(), placement.placementState()));
+    }
+
+    @Override
+    public Mono<PlacementView> resolveReadable(UUID blobId) {
+        return blobRepository.findById(blobId)
+            .switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在")))
+            .thenMany(placementRepository.findAllByBlobIdOrderByCreatedAtAsc(blobId))
+            .filter(placement -> placement.placementState() == PlacementState.ACTIVE)
+            .map(placement -> new PlacementView(placement.id(), placement.provider(), placement.storageTier(),
+                placement.objectKey(), placement.placementState()))
+            .next()
+            .switchIfEmpty(Mono.error(new NotFoundException("Blob 当前没有可读副本")));
+    }
+
+    @Override
     public Mono<StoragePlacementPlanView> inspect(UUID blobId, StorageTier preferredTier, int minimumReplicas) {
         if (minimumReplicas < 1 || minimumReplicas > 32) {
             return Mono.error(new IllegalArgumentException("最小副本数必须介于 1 和 32 之间"));

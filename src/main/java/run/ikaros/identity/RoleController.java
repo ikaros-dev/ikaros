@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,7 +25,7 @@ import reactor.core.publisher.Mono;
  * 提供角色和平台权限注册表的管理接口。
  */
 @RestController
-@RequestMapping("/api/roles")
+@RequestMapping({"/api/roles", "/api/admin/roles"})
 public class RoleController {
     private final RoleService roleService;
 
@@ -94,5 +95,14 @@ public class RoleController {
         @PathVariable PlatformPermission permission
     ) {
         return roleService.grantPermission(actorId, roleId, permission);
+    }
+
+    @PutMapping("/{roleId}/permissions")
+    public Mono<RoleView> replacePermissions(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID roleId,
+        @Valid @RequestBody ReplaceRolePermissionsRequest request
+    ) {
+        return roleService.replacePermissions(actorId, roleId, request);
     }
 }

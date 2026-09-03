@@ -1,0 +1,1 @@
+package run.ikaros.notes; import jakarta.validation.constraints.NotBlank; public record CommitNoteRevisionRequest(@NotBlank String encryptedTitle,@NotBlank String encryptedBody,String encryptedProperties,long expectedRevision) {}

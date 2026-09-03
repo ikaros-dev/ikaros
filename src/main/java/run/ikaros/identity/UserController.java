@@ -14,6 +14,7 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,7 +30,7 @@ import run.ikaros.common.PageResponse;
  */
 @Validated
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping({"/api/users", "/api/admin/users"})
 public class UserController {
     private final UserService userService;
 
@@ -91,6 +92,11 @@ public class UserController {
         return userService.list(status, query, page, size);
     }
 
+    @GetMapping("/{userId}")
+    public Mono<UserView> get(@PathVariable UUID userId) {
+        return userService.get(userId);
+    }
+
     /**
      * 修改指定用户的生命周期状态。
      *
@@ -135,5 +141,14 @@ public class UserController {
         @PathVariable UUID roleId
     ) {
         return userService.assignRole(actorId, userId, roleId).thenReturn(ResponseEntity.noContent().build());
+    }
+
+    @DeleteMapping("/{userId}/roles/{roleId}")
+    public Mono<ResponseEntity<Void>> removeRole(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID userId,
+        @PathVariable UUID roleId
+    ) {
+        return userService.removeRole(actorId, userId, roleId).thenReturn(ResponseEntity.noContent().build());
     }
 }

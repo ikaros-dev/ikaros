@@ -20,6 +20,11 @@ public record PlatformUserEntity(
     @Column("created_at") Instant createdAt,
     @Column("updated_at") Instant updatedAt,
     @Column("last_login_at") Instant lastLoginAt,
+    @Column("security_version") long securityVersion,
     @Version Long version
 ) {
+    public PlatformUserEntity(UUID id, String username, String displayName, String email, UserStatus status,
+                              Instant createdAt, Instant updatedAt, Instant lastLoginAt, Long version) {
+        this(id, username, displayName, email, status, createdAt, updatedAt, lastLoginAt, 0L, version);
+    }
 }

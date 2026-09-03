@@ -1,0 +1,1 @@
+package run.ikaros.music; import java.util.UUID; import org.springframework.data.repository.reactive.ReactiveCrudRepository; public interface MusicQueueRepository extends ReactiveCrudRepository<MusicQueueEntity,UUID>{}

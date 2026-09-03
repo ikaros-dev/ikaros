@@ -1,0 +1,1 @@
+package run.ikaros.finance; import java.math.BigDecimal; import java.time.Instant; import java.util.UUID; public record TransactionView(UUID id,UUID ledgerId,TransactionType type,UUID accountId,UUID targetAccountId,BigDecimal amount,String currency,UUID categoryId,String payee,String note,Instant occurredAt,TransactionStatus status,String source) {}

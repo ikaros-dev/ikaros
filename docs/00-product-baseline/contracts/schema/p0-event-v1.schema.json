@@ -19,7 +19,16 @@
         "resource.collection.created", "resource.collection.member-added", "resource.collection.member-removed", "resource.user-state.changed",
         "storage.attachment.created", "storage.attachment.archived", "storage.attachment.trashed", "storage.blob.verified", "storage.blob.integrity-failed",
         "storage.provider.created", "storage.provider.updated", "storage.provider.enabled", "storage.provider.disabled", "storage.provider.drain-requested",
-        "storage.blob.gc-requested", "storage.blob.purged",
+        "storage.delivery-provider.created", "storage.delivery-provider.updated", "storage.delivery-provider.enabled", "storage.delivery-provider.disabled", "storage.delivery-provider.probe-requested", "storage.delivery-provider.probed", "storage.delivery-provider.degraded", "storage.delivery-provider.signing-key-rotation-requested", "storage.delivery-provider.signing-key-rotated",
+        "storage.delivery-lease.created", "storage.delivery-lease.released", "storage.delivery-lease.expired",
+        "storage.restore-budget.updated",
+        "storage.placement.promotion-requested", "storage.placement.demotion-requested", "storage.placement.tiering-completed",
+        "storage.delivery-binding.created", "storage.delivery-binding.updated", "storage.delivery-binding.removed",
+        "storage.restore-request.requested", "storage.restore-request.cancel-requested", "storage.restore-request.retry-requested",
+        "storage.restore-request.completed",
+        "storage.restore-operation.started", "storage.restore-operation.ready", "storage.restore-operation.failed", "storage.restore-operation.expired",
+        "storage.blob.gc-requested", "storage.blob.purged", "storage.restore.reconcile-requested", "storage.restore.reconciled",
+        "attachment.purged", "ingestion.import.started", "ingestion.plan.generated", "source.item.unavailable",
         "operations.background-task.created", "operations.background-task.started", "operations.background-task.succeeded", "operations.background-task.failed",
         "operations.background-task.cancel-requested", "operations.background-task.cancelled", "operations.background-task.retry-requested", "operations.background-task.timed-out",
         "identity.user.created", "identity.user.disabled", "identity.user.enabled", "identity.user.sessions-revoked", "identity.role.created",
@@ -28,7 +37,7 @@
     },
     "schema_version": { "type": "integer", "const": 1 },
     "occurred_at": { "type": "string", "format": "date-time" },
-    "producer_subsystem": { "type": "string", "enum": ["resource", "storage", "operations", "identity"] },
+    "producer_subsystem": { "type": "string", "enum": ["resource", "storage", "operations", "identity", "ingestion"] },
     "actor": {
       "type": ["object", "null"],
       "properties": { "type": { "type": "string" }, "id": { "type": ["string", "null"], "format": "uuid" } },
@@ -50,6 +59,7 @@
     { "if": { "properties": { "event_type": { "pattern": "^storage\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "storage" } } } },
     { "if": { "properties": { "event_type": { "pattern": "^operations\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "operations" } } } },
     { "if": { "properties": { "event_type": { "pattern": "^identity\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "identity" } } } }
+    ,{ "if": { "properties": { "event_type": { "pattern": "^(ingestion\\.|source\\.)" } } }, "then": { "properties": { "producer_subsystem": { "const": "ingestion" } } } }
   ],
   "additionalProperties": true
 }

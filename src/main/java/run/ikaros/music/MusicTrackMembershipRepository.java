@@ -1,0 +1,1 @@
+package run.ikaros.music; import java.util.UUID; import org.springframework.data.repository.reactive.ReactiveCrudRepository; import reactor.core.publisher.Flux; public interface MusicTrackMembershipRepository extends ReactiveCrudRepository<MusicTrackMembershipEntity,UUID>{Flux<MusicTrackMembershipEntity> findAllByEditionIdOrderBySortOrderAsc(UUID editionId);}

@@ -1,0 +1,2 @@
+package run.ikaros.planning; import java.time.Instant; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.annotation.Version; import org.springframework.data.relational.core.mapping.Column; import org.springframework.data.relational.core.mapping.Table;
+@Table("planning_project_section") public record PlanningProjectSectionEntity(@Id UUID id,@Column("project_id") UUID projectId,String name,int position,@Column("created_at") Instant createdAt,@Column("updated_at") Instant updatedAt,@Version Long version) {}

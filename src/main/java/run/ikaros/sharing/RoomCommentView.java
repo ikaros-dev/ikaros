@@ -1,0 +1,1 @@
+package run.ikaros.sharing; import java.time.Instant; import java.util.UUID; public record RoomCommentView(UUID id,UUID roomId,UUID authorId,String body,boolean deleted,Instant createdAt,Instant updatedAt) {}

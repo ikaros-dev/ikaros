@@ -1,0 +1,1 @@
+package run.ikaros.finance; import java.math.BigDecimal; import java.time.Instant; import java.time.LocalDate; import java.util.UUID; public record BalanceSnapshotView(UUID id,UUID accountId,LocalDate snapshotDate,BigDecimal balance,String currency,Instant createdAt) {}

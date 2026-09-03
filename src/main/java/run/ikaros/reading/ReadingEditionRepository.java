@@ -1,0 +1,1 @@
+package run.ikaros.reading; import java.util.UUID; import org.springframework.data.repository.reactive.ReactiveCrudRepository; import reactor.core.publisher.Flux; public interface ReadingEditionRepository extends ReactiveCrudRepository<ReadingEditionEntity,UUID>{Flux<ReadingEditionEntity> findAllByOwnerIdAndWorkId(UUID ownerId,UUID workId);}

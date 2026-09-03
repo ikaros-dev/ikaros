@@ -3,6 +3,7 @@ package run.ikaros.collection;
 import java.util.List;
 import java.util.UUID;
 import reactor.core.publisher.Mono;
+import run.ikaros.common.PageResponse;
 
 /**
  * Collection 的公开业务能力。
@@ -26,6 +27,8 @@ public interface CollectionService {
      */
     Mono<List<CollectionView>> list(UUID ownerId);
 
+    Mono<PageResponse<CollectionView>> list(UUID ownerId, int page, int size);
+
     /**
      * 将当前用户拥有的 Resource 加入 Collection。
      *
@@ -36,4 +39,9 @@ public interface CollectionService {
      * @return 完成信号
      */
     Mono<Void> addResource(UUID ownerId, UUID collectionId, UUID resourceId, int position);
+
+    /** 移动集合并拒绝自引用及任意深度祖先循环。 */
+    Mono<CollectionView> move(UUID ownerId, UUID collectionId, UUID parentId);
+
+    Mono<Void> removeResource(UUID ownerId, UUID collectionId, UUID resourceId);
 }

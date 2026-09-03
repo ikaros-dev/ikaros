@@ -1,0 +1,1 @@
+package run.ikaros.document; import java.time.Instant; import java.util.UUID; public record WorkingCopyView(UUID documentId,String content,String contentSchemaVersion,UUID baseRevisionId,Instant updatedAt,long version) {}

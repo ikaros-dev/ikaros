@@ -1,0 +1,1 @@
+package run.ikaros.notes; import java.util.List; import java.util.UUID; public record PrivateVaultExport(UUID vaultId,String securityProfile,String cryptoContext,String encryptedRecoveryKey,List<NoteView> notes) {}

@@ -398,6 +398,159 @@ Payload 与 attached 相同 identity key。
 }
 ```
 
+### `storage.delivery-provider.created@1`
+
+```json
+{ "delivery_provider_id": "uuid", "provider_type": "DIRECT|CDN|SERVER_PROXY" }
+```
+
+### `storage.delivery-provider.updated@1`
+
+```json
+{ "delivery_provider_id": "uuid", "changed_fields": ["config", "enabled"], "version": 2 }
+```
+
+### `storage.delivery-provider.enabled@1` / `storage.delivery-provider.disabled@1`
+
+```json
+{ "delivery_provider_id": "uuid" }
+```
+
+### `storage.delivery-provider.probe-requested@1`
+
+```json
+{ "delivery_provider_id": "uuid", "task_id": "uuid" }
+```
+
+### `storage.delivery-provider.signing-key-rotation-requested@1`
+
+```json
+{ "delivery_provider_id": "uuid", "task_id": "uuid" }
+```
+
+### `storage.delivery-provider.probed@1`
+
+```json
+{ "delivery_provider_id": "uuid", "health_status": "HEALTHY|DEGRADED|UNHEALTHY|UNKNOWN", "capability_changes": [] }
+```
+
+### `storage.delivery-provider.degraded@1`
+
+```json
+{ "delivery_provider_id": "uuid", "reason_code": "health-check-degraded" }
+```
+
+### `storage.delivery-provider.signing-key-rotated@1`
+
+```json
+{ "delivery_provider_id": "uuid", "previous_key_version": 1, "new_key_version": 2 }
+```
+
+### `storage.delivery-lease.created@1`
+
+```json
+{ "lease_id": "uuid", "attachment_id": "uuid", "purpose": "DELIVERY", "expires_at": "timestamp" }
+```
+
+### `storage.delivery-lease.released@1`
+
+```json
+{ "lease_id": "uuid", "attachment_id": "uuid" }
+```
+
+### `storage.delivery-lease.expired@1`
+
+```json
+{ "lease_id": "uuid", "attachment_id": "uuid" }
+```
+
+### `storage.restore-budget.updated@1`
+
+```json
+{ "policy_id": "uuid", "scope_type": "INSTANCE", "scope_id": null, "version": 2 }
+```
+
+### `storage.restore-request.retry-requested@1`
+
+```json
+{ "request_id": "uuid", "failed_item_count": 3 }
+```
+
+### `storage.restore.reconcile-requested@1`
+
+```json
+{
+  "operation_id": "uuid"
+}
+```
+
+### `storage.restore.reconciled@1`
+
+```json
+{
+  "operation_id": "uuid",
+  "status": "SUCCEEDED | FAILED | REQUESTED | IN_PROGRESS"
+}
+```
+
+### `attachment.purged@1`
+
+```json
+{
+  "attachment_id": "uuid",
+  "resource_id": "uuid",
+  "blob_id": "uuid",
+  "purged_at": "date-time"
+}
+```
+
+### `ingestion.import.started@1`
+
+```json
+{
+  "run_id": "uuid",
+  "plan_id": "uuid"
+}
+```
+
+### `ingestion.plan.generated@1`
+
+```json
+{
+  "plan_id": "uuid",
+  "scan_run_id": "uuid"
+}
+```
+
+### `source.item.unavailable@1`
+
+```json
+{
+  "item_id": "uuid",
+  "source_id": "uuid",
+  "reason": "string"
+}
+```
+
+### `storage.placement.promotion-requested@1` / `storage.placement.demotion-requested@1`
+
+```json
+{
+  "placement_id": "uuid",
+  "blob_id": "uuid",
+  "target_tier": "HOT | WARM | COLD | ARCHIVE"
+}
+```
+
+### `storage.placement.tiering-completed@1`
+
+```json
+{
+  "placement_id": "uuid",
+  "target_tier": "HOT | WARM | COLD | ARCHIVE"
+}
+```
+
 ## 6. Compatibility Rules
 
 P0 payload compatibility baseline：

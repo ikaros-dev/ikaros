@@ -1,0 +1,1 @@
+package run.ikaros.document; import java.time.Instant; import java.util.UUID; public record RevisionView(UUID id,UUID documentId,long revisionNumber,String content,String contentSchemaVersion,Instant createdAt) {}

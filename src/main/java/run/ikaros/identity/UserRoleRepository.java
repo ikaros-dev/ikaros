@@ -25,4 +25,6 @@ public interface UserRoleRepository extends ReactiveCrudRepository<UserRoleEntit
      * @return 可选的角色绑定
      */
     Mono<UserRoleEntity> findByUserIdAndRoleId(UUID userId, UUID roleId);
+
+    Mono<Void> deleteByUserIdAndRoleId(UUID userId, UUID roleId);
 }

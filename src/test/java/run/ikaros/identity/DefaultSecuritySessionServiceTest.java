@@ -2,6 +2,7 @@ package run.ikaros.identity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.audit.AuditService;
+import run.ikaros.event.DurableEventService;
 
 /** 验证安全会话的创建、升级、查询和撤销规则。 */
 class DefaultSecuritySessionServiceTest {
@@ -93,6 +95,50 @@ class DefaultSecuritySessionServiceTest {
             .thenReturn(Mono.empty());
 
         StepVerifier.create(service.revoke(actorId, userId, sessionId)).verifyComplete();
+        verify(sessionRepository).save(any(SecuritySessionEntity.class));
+    }
+
+    @Test
+    void emitsSessionRevokedEvent() {
+        UUID actorId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID sessionId = UUID.randomUUID();
+        Instant now = Instant.now();
+        SecuritySessionEntity session = new SecuritySessionEntity(sessionId, userId, "EMAIL_OTP", 0, null, null,
+            now.plusSeconds(3600), null, now, now, 0L);
+        DurableEventService events = mock(DurableEventService.class);
+        when(sessionRepository.findById(sessionId)).thenReturn(Mono.just(session));
+        when(sessionRepository.save(any())).thenReturn(Mono.just(session));
+        when(events.append(eq("identity.session.revoked"), eq(1), eq("session"), eq(sessionId), any(String.class)))
+            .thenReturn(Mono.empty());
+        when(auditService.record(eq(actorId), eq("identity.session.revoke"), eq("SESSION"), eq(sessionId), eq("{}")))
+            .thenReturn(Mono.empty());
+        DefaultSecuritySessionService eventService = new DefaultSecuritySessionService(userRepository, sessionRepository,
+            auditService, events);
+
+        StepVerifier.create(eventService.revoke(actorId, userId, sessionId)).verifyComplete();
+        verify(events).append(eq("identity.session.revoked"), eq(1), eq("session"), eq(sessionId), any(String.class));
+    }
+
+    @Test
+    void revokesAllSessionsAndRaisesSecurityVersion() {
+        UUID actorId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity user = new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, now, now, null, 4L, 0L);
+        SecuritySessionEntity session = new SecuritySessionEntity(UUID.randomUUID(), userId, 4L, "EMAIL_OTP", 0,
+            null, null, now.plusSeconds(3600), null, now, now, 0L);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(user));
+        when(userRepository.save(any())).thenReturn(Mono.just(user));
+        when(sessionRepository.findAllByUserIdAndRevokedAtIsNullAndExpiresAtAfter(eq(userId), any()))
+            .thenReturn(Flux.just(session));
+        when(sessionRepository.save(any())).thenReturn(Mono.just(session));
+        when(auditService.record(eq(actorId), eq("identity.session.revoke-all"), eq("USER"), eq(userId), eq("{}")))
+            .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.revokeAll(actorId, userId)).verifyComplete();
+        verify(userRepository).save(argThat(saved -> saved.securityVersion() == 5L));
         verify(sessionRepository).save(any(SecuritySessionEntity.class));
     }
 }

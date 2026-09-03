@@ -1,0 +1,1 @@
+package run.ikaros.password; import java.util.UUID; import org.springframework.data.repository.reactive.ReactiveCrudRepository; import reactor.core.publisher.Mono; public interface TotpConfigRepository extends ReactiveCrudRepository<TotpConfigEntity,UUID>{Mono<TotpConfigEntity> findByItemIdAndOwnerId(UUID itemId,UUID ownerId);}

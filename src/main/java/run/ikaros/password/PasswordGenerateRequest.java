@@ -1,0 +1,1 @@
+package run.ikaros.password; public record PasswordGenerateRequest(Integer length,Boolean uppercase,Boolean lowercase,Boolean numbers,Boolean symbols,Boolean avoidAmbiguous,Integer minimumNumbers,Integer minimumSymbols) {}

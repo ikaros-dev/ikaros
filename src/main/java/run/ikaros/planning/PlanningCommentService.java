@@ -1,0 +1,2 @@
+package run.ikaros.planning; import java.util.UUID; import reactor.core.publisher.Flux; import reactor.core.publisher.Mono;
+public interface PlanningCommentService {Mono<PlanningCommentView> create(UUID authorId,CreatePlanningCommentRequest request);Flux<PlanningCommentView> list(UUID ownerId,PlanningCommentTargetType type,UUID targetId);Mono<PlanningCommentView> update(UUID authorId,UUID commentId,UpdatePlanningCommentRequest request);Mono<Void> delete(UUID authorId,UUID commentId);Mono<Void> delete(UUID authorId,UUID commentId,long expectedVersion);}

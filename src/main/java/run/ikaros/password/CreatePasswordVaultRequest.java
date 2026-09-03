@@ -1,0 +1,1 @@
+package run.ikaros.password; import jakarta.validation.constraints.NotBlank; public record CreatePasswordVaultRequest(@NotBlank String name,@NotBlank String cryptoContext,String encryptedRecoveryKey) {}

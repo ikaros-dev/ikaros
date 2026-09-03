@@ -8,7 +8,7 @@
 | 基线 | `P0-Acceptance-Invariant-Test-Matrix.md` |
 | Schema | `../database/P0-Media-Delivery-Restore-Schema-Addendum.md` |
 | Contract | `../contracts/P0-Media-Delivery-Restore-Contract-Addendum.md` |
-| OpenAPI | `../api/openapi-v2-p0-media-delivery-restore.yaml` |
+| OpenAPI | `../contracts/openapi-v2-p0-media-delivery-restore.yaml` |
 
 > 本矩阵是 P0 Acceptance 基线的规范性扩展。所有新增 Delivery / Restore P0 能力必须有自动化证据；不能因为功能依赖外部 CDN / Object Storage 就只保留手工测试。
 

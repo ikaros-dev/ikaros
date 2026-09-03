@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono;
  * 提供 Blob 多级存储 Placement 规划查询接口。
  */
 @RestController
-@RequestMapping("/api/storage/blobs")
+@RequestMapping({"/api/storage/blobs", "/api/admin/blobs"})
 public class StoragePlacementController {
     private final StoragePlacementService storagePlacementService;
 
@@ -30,6 +30,12 @@ public class StoragePlacementController {
      */
     public StoragePlacementController(StoragePlacementService storagePlacementService) {
         this.storagePlacementService = storagePlacementService;
+    }
+
+    @GetMapping("/{blobId}/placements")
+    public reactor.core.publisher.Flux<PlacementView> list(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID blobId) {
+        return storagePlacementService.list(blobId);
     }
 
     /**

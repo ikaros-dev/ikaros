@@ -1,0 +1,2 @@
+package run.ikaros.document; import java.time.Instant; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.relational.core.mapping.Table; import org.springframework.data.relational.core.mapping.Column;
+@Table("document_embed") public record DocumentEmbedEntity(@Id UUID id,@Column("document_id") UUID documentId,@Column("attachment_id") UUID attachmentId,@Column("display_name") String displayName,String caption,@Column("alt_text") String altText,Instant createdAt) {}

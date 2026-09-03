@@ -5,22 +5,26 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;
+import run.ikaros.event.DurableEventService;
 
 /**
  * 默认用户服务，维护用户状态、角色绑定与对应审计记录。
  */
 @Service
 public class DefaultUserService implements UserService {
+    private static final int MAX_PAGE_SIZE = 100;
     private final PlatformUserRepository userRepository;
     private final PlatformRoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
     private final AuditService auditService;
+    private final DurableEventService eventService;
 
     /**
      * 创建用户服务。
@@ -32,25 +36,42 @@ public class DefaultUserService implements UserService {
      */
     public DefaultUserService(PlatformUserRepository userRepository, PlatformRoleRepository roleRepository,
                               UserRoleRepository userRoleRepository, AuditService auditService) {
+        this(userRepository, roleRepository, userRoleRepository, auditService, null);
+    }
+
+    @Autowired
+    public DefaultUserService(PlatformUserRepository userRepository, PlatformRoleRepository roleRepository,
+                              UserRoleRepository userRoleRepository, AuditService auditService,
+                              DurableEventService eventService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userRoleRepository = userRoleRepository;
         this.auditService = auditService;
+        this.eventService = eventService;
     }
 
     @Override
     public Mono<UserView> create(UUID actorId, CreateUserRequest request) {
         Instant now = Instant.now();
         PlatformUserEntity user = new PlatformUserEntity(null, request.username().trim(), request.displayName().trim(),
-            normalizeEmail(request.email()), UserStatus.PENDING, now, now, null, null);
+            normalizeEmail(request.email()), UserStatus.PENDING, now, now, null, 0L, null);
         return userRepository.save(user)
             .onErrorMap(DuplicateKeyException.class, exception -> new ConflictException("用户名或邮箱已存在"))
-            .flatMap(saved -> auditService.record(actorId, "identity.user.create", "USER", saved.id(), "{}")
+            .flatMap(saved -> emitUserCreated(saved)
+                .then(auditService.record(actorId, "identity.user.create", "USER", saved.id(), "{}"))
                 .then(toView(saved)));
     }
 
     @Override
+    public Mono<UserView> get(UUID userId) {
+        return requiredUser(userId).flatMap(this::toView);
+    }
+
+    @Override
     public Mono<PageResponse<UserView>> list(UserStatus status, String query, int page, int size) {
+        if (page < 0 || size < 1 || size > MAX_PAGE_SIZE) {
+            return Mono.error(new IllegalArgumentException("分页参数不合法"));
+        }
         String keyword = query == null ? "" : query.trim();
         return userRepository.findAll()
             .filter(user -> status == null || user.status() == status)
@@ -68,11 +89,29 @@ public class DefaultUserService implements UserService {
     public Mono<UserView> changeStatus(UUID actorId, UUID userId, UserStatus status) {
         return requiredUser(userId).flatMap(user -> {
             PlatformUserEntity changed = new PlatformUserEntity(user.id(), user.username(), user.displayName(), user.email(),
-                status, user.createdAt(), Instant.now(), user.lastLoginAt(), user.version());
+                status, user.createdAt(), Instant.now(), user.lastLoginAt(),
+                status == user.status() ? user.securityVersion() : user.securityVersion() + 1, user.version());
             return userRepository.save(changed)
-                .flatMap(saved -> auditService.record(actorId, "identity.user.status.change", "USER", userId, "{}")
+                .flatMap(saved -> emitStatusChanged(saved)
+                    .then(auditService.record(actorId, "identity.user.status.change", "USER", userId, "{}"))
                     .then(toView(saved)));
         });
+    }
+
+    private Mono<Void> emitStatusChanged(PlatformUserEntity user) {
+        if (eventService == null) return Mono.empty();
+        String eventType = user.status() == UserStatus.DISABLED ? "identity.user.disabled"
+            : user.status() == UserStatus.ACTIVE ? "identity.user.enabled" : null;
+        if (eventType == null) return Mono.empty();
+        return eventService.append(eventType, 1, "user", user.id(),
+            "{\"user_id\":\"" + user.id() + "\",\"security_version\":"
+                + user.securityVersion() + "}").then();
+    }
+
+    private Mono<Void> emitUserCreated(PlatformUserEntity user) {
+        if (eventService == null) return Mono.empty();
+        return eventService.append("identity.user.created", 1, "user", user.id(),
+            "{\"user_id\":\"" + user.id() + "\"}").then();
     }
 
     @Override
@@ -81,10 +120,33 @@ public class DefaultUserService implements UserService {
         return Mono.zip(requiredUser(userId), requiredRole(roleId))
             .flatMap(ignored -> userRoleRepository.findByUserIdAndRoleId(userId, roleId)
                 .hasElement()
-                .flatMap(exists -> exists ? Mono.<Void>empty() : userRoleRepository.save(new UserRoleEntity(
+                .flatMap(exists -> exists ? Mono.just(false) : userRoleRepository.save(new UserRoleEntity(
                     null, userId, roleId, now, null
-                )).then()))
+                )).thenReturn(true)))
+            .flatMap(created -> created ? emitRoleAssigned(userId, roleId) : Mono.empty())
             .then(auditService.record(actorId, "identity.user.role.assign", "USER", userId, "{}"));
+    }
+
+    private Mono<Void> emitRoleAssigned(UUID userId, UUID roleId) {
+        if (eventService == null) return Mono.empty();
+        return eventService.append("identity.user.role-assigned", 1, "user", userId,
+            "{\"user_id\":\"" + userId + "\",\"role_id\":\"" + roleId + "\"}").then();
+    }
+
+    @Override
+    public Mono<Void> removeRole(UUID actorId, UUID userId, UUID roleId) {
+        return Mono.zip(requiredUser(userId), requiredRole(roleId))
+            .flatMap(ignored -> userRoleRepository.findByUserIdAndRoleId(userId, roleId)
+                .flatMap(binding -> userRoleRepository.deleteByUserIdAndRoleId(userId, roleId)
+                    .then(emitRoleRemoved(userId, roleId)))
+                .switchIfEmpty(Mono.empty()))
+            .then(auditService.record(actorId, "identity.user.role.remove", "USER", userId, "{}"));
+    }
+
+    private Mono<Void> emitRoleRemoved(UUID userId, UUID roleId) {
+        if (eventService == null) return Mono.empty();
+        return eventService.append("identity.user.role-removed", 1, "user", userId,
+            "{\"user_id\":\"" + userId + "\",\"role_id\":\"" + roleId + "\"}").then();
     }
 
     private Mono<PlatformUserEntity> requiredUser(UUID userId) {

@@ -1,0 +1,1 @@
+package run.ikaros.document; import java.util.UUID; import org.springframework.data.repository.reactive.ReactiveCrudRepository; import reactor.core.publisher.Flux; public interface DocumentEmbedRepository extends ReactiveCrudRepository<DocumentEmbedEntity,UUID>{Flux<DocumentEmbedEntity> findAllByDocumentIdOrderByCreatedAtAsc(UUID documentId);}

@@ -1,0 +1,5 @@
+package run.ikaros.ingestion;
+
+public enum IngestionSourceType {
+    LOCAL_FILESYSTEM, NAS_MOUNT, OBJECT_STORAGE, MANUAL_UPLOAD, REMOTE_URL, PROVIDER_COLLECTION, PLUGIN_SOURCE
+}

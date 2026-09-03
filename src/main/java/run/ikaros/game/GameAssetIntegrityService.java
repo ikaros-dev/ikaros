@@ -1,0 +1,1 @@
+package run.ikaros.game; import java.util.UUID; import reactor.core.publisher.Mono; public interface GameAssetIntegrityService{Mono<GameAssetView> verify(UUID owner,UUID assetId,VerifyGameAssetChecksumRequest request);Mono<GameAssetView> requestRestore(UUID owner,UUID assetId);}

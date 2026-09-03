@@ -4,7 +4,7 @@ info:
   version: 0.1.0
   description: 对 P0 Catalog 已声明、但原始 P0 OpenAPI 基线中缺失的 HTTP 契约进行增量补充。
 servers:
-  - url: /api/v2
+  - url: /api
 security:
   - bearerAuth: []
 paths:

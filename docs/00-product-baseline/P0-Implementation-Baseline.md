@@ -36,8 +36,8 @@ Phase 0 实现至少应以下列文档作为输入：
 - `contracts/P0-Command-Query-Event-Catalog.md`
 - `contracts/P0-Event-Payload-Schema-Registry.md`
 - `contracts/schema/p0-event-v1.schema.json`
-- `api/openapi-v2-p0.yaml`
-- `api/openapi-v2-p0-contract-convergence.yaml`
+- `contracts/openapi-v2-p0.yaml`
+- `contracts/openapi-v2-p0-contract-convergence.yaml`
 - `contracts/P0-HTTP-Operation-Registry.yaml`
 - `P0-Requirement-Traceability-Matrix.md`
 - `testing/P0-Acceptance-Invariant-Test-Matrix.md`
@@ -57,7 +57,7 @@ Media Delivery / Restore 的独立 P0 Addendum 继续作为专项规范性扩展
 - Background Task / Attempt 分离；
 - Permission Registry 的权威性与对象级授权边界；
 - Secret Reference 边界；
-- `/api/v2`、Problem、snake_case、Idempotency、ETag/If-Match、Range 等 API 规则；
+- `/api`、Problem、snake_case、Idempotency、ETag/If-Match、Range 等 API 规则；
 - Plugin 私有持久化边界。
 
 ## 4. 尚未冻结的内容

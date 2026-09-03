@@ -1,0 +1,1 @@
+package run.ikaros.sharing; import java.time.Instant; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.relational.core.mapping.Table; @Table("room_event") public record RoomEventEntity(@Id UUID eventId,UUID roomId,long sequence,String eventType,UUID actorId,Instant occurredAt,String payload,long stateVersion) {}

@@ -1,0 +1,1 @@
+package run.ikaros.sharing; import java.time.Instant; import java.util.UUID; public record RoomEventView(UUID eventId,UUID roomId,long sequence,String eventType,UUID actorId,Instant occurredAt,String payload,long stateVersion) {}

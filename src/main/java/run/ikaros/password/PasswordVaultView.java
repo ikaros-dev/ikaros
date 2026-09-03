@@ -1,0 +1,1 @@
+package run.ikaros.password; import java.time.Instant; import java.util.UUID; public record PasswordVaultView(UUID id,UUID ownerId,String name,String securityProfile,String cryptoContext,PasswordVaultStatus status,Instant createdAt) {}

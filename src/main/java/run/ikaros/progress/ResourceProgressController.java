@@ -17,18 +17,25 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+import org.springframework.http.ResponseEntity;
+import run.ikaros.common.IfMatchVersion;
 
 /**
  * 提供 Resource 统一消费进度的 HTTP-first 接口。
  */
 @RestController
-@RequestMapping("/api/resources/{resourceId}/progress")
+@RequestMapping({"/api/resources/{resourceId}/progress"})
 public class ResourceProgressController {
     private final ResourceProgressService progressService;
 
     /** 创建消费进度控制器。 */
     public ResourceProgressController(ResourceProgressService progressService) {
         this.progressService = progressService;
+    }
+
+    /** 保留服务内直接调用的旧 Java 入口；HTTP 请求必须使用带 If-Match 的重载。 */
+    public Mono<ResourceProgressView> set(UUID actorId, UUID resourceId, SetProgressRequest request) {
+        return progressService.set(actorId, resourceId, request);
     }
 
     /** 设置 Resource 消费进度。 */
@@ -40,13 +47,15 @@ public class ResourceProgressController {
         @ApiResponse(responseCode = "404", description = "资源不存在或无权访问", content = @Content)
     })
     @PutMapping
-    public Mono<ResourceProgressView> set(
+    public Mono<ResponseEntity<ResourceProgressView>> set(
         @Parameter(description = "当前认证用户 UUID，由认证层注入", required = true, in = ParameterIn.HEADER)
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @PathVariable UUID resourceId,
+        @RequestHeader(value = "If-Match", required = false) String ifMatch,
         @Valid @RequestBody SetProgressRequest request
     ) {
-        return progressService.set(actorId, resourceId, request);
+        return progressService.set(actorId, resourceId, request, IfMatchVersion.parse(ifMatch))
+            .map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view));
     }
 
     /** 查询 Resource 消费进度。 */
@@ -56,11 +65,12 @@ public class ResourceProgressController {
         @ApiResponse(responseCode = "404", description = "资源或进度不存在", content = @Content)
     })
     @GetMapping
-    public Mono<ResourceProgressView> get(
+    public Mono<ResponseEntity<ResourceProgressView>> get(
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @PathVariable UUID resourceId,
         @RequestParam ProgressType type
     ) {
-        return progressService.get(actorId, resourceId, type);
+        return progressService.get(actorId, resourceId, type)
+            .map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view));
     }
 }

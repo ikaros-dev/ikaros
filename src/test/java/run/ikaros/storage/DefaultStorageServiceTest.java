@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
@@ -22,6 +23,7 @@ import run.ikaros.resource.ResourceEntity;
 import run.ikaros.resource.ResourceLifecycle;
 import run.ikaros.resource.ResourceRepository;
 import run.ikaros.resource.ResourceType;
+import run.ikaros.event.DurableEventService;
 
 /**
  * 验证 Attachment、Blob 与 Placement 的存储边界。
@@ -128,6 +130,41 @@ class DefaultStorageServiceTest {
     }
 
     @Test
+    void archivesAttachmentWithoutDeletingItsBlob() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        UUID attachmentId = UUID.randomUUID();
+        UUID blobId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity resource = new ResourceEntity(resourceId, ownerId, ResourceType.BOOK,
+            ResourceLifecycle.ACTIVE, now, now, null, 0L);
+        AttachmentEntity attachment = new AttachmentEntity(attachmentId, resourceId, blobId, "book.pdf",
+            AttachmentKind.ORIGINAL, now, null, 0L);
+        AttachmentEntity archived = new AttachmentEntity(attachmentId, resourceId, blobId, "book.pdf",
+            AttachmentKind.ORIGINAL, now, null, 1L, null, now);
+        DurableEventService events = mock(DurableEventService.class);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource));
+        when(attachmentRepository.findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(
+            attachmentId, resourceId)).thenReturn(Mono.just(attachment));
+        when(attachmentRepository.save(any(AttachmentEntity.class))).thenReturn(Mono.just(archived));
+        when(auditService.record(eq(ownerId), eq("attachment.archive"), eq("ATTACHMENT"), eq(attachmentId), eq("{}")))
+            .thenReturn(Mono.empty());
+        when(events.append(eq("storage.attachment.archived"), eq(1), eq("attachment"), eq(attachmentId), any()))
+            .thenReturn(Mono.empty());
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        DefaultStorageService eventService = new DefaultStorageService(resourceRepository, attachmentRepository,
+            blobRepository, placementRepository, derivedAttachmentRepository, auditService, transaction, null, null, events);
+
+        StepVerifier.create(eventService.archive(ownerId, resourceId, attachmentId)).verifyComplete();
+        ArgumentCaptor<AttachmentEntity> capture = ArgumentCaptor.forClass(AttachmentEntity.class);
+        verify(attachmentRepository).save(capture.capture());
+        assertThat(capture.getValue().archivedAt()).isNotNull().isAfterOrEqualTo(now);
+        assertThat(capture.getValue().deletedAt()).isNull();
+        verify(events).append(eq("storage.attachment.archived"), eq(1), eq("attachment"), eq(attachmentId), any());
+    }
+
+    @Test
     void onlyReturnsUnreferencedBlobsOlderThanMinimumAge() {
         Instant oldCreatedAt = Instant.now().minus(Duration.ofDays(3));
         Instant recentCreatedAt = Instant.now().minus(Duration.ofHours(2));
@@ -145,6 +182,13 @@ class DefaultStorageServiceTest {
                 });
             })
             .verifyComplete();
+    }
+
+    @Test
+    void rejectsNullGarbageCollectionAgeBeforeRepositoryQuery() {
+        StepVerifier.create(service.findGarbageCollectionCandidates(10, null))
+            .expectError(IllegalArgumentException.class).verify();
+        verifyNoInteractions(blobRepository);
     }
 
     @Test

@@ -19,6 +19,11 @@ public record ResourceTitleEntity(
     @Column("is_primary") boolean primary,
     @Column("created_at") Instant createdAt,
     @Column("updated_at") Instant updatedAt,
-    @Version Long version
+    @Version Long version,
+    @Column("title_kind") ResourceTitleKind titleKind
 ) {
+    public ResourceTitleEntity(UUID id, UUID resourceId, String locale, String title, boolean primary,
+                               Instant createdAt, Instant updatedAt, Long version) {
+        this(id, resourceId, locale, title, primary, createdAt, updatedAt, version, ResourceTitleKind.TITLE);
+    }
 }

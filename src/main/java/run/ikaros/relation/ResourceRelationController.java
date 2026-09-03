@@ -20,7 +20,7 @@ import reactor.core.publisher.Mono;
 
 /** 提供当前用户资源关系的创建、查询与删除接口。 */
 @RestController
-@RequestMapping("/api/resources/{resourceId}/relations")
+@RequestMapping({"/api/resources/{resourceId}/relations"})
 public class ResourceRelationController {
     private final ResourceRelationService relationService;
 

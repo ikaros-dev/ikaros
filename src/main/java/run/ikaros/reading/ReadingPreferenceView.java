@@ -1,0 +1,1 @@
+package run.ikaros.reading; import java.time.Instant; import java.util.UUID; public record ReadingPreferenceView(UUID id,ReadingPreferenceScope scope,String readingKind,UUID workId,String settings,Instant updatedAt) {}

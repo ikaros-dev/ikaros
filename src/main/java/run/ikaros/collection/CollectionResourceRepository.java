@@ -3,6 +3,7 @@ package run.ikaros.collection;
 import java.util.UUID;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * Collection 成员关系的数据库访问边界。
@@ -16,4 +17,6 @@ public interface CollectionResourceRepository extends ReactiveCrudRepository<Col
      * @return 按位置排序的成员关系
      */
     Flux<CollectionResourceEntity> findAllByCollectionIdOrderByPositionAsc(UUID collectionId);
+
+    Mono<Void> deleteByCollectionIdAndResourceId(UUID collectionId, UUID resourceId);
 }

@@ -1,0 +1,1 @@
+package run.ikaros.password; import jakarta.validation.constraints.NotBlank; public record UpsertVaultItemRequest(@NotBlank String itemType,@NotBlank String encryptedName,@NotBlank String encryptedPayload,String encryptedCustomFields,boolean favorite,long expectedRevision) {}

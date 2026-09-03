@@ -1,0 +1,1 @@
+package run.ikaros.password; import java.time.Instant; import java.util.UUID; public record TotpConfigView(UUID id,UUID itemId,TotpAlgorithm algorithm,int digits,int periodSeconds,Instant createdAt,Instant updatedAt) {}

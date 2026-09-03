@@ -1,0 +1,53 @@
+package run.ikaros.storage;
+
+import jakarta.validation.Valid;
+import java.util.UUID;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
+import run.ikaros.common.IfMatchVersion;
+
+@RestController
+@RequestMapping({"/api/attachments/{attachmentId}/delivery-grants"})
+public class DeliveryGrantController {
+    private final DeliveryGrantService service;
+    private final DeliveryLeaseService leases;
+    private final DeliveryGrantContractService contracts;
+
+    public DeliveryGrantController(DeliveryGrantService service, DeliveryLeaseService leases,
+                                   DeliveryGrantContractService contracts) {
+        this.service = service; this.leases = leases; this.contracts = contracts;
+    }
+
+    @PostMapping
+    public Mono<DeliveryGrantContractView> issue(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID attachmentId, @Valid @RequestBody DeliveryGrantRequest request) {
+        return service.issue(actorId, attachmentId, request)
+            .flatMap(grant -> createOrRenewLease(actorId, attachmentId, request, grant)
+                .flatMap(lease -> contracts.contract(attachmentId, grant, lease))
+                .onErrorResume(error -> service.revoke(actorId, grant.id())
+                    .onErrorResume(revokeError -> Mono.empty())
+                    .then(Mono.error(error))));
+    }
+
+    private Mono<DeliveryLeaseView> createOrRenewLease(UUID actorId, UUID attachmentId,
+        DeliveryGrantRequest request, DeliveryGrantView grant) {
+        if (request != null && request.existingLeaseId() != null) {
+            return leases.get(actorId, request.existingLeaseId())
+                .filter(lease -> lease.attachmentId().equals(attachmentId))
+                .flatMap(lease -> leases.renew(actorId, lease.id(), request.ttlSeconds()));
+        }
+        return leases.create(actorId, attachmentId,
+            new DeliveryLeaseRequest(grant.token(), request == null ? null : request.ttlSeconds()));
+    }
+
+    @PostMapping("/{grantId}/actions/revoke")
+    public Mono<Void> revoke(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID grantId, @RequestHeader(value = "If-Match", required = false) String ifMatch) {
+        return service.revoke(actorId, grantId, IfMatchVersion.parse(ifMatch));
+    }
+}

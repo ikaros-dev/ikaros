@@ -13,6 +13,10 @@ import jakarta.validation.constraints.Size;
 public record SetResourceTitleRequest(
     @NotBlank @Size(max = 32) String locale,
     @NotBlank @Size(max = 512) String title,
-    boolean primary
+    boolean primary,
+    ResourceTitleKind kind
 ) {
+    public SetResourceTitleRequest(String locale, String title, boolean primary) {
+        this(locale, title, primary, ResourceTitleKind.TITLE);
+    }
 }

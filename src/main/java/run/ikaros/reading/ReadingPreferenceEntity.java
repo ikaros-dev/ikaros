@@ -1,0 +1,2 @@
+package run.ikaros.reading; import java.time.Instant; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.annotation.Version; import org.springframework.data.relational.core.mapping.Table; import org.springframework.data.relational.core.mapping.Column;
+@Table("reading_preference") public record ReadingPreferenceEntity(@Id UUID id,@Column("owner_id") UUID ownerId,ReadingPreferenceScope scope,@Column("reading_kind") String readingKind,@Column("work_id") UUID workId,String settings,Instant updatedAt,@Version Long version) {}

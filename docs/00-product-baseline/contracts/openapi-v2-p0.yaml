@@ -6,7 +6,7 @@ info:
     Machine-readable P0 HTTP contract for Ikaros V2.
     Business semantics are owned by docs/v2/contracts/P0-Command-Query-Event-Catalog.md.
 servers:
-  - url: /api/v2
+  - url: /api
 security:
   - bearerAuth: []
 tags:

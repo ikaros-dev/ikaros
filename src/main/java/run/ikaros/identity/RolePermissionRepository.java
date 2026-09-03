@@ -17,6 +17,8 @@ public interface RolePermissionRepository extends ReactiveCrudRepository<RolePer
      */
     Flux<RolePermissionEntity> findAllByRoleId(UUID roleId);
 
+    Mono<Void> deleteAllByRoleId(UUID roleId);
+
     /**
      * 查询角色是否已拥有某项权限。
      *

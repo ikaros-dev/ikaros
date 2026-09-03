@@ -1,0 +1,1 @@
+package run.ikaros.password; import java.time.Instant; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.relational.core.mapping.Table; @Table("password_item_folder") public record PasswordItemFolderEntity(@Id UUID id,UUID itemId,UUID folderId,UUID vaultId,UUID ownerId,Instant createdAt) {}

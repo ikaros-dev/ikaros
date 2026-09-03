@@ -1,0 +1,1 @@
+package run.ikaros.reading; import jakarta.validation.constraints.NotBlank; public record CreateReadingEditionRequest(@NotBlank String name,String language,String publisher,String source,int preferenceWeight) {}

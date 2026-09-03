@@ -1,0 +1,1 @@
+CREATE TABLE password_credential (id UUID PRIMARY KEY DEFAULT uuid_v7(), user_id UUID NOT NULL UNIQUE, password_hash VARCHAR(1024) NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT now(), updated_at TIMESTAMPTZ NOT NULL DEFAULT now(), version BIGINT NOT NULL DEFAULT 0, FOREIGN KEY (user_id) REFERENCES platform_user(id) ON DELETE CASCADE);

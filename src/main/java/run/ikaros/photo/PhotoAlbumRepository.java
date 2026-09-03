@@ -1,0 +1,1 @@
+package run.ikaros.photo; import java.util.UUID; import org.springframework.data.repository.reactive.ReactiveCrudRepository; import reactor.core.publisher.Flux; public interface PhotoAlbumRepository extends ReactiveCrudRepository<PhotoAlbumEntity,UUID>{Flux<PhotoAlbumEntity> findAllByOwnerIdOrderByUpdatedAtDesc(UUID ownerId);}

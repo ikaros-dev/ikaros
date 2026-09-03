@@ -1,0 +1,2 @@
+CREATE TABLE document_embed (id UUID PRIMARY KEY DEFAULT uuid_v7(),document_id UUID NOT NULL,attachment_id UUID NOT NULL,display_name VARCHAR(512),caption TEXT,alt_text TEXT,created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,FOREIGN KEY(document_id) REFERENCES document(id) ON DELETE CASCADE,FOREIGN KEY(attachment_id) REFERENCES attachment(id),UNIQUE(document_id,attachment_id));
+CREATE INDEX idx_document_embed_document ON document_embed(document_id,created_at);

@@ -1,0 +1,1 @@
+package run.ikaros.reading; import java.util.UUID; import reactor.core.publisher.Mono; public interface ReadingPreferenceService{Mono<ReadingPreferenceView> update(UUID owner,ReadingPreferenceScope scope,String kind,UUID workId,UpdateReadingPreferenceRequest request);Mono<ReadingPreferenceView> get(UUID owner,ReadingPreferenceScope scope,String kind,UUID workId);}

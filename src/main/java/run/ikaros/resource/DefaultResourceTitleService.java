@@ -71,6 +71,10 @@ public class DefaultResourceTitleService implements ResourceTitleService {
 
     private Mono<ResourceTitleView> saveTitle(UUID ownerId, UUID resourceId, List<ResourceTitleEntity> existing,
                                               SetResourceTitleRequest request) {
+        ResourceTitleKind kind = request.kind() == null ? ResourceTitleKind.TITLE : request.kind();
+        if (kind == ResourceTitleKind.ALIAS && request.primary()) {
+            return Mono.error(new ConflictException("Alias 不能作为 Resource 主标题"));
+        }
         Instant now = Instant.now();
         ResourceTitleEntity current = existing.stream()
             .filter(title -> title.locale().equalsIgnoreCase(request.locale()))
@@ -79,9 +83,11 @@ public class DefaultResourceTitleService implements ResourceTitleService {
         boolean primary = request.primary() || current == null && existing.isEmpty()
             || current != null && current.primary() && !request.primary();
         ResourceTitleEntity target = current == null
-            ? new ResourceTitleEntity(null, resourceId, request.locale(), request.title(), primary, now, now, null)
+            ? new ResourceTitleEntity(null, resourceId, request.locale(), request.title(), primary, now, now, null,
+                kind)
             : new ResourceTitleEntity(current.id(), resourceId, current.locale(), request.title(), primary,
-                current.createdAt(), now, current.version());
+                current.createdAt(), now, current.version(),
+                request.kind() == null ? current.titleKind() : kind);
         List<ResourceTitleEntity> updated = new ArrayList<>();
         for (ResourceTitleEntity title : existing) {
             updated.add(request.primary() && !title.id().equals(current == null ? null : current.id())
@@ -99,11 +105,11 @@ public class DefaultResourceTitleService implements ResourceTitleService {
 
     private ResourceTitleEntity withPrimary(ResourceTitleEntity title, boolean primary) {
         return new ResourceTitleEntity(title.id(), title.resourceId(), title.locale(), title.title(), primary,
-            title.createdAt(), Instant.now(), title.version());
+            title.createdAt(), Instant.now(), title.version(), title.titleKind());
     }
 
     private ResourceTitleView toView(ResourceTitleEntity title) {
-        return new ResourceTitleView(title.id(), title.locale(), title.title(), title.primary());
+        return new ResourceTitleView(title.id(), title.locale(), title.title(), title.primary(), title.titleKind());
     }
 
     private Mono<ResourceEntity> owned(UUID ownerId, UUID resourceId) {

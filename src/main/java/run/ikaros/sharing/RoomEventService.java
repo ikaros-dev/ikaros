@@ -1,0 +1,1 @@
+package run.ikaros.sharing; import java.util.UUID; import reactor.core.publisher.Flux; import reactor.core.publisher.Mono; public interface RoomEventService{Mono<RoomEventView> append(UUID actor,UUID roomId,AppendRoomEventRequest request);Flux<RoomEventView> replay(UUID actor,UUID roomId,long afterSequence);}

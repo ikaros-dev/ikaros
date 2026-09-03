@@ -33,4 +33,6 @@ public interface RoleService {
      * @return 更新后的角色视图
      */
     Mono<RoleView> grantPermission(UUID actorId, UUID roleId, PlatformPermission permission);
+
+    Mono<RoleView> replacePermissions(UUID actorId, UUID roleId, ReplaceRolePermissionsRequest request);
 }

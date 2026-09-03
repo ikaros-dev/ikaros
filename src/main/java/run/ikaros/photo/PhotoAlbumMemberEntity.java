@@ -1,0 +1,2 @@
+package run.ikaros.photo; import java.time.Instant; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.relational.core.mapping.Table; import org.springframework.data.relational.core.mapping.Column;
+@Table("photo_album_member") public record PhotoAlbumMemberEntity(@Id UUID id,@Column("album_id") UUID albumId,@Column("photo_id") UUID photoId,@Column("added_at") Instant addedAt) {}

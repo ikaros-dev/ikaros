@@ -7,7 +7,7 @@
 | PRD | `Product-Requirements-Document.md` |
 | 契约目录 | `contracts/P0-Command-Query-Event-Catalog.md` |
 | 数据库 | `database/P0-Database-Schema-Design.md` |
-| OpenAPI | `api/openapi-v2-p0.yaml` + `api/openapi-v2-p0-contract-convergence.yaml` |
+| OpenAPI | `contracts/openapi-v2-p0.yaml` + `contracts/openapi-v2-p0-contract-convergence.yaml` |
 | HTTP 注册表 | `contracts/P0-HTTP-Operation-Registry.yaml` |
 | 验收测试 | `testing/P0-Acceptance-Invariant-Test-Matrix.md` |
 

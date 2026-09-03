@@ -14,6 +14,7 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,13 +23,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+import run.ikaros.common.PageResponse;
 
 /**
  * 提供 Collection 组织能力的 HTTP-first 接口。
  */
 @Validated
 @RestController
-@RequestMapping("/api/collections")
+@RequestMapping({"/api/collections"})
 public class CollectionController {
     private final CollectionService collectionService;
 
@@ -81,6 +83,16 @@ public class CollectionController {
         return collectionService.list(actorId);
     }
 
+    @Operation(summary = "分页查询资源集合", description = "按更新时间倒序返回当前用户 Collection 的分页结果。")
+    @GetMapping(params = "page")
+    public Mono<PageResponse<CollectionView>> listPage(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @RequestParam(defaultValue = "0") @Min(0) int page,
+        @RequestParam(defaultValue = "20") @Min(1) int size
+    ) {
+        return collectionService.list(actorId, page, size);
+    }
+
     /**
      * 向 Collection 添加一个 Resource。
      *
@@ -105,6 +117,26 @@ public class CollectionController {
         @RequestParam(defaultValue = "0") @Min(0) int position
     ) {
         return collectionService.addResource(actorId, collectionId, resourceId, position)
+            .thenReturn(ResponseEntity.noContent().build());
+    }
+
+    @Operation(summary = "移动资源集合", description = "移动集合到新的父集合；系统会拒绝自引用和任意深度循环。")
+    @PostMapping("/{collectionId}/move")
+    public Mono<CollectionView> move(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID collectionId,
+        @RequestParam(required = false) UUID parentId
+    ) {
+        return collectionService.move(actorId, collectionId, parentId);
+    }
+
+    @DeleteMapping("/{collectionId}/resources/{resourceId}")
+    public Mono<ResponseEntity<Void>> removeResource(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID collectionId,
+        @PathVariable UUID resourceId
+    ) {
+        return collectionService.removeResource(actorId, collectionId, resourceId)
             .thenReturn(ResponseEntity.noContent().build());
     }
 }

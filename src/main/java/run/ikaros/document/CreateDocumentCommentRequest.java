@@ -1,0 +1,1 @@
+package run.ikaros.document; import jakarta.validation.constraints.NotBlank; import java.util.UUID; public record CreateDocumentCommentRequest(UUID parentCommentId,UUID anchorRevisionId,String anchor,@NotBlank String body) {}

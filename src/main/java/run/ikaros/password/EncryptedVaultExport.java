@@ -1,0 +1,1 @@
+package run.ikaros.password; import java.util.List; import java.util.UUID; public record EncryptedVaultExport(UUID vaultId,String securityProfile,String cryptoContext,List<PasswordVaultItemView> items) {}

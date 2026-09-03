@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import run.ikaros.common.ConflictException;
+import run.ikaros.common.ForbiddenException;
 
 /** 验证权限与安全验证等级必须同时成立。 */
 class DefaultAccessControlServiceTest {
@@ -66,9 +66,26 @@ class DefaultAccessControlServiceTest {
         StepVerifier.create(service.require(userId, sessionId, new SecurityPolicy("MANAGE_USERS",
                 PlatformPermission.SYSTEM_USER_MANAGE, SecurityVerificationLevel.SVL_1, true)))
             .expectErrorSatisfies(error -> {
-                assertThat(error).isInstanceOf(ConflictException.class);
+                assertThat(error).isInstanceOf(ForbiddenException.class);
                 assertThat(error).hasMessage("当前身份、权限或安全验证等级不满足操作要求");
             })
+            .verify();
+    }
+
+    @Test
+    void rejectsSessionFromOlderUserSecurityVersion() {
+        UUID userId = UUID.randomUUID();
+        UUID sessionId = UUID.randomUUID();
+        Instant now = Instant.now();
+        when(userRepository.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, now, now, null, 2L, 0L)));
+        when(userRoleRepository.findAllByUserId(userId)).thenReturn(Flux.empty());
+        when(sessionRepository.findById(sessionId)).thenReturn(Mono.just(new SecuritySessionEntity(sessionId, userId,
+            1L, "EMAIL_OTP", 4, now, now.plusSeconds(300), now.plusSeconds(3600), null, now, now, 0L)));
+
+        StepVerifier.create(service.require(userId, sessionId, new SecurityPolicy("READ",
+                PlatformPermission.RESOURCE_READ, SecurityVerificationLevel.SVL_0, false)))
+            .expectError(ForbiddenException.class)
             .verify();
     }
 }

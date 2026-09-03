@@ -7,7 +7,7 @@
 | 状态 | Draft / Implementation Contract |
 | 基线 | `P0-Command-Query-Event-Catalog.md` |
 | Schema | `../database/P0-Media-Delivery-Restore-Schema-Addendum.md` |
-| OpenAPI | `../api/openapi-v2-p0-media-delivery-restore.yaml` |
+| OpenAPI | `openapi-v2-p0-media-delivery-restore.yaml` |
 
 > 本文档是 P0 Command / Query / Event Catalog 的规范性扩展，同时补充 deterministic Permission Registry seed。Controller、Media 模块、插件与 Worker 必须通过这些 Application Contract 访问 Delivery / Restore 能力，不得直接写 Storage 私有表。
 

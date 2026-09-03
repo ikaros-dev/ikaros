@@ -1,0 +1,1 @@
+package run.ikaros.document; import java.util.UUID; import reactor.core.publisher.Flux; import reactor.core.publisher.Mono; public interface DocumentEmbedService{Mono<DocumentEmbedView> create(UUID owner,UUID documentId,CreateDocumentEmbedRequest request);Flux<DocumentEmbedView> list(UUID owner,UUID documentId);Mono<Void> delete(UUID owner,UUID embedId);}
