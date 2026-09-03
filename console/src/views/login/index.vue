@@ -44,8 +44,8 @@ const { title, getDropdownItemStyle, getDropdownItemClass } = useNav();
 const { locale, translationCh, translationEn } = useTranslationLang();
 
 const ruleForm = reactive({
-  username: "admin",
-  password: "admin123"
+  username: "",
+  password: ""
 });
 
 const onLogin = async (formEl: FormInstance | undefined) => {
@@ -171,7 +171,7 @@ useEventListener(document, "keydown", ({ code }) => {
                 <el-input
                   v-model="ruleForm.username"
                   clearable
-                  :placeholder="t('login.pureUsername')"
+                  placeholder="用户名（不支持邮箱）"
                   :prefix-icon="useRenderIcon(User)"
                 />
               </el-form-item>
@@ -201,6 +201,9 @@ useEventListener(document, "keydown", ({ code }) => {
                 {{ t("login.pureLogin") }}
               </el-button>
             </Motion>
+            <div class="text-center mt-3 text-sm text-[var(--el-text-color-secondary)]">
+              还没有账号？<router-link class="text-primary" to="/register">立即注册</router-link>
+            </div>
           </el-form>
         </div>
       </div>

@@ -11,6 +11,12 @@ export default [
       showLink: false
     }
   },
+  {
+    path: "/register",
+    name: "Register",
+    component: () => import("@/views/login/register.vue"),
+    meta: { title: "注册", showLink: false }
+  },
   // 全屏403（无权访问）页面
   {
     path: "/access-denied",

@@ -37,10 +37,19 @@ export type RefreshTokenResult = {
 /** 登录 */
 type AuthenticationView = { userId: string; sessionId: string; sessionToken: string; expiresAt: string; user?: { username?: string; displayName?: string; roleCodes?: string[] } };
 
+const toUserResult = (result: AuthenticationView): UserResult => {
+  return { success: true, data: { avatar: "", username: result.user?.username || "", nickname: result.user?.displayName || "", roles: result.user?.roleCodes || [], permissions: [], accessToken: result.sessionToken, refreshToken: result.sessionToken, expires: new Date(result.expiresAt) } };
+};
+
 export const getLogin = async (data?: object): Promise<UserResult> => {
   const result = await http.request<AuthenticationView>("post", "/auth/login", { data });
-  const expires = new Date(result.expiresAt);
-  return { success: true, data: { avatar: "", username: result.user?.username || "", nickname: result.user?.displayName || "", roles: result.user?.roleCodes || [], permissions: [], accessToken: result.sessionToken, refreshToken: result.sessionToken, expires } };
+  return toUserResult(result);
+};
+
+/** 注册 */
+export const registerUser = async (data: object): Promise<UserResult> => {
+  const result = await http.request<AuthenticationView>("post", "/auth/register", { data });
+  return toUserResult(result);
 };
 
 /** 刷新`token` */
