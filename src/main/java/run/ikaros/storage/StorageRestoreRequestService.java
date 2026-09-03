@@ -168,12 +168,12 @@ public class StorageRestoreRequestService {
     }
 
     public Flux<StorageRestoreRequestView> list(UUID actorId) {
-        return requests.findAllByActorIdOrderByCreatedAtDesc(actorId).map(this::view);
+        return requests.findAllByActorIdOrderByCreatedAtDesc(actorId).take(100).map(this::view);
     }
 
     public Flux<StorageRestoreRequestView> list(UUID actorId, StorageRestoreRequestStatus status) {
         return requests.findAllByActorIdOrderByCreatedAtDesc(actorId)
-            .filter(request -> status == null || request.status() == status)
+            .take(100).filter(request -> status == null || request.status() == status)
             .map(this::view);
     }
 
