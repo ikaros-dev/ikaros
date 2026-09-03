@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMenu, ElMenuItem, ElSubMenu } from 'element-plus'
 
-const route = useRoute(); const expanded = ref<string[]>(['内容与创作', '个人网盘', '身份与安全'])
+const route = useRoute(); const router = useRouter(); const expanded = ref<string[]>(['内容与创作', '个人网盘', '身份与安全'])
 const groups = [
   { label: '工作台', items: [{ label: '概览', path: '/console/dashboard' }, { label: '全局搜索', path: '/console/search' }, { label: '我的活动', path: '/console/activity' }] },
   { label: '内容与创作', items: [{ label: '统一资源库', path: '/console/resources' }, { label: '集合与标签', path: '/console/collections' }, { label: '文章与文档', path: '/console/documents' }, { label: '媒体消费', path: '/console/media' }, { label: '分享与协作', path: '/console/sharing' }] },
@@ -12,5 +13,6 @@ const groups = [
 ]
 function toggle(label: string) { expanded.value = expanded.value.includes(label) ? expanded.value.filter(item => item !== label) : [...expanded.value, label] }
 const active = computed(() => route.path)
+function navigate(path: string) { router.push(path) }
 </script>
-<template><aside class="console-nav"><RouterLink to="/console/dashboard" class="console-nav-brand"><span class="brand-mark">i</span><span><strong>Ikaros</strong><small>Console</small></span></RouterLink><div class="console-nav-groups"><section v-for="group in groups" :key="group.label"><button class="console-nav-group" @click="toggle(group.label)"><span>{{ group.label }}</span><span>{{ expanded.includes(group.label) ? '⌃' : '⌄' }}</span></button><div v-if="expanded.includes(group.label)" class="console-nav-items"><RouterLink v-for="item in group.items" :key="item.path" :to="item.path" :class="{ active: active === item.path || active.startsWith(item.path + '/') }">{{ item.label }}</RouterLink></div></section></div><div class="console-nav-foot"><span class="mini-avatar">陈</span><div><b>陈昊</b><small>管理员</small></div></div></aside></template>
+<template><aside class="console-nav"><RouterLink to="/console/dashboard" class="console-nav-brand"><span class="brand-mark">i</span><span><strong>Ikaros</strong><small>Console</small></span></RouterLink><el-menu :default-active="active" :default-openeds="expanded" class="console-element-menu" @select="navigate"><el-sub-menu v-for="group in groups" :key="group.label" :index="group.label"><template #title>{{ group.label }}</template><el-menu-item v-for="item in group.items" :key="item.path" :index="item.path">{{ item.label }}</el-menu-item></el-sub-menu></el-menu><div class="console-nav-foot"><span class="mini-avatar">陈</span><div><b>陈昊</b><small>管理员</small></div></div></aside></template>
