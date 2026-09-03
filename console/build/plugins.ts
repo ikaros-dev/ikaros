@@ -1,6 +1,7 @@
 import { cdn } from "./cdn";
 import vue from "@vitejs/plugin-vue";
 import { pathResolve } from "./utils";
+import svgLoader from "vite-svg-loader";
 import Icons from "unplugin-icons/vite";
 import type { PluginOption } from "vite";
 import vueJsx from "@vitejs/plugin-vue-jsx";
@@ -41,6 +42,8 @@ export function getPluginsList(
      * vite-plugin-router-warn只在开发环境下启用，只处理vue-router文件并且只在服务启动或重启时运行一次，性能消耗可忽略不计
      */
     removeNoMatch(),
+    // 将 ?component SVG 导入编译为 Vue 组件，避免退化为 data URI 字符串
+    svgLoader(),
     // 自动按需加载图标
     Icons({
       compiler: "vue3",
