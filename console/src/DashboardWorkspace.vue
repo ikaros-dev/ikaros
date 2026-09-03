@@ -19,7 +19,7 @@ const taskFailed = ref(0)
 async function load() {
   loading.value = true; error.value = ''
   if (!actorId) { error.value = '未配置当前用户身份，无法加载实时统计'; loading.value = false; return }
-  const results = await Promise.allSettled([api.listResources('?limit=1'), api.listDriveSpaces(actorId), api.listTodayTasks(actorId), api.listBackgroundTasks()])
+  const results = await Promise.allSettled([api.listResources('?size=1', actorId), api.listDriveSpaces(actorId), api.listTodayTasks(actorId), api.listBackgroundTasks()])
   const resources = results[0]; const spaces = results[1]; const today = results[2]; const tasks = results[3]
   if (resources.status === 'fulfilled') resourceCount.value = Array.isArray(resources.value) ? resources.value.length : resources.value.total || unwrapPage(resources.value).length
   if (spaces.status === 'fulfilled' && spaces.value[0]) { const space = spaces.value[0]; storageUsed.value = Number(((space.usedBytes || space.used_bytes || 0) / 1024 ** 3).toFixed(1)); storageQuota.value = Math.max(1, Number(((space.quotaBytes || space.quota_bytes || 0) / 1024 ** 3).toFixed(1))) }

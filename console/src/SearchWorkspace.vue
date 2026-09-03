@@ -5,7 +5,7 @@ import { ElAlert, ElButton, ElEmpty, ElInput, ElSkeleton, ElTable, ElTableColumn
 import { api, unwrapPage, type ResourceRecord } from './services/api'
 const route = useRoute(); const router = useRouter(); const query = ref(String(route.query.q || '')); const loading = ref(true); const error = ref(''); const results = ref<ResourceRecord[]>([])
 const filtered = computed(() => results.value.filter(item => `${item.title || ''} ${item.resource_type || ''} ${item.lifecycle || ''}`.toLowerCase().includes(query.value.toLowerCase())))
-async function load() { loading.value = true; error.value = ''; try { const result = await api.listResources('?limit=100'); results.value = unwrapPage(result) } catch { results.value = []; error.value = '搜索 API 暂不可用，请检查登录状态或后端服务' } finally { loading.value = false } }
+async function load() { loading.value = true; error.value = ''; const actorId = String(import.meta.env.VITE_ACTOR_ID || ''); if (!actorId) { results.value = []; error.value = '未配置当前用户身份，无法搜索资源'; loading.value = false; return } try { const result = await api.listResources('?size=100', actorId); results.value = unwrapPage(result) } catch { results.value = []; error.value = '搜索 API 暂不可用，请检查登录状态或后端服务' } finally { loading.value = false } }
 function open(item: ResourceRecord) { router.push(`/console/resources/${item.id}`) }
 function submit() { router.replace({ query: query.value ? { q: query.value } : {} }) }
 onMounted(load)

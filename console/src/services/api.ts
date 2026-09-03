@@ -55,8 +55,8 @@ export type MediaHistoryRecord = { id: string; resourceId?: string; sessionId?: 
 export type ResourceActivityRecord = { id: string; resourceId?: string; resource_id?: string; type?: string; details?: string; occurredAt?: string; occurred_at?: string }
 
 export const api = {
-  listResources: (params = '') => request<Page<ResourceRecord> | ResourceRecord[]>(`/resources${params}`),
-  getResource: (id: string) => request<ResourceRecord>(`/resources/${encodeURIComponent(id)}`),
+  listResources: (params = '', actorId = '') => request<Page<ResourceRecord> | ResourceRecord[]>(`/resources${params}`, { headers: actorId ? { 'X-Ikaros-Actor-Id': actorId } : undefined }),
+  getResource: (id: string, actorId = '') => request<ResourceRecord>(`/resources/${encodeURIComponent(id)}`, { headers: actorId ? { 'X-Ikaros-Actor-Id': actorId } : undefined }),
   getFavorite: (id: string, actorId: string) => request<FavoriteRecord>(`/resources/${encodeURIComponent(id)}/favorite`, { headers: { 'X-Ikaros-Actor-Id': actorId } }),
   addFavorite: (id: string, actorId: string) => request<FavoriteRecord>(`/resources/${encodeURIComponent(id)}/favorite`, { method: 'POST', headers: { 'X-Ikaros-Actor-Id': actorId } }),
   removeFavorite: (id: string, actorId: string) => request<void>(`/resources/${encodeURIComponent(id)}/favorite`, { method: 'DELETE', headers: { 'X-Ikaros-Actor-Id': actorId } }),
