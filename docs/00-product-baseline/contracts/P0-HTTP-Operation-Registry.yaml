@@ -1,6 +1,6 @@
 version: '0.2'
 baseline: v2-p0-foundation-0.2
-base_path: /api/v2
+base_path: /api
 sources:
   - api/openapi-v2-p0.yaml
   - api/openapi-v2-p0-contract-convergence.yaml

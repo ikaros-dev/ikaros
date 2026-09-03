@@ -6,7 +6,7 @@ info:
     Normative P0 extension for media availability, archive restore, delivery grants,
     delivery-provider administration and restore-budget administration.
 servers:
-  - url: /api/v2
+  - url: /api
 security:
   - bearerAuth: []
 

@@ -282,7 +282,7 @@ P0-ARCH-001 ~ P0-ARCH-010 = PASS
 | `P0-API-002` | operationId 全局唯一 | CONTRACT | duplicate operationId check |
 | `P0-API-003` | public mutating endpoint 映射到 Catalog Command | CONTRACT | mapping registry test |
 | `P0-API-004` | public read endpoint 映射到 Catalog Query | CONTRACT | mapping registry test |
-| `P0-API-005` | API base path 为 `/api/v2` | CONTRACT | spec validation |
+| `P0-API-005` | API base path 为 `/api` | CONTRACT | spec validation |
 | `P0-API-006` | Public JSON 使用 snake_case | CONTRACT | schema/property lint |
 | `P0-API-007` | Problem response 使用 machine-readable `code` | E2E/CONTRACT | error response fixture |
 | `P0-API-008` | required idempotent create 接受 `Idempotency-Key` | CONTRACT/E2E | header required fixture |
