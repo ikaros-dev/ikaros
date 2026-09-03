@@ -237,7 +237,7 @@ public class DefaultStorageService implements StorageService {
         if (limit < 1 || limit > 500) {
             return Mono.error(new IllegalArgumentException("GC 候选数量必须介于 1 和 500 之间"));
         }
-        if (minimumAge.isNegative()) {
+        if (minimumAge == null || minimumAge.isNegative()) {
             return Mono.error(new IllegalArgumentException("GC 最小保留期不能为负数"));
         }
         Instant eligibleBefore = Instant.now().minus(minimumAge);
