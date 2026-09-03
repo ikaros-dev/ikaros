@@ -1,8 +1,8 @@
 package run.ikaros.task;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
@@ -295,7 +295,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
                 entity.leaseOwner(), entity.leaseToken(), entity.leaseExpiresAt(), entity.attempt(),
                 entity.cancelRequestedAt(), mapper.readValue(entity.progress(), new TypeReference<>() { }),
                 mapper.readValue(entity.result(), new TypeReference<>() { }), entity.createdAt(), entity.updatedAt(), entity.parentTaskId()));
-        } catch (JsonProcessingException | IllegalArgumentException error) {
+        } catch (JacksonException | IllegalArgumentException error) {
             return Mono.error(new IllegalStateException("Task 数据损坏", error));
         }
     }
@@ -304,7 +304,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
 
     private Mono<String> encode(Map<String, Object> value) {
         try { return Mono.just(mapper.writeValueAsString(value == null ? Map.of() : value)); }
-        catch (JsonProcessingException error) { return Mono.error(new IllegalArgumentException("Task Payload 无法序列化", error)); }
+        catch (JacksonException error) { return Mono.error(new IllegalArgumentException("Task Payload 无法序列化", error)); }
     }
 
     private BackgroundTaskEntity copy(BackgroundTaskEntity old, TaskStatus status, String owner, UUID token,
@@ -322,6 +322,6 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
 
     private Instant timeoutAtJson(String payload, Instant createdAt) {
         try { return timeoutAt(mapper.readValue(payload, new TypeReference<>() { }), createdAt); }
-        catch (JsonProcessingException ignored) { return null; }
+        catch (JacksonException ignored) { return null; }
     }
 }

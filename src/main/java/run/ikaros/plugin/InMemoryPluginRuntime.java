@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -19,6 +20,7 @@ public class InMemoryPluginRuntime implements PluginRuntime {
     private final String pluginApiVersion;
     private final PluginExtensionRegistry extensionRegistry;
 
+    @Autowired
     public InMemoryPluginRuntime(@Value("${ikaros.server.version:2.0.0}") String serverVersion) {
         this(serverVersion, "1", null);
     }

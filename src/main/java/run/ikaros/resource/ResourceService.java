@@ -2,7 +2,7 @@ package run.ikaros.resource;
 
 import java.util.UUID;
 import reactor.core.publisher.Mono;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import run.ikaros.common.PageResponse;
 
 /**

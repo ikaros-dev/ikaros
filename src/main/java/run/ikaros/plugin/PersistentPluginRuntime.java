@@ -1,7 +1,7 @@
 package run.ikaros.plugin;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import reactor.core.publisher.Flux;
 import java.util.Set;
@@ -125,7 +125,7 @@ public class PersistentPluginRuntime implements PluginRuntime {
             Set<String> grants = mapper.readValue(entity.grantedPermissionsJson(), mapper.getTypeFactory()
                 .constructCollectionType(Set.class, String.class));
             return Mono.just(new PluginDescriptor(manifest, PluginLifecycle.valueOf(entity.status()), grants));
-        } catch (JsonProcessingException | IllegalArgumentException error) {
+        } catch (JacksonException | IllegalArgumentException error) {
             return Mono.error(new ConflictException("插件 Manifest 数据损坏"));
         }
     }
@@ -133,7 +133,7 @@ public class PersistentPluginRuntime implements PluginRuntime {
     private Mono<Encoded> encode(PluginManifest manifest, Set<String> permissions) {
         try {
             return Mono.just(new Encoded(mapper.writeValueAsString(manifest), mapper.writeValueAsString(permissions)));
-        } catch (JsonProcessingException error) {
+        } catch (JacksonException error) {
             return Mono.error(new IllegalArgumentException("插件 Manifest 无法序列化", error));
         }
     }

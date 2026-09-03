@@ -1,6 +1,6 @@
 package run.ikaros.ingestion;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -63,5 +63,5 @@ class DefaultImportPlanService implements ImportPlanService {
                         return items.save(new ImportPlanItemEntity(item.id(),item.planId(),item.candidateId(),request.action().name(),request.targetId(),request.reason(),item.confidence(),item.idempotencyKey(),item.createdAt(),item.version())); }); });
     }
     private Mono<String> encode(Map<String,Object> value) { try { return Mono.just(mapper.writeValueAsString(value==null?Map.of():value)); }
-        catch (JsonProcessingException e) { return Mono.error(new IllegalArgumentException("policy snapshot 无法序列化", e)); } }
+        catch (JacksonException e) { return Mono.error(new IllegalArgumentException("policy snapshot 无法序列化", e)); } }
 }

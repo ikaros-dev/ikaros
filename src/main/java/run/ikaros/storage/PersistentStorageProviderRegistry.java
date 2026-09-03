@@ -1,7 +1,7 @@
 package run.ikaros.storage;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -139,7 +139,7 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
     private Mono<String> encode(Map<String, Object> metadata) {
         try {
             return Mono.just(mapper.writeValueAsString(metadata == null ? Map.of() : metadata));
-        } catch (JsonProcessingException error) {
+        } catch (JacksonException error) {
             return Mono.error(new IllegalArgumentException("Provider metadata 无法序列化", error));
         }
     }
@@ -148,7 +148,7 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
         try {
             return mapper.readValue(json, mapper.getTypeFactory()
                 .constructMapType(Map.class, String.class, Object.class));
-        } catch (JsonProcessingException error) {
+        } catch (JacksonException error) {
             throw new ConflictException("Provider metadata 数据损坏");
         }
     }
@@ -173,7 +173,7 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
             return new StorageProvider(entity.id(), entity.providerKey(), entity.providerType(),
                 StorageTier.valueOf(entity.tier()), StorageProviderStatus.valueOf(entity.status()),
                 entity.secretReference(), metadata, entity.createdAt(), entity.updatedAt());
-        } catch (JsonProcessingException | IllegalArgumentException error) {
+        } catch (JacksonException | IllegalArgumentException error) {
             throw new ConflictException("Storage Provider 数据损坏");
         }
     }

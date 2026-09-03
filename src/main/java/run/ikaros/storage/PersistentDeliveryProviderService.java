@@ -1,8 +1,8 @@
 package run.ikaros.storage;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,7 +86,7 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
             throw new ConflictException("Delivery Provider credential_ref 必须使用 secret:// URI");
     }
     private Mono<String> encode(Map<String, Object> value) { try { return Mono.just(mapper.writeValueAsString(value == null ? Map.of() : value)); }
-        catch (JsonProcessingException e) { return Mono.error(new IllegalArgumentException("Delivery Provider config 无法序列化", e)); } }
+        catch (JacksonException e) { return Mono.error(new IllegalArgumentException("Delivery Provider config 无法序列化", e)); } }
     private Mono<Void> emit(String type, DeliveryProviderEntity provider, String payload) {
         return events.append(type, 1, "delivery_provider", provider.id(), payload).then();
     }
@@ -108,5 +108,5 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
         e.credentialRef(), decode(e.config()), decode(e.capabilities()), e.grantRevocationMode(), e.signingKeyVersion(), e.healthStatus(), e.enabled(),
         e.createdAt(), e.updatedAt(), e.version() == null ? 0 : e.version()); }
     private Map<String, Object> decode(String value) { try { return mapper.readValue(value == null ? "{}" : value, new TypeReference<>() {}); }
-        catch (JsonProcessingException e) { throw new ConflictException("Delivery Provider 配置数据损坏"); } }
+        catch (JacksonException e) { throw new ConflictException("Delivery Provider 配置数据损坏"); } }
 }

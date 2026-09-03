@@ -1,8 +1,8 @@
 package run.ikaros.ingestion;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.Map;
 import java.util.List;
@@ -95,7 +95,7 @@ public class DefaultIngestionSourceService implements IngestionSourceService {
     private Mono<String> encode(Map<String, Object> policy) {
         try {
             return Mono.just(mapper.writeValueAsString(policy == null ? Map.of() : policy));
-        } catch (JsonProcessingException error) {
+        } catch (JacksonException error) {
             return Mono.error(new IllegalArgumentException("scan policy 无法序列化", error));
         }
     }
@@ -107,7 +107,7 @@ public class DefaultIngestionSourceService implements IngestionSourceService {
                 source.displayName(), source.rootReference(), source.credentialReference() != null, policy,
                 IngestionSourceStatus.valueOf(source.status()), source.lastSuccessfulScan(), source.healthStatus(),
                 source.createdAt(), source.updatedAt());
-        } catch (JsonProcessingException | IllegalArgumentException error) {
+        } catch (JacksonException | IllegalArgumentException error) {
             throw new IllegalStateException("Ingestion Source 数据损坏", error);
         }
     }
