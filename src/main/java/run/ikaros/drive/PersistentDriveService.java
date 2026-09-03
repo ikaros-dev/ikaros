@@ -89,6 +89,7 @@ public class PersistentDriveService implements DriveService {
     @Override
     public Mono<DriveQuotaReservationView> beginUpload(UUID actor, UUID sid, BeginDriveUploadRequest req) {
         return transactionalOperator.transactional(ownedSpace(actor, sid)
+            .then(releaseExpiredReservations(sid, Instant.now()))
             .then(reservationRepository.findByDriveSpaceIdAndUploadSessionId(sid, req.uploadSessionId())
                 .map(this::reservationView))
             .switchIfEmpty(quotaRepository.findById(sid)
@@ -108,6 +109,20 @@ public class PersistentDriveService implements DriveService {
     }
     @Override public Mono<DriveQuotaReservationView> finalizeUpload(UUID actor, UUID sid, UUID rid) { return settle(actor,sid,rid,QuotaReservationState.COMMITTED,true); }
     @Override public Mono<DriveQuotaReservationView> abortUpload(UUID actor, UUID sid, UUID rid) { return settle(actor,sid,rid,QuotaReservationState.RELEASED,false); }
+
+    private Mono<Void> releaseExpiredReservations(UUID sid, Instant now) {
+        return reservationRepository.findAllByDriveSpaceIdAndStateAndExpiresAtLessThanEqual(
+                sid, QuotaReservationState.ACTIVE, now).collectList().flatMap(expired -> {
+            if (expired.isEmpty()) return Mono.empty();
+            long released = expired.stream().mapToLong(DriveQuotaReservationEntity::reservedBytes).sum();
+            return quotaRepository.findById(sid).flatMap(quota -> quotaRepository.save(new DriveQuotaEntity(
+                sid, quota.limitBytes(), quota.usedBytes(), Math.max(0, quota.reservedBytes() - released), quota.version())))
+                .thenMany(Flux.fromIterable(expired).flatMap(reservation -> reservationRepository.save(
+                    new DriveQuotaReservationEntity(reservation.id(), sid, reservation.uploadSessionId(),
+                        reservation.reservedBytes(), QuotaReservationState.RELEASED, reservation.expiresAt(),
+                        reservation.createdAt(), now, reservation.version())))).then();
+        });
+    }
     private Mono<DriveQuotaReservationView> settle(UUID actor, UUID sid, UUID rid,
                                                    QuotaReservationState target, boolean commit) {
         return transactionalOperator.transactional(ownedSpace(actor, sid)
