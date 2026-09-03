@@ -35,8 +35,12 @@ export type RefreshTokenResult = {
 };
 
 /** 登录 */
-export const getLogin = (data?: object) => {
-  return http.request<UserResult>("post", "/login", { data });
+type AuthenticationView = { userId: string; sessionId: string; sessionToken: string; expiresAt: string; user?: { username?: string; displayName?: string; roleCodes?: string[] } };
+
+export const getLogin = async (data?: object): Promise<UserResult> => {
+  const result = await http.request<AuthenticationView>("post", "/auth/login", { data });
+  const expires = new Date(result.expiresAt);
+  return { success: true, data: { avatar: "", username: result.user?.username || "", nickname: result.user?.displayName || "", roles: result.user?.roleCodes || [], permissions: [], accessToken: result.sessionToken, refreshToken: result.sessionToken, expires } };
 };
 
 /** 刷新`token` */

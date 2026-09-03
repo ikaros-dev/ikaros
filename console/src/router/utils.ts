@@ -213,7 +213,7 @@ function initRouter() {
           handleAsyncRoutes(cloneDeep(data));
           storageLocal().setItem(key, data);
           resolve(router);
-        });
+        }).catch(() => { handleAsyncRoutes([]); resolve(router); });
       });
     }
   } else {
@@ -221,7 +221,7 @@ function initRouter() {
       getAsyncRoutes().then(({ data }) => {
         handleAsyncRoutes(cloneDeep(data));
         resolve(router);
-      });
+      }).catch(() => { handleAsyncRoutes([]); resolve(router); });
     });
   }
 }
