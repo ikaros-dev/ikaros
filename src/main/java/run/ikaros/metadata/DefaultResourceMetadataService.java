@@ -33,7 +33,7 @@ public class DefaultResourceMetadataService implements ResourceMetadataService {
             .flatMap(current -> metadataRepository.save(new ResourceMetadataEntity(current.id(),resourceId,fieldKey,current.value(),current.source(),current.sourceReference(),false,Instant.now(),current.version())))
             .flatMap(saved -> auditService.record(ownerId,"resource.metadata.automatic.restore","RESOURCE",resourceId,"{}").thenReturn(view(saved,true)));
     }
-    @Override public Flux<ResourceMetadataView> list(UUID ownerId, UUID resourceId) { return owned(ownerId,resourceId).thenMany(metadataRepository.findAllByResourceIdOrderByFieldKeyAsc(resourceId).map(value -> view(value,true))); }
+    @Override public Flux<ResourceMetadataView> list(UUID ownerId, UUID resourceId) { return owned(ownerId,resourceId).thenMany(metadataRepository.findAllByResourceIdOrderByFieldKeyAsc(resourceId).take(100).map(value -> view(value,true))); }
     private Mono<ResourceMetadataView> saveAutomatic(ResourceMetadataEntity current, AutomaticMetadataRequest request) { return metadataRepository.save(new ResourceMetadataEntity(current.id(),current.resourceId(),current.fieldKey(),request.value(),request.source(),request.sourceReference(),false,Instant.now(),current.version())).map(saved -> view(saved,true)); }
     private Mono<Void> owned(UUID ownerId, UUID resourceId) { return resourceRepository.findByIdAndOwnerId(resourceId,ownerId).switchIfEmpty(Mono.error(new NotFoundException("资源不存在或无权访问"))).then(); }
     private ResourceMetadataView view(ResourceMetadataEntity value, boolean applied) { return new ResourceMetadataView(value.id(),value.fieldKey(),value.value(),value.source(),value.sourceReference(),value.manuallyLocked(),applied); }
