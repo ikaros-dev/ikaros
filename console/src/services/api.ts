@@ -19,9 +19,13 @@ function requestId() { return crypto.randomUUID() }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const session = currentAuthSession()
+  const sessionHeaders = {
+    ...(session?.userId ? { 'X-Ikaros-Actor-Id': session.userId } : {}),
+    ...(session?.sessionId ? { 'X-Ikaros-Session-Id': session.sessionId } : {})
+  }
   const response = await fetch(`${apiBase}${path}`, {
     ...init,
-    headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...(session?.sessionToken ? { Authorization: `Bearer ${session.sessionToken}` } : {}), ...init?.headers },
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...sessionHeaders, ...(session?.sessionToken ? { Authorization: `Bearer ${session.sessionToken}` } : {}), ...init?.headers },
     credentials: 'include'
   })
   if (!response.ok) {
