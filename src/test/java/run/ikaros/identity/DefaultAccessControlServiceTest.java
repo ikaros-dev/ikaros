@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import run.ikaros.common.ConflictException;
+import run.ikaros.common.ForbiddenException;
 
 /** 验证权限与安全验证等级必须同时成立。 */
 class DefaultAccessControlServiceTest {
@@ -66,7 +66,7 @@ class DefaultAccessControlServiceTest {
         StepVerifier.create(service.require(userId, sessionId, new SecurityPolicy("MANAGE_USERS",
                 PlatformPermission.SYSTEM_USER_MANAGE, SecurityVerificationLevel.SVL_1, true)))
             .expectErrorSatisfies(error -> {
-                assertThat(error).isInstanceOf(ConflictException.class);
+                assertThat(error).isInstanceOf(ForbiddenException.class);
                 assertThat(error).hasMessage("当前身份、权限或安全验证等级不满足操作要求");
             })
             .verify();
@@ -85,7 +85,7 @@ class DefaultAccessControlServiceTest {
 
         StepVerifier.create(service.require(userId, sessionId, new SecurityPolicy("READ",
                 PlatformPermission.RESOURCE_READ, SecurityVerificationLevel.SVL_0, false)))
-            .expectError(ConflictException.class)
+            .expectError(ForbiddenException.class)
             .verify();
     }
 }

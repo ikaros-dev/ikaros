@@ -37,6 +37,11 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.CONFLICT, exception.code(), exception.getMessage());
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    public ProblemDetail handleForbidden(ForbiddenException exception) {
+        return problem(HttpStatus.FORBIDDEN, exception.code(), exception.getMessage());
+    }
+
     @ExceptionHandler(PreconditionRequiredException.class)
     public ProblemDetail handlePreconditionRequired(PreconditionRequiredException exception) {
         return problem(HttpStatus.PRECONDITION_REQUIRED, "precondition.required", exception.getMessage());

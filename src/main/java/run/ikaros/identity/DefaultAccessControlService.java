@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import run.ikaros.common.ConflictException;
+import run.ikaros.common.ForbiddenException;
 
 /**
  * 默认访问控制服务，禁止高安全验证等级绕过 RBAC 或过期会话的限制。
@@ -55,6 +55,6 @@ public class DefaultAccessControlService implements AccessControlService {
         return Mono.zip(userIsActive, permitted, sessionSatisfiesPolicy)
             .flatMap(result -> result.getT1() && result.getT2() && result.getT3()
                 ? Mono.<Void>empty()
-                : Mono.error(new ConflictException("当前身份、权限或安全验证等级不满足操作要求")));
+                : Mono.error(new ForbiddenException("当前身份、权限或安全验证等级不满足操作要求")));
     }
 }
