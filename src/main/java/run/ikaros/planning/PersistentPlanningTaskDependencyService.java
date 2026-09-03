@@ -39,7 +39,7 @@ public class PersistentPlanningTaskDependencyService implements PlanningTaskDepe
   @Override
   public Flux<PlanningTaskDependencyView> list(UUID actor, UUID taskId) {
     return task(taskId).flatMapMany(task -> visible(actor, task)
-        .thenMany(dependencies.findAllByTaskId(taskId))).map(this::view);
+        .thenMany(dependencies.findAllByTaskId(taskId).take(100))).map(this::view);
   }
 
   @Override
