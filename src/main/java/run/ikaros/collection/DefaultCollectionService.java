@@ -3,6 +3,7 @@ package run.ikaros.collection;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -11,6 +12,7 @@ import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;
+import run.ikaros.event.DurableEventService;
 import run.ikaros.resource.ResourceRepository;
 
 /**
@@ -23,6 +25,7 @@ public class DefaultCollectionService implements CollectionService {
     private final ResourceRepository resourceRepository;
     private final AuditService auditService;
     private final TransactionalOperator transactionalOperator;
+    private final DurableEventService eventService;
 
     /**
      * 创建 Collection 服务。
@@ -38,21 +41,34 @@ public class DefaultCollectionService implements CollectionService {
                                     ResourceRepository resourceRepository,
                                     AuditService auditService,
                                     TransactionalOperator transactionalOperator) {
+        this(collectionRepository, collectionResourceRepository, resourceRepository, auditService,
+            transactionalOperator, null);
+    }
+
+    @Autowired
+    public DefaultCollectionService(CollectionRepository collectionRepository,
+                                    CollectionResourceRepository collectionResourceRepository,
+                                    ResourceRepository resourceRepository,
+                                    AuditService auditService,
+                                    TransactionalOperator transactionalOperator,
+                                    DurableEventService eventService) {
         this.collectionRepository = collectionRepository;
         this.collectionResourceRepository = collectionResourceRepository;
         this.resourceRepository = resourceRepository;
         this.auditService = auditService;
         this.transactionalOperator = transactionalOperator;
+        this.eventService = eventService;
     }
 
     @Override
     public Mono<CollectionView> create(UUID ownerId, CreateCollectionRequest request) {
         Instant now = Instant.now();
-        return parent(ownerId, request.parentId()).then(collectionRepository.save(new CollectionEntity(
+        return transactionalOperator.transactional(parent(ownerId, request.parentId()).then(collectionRepository.save(new CollectionEntity(
                 null, ownerId, request.parentId(), request.name(), request.description(),
                 now, now, null)))
-            .flatMap(collection -> auditService.record(ownerId, "collection.create", "COLLECTION", collection.id(), "{}")
-                .thenReturn(toView(collection)));
+            .flatMap(collection -> emitCreated(collection)
+                .then(auditService.record(ownerId, "collection.create", "COLLECTION", collection.id(), "{}"))
+                .thenReturn(toView(collection))));
     }
 
     @Override
@@ -83,6 +99,7 @@ public class DefaultCollectionService implements CollectionService {
                 null, collectionId, resourceId, position, Instant.now(), null
             )))
             .onErrorMap(DuplicateKeyException.class, exception -> new ConflictException("资源已在该集合中"))
+            .then(emitMembership("resource.collection.member-added", collectionId, resourceId))
             .then(auditService.record(ownerId, "collection.resource.add", "COLLECTION", collectionId,
                 "{\"resourceId\":\"" + resourceId + "\"}")));
     }
@@ -104,6 +121,7 @@ public class DefaultCollectionService implements CollectionService {
             .then(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)
                 .switchIfEmpty(Mono.error(new NotFoundException("资源不存在或无权访问"))))
             .then(collectionResourceRepository.deleteByCollectionIdAndResourceId(collectionId, resourceId))
+            .then(emitMembership("resource.collection.member-removed", collectionId, resourceId))
             .then(auditService.record(ownerId, "collection.resource.remove", "COLLECTION", collectionId,
                 "{\"resourceId\":\"" + resourceId + "\"}")));
     }
@@ -136,5 +154,18 @@ public class DefaultCollectionService implements CollectionService {
     private CollectionView toView(CollectionEntity collection) {
         return new CollectionView(collection.id(), collection.parentId(), collection.name(), collection.description(), collection.createdAt(),
             collection.updatedAt());
+    }
+
+    private Mono<Void> emitCreated(CollectionEntity collection) {
+        if (eventService == null) return Mono.empty();
+        String payload = "{\"collection_id\":\"" + collection.id()
+            + "\",\"kind\":\"library\",\"mode\":\"STATIC\"}";
+        return eventService.append("resource.collection.created", 1, "collection", collection.id(), payload).then();
+    }
+
+    private Mono<Void> emitMembership(String eventType, UUID collectionId, UUID resourceId) {
+        if (eventService == null) return Mono.empty();
+        String payload = "{\"collection_id\":\"" + collectionId + "\",\"resource_id\":\"" + resourceId + "\"}";
+        return eventService.append(eventType, 1, "collection", collectionId, payload).then();
     }
 }
