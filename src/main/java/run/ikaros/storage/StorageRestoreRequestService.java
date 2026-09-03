@@ -227,11 +227,15 @@ public class StorageRestoreRequestService {
                     && request.status() != StorageRestoreRequestStatus.PARTIAL_FAILURE) {
                     return Mono.error(new ConflictException("只有失败或部分失败的 Restore Request 可以重试"));
                 }
-                Map<String, Object> payload = request.scope() == StorageRestoreScope.SEASON
-                    ? Map.of("restore_request_id", request.id().toString(), "season_id", request.scopeId().toString(),
-                        "retry_failed_only", true, "provider_restore_class", "STANDARD")
-                    : Map.of("restore_request_id", request.id().toString(), "attachment_id", request.scopeId().toString(),
-                        "retry_failed_only", true, "provider_restore_class", "STANDARD");
+                Map<String, Object> payload = new java.util.HashMap<>();
+                payload.put("restore_request_id", request.id().toString());
+                payload.put(request.scope() == StorageRestoreScope.SEASON ? "season_id" : "attachment_id",
+                    request.scopeId().toString());
+                payload.put("retry_failed_only", true);
+                payload.put("provider_restore_class", "STANDARD");
+                if (request.selectedAttachmentIds() != null && !request.selectedAttachmentIds().isBlank()) {
+                    payload.put("selected_attachment_ids", request.selectedAttachmentIds());
+                }
                 return tasks.submit("storage.restore", payload, "storage.restore.retry:" + id + ":" + idempotencyKey)
                     .flatMap(task -> requests.save(new StorageRestoreRequestEntity(request.id(), request.actorId(), request.scope(),
                         request.scopeId(), StorageRestoreRequestStatus.REQUESTED, request.totalItems(), request.completedItems(),
