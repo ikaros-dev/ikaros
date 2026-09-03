@@ -39,6 +39,17 @@ class PersistentBackupRestoreServiceTest {
             .verify();
     }
 
+    @Test
+    void verificationRejectsImpossibleObjectCounts() {
+        VerifyRestorePointRequest request = new VerifyRestorePointRequest(
+            VerificationLevel.CONTENT_FULL, VerificationStatus.PASSED, null, 2, 3);
+
+        StepVerifier.create(service.verify(id, request))
+            .expectError(IllegalArgumentException.class)
+            .verify();
+        verify(repository, never()).findById(id);
+    }
+
     private RestorePointEntity point(RestorePointState state, VerificationStatus status) {
         return new RestorePointEntity(id, "v1", "instance", "schema", "digest", state,
             VerificationLevel.CONTENT_FULL, status, null, 1, 0, Instant.now(),
