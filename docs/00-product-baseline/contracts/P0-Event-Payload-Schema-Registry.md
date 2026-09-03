@@ -532,6 +532,25 @@ Payload 与 attached 相同 identity key。
 }
 ```
 
+### `storage.placement.promotion-requested@1` / `storage.placement.demotion-requested@1`
+
+```json
+{
+  "placement_id": "uuid",
+  "blob_id": "uuid",
+  "target_tier": "HOT | WARM | COLD | ARCHIVE"
+}
+```
+
+### `storage.placement.tiering-completed@1`
+
+```json
+{
+  "placement_id": "uuid",
+  "target_tier": "HOT | WARM | COLD | ARCHIVE"
+}
+```
+
 ## 6. Compatibility Rules
 
 P0 payload compatibility baseline：
