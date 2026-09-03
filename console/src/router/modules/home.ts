@@ -34,7 +34,7 @@ export default {
   name: "IkarosConsole",
   component: Layout,
   redirect: "/resources",
-  meta: { title: "Ikaros 管理控制台", showLink: false },
+  meta: { title: "Ikaros 管理控制台", icon: "ep:menu" },
   children: [
     subsystem("/resource-center", "ResourceCenter", "资源中心", "ep:files", [
       moduleRoute({ path: "/resources", name: "Resources", title: "资源管理", description: "管理资源、标题、标签和生命周期。", endpoint: "/resources", createEndpoint: "/resources", deleteEndpoint: "/resources", actions: [{ name: "archive", label: "归档", path: "/resources/{id}/actions/archive", confirm: "确定归档此资源吗？" }, { name: "restore", label: "恢复", path: "/resources/{id}/actions/restore" }], createFields: [{ name: "type", label: "类型", required: true, defaultValue: "OTHER" }, { name: "title", label: "标题", required: true }, { name: "locale", label: "语言", required: true, defaultValue: "zh-CN" }], columns: ["id", "resourceType", "status", "createdAt"], icon: "ep:files" }),

@@ -5,6 +5,7 @@ export type routeMetaType = {
   title?: string;
   icon?: string | FunctionalComponent;
   showLink?: boolean;
+  showParent?: boolean;
   savedPosition?: boolean;
   auths?: Array<string>;
 };
