@@ -33,7 +33,7 @@ public class PersistentMediaReleaseService implements MediaReleaseService {
 
     @Override public Flux<MediaReleaseView> list(UUID ownerId, UUID resourceId) {
         return resources.get(ownerId, resourceId).flatMapMany(resource -> releases
-            .findAllByOwnerIdAndPlayableResourceIdOrderByCreatedAtDesc(ownerId, resourceId).map(this::view));
+            .findAllByOwnerIdAndPlayableResourceIdOrderByCreatedAtDesc(ownerId, resourceId).take(100).map(this::view));
     }
 
     @Override public Mono<MediaReleaseView> changeState(UUID ownerId, UUID releaseId, UpdateMediaReleaseStateRequest request) {

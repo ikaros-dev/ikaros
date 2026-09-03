@@ -32,7 +32,7 @@ public class PersistentMediaTechnicalMetadataService implements MediaTechnicalMe
     @Override public Mono<MediaProbeView> getProbe(UUID ownerId, UUID releaseId, String profileVersion) {
         return ownedRelease(ownerId, releaseId).then(probes.findByReleaseIdAndProbeProfileVersion(releaseId, profileVersion).switchIfEmpty(Mono.error(new NotFoundException("Media Probe 不存在"))).map(this::probeView));
     }
-    @Override public Flux<MediaExternalSubtitleView> listSubtitles(UUID ownerId, UUID releaseId) { return ownedRelease(ownerId, releaseId).flatMapMany(r -> subtitles.findAllByReleaseIdOrderByLanguageAsc(releaseId).map(this::subtitleView)); }
+    @Override public Flux<MediaExternalSubtitleView> listSubtitles(UUID ownerId, UUID releaseId) { return ownedRelease(ownerId, releaseId).flatMapMany(r -> subtitles.findAllByReleaseIdOrderByLanguageAsc(releaseId).take(100).map(this::subtitleView)); }
     @Override public Mono<MediaExternalSubtitleView> addSubtitle(UUID ownerId, UUID releaseId, AddExternalSubtitleRequest request) {
         return ownedRelease(ownerId, releaseId).flatMap(r -> attachments.findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(request.attachmentId(), r.playableResourceId()).switchIfEmpty(Mono.error(new NotFoundException("字幕 Attachment 不属于该 Resource"))).flatMap(a -> subtitles.save(new MediaExternalSubtitleEntity(null, releaseId, a.id(), request.language(), request.title(), request.format(), request.provider(), request.offsetMillis(), request.forced(), request.hearingImpaired(), null)))).map(this::subtitleView);
     }
