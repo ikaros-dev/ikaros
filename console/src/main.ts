@@ -28,6 +28,7 @@ import DashboardWorkspace from './DashboardWorkspace.vue'
 import ActivityWorkspace from './ActivityWorkspace.vue'
 import SearchWorkspace from './SearchWorkspace.vue'
 import SecurityWorkspace from './SecurityWorkspace.vue'
+import LoginWorkspace from './LoginWorkspace.vue'
 import FinanceWorkspace from './FinanceWorkspace.vue'
 import AccessDenied from './AccessDenied.vue'
 import { getRouteMeta } from './config/route-meta'
@@ -36,7 +37,7 @@ import './error-state.css'
 import './auth.css'
 
 const routes = [
-  { path: '/login', component: App }, { path: '/setup', component: AuthEntry }, { path: '/login/verify', component: AuthEntry }, { path: '/recovery/:pathMatch(.*)*', component: AuthEntry },
+  { path: '/login', component: LoginWorkspace }, { path: '/setup', component: AuthEntry }, { path: '/login/verify', component: AuthEntry }, { path: '/recovery/:pathMatch(.*)*', component: AuthEntry },
   { path: '/console/resources', component: ResourceLibrary }, { path: '/console/resources/:id', component: ResourceDetail }, { path: '/console/collections', component: CollectionWorkspace }, { path: '/console/documents', component: DocumentWorkspace },
   { path: '/console/drive', component: DriveHome }, { path: '/console/drive/spaces', component: DriveWorkspace }, { path: '/console/drive/spaces/:spaceId', component: DriveWorkspace }, { path: '/console/drive/nodes/:nodeId', component: DriveWorkspace }, { path: '/console/drive/transfers', component: DriveWorkspace }, { path: '/console/drive/sync', component: DriveWorkspace }, { path: '/console/drive/conflicts', component: DriveWorkspace }, { path: '/console/drive/revisions', component: DriveWorkspace }, { path: '/console/drive/trash', component: DriveWorkspace }, { path: '/console/drive/quota', component: DriveWorkspace }, { path: '/console/drive/policies', component: DriveWorkspace },
   { path: '/console/platform/parameters', component: AdminCatalog }, { path: '/console/platform/dictionaries', component: AdminCatalog }, { path: '/console/platform/menus', component: AdminCatalog }, { path: '/console/communications/audit', component: AdminCatalog }, { path: '/console/communications/templates', component: CommunicationCatalog }, { path: '/console/communications/providers', component: CommunicationCatalog }, { path: '/console/communications/login-logs', component: CommunicationCatalog }, { path: '/console/communications/security-events', component: CommunicationCatalog },
