@@ -27,7 +27,7 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String path = exchange.getRequest().getPath().value();
-        if (path.contains("/content") && hasDeliveryGrant(exchange)) return chain.filter(exchange);
+        if (isAttachmentContentPath(path) && hasDeliveryGrant(exchange)) return chain.filter(exchange);
         if (!(path.startsWith("/api/v2/resources") || path.startsWith("/api/resources")
             || path.startsWith("/api/v2/storage/providers") || path.startsWith("/api/storage/providers")
             || path.startsWith("/api/v2/admin/storage-providers")
@@ -121,6 +121,11 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
         String header = exchange.getRequest().getHeaders().getFirst("X-Ikaros-Delivery-Grant");
         String query = exchange.getRequest().getQueryParams().getFirst("delivery_grant");
         return (header != null && !header.isBlank()) || (query != null && !query.isBlank());
+    }
+
+    private boolean isAttachmentContentPath(String path) {
+        return (path.startsWith("/api/v2/attachments/") || path.startsWith("/api/attachments/"))
+            && path.endsWith("/content");
     }
 
     private Mono<Void> reject(ServerWebExchange exchange, HttpStatus status) {

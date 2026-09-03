@@ -134,4 +134,16 @@ class ResourceAuthorizationWebFilterTest {
                 run.ikaros.identity.PlatformPermission.SYSTEM_ROLE_MANAGE,
                 run.ikaros.identity.SecurityVerificationLevel.SVL_2, true));
     }
+
+    @Test
+    void doesNotTreatArbitraryContentPathAsGrantOnlyDelivery() {
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
+            "/api/v2/resources/" + UUID.randomUUID() + "/content")
+            .header("X-Ikaros-Delivery-Grant", "opaque-grant").build());
+        WebFilterChain chain = mock(WebFilterChain.class);
+
+        new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
+
+        assertEquals(401, exchange.getResponse().getStatusCode().value());
+    }
 }
