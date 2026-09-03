@@ -75,7 +75,7 @@ public class DefaultCollectionService implements CollectionService {
     @Override
     public Mono<List<CollectionView>> list(UUID ownerId) {
         return collectionRepository.findAllByOwnerIdOrderByUpdatedAtDesc(ownerId)
-            .map(this::toView)
+            .take(MAX_UNPAGED_RESULTS).map(this::toView)
             .collectList();
     }
 
