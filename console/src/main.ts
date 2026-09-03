@@ -30,7 +30,7 @@ import SecurityWorkspace from './SecurityWorkspace.vue'
 import LoginWorkspace from './LoginWorkspace.vue'
 import NotFoundWorkspace from './NotFoundWorkspace.vue'
 import FinanceWorkspace from './FinanceWorkspace.vue'
-import { syncRuntimeActorId } from './services/api'
+import { currentAuthSession, syncRuntimeActorId } from './services/api'
 import FinanceTransactionsWorkspace from './FinanceTransactionsWorkspace.vue'
 import FinanceBudgetsWorkspace from './FinanceBudgetsWorkspace.vue'
 import AccessDenied from './AccessDenied.vue'
@@ -63,6 +63,11 @@ router.addRoute({ path: '/console/finance/budgets', component: FinanceBudgetsWor
 router.addRoute({ path: '/console/finance/reconcile', component: FinanceWorkspace })
 router.beforeEach((to) => {
   if (!to.path.startsWith('/console/') || to.path === '/console/403') return true
+  const session = currentAuthSession()
+  const expired = Boolean(session?.expiresAt && new Date(session.expiresAt).getTime() <= Date.now())
+  if (!session?.sessionToken || expired) {
+    return { path: '/login', query: { returnUrl: to.fullPath } }
+  }
   let capabilities: string[] = []
   try { const stored = JSON.parse(localStorage.getItem('ikaros-console-capabilities') || '[]'); capabilities = Array.isArray(stored) ? stored : [] } catch { capabilities = [] }
   if (!capabilities.length) return true
