@@ -28,13 +28,13 @@ public class PersistentPlanningProjectService implements PlanningProjectService 
     }
 
     @Override public Flux<PlanningProjectView> list(UUID ownerId) {
-        Flux<PlanningProjectEntity> owned = repository.findAllByOwnerIdOrderByUpdatedAtDesc(ownerId);
-        Flux<PlanningProjectEntity> shared = members.findAllByUserId(ownerId)
+        Flux<PlanningProjectEntity> owned = repository.findAllByOwnerIdOrderByUpdatedAtDesc(ownerId).take(100);
+        Flux<PlanningProjectEntity> shared = members.findAllByUserId(ownerId).take(100)
             .map(PlanningProjectMemberEntity::projectId)
             .flatMap(repository::findById);
         return Flux.concat(owned, shared).distinct(PlanningProjectEntity::id)
             .sort(java.util.Comparator.comparing(PlanningProjectEntity::updatedAt).reversed())
-            .map(this::view);
+            .take(100).map(this::view);
     }
 
     @Override public Mono<PlanningProjectView> update(UUID ownerId, UUID projectId, UpdatePlanningProjectRequest request) {
