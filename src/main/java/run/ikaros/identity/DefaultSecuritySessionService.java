@@ -2,6 +2,7 @@ package run.ikaros.identity;
 
 import java.time.Instant;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -33,6 +34,7 @@ public class DefaultSecuritySessionService implements SecuritySessionService {
         this(userRepository, sessionRepository, auditService, null);
     }
 
+    @Autowired
     public DefaultSecuritySessionService(PlatformUserRepository userRepository,
                                          SecuritySessionRepository sessionRepository,
                                          AuditService auditService, DurableEventService eventService) {
