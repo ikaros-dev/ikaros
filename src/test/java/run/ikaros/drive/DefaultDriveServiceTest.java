@@ -73,4 +73,10 @@ class DefaultDriveServiceTest {
         assertEquals(first.id(), retry.id());
         assertEquals(1024, service.quota(user, space.id()).block().reservedBytes());
     }
+
+    @Test void uploadReservationRejectsQuotaOverflow() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        BeginDriveUploadRequest request = new BeginDriveUploadRequest(UUID.randomUUID(), 100L * 1024 * 1024 * 1024 + 1);
+        assertThrows(ConflictException.class, () -> service.beginUpload(user, space.id(), request).block());
+    }
 }

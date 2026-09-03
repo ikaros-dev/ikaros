@@ -15,6 +15,7 @@ import run.ikaros.common.UuidV7Generator;
 
 @Service
 public class DefaultDriveService implements DriveService {
+    private static final long DEFAULT_QUOTA_BYTES = 100L * 1024 * 1024 * 1024;
     private record Space(UUID id, UUID owner, String name, UUID root, long generation, Instant created, Instant updated, long version) {}
     private record Node(UUID id, UUID space, UUID parent, DriveNodeType type, String name, String normalized,
         DriveLifecycle lifecycle, UUID revision, long version, Instant created, Instant updated) {}
@@ -133,9 +134,9 @@ public class DefaultDriveService implements DriveService {
                 && r.state() == QuotaReservationState.COMMITTED).mapToLong(Reservation::bytes).sum();
             long reserved = reservations.values().stream().filter(r -> r.space().equals(spaceId)
                 && r.state() == QuotaReservationState.ACTIVE && r.expires().isAfter(now)).mapToLong(Reservation::bytes).sum();
-            long available = Long.MAX_VALUE - used;
+            long available = DEFAULT_QUOTA_BYTES - used;
             available = available < reserved ? 0 : available - reserved;
-            return new DriveQuotaView(spaceId, Long.MAX_VALUE, used, reserved, available);
+            return new DriveQuotaView(spaceId, DEFAULT_QUOTA_BYTES, used, reserved, available);
         });
     }
     @Override public Mono<DriveQuotaReservationView> beginUpload(UUID actorId, UUID spaceId, BeginDriveUploadRequest request) {
@@ -149,6 +150,14 @@ public class DefaultDriveService implements DriveService {
                     existing.bytes(), QuotaReservationState.RELEASED, existing.expires()));
             }
             Instant expires = Instant.now().plusSeconds(3600);
+            long used = reservations.values().stream().filter(r -> r.space().equals(spaceId)
+                && r.state() == QuotaReservationState.COMMITTED).mapToLong(Reservation::bytes).sum();
+            long reserved = reservations.values().stream().filter(r -> r.space().equals(spaceId)
+                && r.state() == QuotaReservationState.ACTIVE && r.expires().isAfter(Instant.now()))
+                .mapToLong(Reservation::bytes).sum();
+            if (request.reservedBytes() > DEFAULT_QUOTA_BYTES - used - reserved) {
+                return Mono.error(new ConflictException("配额不足"));
+            }
             Reservation created = new Reservation(ids.next(), spaceId, request.uploadSessionId(), request.reservedBytes(),
                 QuotaReservationState.ACTIVE, expires);
             reservations.put(created.id(), created);
