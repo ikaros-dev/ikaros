@@ -9,6 +9,7 @@ import run.ikaros.common.NotFoundException;
 
 @Service
 public class DefaultIngestionCandidateService implements IngestionCandidateService {
+    private static final int MAX_UNPAGED_RESULTS = 100;
     private final ScanRunRepository scans;
     private final IngestionCandidateRepository candidates;
     public DefaultIngestionCandidateService(ScanRunRepository scans, IngestionCandidateRepository candidates) {
@@ -25,7 +26,8 @@ public class DefaultIngestionCandidateService implements IngestionCandidateServi
     @Override public Mono<List<IngestionCandidateView>> list(UUID ownerId, UUID scanRunId) {
         return scans.findByIdAndOwnerId(scanRunId, ownerId)
             .switchIfEmpty(Mono.error(new NotFoundException("扫描运行不存在或无权访问")))
-            .thenMany(candidates.findAllByScanRunIdOrderByCreatedAtAsc(scanRunId)).map(this::view).collectList();
+            .thenMany(candidates.findAllByScanRunIdOrderByCreatedAtAsc(scanRunId).take(MAX_UNPAGED_RESULTS))
+            .map(this::view).collectList();
     }
     private IngestionCandidateView view(IngestionCandidateEntity c) {
         return new IngestionCandidateView(c.id(), c.scanRunId(), c.sourceId(), c.suggestedResourceType(), c.titleHint(),
