@@ -39,7 +39,7 @@ public class ScheduledTransactionService {
 
   public Flux<ScheduledTransactionView> list(UUID actor, UUID ledgerId) {
     return access.access(actor, ledgerId)
-        .flatMapMany(role -> schedules.findAllByLedgerIdOrderByNextRunAsc(ledgerId).map(this::view));
+        .flatMapMany(role -> schedules.findAllByLedgerIdOrderByNextRunAsc(ledgerId).take(100).map(this::view));
   }
 
   public Mono<ScheduledTransactionView> setActive(UUID actor, UUID id, boolean active) {

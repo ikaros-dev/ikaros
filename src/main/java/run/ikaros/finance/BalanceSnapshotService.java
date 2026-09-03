@@ -34,7 +34,7 @@ public class BalanceSnapshotService {
 
   public Flux<BalanceSnapshotView> list(UUID actor, UUID ledgerId) {
     return access.access(actor, ledgerId)
-        .flatMapMany(role -> snapshots.findAllByLedgerIdOrderBySnapshotDateDesc(ledgerId).map(this::view));
+        .flatMapMany(role -> snapshots.findAllByLedgerIdOrderBySnapshotDateDesc(ledgerId).take(100).map(this::view));
   }
 
   private BalanceSnapshotView view(BalanceSnapshotEntity x) {

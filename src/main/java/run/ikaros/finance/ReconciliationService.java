@@ -39,7 +39,7 @@ public class ReconciliationService {
 
   public Flux<ReconciliationView> list(UUID actor, UUID ledgerId) {
     return access.access(actor, ledgerId)
-        .flatMapMany(role -> reconciliations.findAllByLedgerIdOrderByStatementDateDesc(ledgerId).map(this::view));
+        .flatMapMany(role -> reconciliations.findAllByLedgerIdOrderByStatementDateDesc(ledgerId).take(100).map(this::view));
   }
 
   public Mono<ReconciliationView> close(UUID actor, UUID id) {
