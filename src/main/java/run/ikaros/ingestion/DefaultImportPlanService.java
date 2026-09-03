@@ -18,6 +18,7 @@ interface ImportPlanService {
 
 @Service
 class DefaultImportPlanService implements ImportPlanService {
+    private static final int MAX_UNPAGED_RESULTS = 100;
     private final ScanRunRepository scans; private final IngestionCandidateRepository candidates;
     private final ImportPlanRepository plans; private final ImportPlanItemRepository items; private final ObjectMapper mapper;
     private final DurableEventService events;
@@ -41,7 +42,7 @@ class DefaultImportPlanService implements ImportPlanService {
     }
     public Mono<List<ImportPlanItemEntity>> items(UUID ownerId, UUID planId) {
         return plans.findByIdAndOwnerId(planId, ownerId).switchIfEmpty(Mono.error(new NotFoundException("Import Plan 不存在或无权访问")))
-            .thenMany(items.findAllByPlanIdOrderByCreatedAtAsc(planId)).collectList();
+            .thenMany(items.findAllByPlanIdOrderByCreatedAtAsc(planId).take(MAX_UNPAGED_RESULTS)).collectList();
     }
     public Mono<ImportPlanView> approve(UUID ownerId, UUID planId, ApproveImportPlanRequest request) {
         return plans.findByIdAndOwnerId(planId, ownerId).switchIfEmpty(Mono.error(new NotFoundException("Import Plan 不存在或无权访问")))
