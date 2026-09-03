@@ -25,7 +25,7 @@ public class PersistentPlanningImportantDateService implements PlanningImportant
     }
 
     public Flux<PlanningImportantDateView> list(UUID owner) {
-        return dates.findAllByOwnerIdOrderByOccursAtAsc(owner).map(this::view);
+        return dates.findAllByOwnerIdOrderByOccursAtAsc(owner).take(100).map(this::view);
     }
 
     public Mono<PlanningImportantDateView> update(UUID owner, UUID id, UpdatePlanningImportantDateRequest request) {
