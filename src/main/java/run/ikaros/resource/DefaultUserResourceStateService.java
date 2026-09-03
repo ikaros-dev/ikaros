@@ -1,22 +1,37 @@
 package run.ikaros.resource;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PreconditionFailedException;
+import run.ikaros.event.DurableEventService;
 
 @Service
 public class DefaultUserResourceStateService implements UserResourceStateService {
     private final ResourceRepository resources;
     private final UserResourceStateRepository states;
     private final TransactionalOperator transaction;
+    private final DurableEventService eventService;
 
     public DefaultUserResourceStateService(ResourceRepository resources, UserResourceStateRepository states,
                                            TransactionalOperator transaction) {
-        this.resources = resources; this.states = states; this.transaction = transaction;
+        this(resources, states, transaction, null);
+    }
+
+    @Autowired
+    public DefaultUserResourceStateService(ResourceRepository resources, UserResourceStateRepository states,
+                                           TransactionalOperator transaction, DurableEventService eventService) {
+        this.resources = resources;
+        this.states = states;
+        this.transaction = transaction;
+        this.eventService = eventService;
     }
 
     @Override
@@ -54,9 +69,11 @@ public class DefaultUserResourceStateService implements UserResourceStateService
                 if (expectedVersion != null && actualVersion != expectedVersion) {
                     return Mono.error(new PreconditionFailedException("If-Match 与用户资源状态当前版本不匹配"));
                 }
-                return states.save(new UserResourceStateEntity(userId, resourceId, request.favorite(),
+                UserResourceStateEntity next = new UserResourceStateEntity(userId, resourceId, request.favorite(),
                     request.rating(), request.statusCode(), request.progressValue(), request.progressUnit(),
-                    request.progressValue() == null ? current.lastAccessedAt() : Instant.now(), current.version(), Instant.now()));
+                    request.progressValue() == null ? current.lastAccessedAt() : Instant.now(), current.version(), Instant.now());
+                return states.save(next)
+                    .flatMap(saved -> emitChanged(current, saved).thenReturn(saved));
             })
             .map(this::view).as(transaction::transactional);
     }
@@ -70,5 +87,27 @@ public class DefaultUserResourceStateService implements UserResourceStateService
         return new UserResourceStateView(state.userId(), state.resourceId(), state.favorite(), state.rating(),
             state.statusCode(), state.progressValue(), state.progressUnit(), state.lastAccessedAt(),
             state.version(), state.updatedAt());
+    }
+
+    private Mono<Void> emitChanged(UserResourceStateEntity previous, UserResourceStateEntity current) {
+        if (eventService == null) {
+            return Mono.empty();
+        }
+        List<String> changed = new ArrayList<>();
+        if (previous.favorite() != current.favorite()) changed.add("favorite");
+        if (!Objects.equals(previous.rating(), current.rating())) changed.add("rating");
+        if (!Objects.equals(previous.statusCode(), current.statusCode())) changed.add("status_code");
+        if (!Objects.equals(previous.progressValue(), current.progressValue())) changed.add("progress_value");
+        if (!Objects.equals(previous.progressUnit(), current.progressUnit())) changed.add("progress_unit");
+        if (!Objects.equals(previous.lastAccessedAt(), current.lastAccessedAt())) changed.add("last_accessed_at");
+        String fields = changed.stream().map(this::quoteJson).collect(java.util.stream.Collectors.joining(","));
+        String payload = "{\"user_id\":\"" + current.userId() + "\",\"resource_id\":\""
+            + current.resourceId() + "\",\"changed_fields\":[" + fields + "],\"version\":"
+            + (current.version() == null ? 0 : current.version()) + "}";
+        return eventService.append("resource.user-state.changed", 1, "resource", current.resourceId(), payload).then();
+    }
+
+    private String quoteJson(String value) {
+        return "\"" + value + "\"";
     }
 }
