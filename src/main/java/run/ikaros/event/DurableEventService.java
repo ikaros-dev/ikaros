@@ -58,9 +58,9 @@ public class DurableEventService {
                         .then(transaction.transactional(Mono.defer(() -> inbox.save(new InboxEntryEntity(null, consumerId, event.id(), Instant.now())))
                             .then(handler.apply(event))
                             .then(Mono.defer(() -> mark(event)))))
-                )
+                ).thenReturn(1L)
             )
-            .count();
+            .reduce(0L, Long::sum);
     }
 
     private Mono<Void> mark(OutboxEventEntity event) {

@@ -53,7 +53,7 @@ class OutboxRetrySemanticsTest {
         StepVerifier.create(service.dispatchOnce("consumer", ignored -> {
             called.set(true);
             return Mono.empty();
-        })).expectNext(0L).verifyComplete();
+        })).expectNext(1L).verifyComplete();
 
         org.junit.jupiter.api.Assertions.assertFalse(called.get());
     }
