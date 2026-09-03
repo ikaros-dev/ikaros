@@ -102,6 +102,14 @@ public class DefaultSecuritySessionService implements SecuritySessionService {
     }
 
     @Override
+    public Mono<Void> revokeCurrent(UUID actorId, UUID sessionId) {
+        return sessionRepository.findById(sessionId)
+            .filter(session -> session.userId().equals(actorId))
+            .switchIfEmpty(Mono.error(new NotFoundException("当前会话不存在")))
+            .flatMap(session -> revoke(actorId, actorId, session.id()));
+    }
+
+    @Override
     public Mono<Void> revokeAll(UUID actorId, UUID userId) {
         Instant now = Instant.now();
         return userRepository.findById(userId)

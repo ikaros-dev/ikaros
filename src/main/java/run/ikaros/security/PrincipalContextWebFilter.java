@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 
 /** 将认证层传入的主体信息收敛到 Reactor Context，并生成请求/关联 ID。 */
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class PrincipalContextWebFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {

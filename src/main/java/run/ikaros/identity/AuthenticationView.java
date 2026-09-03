@@ -1,1 +1,8 @@
-package run.ikaros.identity; import java.time.Instant; import java.util.UUID; public record AuthenticationView(UUID userId,UUID sessionId,String sessionToken,Instant expiresAt,UserView user) {}
+package run.ikaros.identity;
+
+import java.time.Instant;
+import java.util.UUID;
+
+/** 登录、注册和刷新接口返回的 JWT 凭据。 */
+public record AuthenticationView(UUID userId, UUID sessionId, String accessToken,
+                                 String refreshToken, Instant expiresAt, UserView user) { }

@@ -19,6 +19,14 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+ikaros:
+  security:
+    jwt:
+      issuer: ${IKAROS_JWT_ISSUER:ikaros}
+      secret: ${IKAROS_JWT_SECRET:change-this-development-secret-to-a-long-random-value}
+      access-token-ttl: ${IKAROS_JWT_ACCESS_TOKEN_TTL:PT15M}
+      refresh-token-ttl: ${IKAROS_JWT_REFRESH_TOKEN_TTL:P30D}
+
 logging:
   charset:
     console: UTF-8

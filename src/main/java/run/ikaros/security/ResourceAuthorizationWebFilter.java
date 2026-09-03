@@ -32,24 +32,16 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
         if (exchange.getRequest().getMethod() == HttpMethod.OPTIONS) return chain.filter(exchange);
         if (isAttachmentContentPath(path) && hasDeliveryGrant(exchange)) return chain.filter(exchange);
         if (!path.startsWith("/api/") || path.equals("/api/health/live") || path.equals("/api/health/ready")
-            || path.equals("/api/auth/register") || path.equals("/api/auth/login")) {
+            || path.equals("/api/auth/register") || path.equals("/api/auth/login")
+            || path.equals("/api/auth/refresh-token") || path.equals("/api/refresh-token")
+            || path.equals("/api/auth/logout") || path.equals("/api/logout")) {
             return chain.filter(exchange);
         }
+        JwtPrincipal jwtPrincipal = exchange.getAttribute(JwtPrincipal.EXCHANGE_ATTRIBUTE);
+        if (jwtPrincipal == null) return reject(exchange, HttpStatus.UNAUTHORIZED);
         PlatformPermission permission = permission(exchange.getRequest().getMethod().name(), path);
-        String actorHeader = exchange.getRequest().getHeaders().getFirst("X-Ikaros-Actor-Id");
-        String sessionHeader = exchange.getRequest().getHeaders().getFirst("X-Ikaros-Session-Id");
-        if (actorHeader == null || actorHeader.isBlank() || sessionHeader == null || sessionHeader.isBlank()) {
-            return reject(exchange, HttpStatus.UNAUTHORIZED);
-        }
-        try {
-            UUID actorId = UUID.fromString(actorHeader);
-            UUID sessionId = UUID.fromString(sessionHeader);
-            SecurityPolicy policy = policy(permission);
-            return accessControl.require(actorId, sessionId, policy)
-                .then(chain.filter(exchange));
-        } catch (IllegalArgumentException invalidIdentity) {
-            return reject(exchange, HttpStatus.BAD_REQUEST);
-        }
+        if (!jwtPrincipal.permissions().contains(permission.key())) return reject(exchange, HttpStatus.FORBIDDEN);
+        return chain.filter(exchange);
     }
 
     private PlatformPermission permission(String method, String path) {
