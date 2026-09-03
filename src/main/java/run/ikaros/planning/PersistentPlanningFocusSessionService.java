@@ -26,7 +26,7 @@ public class PersistentPlanningFocusSessionService implements PlanningFocusSessi
             return sessions.save(new PlanningFocusSessionEntity(null, ownerId, request.taskId(), request.mode() == null ? PlanningFocusMode.FREEFORM : request.mode(),
                 PlanningFocusSessionStatus.RUNNING, request.plannedMinutes(), null, now, null, null, now, null)).map(this::view); }));
     }
-    @Override public Flux<PlanningFocusSessionView> list(UUID ownerId) { return sessions.findAllByOwnerIdOrderByStartedAtDesc(ownerId).map(this::view); }
+    @Override public Flux<PlanningFocusSessionView> list(UUID ownerId) { return sessions.findAllByOwnerIdOrderByStartedAtDesc(ownerId).take(100).map(this::view); }
     @Override public Mono<PlanningFocusSessionView> complete(UUID ownerId, UUID sessionId, CompletePlanningFocusSessionRequest request) {
         return completeInternal(ownerId, sessionId, request, null);
     }

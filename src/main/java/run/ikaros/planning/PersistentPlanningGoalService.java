@@ -25,7 +25,7 @@ public class PersistentPlanningGoalService implements PlanningGoalService {
             request.type() == null ? PlanningGoalType.OUTCOME : request.type(), PlanningGoalStatus.ACTIVE, 0d,
             request.startAt(), request.deadline(), null, now, now, null)).map(this::view);
     }
-    @Override public Flux<PlanningGoalView> list(UUID ownerId) { return goals.findAllByOwnerIdOrderByUpdatedAtDesc(ownerId).map(this::view); }
+    @Override public Flux<PlanningGoalView> list(UUID ownerId) { return goals.findAllByOwnerIdOrderByUpdatedAtDesc(ownerId).take(100).map(this::view); }
     @Override public Mono<PlanningGoalView> update(UUID ownerId, UUID goalId, UpdatePlanningGoalRequest request) {
         validateDates(request.startAt(), request.deadline());
         return owned(ownerId, goalId).flatMap(old -> { check(old, request.expectedVersion());
