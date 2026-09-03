@@ -28,25 +28,7 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String path = exchange.getRequest().getPath().value();
         if (isAttachmentContentPath(path) && hasDeliveryGrant(exchange)) return chain.filter(exchange);
-        if (!(path.startsWith("/api/resources") || path.startsWith("/api/resources")
-            || path.startsWith("/api/storage/providers") || path.startsWith("/api/storage/providers")
-            || path.startsWith("/api/admin/storage-providers")
-            || path.startsWith("/api/admin/blobs")
-            || path.startsWith("/api/admin/delivery-providers")
-            || path.startsWith("/api/admin/restore-budget-policy")
-            || path.startsWith("/api/admin/backup")
-            || path.startsWith("/api/storage/restore-budget")
-            || path.startsWith("/api/storage/placements")
-            || path.startsWith("/api/attachments/") && (path.contains("/restore-requests")
-                || path.contains("/availability") || path.contains("/delivery-grants") || path.contains("/content"))
-            || path.startsWith("/api/media/seasons/") && path.contains("/restore-requests")
-            || path.startsWith("/api/restore-requests")
-            || path.startsWith("/api/storage/restore-requests")
-            || path.startsWith("/api/delivery-leases")
-            || path.startsWith("/api/ingestion/sources") || path.startsWith("/api/ingestion/sources")
-            || path.startsWith("/api/users") || path.startsWith("/api/admin/users")
-            || path.startsWith("/api/roles") || path.startsWith("/api/admin/roles")
-            || path.startsWith("/api/permissions") || path.startsWith("/api/admin/permissions"))) {
+        if (!path.startsWith("/api/") || path.equals("/api/health/live") || path.equals("/api/health/ready")) {
             return chain.filter(exchange);
         }
         PlatformPermission permission = permission(exchange.getRequest().getMethod().name(), path);

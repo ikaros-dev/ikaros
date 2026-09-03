@@ -111,6 +111,17 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
+    void rejectsUnlistedApiRouteWithoutSession() {
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
+            "/api/finance/ledgers").build());
+        WebFilterChain chain = mock(WebFilterChain.class);
+
+        new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
+
+        assertEquals(401, exchange.getResponse().getStatusCode().value());
+    }
+
+    @Test
     void letsDeliveryGrantContentReachGrantAuthorizationWithoutSession() {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
             "/api/attachments/" + UUID.randomUUID() + "/content")
