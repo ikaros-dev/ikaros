@@ -26,7 +26,7 @@ public class HealthController {
 
     @GetMapping("/ready")
     public Mono<ResponseEntity<Map<String, String>>> ready() {
-        return database.sql("select 1").fetch().rowsUpdated()
+        return database.sql("select 1").fetch().one()
             .map(ignored -> ResponseEntity.ok(Map.of("status", "UP")))
             .onErrorResume(error -> Mono.just(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(Map.of("status", "DOWN"))));
