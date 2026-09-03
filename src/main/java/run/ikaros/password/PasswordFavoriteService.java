@@ -20,7 +20,7 @@ public class PasswordFavoriteService {
   public Flux<PasswordVaultItemView> list(UUID actorId, UUID vaultId) {
     return unlocked(actorId, vaultId)
         .flatMapMany(v -> items.findAllByVaultIdAndOwnerIdAndFavoriteTrueAndTombstoneFalseOrderByUpdatedAtDesc(vaultId, actorId)
-            .map(i -> new PasswordVaultItemView(i.id(), i.vaultId(), i.itemType(), i.encryptedName(), i.encryptedPayload(), i.encryptedCustomFields(), i.favorite(), i.revision(), i.tombstone(), i.createdAt(), i.updatedAt())));
+            .take(100).map(i -> new PasswordVaultItemView(i.id(), i.vaultId(), i.itemType(), i.encryptedName(), i.encryptedPayload(), i.encryptedCustomFields(), i.favorite(), i.revision(), i.tombstone(), i.createdAt(), i.updatedAt())));
   }
 
   private Mono<PasswordVaultEntity> unlocked(UUID actorId, UUID vaultId) {
