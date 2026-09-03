@@ -6,13 +6,14 @@ import { ApiError, api } from './services/api'
 const route = useRoute(); const router = useRouter(); const tab = ref('概览'); const loading = ref(false); const toast = ref(''); const favorite = ref(false); const lifecycle = ref('正常')
 const resourceId = computed(() => String(route.params.id || '')); const actorId = String(import.meta.env.VITE_ACTOR_ID || ''); const title = ref(''); const type = ref(''); const description = ref('')
 const metadata = ref([{ key: '标题', value: '《星际穿越》', source: '人工', locked: true }, { key: '上映年份', value: '2014', source: '提供方', locked: false }, { key: '导演', value: 'Christopher Nolan', source: '提供方', locked: false }])
-const activity = [{ text: '完成元数据同步', time: '12 分钟前', actor: '系统' }, { text: '添加到收藏', time: '昨天 15:08', actor: '陈昊' }, { text: '创建资源', time: '2026-08-20', actor: '陈昊' }]
+const activity = ref<Array<{ text: string; time: string; actor: string }>>([])
 function notify(message: string) { toast.value = message; window.setTimeout(() => toast.value = '', 2400) }
 async function load() { if (!resourceId.value) { notify('资源 ID 不存在'); return }; loading.value = true; try { const result = await api.getResource(resourceId.value); title.value = result.title || result.id; type.value = result.resource_type || '其他'; lifecycle.value = result.lifecycle || '未知' } catch (error) { if (!(error instanceof ApiError && import.meta.env.DEV && error.status === 404)) notify('资源详情加载失败，请检查登录状态或后端服务') } finally { loading.value = false } }
 async function toggleFavorite() { if (!actorId || !resourceId.value) { notify('未配置当前用户身份，无法修改收藏'); return }; const next = !favorite.value; try { if (next) { await api.addFavorite(resourceId.value, actorId) } else { await api.removeFavorite(resourceId.value, actorId) }; favorite.value = next; notify(next ? '资源已收藏' : '已取消收藏') } catch { notify('收藏状态更新失败，请稍后重试') } }
-async function loadFavorite() { if (!actorId || resourceId.value === 'demo-resource') return; try { const result = await api.getFavorite(resourceId.value, actorId); favorite.value = Boolean(result.favorite ?? result.favorited) } catch { /* 收藏状态不可用时不影响资源详情 */ } }
+async function loadFavorite() { if (!actorId || !resourceId.value) return; try { const result = await api.getFavorite(resourceId.value, actorId); favorite.value = Boolean(result.favorite ?? result.favorited) } catch { /* 收藏状态不可用时不影响资源详情 */ } }
+async function loadActivity() { if (!actorId || !resourceId.value) return; try { const result = await api.listRecentActivity(actorId, 50); activity.value = result.filter(item => (item.resourceId || item.resource_id) === resourceId.value).map(item => ({ text: item.details || item.type || '资源活动', time: item.occurredAt || item.occurred_at || '时间不可用', actor: actorId })) } catch { activity.value = [] } }
 async function archive() { if (lifecycle.value === '已归档') return; if (!actorId || !resourceId.value) { notify('未配置当前用户身份，无法归档资源'); return } loading.value = true; try { await api.archiveResource(resourceId.value, actorId); lifecycle.value = '已归档'; notify('资源已归档，操作已写入审计') } catch (error) { notify(error instanceof ApiError && error.status === 409 ? '资源当前状态不允许归档' : '资源归档失败，请稍后重试') } finally { loading.value = false } }
-load(); loadFavorite()
+load(); loadFavorite(); loadActivity()
 </script>
 
 <template>
