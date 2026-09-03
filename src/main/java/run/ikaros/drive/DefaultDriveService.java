@@ -144,6 +144,10 @@ public class DefaultDriveService implements DriveService {
                 && r.upload().equals(request.uploadSessionId())).findFirst().orElse(null);
             if (existing != null && existing.state() == QuotaReservationState.ACTIVE
                 && existing.expires().isAfter(Instant.now())) return Mono.just(reservationView(existing));
+            if (existing != null && existing.state() == QuotaReservationState.ACTIVE) {
+                reservations.put(existing.id(), new Reservation(existing.id(), existing.space(), existing.upload(),
+                    existing.bytes(), QuotaReservationState.RELEASED, existing.expires()));
+            }
             Instant expires = Instant.now().plusSeconds(3600);
             Reservation created = new Reservation(ids.next(), spaceId, request.uploadSessionId(), request.reservedBytes(),
                 QuotaReservationState.ACTIVE, expires);
