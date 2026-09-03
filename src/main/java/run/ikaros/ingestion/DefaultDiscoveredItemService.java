@@ -10,6 +10,7 @@ import run.ikaros.event.DurableEventService;
 
 @Service
 public class DefaultDiscoveredItemService implements DiscoveredItemService {
+    private static final int MAX_UNPAGED_RESULTS = 100;
     private final ScanRunRepository scanRuns;
     private final DiscoveredItemRepository items;
     private final DurableEventService events;
@@ -35,7 +36,7 @@ public class DefaultDiscoveredItemService implements DiscoveredItemService {
     public Mono<List<DiscoveredItemView>> list(UUID ownerId, UUID scanRunId) {
         return scanRuns.findByIdAndOwnerId(scanRunId, ownerId)
             .switchIfEmpty(Mono.error(new NotFoundException("扫描运行不存在或无权访问")))
-            .thenMany(items.findAllByScanRunIdOrderByRelativeKeyAsc(scanRunId))
+            .thenMany(items.findAllByScanRunIdOrderByRelativeKeyAsc(scanRunId).take(MAX_UNPAGED_RESULTS))
             .map(this::view).collectList();
     }
 
