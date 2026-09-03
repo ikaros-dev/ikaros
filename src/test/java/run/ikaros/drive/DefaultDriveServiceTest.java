@@ -62,4 +62,15 @@ class DefaultDriveServiceTest {
         assertEquals(first.id(), retry.id());
         assertEquals(1, service.revisions(user, file.id()).count().block());
     }
+
+    @Test void uploadReservationIsIdempotentForSameSession() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        UUID uploadSession = UUID.randomUUID();
+        BeginDriveUploadRequest request = new BeginDriveUploadRequest(uploadSession, 1024);
+
+        DriveQuotaReservationView first = service.beginUpload(user, space.id(), request).block();
+        DriveQuotaReservationView retry = service.beginUpload(user, space.id(), request).block();
+        assertEquals(first.id(), retry.id());
+        assertEquals(1024, service.quota(user, space.id()).block().reservedBytes());
+    }
 }
