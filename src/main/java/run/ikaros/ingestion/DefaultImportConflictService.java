@@ -8,12 +8,14 @@ import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 @Service
 public class DefaultImportConflictService implements ImportConflictService {
+    private static final int MAX_UNPAGED_RESULTS = 100;
     private final ImportConflictRepository repository;
     public DefaultImportConflictService(ImportConflictRepository repository) { this.repository=repository; }
     public Mono<ImportConflictView> create(UUID ownerId, CreateImportConflictRequest request) {
         return repository.save(new ImportConflictEntity(null,request.planId(),request.candidateId(),ownerId,request.reason(),request.confidence(),ImportConflictStatus.OPEN.name(),null,Instant.now(),null,null)).map(this::view);
     }
-    public Mono<List<ImportConflictView>> pending(UUID ownerId) { return repository.findAllByOwnerIdAndStatusOrderByCreatedAtAsc(ownerId,ImportConflictStatus.OPEN.name()).map(this::view).collectList(); }
+    public Mono<List<ImportConflictView>> pending(UUID ownerId) { return repository.findAllByOwnerIdAndStatusOrderByCreatedAtAsc(ownerId,ImportConflictStatus.OPEN.name())
+        .take(MAX_UNPAGED_RESULTS).map(this::view).collectList(); }
     public Mono<ImportConflictView> resolve(UUID ownerId,UUID id,ResolveImportConflictRequest request) {
         return repository.findByIdAndOwnerId(id,ownerId).switchIfEmpty(Mono.error(new NotFoundException("冲突不存在或无权访问")))
             .flatMap(current -> { if (!ImportConflictStatus.OPEN.name().equals(current.status())) return Mono.error(new ConflictException("冲突已处理"));
