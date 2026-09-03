@@ -198,7 +198,7 @@ public class DefaultDriveService implements DriveService {
     }
     @Override public Flux<SyncBindingView> bindings(UUID actorId) { return Flux.fromIterable(bindings.values())
         .filter(binding -> binding.user().equals(actorId)).sort(java.util.Comparator.comparing(Binding::created))
-        .map(this::bindingView); }
+        .take(100).map(this::bindingView); }
     @Override public Mono<SyncBindingView> setBindingEnabled(UUID actorId, UUID bindingId, boolean enabled) {
         return Mono.justOrEmpty(bindings.get(bindingId)).filter(binding -> binding.user().equals(actorId))
             .switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在")))
@@ -221,7 +221,7 @@ public class DefaultDriveService implements DriveService {
     @Override public Flux<SyncConflictView> conflicts(UUID actorId, UUID bindingId) {
         return ownedBinding(actorId, bindingId).flatMapMany(binding -> Flux.fromIterable(conflicts.values())
             .filter(conflict -> conflict.binding().equals(binding.id())).sort(java.util.Comparator.comparing(Conflict::detected).reversed())
-            .map(this::conflictView));
+            .take(100).map(this::conflictView));
     }
     @Override public Mono<SyncConflictView> resolveConflict(UUID actorId, UUID conflictId, SyncConflictState state) {
         if (state != SyncConflictState.RESOLVED && state != SyncConflictState.DISMISSED)
@@ -247,7 +247,7 @@ public class DefaultDriveService implements DriveService {
         });
     }
     @Override public Flux<DeviceView> devices(UUID actorId) { return Flux.fromIterable(devices.values())
-        .filter(d -> d.user().equals(actorId) && d.revoked() == null).map(this::deviceView); }
+        .filter(d -> d.user().equals(actorId) && d.revoked() == null).take(100).map(this::deviceView); }
     @Override public Mono<DeviceView> revokeDevice(UUID actorId, UUID deviceId) {
         return Mono.justOrEmpty(devices.get(deviceId)).filter(d -> d.user().equals(actorId))
             .switchIfEmpty(Mono.error(new NotFoundException("Device 不存在")))
@@ -274,7 +274,7 @@ public class DefaultDriveService implements DriveService {
     @Override public Flux<SyncMappingView> mappings(UUID actorId, UUID bindingId) {
         return ownedBinding(actorId, bindingId).flatMapMany(binding -> Flux.fromIterable(mappings.values())
             .filter(mapping -> mapping.binding().equals(binding.id())).sort(java.util.Comparator.comparing(Mapping::updated))
-            .map(this::mappingView));
+            .take(100).map(this::mappingView));
     }
     @Override public Flux<DriveTombstoneView> tombstones(UUID actorId, UUID spaceId, long afterSequence) { return ownedSpace(actorId,spaceId).flatMapMany(s -> Flux.fromIterable(tombstoneLog.values()).filter(t -> t.spaceId().equals(spaceId) && t.sequence() > afterSequence).sort(java.util.Comparator.comparing(DriveTombstoneView::sequence))); }
     @Override public Flux<SyncMutationResult> applyMutations(UUID actorId, UUID bindingId, java.util.List<SyncMutationRequest> requests) {
