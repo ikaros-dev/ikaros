@@ -4,9 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElAlert, ElButton, ElEmpty, ElInput, ElSkeleton, ElTable, ElTableColumn, ElTag } from 'element-plus'
 import { api, unwrapPage, type ResourceRecord } from './services/api'
 const route = useRoute(); const router = useRouter(); const query = ref(String(route.query.q || '')); const loading = ref(true); const error = ref(''); const results = ref<ResourceRecord[]>([])
-const demo: ResourceRecord[] = [{ id: 'demo-resource', title: '《星际穿越》', resource_type: '电影', lifecycle: '正常' }, { id: 'demo-document', title: 'Ikaros V2 产品设计', resource_type: '文档', lifecycle: '正常' }, { id: 'demo-collection', title: '2026 年读书计划', resource_type: '集合', lifecycle: '草稿' }]
 const filtered = computed(() => results.value.filter(item => `${item.title || ''} ${item.resource_type || ''} ${item.lifecycle || ''}`.toLowerCase().includes(query.value.toLowerCase())))
-async function load() { loading.value = true; error.value = ''; try { const result = await api.listResources('?limit=100'); results.value = unwrapPage(result); if (!results.value.length) results.value = demo } catch { results.value = demo; error.value = '搜索 API 暂不可用，当前显示演示结果' } finally { loading.value = false } }
+async function load() { loading.value = true; error.value = ''; try { const result = await api.listResources('?limit=100'); results.value = unwrapPage(result) } catch { results.value = []; error.value = '搜索 API 暂不可用，请检查登录状态或后端服务' } finally { loading.value = false } }
 function open(item: ResourceRecord) { router.push(`/console/resources/${item.id}`) }
 function submit() { router.replace({ query: query.value ? { q: query.value } : {} }) }
 onMounted(load)
