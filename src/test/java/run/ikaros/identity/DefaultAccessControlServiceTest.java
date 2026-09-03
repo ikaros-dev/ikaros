@@ -71,4 +71,21 @@ class DefaultAccessControlServiceTest {
             })
             .verify();
     }
+
+    @Test
+    void rejectsSessionFromOlderUserSecurityVersion() {
+        UUID userId = UUID.randomUUID();
+        UUID sessionId = UUID.randomUUID();
+        Instant now = Instant.now();
+        when(userRepository.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, now, now, null, 2L, 0L)));
+        when(userRoleRepository.findAllByUserId(userId)).thenReturn(Flux.empty());
+        when(sessionRepository.findById(sessionId)).thenReturn(Mono.just(new SecuritySessionEntity(sessionId, userId,
+            1L, "EMAIL_OTP", 4, now, now.plusSeconds(300), now.plusSeconds(3600), null, now, now, 0L)));
+
+        StepVerifier.create(service.require(userId, sessionId, new SecurityPolicy("READ",
+                PlatformPermission.RESOURCE_READ, SecurityVerificationLevel.SVL_0, false)))
+            .expectError(ConflictException.class)
+            .verify();
+    }
 }

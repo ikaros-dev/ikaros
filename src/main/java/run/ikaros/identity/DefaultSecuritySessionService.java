@@ -39,8 +39,9 @@ public class DefaultSecuritySessionService implements SecuritySessionService {
         if (!expiresAt.isAfter(now)) {
             return Mono.error(new ConflictException("会话到期时间必须晚于当前时间"));
         }
-        return activeUser(userId).then(sessionRepository.save(new SecuritySessionEntity(null, userId, loginMethod,
-                SecurityVerificationLevel.SVL_0.value(), null, null, expiresAt, null, now, now, null)))
+        return activeUser(userId).flatMap(user -> sessionRepository.save(new SecuritySessionEntity(null, userId,
+                user.securityVersion(), loginMethod, SecurityVerificationLevel.SVL_0.value(), null, null,
+                expiresAt, null, now, now, null)))
             .map(this::toView);
     }
 
@@ -56,8 +57,8 @@ public class DefaultSecuritySessionService implements SecuritySessionService {
                 return Mono.error(new ConflictException("不能降低会话的安全验证等级"));
             }
             SecuritySessionEntity steppedUp = new SecuritySessionEntity(session.id(), session.userId(),
-                session.loginMethod(), level.value(), now, verificationExpiresAt, session.expiresAt(), session.revokedAt(),
-                now, session.createdAt(), session.version());
+                session.securityVersion(), session.loginMethod(), level.value(), now, verificationExpiresAt,
+                session.expiresAt(), session.revokedAt(), now, session.createdAt(), session.version());
             return sessionRepository.save(steppedUp).map(this::toView);
         });
     }
@@ -80,8 +81,9 @@ public class DefaultSecuritySessionService implements SecuritySessionService {
                     return Mono.empty();
                 }
                 SecuritySessionEntity revoked = new SecuritySessionEntity(session.id(), session.userId(),
-                    session.loginMethod(), session.currentSvl(), session.verifiedAt(), session.verificationExpiresAt(),
-                    session.expiresAt(), Instant.now(), session.lastActiveAt(), session.createdAt(), session.version());
+                    session.securityVersion(), session.loginMethod(), session.currentSvl(), session.verifiedAt(),
+                    session.verificationExpiresAt(), session.expiresAt(), Instant.now(), session.lastActiveAt(),
+                    session.createdAt(), session.version());
                 return sessionRepository.save(revoked).then();
             })
             .then(auditService.record(actorId, "identity.session.revoke", "SESSION", sessionId, "{}"));

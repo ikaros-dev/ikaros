@@ -42,7 +42,7 @@ public class DefaultUserService implements UserService {
     public Mono<UserView> create(UUID actorId, CreateUserRequest request) {
         Instant now = Instant.now();
         PlatformUserEntity user = new PlatformUserEntity(null, request.username().trim(), request.displayName().trim(),
-            normalizeEmail(request.email()), UserStatus.PENDING, now, now, null, null);
+            normalizeEmail(request.email()), UserStatus.PENDING, now, now, null, 0L, null);
         return userRepository.save(user)
             .onErrorMap(DuplicateKeyException.class, exception -> new ConflictException("用户名或邮箱已存在"))
             .flatMap(saved -> auditService.record(actorId, "identity.user.create", "USER", saved.id(), "{}")
@@ -73,7 +73,8 @@ public class DefaultUserService implements UserService {
     public Mono<UserView> changeStatus(UUID actorId, UUID userId, UserStatus status) {
         return requiredUser(userId).flatMap(user -> {
             PlatformUserEntity changed = new PlatformUserEntity(user.id(), user.username(), user.displayName(), user.email(),
-                status, user.createdAt(), Instant.now(), user.lastLoginAt(), user.version());
+                status, user.createdAt(), Instant.now(), user.lastLoginAt(),
+                status == user.status() ? user.securityVersion() : user.securityVersion() + 1, user.version());
             return userRepository.save(changed)
                 .flatMap(saved -> auditService.record(actorId, "identity.user.status.change", "USER", userId, "{}")
                     .then(toView(saved)));
