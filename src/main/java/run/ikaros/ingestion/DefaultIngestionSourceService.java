@@ -16,6 +16,7 @@ import run.ikaros.event.DurableEventService;
 
 @Service
 public class DefaultIngestionSourceService implements IngestionSourceService {
+    private static final int MAX_UNPAGED_RESULTS = 100;
     private final IngestionSourceRepository repository;
     private final AuditService auditService;
     private final ObjectMapper mapper;
@@ -52,7 +53,8 @@ public class DefaultIngestionSourceService implements IngestionSourceService {
 
     @Override
     public Mono<List<IngestionSourceView>> list(UUID ownerId) {
-        return repository.findAllByOwnerIdOrderByUpdatedAtDesc(ownerId).map(this::toView).collectList();
+        return repository.findAllByOwnerIdOrderByUpdatedAtDesc(ownerId).take(MAX_UNPAGED_RESULTS)
+            .map(this::toView).collectList();
     }
 
     @Override
