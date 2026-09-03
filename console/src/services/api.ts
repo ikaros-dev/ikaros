@@ -7,7 +7,7 @@ export class ApiError extends Error {
   }
 }
 
-const apiBase = (import.meta.env.VITE_API_BASE_URL || '/api/v2').replace(/\/$/, '')
+const apiBase = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
 function requestId() { return crypto.randomUUID() }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
