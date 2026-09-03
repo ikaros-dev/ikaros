@@ -30,25 +30,25 @@ public class PersistentPlanningCalendarService implements PlanningCalendarServic
             .filter(task -> task.status() != PlanningTaskStatus.CANCELLED && task.status() != PlanningTaskStatus.ARCHIVED
                 && task.deadline() != null && !task.deadline().isBefore(from) && task.deadline().isBefore(to))
             .map(task -> new PlanningCalendarItemView(PlanningCalendarItemType.TASK_DEADLINE, task.id(), task.id(), task.title(), task.deadline(), task.deadline(), "UTC"));
-        Flux<PlanningCalendarItemView> timeBlocks = blocks.findAllByOwnerIdAndStartAtLessThanAndEndAtGreaterThanOrderByStartAt(ownerId, to, from)
+        Flux<PlanningCalendarItemView> timeBlocks = blocks.findAllByOwnerIdAndStartAtLessThanAndEndAtGreaterThanOrderByStartAt(ownerId, to, from).take(100)
             .filter(block -> block.status() == PlanningTimeBlockStatus.ACTIVE)
             .map(block -> new PlanningCalendarItemView(PlanningCalendarItemType.TIME_BLOCK, block.id(), block.id(), block.title(), block.startAt(), block.endAt(), block.timeZone()));
-        Flux<PlanningCalendarItemView> reminderItems = reminders.findAllByOwnerIdOrderByTriggerAt(ownerId)
+        Flux<PlanningCalendarItemView> reminderItems = reminders.findAllByOwnerIdOrderByTriggerAt(ownerId).take(100)
             .filter(reminder -> reminder.status() != PlanningReminderStatus.CANCELLED && reminder.triggerAt() != null
                 && !reminder.triggerAt().isBefore(from) && reminder.triggerAt().isBefore(to))
             .map(reminder -> new PlanningCalendarItemView(PlanningCalendarItemType.REMINDER, reminder.id(), reminder.targetId(),
                 "Reminder", reminder.triggerAt(), reminder.triggerAt(), reminder.timeZone()));
-        Flux<PlanningCalendarItemView> dateItems = importantDates.findAllByOwnerIdOrderByOccursAtAsc(ownerId)
+        Flux<PlanningCalendarItemView> dateItems = importantDates.findAllByOwnerIdOrderByOccursAtAsc(ownerId).take(100)
             .filter(date -> date.status() == PlanningImportantDateStatus.ACTIVE && !date.occursAt().isBefore(from) && date.occursAt().isBefore(to))
             .map(date -> new PlanningCalendarItemView(PlanningCalendarItemType.IMPORTANT_DATE, date.id(), date.id(), date.title(), date.occursAt(), date.occursAt(), date.timeZone()));
         return Flux.merge(scheduled, deadlines, timeBlocks, reminderItems, dateItems).sort(java.util.Comparator.comparing(PlanningCalendarItemView::startAt));
     }
 
     private Flux<PlanningTaskEntity> accessibleTasks(UUID ownerId) {
-        Flux<PlanningTaskEntity> owned = tasks.findAllByOwnerIdOrderByCreatedAtDesc(ownerId);
+        Flux<PlanningTaskEntity> owned = tasks.findAllByOwnerIdOrderByCreatedAtDesc(ownerId).take(100);
         Flux<PlanningTaskEntity> shared = members.findAllByUserId(ownerId)
             .map(PlanningProjectMemberEntity::projectId)
-            .flatMap(tasks::findAllByProjectIdOrderByCreatedAtDesc);
+            .flatMap(id -> tasks.findAllByProjectIdOrderByCreatedAtDesc(id).take(100));
         return Flux.concat(owned, shared).distinct(PlanningTaskEntity::id);
     }
 }
