@@ -29,7 +29,8 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String path = exchange.getRequest().getPath().value();
         if (isAttachmentContentPath(path) && hasDeliveryGrant(exchange)) return chain.filter(exchange);
-        if (!path.startsWith("/api/") || path.equals("/api/health/live") || path.equals("/api/health/ready")) {
+        if (!path.startsWith("/api/") || path.equals("/api/health/live") || path.equals("/api/health/ready")
+            || path.equals("/api/auth/register") || path.equals("/api/auth/login")) {
             return chain.filter(exchange);
         }
         PlatformPermission permission = permission(exchange.getRequest().getMethod().name(), path);
