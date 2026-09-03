@@ -1,6 +1,7 @@
 package run.ikaros.identity;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -74,6 +75,27 @@ public class DefaultRoleService implements RoleService {
                     "{\"role_id\":\"" + roleId + "\",\"permission_keys\":[\"" + permission.key() + "\"]}")
                     : Mono.empty()).then(auditService.record(actorId, "identity.role.permission.grant", "ROLE", roleId, "{}"))
                     .thenReturn(view)));
+    }
+
+    @Override
+    public Mono<RoleView> replacePermissions(UUID actorId, UUID roleId, ReplaceRolePermissionsRequest request) {
+        List<String> desired = request.permissions().stream().map(PlatformPermission::key).distinct().sorted().toList();
+        return requiredRole(roleId)
+            .flatMap(role -> permissionRepository.findAllByRoleId(roleId).map(RolePermissionEntity::permissionKey)
+                .sort().collectList().flatMap(current -> {
+                    if (current.equals(desired)) return toView(role);
+                    Instant now = Instant.now();
+                    return permissionRepository.deleteAllByRoleId(roleId)
+                        .thenMany(Flux.fromIterable(desired)
+                            .map(key -> new RolePermissionEntity(null, roleId, key, now, null))
+                            .flatMap(permissionRepository::save))
+                        .then(toView(role))
+                        .flatMap(view -> emit("identity.role.permissions-replaced", roleId,
+                            "{\"role_id\":\"" + roleId + "\",\"permission_keys\":[\""
+                                + String.join("\",\"", desired) + "\"]}").thenReturn(view));
+                }))
+            .flatMap(view -> auditService.record(actorId, "identity.role.permission.replace", "ROLE", roleId, "{}")
+                .thenReturn(view));
     }
 
     private Mono<Void> emit(String type, UUID roleId, String payload) {

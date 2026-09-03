@@ -62,7 +62,7 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
     }
 
     private PlatformPermission permission(String method, String path) {
-        if (path.contains("/roles/") && path.contains("/permissions/")) {
+        if (path.contains("/roles/") && path.contains("/permissions")) {
             return PlatformPermission.SYSTEM_ROLE_MANAGE;
         }
         if (path.contains("/users/") && path.contains("/roles/")) {
