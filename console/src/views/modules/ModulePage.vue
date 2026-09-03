@@ -10,6 +10,7 @@ const endpoint = computed(() => String(route.meta.endpoint || ""));
 const columns = computed(() => (route.meta.columns as string[]) || ["id"]);
 const createEndpoint = computed(() => String(route.meta.createEndpoint || ""));
 const createFields = computed(() => route.meta.createFields || []);
+const deleteEndpoint = computed(() => String(route.meta.deleteEndpoint || ""));
 const createVisible = ref(false);
 const createLoading = ref(false);
 const createForm = reactive<Record<string, string>>({});
@@ -26,6 +27,13 @@ async function create() {
     createVisible.value = false;
     await load();
   } finally { createLoading.value = false; }
+}
+
+async function remove(row: Record<string, unknown>) {
+  const id = row.id;
+  if (!id || !window.confirm("确定删除此条数据吗？")) return;
+  await http.request("delete", `${deleteEndpoint.value}/${id}`);
+  await load();
 }
 const loading = ref(false);
 const error = ref("");
@@ -59,6 +67,7 @@ onMounted(load);
       <el-table v-else :data="rows" stripe>
         <el-table-column v-for="column in columns" :key="column" :prop="column" :label="column" min-width="160" show-overflow-tooltip />
         <el-table-column label="原始数据" min-width="220"><template #default="scope"><span class="text-xs text-[var(--el-text-color-secondary)]">{{ JSON.stringify(scope.row) }}</span></template></el-table-column>
+        <el-table-column v-if="deleteEndpoint" label="操作" width="90" fixed="right"><template #default="scope"><el-button link type="danger" @click="remove(scope.row)">删除</el-button></template></el-table-column>
       </el-table>
     </el-card>
     <el-dialog v-model="createVisible" title="新建" width="480px">
