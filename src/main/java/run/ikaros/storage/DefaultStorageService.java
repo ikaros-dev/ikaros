@@ -23,6 +23,7 @@ import run.ikaros.task.BackgroundTaskService;
  */
 @Service
 public class DefaultStorageService implements StorageService {
+    private static final int MAX_UNPAGED_RESULTS = 100;
     private final ResourceRepository resourceRepository;
     private final AttachmentRepository attachmentRepository;
     private final BlobRepository blobRepository;
@@ -154,7 +155,8 @@ public class DefaultStorageService implements StorageService {
     @Override
     public Mono<List<AttachmentView>> list(UUID ownerId, UUID resourceId) {
         return owned(ownerId, resourceId)
-            .thenMany(attachmentRepository.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(resourceId))
+            .thenMany(attachmentRepository.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(resourceId)
+                .take(MAX_UNPAGED_RESULTS))
             .flatMap(attachment -> blobRepository.findById(attachment.blobId())
                 .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
                 .flatMap(blob -> toView(attachment, blob)))
