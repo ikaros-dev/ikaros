@@ -45,7 +45,7 @@ public class PersistentPlanningTaskService implements PlanningTaskService {
 
   @Override
   public Flux<PlanningTaskView> list(UUID actor, PlanningTaskStatus status) {
-    return accessible(actor).filter(t -> status == null || t.status() == status).map(this::view);
+    return accessible(actor).filter(t -> status == null || t.status() == status).take(100).map(this::view);
   }
 
   @Override
@@ -53,7 +53,7 @@ public class PersistentPlanningTaskService implements PlanningTaskService {
     ZonedDateTime start = Instant.now().atZone(zoneId).toLocalDate().atStartOfDay(zoneId);
     Instant from = start.toInstant();
     Instant to = start.plusDays(1).toInstant();
-    return accessible(actor).filter(t -> visible(t) && inWindow(t, from, to)).map(this::view);
+    return accessible(actor).filter(t -> visible(t) && inWindow(t, from, to)).take(100).map(this::view);
   }
 
   @Override
@@ -62,7 +62,7 @@ public class PersistentPlanningTaskService implements PlanningTaskService {
     return accessible(actor).filter(t -> visible(t)
         && ((t.scheduledStart() != null && !t.scheduledStart().isBefore(now))
             || (t.deadline() != null && !t.deadline().isBefore(now))))
-        .map(this::view);
+        .take(100).map(this::view);
   }
 
   @Override
@@ -74,13 +74,13 @@ public class PersistentPlanningTaskService implements PlanningTaskService {
         && (from == null || t.deadline() == null || !t.deadline().isBefore(from))
         && (to == null || t.deadline() == null || t.deadline().isBefore(to))
         && (!overdue || (t.deadline() != null && t.deadline().isBefore(now) && visible(t))))
-        .map(this::view);
+        .take(100).map(this::view);
   }
 
   @Override
   public Flux<PlanningTaskView> eisenhower(UUID actor, boolean important, boolean urgent) {
     return accessible(actor).filter(t -> visible(t) && t.important() == important && t.urgent() == urgent)
-        .map(this::view);
+        .take(100).map(this::view);
   }
 
   @Override
