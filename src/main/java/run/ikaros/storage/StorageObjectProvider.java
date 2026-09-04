@@ -11,4 +11,8 @@ public interface StorageObjectProvider {
     Mono<StorageUploadIntent> createUploadIntent(StorageProvider provider, StorageUploadRequest request);
 
     Mono<StorageObjectMetadata> verify(StorageProvider provider, String objectKey);
+
+    default Mono<StorageObjectMetadata> verify(StorageProvider provider, String objectKey, String expectedSha256) {
+        return verify(provider, objectKey);
+    }
 }

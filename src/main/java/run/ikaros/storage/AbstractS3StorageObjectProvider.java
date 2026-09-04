@@ -1,6 +1,7 @@
 package run.ikaros.storage;
 
 import java.net.URI;
+import java.security.MessageDigest;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
@@ -14,6 +15,8 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.ChecksumMode;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
@@ -47,15 +50,38 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
 
     @Override
     public Mono<StorageObjectMetadata> verify(StorageProvider provider, String objectKey) {
+        return verify(provider, objectKey, null);
+    }
+
+    @Override
+    public Mono<StorageObjectMetadata> verify(StorageProvider provider, String objectKey, String expectedSha256) {
         return credentialResolver.resolve(provider.secretReference()).flatMap(credentials -> Mono.fromCallable(() -> {
             S3Settings settings = S3Settings.from(provider);
             return withClient(settings, credentials, client -> {
                 var object = client.headObject(HeadObjectRequest.builder().bucket(settings.bucket()).key(objectKey)
                     .checksumMode(ChecksumMode.ENABLED).build());
+                String checksum = object.checksumSHA256();
+                if (expectedSha256 != null) {
+                    checksum = calculateChecksum(client, settings.bucket(), objectKey);
+                }
                 return new StorageObjectMetadata(objectKey, object.contentLength(), object.contentType(), object.eTag(),
-                    object.checksumSHA256());
+                    checksum);
             });
         })).subscribeOn(Schedulers.boundedElastic());
+    }
+
+    private String calculateChecksum(S3Client client, String bucket, String objectKey) {
+        try (ResponseInputStream<?> stream = client.getObject(GetObjectRequest.builder().bucket(bucket).key(objectKey).build())) {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] buffer = new byte[64 * 1024];
+            int read;
+            while ((read = stream.read(buffer)) >= 0) {
+                if (read > 0) digest.update(buffer, 0, read);
+            }
+            return Base64.getEncoder().encodeToString(digest.digest());
+        } catch (Exception error) {
+            throw new IllegalStateException("无法读取上传对象进行完整性校验", error);
+        }
     }
 
     private <T> T withClient(S3Settings settings, software.amazon.awssdk.auth.credentials.AwsCredentialsProvider credentials,

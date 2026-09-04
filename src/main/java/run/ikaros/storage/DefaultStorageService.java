@@ -182,7 +182,7 @@ public class DefaultStorageService implements StorageService {
 
     private Mono<Void> verifyUploadedObject(StorageProvider provider, CommitUploadRequest request) {
         if (provider.tier() != request.tier()) return Mono.error(new ConflictException("Placement tier 与 Storage Provider 配置不一致"));
-        return objectProviderRegistry.verify(provider, request.objectKey()).flatMap(actual -> {
+        return objectProviderRegistry.verify(provider, request.objectKey(), request.sha256()).flatMap(actual -> {
             if (actual.sizeBytes() != request.sizeBytes()) {
                 return Mono.<Void>error(new ConflictException("已上传对象大小与提交声明不一致"));
             }
