@@ -602,17 +602,6 @@ body[layout="vertical"] {
 
     /* 菜单折叠 */
     .el-menu--collapse {
-      .el-sub-menu {
-        & > .el-sub-menu__title {
-          & > span {
-            visibility: visible;
-            width: 100%;
-            height: 100%;
-            text-align: center;
-          }
-        }
-      }
-
       .submenu-title-noDropdown {
         background: transparent !important;
       }
