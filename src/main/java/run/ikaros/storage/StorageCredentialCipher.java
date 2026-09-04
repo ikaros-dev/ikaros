@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import run.ikaros.common.ConflictException;
@@ -25,6 +26,7 @@ public class StorageCredentialCipher {
     private final String activeKeyVersion;
     private final SecureRandom random = new SecureRandom();
 
+    @Autowired
     public StorageCredentialCipher(
         @Value("${ikaros.storage.credential-encryption-key:}") String activeKey,
         @Value("${ikaros.storage.credential-encryption-keys:}") String configuredKeys,
