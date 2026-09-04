@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import Motion from "./utils/motion";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { message } from "@/utils/message";
 import { loginRules } from "./utils/rule";
 import { ref, reactive, toRaw } from "vue";
@@ -30,6 +30,7 @@ defineOptions({
 });
 
 const router = useRouter();
+const route = useRoute();
 const loading = ref(false);
 const disabled = ref(false);
 const ruleFormRef = ref<FormInstance>();
@@ -63,8 +64,9 @@ const onLogin = async (formEl: FormInstance | undefined) => {
             // 获取后端路由
             return initRouter().then(() => {
               disabled.value = true;
+              const target = typeof route.query.redirect === "string" && route.query.redirect.startsWith("/") && !route.query.redirect.startsWith("//") ? route.query.redirect : getTopMenu(true).path;
               router
-                .push(getTopMenu(true).path)
+                .push(target)
                 .then(() => {
                   message(t("login.pureLoginSuccess"), { type: "success" });
                 })
