@@ -11,5 +11,13 @@ public record StorageProviderEntity(@Id UUID id, @Column("provider_key") String 
                                     @Column("provider_type") String providerType, String tier,
                                     String status, @Column("secret_reference") String secretReference,
                                     @Column("provider_metadata") String providerMetadata,
+                                    @Column("access_key_id_ciphertext") String accessKeyIdCiphertext,
+                                    @Column("secret_access_key_ciphertext") String secretAccessKeyCiphertext,
+                                    @Column("session_token_ciphertext") String sessionTokenCiphertext,
                                     @Column("created_at") Instant createdAt, @Column("updated_at") Instant updatedAt) {
+    public StorageProviderEntity(UUID id, String providerKey, String providerType, String tier, String status,
+                                 String secretReference, String providerMetadata, Instant createdAt, Instant updatedAt) {
+        this(id, providerKey, providerType, tier, status, secretReference, providerMetadata, null, null, null,
+            createdAt, updatedAt);
+    }
 }

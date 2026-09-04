@@ -8,6 +8,12 @@ import reactor.core.publisher.Mono;
 public interface StorageProviderRegistry {
     Mono<StorageProvider> register(String providerKey, String providerType, StorageTier tier,
                                     String secretReference, Map<String, Object> metadata);
+
+    default Mono<StorageProvider> register(String providerKey, String providerType, StorageTier tier,
+                                           String secretReference, Map<String, Object> metadata,
+                                           String accessKeyId, String secretAccessKey, String sessionToken) {
+        return register(providerKey, providerType, tier, secretReference, metadata);
+    }
     Mono<StorageProvider> update(UUID providerId, UpdateStorageProviderRequest request);
     Mono<StorageProvider> enable(UUID providerId);
     Mono<StorageProvider> disable(UUID providerId);

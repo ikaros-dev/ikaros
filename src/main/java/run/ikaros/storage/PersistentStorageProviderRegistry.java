@@ -22,23 +22,35 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
     private final StorageProviderRepository repository;
     private final ObjectMapper mapper;
     private final DurableEventService events;
+    private final StorageCredentialCipher credentialCipher;
 
     @Autowired
     public PersistentStorageProviderRegistry(StorageProviderRepository repository, ObjectMapper mapper,
-                                             DurableEventService events) {
+                                             DurableEventService events, StorageCredentialCipher credentialCipher) {
         this.repository = repository;
         this.mapper = mapper;
         this.events = events;
+        this.credentialCipher = credentialCipher;
     }
 
     @Override
     public Mono<StorageProvider> register(String providerKey, String providerType, StorageTier tier,
                                           String secretReference, Map<String, Object> metadata) {
+        return register(providerKey, providerType, tier, secretReference, metadata, null, null, null);
+    }
+
+    @Override
+    public Mono<StorageProvider> register(String providerKey, String providerType, StorageTier tier,
+                                          String secretReference, Map<String, Object> metadata,
+                                          String accessKeyId, String secretAccessKey, String sessionToken) {
         if (providerKey == null || providerKey.isBlank() || providerType == null || providerType.isBlank()
-            || tier == null || secretReference == null || secretReference.isBlank()) {
+            || tier == null) {
             return Mono.error(new IllegalArgumentException("Storage Provider 参数不完整"));
         }
-        if (!secretReference.startsWith("secret://")) {
+        boolean hasCredentials = accessKeyId != null && !accessKeyId.isBlank() && secretAccessKey != null && !secretAccessKey.isBlank();
+        if (!hasCredentials && (secretReference == null || secretReference.isBlank())) return Mono.error(new IllegalArgumentException("必须提供 Secret 引用或 AccessKey/SecretKey"));
+        String reference = hasCredentials ? "secret://provider/" + providerKey : secretReference;
+        if (!reference.startsWith("secret://")) {
             return Mono.error(new ConflictException("Provider secret reference 必须使用 secret:// URI"));
         }
         return repository.findByProviderKey(providerKey)
@@ -46,7 +58,8 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
             .switchIfEmpty(Mono.defer(() -> encode(metadata).flatMap(json -> {
                 Instant now = Instant.now();
                 return repository.save(new StorageProviderEntity(null, providerKey, providerType, tier.name(),
-                    StorageProviderStatus.ENABLED.name(), secretReference, json, now, now)).map(this::toModel)
+                    StorageProviderStatus.ENABLED.name(), reference, json, hasCredentials ? credentialCipher.encrypt(accessKeyId) : null,
+                    hasCredentials ? credentialCipher.encrypt(secretAccessKey) : null, hasCredentials ? credentialCipher.encrypt(sessionToken) : null, now, now)).map(this::toModel)
                     .flatMap(provider -> emit("storage.provider.created", provider,
                         "{\"provider_id\":\"" + provider.id() + "\",\"provider_type\":\"" + provider.providerType()
                             + "\",\"tier\":\"" + provider.tier() + "\"}").thenReturn(provider));

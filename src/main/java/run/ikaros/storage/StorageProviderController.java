@@ -26,7 +26,7 @@ public class StorageProviderController {
     @PostMapping
     public Mono<ResponseEntity<StorageProvider>> register(@Valid @RequestBody RegisterStorageProviderRequest request) {
         return registry.register(request.providerKey(), request.providerType(), request.tier(),
-                request.secretReference(), request.metadata())
+                request.secretReference(), request.metadata(), request.accessKeyId(), request.secretAccessKey(), request.sessionToken())
             .map(provider -> ResponseEntity.created(URI.create("/api/storage/providers/" + provider.id()))
                 .body(provider));
     }
