@@ -12,6 +12,7 @@ const FinancePage = () => import("@/views/finance/index.vue");
 const FinanceAccountsPage = () => import("@/views/finance/Accounts.vue");
 const FinanceTransactionsPage = () => import("@/views/finance/Transactions.vue");
 const FinanceBudgetsPage = () => import("@/views/finance/Budgets.vue");
+const FinanceReconcilePage = () => import("@/views/finance/Reconcile.vue");
 
 type ModuleOptions = {
   path: string;
@@ -141,7 +142,7 @@ export default {
     { path: "/console/finance/accounts", name: "FinanceAccountsSpecRoute", component: FinanceAccountsPage, meta: { title: "账户", showLink: false } },
     { path: "/console/finance/transactions", name: "FinanceTransactionsSpecRoute", component: FinanceTransactionsPage, meta: { title: "交易记录", showLink: false } },
     { path: "/console/finance/budgets", name: "FinanceBudgetsSpecRoute", component: FinanceBudgetsPage, meta: { title: "预算", showLink: false } },
-    { path: "/console/finance/reconcile", name: "FinanceReconcileSpecRoute", component: ModulePage, meta: { title: "对账", showLink: false, description: "检查账户与交易记录的一致性。", endpoint: "/finance/reconcile", columns: ["id", "status", "difference", "updatedAt"], icon: "ep:finished" } },
+    { path: "/console/finance/reconcile", name: "FinanceReconcileSpecRoute", component: FinanceReconcilePage, meta: { title: "对账", showLink: false } },
     { path: "/console/private-notes", name: "PrivateNotesSpecRoute", component: ModulePage, meta: { title: "私密笔记", showLink: false, description: "在加密边界内管理个人笔记。", endpoint: "/private-notes/notes", columns: ["id", "title", "updatedAt", "status"], icon: "ep:lock" } },
     { path: "/console/private-notes/conflicts", name: "PrivateNotesConflictsSpecRoute", component: ModulePage, meta: { title: "笔记冲突", showLink: false, description: "处理同步冲突并保留版本历史。", endpoint: "/private-notes/conflicts", columns: ["id", "noteId", "status", "createdAt"], icon: "ep:warning" } },
     { path: "/console/private-notes/recovery", name: "PrivateNotesRecoverySpecRoute", component: ModulePage, meta: { title: "笔记恢复", showLink: false, description: "查看恢复状态和安全恢复操作。", endpoint: "/private-notes/recovery", columns: ["id", "status", "createdAt", "updatedAt"], icon: "ep:refresh" } },
@@ -226,7 +227,7 @@ export default {
       { path: "/finance/accounts", name: "FinanceAccounts", component: FinanceAccountsPage, meta: { title: "账户", description: "管理财务账户和余额。", icon: "ep:wallet" } },
       { path: "/finance/transactions", name: "FinanceTransactions", component: FinanceTransactionsPage, meta: { title: "交易记录", description: "查看和管理收支交易。", icon: "ep:money" } },
       { path: "/finance/budgets", name: "FinanceBudgets", component: FinanceBudgetsPage, meta: { title: "预算", description: "管理预算和执行情况。", icon: "ep:pie-chart" } },
-      moduleRoute({ path: "/finance/reconcile", name: "FinanceReconcile", title: "对账", description: "检查账户与交易记录的一致性。", endpoint: "/finance/reconcile", columns: ["id", "status", "difference", "updatedAt"], icon: "ep:finished" })
+      { path: "/finance/reconcile", name: "FinanceReconcile", component: FinanceReconcilePage, meta: { title: "对账", description: "检查账户与交易记录的一致性。", icon: "ep:finished" } }
     ]),
     subsystem("/identity-center", "IdentityCenter", "身份与安全", "ep:lock", [
       moduleRoute({ path: "/account", name: "Account", title: "我的账户", description: "查看当前登录用户资料。", endpoint: "/me", columns: ["id", "username", "displayName", "email", "status"], icon: "ep:user-filled" }),
