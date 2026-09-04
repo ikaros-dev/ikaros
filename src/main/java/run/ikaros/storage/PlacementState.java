@@ -7,5 +7,7 @@ public enum PlacementState {
     ACTIVE,
     VERIFYING,
     UNAVAILABLE,
-    DELETING
+    DELETING,
+    RESTORING,
+    READY_TEMPORARILY
 }
