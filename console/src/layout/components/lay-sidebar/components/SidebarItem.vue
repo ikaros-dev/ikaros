@@ -154,7 +154,7 @@ function resolvePath(routePath) {
               offset: [0, -10],
               theme: tooltipEffect
             }"
-            class="w-full! text-inherit!"
+            class="sidebar-menu-label w-full! text-inherit!"
           >
             {{ transformI18n(onlyOneChild.meta.title) }}
           </ReText>
@@ -193,7 +193,7 @@ function resolvePath(routePath) {
           offset: [0, -10],
           theme: tooltipEffect
         }"
-        :class="textClass"
+        :class="[textClass, 'sidebar-menu-label']"
       >
         {{ transformI18n(item.meta.title) }}
       </ReText>

@@ -609,6 +609,17 @@ body[layout="vertical"] {
       .el-sub-menu__title {
         padding: 0;
       }
+
+      .sidebar-menu-label {
+        display: none !important;
+      }
+
+      .el-sub-menu__title > .sub-menu-icon {
+        display: flex !important;
+        visibility: visible !important;
+        width: auto !important;
+        margin: 0 auto !important;
+      }
     }
 
     .sub-menu-icon {
