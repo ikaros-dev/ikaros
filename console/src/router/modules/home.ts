@@ -178,7 +178,7 @@ export default {
     { path: "/console/ai/jobs", name: "AiJobsSpecRoute", component: AiJobsPage, meta: { title: "AI 任务", showLink: false } },
     { path: "/console/communications/announcements", name: "AnnouncementsSpecRoute", component: AnnouncementsPage, meta: { title: "公告", showLink: false } },
     { path: "/console/communications/notifications", name: "NotificationsSpecRoute", component: NotificationsPage, meta: { title: "通知", showLink: false } },
-    { path: "/console/communications/audit", name: "CommunicationsAuditSpecRoute", component: ModulePage, meta: { title: "沟通审计", showLink: false, description: "审计公告和通知操作记录。", endpoint: "/communications/audit", columns: ["id", "action", "actorId", "createdAt"], icon: "ep:document" } },
+    { path: "/console/communications/audit", name: "CommunicationsAuditSpecRoute", component: () => import("@/views/communications/Audit.vue"), meta: { title: "沟通审计", showLink: false } },
     { path: "/console/analytics", name: "AnalyticsSpecRoute", component: () => import("@/views/analytics/index.vue"), meta: { title: "数据分析", showLink: false } },
     { path: "/console/analytics/content", name: "AnalyticsContentSpecRoute", component: () => import("@/views/analytics/index.vue"), meta: { title: "内容分析", showLink: false } },
     { path: "/console/analytics/storage", name: "AnalyticsStorageSpecRoute", component: () => import("@/views/analytics/index.vue"), meta: { title: "存储分析", showLink: false } },
