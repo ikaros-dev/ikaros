@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from "vue";
 import { http } from "@/utils/http";
 type Project = { id: string; name: string; description?: string; status?: string; version?: number };
 type Task = { id: string; title: string; status?: string; projectId?: string; important?: boolean; urgent?: boolean; deadline?: string; estimatedDurationMinutes?: number; version?: number };
-const projects = ref<Project[]>([]); const tasks = ref<Task[]>([]); const selected = ref<Project | null>(null); const loading = ref(false); const saving = ref(false); const error = ref(""); const dialog = ref(false); const taskDialog = ref(false); const taskDetail = ref<Task | null>(null);
+const projects = ref<Project[]>([]); const tasks = ref<Task[]>([]); const selected = ref<Project | null>(null); const loading = ref(false); const saving = ref(false); const error = ref(""); const dialog = ref(false); const taskDialog = ref(false); const taskDetail = ref<any>(false);
 const projectForm = ref({ name: "", description: "" }); const taskForm = ref({ title: "", priority: "MEDIUM", important: false, urgent: false });
 const visibleTasks = computed(() => selected.value ? tasks.value.filter(task => task.projectId === selected.value?.id) : tasks.value);
 async function load() { loading.value = true; error.value = ""; try { const [p, t] = await Promise.all([http.get<unknown, unknown>("/planning/projects"), http.get<unknown, unknown>("/planning/tasks")]); projects.value = Array.isArray(p) ? p as Project[] : []; tasks.value = Array.isArray(t) ? t as Task[] : []; if (!selected.value && projects.value.length) selected.value = projects.value[0]; } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "项目数据加载失败"; } finally { loading.value = false; } }
