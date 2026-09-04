@@ -39,13 +39,15 @@ function handRank(routeInfo: any) {
 /** 按照路由中meta下的rank等级升序来排序路由 */
 function ascending(arr: any[]) {
   arr.forEach((v, index) => {
+    if (!v) return;
     if (v?.children?.length) ascending(v.children);
     // 当rank不存在时，根据顺序自动创建，首页路由永远在第一位
-    if (handRank(v)) v.meta.rank = index + 2;
+    if (v.meta && handRank(v)) v.meta.rank = index + 2;
   });
   return arr.sort(
     (a: { meta: { rank: number } }, b: { meta: { rank: number } }) => {
-      return a?.meta.rank - b?.meta.rank;
+      return (a?.meta?.rank ?? Number.MAX_SAFE_INTEGER) -
+        (b?.meta?.rank ?? Number.MAX_SAFE_INTEGER);
     }
   );
 }
