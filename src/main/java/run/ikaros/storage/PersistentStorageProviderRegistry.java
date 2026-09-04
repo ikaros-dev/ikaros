@@ -87,7 +87,7 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
                         || valueString.toLowerCase().contains("secret")))) {
                     return Mono.error(new ConflictException("Provider metadata 不得保存明文凭据"));
                 }
-                return encode(requestedMetadata == null ? readMetadata(current.providerMetadata()) : requestedMetadata)
+                return encode(requestedMetadata == null ? readMetadata(current.providerMetadata().asString()) : requestedMetadata)
                     .flatMap(metadata -> repository.save(new StorageProviderEntity(current.id(), current.providerKey(),
                         type, tier, current.status(), secret, metadata, current.accessKeyIdCiphertext(),
                         current.secretAccessKeyCiphertext(), current.sessionTokenCiphertext(), current.createdAt(), Instant.now())))
@@ -184,7 +184,7 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
 
     private StorageProvider toModel(StorageProviderEntity entity) {
         try {
-            Map<String, Object> metadata = mapper.readValue(entity.providerMetadata(),
+            Map<String, Object> metadata = mapper.readValue(entity.providerMetadata().asString(),
                 mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class));
             return new StorageProvider(entity.id(), entity.providerKey(), entity.providerType(),
                 StorageTier.valueOf(entity.tier()), StorageProviderStatus.valueOf(entity.status()),

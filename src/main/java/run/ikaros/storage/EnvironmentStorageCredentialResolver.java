@@ -36,7 +36,7 @@ public class EnvironmentStorageCredentialResolver implements StorageCredentialRe
                         && java.util.Objects.equals(sessionCiphertext, provider.sessionTokenCiphertext())
                         ? Mono.just(provider)
                         : providers.save(new StorageProviderEntity(provider.id(), provider.providerKey(), provider.providerType(),
-                            provider.tier(), provider.status(), provider.secretReference(), provider.providerMetadata(),
+                            provider.tier(), provider.status(), provider.secretReference(), provider.providerMetadata().asString(),
                             accessCiphertext, secretCiphertext, sessionCiphertext, provider.createdAt(), java.time.Instant.now()));
                     return refreshed.flatMap(saved -> {
                         String access = cipher.decrypt(saved.accessKeyIdCiphertext());

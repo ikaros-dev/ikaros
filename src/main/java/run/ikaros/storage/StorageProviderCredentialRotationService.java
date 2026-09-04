@@ -49,7 +49,7 @@ public class StorageProviderCredentialRotationService {
             return Mono.just(view(provider, 0));
         }
         return providers.save(new StorageProviderEntity(provider.id(), provider.providerKey(), provider.providerType(),
-                provider.tier(), provider.status(), provider.secretReference(), provider.providerMetadata(), access,
+                provider.tier(), provider.status(), provider.secretReference(), provider.providerMetadata().asString(), access,
                 secret, session, provider.createdAt(), Instant.now()))
             .map(saved -> view(saved, rotated));
     }
