@@ -55,6 +55,31 @@ export default {
     { path: "/console/drive/policies", name: "DrivePoliciesSpecRoute", component: ModulePage, meta: { title: "云盘策略", showLink: false, description: "管理云盘保留和同步策略。", endpoint: "/drive/policies", columns: ["id", "name", "status", "updatedAt"] } },
     { path: "/console/drive/spaces", name: "DriveSpacesSpecRoute", component: ModulePage, meta: { title: "云盘空间", showLink: false, description: "管理个人云盘空间。", endpoint: "/drive/spaces", columns: ["id", "name", "usedBytes", "quotaBytes"] } },
     { path: "/console/drive/revisions", name: "DriveRevisionsSpecRoute", component: ModulePage, meta: { title: "文件版本", showLink: false, description: "查看云盘文件版本历史。", endpoint: "/drive/revisions", columns: ["id", "nodeId", "revision", "createdAt"] } },
+    subsystem("/ai-center", "AiCenter", "AI 智能", "ep:magic-stick", [
+      moduleRoute({ path: "/assistant", name: "AiAssistant", title: "AI 助手", description: "与 AI 助手协作处理内容和任务。", endpoint: "/ai/assistant/sessions", columns: ["id", "title", "status", "createdAt"], icon: "ep:chat-dot-round" }),
+      moduleRoute({ path: "/models", name: "AiModels", title: "AI 模型", description: "查看可用模型和能力配置。", endpoint: "/ai/models", columns: ["id", "name", "provider", "status"], icon: "ep:cpu" }),
+      moduleRoute({ path: "/personas", name: "AiPersonas", title: "AI 人格", description: "管理助手人格和提示配置。", endpoint: "/ai/personas", columns: ["id", "name", "status", "updatedAt"], icon: "ep:user" }),
+      moduleRoute({ path: "/privacy", name: "AiPrivacy", title: "AI 隐私", description: "管理 AI 数据使用和隐私边界。", endpoint: "/ai/privacy", columns: ["key", "value", "updatedAt"], icon: "ep:lock" }),
+      moduleRoute({ path: "/jobs", name: "AiJobs", title: "AI 任务", description: "查看 AI 后台任务及执行状态。", endpoint: "/ai/jobs", columns: ["id", "type", "status", "createdAt"], icon: "ep:operation" })
+    ]),
+    subsystem("/operations-center", "OperationsCenter", "系统运维", "ep:monitor", [
+      moduleRoute({ path: "/health", name: "OpsHealth", title: "系统健康", description: "查看服务、依赖和存储健康状态。", endpoint: "/ops/health", columns: ["component", "status", "latencyMs", "checkedAt"], icon: "ep:monitor" }),
+      moduleRoute({ path: "/jobs", name: "OpsJobs", title: "运维任务", description: "查看运维任务及执行结果。", endpoint: "/ops/jobs", columns: ["id", "type", "status", "createdAt"], icon: "ep:operation" }),
+      moduleRoute({ path: "/background", name: "OpsBackground", title: "后台任务", description: "查看后台操作进度。", endpoint: "/background-tasks", columns: ["id", "type", "status", "progress", "createdAt"], icon: "ep:loading" })
+    ]),
+    subsystem("/security-center", "SecurityCenter", "身份安全", "ep:lock", [
+      moduleRoute({ path: "/users", name: "SecurityUsers", title: "安全用户", description: "管理用户、账号状态和安全策略。", endpoint: "/admin/users", columns: ["id", "username", "status", "createdAt"], icon: "ep:user" }),
+      moduleRoute({ path: "/permissions", name: "SecurityPermissions", title: "权限", description: "管理权限注册表和授权能力。", endpoint: "/admin/permissions", columns: ["code", "name", "description"], icon: "ep:lock" }),
+      moduleRoute({ path: "/sessions", name: "SecuritySessions", title: "会话", description: "查看活动会话和登录设备。", endpoint: "/security/sessions", columns: ["id", "device", "ipAddress", "lastSeenAt"], icon: "ep:connection" }),
+      moduleRoute({ path: "/authentication", name: "SecurityAuthentication", title: "认证设置", description: "管理认证方式和验证挑战。", endpoint: "/security/verification-challenges", columns: ["id", "method", "status", "expiresAt"], icon: "ep:key" })
+    ]),
+    subsystem("/integration-center", "IntegrationCenter", "集成自动化", "ep:connection", [
+      moduleRoute({ path: "/automation", name: "IntegrationAutomation", title: "自动化", description: "管理自动化规则和触发器。", endpoint: "/integration/automation", columns: ["id", "name", "status", "updatedAt"], icon: "ep:connection" }),
+      moduleRoute({ path: "/executions", name: "IntegrationExecutions", title: "自动化执行", description: "查看自动化执行记录。", endpoint: "/integration/executions", columns: ["id", "automationId", "status", "createdAt"], icon: "ep:operation" }),
+      moduleRoute({ path: "/events", name: "IntegrationEvents", title: "集成事件", description: "查看外部集成事件和投递状态。", endpoint: "/integration/events", columns: ["id", "type", "status", "createdAt"], icon: "ep:bell" }),
+      moduleRoute({ path: "/sync", name: "IntegrationSync", title: "同步", description: "管理外部数据同步任务。", endpoint: "/integration/sync", columns: ["id", "source", "status", "updatedAt"], icon: "ep:refresh" }),
+      moduleRoute({ path: "/plugins", name: "IntegrationPlugins", title: "插件", description: "管理集成插件及其权限。", endpoint: "/integration/plugins", columns: ["id", "name", "status", "version"], icon: "ep:cpu" })
+    ]),
     { path: "/console/attachments", name: "AttachmentsSpecRoute", component: () => import("@/views/attachments/index.vue"), meta: { title: "附件与 Blob", showLink: false } },
     { path: "/console/storage/tiers", name: "StorageTiersSpecRoute", component: () => import("@/views/storage/Tiers.vue"), meta: { title: "持久化存储层", showLink: false } },
     { path: "/console/storage/archive", name: "StorageArchiveSpecRoute", component: () => import("@/views/storage/Archive.vue"), meta: { title: "归档与恢复", showLink: false } },
