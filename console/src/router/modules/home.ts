@@ -70,7 +70,6 @@ export default {
     ]),
     subsystem("/identity-center", "IdentityCenter", "身份与安全", "ep:lock", [
       moduleRoute({ path: "/account", name: "Account", title: "我的账户", description: "查看当前登录用户资料。", endpoint: "/me", columns: ["id", "username", "displayName", "email", "status"], icon: "ep:user-filled" }),
-      moduleRoute({ path: "/sessions", name: "Sessions", title: "会话安全", description: "查看当前账号的有效登录会话。", endpoint: "/me/sessions", columns: ["id", "createdAt", "expiresAt", "lastSeenAt"], icon: "ep:monitor" }),
       moduleRoute({ path: "/security", name: "Security", title: "安全中心", description: "查看安全验证挑战和会话状态。", endpoint: "/security/verification-challenges", columns: ["id", "status", "createdAt", "expiresAt"], icon: "ep:warning" }),
       moduleRoute({ path: "/users", name: "Users", title: "用户管理", description: "管理用户状态、角色和账号信息。", endpoint: "/admin/users", columns: ["id", "username", "displayName", "status"], icon: "ep:user" }),
       moduleRoute({ path: "/roles", name: "Roles", title: "角色管理", description: "查看角色及其权限配置。", endpoint: "/admin/roles", columns: ["id", "code", "name", "description"], icon: "ep:key" }),

@@ -8,7 +8,7 @@ const subsystems = [
   { title: "资源中心", description: "资源、文档、集合与活动", path: "/resources", icon: "ep:files" },
   { title: "内容与媒体", description: "媒体、阅读、音乐与照片", path: "/media", icon: "ep:video-camera" },
   { title: "存储与云盘", description: "云盘空间、存储与备份", path: "/drive", icon: "ep:box" },
-  { title: "身份与安全", description: "用户、角色、权限与会话", path: "/account", icon: "ep:lock" }
+  { title: "身份与安全", description: "用户、角色与权限", path: "/account", icon: "ep:lock" }
 ];
 
 const today = computed(() => new Intl.DateTimeFormat("zh-CN", {
