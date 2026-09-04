@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { http } from "@/utils/http";
-type Job = Record<string, any>; const tab = ref("jobs"); const rows = ref<Job[]>([]); const loading = ref(false); const error = ref(""); const detail = ref<Job | null>(null);
+type Job = Record<string, any>; const tab = ref("jobs"); const rows = ref<Job[]>([]); const loading = ref(false); const error = ref(""); const detail = ref<any>(false);
 async function load() { loading.value = true; try { const result = await http.get<unknown, unknown>("/background-tasks"); rows.value = Array.isArray(result) ? result as Job[] : []; } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "AI 作业加载失败"; } finally { loading.value = false; } }
 load();
 </script>
