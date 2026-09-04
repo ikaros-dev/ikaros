@@ -9,6 +9,7 @@ const PlanningCalendarPage = () => import("@/views/planning/Calendar.vue");
 const PlanningGoalsPage = () => import("@/views/planning/Goals.vue");
 const PlanningFocusPage = () => import("@/views/planning/Focus.vue");
 const FinancePage = () => import("@/views/finance/index.vue");
+const FinanceAccountsPage = () => import("@/views/finance/Accounts.vue");
 
 type ModuleOptions = {
   path: string;
@@ -135,7 +136,7 @@ export default {
     { path: "/console/planning/goals", name: "PlanningGoalsSpecRoute", component: PlanningGoalsPage, meta: { title: "目标", showLink: false } },
     { path: "/console/planning/focus", name: "PlanningFocusSpecRoute", component: PlanningFocusPage, meta: { title: "专注", showLink: false } },
     { path: "/console/finance", name: "FinanceSpecRoute", component: FinancePage, meta: { title: "个人记账", showLink: false } },
-    { path: "/console/finance/accounts", name: "FinanceAccountsSpecRoute", component: ModulePage, meta: { title: "账户", showLink: false, description: "管理财务账户和余额。", endpoint: "/finance/accounts", columns: ["id", "name", "type", "balance"], icon: "ep:wallet" } },
+    { path: "/console/finance/accounts", name: "FinanceAccountsSpecRoute", component: FinanceAccountsPage, meta: { title: "账户", showLink: false } },
     { path: "/console/finance/transactions", name: "FinanceTransactionsSpecRoute", component: ModulePage, meta: { title: "交易记录", showLink: false, description: "查看和管理收支交易。", endpoint: "/finance/transactions", columns: ["id", "accountId", "amount", "occurredAt"], icon: "ep:money" } },
     { path: "/console/finance/budgets", name: "FinanceBudgetsSpecRoute", component: ModulePage, meta: { title: "预算", showLink: false, description: "管理预算和执行情况。", endpoint: "/finance/budgets", columns: ["id", "name", "amount", "spent"], icon: "ep:pie-chart" } },
     { path: "/console/finance/reconcile", name: "FinanceReconcileSpecRoute", component: ModulePage, meta: { title: "对账", showLink: false, description: "检查账户与交易记录的一致性。", endpoint: "/finance/reconcile", columns: ["id", "status", "difference", "updatedAt"], icon: "ep:finished" } },
@@ -220,7 +221,7 @@ export default {
       { path: "/planning/goals", name: "PlanningGoals", component: PlanningGoalsPage, meta: { title: "目标", description: "跟踪目标、关键结果与进度。", icon: "ep:aim" } },
       { path: "/planning/focus", name: "PlanningFocus", component: PlanningFocusPage, meta: { title: "专注", description: "管理专注会话和今日投入。", icon: "ep:timer" } },
       { path: "/finance", name: "Finance", component: FinancePage, meta: { title: "个人财务", description: "查看账本、账户和财务记录。", icon: "ep:money" } },
-      moduleRoute({ path: "/finance/accounts", name: "FinanceAccounts", title: "账户", description: "管理财务账户和余额。", endpoint: "/finance/accounts", columns: ["id", "name", "type", "balance"], icon: "ep:wallet" }),
+      { path: "/finance/accounts", name: "FinanceAccounts", component: FinanceAccountsPage, meta: { title: "账户", description: "管理财务账户和余额。", icon: "ep:wallet" } },
       moduleRoute({ path: "/finance/transactions", name: "FinanceTransactions", title: "交易记录", description: "查看和管理收支交易。", endpoint: "/finance/transactions", columns: ["id", "accountId", "amount", "occurredAt"], icon: "ep:money" }),
       moduleRoute({ path: "/finance/budgets", name: "FinanceBudgets", title: "预算", description: "管理预算和执行情况。", endpoint: "/finance/budgets", columns: ["id", "name", "amount", "spent"], icon: "ep:pie-chart" }),
       moduleRoute({ path: "/finance/reconcile", name: "FinanceReconcile", title: "对账", description: "检查账户与交易记录的一致性。", endpoint: "/finance/reconcile", columns: ["id", "status", "difference", "updatedAt"], icon: "ep:finished" })
