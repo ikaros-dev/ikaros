@@ -77,8 +77,6 @@ class PureHttp {
           : new Promise(resolve => {
               const data = getToken();
               if (data) {
-                if (data.actorId) config.headers["X-Ikaros-Actor-Id"] = data.actorId;
-                if (data.sessionId) config.headers["X-Ikaros-Session-Id"] = data.sessionId;
                 const now = new Date().getTime();
                 const expired = parseInt(data.expires) - now <= 0;
                 if (expired) {

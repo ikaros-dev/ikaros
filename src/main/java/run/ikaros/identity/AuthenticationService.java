@@ -97,7 +97,7 @@ public class AuthenticationService {
             .map(data -> {
                 JwtTokenService.TokenPair pair = tokens.issue(user.id(), sessionId, data.getT2());
                 return new AuthenticationView(user.id(), sessionId, pair.accessToken(), pair.refreshToken(),
-                    pair.accessTokenExpiresAt(), data.getT1());
+                    pair.accessTokenExpiresAt(), data.getT1(), data.getT2());
             });
     }
 

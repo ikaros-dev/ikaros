@@ -28,10 +28,10 @@ export type UserResult = {
 export type RefreshTokenResult = UserResult;
 
 /** 登录 */
-type AuthenticationView = { userId: string; sessionId: string; accessToken: string; refreshToken: string; expiresAt: string; user?: { username?: string; displayName?: string; roleCodes?: string[] } };
+type AuthenticationView = { userId: string; sessionId: string; accessToken: string; refreshToken: string; expiresAt: string; user?: { username?: string; displayName?: string; roleCodes?: string[] }; permissions?: string[] };
 
 const toUserResult = (result: AuthenticationView): UserResult => {
-  return { success: true, data: { avatar: "", username: result.user?.username || "", actorId: result.userId, sessionId: result.sessionId, nickname: result.user?.displayName || "", roles: result.user?.roleCodes || [], permissions: [], accessToken: result.accessToken, refreshToken: result.refreshToken, expires: new Date(result.expiresAt) } };
+  return { success: true, data: { avatar: "", username: result.user?.username || "", actorId: result.userId, sessionId: result.sessionId, nickname: result.user?.displayName || "", roles: result.user?.roleCodes || [], permissions: result.permissions || [], accessToken: result.accessToken, refreshToken: result.refreshToken, expires: new Date(result.expiresAt) } };
 };
 
 export const getLogin = async (data?: object): Promise<UserResult> => {
