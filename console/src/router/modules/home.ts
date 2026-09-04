@@ -181,7 +181,7 @@ export default {
     ]),
     subsystem("/content-center", "ContentCenter", "内容与媒体", "ep:video-camera", [
       { path: "/media", name: "Media", component: () => import("@/views/media/index.vue"), meta: { title: "媒体库", icon: "ep:video-camera" } },
-      moduleRoute({ path: "/reading", name: "Reading", title: "阅读库", description: "管理阅读作品、版本和阅读内容。", endpoint: "/reading/works", columns: ["id", "title", "status", "createdAt"], icon: "ep:reading" }),
+      { path: "/reading", name: "Reading", component: () => import("@/views/reading/index.vue"), meta: { title: "阅读库", icon: "ep:reading" } },
       moduleRoute({ path: "/music", name: "Music", title: "音乐库", description: "查看音乐播放列表和播放记录。", endpoint: "/music/playlists", columns: ["id", "name", "status", "createdAt"], icon: "ep:headset" }),
       moduleRoute({ path: "/photos", name: "Photos", title: "照片管理", description: "浏览照片和媒体元数据。", endpoint: "/photos/timeline", columns: ["id", "title", "status", "createdAt"], icon: "ep:picture" }),
       moduleRoute({ path: "/games", name: "Games", title: "游戏档案", description: "管理游戏、版本和数字资产。", endpoint: "/games", columns: ["id", "name", "status", "createdAt"], icon: "ep:monitor" })
