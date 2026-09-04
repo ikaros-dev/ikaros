@@ -124,8 +124,8 @@ export default {
       { path: "/storage", name: "AnalyticsStorage", component: () => import("@/views/analytics/index.vue"), meta: { title: "存储分析", icon: "ep:box" } },
       { path: "/planning", name: "AnalyticsPlanning", component: () => import("@/views/analytics/index.vue"), meta: { title: "计划分析", icon: "ep:calendar" } },
       { path: "/system", name: "AnalyticsSystem", component: () => import("@/views/analytics/index.vue"), meta: { title: "系统分析", icon: "ep:monitor" } },
-      moduleRoute({ path: "/metrics", name: "AnalyticsMetrics", title: "指标", description: "浏览系统注册指标。", endpoint: "/analytics/metrics", columns: ["name", "value", "unit", "updatedAt"], icon: "ep:trend-charts" }),
-      moduleRoute({ path: "/reports", name: "AnalyticsReports", title: "分析报告", description: "管理分析报告和导出任务。", endpoint: "/analytics/reports", columns: ["id", "name", "status", "createdAt"], icon: "ep:document" })
+      { path: "/metrics", name: "AnalyticsMetrics", component: () => import("@/views/analytics/index.vue"), meta: { title: "指标", icon: "ep:trend-charts" } },
+      { path: "/reports", name: "AnalyticsReports", component: () => import("@/views/analytics/index.vue"), meta: { title: "分析报告", icon: "ep:document" } }
     ]),
     subsystem("/configuration-center", "ConfigurationCenter", "平台配置", "ep:setting", [
       { path: "/parameters", name: "PlatformParameters", component: PlatformParametersPage, meta: { title: "平台参数", description: "管理平台运行参数。", icon: "ep:setting" } },
