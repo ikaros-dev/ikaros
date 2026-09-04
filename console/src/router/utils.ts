@@ -39,6 +39,7 @@ function handRank(routeInfo: any) {
 /** 按照路由中meta下的rank等级升序来排序路由 */
 function ascending(arr: any[]) {
   arr.forEach((v, index) => {
+    if (v?.children?.length) ascending(v.children);
     // 当rank不存在时，根据顺序自动创建，首页路由永远在第一位
     if (handRank(v)) v.meta.rank = index + 2;
   });

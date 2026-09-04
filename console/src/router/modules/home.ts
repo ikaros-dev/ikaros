@@ -59,8 +59,28 @@ function moduleRoute(options: ModuleOptions) {
   };
 }
 
+const subsystemRanks: Record<string, number> = {
+  "/platform-config": 10,
+  "/identity-center": 20,
+  "/resource-center": 30,
+  "/storage-center": 40,
+  "/content-center": 50,
+  "/planning-center": 60,
+  "/finance-center": 70,
+  "/operations-center": 80,
+  "/edge-acceleration": 90,
+  "/ingestion-center": 100,
+  "/collaboration-center": 110,
+  "/ai-center": 120,
+  "/integration-center": 130,
+  "/analytics-center": 140,
+  "/password-center": 150,
+  "/private-notes": 160,
+  "/account-center": 170
+};
+
 function subsystem(path: string, name: string, title: string, icon: string, children: any[]) {
-  return { path, name, meta: { title, icon, showParent: true }, children };
+  return { path, name, meta: { title, icon, showParent: true, rank: subsystemRanks[path] ?? 999 }, children };
 }
 
 export default {
