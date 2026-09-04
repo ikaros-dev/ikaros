@@ -58,7 +58,8 @@ export default {
       { path: "/console/attachments/:attachmentId", name: "AttachmentDetail", component: () => import("@/views/attachments/Detail.vue"), meta: { title: "附件详情", showLink: false } },
       { path: "/drive", name: "Drive", component: () => import("@/views/drive/index.vue"), meta: { title: "个人云盘", icon: "ep:folder-opened" } },
       { path: "/console/drive/nodes/:nodeId", name: "DriveNodeDetail", component: () => import("@/views/drive/NodeDetail.vue"), meta: { title: "文件详情", showLink: false } },
-      moduleRoute({ path: "/storage", name: "Storage", title: "存储管理", description: "管理存储 Provider 和恢复请求。", endpoint: "/admin/storage-providers", columns: ["id", "name", "status", "createdAt"], icon: "ep:box" }),
+      moduleRoute({ path: "/storage/tiers", name: "StorageTiers", title: "持久化存储层", description: "查看 Hot、Warm、Cold/Archive 存储层与 Provider。Cache 不属于持久化存储层。", endpoint: "/storage/providers", columns: ["id", "name", "providerType", "tier", "status", "createdAt"], icon: "ep:box" }),
+      moduleRoute({ path: "/storage/archive", name: "StorageArchive", title: "归档与恢复", description: "查看归档资源、恢复队列和回收站操作。恢复与清理均为异步后台操作。", endpoint: "/storage/restore-requests", columns: ["id", "resourceId", "status", "createdAt"], icon: "ep:refresh-left" }),
       moduleRoute({ path: "/backup", name: "Backup", title: "备份恢复", description: "管理恢复点和备份验证。", endpoint: "/admin/backup/restore-points", columns: ["id", "status", "createdAt", "verifiedAt"], icon: "ep:files" })
     ]),
     subsystem("/ingestion-center", "IngestionCenter", "导入与处理", "ep:upload", [
