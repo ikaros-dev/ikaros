@@ -28,6 +28,7 @@ const SecurityPermissionsPage = () => import("@/views/security/Permissions.vue")
 const SecuritySessionsPage = () => import("@/views/security/Sessions.vue");
 const SecurityAuthenticationPage = () => import("@/views/security/Authentication.vue");
 const OpsHealthPage = () => import("@/views/operations/Health.vue");
+const OpsJobsPage = () => import("@/views/operations/Jobs.vue");
 
 type ModuleOptions = {
   path: string;
@@ -91,7 +92,7 @@ export default {
     ]),
     subsystem("/operations-center", "OperationsCenter", "系统运维", "ep:monitor", [
       { path: "/health", name: "OpsHealth", component: OpsHealthPage, meta: { title: "系统健康", description: "查看服务、依赖和存储健康状态。", icon: "ep:monitor" } },
-      moduleRoute({ path: "/jobs", name: "OpsJobs", title: "运维任务", description: "查看运维任务及执行结果。", endpoint: "/ops/jobs", columns: ["id", "type", "status", "createdAt"], icon: "ep:operation" }),
+      { path: "/jobs", name: "OpsJobs", component: OpsJobsPage, meta: { title: "运维任务", description: "查看运维任务及执行结果。", icon: "ep:operation" } },
       moduleRoute({ path: "/background", name: "OpsBackground", title: "后台任务", description: "查看后台操作进度。", endpoint: "/background-tasks", columns: ["id", "type", "status", "progress", "createdAt"], icon: "ep:loading" })
     ]),
     subsystem("/security-center", "SecurityCenter", "身份安全", "ep:lock", [
@@ -184,7 +185,7 @@ export default {
     { path: "/console/platform/dictionaries", name: "PlatformDictionariesSpecRoute", component: ModulePage, meta: { title: "数据字典", showLink: false, description: "管理平台字典项。", endpoint: "/platform/dictionaries", columns: ["code", "name", "status", "updatedAt"], icon: "ep:list" } },
     { path: "/console/platform/menus", name: "PlatformMenusSpecRoute", component: ModulePage, meta: { title: "平台菜单", showLink: false, description: "管理菜单和导航结构。", endpoint: "/platform/menus", columns: ["id", "name", "path", "status"], icon: "ep:menu" } },
     { path: "/console/ops/health", name: "OpsHealthSpecRoute", component: OpsHealthPage, meta: { title: "系统健康", showLink: false } },
-    { path: "/console/ops/jobs", name: "OpsJobsSpecRoute", component: ModulePage, meta: { title: "运维任务", showLink: false, description: "查看运维任务及执行结果。", endpoint: "/ops/jobs", columns: ["id", "type", "status", "createdAt"], icon: "ep:operation" } },
+    { path: "/console/ops/jobs", name: "OpsJobsSpecRoute", component: OpsJobsPage, meta: { title: "运维任务", showLink: false } },
     { path: "/console/ops/background", name: "OpsBackgroundSpecRoute", component: ModulePage, meta: { title: "后台任务", showLink: false, description: "查看可持久访问的后台操作进度。", endpoint: "/background-tasks", columns: ["id", "type", "status", "progress", "createdAt"], icon: "ep:loading" } },
     { path: "/console/security/users", name: "SecurityUsersSpecRoute", component: SecurityUsersPage, meta: { title: "安全用户", showLink: false } },
     { path: "/console/security/permissions", name: "SecurityPermissionsSpecRoute", component: SecurityPermissionsPage, meta: { title: "权限", showLink: false } },
