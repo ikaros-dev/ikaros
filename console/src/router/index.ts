@@ -116,7 +116,7 @@ export function resetRouter() {
 }
 
 /** 路由白名单 */
-const whiteList = ["/login", "/register"];
+const whiteList = ["/login", "/register", "/setup"];
 
 const { VITE_HIDE_HOME } = import.meta.env;
 
@@ -170,7 +170,7 @@ router.beforeEach((to: ToRouteType, _from, next) => {
       // 刷新
       if (
         usePermissionStoreHook().wholeMenus.length === 0 &&
-        to.path !== "/login" &&
+        to.path !== "/login" && to.path !== "/setup" &&
         to.path !== "/register"
       ) {
         initRouter().then((router: Router) => {
