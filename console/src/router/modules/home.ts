@@ -133,15 +133,15 @@ export default {
       { path: "/menus", name: "PlatformMenus", component: PlatformMenusPage, meta: { title: "平台菜单", description: "管理菜单和导航结构。", icon: "ep:menu" } }
     ]),
     subsystem("/password-center", "PasswordCenter", "密码管理", "ep:key", [
-      moduleRoute({ path: "/vault", name: "Passwords", title: "密码库", description: "管理密码条目和安全状态。", endpoint: "/passwords", columns: ["id", "title", "username", "updatedAt"], icon: "ep:lock" }),
-      moduleRoute({ path: "/generator", name: "PasswordGenerator", title: "密码生成器", description: "生成符合策略的随机密码。", endpoint: "/passwords/generator", columns: ["id", "length", "strength", "createdAt"], icon: "ep:magic-stick" }),
-      moduleRoute({ path: "/health", name: "PasswordHealth", title: "密码健康", description: "检查重复、弱密码和泄露风险。", endpoint: "/passwords/health", columns: ["id", "title", "risk", "updatedAt"], icon: "ep:warning" }),
-      moduleRoute({ path: "/devices", name: "PasswordDevices", title: "密码设备", description: "管理密码库授权设备。", endpoint: "/passwords/devices", columns: ["id", "name", "status", "lastSeenAt"], icon: "ep:mobile-phone" })
+      { path: "/vault", name: "Passwords", component: () => import("@/views/password/index.vue"), meta: { title: "密码库", icon: "ep:lock" } },
+      { path: "/generator", name: "PasswordGenerator", component: () => import("@/views/password/index.vue"), meta: { title: "密码生成器", icon: "ep:magic-stick" } },
+      { path: "/health", name: "PasswordHealth", component: () => import("@/views/password/index.vue"), meta: { title: "密码健康", icon: "ep:warning" } },
+      { path: "/devices", name: "PasswordDevices", component: () => import("@/views/password/index.vue"), meta: { title: "密码设备", icon: "ep:mobile-phone" } }
     ]),
     subsystem("/notes-center", "NotesCenter", "私密笔记", "ep:lock", [
       { path: "/notes", name: "PrivateNotes", component: PrivateNotesPage, meta: { title: "私密笔记", description: "在加密边界内管理个人笔记。", icon: "ep:document" } },
-      moduleRoute({ path: "/conflicts", name: "PrivateNotesConflicts", title: "笔记冲突", description: "处理同步冲突并保留版本历史。", endpoint: "/private-notes/conflicts", columns: ["id", "noteId", "status", "createdAt"], icon: "ep:warning" }),
-      moduleRoute({ path: "/recovery", name: "PrivateNotesRecovery", title: "笔记恢复", description: "查看恢复状态和安全恢复操作。", endpoint: "/private-notes/recovery", columns: ["id", "status", "createdAt", "updatedAt"], icon: "ep:refresh" })
+      { path: "/conflicts", name: "PrivateNotesConflicts", component: () => import("@/views/notes/Security.vue"), meta: { title: "笔记冲突", icon: "ep:warning" } },
+      { path: "/recovery", name: "PrivateNotesRecovery", component: () => import("@/views/notes/Security.vue"), meta: { title: "笔记恢复", icon: "ep:refresh" } }
     ]),
     subsystem("/account-center", "AccountCenter", "个人中心", "ep:user", [
       { path: "/profile", name: "AccountProfile", component: AccountProfilePage, meta: { title: "个人资料", description: "查看和维护个人资料。", icon: "ep:user" } },
