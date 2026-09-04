@@ -77,7 +77,6 @@ export default {
     { path: "/console/resources/:resourceId", name: "ResourceDetailSpecRoute", component: () => import("@/views/resources/Detail.vue"), meta: { title: "资源详情", showLink: false } },
     { path: "/console/collections", name: "CollectionsSpecRoute", component: CollectionsPage, meta: { title: "收藏集合", showLink: false } },
     { path: "/console/documents", name: "DocumentsSpecRoute", component: DocumentsPage, meta: { title: "文档管理", showLink: false } },
-    { path: "/console/media", name: "MediaSpecRoute", component: () => import("@/views/media/index.vue"), meta: { title: "媒体库", showLink: false } },
     { path: "/console/sharing", name: "SharingSpecRoute", component: () => import("@/views/sharing/index.vue"), meta: { title: "分享协作", showLink: false } },
     { path: "/console/drive", name: "DriveSpecRoute", component: () => import("@/views/drive/index.vue"), meta: { title: "个人云盘", showLink: false } },
     { path: "/console/drive/trash", name: "DriveTrashSpecRoute", component: () => import("@/views/drive/Operations.vue"), meta: { title: "云盘回收站", showLink: false } },
