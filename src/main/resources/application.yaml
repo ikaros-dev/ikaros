@@ -21,7 +21,8 @@ springdoc:
 
 ikaros:
   storage:
-    credential-encryption-key: ${IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEY:ikaros.run}
+    # Must be supplied by deployment secret management; never use a shared default.
+    credential-encryption-key: ${IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEY:}
   security:
     jwt:
       issuer: ${IKAROS_JWT_ISSUER:ikaros}
