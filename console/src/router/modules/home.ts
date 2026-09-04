@@ -146,8 +146,8 @@ export default {
     subsystem("/account-center", "AccountCenter", "个人中心", "ep:user", [
       { path: "/profile", name: "AccountProfile", component: AccountProfilePage, meta: { title: "个人资料", description: "查看和维护个人资料。", icon: "ep:user" } },
       { path: "/preferences", name: "AccountPreferences", component: AccountPreferencesPage, meta: { title: "偏好设置", description: "管理 Console 显示和交互偏好。", icon: "ep:setting" } },
-      moduleRoute({ path: "/notifications", name: "AccountNotifications", title: "通知设置", description: "管理通知渠道和订阅偏好。", endpoint: "/me/notifications", columns: ["channel", "enabled", "updatedAt"], icon: "ep:bell" }),
-      moduleRoute({ path: "/security", name: "AccountSecurity", title: "账户安全", description: "管理认证方式和安全状态。", endpoint: "/security/verification-challenges", columns: ["id", "status", "createdAt", "expiresAt"], icon: "ep:lock" })
+      { path: "/notifications", name: "AccountNotifications", component: () => import("@/views/communications/Notifications.vue"), meta: { title: "通知设置", icon: "ep:bell" } },
+      { path: "/security", name: "AccountSecurity", component: () => import("@/views/security/Authentication.vue"), meta: { title: "账户安全", icon: "ep:lock" } }
     ]),
     { path: "/console/attachments", name: "AttachmentsSpecRoute", component: () => import("@/views/attachments/index.vue"), meta: { title: "附件与 Blob", showLink: false } },
     { path: "/console/storage/tiers", name: "StorageTiersSpecRoute", component: () => import("@/views/storage/Tiers.vue"), meta: { title: "持久化存储层", showLink: false } },
