@@ -2,7 +2,7 @@
 import { onMounted, ref } from "vue";
 import { http } from "@/utils/http";
 type DocumentItem = { id: string; resourceId?: string; kind?: string; currentRevisionId?: string };
-const items = ref<DocumentItem[]>([]); const loading = ref(false); const saving = ref(false); const error = ref(""); const dialog = ref(false); const detail = ref<DocumentItem | null>(null); const detailLoading = ref(false);
+const items = ref<DocumentItem[]>([]); const loading = ref(false); const saving = ref(false); const error = ref(""); const dialog = ref(false); const detail = ref<any>(false); const detailLoading = ref(false);
 const form = ref({ title: "", kind: "DOCUMENT", locale: "zh-CN", content: "" });
 async function load() { loading.value = true; error.value = ""; try { const result = await http.get<unknown, unknown>("/documents"); items.value = Array.isArray(result) ? result as DocumentItem[] : []; } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "文档加载失败"; } finally { loading.value = false; } }
 async function createDocument() { if (!form.value.title.trim()) { error.value = "标题不能为空"; return; } saving.value = true; try { await http.post("/documents", { data: { ...form.value, title: form.value.title.trim() } }); dialog.value = false; form.value = { title: "", kind: "DOCUMENT", locale: "zh-CN", content: "" }; await load(); } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "文档创建失败"; } finally { saving.value = false; } }
