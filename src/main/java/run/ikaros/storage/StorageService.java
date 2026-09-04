@@ -23,6 +23,8 @@ public interface StorageService {
 
     Mono<AttachmentView> commitUpload(UUID ownerId, UUID resourceId, CommitUploadRequest request);
 
+    Mono<StorageUploadIntentView> beginUpload(UUID ownerId, UUID resourceId, BeginUploadRequest request);
+
     /**
      * 登记一个可追溯到原始附件的派生附件。
      *

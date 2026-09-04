@@ -133,6 +133,21 @@ public class StorageController {
                 + "/attachments/" + attachment.id())).body(attachment));
     }
 
+    @Operation(summary = "创建附件上传地址", description = "校验 Resource 权限并返回短时效 Provider 预签名 PUT 地址。")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "上传地址创建成功"),
+        @ApiResponse(responseCode = "404", description = "资源不存在或无权访问", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Provider 不可写或未配置 adapter", content = @Content)
+    })
+    @PostMapping("/upload-intents")
+    public Mono<StorageUploadIntentView> beginUpload(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID resourceId,
+        @Valid @RequestBody BeginUploadRequest request
+    ) {
+        return storageService.beginUpload(actorId, resourceId, request);
+    }
+
     @Operation(summary = "删除资源附件", description = "软删除 Attachment，Blob 由后续 GC 根据引用计数决定是否清理。")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "附件删除成功"),

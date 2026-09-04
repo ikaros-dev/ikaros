@@ -35,6 +35,7 @@ public class DefaultStorageService implements StorageService {
     private final BackgroundTaskService taskService;
     private final DurableEventService eventService;
     private StorageContentReader contentReader;
+    private StorageObjectProviderRegistry objectProviderRegistry;
 
     /**
      * 创建存储服务。
@@ -110,6 +111,11 @@ public class DefaultStorageService implements StorageService {
         this.contentReader = contentReader;
     }
 
+    @Autowired(required = false)
+    public void setObjectProviderRegistry(StorageObjectProviderRegistry objectProviderRegistry) {
+        this.objectProviderRegistry = objectProviderRegistry;
+    }
+
     @Override
     public Mono<AttachmentView> attachDerived(UUID ownerId, UUID resourceId, CreateDerivedAttachmentRequest request) {
         return attachmentRepository.findById(request.sourceAttachmentId())
@@ -149,7 +155,44 @@ public class DefaultStorageService implements StorageService {
 
     @Override
     public Mono<AttachmentView> commitUpload(UUID ownerId, UUID resourceId, CommitUploadRequest request) {
-        return attachInternal(ownerId, resourceId, request.asAttachment(), request.idempotencyKey());
+        if (providerRegistry == null || objectProviderRegistry == null) {
+            return Mono.error(new ConflictException("Storage Provider 上传能力未配置"));
+        }
+        return providerRegistry.requireWritableByKey(request.provider())
+            .flatMap(provider -> verifyUploadedObject(provider, request)
+                .then(attachInternal(ownerId, resourceId, request.asAttachment(), request.idempotencyKey())));
+    }
+
+    @Override
+    public Mono<StorageUploadIntentView> beginUpload(UUID ownerId, UUID resourceId, BeginUploadRequest request) {
+        if (providerRegistry == null || objectProviderRegistry == null) {
+            return Mono.error(new ConflictException("Storage Provider 上传能力未配置"));
+        }
+        String objectKey = request.objectKey() == null || request.objectKey().isBlank()
+            ? "attachments/" + UUID.randomUUID() + "/" + safeFileName(request.fileName()) : request.objectKey();
+        return owned(ownerId, resourceId)
+            .then(providerRegistry.requireWritableByKey(request.provider()))
+            .flatMap(provider -> objectProviderRegistry.createUploadIntent(provider,
+                new StorageUploadRequest(objectKey, request.sizeBytes(), request.mediaType()))
+                .map(intent -> new StorageUploadIntentView(provider.providerKey(), provider.tier(), intent.method(),
+                    intent.url(), intent.objectKey(), intent.expiresAt())));
+    }
+
+    private Mono<Void> verifyUploadedObject(StorageProvider provider, CommitUploadRequest request) {
+        if (provider.tier() != request.tier()) return Mono.error(new ConflictException("Placement tier 与 Storage Provider 配置不一致"));
+        return objectProviderRegistry.verify(provider, request.objectKey()).flatMap(actual -> {
+            if (actual.sizeBytes() != request.sizeBytes()) {
+                return Mono.<Void>error(new ConflictException("已上传对象大小与提交声明不一致"));
+            }
+            return Mono.<Void>empty();
+        }).onErrorMap(error -> error instanceof ConflictException ? error
+            : new ConflictException("无法确认已上传对象，请检查上传是否完成"));
+    }
+
+    private String safeFileName(String fileName) {
+        String value = fileName.replace('\\', '/');
+        value = value.substring(value.lastIndexOf('/') + 1).replaceAll("[^a-zA-Z0-9._-]", "_");
+        return value.isBlank() ? "upload.bin" : value;
     }
 
     @Override
