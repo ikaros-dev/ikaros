@@ -83,12 +83,6 @@ export default {
       { path: "jobs", name: "OpsJobs", component: OpsJobsPage, meta: { title: "运维任务", description: "查看运维任务及执行结果。", icon: "ep:operation" } },
       { path: "background", name: "OpsBackground", component: OpsBackgroundPage, meta: { title: "后台任务", description: "查看后台操作进度。", icon: "ep:loading" } }
     ]),
-    subsystem("/security-center", "SecurityCenter", "身份安全", "ep:lock", [
-      { path: "users", name: "SecurityUsers", component: SecurityUsersPage, meta: { title: "安全用户", description: "管理用户、账号状态和安全策略。", icon: "ep:user" } },
-      { path: "permissions", name: "SecurityPermissions", component: SecurityPermissionsPage, meta: { title: "权限", description: "管理权限注册表和授权能力。", icon: "ep:lock" } },
-      { path: "sessions", name: "SecuritySessions", component: SecuritySessionsPage, meta: { title: "JWT 状态", description: "查看本地 Access / Refresh Token 状态。", icon: "ep:key" } },
-      { path: "authentication", name: "SecurityAuthentication", component: SecurityAuthenticationPage, meta: { title: "认证设置", description: "管理认证方式和验证挑战。", icon: "ep:key" } }
-    ]),
     subsystem("/integration-center", "IntegrationCenter", "集成自动化", "ep:connection", [
       { path: "automation", name: "IntegrationAutomation", component: () => import("@/views/integration/index.vue"), meta: { title: "自动化", icon: "ep:connection" } },
       { path: "executions", name: "IntegrationExecutions", component: () => import("@/views/integration/index.vue"), meta: { title: "自动化执行", icon: "ep:operation" } },
@@ -203,7 +197,9 @@ export default {
       { path: "security", name: "Security", component: SecurityAuthenticationPage, meta: { title: "安全中心", icon: "ep:warning" } },
       { path: "users", name: "Users", component: SecurityUsersPage, meta: { title: "用户管理", icon: "ep:user" } },
       { path: "roles", name: "Roles", component: SecurityPermissionsPage, meta: { title: "角色管理", icon: "ep:key" } },
-      { path: "permissions", name: "Permissions", component: SecurityPermissionsPage, meta: { title: "权限管理", icon: "ep:lock" } }
+      { path: "permissions", name: "Permissions", component: SecurityPermissionsPage, meta: { title: "权限管理", icon: "ep:lock" } },
+      { path: "sessions", name: "SecuritySessions", component: SecuritySessionsPage, meta: { title: "JWT 状态", description: "查看本地 Access / Refresh Token 状态。", icon: "ep:key" } },
+      { path: "authentication", name: "SecurityAuthentication", component: SecurityAuthenticationPage, meta: { title: "认证设置", description: "管理认证方式和验证挑战。", icon: "ep:key" } }
     ])
   ]
 } satisfies RouteConfigsTable;
