@@ -80,6 +80,31 @@ export default {
       moduleRoute({ path: "/sync", name: "IntegrationSync", title: "同步", description: "管理外部数据同步任务。", endpoint: "/integration/sync", columns: ["id", "source", "status", "updatedAt"], icon: "ep:refresh" }),
       moduleRoute({ path: "/plugins", name: "IntegrationPlugins", title: "插件", description: "管理集成插件及其权限。", endpoint: "/integration/plugins", columns: ["id", "name", "status", "version"], icon: "ep:cpu" })
     ]),
+    subsystem("/communications-center", "CommunicationsCenter", "沟通与审计", "ep:notification", [
+      moduleRoute({ path: "/announcements", name: "Announcements", title: "公告", description: "发布和管理系统公告。", endpoint: "/communications/announcements", columns: ["id", "title", "status", "publishedAt"], icon: "ep:notification" }),
+      moduleRoute({ path: "/notifications", name: "Notifications", title: "通知", description: "查看通知投递和用户触达状态。", endpoint: "/communications/notifications", columns: ["id", "channel", "status", "createdAt"], icon: "ep:bell" }),
+      moduleRoute({ path: "/audit", name: "CommunicationsAudit", title: "沟通审计", description: "审计公告和通知操作记录。", endpoint: "/communications/audit", columns: ["id", "action", "actorId", "createdAt"], icon: "ep:document" })
+    ]),
+    subsystem("/analytics-center", "AnalyticsCenter", "数据分析", "ep:data-analysis", [
+      moduleRoute({ path: "/overview", name: "AnalyticsOverview", title: "分析总览", description: "查看跨模块运营指标。", endpoint: "/analytics/overview", columns: ["metric", "value", "period", "updatedAt"], icon: "ep:data-analysis" }),
+      moduleRoute({ path: "/content", name: "AnalyticsContent", title: "内容分析", description: "分析内容规模和使用情况。", endpoint: "/analytics/content", columns: ["metric", "value", "period"], icon: "ep:document" }),
+      moduleRoute({ path: "/storage", name: "AnalyticsStorage", title: "存储分析", description: "分析 Blob、附件和存储层使用情况。", endpoint: "/analytics/storage", columns: ["metric", "value", "tier", "period"], icon: "ep:box" }),
+      moduleRoute({ path: "/planning", name: "AnalyticsPlanning", title: "计划分析", description: "分析任务、项目和目标进度。", endpoint: "/analytics/planning", columns: ["metric", "value", "period"], icon: "ep:calendar" }),
+      moduleRoute({ path: "/system", name: "AnalyticsSystem", title: "系统分析", description: "分析系统健康和运行指标。", endpoint: "/analytics/system", columns: ["metric", "value", "status", "updatedAt"], icon: "ep:monitor" }),
+      moduleRoute({ path: "/metrics", name: "AnalyticsMetrics", title: "指标", description: "浏览系统注册指标。", endpoint: "/analytics/metrics", columns: ["name", "value", "unit", "updatedAt"], icon: "ep:trend-charts" }),
+      moduleRoute({ path: "/reports", name: "AnalyticsReports", title: "分析报告", description: "管理分析报告和导出任务。", endpoint: "/analytics/reports", columns: ["id", "name", "status", "createdAt"], icon: "ep:document" })
+    ]),
+    subsystem("/configuration-center", "ConfigurationCenter", "平台配置", "ep:setting", [
+      moduleRoute({ path: "/parameters", name: "PlatformParameters", title: "平台参数", description: "管理平台运行参数。", endpoint: "/platform/parameters", columns: ["key", "value", "description", "updatedAt"], icon: "ep:setting" }),
+      moduleRoute({ path: "/dictionaries", name: "PlatformDictionaries", title: "数据字典", description: "管理平台字典项。", endpoint: "/platform/dictionaries", columns: ["code", "name", "status", "updatedAt"], icon: "ep:list" }),
+      moduleRoute({ path: "/menus", name: "PlatformMenus", title: "平台菜单", description: "管理菜单和导航结构。", endpoint: "/platform/menus", columns: ["id", "name", "path", "status"], icon: "ep:menu" })
+    ]),
+    subsystem("/password-center", "PasswordCenter", "密码管理", "ep:key", [
+      moduleRoute({ path: "/vault", name: "Passwords", title: "密码库", description: "管理密码条目和安全状态。", endpoint: "/passwords", columns: ["id", "title", "username", "updatedAt"], icon: "ep:lock" }),
+      moduleRoute({ path: "/generator", name: "PasswordGenerator", title: "密码生成器", description: "生成符合策略的随机密码。", endpoint: "/passwords/generator", columns: ["id", "length", "strength", "createdAt"], icon: "ep:magic-stick" }),
+      moduleRoute({ path: "/health", name: "PasswordHealth", title: "密码健康", description: "检查重复、弱密码和泄露风险。", endpoint: "/passwords/health", columns: ["id", "title", "risk", "updatedAt"], icon: "ep:warning" }),
+      moduleRoute({ path: "/devices", name: "PasswordDevices", title: "密码设备", description: "管理密码库授权设备。", endpoint: "/passwords/devices", columns: ["id", "name", "status", "lastSeenAt"], icon: "ep:mobile-phone" })
+    ]),
     { path: "/console/attachments", name: "AttachmentsSpecRoute", component: () => import("@/views/attachments/index.vue"), meta: { title: "附件与 Blob", showLink: false } },
     { path: "/console/storage/tiers", name: "StorageTiersSpecRoute", component: () => import("@/views/storage/Tiers.vue"), meta: { title: "持久化存储层", showLink: false } },
     { path: "/console/storage/archive", name: "StorageArchiveSpecRoute", component: () => import("@/views/storage/Archive.vue"), meta: { title: "归档与恢复", showLink: false } },
