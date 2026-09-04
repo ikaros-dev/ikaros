@@ -8,6 +8,7 @@ import type { FormInstance, FormRules } from "element-plus";
 const router = useRouter();
 const formRef = ref<FormInstance>();
 const loading = ref(false);
+const error = ref("");
 const form = reactive({ username: "", displayName: "", email: "", password: "", confirmPassword: "" });
 const rules: FormRules = {
   username: [{ required: true, message: "请输入用户名", trigger: "blur" }, { pattern: /^[A-Za-z0-9][A-Za-z0-9_.-]*$/, message: "用户名只能使用字母、数字、下划线、点和连字符", trigger: "blur" }],
@@ -19,12 +20,12 @@ const rules: FormRules = {
 
 async function submit() {
   if (!(await formRef.value?.validate())) return;
-  loading.value = true;
+  loading.value = true; error.value = "";
   try {
     await registerUser({ username: form.username, password: form.password, displayName: form.displayName, email: form.email });
     message("注册成功，请登录", { type: "success" });
     router.push("/login");
-  } finally { loading.value = false; }
+  } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "注册失败，请检查输入后重试"; } finally { loading.value = false; }
 }
 </script>
 
@@ -32,8 +33,9 @@ async function submit() {
   <div class="flex items-center justify-center min-h-screen p-6">
     <el-card class="w-full max-w-[440px]">
       <h2 class="text-2xl font-semibold mb-6">创建账号</h2>
+      <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" class="mb-4" />
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @keyup.enter="submit">
-        <el-form-item label="用户名" prop="username"><el-input v-model="form.username" placeholder="如 chivehao" /></el-form-item>
+        <el-form-item label="用户名" prop="username"><el-input v-model="form.username" placeholder="如 chivehao" /><div class="text-xs text-[var(--el-text-color-secondary)] mt-1">只能使用字母、数字、下划线、点和连字符，不能填写邮箱地址。</div></el-form-item>
         <el-form-item label="显示名称" prop="displayName"><el-input v-model="form.displayName" /></el-form-item>
         <el-form-item label="邮箱" prop="email"><el-input v-model="form.email" /></el-form-item>
         <el-form-item label="密码" prop="password"><el-input v-model="form.password" type="password" show-password /></el-form-item>
