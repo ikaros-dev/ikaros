@@ -29,6 +29,7 @@ const SecuritySessionsPage = () => import("@/views/security/Sessions.vue");
 const SecurityAuthenticationPage = () => import("@/views/security/Authentication.vue");
 const OpsHealthPage = () => import("@/views/operations/Health.vue");
 const OpsJobsPage = () => import("@/views/operations/Jobs.vue");
+const OpsBackgroundPage = () => import("@/views/operations/Background.vue");
 
 type ModuleOptions = {
   path: string;
@@ -93,7 +94,7 @@ export default {
     subsystem("/operations-center", "OperationsCenter", "系统运维", "ep:monitor", [
       { path: "/health", name: "OpsHealth", component: OpsHealthPage, meta: { title: "系统健康", description: "查看服务、依赖和存储健康状态。", icon: "ep:monitor" } },
       { path: "/jobs", name: "OpsJobs", component: OpsJobsPage, meta: { title: "运维任务", description: "查看运维任务及执行结果。", icon: "ep:operation" } },
-      moduleRoute({ path: "/background", name: "OpsBackground", title: "后台任务", description: "查看后台操作进度。", endpoint: "/background-tasks", columns: ["id", "type", "status", "progress", "createdAt"], icon: "ep:loading" })
+      { path: "/background", name: "OpsBackground", component: OpsBackgroundPage, meta: { title: "后台任务", description: "查看后台操作进度。", icon: "ep:loading" } }
     ]),
     subsystem("/security-center", "SecurityCenter", "身份安全", "ep:lock", [
       { path: "/users", name: "SecurityUsers", component: SecurityUsersPage, meta: { title: "安全用户", description: "管理用户、账号状态和安全策略。", icon: "ep:user" } },
@@ -186,7 +187,7 @@ export default {
     { path: "/console/platform/menus", name: "PlatformMenusSpecRoute", component: ModulePage, meta: { title: "平台菜单", showLink: false, description: "管理菜单和导航结构。", endpoint: "/platform/menus", columns: ["id", "name", "path", "status"], icon: "ep:menu" } },
     { path: "/console/ops/health", name: "OpsHealthSpecRoute", component: OpsHealthPage, meta: { title: "系统健康", showLink: false } },
     { path: "/console/ops/jobs", name: "OpsJobsSpecRoute", component: OpsJobsPage, meta: { title: "运维任务", showLink: false } },
-    { path: "/console/ops/background", name: "OpsBackgroundSpecRoute", component: ModulePage, meta: { title: "后台任务", showLink: false, description: "查看可持久访问的后台操作进度。", endpoint: "/background-tasks", columns: ["id", "type", "status", "progress", "createdAt"], icon: "ep:loading" } },
+    { path: "/console/ops/background", name: "OpsBackgroundSpecRoute", component: OpsBackgroundPage, meta: { title: "后台任务", showLink: false } },
     { path: "/console/security/users", name: "SecurityUsersSpecRoute", component: SecurityUsersPage, meta: { title: "安全用户", showLink: false } },
     { path: "/console/security/permissions", name: "SecurityPermissionsSpecRoute", component: SecurityPermissionsPage, meta: { title: "权限", showLink: false } },
     { path: "/console/security/sessions", name: "SecuritySessionsSpecRoute", component: SecuritySessionsPage, meta: { title: "会话", showLink: false } },
