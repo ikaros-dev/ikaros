@@ -39,18 +39,25 @@ function placementSummary(item: Attachment) {
   const tiers = [...new Set(placements.map(p => String(p.tier || "未知")))].join(" / ");
   return `${placements.length} 个副本 · ${tiers}`;
 }
+function base64(bytes: Uint8Array) {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
 async function commitUpload() {
   if (!resourceId.value.trim() || !file.value || !upload.value.provider) { error.value = "Resource ID、文件和 Provider 均不能为空"; return; }
   uploadLoading.value = true;
   try {
     const mediaType = file.value.type || "application/octet-stream";
     const digest = await crypto.subtle.digest("SHA-256", await file.value.arrayBuffer());
-    const sha256 = Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, "0")).join("");
+    const digestBytes = new Uint8Array(digest);
+    const sha256 = Array.from(digestBytes).map(byte => byte.toString(16).padStart(2, "0")).join("");
+    const checksumSha256 = base64(digestBytes);
     const intent = await http.post<any, any>(`/resources/${resourceId.value.trim()}/attachments/upload-intents`, { data: {
       fileName: file.value.name, sizeBytes: file.value.size, mediaType, provider: upload.value.provider,
       objectKey: upload.value.objectKey || undefined, sha256
     } });
-    const uploaded = await fetch(intent.url, { method: intent.method || "PUT", headers: { "Content-Type": mediaType }, body: file.value });
+    const uploaded = await fetch(intent.url, { method: intent.method || "PUT", headers: { "Content-Type": mediaType, "x-amz-checksum-sha256": checksumSha256 }, body: file.value });
     if (!uploaded.ok) throw new Error(`对象上传失败（HTTP ${uploaded.status}）`);
     await http.post(`/resources/${resourceId.value.trim()}/attachments/commit`, { data: { sha256, sizeBytes: file.value.size, mediaType, fileName: file.value.name, kind: upload.value.kind, provider: intent.provider, tier: intent.tier, objectKey: intent.objectKey, idempotencyKey: crypto.randomUUID() } });
     uploadDialog.value = false; await load();
