@@ -23,6 +23,8 @@ ikaros:
   storage:
     # Must be supplied by deployment secret management; never use a shared default.
     credential-encryption-key: ${IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEY:}
+    credential-encryption-keys: ${IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEYS:}
+    credential-encryption-key-version: ${IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEY_VERSION:v1}
   security:
     jwt:
       issuer: ${IKAROS_JWT_ISSUER:ikaros}
