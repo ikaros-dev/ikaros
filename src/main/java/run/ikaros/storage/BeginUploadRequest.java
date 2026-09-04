@@ -9,5 +9,6 @@ public record BeginUploadRequest(
     @Min(0) long sizeBytes,
     @NotBlank @Size(max = 256) String mediaType,
     @NotBlank @Size(max = 128) String provider,
-    @Size(max = 1024) String objectKey
+    @Size(max = 1024) String objectKey,
+    @NotBlank @jakarta.validation.constraints.Pattern(regexp = "^[A-Fa-f0-9]{64}$") String sha256
 ) { }

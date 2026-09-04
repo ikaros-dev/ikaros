@@ -42,14 +42,14 @@ async function commitUpload() {
   uploadLoading.value = true;
   try {
     const mediaType = file.value.type || "application/octet-stream";
+    const digest = await crypto.subtle.digest("SHA-256", await file.value.arrayBuffer());
+    const sha256 = Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, "0")).join("");
     const intent = await http.post<any, any>(`/resources/${resourceId.value.trim()}/attachments/upload-intents`, { data: {
       fileName: file.value.name, sizeBytes: file.value.size, mediaType, provider: upload.value.provider,
-      objectKey: upload.value.objectKey || undefined
+      objectKey: upload.value.objectKey || undefined, sha256
     } });
     const uploaded = await fetch(intent.url, { method: intent.method || "PUT", headers: { "Content-Type": mediaType }, body: file.value });
     if (!uploaded.ok) throw new Error(`对象上传失败（HTTP ${uploaded.status}）`);
-    const digest = await crypto.subtle.digest("SHA-256", await file.value.arrayBuffer());
-    const sha256 = Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, "0")).join("");
     await http.post(`/resources/${resourceId.value.trim()}/attachments/commit`, { data: { sha256, sizeBytes: file.value.size, mediaType, fileName: file.value.name, kind: upload.value.kind, provider: intent.provider, tier: intent.tier, objectKey: intent.objectKey, idempotencyKey: crypto.randomUUID() } });
     uploadDialog.value = false; await load();
   } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "附件提交失败，请确认对象已存在于 Provider"; }

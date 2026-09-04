@@ -173,7 +173,7 @@ public class DefaultStorageService implements StorageService {
         return owned(ownerId, resourceId)
             .then(providerRegistry.requireWritableByKey(request.provider()))
             .flatMap(provider -> objectProviderRegistry.createUploadIntent(provider,
-                new StorageUploadRequest(objectKey, request.sizeBytes(), request.mediaType()))
+                new StorageUploadRequest(objectKey, request.sizeBytes(), request.mediaType(), request.sha256()))
                 .map(intent -> new StorageUploadIntentView(provider.providerKey(), provider.tier(), intent.method(),
                     intent.url(), intent.objectKey(), intent.expiresAt())));
     }
@@ -183,6 +183,9 @@ public class DefaultStorageService implements StorageService {
         return objectProviderRegistry.verify(provider, request.objectKey()).flatMap(actual -> {
             if (actual.sizeBytes() != request.sizeBytes()) {
                 return Mono.<Void>error(new ConflictException("已上传对象大小与提交声明不一致"));
+            }
+            if (actual.sha256() == null || !actual.sha256().equalsIgnoreCase(request.sha256())) {
+                return Mono.<Void>error(new ConflictException("已上传对象 SHA-256 与提交声明不一致"));
             }
             return Mono.<Void>empty();
         }).onErrorMap(error -> error instanceof ConflictException ? error

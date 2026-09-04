@@ -33,7 +33,8 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
                 .endpointOverride(settings.endpoint()).credentialsProvider(DefaultCredentialsProvider.create()).build()) {
                 PutObjectPresignRequest presign = PutObjectPresignRequest.builder().signatureDuration(timeout)
                     .putObjectRequest(builder -> builder.bucket(settings.bucket()).key(request.objectKey())
-                        .contentLength(request.sizeBytes()).contentType(request.mediaType()).build()).build();
+                        .contentLength(request.sizeBytes()).contentType(request.mediaType())
+                        .checksumSHA256(request.sha256()).build()).build();
                 String url = presigner.presignPutObject(presign).url().toString();
                 return new StorageUploadIntent("PUT", url, request.objectKey(), Instant.now().plus(timeout));
             }
@@ -46,7 +47,8 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
             S3Settings settings = S3Settings.from(provider);
             return withClient(settings, client -> {
                 var object = client.headObject(HeadObjectRequest.builder().bucket(settings.bucket()).key(objectKey).build());
-                return new StorageObjectMetadata(objectKey, object.contentLength(), object.contentType(), object.eTag());
+                return new StorageObjectMetadata(objectKey, object.contentLength(), object.contentType(), object.eTag(),
+                    object.checksumSHA256());
             });
         }).subscribeOn(Schedulers.boundedElastic());
     }
