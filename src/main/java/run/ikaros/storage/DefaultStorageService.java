@@ -34,7 +34,7 @@ public class DefaultStorageService implements StorageService {
     private final StorageProviderRegistry providerRegistry;
     private final BackgroundTaskService taskService;
     private final DurableEventService eventService;
-    private StorageContentReader contentReader;
+    private List<StorageContentReader> contentReaders = List.of();
     private StorageObjectProviderRegistry objectProviderRegistry;
 
     /**
@@ -107,8 +107,8 @@ public class DefaultStorageService implements StorageService {
     }
 
     @Autowired(required = false)
-    public void setContentReader(StorageContentReader contentReader) {
-        this.contentReader = contentReader;
+    public void setContentReader(List<StorageContentReader> contentReaders) {
+        this.contentReaders = List.copyOf(contentReaders == null ? List.of() : contentReaders);
     }
 
     @Autowired(required = false)
@@ -222,7 +222,7 @@ public class DefaultStorageService implements StorageService {
 
     @Override
     public Mono<StorageContent> readContent(UUID ownerId, UUID attachmentId, String range) {
-        if (contentReader == null || providerRegistry == null) {
+        if (contentReaders.isEmpty() || providerRegistry == null) {
             return Mono.error(new ConflictException("Storage Provider 内容读取能力未配置"));
         }
         return attachmentRepository.findById(attachmentId)
@@ -240,7 +240,8 @@ public class DefaultStorageService implements StorageService {
             .concatMap(placement -> providerRegistry.getByKey(placement.provider())
                 .filter(provider -> provider.status() != StorageProviderStatus.DISABLED
                     && provider.status() != StorageProviderStatus.FAILED)
-                .flatMap(provider -> contentReader.read(provider, placement, blob, range))
+                .flatMap(provider -> contentReaders.stream().filter(reader -> reader.supports(provider)).findFirst()
+                    .map(reader -> reader.read(provider, placement, blob, range)).orElse(Mono.empty()))
                 .onErrorResume(error -> Mono.empty()))
             .next()
             .switchIfEmpty(Mono.error(new StorageUnavailableException("附件当前没有可读副本")));
