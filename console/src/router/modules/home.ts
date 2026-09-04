@@ -105,6 +105,17 @@ export default {
       moduleRoute({ path: "/health", name: "PasswordHealth", title: "密码健康", description: "检查重复、弱密码和泄露风险。", endpoint: "/passwords/health", columns: ["id", "title", "risk", "updatedAt"], icon: "ep:warning" }),
       moduleRoute({ path: "/devices", name: "PasswordDevices", title: "密码设备", description: "管理密码库授权设备。", endpoint: "/passwords/devices", columns: ["id", "name", "status", "lastSeenAt"], icon: "ep:mobile-phone" })
     ]),
+    subsystem("/notes-center", "NotesCenter", "私密笔记", "ep:lock", [
+      moduleRoute({ path: "/notes", name: "PrivateNotes", title: "私密笔记", description: "在加密边界内管理个人笔记。", endpoint: "/private-notes/notes", columns: ["id", "title", "updatedAt", "status"], icon: "ep:document" }),
+      moduleRoute({ path: "/conflicts", name: "PrivateNotesConflicts", title: "笔记冲突", description: "处理同步冲突并保留版本历史。", endpoint: "/private-notes/conflicts", columns: ["id", "noteId", "status", "createdAt"], icon: "ep:warning" }),
+      moduleRoute({ path: "/recovery", name: "PrivateNotesRecovery", title: "笔记恢复", description: "查看恢复状态和安全恢复操作。", endpoint: "/private-notes/recovery", columns: ["id", "status", "createdAt", "updatedAt"], icon: "ep:refresh" })
+    ]),
+    subsystem("/account-center", "AccountCenter", "个人中心", "ep:user", [
+      moduleRoute({ path: "/profile", name: "AccountProfile", title: "个人资料", description: "查看和维护个人资料。", endpoint: "/me", columns: ["id", "username", "displayName", "email", "status"], icon: "ep:user" }),
+      moduleRoute({ path: "/preferences", name: "AccountPreferences", title: "偏好设置", description: "管理 Console 显示和交互偏好。", endpoint: "/me/preferences", columns: ["key", "value", "updatedAt"], icon: "ep:setting" }),
+      moduleRoute({ path: "/notifications", name: "AccountNotifications", title: "通知设置", description: "管理通知渠道和订阅偏好。", endpoint: "/me/notifications", columns: ["channel", "enabled", "updatedAt"], icon: "ep:bell" }),
+      moduleRoute({ path: "/security", name: "AccountSecurity", title: "账户安全", description: "管理认证方式和安全状态。", endpoint: "/security/verification-challenges", columns: ["id", "status", "createdAt", "expiresAt"], icon: "ep:lock" })
+    ]),
     { path: "/console/attachments", name: "AttachmentsSpecRoute", component: () => import("@/views/attachments/index.vue"), meta: { title: "附件与 Blob", showLink: false } },
     { path: "/console/storage/tiers", name: "StorageTiersSpecRoute", component: () => import("@/views/storage/Tiers.vue"), meta: { title: "持久化存储层", showLink: false } },
     { path: "/console/storage/archive", name: "StorageArchiveSpecRoute", component: () => import("@/views/storage/Archive.vue"), meta: { title: "归档与恢复", showLink: false } },
@@ -195,7 +206,16 @@ export default {
     ]),
     subsystem("/planning-center", "PlanningCenter", "计划与财务", "ep:calendar", [
       moduleRoute({ path: "/planning", name: "Planning", title: "生产力与计划", description: "管理项目、任务和目标。", endpoint: "/planning/projects", createEndpoint: "/planning/projects", createFields: [{ name: "name", label: "项目名称", required: true }, { name: "description", label: "描述" }], columns: ["id", "name", "status", "createdAt"], icon: "ep:calendar" }),
-      moduleRoute({ path: "/finance", name: "Finance", title: "个人财务", description: "查看账本、账户和财务记录。", endpoint: "/finance/ledgers", columns: ["id", "name", "currency", "createdAt"], icon: "ep:money" })
+      moduleRoute({ path: "/planning/today", name: "PlanningToday", title: "今日计划", description: "查看今日任务、优先级和完成进度。", endpoint: "/planning/tasks", columns: ["id", "title", "status", "dueAt"], icon: "ep:calendar" }),
+      moduleRoute({ path: "/planning/projects", name: "PlanningProjects", title: "项目管理", description: "管理项目、任务和目标。", endpoint: "/planning/projects", columns: ["id", "name", "status", "createdAt"], icon: "ep:calendar" }),
+      moduleRoute({ path: "/planning/calendar", name: "PlanningCalendar", title: "日历", description: "按时间查看计划事项。", endpoint: "/planning/calendar", columns: ["id", "title", "startAt", "endAt"], icon: "ep:calendar" }),
+      moduleRoute({ path: "/planning/goals", name: "PlanningGoals", title: "目标", description: "跟踪目标、关键结果与进度。", endpoint: "/planning/goals", columns: ["id", "title", "status", "progress"], icon: "ep:aim" }),
+      moduleRoute({ path: "/planning/focus", name: "PlanningFocus", title: "专注", description: "管理专注会话和今日投入。", endpoint: "/planning/focus-sessions", columns: ["id", "status", "startedAt", "durationSeconds"], icon: "ep:timer" }),
+      moduleRoute({ path: "/finance", name: "Finance", title: "个人财务", description: "查看账本、账户和财务记录。", endpoint: "/finance/ledgers", columns: ["id", "name", "currency", "createdAt"], icon: "ep:money" }),
+      moduleRoute({ path: "/finance/accounts", name: "FinanceAccounts", title: "账户", description: "管理财务账户和余额。", endpoint: "/finance/accounts", columns: ["id", "name", "type", "balance"], icon: "ep:wallet" }),
+      moduleRoute({ path: "/finance/transactions", name: "FinanceTransactions", title: "交易记录", description: "查看和管理收支交易。", endpoint: "/finance/transactions", columns: ["id", "accountId", "amount", "occurredAt"], icon: "ep:money" }),
+      moduleRoute({ path: "/finance/budgets", name: "FinanceBudgets", title: "预算", description: "管理预算和执行情况。", endpoint: "/finance/budgets", columns: ["id", "name", "amount", "spent"], icon: "ep:pie-chart" }),
+      moduleRoute({ path: "/finance/reconcile", name: "FinanceReconcile", title: "对账", description: "检查账户与交易记录的一致性。", endpoint: "/finance/reconcile", columns: ["id", "status", "difference", "updatedAt"], icon: "ep:finished" })
     ]),
     subsystem("/identity-center", "IdentityCenter", "身份与安全", "ep:lock", [
       moduleRoute({ path: "/account", name: "Account", title: "我的账户", description: "查看当前登录用户资料。", endpoint: "/me", columns: ["id", "username", "displayName", "email", "status"], icon: "ep:user-filled" }),
