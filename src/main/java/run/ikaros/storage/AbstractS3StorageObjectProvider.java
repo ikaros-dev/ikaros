@@ -19,11 +19,8 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 /** S3 API implementation shared by cloud vendors exposing S3-compatible APIs. */
 abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider {
     private static final Duration URL_TTL = Duration.ofMinutes(15);
-    private final Duration timeout;
-
-    AbstractS3StorageObjectProvider(@Value("${ikaros.storage.upload-url-ttl:PT15M}") Duration timeout) {
-        this.timeout = timeout == null ? URL_TTL : timeout;
-    }
+    @Value("${ikaros.storage.upload-url-ttl:PT15M}")
+    private Duration timeout = URL_TTL;
 
     @Override
     public Mono<StorageUploadIntent> createUploadIntent(StorageProvider provider, StorageUploadRequest request) {
