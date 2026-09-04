@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { http } from "@/utils/http";
-type Parameter = Record<string, any>; const rows = ref<Parameter[]>([]); const loading = ref(false); const error = ref(""); const query = ref(""); const source = ref(""); const detail = ref<Parameter | null>(null); const filtered = computed(() => rows.value.filter(row => (!query.value || JSON.stringify(row).toLowerCase().includes(query.value.toLowerCase())) && (!source.value || row.source === source.value)));
+type Parameter = Record<string, any>; const rows = ref<Parameter[]>([]); const loading = ref(false); const error = ref(""); const query = ref(""); const source = ref(""); const detail = ref<any>(false); const filtered = computed(() => rows.value.filter(row => (!query.value || JSON.stringify(row).toLowerCase().includes(query.value.toLowerCase())) && (!source.value || row.source === source.value)));
 async function load() { loading.value = true; try { const result: any = await http.get("/platform/parameters"); rows.value = Array.isArray(result) ? result : (result?.content || result?.items || []); } catch (e: any) { error.value = e?.response?.data?.detail || "平台参数接口尚未接入"; } finally { loading.value = false; } }
 load();
 </script>
