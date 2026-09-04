@@ -150,6 +150,11 @@ export default {
       { path: "/security", name: "AccountSecurity", component: () => import("@/views/security/Authentication.vue"), meta: { title: "账户安全", icon: "ep:lock" } }
     ]),
     { path: "/console/attachments", name: "AttachmentsSpecRoute", component: () => import("@/views/attachments/index.vue"), meta: { title: "附件与 Blob", showLink: false } },
+    { path: "/console/media", name: "MediaSpecRoute", component: () => import("@/views/media/index.vue"), meta: { title: "媒体库", showLink: false } },
+    { path: "/console/reading", name: "ReadingSpecRoute", component: () => import("@/views/reading/index.vue"), meta: { title: "阅读库", showLink: false } },
+    { path: "/console/music", name: "MusicSpecRoute", component: () => import("@/views/media/Catalog.vue"), meta: { title: "音乐库", showLink: false } },
+    { path: "/console/photos", name: "PhotosSpecRoute", component: () => import("@/views/media/Catalog.vue"), meta: { title: "照片管理", showLink: false } },
+    { path: "/console/games", name: "GamesSpecRoute", component: () => import("@/views/media/Catalog.vue"), meta: { title: "游戏档案", showLink: false } },
     { path: "/console/storage/tiers", name: "StorageTiersSpecRoute", component: () => import("@/views/storage/Tiers.vue"), meta: { title: "持久化存储层", showLink: false } },
     { path: "/console/storage/providers", name: "StorageProvidersSpecRoute", component: () => import("@/views/storage/Tiers.vue"), meta: { title: "存储 Provider", showLink: false } },
     { path: "/console/storage/archive", name: "StorageArchiveSpecRoute", component: () => import("@/views/storage/Archive.vue"), meta: { title: "归档与恢复", showLink: false } },
