@@ -191,11 +191,11 @@ export default {
       { path: "calendar", name: "PlanningCalendar", component: PlanningCalendarPage, meta: { title: "日历", description: "按时间查看计划事项。", icon: "ep:calendar" } },
       { path: "goals", name: "PlanningGoals", component: PlanningGoalsPage, meta: { title: "目标", description: "跟踪目标、关键结果与进度。", icon: "ep:aim" } },
       { path: "focus", name: "PlanningFocus", component: PlanningFocusPage, meta: { title: "专注", description: "管理专注会话和今日投入。", icon: "ep:timer" } },
-      { path: "finance/overview", name: "Finance", component: FinancePage, meta: { title: "个人财务", description: "查看账本、账户和财务记录。", icon: "ep:money" } },
-      { path: "finance/accounts", name: "FinanceAccounts", component: FinanceAccountsPage, meta: { title: "账户", description: "管理财务账户和余额。", icon: "ep:wallet" } },
-      { path: "finance/transactions", name: "FinanceTransactions", component: FinanceTransactionsPage, meta: { title: "交易记录", description: "查看和管理收支交易。", icon: "ep:money" } },
-      { path: "finance/budgets", name: "FinanceBudgets", component: FinanceBudgetsPage, meta: { title: "预算", description: "管理预算和执行情况。", icon: "ep:pie-chart" } },
-      { path: "finance/reconcile", name: "FinanceReconcile", component: FinanceReconcilePage, meta: { title: "对账", description: "检查账户与交易记录的一致性。", icon: "ep:finished" } }
+      { path: "finance", name: "Finance", component: FinancePage, meta: { title: "个人财务", description: "查看账本、账户和财务记录。", icon: "ep:money" } },
+      { path: "accounts", name: "FinanceAccounts", component: FinanceAccountsPage, meta: { title: "账户", description: "管理财务账户和余额。", icon: "ep:wallet" } },
+      { path: "transactions", name: "FinanceTransactions", component: FinanceTransactionsPage, meta: { title: "交易记录", description: "查看和管理收支交易。", icon: "ep:money" } },
+      { path: "budgets", name: "FinanceBudgets", component: FinanceBudgetsPage, meta: { title: "预算", description: "管理预算和执行情况。", icon: "ep:pie-chart" } },
+      { path: "reconcile", name: "FinanceReconcile", component: FinanceReconcilePage, meta: { title: "对账", description: "检查账户与交易记录的一致性。", icon: "ep:finished" } }
     ]),
     subsystem("/identity-center", "IdentityCenter", "身份与安全", "ep:lock", [
       { path: "account", name: "Account", component: () => import("@/views/account/Profile.vue"), meta: { title: "我的账户", icon: "ep:user-filled" } },
