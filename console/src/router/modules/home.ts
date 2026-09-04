@@ -1,6 +1,7 @@
 const Layout = () => import("@/layout/index.vue");
 const ModulePage = () => import("@/views/modules/ModulePage.vue");
 const DashboardPage = () => import("@/views/dashboard/index.vue");
+const ResourcesPage = () => import("@/views/resources/index.vue");
 const CollectionsPage = () => import("@/views/collections/index.vue");
 const DocumentsPage = () => import("@/views/documents/index.vue");
 const PlanningTodayPage = () => import("@/views/planning/Today.vue");
@@ -72,7 +73,7 @@ export default {
     { path: "/dashboard", name: "Dashboard", component: DashboardPage, meta: { title: "仪表盘", icon: "ep:data-analysis" } },
     { path: "/console/search", name: "WorkbenchSearch", component: () => import("@/views/workbench/Search.vue"), meta: { title: "全局搜索", showLink: false } },
     { path: "/console/dashboard", name: "DashboardSpecRoute", component: DashboardPage, meta: { title: "仪表盘", showLink: false } },
-    { path: "/console/resources", name: "ResourcesSpecRoute", component: ModulePage, meta: { title: "资源管理", showLink: false, description: "管理资源、标题、标签和生命周期。", endpoint: "/resources", createEndpoint: "/resources", createFields: [{ name: "type", label: "类型", required: true, defaultValue: "OTHER" }, { name: "title", label: "标题", required: true }, { name: "locale", label: "语言", required: true, defaultValue: "zh-CN" }], deleteEndpoint: "/resources", detailPath: "/console/resources/{id}", actions: [{ name: "archive", label: "归档", path: "/resources/{id}/actions/archive", confirm: "确定归档此资源吗？" }, { name: "restore", label: "恢复", path: "/resources/{id}/actions/restore" }], columns: ["id", "resourceType", "status", "createdAt"] } },
+    { path: "/console/resources", name: "ResourcesSpecRoute", component: ResourcesPage, meta: { title: "资源管理", showLink: false } },
     { path: "/console/resources/:resourceId", name: "ResourceDetailSpecRoute", component: () => import("@/views/resources/Detail.vue"), meta: { title: "资源详情", showLink: false } },
     { path: "/console/collections", name: "CollectionsSpecRoute", component: CollectionsPage, meta: { title: "收藏集合", showLink: false } },
     { path: "/console/documents", name: "DocumentsSpecRoute", component: DocumentsPage, meta: { title: "文档管理", showLink: false } },
@@ -205,7 +206,7 @@ export default {
     { path: "/console/integration/sync", name: "IntegrationSyncSpecRoute", component: ModulePage, meta: { title: "同步", showLink: false, description: "管理外部数据同步任务。", endpoint: "/integration/sync", columns: ["id", "source", "status", "updatedAt"], icon: "ep:refresh" } },
     { path: "/console/integration/plugins", name: "IntegrationPluginsSpecRoute", component: ModulePage, meta: { title: "插件", showLink: false, description: "管理集成插件及其权限。", endpoint: "/integration/plugins", columns: ["id", "name", "status", "version"], icon: "ep:cpu" } },
     subsystem("/resource-center", "ResourceCenter", "资源中心", "ep:files", [
-      moduleRoute({ path: "/resources", name: "Resources", title: "资源管理", description: "管理资源、标题、标签和生命周期。", endpoint: "/resources", createEndpoint: "/resources", deleteEndpoint: "/resources", actions: [{ name: "archive", label: "归档", path: "/resources/{id}/actions/archive", confirm: "确定归档此资源吗？" }, { name: "restore", label: "恢复", path: "/resources/{id}/actions/restore" }], createFields: [{ name: "type", label: "类型", required: true, defaultValue: "OTHER" }, { name: "title", label: "标题", required: true }, { name: "locale", label: "语言", required: true, defaultValue: "zh-CN" }], columns: ["id", "resourceType", "status", "createdAt"], icon: "ep:files" }),
+      { path: "/resources", name: "Resources", component: ResourcesPage, meta: { title: "资源管理", description: "管理资源、标题、标签和生命周期。", icon: "ep:files" } },
       { path: "/documents", name: "Documents", component: DocumentsPage, meta: { title: "文档管理", description: "管理个人文档和工作副本。", icon: "ep:document" } },
       { path: "/collections", name: "Collections", component: CollectionsPage, meta: { title: "收藏集合", description: "管理资源集合及其成员。", icon: "ep:collection" } },
       { path: "/activity", name: "Activity", component: () => import("@/views/workbench/Activity.vue"), meta: { title: "资源活动", icon: "ep:histogram" } },
