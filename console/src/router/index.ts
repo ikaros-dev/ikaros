@@ -116,7 +116,7 @@ export function resetRouter() {
 }
 
 /** 路由白名单 */
-const whiteList = ["/login", "/register", "/setup"];
+const whiteList = ["/login", "/login/verify", "/login/recovery", "/login/recovery/verify", "/login/recovery/reset", "/register", "/setup"];
 
 const { VITE_HIDE_HOME } = import.meta.env;
 
@@ -208,7 +208,7 @@ router.beforeEach((to: ToRouteType, _from, next) => {
       toCorrectRoute();
     }
   } else {
-    if (to.path !== "/login") {
+    if (!whiteList.includes(to.path)) {
       if (whiteList.indexOf(to.path) !== -1) {
         next();
       } else {
