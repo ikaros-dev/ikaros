@@ -44,7 +44,7 @@ export default {
     { path: "/console/resources/:resourceId", name: "ResourceDetailSpecRoute", component: () => import("@/views/resources/Detail.vue"), meta: { title: "资源详情", showLink: false } },
     { path: "/console/collections", name: "CollectionsSpecRoute", component: ModulePage, meta: { title: "收藏集合", showLink: false, description: "管理资源集合及其成员。", endpoint: "/collections", columns: ["id", "name", "description", "createdAt"] } },
     { path: "/console/documents", name: "DocumentsSpecRoute", component: ModulePage, meta: { title: "文档管理", showLink: false, description: "管理个人文档和工作副本。", endpoint: "/documents", columns: ["id", "title", "status", "updatedAt"] } },
-    { path: "/console/media", name: "MediaSpecRoute", component: ModulePage, meta: { title: "媒体库", showLink: false, description: "查看媒体资源和播放内容。", endpoint: "/media/subjects", columns: ["id", "title", "mediaType", "status"] } },
+    { path: "/console/media", name: "MediaSpecRoute", component: () => import("@/views/media/index.vue"), meta: { title: "媒体库", showLink: false } },
     { path: "/console/sharing", name: "SharingSpecRoute", component: ModulePage, meta: { title: "分享协作", showLink: false, description: "管理分享链接和协作空间。", endpoint: "/shares", columns: ["id", "status", "createdAt", "expiresAt"] } },
     { path: "/console/drive", name: "DriveSpecRoute", component: () => import("@/views/drive/index.vue"), meta: { title: "个人云盘", showLink: false } },
     { path: "/console/drive/trash", name: "DriveTrashSpecRoute", component: ModulePage, meta: { title: "云盘回收站", showLink: false, description: "管理已删除的云盘节点。", endpoint: "/drive/trash", columns: ["id", "name", "deletedAt", "expiresAt"] } },
@@ -180,7 +180,7 @@ export default {
       { path: "/console/activity", name: "WorkbenchActivity", component: () => import("@/views/workbench/Activity.vue"), meta: { title: "我的活动与收藏", showLink: false } }
     ]),
     subsystem("/content-center", "ContentCenter", "内容与媒体", "ep:video-camera", [
-      moduleRoute({ path: "/media", name: "Media", title: "媒体库", description: "查看媒体资源和播放内容。", endpoint: "/media/subjects", columns: ["id", "title", "mediaType", "status"], icon: "ep:video-camera" }),
+      { path: "/media", name: "Media", component: () => import("@/views/media/index.vue"), meta: { title: "媒体库", icon: "ep:video-camera" } },
       moduleRoute({ path: "/reading", name: "Reading", title: "阅读库", description: "管理阅读作品、版本和阅读内容。", endpoint: "/reading/works", columns: ["id", "title", "status", "createdAt"], icon: "ep:reading" }),
       moduleRoute({ path: "/music", name: "Music", title: "音乐库", description: "查看音乐播放列表和播放记录。", endpoint: "/music/playlists", columns: ["id", "name", "status", "createdAt"], icon: "ep:headset" }),
       moduleRoute({ path: "/photos", name: "Photos", title: "照片管理", description: "浏览照片和媒体元数据。", endpoint: "/photos/timeline", columns: ["id", "title", "status", "createdAt"], icon: "ep:picture" }),
