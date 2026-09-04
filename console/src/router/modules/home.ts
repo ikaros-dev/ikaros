@@ -40,7 +40,7 @@ export default {
     { path: "/dashboard", name: "Dashboard", component: DashboardPage, meta: { title: "仪表盘", icon: "ep:data-analysis" } },
     { path: "/console/search", name: "WorkbenchSearch", component: () => import("@/views/workbench/Search.vue"), meta: { title: "全局搜索", showLink: false } },
     { path: "/console/dashboard", name: "DashboardSpecRoute", component: DashboardPage, meta: { title: "仪表盘", showLink: false } },
-    { path: "/console/resources", name: "ResourcesSpecRoute", component: ModulePage, meta: { title: "资源管理", showLink: false, description: "管理资源、标题、标签和生命周期。", endpoint: "/resources", columns: ["id", "resourceType", "status", "createdAt"] } },
+    { path: "/console/resources", name: "ResourcesSpecRoute", component: ModulePage, meta: { title: "资源管理", showLink: false, description: "管理资源、标题、标签和生命周期。", endpoint: "/resources", detailPath: "/console/resources/{id}", columns: ["id", "resourceType", "status", "createdAt"] } },
     { path: "/console/resources/:resourceId", name: "ResourceDetailSpecRoute", component: () => import("@/views/resources/Detail.vue"), meta: { title: "资源详情", showLink: false } },
     { path: "/console/collections", name: "CollectionsSpecRoute", component: ModulePage, meta: { title: "收藏集合", showLink: false, description: "管理资源集合及其成员。", endpoint: "/collections", columns: ["id", "name", "description", "createdAt"] } },
     { path: "/console/documents", name: "DocumentsSpecRoute", component: ModulePage, meta: { title: "文档管理", showLink: false, description: "管理个人文档和工作副本。", endpoint: "/documents", columns: ["id", "title", "status", "updatedAt"] } },

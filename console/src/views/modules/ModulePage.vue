@@ -12,6 +12,7 @@ const createEndpoint = computed(() => String(route.meta.createEndpoint || ""));
 const createFields = computed(() => route.meta.createFields || []);
 const deleteEndpoint = computed(() => String(route.meta.deleteEndpoint || ""));
 const actions = computed(() => route.meta.actions || []);
+const detailPath = computed(() => String(route.meta.detailPath || ""));
 const createVisible = ref(false);
 const createLoading = ref(false);
 const createForm = reactive<Record<string, string>>({});
@@ -45,6 +46,7 @@ async function executeAction(action: { path: string; label: string; method?: str
 const loading = ref(false);
 const error = ref("");
 const rows = ref<Record<string, unknown>[]>([]);
+function openDetail(row: Record<string, unknown>) { if (detailPath.value && row.id) window.location.assign(detailPath.value.replace("{id}", String(row.id))); }
 
 async function load() {
   loading.value = true;
@@ -71,7 +73,7 @@ onMounted(load);
       <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" class="mb-4" />
       <el-skeleton v-if="loading" :rows="5" animated />
       <el-empty v-else-if="!rows.length && !error" description="暂无数据" />
-      <el-table v-else :data="rows" stripe>
+      <el-table v-else :data="rows" stripe :row-class-name="detailPath ? () => 'cursor-pointer' : undefined" @row-click="openDetail">
         <el-table-column v-for="column in columns" :key="column" :prop="column" :label="column" min-width="160" show-overflow-tooltip />
         <el-table-column label="原始数据" min-width="220"><template #default="scope"><span class="text-xs text-[var(--el-text-color-secondary)]">{{ JSON.stringify(scope.row) }}</span></template></el-table-column>
         <el-table-column v-if="deleteEndpoint || actions.length" label="操作" width="180" fixed="right"><template #default="scope"><el-button v-for="action in actions" :key="action.name" link @click="executeAction(action, scope.row)">{{ action.label }}</el-button><el-button v-if="deleteEndpoint" link type="danger" @click="remove(scope.row)">删除</el-button></template></el-table-column>
