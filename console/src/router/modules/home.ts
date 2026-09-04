@@ -200,7 +200,6 @@ export default {
       { path: "reconcile", name: "FinanceReconcile", component: FinanceReconcilePage, meta: { title: "对账", description: "检查账户与交易记录的一致性。", icon: "ep:finished" } }
     ]),
     subsystem("/identity-center", "IdentityCenter", "身份与安全", "ep:lock", [
-      { path: "account", name: "Account", component: () => import("@/views/account/Profile.vue"), meta: { title: "我的账户", icon: "ep:user-filled" } },
       { path: "security", name: "Security", component: SecurityAuthenticationPage, meta: { title: "安全中心", icon: "ep:warning" } },
       { path: "users", name: "Users", component: SecurityUsersPage, meta: { title: "用户管理", icon: "ep:user" } },
       { path: "roles", name: "Roles", component: SecurityPermissionsPage, meta: { title: "角色管理", icon: "ep:key" } },
