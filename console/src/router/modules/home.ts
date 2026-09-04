@@ -168,11 +168,13 @@ export default {
       { path: "archive", name: "StorageArchive", component: () => import("@/views/storage/Archive.vue"), meta: { title: "归档与恢复", icon: "ep:refresh-left" } },
       { path: "cache", name: "StorageCache", component: () => import("@/views/storage/Cache.vue"), meta: { title: "缓存与我的下载", icon: "ep:coffee-cup" } },
       { path: "backup", name: "Backup", component: () => import("@/views/storage/Backup.vue"), meta: { title: "备份恢复", icon: "ep:files" } },
-      { path: "delivery/reliability", name: "StorageDeliveryReliability", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "Delivery Reliability", icon: "ep:monitor" } },
-      { path: "delivery/failover", name: "StorageDeliveryFailover", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "Failover 观测", icon: "ep:warning" } },
-      { path: "delivery/restore", name: "StorageDeliveryRestore", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "Restore 协调", icon: "ep:refresh" } },
-      { path: "delivery/budget", name: "StorageDeliveryBudget", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "Traffic Budget", icon: "ep:data-line" } },
-      { path: "delivery/purge", name: "StorageDeliveryPurge", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "CDN Purge", icon: "ep:delete" } }
+    ]),
+    subsystem("/edge-acceleration", "EdgeAccelerationCenter", "边缘加速", "ep:connection", [
+      { path: "reliability", name: "StorageDeliveryReliability", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "投递可靠性", icon: "ep:monitor" } },
+      { path: "failover", name: "StorageDeliveryFailover", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "故障切换", icon: "ep:warning" } },
+      { path: "restore", name: "StorageDeliveryRestore", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "恢复协调", icon: "ep:refresh" } },
+      { path: "budget", name: "StorageDeliveryBudget", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "流量预算", icon: "ep:data-line" } },
+      { path: "purge", name: "StorageDeliveryPurge", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "CDN 清理", icon: "ep:delete" } }
     ]),
     subsystem("/ingestion-center", "IngestionCenter", "导入与处理", "ep:upload", [
       { path: "import", name: "Ingestion", component: () => import("@/views/ingestion/index.vue"), meta: { title: "内容导入", icon: "ep:upload" } },
