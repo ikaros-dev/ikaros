@@ -184,13 +184,15 @@ export default {
       { path: "rooms", name: "Rooms", component: () => import("@/views/sharing/index.vue"), meta: { title: "协作房间", icon: "ep:chat-line-round" } },
       { path: "sharing", name: "Sharing", component: () => import("@/views/sharing/index.vue"), meta: { title: "分享协作", icon: "ep:share" } }
     ]),
-    subsystem("/planning-center", "PlanningCenter", "计划与财务", "ep:calendar", [
+    subsystem("/planning-center", "PlanningCenter", "项目与计划", "ep:calendar", [
       { path: "overview", name: "Planning", component: () => import("@/views/planning/Projects.vue"), meta: { title: "生产力与计划", icon: "ep:calendar" } },
       { path: "today", name: "PlanningToday", component: PlanningTodayPage, meta: { title: "今日计划", description: "查看今日任务、优先级和完成进度。", icon: "ep:calendar" } },
       { path: "projects", name: "PlanningProjects", component: PlanningProjectsPage, meta: { title: "项目管理", description: "管理项目、任务和目标。", icon: "ep:calendar" } },
       { path: "calendar", name: "PlanningCalendar", component: PlanningCalendarPage, meta: { title: "日历", description: "按时间查看计划事项。", icon: "ep:calendar" } },
       { path: "goals", name: "PlanningGoals", component: PlanningGoalsPage, meta: { title: "目标", description: "跟踪目标、关键结果与进度。", icon: "ep:aim" } },
       { path: "focus", name: "PlanningFocus", component: PlanningFocusPage, meta: { title: "专注", description: "管理专注会话和今日投入。", icon: "ep:timer" } },
+    ]),
+    subsystem("/finance-center", "FinanceCenter", "记账与财务", "ep:money", [
       { path: "finance", name: "Finance", component: FinancePage, meta: { title: "个人财务", description: "查看账本、账户和财务记录。", icon: "ep:money" } },
       { path: "accounts", name: "FinanceAccounts", component: FinanceAccountsPage, meta: { title: "账户", description: "管理财务账户和余额。", icon: "ep:wallet" } },
       { path: "transactions", name: "FinanceTransactions", component: FinanceTransactionsPage, meta: { title: "交易记录", description: "查看和管理收支交易。", icon: "ep:money" } },
