@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import { computed, ref } from "vue"; import { useRoute } from "vue-router";
+const route = useRoute(); const query = ref(""); const tab = ref("catalog"); const kind = computed(() => String(route.path.split("/").pop())); const title = computed(() => ({ music: "音乐库", photos: "照片管理", games: "游戏档案" }[kind.value] || "媒体目录"));
+</script>
+<template><main class="p-4 md:p-6"><div class="flex justify-between items-start mb-6"><div><h1 class="text-2xl font-semibold">{{ title }}</h1><p class="mt-1 text-[var(--el-text-color-secondary)]">资源、附件和技术元数据分层管理，敏感内容遵循授权边界。</p></div><el-button>刷新</el-button></div><el-tabs v-model="tab"><el-tab-pane label="目录" name="catalog"/><el-tab-pane label="元数据" name="metadata"/><el-tab-pane label="播放 / 时间线" name="activity"/></el-tabs><el-card shadow="never"><template #header><div class="flex justify-between"><span>{{ title }}目录</span><el-input v-model="query" clearable placeholder="搜索标题或资源 ID" class="w-64"/></div></template><el-empty description="该业务域的目录查询接口尚未接入；保留目录、元数据和活动布局，不生成虚假条目"/><el-alert title="附件物理存储请在“附件与存储”模块管理。" type="info" show-icon :closable="false"/></el-card></main></template>
