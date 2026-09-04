@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { http } from "@/utils/http";
-type Job = Record<string, any>; const rows = ref<Job[]>([]); const loading = ref(false); const error = ref(""); const status = ref(""); const query = ref(""); const detail = ref<Job | null>(null); const counts = computed(() => ({ running: rows.value.filter(row => String(row.status).toUpperCase() === 'RUNNING').length, queued: rows.value.filter(row => String(row.status).toUpperCase() === 'QUEUED').length, failed: rows.value.filter(row => String(row.status).toUpperCase() === 'FAILED').length }));
+type Job = Record<string, any>; const rows = ref<Job[]>([]); const loading = ref(false); const error = ref(""); const status = ref(""); const query = ref(""); const detail = ref<any>(false); const counts = computed(() => ({ running: rows.value.filter(row => String(row.status).toUpperCase() === 'RUNNING').length, queued: rows.value.filter(row => String(row.status).toUpperCase() === 'QUEUED').length, failed: rows.value.filter(row => String(row.status).toUpperCase() === 'FAILED').length }));
 async function load() { loading.value = true; try { const result: any = await http.get("/background-tasks"); const values = Array.isArray(result) ? result : (result?.content || result?.items || []); rows.value = values.filter((row: Job) => !status.value || String(row.status).toUpperCase() === status.value); } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "运维任务加载失败"; } finally { loading.value = false; } }
 const filtered = computed(() => query.value ? rows.value.filter(row => JSON.stringify(row).toLowerCase().includes(query.value.toLowerCase())) : rows.value); load();
 </script>
