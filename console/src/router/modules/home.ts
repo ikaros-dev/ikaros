@@ -87,6 +87,8 @@ export default {
     { path: "/console/drive/quota", name: "DriveQuotaSpecRoute", component: () => import("@/views/drive/Operations.vue"), meta: { title: "云盘配额", showLink: false } },
     { path: "/console/drive/policies", name: "DrivePoliciesSpecRoute", component: () => import("@/views/drive/Operations.vue"), meta: { title: "云盘策略", showLink: false } },
     { path: "/console/drive/spaces", name: "DriveSpacesSpecRoute", component: () => import("@/views/drive/index.vue"), meta: { title: "云盘空间", showLink: false } },
+    { path: "/console/drive/spaces/:spaceId", name: "DriveSpaceDetailSpecRoute", component: () => import("@/views/drive/Operations.vue"), meta: { title: "云盘空间详情", showLink: false } },
+    { path: "/console/drive/sync/:bindingId", name: "DriveBindingDetailSpecRoute", component: () => import("@/views/drive/Operations.vue"), meta: { title: "同步绑定详情", showLink: false } },
     { path: "/console/drive/revisions", name: "DriveRevisionsSpecRoute", component: () => import("@/views/drive/Operations.vue"), meta: { title: "文件版本", showLink: false } },
     subsystem("/ai-center", "AiCenter", "AI 智能", "ep:magic-stick", [
       { path: "/assistant", name: "AiAssistant", component: AiAssistantPage, meta: { title: "AI 助手", description: "与 AI 助手协作处理内容和任务。", icon: "ep:chat-dot-round" } },
