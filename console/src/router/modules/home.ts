@@ -14,6 +14,7 @@ const FinanceTransactionsPage = () => import("@/views/finance/Transactions.vue")
 const FinanceBudgetsPage = () => import("@/views/finance/Budgets.vue");
 const FinanceReconcilePage = () => import("@/views/finance/Reconcile.vue");
 const PrivateNotesPage = () => import("@/views/notes/index.vue");
+const AccountProfilePage = () => import("@/views/account/Profile.vue");
 
 type ModuleOptions = {
   path: string;
@@ -124,7 +125,7 @@ export default {
       moduleRoute({ path: "/recovery", name: "PrivateNotesRecovery", title: "笔记恢复", description: "查看恢复状态和安全恢复操作。", endpoint: "/private-notes/recovery", columns: ["id", "status", "createdAt", "updatedAt"], icon: "ep:refresh" })
     ]),
     subsystem("/account-center", "AccountCenter", "个人中心", "ep:user", [
-      moduleRoute({ path: "/profile", name: "AccountProfile", title: "个人资料", description: "查看和维护个人资料。", endpoint: "/me", columns: ["id", "username", "displayName", "email", "status"], icon: "ep:user" }),
+      { path: "/profile", name: "AccountProfile", component: AccountProfilePage, meta: { title: "个人资料", description: "查看和维护个人资料。", icon: "ep:user" } },
       moduleRoute({ path: "/preferences", name: "AccountPreferences", title: "偏好设置", description: "管理 Console 显示和交互偏好。", endpoint: "/me/preferences", columns: ["key", "value", "updatedAt"], icon: "ep:setting" }),
       moduleRoute({ path: "/notifications", name: "AccountNotifications", title: "通知设置", description: "管理通知渠道和订阅偏好。", endpoint: "/me/notifications", columns: ["channel", "enabled", "updatedAt"], icon: "ep:bell" }),
       moduleRoute({ path: "/security", name: "AccountSecurity", title: "账户安全", description: "管理认证方式和安全状态。", endpoint: "/security/verification-challenges", columns: ["id", "status", "createdAt", "expiresAt"], icon: "ep:lock" })
@@ -147,7 +148,7 @@ export default {
     { path: "/console/private-notes", name: "PrivateNotesSpecRoute", component: PrivateNotesPage, meta: { title: "私密笔记", showLink: false } },
     { path: "/console/private-notes/conflicts", name: "PrivateNotesConflictsSpecRoute", component: ModulePage, meta: { title: "笔记冲突", showLink: false, description: "处理同步冲突并保留版本历史。", endpoint: "/private-notes/conflicts", columns: ["id", "noteId", "status", "createdAt"], icon: "ep:warning" } },
     { path: "/console/private-notes/recovery", name: "PrivateNotesRecoverySpecRoute", component: ModulePage, meta: { title: "笔记恢复", showLink: false, description: "查看恢复状态和安全恢复操作。", endpoint: "/private-notes/recovery", columns: ["id", "status", "createdAt", "updatedAt"], icon: "ep:refresh" } },
-    { path: "/console/account/profile", name: "AccountProfileSpecRoute", component: ModulePage, meta: { title: "个人资料", showLink: false, description: "查看和维护个人资料。", endpoint: "/me", columns: ["id", "username", "displayName", "email", "status"], icon: "ep:user" } },
+    { path: "/console/account/profile", name: "AccountProfileSpecRoute", component: AccountProfilePage, meta: { title: "个人资料", showLink: false } },
     { path: "/console/account/preferences", name: "AccountPreferencesSpecRoute", component: ModulePage, meta: { title: "偏好设置", showLink: false, description: "管理 Console 显示和交互偏好。", endpoint: "/me/preferences", columns: ["key", "value", "updatedAt"], icon: "ep:setting" } },
     { path: "/console/account/notifications", name: "AccountNotificationsSpecRoute", component: ModulePage, meta: { title: "通知设置", showLink: false, description: "管理通知渠道和订阅偏好。", endpoint: "/me/notifications", columns: ["channel", "enabled", "updatedAt"], icon: "ep:bell" } },
     { path: "/console/account/security", name: "AccountSecuritySpecRoute", component: ModulePage, meta: { title: "账户安全", showLink: false, description: "管理认证方式和安全状态。", endpoint: "/security/verification-challenges", columns: ["id", "status", "createdAt", "expiresAt"], icon: "ep:lock" } },
