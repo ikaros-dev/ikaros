@@ -47,9 +47,6 @@
     "types/*.d.ts",
     "vite.config.ts"
   ],
-  "vueCompilerOptions": {
-    "strictTemplates": false
-  },
   "exclude": [
     "dist",
     "**/*.js",
