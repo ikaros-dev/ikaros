@@ -5,6 +5,7 @@ import { http } from "@/utils/http";
 
 type Placement = Record<string, unknown>;
 type Attachment = Record<string, any> & { placements?: Placement[] };
+type Provider = Record<string, any>;
 const resourceId = ref("");
 const route = useRoute();
 const attachments = ref<Attachment[]>([]);
@@ -16,6 +17,7 @@ const loaded = ref(false);
 const uploadDialog = ref(false);
 const uploadLoading = ref(false);
 const file = ref<File | null>(null);
+const providerOptions = ref<Provider[]>([]);
 const upload = ref({ objectKey: "", provider: "s3-main", kind: "ORIGINAL" });
 const availableCount = computed(() => attachments.value.filter(item => String(item.availability || "").toUpperCase() === "AVAILABLE").length);
 const uniqueBlobs = computed(() => new Set(attachments.value.map(item => item.blobId).filter(Boolean)).size);
@@ -56,6 +58,7 @@ async function commitUpload() {
   finally { uploadLoading.value = false; }
 }
 onMounted(() => { const value = route.query.resourceId; if (typeof value === "string" && value) { resourceId.value = value; load(); } });
+onMounted(async () => { try { const result = await http.get<unknown, unknown>("/storage/providers"); providerOptions.value = Array.isArray(result) ? (result as Provider[]).filter(item => String(item.status).toUpperCase() === "ENABLED") : []; if (!providerOptions.value.some(item => item.providerKey === upload.value.provider)) upload.value.provider = providerOptions.value[0]?.providerKey || ""; } catch { providerOptions.value = []; } });
 </script>
 
 <template>
@@ -85,6 +88,6 @@ onMounted(() => { const value = route.query.resourceId; if (typeof value === "st
       </el-table>
     </el-card>
     <el-drawer v-model="detailVisible" title="附件详情" size="420px"><template v-if="selected"><el-descriptions :column="1" border><el-descriptions-item label="Attachment ID">{{ selected.id }}</el-descriptions-item><el-descriptions-item label="文件名">{{ selected.fileName }}</el-descriptions-item><el-descriptions-item label="MIME">{{ selected.mediaType || '-' }}</el-descriptions-item><el-descriptions-item label="Blob ID">{{ selected.blobId || '-' }}</el-descriptions-item><el-descriptions-item label="SHA-256">{{ selected.sha256 || '-' }}</el-descriptions-item><el-descriptions-item label="大小">{{ selected.sizeBytes }} Bytes</el-descriptions-item></el-descriptions><el-button class="mt-4" @click="$router.push(`/console/attachments/${selected.id}`)">打开完整详情</el-button></template></el-drawer>
-    <el-dialog v-model="uploadDialog" title="上传附件" width="520px"><el-alert title="选择文件后将先上传到 Provider，再提交 Attachment 关系。Object Key 留空则由后端生成。" type="info" :closable="false" class="mb-4"/><el-form label-position="top"><el-form-item label="文件" required><input type="file" @change="file = ($event.target as HTMLInputElement).files?.[0] || null" /></el-form-item><el-form-item label="Object Key"><el-input v-model="upload.objectKey" placeholder="留空自动生成" /></el-form-item><el-form-item label="Provider"><el-input v-model="upload.provider" /></el-form-item><el-form-item label="Attachment 角色"><el-select v-model="upload.kind" class="w-full"><el-option label="原始内容" value="ORIGINAL"/><el-option label="封面" value="COVER"/><el-option label="字幕" value="SUBTITLE"/><el-option label="派生内容" value="DERIVED"/></el-select></el-form-item></el-form><template #footer><el-button @click="uploadDialog = false">取消</el-button><el-button type="primary" :loading="uploadLoading" @click="commitUpload">上传并提交附件</el-button></template></el-dialog>
+    <el-dialog v-model="uploadDialog" title="上传附件" width="520px"><el-alert title="选择文件后将先上传到 Provider，再提交 Attachment 关系。Object Key 留空则由后端生成。" type="info" :closable="false" class="mb-4"/><el-form label-position="top"><el-form-item label="文件" required><input type="file" @change="file = ($event.target as HTMLInputElement).files?.[0] || null" /></el-form-item><el-form-item label="Object Key"><el-input v-model="upload.objectKey" placeholder="留空自动生成" /></el-form-item><el-form-item label="Provider"><el-select v-model="upload.provider" class="w-full" placeholder="请选择已启用 Provider"><el-option v-for="provider in providerOptions" :key="provider.providerKey" :label="`${provider.providerKey} (${provider.providerType})`" :value="provider.providerKey" /></el-select></el-form-item><el-form-item label="Attachment 角色"><el-select v-model="upload.kind" class="w-full"><el-option label="原始内容" value="ORIGINAL"/><el-option label="封面" value="COVER"/><el-option label="字幕" value="SUBTITLE"/><el-option label="派生内容" value="DERIVED"/></el-select></el-form-item></el-form><template #footer><el-button @click="uploadDialog = false">取消</el-button><el-button type="primary" :loading="uploadLoading" @click="commitUpload">上传并提交附件</el-button></template></el-dialog>
   </main>
 </template>

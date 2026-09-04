@@ -8,7 +8,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import java.util.Base64;
+import java.util.HexFormat;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
@@ -32,11 +33,15 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
                 PutObjectPresignRequest presign = PutObjectPresignRequest.builder().signatureDuration(timeout)
                     .putObjectRequest(builder -> builder.bucket(settings.bucket()).key(request.objectKey())
                         .contentLength(request.sizeBytes()).contentType(request.mediaType())
-                        .checksumSHA256(request.sha256()).build()).build();
+                        .checksumSHA256(checksumHeader(request.sha256())).build()).build();
                 String url = presigner.presignPutObject(presign).url().toString();
                 return new StorageUploadIntent("PUT", url, request.objectKey(), Instant.now().plus(timeout));
             }
         })).subscribeOn(Schedulers.boundedElastic());
+    }
+
+    private String checksumHeader(String sha256) {
+        return sha256 == null ? null : Base64.getEncoder().encodeToString(HexFormat.of().parseHex(sha256));
     }
 
     @Override

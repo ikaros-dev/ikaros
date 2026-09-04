@@ -5,6 +5,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Base64;
+import java.util.HexFormat;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -184,7 +186,8 @@ public class DefaultStorageService implements StorageService {
             if (actual.sizeBytes() != request.sizeBytes()) {
                 return Mono.<Void>error(new ConflictException("已上传对象大小与提交声明不一致"));
             }
-            if (actual.sha256() == null || !actual.sha256().equalsIgnoreCase(request.sha256())) {
+            String expectedChecksum = Base64.getEncoder().encodeToString(HexFormat.of().parseHex(request.sha256()));
+            if (actual.checksumSha256() == null || !actual.checksumSha256().equals(expectedChecksum)) {
                 return Mono.<Void>error(new ConflictException("已上传对象 SHA-256 与提交声明不一致"));
             }
             return Mono.<Void>empty();
