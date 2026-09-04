@@ -113,9 +113,15 @@ public class StorageRestoreTaskHandler {
     private Mono<Map<String, Object>> execute(StorageRestoreRequestEntity request, UUID requestId,
         BlobEntity blob, BlobPlacementEntity placement, StorageRestoreOperationEntity operation, String restoreClass,
         boolean completeRequest) {
-        if (operation.status() == StorageRestoreOperationStatus.SUCCEEDED) {
+        boolean temporaryReady = operation.status() == StorageRestoreOperationStatus.READY_TEMPORARILY
+            && operation.restoreExpiresAt() != null && operation.restoreExpiresAt().isAfter(Instant.now());
+        boolean permanentlyReady = operation.status() == StorageRestoreOperationStatus.SUCCEEDED
+            && (operation.restoreExpiresAt() == null || operation.restoreExpiresAt().isAfter(Instant.now()));
+        if (temporaryReady || permanentlyReady) {
             Mono<Void> status = completeRequest ? updateStatus(request, StorageRestoreRequestStatus.COMPLETED).then() : Mono.empty();
-            return updateItem(request.id(), placement.id(), StorageRestoreRequestItemStatus.READY, null)
+            StorageRestoreRequestItemStatus itemStatus = temporaryReady
+                ? StorageRestoreRequestItemStatus.READY_TEMPORARILY : StorageRestoreRequestItemStatus.READY;
+            return updateItem(request.id(), placement.id(), itemStatus, null)
                 .then(status)
                 .thenReturn(Map.<String, Object>of("restore_request_id", requestId.toString(), "completed_items", 1));
         }
@@ -130,17 +136,16 @@ public class StorageRestoreTaskHandler {
             }).flatMap(result -> {
             if (!result.readable()) return Mono.error(new ConflictException("Provider 恢复后对象仍不可读"));
             Instant now = Instant.now();
-            BlobPlacementEntity active = new BlobPlacementEntity(placement.id(), placement.blobId(), placement.provider(),
-                placement.storageTier(), placement.objectKey(), PlacementState.ACTIVE, now, placement.createdAt(), placement.version());
-            BlobEntity available = new BlobEntity(blob.id(), blob.hashAlgorithm(), blob.sha256(), blob.sizeBytes(),
-                blob.mediaType(), BlobAvailability.AVAILABLE, blob.createdAt(), blob.version());
+            StorageRestoreOperationStatus readyStatus = result.expiresAt() == null
+                ? StorageRestoreOperationStatus.SUCCEEDED : StorageRestoreOperationStatus.READY_TEMPORARILY;
             Mono<Void> status = completeRequest ? updateStatus(request, StorageRestoreRequestStatus.COMPLETED).then() : Mono.empty();
-            return placements.save(active).then(blobs.save(available))
-                .then(updateOperation(operation, StorageRestoreOperationStatus.SUCCEEDED, result.providerOperationId(), result.expiresAt()))
+            return updateOperation(operation, readyStatus, result.providerOperationId(), result.expiresAt())
                 .flatMap(ready -> events.append("storage.restore-operation.ready", 1, "restore_operation", ready.id(),
                     "{\"operation_id\":\"" + ready.id() + "\",\"placement_id\":\"" + ready.placementId()
                         + "\",\"restore_expires_at\":" + (ready.restoreExpiresAt() == null ? "null" : "\"" + ready.restoreExpiresAt() + "\"") + "}").then())
-                .then(updateItem(request.id(), placement.id(), StorageRestoreRequestItemStatus.READY, null))
+                .then(updateItem(request.id(), placement.id(),
+                    readyStatus == StorageRestoreOperationStatus.READY_TEMPORARILY
+                        ? StorageRestoreRequestItemStatus.READY_TEMPORARILY : StorageRestoreRequestItemStatus.READY, null))
                 .then(status)
                 .thenReturn(Map.<String, Object>of("restore_request_id", requestId.toString(), "completed_items", 1));
         }).onErrorResume(error -> updateOperation(operation, StorageRestoreOperationStatus.FAILED, null, null)
@@ -154,11 +159,25 @@ public class StorageRestoreTaskHandler {
 
     private Mono<StorageRestoreOperationEntity> operation(StorageRestoreRequestEntity request,
         BlobPlacementEntity placement, UUID taskId, String restoreClass) {
-        return operations.findByPlacementIdAndProviderRestoreClassAndRestoreGeneration(placement.id(), restoreClass, 0)
+        return operations.findFirstByPlacementIdAndProviderRestoreClassOrderByRestoreGenerationDesc(placement.id(), restoreClass)
+            .filter(existing -> existing.status() != StorageRestoreOperationStatus.EXPIRED
+                && existing.status() != StorageRestoreOperationStatus.FAILED
+                && existing.status() != StorageRestoreOperationStatus.CANCELLED
+                && (existing.status() != StorageRestoreOperationStatus.READY_TEMPORARILY
+                    || existing.restoreExpiresAt() == null || existing.restoreExpiresAt().isAfter(Instant.now())))
             .switchIfEmpty(Mono.defer(() -> {
                 Instant now = Instant.now();
-                return operations.save(new StorageRestoreOperationEntity(null, placement.id(), restoreClass, 0,
-                    StorageRestoreOperationStatus.REQUESTED, taskId, null, null, null, now, now, null));
+                return operations.findFirstByPlacementIdAndProviderRestoreClassOrderByRestoreGenerationDesc(
+                        placement.id(), restoreClass)
+                    .map(previous -> previous.restoreGeneration() + 1)
+                    .defaultIfEmpty(0L)
+                    .flatMap(generation -> {
+                        String operationKey = placement.id() + ":" + restoreClass + ":" + generation;
+                        return operations.findByOperationKey(operationKey)
+                            .switchIfEmpty(Mono.defer(() -> operations.save(new StorageRestoreOperationEntity(null,
+                                placement.id(), restoreClass, generation, operationKey,
+                                StorageRestoreOperationStatus.REQUESTED, taskId, null, null, null, now, now, null))));
+                    });
             }));
     }
 
@@ -173,9 +192,12 @@ public class StorageRestoreTaskHandler {
     }
 
     private Mono<Void> updateItem(UUID requestId, UUID placementId, StorageRestoreRequestItemStatus status, String error) {
-        return items.findByRequestIdAndPlacementId(requestId, placementId)
-            .flatMap(old -> items.save(new StorageRestoreRequestItemEntity(old.id(), old.requestId(), old.placementId(),
-                old.operationId(), status, error, old.createdAt(), Instant.now(), old.version()))).then();
+        return requests.findById(requestId)
+            .filter(request -> request.status() != StorageRestoreRequestStatus.CANCELLED)
+            .flatMap(ignored -> items.findByRequestIdAndPlacementId(requestId, placementId)
+                .flatMap(old -> items.save(new StorageRestoreRequestItemEntity(old.id(), old.requestId(), old.placementId(),
+                    old.operationId(), status, error, old.createdAt(), Instant.now(), old.version()))))
+            .then();
     }
 
     private Mono<StorageRestoreOperationEntity> updateOperation(StorageRestoreOperationEntity old,

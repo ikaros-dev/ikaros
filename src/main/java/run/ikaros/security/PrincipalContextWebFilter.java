@@ -2,6 +2,8 @@ package run.ikaros.security;
 
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
@@ -10,6 +12,7 @@ import reactor.core.publisher.Mono;
 
 /** 将认证层传入的主体信息收敛到 Reactor Context，并生成请求/关联 ID。 */
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class PrincipalContextWebFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {

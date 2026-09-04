@@ -14,6 +14,13 @@ export default defineComponent({
     if (typeof this.icon === "object") addIcon(this.icon, this.icon);
     const attrs = this.$attrs;
     if (typeof this.icon === "string") {
+      if (this.icon.startsWith("data:image/")) {
+        return h("img", {
+          src: this.icon,
+          "aria-hidden": false,
+          ...attrs
+        });
+      }
       return h(
         IconifyIcon,
         {

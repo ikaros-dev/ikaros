@@ -22,23 +22,35 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
     private final StorageProviderRepository repository;
     private final ObjectMapper mapper;
     private final DurableEventService events;
+    private final StorageCredentialCipher credentialCipher;
 
     @Autowired
     public PersistentStorageProviderRegistry(StorageProviderRepository repository, ObjectMapper mapper,
-                                             DurableEventService events) {
+                                             DurableEventService events, StorageCredentialCipher credentialCipher) {
         this.repository = repository;
         this.mapper = mapper;
         this.events = events;
+        this.credentialCipher = credentialCipher;
     }
 
     @Override
     public Mono<StorageProvider> register(String providerKey, String providerType, StorageTier tier,
                                           String secretReference, Map<String, Object> metadata) {
+        return register(providerKey, providerType, tier, secretReference, metadata, null, null, null);
+    }
+
+    @Override
+    public Mono<StorageProvider> register(String providerKey, String providerType, StorageTier tier,
+                                          String secretReference, Map<String, Object> metadata,
+                                          String accessKeyId, String secretAccessKey, String sessionToken) {
         if (providerKey == null || providerKey.isBlank() || providerType == null || providerType.isBlank()
-            || tier == null || secretReference == null || secretReference.isBlank()) {
+            || tier == null) {
             return Mono.error(new IllegalArgumentException("Storage Provider 参数不完整"));
         }
-        if (!secretReference.startsWith("secret://")) {
+        boolean hasCredentials = accessKeyId != null && !accessKeyId.isBlank() && secretAccessKey != null && !secretAccessKey.isBlank();
+        if (!hasCredentials && (secretReference == null || secretReference.isBlank())) return Mono.error(new IllegalArgumentException("必须提供 Secret 引用或 AccessKey/SecretKey"));
+        String reference = hasCredentials ? "secret://provider/" + providerKey : secretReference;
+        if (!reference.startsWith("secret://")) {
             return Mono.error(new ConflictException("Provider secret reference 必须使用 secret:// URI"));
         }
         return repository.findByProviderKey(providerKey)
@@ -46,7 +58,8 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
             .switchIfEmpty(Mono.defer(() -> encode(metadata).flatMap(json -> {
                 Instant now = Instant.now();
                 return repository.save(new StorageProviderEntity(null, providerKey, providerType, tier.name(),
-                    StorageProviderStatus.ENABLED.name(), secretReference, json, now, now)).map(this::toModel)
+                    StorageProviderStatus.ENABLED.name(), reference, json, hasCredentials ? credentialCipher.encrypt(accessKeyId) : null,
+                    hasCredentials ? credentialCipher.encrypt(secretAccessKey) : null, hasCredentials ? credentialCipher.encrypt(sessionToken) : null, now, now)).map(this::toModel)
                     .flatMap(provider -> emit("storage.provider.created", provider,
                         "{\"provider_id\":\"" + provider.id() + "\",\"provider_type\":\"" + provider.providerType()
                             + "\",\"tier\":\"" + provider.tier() + "\"}").thenReturn(provider));
@@ -74,9 +87,10 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
                         || valueString.toLowerCase().contains("secret")))) {
                     return Mono.error(new ConflictException("Provider metadata 不得保存明文凭据"));
                 }
-                return encode(requestedMetadata == null ? readMetadata(current.providerMetadata()) : requestedMetadata)
+                return encode(requestedMetadata == null ? readMetadata(current.providerMetadata().asString()) : requestedMetadata)
                     .flatMap(metadata -> repository.save(new StorageProviderEntity(current.id(), current.providerKey(),
-                        type, tier, current.status(), secret, metadata, current.createdAt(), Instant.now())))
+                        type, tier, current.status(), secret, metadata, current.accessKeyIdCiphertext(),
+                        current.secretAccessKeyCiphertext(), current.sessionTokenCiphertext(), current.createdAt(), Instant.now())))
                     .map(this::toModel)
                     .flatMap(provider -> emit("storage.provider.updated", provider,
                         "{\"provider_id\":\"" + provider.id()
@@ -123,6 +137,7 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
         return repository.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
             .map(current -> new StorageProviderEntity(current.id(), current.providerKey(), current.providerType(),
                 current.tier(), status.name(), current.secretReference(), current.providerMetadata(),
+                current.accessKeyIdCiphertext(), current.secretAccessKeyCiphertext(), current.sessionTokenCiphertext(),
                 current.createdAt(), Instant.now()))
             .flatMap(repository::save).map(this::toModel)
             .flatMap(provider -> {
@@ -169,7 +184,7 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
 
     private StorageProvider toModel(StorageProviderEntity entity) {
         try {
-            Map<String, Object> metadata = mapper.readValue(entity.providerMetadata(),
+            Map<String, Object> metadata = mapper.readValue(entity.providerMetadata().asString(),
                 mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class));
             return new StorageProvider(entity.id(), entity.providerKey(), entity.providerType(),
                 StorageTier.valueOf(entity.tier()), StorageProviderStatus.valueOf(entity.status()),

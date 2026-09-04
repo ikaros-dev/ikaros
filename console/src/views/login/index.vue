@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import Motion from "./utils/motion";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { message } from "@/utils/message";
 import { loginRules } from "./utils/rule";
 import { ref, reactive, toRaw } from "vue";
@@ -30,6 +30,7 @@ defineOptions({
 });
 
 const router = useRouter();
+const route = useRoute();
 const loading = ref(false);
 const disabled = ref(false);
 const ruleFormRef = ref<FormInstance>();
@@ -44,8 +45,8 @@ const { title, getDropdownItemStyle, getDropdownItemClass } = useNav();
 const { locale, translationCh, translationEn } = useTranslationLang();
 
 const ruleForm = reactive({
-  username: "admin",
-  password: "admin123"
+  username: "",
+  password: ""
 });
 
 const onLogin = async (formEl: FormInstance | undefined) => {
@@ -63,8 +64,9 @@ const onLogin = async (formEl: FormInstance | undefined) => {
             // 获取后端路由
             return initRouter().then(() => {
               disabled.value = true;
+              const target = typeof route.query.redirect === "string" && route.query.redirect.startsWith("/") && !route.query.redirect.startsWith("//") ? route.query.redirect : getTopMenu(true).path;
               router
-                .push(getTopMenu(true).path)
+                .push(target)
                 .then(() => {
                   message(t("login.pureLoginSuccess"), { type: "success" });
                 })
@@ -171,7 +173,7 @@ useEventListener(document, "keydown", ({ code }) => {
                 <el-input
                   v-model="ruleForm.username"
                   clearable
-                  :placeholder="t('login.pureUsername')"
+                  placeholder="用户名（不支持邮箱）"
                   :prefix-icon="useRenderIcon(User)"
                 />
               </el-form-item>
@@ -201,6 +203,9 @@ useEventListener(document, "keydown", ({ code }) => {
                 {{ t("login.pureLogin") }}
               </el-button>
             </Motion>
+            <div class="text-center mt-3 text-sm text-[var(--el-text-color-secondary)]">
+              还没有账号？<router-link class="text-primary" to="/register">立即注册</router-link>
+            </div>
           </el-form>
         </div>
       </div>

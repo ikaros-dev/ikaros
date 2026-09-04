@@ -25,6 +25,11 @@ public class LocalStorageContentReader implements StorageContentReader {
     private static final long MAX_RANGE_LENGTH = 64L * 1024L * 1024L;
 
     @Override
+    public boolean supports(StorageProvider provider) {
+        return "LOCAL_FILESYSTEM".equalsIgnoreCase(provider.providerType());
+    }
+
+    @Override
     public Mono<StorageContent> read(StorageProvider provider, BlobPlacementEntity placement, BlobEntity blob,
                                      String range) {
         if (!"LOCAL_FILESYSTEM".equalsIgnoreCase(provider.providerType())) {

@@ -602,23 +602,23 @@ body[layout="vertical"] {
 
     /* 菜单折叠 */
     .el-menu--collapse {
-      .el-sub-menu {
-        & > .el-sub-menu__title {
-          & > span {
-            visibility: visible;
-            width: 100%;
-            height: 100%;
-            text-align: center;
-          }
-        }
-      }
-
       .submenu-title-noDropdown {
         background: transparent !important;
       }
 
       .el-sub-menu__title {
         padding: 0;
+      }
+
+      .sidebar-menu-label {
+        display: none !important;
+      }
+
+      .el-sub-menu__title > .sub-menu-icon {
+        display: flex !important;
+        visibility: visible !important;
+        width: auto !important;
+        margin: 0 auto !important;
       }
     }
 

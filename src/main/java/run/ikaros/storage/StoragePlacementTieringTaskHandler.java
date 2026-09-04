@@ -19,17 +19,19 @@ public class StoragePlacementTieringTaskHandler {
     private final BlobRepository blobs;
     private final StorageProviderRegistry providers;
     private final StorageRestoreExecutor restoreExecutor;
+    private final StorageContentCopier copier;
     private final MediaDeliveryLeaseRepository leases;
     private final DurableEventService events;
 
     public StoragePlacementTieringTaskHandler(BackgroundTaskDispatcher dispatcher, BlobPlacementRepository placements,
         BlobRepository blobs, StorageProviderRegistry providers, StorageRestoreExecutor restoreExecutor,
-        MediaDeliveryLeaseRepository leases, DurableEventService events) {
+        StorageContentCopier copier, MediaDeliveryLeaseRepository leases, DurableEventService events) {
         this.dispatcher = dispatcher;
         this.placements = placements;
         this.blobs = blobs;
         this.providers = providers;
         this.restoreExecutor = restoreExecutor;
+        this.copier = copier;
         this.leases = leases;
         this.events = events;
     }
@@ -52,6 +54,9 @@ public class StoragePlacementTieringTaskHandler {
     }
 
     private Mono<BlobPlacementEntity> demote(BlobPlacementEntity placement, StorageTier targetTier) {
+        if (placement.durabilityRole() == PlacementDurabilityRole.ARCHIVE_BASE) {
+            return Mono.error(new ConflictException("Archive Base 不允许自动 Demotion 或修改层级"));
+        }
         return Mono.zip(
             leases.existsByBlobIdAndReleasedAtIsNullAndLeaseExpiresAtAfter(placement.blobId(), Instant.now()),
             placements.countByBlobIdAndPlacementState(placement.blobId(), PlacementState.ACTIVE))
@@ -61,19 +66,34 @@ public class StoragePlacementTieringTaskHandler {
     }
 
     private Mono<BlobPlacementEntity> promote(BlobPlacementEntity placement, StorageTier targetTier) {
-        if (placement.placementState() == PlacementState.ACTIVE) return saveTier(placement, targetTier);
         return Mono.zip(blobs.findById(placement.blobId())
                 .switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在"))),
             providers.getByKey(placement.provider())
                 .switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在"))))
             .flatMap(values -> {
                 StorageProvider provider = values.getT2();
-                if (!restoreExecutor.supports(provider)) return Mono.error(new ConflictException("Provider 不支持 Promotion"));
-                return restoreExecutor.restore(provider, placement, values.getT1())
-                    .flatMap(result -> result.readable()
-                        ? saveActiveTier(placement, targetTier)
-                        : Mono.error(new ConflictException("Promotion 后对象仍不可读")));
+                if (!copier.supports(provider)) return Mono.error(new ConflictException("Provider 不支持 Promotion Copy"));
+                return placements.findFirstByBlobIdAndDurabilityRoleAndStorageTierAndPlacementState(
+                        placement.blobId(), PlacementDurabilityRole.PROMOTED_COPY, targetTier, PlacementState.ACTIVE)
+                    .switchIfEmpty(Mono.defer(() -> createPromotion(values.getT1(), provider, placement, targetTier)))
+                    .cast(BlobPlacementEntity.class);
             });
+    }
+
+    private Mono<BlobPlacementEntity> createPromotion(BlobEntity blob, StorageProvider provider,
+        BlobPlacementEntity placement, StorageTier targetTier) {
+        Mono<Boolean> readable = placement.placementState() == PlacementState.ACTIVE
+            ? Mono.just(true)
+            : restoreExecutor.supports(provider)
+                ? restoreExecutor.restore(provider, placement, blob).map(StorageRestoreResult::readable)
+                : Mono.just(false);
+        return readable.flatMap(ok -> ok
+            ? copier.copy(provider, placement, blob, targetTier)
+                .flatMap(objectKey -> placements.save(new BlobPlacementEntity(null, placement.blobId(),
+                    placement.provider(), targetTier, objectKey, PlacementState.ACTIVE,
+                    PlacementDurabilityRole.PROMOTED_COPY, true, false, null, null, Instant.now(),
+                    placement.id(), Instant.now(), Instant.now(), null)))
+            : Mono.error(new ConflictException("Promotion 源对象仍不可读")));
     }
 
     private Mono<BlobPlacementEntity> saveTier(BlobPlacementEntity placement, StorageTier targetTier) {
@@ -81,8 +101,4 @@ public class StoragePlacementTieringTaskHandler {
             placement.objectKey(), placement.placementState(), placement.verifiedAt(), placement.createdAt(), placement.version()));
     }
 
-    private Mono<BlobPlacementEntity> saveActiveTier(BlobPlacementEntity placement, StorageTier targetTier) {
-        return placements.save(new BlobPlacementEntity(placement.id(), placement.blobId(), placement.provider(), targetTier,
-            placement.objectKey(), PlacementState.ACTIVE, Instant.now(), placement.createdAt(), placement.version()));
-    }
 }

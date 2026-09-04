@@ -22,6 +22,8 @@
         <springdoc.version>3.0.3</springdoc.version>
         <r2dbc-migrate.version>4.0.1</r2dbc-migrate.version>
         <testcontainers.version>1.21.3</testcontainers.version>
+        <java-jwt.version>4.5.0</java-jwt.version>
+        <aws-sdk.version>2.31.63</aws-sdk.version>
     </properties>
 
     <dependencyManagement>
@@ -60,7 +62,16 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>r2dbc-postgresql</artifactId>
-            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>${java-jwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>${aws-sdk.version}</version>
         </dependency>
 
         <dependency>

@@ -50,7 +50,7 @@ export function useRenderIcon(icon: any, attrs?: iconType): Component {
       name: "Icon",
       render() {
         if (!icon) return;
-        const IconifyIcon = icon.includes(":")
+        const IconifyIcon = icon.includes(":") && !icon.startsWith("data:image/")
           ? IconifyIconOnline
           : IconifyIconOffline;
         return h(IconifyIcon, {

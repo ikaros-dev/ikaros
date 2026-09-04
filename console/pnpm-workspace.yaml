@@ -1,0 +1,17 @@
+allowBuilds:
+  '@parcel/watcher': false
+  esbuild: false
+  vue-demi: false
+allowedDeprecatedVersions:
+  are-we-there-yet: '*'
+  sourcemap-codec: '*'
+  lodash.isequal: '*'
+  domexception: '*'
+  w3c-hr-time: '*'
+  inflight: '*'
+  npmlog: '*'
+  rimraf: '*'
+  stable: '*'
+  gauge: '*'
+  abab: '*'
+  glob: '*'

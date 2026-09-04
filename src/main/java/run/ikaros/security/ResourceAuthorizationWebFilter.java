@@ -3,6 +3,7 @@ package run.ikaros.security;
 import java.util.UUID;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -28,22 +29,19 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String path = exchange.getRequest().getPath().value();
+        if (exchange.getRequest().getMethod() == HttpMethod.OPTIONS) return chain.filter(exchange);
         if (isAttachmentContentPath(path) && hasDeliveryGrant(exchange)) return chain.filter(exchange);
         if (!path.startsWith("/api/") || path.equals("/api/health/live") || path.equals("/api/health/ready")
-            || path.equals("/api/auth/register") || path.equals("/api/auth/login")) {
+            || path.equals("/api/auth/register") || path.equals("/api/auth/login")
+            || path.equals("/api/auth/refresh-token") || path.equals("/api/refresh-token")
+            || path.equals("/api/auth/logout") || path.equals("/api/logout")) {
             return chain.filter(exchange);
         }
+        JwtPrincipal jwtPrincipal = exchange.getAttribute(JwtPrincipal.EXCHANGE_ATTRIBUTE);
+        if (jwtPrincipal == null) return reject(exchange, HttpStatus.UNAUTHORIZED);
         PlatformPermission permission = permission(exchange.getRequest().getMethod().name(), path);
-        return PrincipalContexts.current()
-            .flatMap(context -> {
-                if (context.sessionId() == null) {
-                    return reject(exchange, HttpStatus.UNAUTHORIZED);
-                }
-                SecurityPolicy policy = policy(permission);
-                return accessControl.require(context.actorId(), context.sessionId(), policy)
-                    .then(chain.filter(exchange));
-            })
-            .switchIfEmpty(reject(exchange, HttpStatus.UNAUTHORIZED));
+        if (!jwtPrincipal.permissions().contains(permission.key())) return reject(exchange, HttpStatus.FORBIDDEN);
+        return chain.filter(exchange);
     }
 
     private PlatformPermission permission(String method, String path) {

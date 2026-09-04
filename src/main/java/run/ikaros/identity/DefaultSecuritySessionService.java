@@ -101,6 +101,7 @@ public class DefaultSecuritySessionService implements SecuritySessionService {
             .then(auditService.record(actorId, "identity.session.revoke", "SESSION", sessionId, "{}"));
     }
 
+
     @Override
     public Mono<Void> revokeAll(UUID actorId, UUID userId) {
         Instant now = Instant.now();

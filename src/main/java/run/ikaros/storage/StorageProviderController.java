@@ -18,15 +18,21 @@ import reactor.core.publisher.Mono;
 @RequestMapping({"/api/storage/providers", "/api/admin/storage-providers"})
 public class StorageProviderController {
     private final StorageProviderRegistry registry;
+    private final StorageProviderCredentialRotationService credentialRotation;
+    private final StorageProviderCredentialService credentialService;
 
-    public StorageProviderController(StorageProviderRegistry registry) {
+    public StorageProviderController(StorageProviderRegistry registry,
+                                     StorageProviderCredentialRotationService credentialRotation,
+                                     StorageProviderCredentialService credentialService) {
         this.registry = registry;
+        this.credentialRotation = credentialRotation;
+        this.credentialService = credentialService;
     }
 
     @PostMapping
     public Mono<ResponseEntity<StorageProvider>> register(@Valid @RequestBody RegisterStorageProviderRequest request) {
         return registry.register(request.providerKey(), request.providerType(), request.tier(),
-                request.secretReference(), request.metadata())
+                request.secretReference(), request.metadata(), request.accessKeyId(), request.secretAccessKey(), request.sessionToken())
             .map(provider -> ResponseEntity.created(URI.create("/api/storage/providers/" + provider.id()))
                 .body(provider));
     }
@@ -44,6 +50,23 @@ public class StorageProviderController {
     @PostMapping("/{providerId}/enable")
     public Mono<StorageProvider> enable(@PathVariable UUID providerId) {
         return registry.enable(providerId);
+    }
+
+    @PostMapping("/{providerId}/actions/rotate-credentials")
+    public Mono<StorageCredentialRotationView> rotateCredentials(@PathVariable UUID providerId) {
+        return credentialRotation.rotate(providerId);
+    }
+
+    @PostMapping("/{providerId}/credentials")
+    public Mono<ResponseEntity<Void>> replaceCredentials(@PathVariable UUID providerId,
+                                                          @Valid @RequestBody ReplaceStorageProviderCredentialsRequest request) {
+        return credentialService.replace(providerId, request)
+            .thenReturn(ResponseEntity.noContent().build());
+    }
+
+    @PostMapping("/actions/rotate-credentials")
+    public Mono<StorageCredentialBatchRotationView> rotateAllCredentials() {
+        return credentialRotation.rotateAll();
     }
 
     @DeleteMapping("/{providerId}")

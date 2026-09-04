@@ -147,23 +147,6 @@ function resolvePath(routePath) {
           "
         />
       </div>
-      <el-text
-        v-if="
-          (!item?.meta.icon &&
-            isCollapse &&
-            layout === 'vertical' &&
-            item?.pathList?.length === 1) ||
-          (!onlyOneChild.meta.icon &&
-            isCollapse &&
-            layout === 'mix' &&
-            item?.pathList?.length === 2)
-        "
-        truncated
-        class="w-full! px-3! min-w-[54px]! text-center! text-inherit!"
-      >
-        {{ transformI18n(onlyOneChild.meta.title) }}
-      </el-text>
-
       <template #title>
         <div :style="getDivStyle">
           <ReText
@@ -171,7 +154,7 @@ function resolvePath(routePath) {
               offset: [0, -10],
               theme: tooltipEffect
             }"
-            class="w-full! text-inherit!"
+            class="sidebar-menu-label w-full! text-inherit!"
           >
             {{ transformI18n(onlyOneChild.meta.title) }}
           </ReText>
@@ -210,7 +193,7 @@ function resolvePath(routePath) {
           offset: [0, -10],
           theme: tooltipEffect
         }"
-        :class="textClass"
+        :class="[textClass, 'sidebar-menu-label']"
       >
         {{ transformI18n(item.meta.title) }}
       </ReText>

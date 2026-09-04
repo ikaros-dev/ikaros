@@ -3,7 +3,6 @@ import Cookies from "js-cookie";
 import { getConfig } from "@/config";
 import NProgress from "@/utils/progress";
 import { transformI18n } from "@/plugins/i18n";
-import { buildHierarchyTree } from "@/utils/tree";
 import remainingRouter from "./modules/remaining";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { usePermissionStoreHook } from "@/store/modules/permission";
@@ -21,9 +20,7 @@ import {
   isOneOfArray,
   getHistoryMode,
   findRouteByPath,
-  handleAliveRoute,
-  formatTwoStageRoutes,
-  formatFlatteningRoutes
+  handleAliveRoute
 } from "./utils";
 import {
   type Router,
@@ -56,9 +53,9 @@ Object.keys(modules).forEach(key => {
   routes.push(modules[key].default);
 });
 
-/** 导出处理后的静态路由（三级及以上的路由全部拍成二级） */
-export const constantRoutes: Array<RouteRecordRaw> = formatTwoStageRoutes(
-  formatFlatteningRoutes(buildHierarchyTree(ascending(routes.flat(Infinity))))
+/** 导出保留菜单组层级的静态路由 */
+export const constantRoutes: Array<RouteRecordRaw> = ascending(
+  routes.flat(Infinity)
 );
 
 /** 初始的静态路由，用于退出登录时重置路由 */
@@ -108,15 +105,13 @@ export function resetRouter() {
   for (const route of initConstantRoutes.concat(...(remainingRouter as any))) {
     router.addRoute(route);
   }
-  router.options.routes = formatTwoStageRoutes(
-    formatFlatteningRoutes(buildHierarchyTree(ascending(routes.flat(Infinity))))
-  );
+  router.options.routes = ascending(routes.flat(Infinity));
   usePermissionStoreHook().clearAllCachePage();
   resetLoadedPaths();
 }
 
 /** 路由白名单 */
-const whiteList = ["/login"];
+const whiteList = ["/login", "/login/verify", "/login/recovery", "/login/recovery/verify", "/login/recovery/reset", "/register", "/setup"];
 
 const { VITE_HIDE_HOME } = import.meta.env;
 
@@ -170,7 +165,8 @@ router.beforeEach((to: ToRouteType, _from, next) => {
       // 刷新
       if (
         usePermissionStoreHook().wholeMenus.length === 0 &&
-        to.path !== "/login"
+        to.path !== "/login" && to.path !== "/setup" &&
+        to.path !== "/register"
       ) {
         initRouter().then((router: Router) => {
           if (!useMultiTagsStoreHook().getMultiTagsCache) {
@@ -207,12 +203,12 @@ router.beforeEach((to: ToRouteType, _from, next) => {
       toCorrectRoute();
     }
   } else {
-    if (to.path !== "/login") {
+    if (!whiteList.includes(to.path)) {
       if (whiteList.indexOf(to.path) !== -1) {
         next();
       } else {
         removeToken();
-        next({ path: "/login" });
+        next({ path: "/login", query: { redirect: to.fullPath } });
       }
     } else {
       next();

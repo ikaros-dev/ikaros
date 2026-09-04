@@ -2,6 +2,7 @@ package run.ikaros.storage;
 
 import java.time.Instant;
 import java.util.UUID;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
@@ -16,16 +17,16 @@ public class BlobVerificationService {
     private final AttachmentRepository attachments;
     private final ResourceRepository resources;
     private final StorageProviderRegistry providers;
-    private final StorageContentReader reader;
+    private final List<StorageContentReader> readers;
     private final BlobIntegrityService integrity;
     private final DurableEventService events;
     private final TransactionalOperator transaction;
 
     public BlobVerificationService(BlobRepository blobs, BlobPlacementRepository placements, AttachmentRepository attachments,
-        ResourceRepository resources, StorageProviderRegistry providers, StorageContentReader reader,
+        ResourceRepository resources, StorageProviderRegistry providers, List<StorageContentReader> readers,
         BlobIntegrityService integrity, DurableEventService events, TransactionalOperator transaction) {
         this.blobs = blobs; this.placements = placements; this.attachments = attachments; this.resources = resources;
-        this.providers = providers; this.reader = reader; this.integrity = integrity;
+        this.providers = providers; this.readers = List.copyOf(readers); this.integrity = integrity;
         this.events = events; this.transaction = transaction;
     }
 
@@ -36,7 +37,8 @@ public class BlobVerificationService {
                 .switchIfEmpty(Mono.error(new NotFoundException("Blob 当前没有可校验的可读副本")))
                 .flatMap(placement -> providers.getByKey(placement.provider())
                     .switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
-                    .flatMap(provider -> reader.read(provider, placement, blob, null)
+                    .flatMap(provider -> readers.stream().filter(reader -> reader.supports(provider)).findFirst()
+                        .map(reader -> reader.read(provider, placement, blob, null)).orElse(Mono.error(new NotFoundException("没有匹配的 Storage Content Reader")))
                         .flatMap(content -> integrity.verify(blob.id(), blob.sha256(), blob.sizeBytes(), content.body())
                             .flatMap(result -> persist(blob, placement, result))))));
     }

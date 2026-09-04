@@ -25,8 +25,11 @@ public class StorageProviderDrainTaskHandler {
 
     private Mono<Map<String, Object>> handle(BackgroundTask task) {
         UUID providerId = UUID.fromString(String.valueOf(task.payload().get("provider_id")));
-        return providers.get(providerId).flatMap(provider -> placements.countByProviderAndPlacementState(provider.providerKey(), PlacementState.ACTIVE)
-            .flatMap(active -> {
+        return providers.get(providerId).flatMap(provider -> placements.findAllByProviderAndDurabilityRole(
+                provider.providerKey(), PlacementDurabilityRole.ARCHIVE_BASE).hasElements()
+            .flatMap(hasArchiveBase -> {
+                if (hasArchiveBase) return Mono.error(new IllegalStateException("Provider 仍存在 Archive Base，Drain 必须先完成受控迁移"));
+                return placements.countByProviderAndPlacementState(provider.providerKey(), PlacementState.ACTIVE).flatMap(active -> {
                 if (active > 0) return Mono.error(new IllegalStateException("Provider 仍存在 Active Placement，Drain 等待中"));
                 return providers.disable(providerId).map(disabled -> {
                     Map<String, Object> result = new HashMap<>();
@@ -34,6 +37,7 @@ public class StorageProviderDrainTaskHandler {
                     result.put("status", disabled.status().name());
                     result.put("active_placements", 0);
                     return result;
+                });
                 });
             }));
     }

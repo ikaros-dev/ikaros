@@ -19,6 +19,19 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+ikaros:
+  storage:
+    # Must be supplied by deployment secret management; never use a shared default.
+    credential-encryption-key: ${IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEY:}
+    credential-encryption-keys: ${IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEYS:}
+    credential-encryption-key-version: ${IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEY_VERSION:v1}
+  security:
+    jwt:
+      issuer: ${IKAROS_JWT_ISSUER:ikaros}
+      secret: ${IKAROS_JWT_SECRET:change-this-development-secret-to-a-long-random-value}
+      access-token-ttl: ${IKAROS_JWT_ACCESS_TOKEN_TTL:PT15M}
+      refresh-token-ttl: ${IKAROS_JWT_REFRESH_TOKEN_TTL:P30D}
+
 logging:
   charset:
     console: UTF-8

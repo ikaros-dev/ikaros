@@ -5,6 +5,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Base64;
+import java.util.HexFormat;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -34,7 +36,8 @@ public class DefaultStorageService implements StorageService {
     private final StorageProviderRegistry providerRegistry;
     private final BackgroundTaskService taskService;
     private final DurableEventService eventService;
-    private StorageContentReader contentReader;
+    private List<StorageContentReader> contentReaders = List.of();
+    private StorageObjectProviderRegistry objectProviderRegistry;
 
     /**
      * 创建存储服务。
@@ -106,8 +109,13 @@ public class DefaultStorageService implements StorageService {
     }
 
     @Autowired(required = false)
-    public void setContentReader(StorageContentReader contentReader) {
-        this.contentReader = contentReader;
+    public void setContentReader(List<StorageContentReader> contentReaders) {
+        this.contentReaders = List.copyOf(contentReaders == null ? List.of() : contentReaders);
+    }
+
+    @Autowired(required = false)
+    public void setObjectProviderRegistry(StorageObjectProviderRegistry objectProviderRegistry) {
+        this.objectProviderRegistry = objectProviderRegistry;
     }
 
     @Override
@@ -149,7 +157,56 @@ public class DefaultStorageService implements StorageService {
 
     @Override
     public Mono<AttachmentView> commitUpload(UUID ownerId, UUID resourceId, CommitUploadRequest request) {
-        return attachInternal(ownerId, resourceId, request.asAttachment(), request.idempotencyKey());
+        if (providerRegistry == null || objectProviderRegistry == null) {
+            return Mono.error(new ConflictException("Storage Provider 上传能力未配置"));
+        }
+        return providerRegistry.requireWritableByKey(request.provider())
+            .flatMap(provider -> verifyUploadedObject(provider, request)
+                .then(attachInternal(ownerId, resourceId, request.asAttachment(), request.idempotencyKey())));
+    }
+
+    @Override
+    public Mono<StorageUploadIntentView> beginUpload(UUID ownerId, UUID resourceId, BeginUploadRequest request) {
+        if (providerRegistry == null || objectProviderRegistry == null) {
+            return Mono.error(new ConflictException("Storage Provider 上传能力未配置"));
+        }
+        String objectKey = request.objectKey() == null || request.objectKey().isBlank()
+            ? "attachments/" + UUID.randomUUID() + "/" + safeFileName(request.fileName()) : request.objectKey();
+        return owned(ownerId, resourceId)
+            .then(providerRegistry.requireWritableByKey(request.provider()))
+            .flatMap(provider -> blobRepository.findBySha256(request.sha256().toLowerCase())
+                .flatMap(blob -> {
+                    if (blob.sizeBytes() != request.sizeBytes()) {
+                        return Mono.error(new ConflictException("相同 SHA-256 的 Blob 大小不一致"));
+                    }
+                    return placementRepository.findFirstByBlobIdAndProvider(blob.id(), provider.providerKey())
+                        .map(placement -> new StorageUploadIntentView(provider.providerKey(), provider.tier(), "SKIP", "",
+                            placement.objectKey(), Instant.now(), request.sha256(), true));
+                })
+                .switchIfEmpty(Mono.defer(() -> objectProviderRegistry.createUploadIntent(provider,
+                    new StorageUploadRequest(objectKey, request.sizeBytes(), request.mediaType(), request.sha256()))
+                    .map(intent -> new StorageUploadIntentView(provider.providerKey(), provider.tier(), intent.method(),
+                        intent.url(), intent.objectKey(), intent.expiresAt(), request.sha256(), false)))));
+    }
+
+    private Mono<Void> verifyUploadedObject(StorageProvider provider, CommitUploadRequest request) {
+        if (provider.tier() != request.tier()) return Mono.error(new ConflictException("Placement tier 与 Storage Provider 配置不一致"));
+        if (!request.sha256().equalsIgnoreCase(request.uploadSha256())) {
+            return Mono.error(new ConflictException("上传意图 SHA-256 与提交声明不一致"));
+        }
+        return objectProviderRegistry.verify(provider, request.objectKey()).flatMap(actual -> {
+            if (actual.sizeBytes() != request.sizeBytes()) {
+                return Mono.<Void>error(new ConflictException("已上传对象大小与提交声明不一致"));
+            }
+            return Mono.<Void>empty();
+        }).onErrorMap(error -> error instanceof ConflictException ? error
+            : new ConflictException("无法确认已上传对象，请检查上传是否完成"));
+    }
+
+    private String safeFileName(String fileName) {
+        String value = fileName.replace('\\', '/');
+        value = value.substring(value.lastIndexOf('/') + 1).replaceAll("[^a-zA-Z0-9._-]", "_");
+        return value.isBlank() ? "upload.bin" : value;
     }
 
     @Override
@@ -176,7 +233,7 @@ public class DefaultStorageService implements StorageService {
 
     @Override
     public Mono<StorageContent> readContent(UUID ownerId, UUID attachmentId, String range) {
-        if (contentReader == null || providerRegistry == null) {
+        if (contentReaders.isEmpty() || providerRegistry == null) {
             return Mono.error(new ConflictException("Storage Provider 内容读取能力未配置"));
         }
         return attachmentRepository.findById(attachmentId)
@@ -194,7 +251,8 @@ public class DefaultStorageService implements StorageService {
             .concatMap(placement -> providerRegistry.getByKey(placement.provider())
                 .filter(provider -> provider.status() != StorageProviderStatus.DISABLED
                     && provider.status() != StorageProviderStatus.FAILED)
-                .flatMap(provider -> contentReader.read(provider, placement, blob, range))
+                .flatMap(provider -> contentReaders.stream().filter(reader -> reader.supports(provider)).findFirst()
+                    .map(reader -> reader.read(provider, placement, blob, range)).orElse(Mono.empty()))
                 .onErrorResume(error -> Mono.empty()))
             .next()
             .switchIfEmpty(Mono.error(new StorageUnavailableException("附件当前没有可读副本")));

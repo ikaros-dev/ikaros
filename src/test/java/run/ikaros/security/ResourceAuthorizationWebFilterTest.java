@@ -1,7 +1,6 @@
 package run.ikaros.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -10,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.WebFilterChain;
-import reactor.util.context.Context;
 import run.ikaros.identity.AccessControlService;
 import reactor.core.publisher.Mono;
 
@@ -136,26 +134,19 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
-    void requiresFreshStepUpForRolePermissionChanges() {
+    void authorizesRolePermissionChangesFromJwtClaims() {
         UUID actor = UUID.randomUUID();
         UUID session = UUID.randomUUID();
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(
             "/api/admin/roles/" + UUID.randomUUID() + "/permissions/SYSTEM_ROLE_READ")
             .build());
         WebFilterChain chain = mock(WebFilterChain.class);
-        AccessControlService accessControl = mock(AccessControlService.class);
-        when(accessControl.require(any(), any(), any())).thenReturn(Mono.empty());
         when(chain.filter(exchange)).thenReturn(Mono.empty());
+        exchange.getAttributes().put(JwtPrincipal.EXCHANGE_ATTRIBUTE,
+            new JwtPrincipal(actor, session, java.util.List.of("system.role.manage")));
 
-        new ResourceAuthorizationWebFilter(accessControl).filter(exchange, chain)
-            .contextWrite(Context.of(PrincipalContext.CONTEXT_KEY,
-                new PrincipalContext(actor, session, "request", "correlation", false)))
-            .block();
-
-        verify(accessControl).require(actor, session,
-            new run.ikaros.identity.SecurityPolicy("resource.http",
-                run.ikaros.identity.PlatformPermission.SYSTEM_ROLE_MANAGE,
-                run.ikaros.identity.SecurityVerificationLevel.SVL_2, true));
+        new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
+        verify(chain).filter(exchange);
     }
 
     @Test

@@ -12,6 +12,17 @@ declare global {
    * @description 完整子路由的`meta`配置表
    */
   interface CustomizeRouteMeta {
+    /** 业务模块页面描述 */
+    description?: string;
+    /** 业务模块读取接口 */
+    endpoint?: string;
+    /** 业务列表展示字段 */
+    columns?: string[];
+    createEndpoint?: string;
+    createFields?: Array<{ name: string; label: string; required?: boolean; defaultValue?: string }>;
+    deleteEndpoint?: string;
+    actions?: Array<{ name: string; label: string; method?: string; path: string; confirm?: string }>;
+    detailPath?: string;
     /** 菜单名称（兼容国际化、非国际化，如何用国际化的写法就必须在根目录的`locales`文件夹下对应添加） `必填` */
     title: string;
     /** 菜单图标 `可选` */

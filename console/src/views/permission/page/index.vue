@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import { initRouter } from "@/router/utils";
-import { storageLocal } from "@pureadmin/utils";
-import { type CSSProperties, ref, computed } from "vue";
+import { type CSSProperties, computed } from "vue";
 import { useUserStoreHook } from "@/store/modules/user";
-import { usePermissionStoreHook } from "@/store/modules/permission";
 
 defineOptions({
   name: "PermissionPage"
@@ -16,51 +13,25 @@ const elStyle = computed((): CSSProperties => {
   };
 });
 
-const username = ref(useUserStoreHook()?.username);
-
-const options = [
-  {
-    value: "admin",
-    label: "管理员角色"
-  },
-  {
-    value: "common",
-    label: "普通角色"
-  }
-];
-
-function onChange() {
-  useUserStoreHook()
-    .loginByUsername({ username: username.value, password: "admin123" })
-    .then(res => {
-      if (res.success) {
-        storageLocal().removeItem("async-routes");
-        usePermissionStoreHook().clearAllCachePage();
-        initRouter();
-      }
-    });
-}
+const user = useUserStoreHook();
+const username = computed(() => user.username || "未登录");
+const roles = computed(() => user.roles || []);
+const permissions = computed(() => user.permissions || []);
 </script>
 
 <template>
   <div>
     <p class="mb-2!">
-      模拟后台根据不同角色返回对应路由，观察左侧菜单变化（管理员角色可查看系统管理菜单、普通角色不可查看系统管理菜单）
+      当前角色和按钮权限来自后端登录响应，不在前端伪造或切换权限。
     </p>
     <el-card shadow="never" :style="elStyle">
       <template #header>
         <div class="card-header">
-          <span>当前角色：{{ username }}</span>
+          <span>当前用户：{{ username }}</span>
         </div>
       </template>
-      <el-select v-model="username" class="w-[160px]!" @change="onChange">
-        <el-option
-          v-for="item in options"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        />
-      </el-select>
+      <p>角色：{{ roles.length ? roles.join("、") : "暂无角色" }}</p>
+      <p>权限：{{ permissions.length ? permissions.join("、") : "暂无权限" }}</p>
     </el-card>
   </div>
 </template>

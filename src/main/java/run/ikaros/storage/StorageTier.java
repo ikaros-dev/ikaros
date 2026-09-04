@@ -7,5 +7,6 @@ public enum StorageTier {
     HOT,
     WARM,
     COLD,
-    ARCHIVE
+    ARCHIVE,
+    DEEP_ARCHIVE
 }
