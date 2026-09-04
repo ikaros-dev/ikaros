@@ -32,6 +32,7 @@ const OpsJobsPage = () => import("@/views/operations/Jobs.vue");
 const OpsBackgroundPage = () => import("@/views/operations/Background.vue");
 const PlatformParametersPage = () => import("@/views/platform/Parameters.vue");
 const PlatformDictionariesPage = () => import("@/views/platform/Dictionaries.vue");
+const PlatformMenusPage = () => import("@/views/platform/Menus.vue");
 
 type ModuleOptions = {
   path: string;
@@ -128,7 +129,7 @@ export default {
     subsystem("/configuration-center", "ConfigurationCenter", "平台配置", "ep:setting", [
       { path: "/parameters", name: "PlatformParameters", component: PlatformParametersPage, meta: { title: "平台参数", description: "管理平台运行参数。", icon: "ep:setting" } },
       { path: "/dictionaries", name: "PlatformDictionaries", component: PlatformDictionariesPage, meta: { title: "数据字典", description: "管理平台字典项。", icon: "ep:list" } },
-      moduleRoute({ path: "/menus", name: "PlatformMenus", title: "平台菜单", description: "管理菜单和导航结构。", endpoint: "/platform/menus", columns: ["id", "name", "path", "status"], icon: "ep:menu" })
+      { path: "/menus", name: "PlatformMenus", component: PlatformMenusPage, meta: { title: "平台菜单", description: "管理菜单和导航结构。", icon: "ep:menu" } }
     ]),
     subsystem("/password-center", "PasswordCenter", "密码管理", "ep:key", [
       moduleRoute({ path: "/vault", name: "Passwords", title: "密码库", description: "管理密码条目和安全状态。", endpoint: "/passwords", columns: ["id", "title", "username", "updatedAt"], icon: "ep:lock" }),
@@ -186,7 +187,7 @@ export default {
     { path: "/console/analytics/reports", name: "AnalyticsReportsSpecRoute", component: ModulePage, meta: { title: "分析报告", showLink: false, description: "管理分析报告和导出任务。", endpoint: "/analytics/reports", columns: ["id", "name", "status", "createdAt"], icon: "ep:document" } },
     { path: "/console/platform/parameters", name: "PlatformParametersSpecRoute", component: PlatformParametersPage, meta: { title: "平台参数", showLink: false } },
     { path: "/console/platform/dictionaries", name: "PlatformDictionariesSpecRoute", component: PlatformDictionariesPage, meta: { title: "数据字典", showLink: false } },
-    { path: "/console/platform/menus", name: "PlatformMenusSpecRoute", component: ModulePage, meta: { title: "平台菜单", showLink: false, description: "管理菜单和导航结构。", endpoint: "/platform/menus", columns: ["id", "name", "path", "status"], icon: "ep:menu" } },
+    { path: "/console/platform/menus", name: "PlatformMenusSpecRoute", component: PlatformMenusPage, meta: { title: "平台菜单", showLink: false } },
     { path: "/console/ops/health", name: "OpsHealthSpecRoute", component: OpsHealthPage, meta: { title: "系统健康", showLink: false } },
     { path: "/console/ops/jobs", name: "OpsJobsSpecRoute", component: OpsJobsPage, meta: { title: "运维任务", showLink: false } },
     { path: "/console/ops/background", name: "OpsBackgroundSpecRoute", component: OpsBackgroundPage, meta: { title: "后台任务", showLink: false } },
