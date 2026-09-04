@@ -116,14 +116,14 @@ export default {
     subsystem("/communications-center", "CommunicationsCenter", "沟通与审计", "ep:notification", [
       { path: "/announcements", name: "Announcements", component: AnnouncementsPage, meta: { title: "公告", description: "发布和管理系统公告。", icon: "ep:notification" } },
       { path: "/notifications", name: "Notifications", component: NotificationsPage, meta: { title: "通知", description: "查看通知投递和用户触达状态。", icon: "ep:bell" } },
-      moduleRoute({ path: "/audit", name: "CommunicationsAudit", title: "沟通审计", description: "审计公告和通知操作记录。", endpoint: "/communications/audit", columns: ["id", "action", "actorId", "createdAt"], icon: "ep:document" })
+      { path: "/audit", name: "CommunicationsAudit", component: () => import("@/views/communications/Audit.vue"), meta: { title: "沟通审计", icon: "ep:document" } }
     ]),
     subsystem("/analytics-center", "AnalyticsCenter", "数据分析", "ep:data-analysis", [
-      moduleRoute({ path: "/overview", name: "AnalyticsOverview", title: "分析总览", description: "查看跨模块运营指标。", endpoint: "/analytics/overview", columns: ["metric", "value", "period", "updatedAt"], icon: "ep:data-analysis" }),
-      moduleRoute({ path: "/content", name: "AnalyticsContent", title: "内容分析", description: "分析内容规模和使用情况。", endpoint: "/analytics/content", columns: ["metric", "value", "period"], icon: "ep:document" }),
-      moduleRoute({ path: "/storage", name: "AnalyticsStorage", title: "存储分析", description: "分析 Blob、附件和存储层使用情况。", endpoint: "/analytics/storage", columns: ["metric", "value", "tier", "period"], icon: "ep:box" }),
-      moduleRoute({ path: "/planning", name: "AnalyticsPlanning", title: "计划分析", description: "分析任务、项目和目标进度。", endpoint: "/analytics/planning", columns: ["metric", "value", "period"], icon: "ep:calendar" }),
-      moduleRoute({ path: "/system", name: "AnalyticsSystem", title: "系统分析", description: "分析系统健康和运行指标。", endpoint: "/analytics/system", columns: ["metric", "value", "status", "updatedAt"], icon: "ep:monitor" }),
+      { path: "/overview", name: "AnalyticsOverview", component: () => import("@/views/analytics/index.vue"), meta: { title: "分析总览", icon: "ep:data-analysis" } },
+      { path: "/content", name: "AnalyticsContent", component: () => import("@/views/analytics/index.vue"), meta: { title: "内容分析", icon: "ep:document" } },
+      { path: "/storage", name: "AnalyticsStorage", component: () => import("@/views/analytics/index.vue"), meta: { title: "存储分析", icon: "ep:box" } },
+      { path: "/planning", name: "AnalyticsPlanning", component: () => import("@/views/analytics/index.vue"), meta: { title: "计划分析", icon: "ep:calendar" } },
+      { path: "/system", name: "AnalyticsSystem", component: () => import("@/views/analytics/index.vue"), meta: { title: "系统分析", icon: "ep:monitor" } },
       moduleRoute({ path: "/metrics", name: "AnalyticsMetrics", title: "指标", description: "浏览系统注册指标。", endpoint: "/analytics/metrics", columns: ["name", "value", "unit", "updatedAt"], icon: "ep:trend-charts" }),
       moduleRoute({ path: "/reports", name: "AnalyticsReports", title: "分析报告", description: "管理分析报告和导出任务。", endpoint: "/analytics/reports", columns: ["id", "name", "status", "createdAt"], icon: "ep:document" })
     ]),
