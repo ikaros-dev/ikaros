@@ -23,9 +23,9 @@ public class StorageRestoreOperationExpiryScheduler {
     public void expire() {
         if (!running.compareAndSet(false, true)) return;
         Instant now = Instant.now();
-        operations.findAllByStatusAndRestoreExpiresAtBefore(StorageRestoreOperationStatus.SUCCEEDED, now)
+        operations.findAllByStatusAndRestoreExpiresAtBefore(StorageRestoreOperationStatus.READY_TEMPORARILY, now)
             .concatMap(operation -> operations.save(new StorageRestoreOperationEntity(operation.id(), operation.placementId(),
-                operation.providerRestoreClass(), operation.restoreGeneration(), StorageRestoreOperationStatus.EXPIRED,
+                operation.providerRestoreClass(), operation.restoreGeneration(), operation.operationKey(), StorageRestoreOperationStatus.EXPIRED,
                 operation.backgroundTaskId(), operation.providerOperationId(), operation.restoreExpiresAt(),
                 operation.errorSummary(), operation.createdAt(), now, operation.version()))
                 .flatMap(expired -> events.append("storage.restore-operation.expired", 1, "restore_operation", expired.id(),

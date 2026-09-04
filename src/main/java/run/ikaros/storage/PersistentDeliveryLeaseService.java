@@ -24,18 +24,19 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
     private final MediaDeliveryBindingRepository bindings;
     private final DeliveryProviderRepository deliveryProviders;
     private final DurableEventService events;
+    private final StorageRestoreOperationRepository restoreOperations;
 
     public PersistentDeliveryLeaseService(AttachmentRepository attachments, ResourceRepository resources,
                                           MediaDeliveryGrantRepository grants, MediaDeliveryLeaseRepository leases,
                                           BlobPlacementRepository placements, StorageProviderRegistry providerRegistry,
                                           MediaDeliveryBindingRepository bindings, DeliveryProviderRepository deliveryProviders,
-                                          DurableEventService events) {
+                                          DurableEventService events, StorageRestoreOperationRepository restoreOperations) {
         this.attachments = attachments;
         this.resources = resources;
         this.grants = grants;
         this.leases = leases;
         this.placements = placements; this.providerRegistry = providerRegistry; this.bindings = bindings;
-        this.deliveryProviders = deliveryProviders; this.events = events;
+        this.deliveryProviders = deliveryProviders; this.events = events; this.restoreOperations = restoreOperations;
     }
 
     @Override
@@ -143,7 +144,7 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
 
     private Mono<Selection> select(UUID blobId) {
         return placements.findAllByBlobIdOrderByCreatedAtAsc(blobId)
-            .filter(p -> p.placementState() == PlacementState.ACTIVE)
+            .filterWhen(this::isReadablePlacement)
             .index()
             .concatMap(indexed -> providerRegistry.getByKey(indexed.getT2().provider())
                 .filter(provider -> provider.status() != StorageProviderStatus.DISABLED
@@ -159,6 +160,15 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
                             indexed.getT1().intValue(), provider.updatedAt().toString())))))
             .next()
             .switchIfEmpty(Mono.error(new StorageUnavailableException("附件没有可用 Delivery Binding")));
+    }
+
+    private Mono<Boolean> isReadablePlacement(BlobPlacementEntity placement) {
+        if (placement.placementState() == PlacementState.ACTIVE) return Mono.just(true);
+        if (placement.placementState() != PlacementState.READY_TEMPORARILY) return Mono.just(false);
+        return restoreOperations.findFirstByPlacementIdOrderByRestoreGenerationDesc(placement.id())
+            .map(operation -> operation.status() == StorageRestoreOperationStatus.READY_TEMPORARILY
+                && operation.restoreExpiresAt() != null && operation.restoreExpiresAt().isAfter(Instant.now()))
+            .defaultIfEmpty(false);
     }
 
     private record Selection(UUID bindingId, String reason, int fallbackIndex, String healthSnapshotVersion) {}

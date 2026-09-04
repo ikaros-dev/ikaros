@@ -13,10 +13,11 @@ public class AttachmentMediaAvailabilityService {
     private final AttachmentRepository attachments; private final MediaAvailabilityService availability;
     private final BlobRepository blobs; private final BlobPlacementRepository placements;
     private final StorageProviderRegistry providerRegistry; private final StorageRestoreRequestRepository restoreRequests;
+    private final StorageRestoreOperationRepository restoreOperations;
     public AttachmentMediaAvailabilityService(AttachmentRepository attachments, MediaAvailabilityService availability,
         BlobRepository blobs, BlobPlacementRepository placements, StorageProviderRegistry providerRegistry,
-        StorageRestoreRequestRepository restoreRequests) { this.attachments=attachments; this.availability=availability;
-        this.blobs=blobs; this.placements=placements; this.providerRegistry=providerRegistry; this.restoreRequests=restoreRequests; }
+        StorageRestoreRequestRepository restoreRequests, StorageRestoreOperationRepository restoreOperations) { this.attachments=attachments; this.availability=availability;
+        this.blobs=blobs; this.placements=placements; this.providerRegistry=providerRegistry; this.restoreRequests=restoreRequests; this.restoreOperations=restoreOperations; }
     public Mono<MediaAvailabilityResponse> get(UUID owner, UUID attachmentId) { return attachments.findById(attachmentId)
         .filter(a -> a.deletedAt()==null).switchIfEmpty(Mono.error(new NotFoundException("附件不存在或已删除")))
         .flatMap(a -> availability.get(owner,a.resourceId()).then(blobs.findById(a.blobId())
@@ -28,10 +29,18 @@ public class AttachmentMediaAvailabilityService {
         case MISSING -> Mono.just(new MediaAvailabilityResponse(id,MediaContractAvailability.MISSING,null,null,null,null));
         case CORRUPTED -> Mono.just(new MediaAvailabilityResponse(id,MediaContractAvailability.CORRUPTED,null,null,null,null));
         case AVAILABLE, REMOTE -> placements.findAllByBlobIdOrderByCreatedAtAsc(blob.id()).collectList().flatMap(all -> Flux.fromIterable(all)
-            .filter(p -> p.placementState()==PlacementState.ACTIVE).concatMap(p -> providerRegistry.getByKey(p.provider())
+            .filterWhen(this::isReadablePlacement).concatMap(p -> providerRegistry.getByKey(p.provider())
                 .map(v -> v.status()!=StorageProviderStatus.DISABLED && v.status()!=StorageProviderStatus.FAILED)).any(Boolean::booleanValue)
             .map(readable -> new MediaAvailabilityResponse(id,readable?MediaContractAvailability.READY:
                 all.stream().anyMatch(p -> p.placementState()!=PlacementState.ACTIVE)?MediaContractAvailability.RESTORE_REQUIRED:MediaContractAvailability.MISSING,null,null,null,null))); }; }
+    private Mono<Boolean> isReadablePlacement(BlobPlacementEntity placement) {
+        if (placement.placementState() == PlacementState.ACTIVE) return Mono.just(true);
+        if (placement.placementState() != PlacementState.READY_TEMPORARILY) return Mono.just(false);
+        return restoreOperations.findFirstByPlacementIdOrderByRestoreGenerationDesc(placement.id())
+            .map(o -> o.status() == StorageRestoreOperationStatus.READY_TEMPORARILY
+                && o.restoreExpiresAt() != null && o.restoreExpiresAt().isAfter(java.time.Instant.now()))
+            .defaultIfEmpty(false);
+    }
     private Mono<StorageRestoreRequestEntity> activeRestore(UUID owner, UUID id) { return restoreRequests.findFirstByActorIdAndScopeAndScopeIdAndStatusInOrderByCreatedAtDesc(owner,
         StorageRestoreScope.ATTACHMENT,id,List.of(StorageRestoreRequestStatus.REQUESTED,StorageRestoreRequestStatus.IN_PROGRESS)); }
     private record Ctx(UUID id, BlobEntity blob) {}
