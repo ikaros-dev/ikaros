@@ -45,7 +45,7 @@ export default {
     { path: "/console/collections", name: "CollectionsSpecRoute", component: ModulePage, meta: { title: "收藏集合", showLink: false, description: "管理资源集合及其成员。", endpoint: "/collections", columns: ["id", "name", "description", "createdAt"] } },
     { path: "/console/documents", name: "DocumentsSpecRoute", component: ModulePage, meta: { title: "文档管理", showLink: false, description: "管理个人文档和工作副本。", endpoint: "/documents", columns: ["id", "title", "status", "updatedAt"] } },
     { path: "/console/media", name: "MediaSpecRoute", component: () => import("@/views/media/index.vue"), meta: { title: "媒体库", showLink: false } },
-    { path: "/console/sharing", name: "SharingSpecRoute", component: ModulePage, meta: { title: "分享协作", showLink: false, description: "管理分享链接和协作空间。", endpoint: "/shares", columns: ["id", "status", "createdAt", "expiresAt"] } },
+    { path: "/console/sharing", name: "SharingSpecRoute", component: () => import("@/views/sharing/index.vue"), meta: { title: "分享协作", showLink: false } },
     { path: "/console/drive", name: "DriveSpecRoute", component: () => import("@/views/drive/index.vue"), meta: { title: "个人云盘", showLink: false } },
     { path: "/console/drive/trash", name: "DriveTrashSpecRoute", component: ModulePage, meta: { title: "云盘回收站", showLink: false, description: "管理已删除的云盘节点。", endpoint: "/drive/trash", columns: ["id", "name", "deletedAt", "expiresAt"] } },
     { path: "/console/drive/transfers", name: "DriveTransfersSpecRoute", component: ModulePage, meta: { title: "传输任务", showLink: false, description: "查看上传、下载和同步传输任务。", endpoint: "/drive/transfers", columns: ["id", "name", "status", "progress"] } },
@@ -202,7 +202,7 @@ export default {
     ]),
     subsystem("/collaboration-center", "CollaborationCenter", "协作与分享", "ep:chat-line-round", [
       moduleRoute({ path: "/rooms", name: "Rooms", title: "协作房间", description: "查看共享协作房间及其状态。", endpoint: "/rooms", columns: ["id", "name", "status", "createdAt"], icon: "ep:chat-line-round" }),
-      moduleRoute({ path: "/sharing", name: "Sharing", title: "分享协作", description: "管理分享链接和协作空间。", endpoint: "/shares", columns: ["id", "status", "createdAt", "expiresAt"], icon: "ep:share" })
+      { path: "/sharing", name: "Sharing", component: () => import("@/views/sharing/index.vue"), meta: { title: "分享协作", icon: "ep:share" } }
     ]),
     subsystem("/planning-center", "PlanningCenter", "计划与财务", "ep:calendar", [
       moduleRoute({ path: "/planning", name: "Planning", title: "生产力与计划", description: "管理项目、任务和目标。", endpoint: "/planning/projects", createEndpoint: "/planning/projects", createFields: [{ name: "name", label: "项目名称", required: true }, { name: "description", label: "描述" }], columns: ["id", "name", "status", "createdAt"], icon: "ep:calendar" }),
