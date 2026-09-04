@@ -13,6 +13,7 @@ import java.util.HexFormat;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.ChecksumMode;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
@@ -49,7 +50,8 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
         return credentialResolver.resolve(provider.secretReference()).flatMap(credentials -> Mono.fromCallable(() -> {
             S3Settings settings = S3Settings.from(provider);
             return withClient(settings, credentials, client -> {
-                var object = client.headObject(HeadObjectRequest.builder().bucket(settings.bucket()).key(objectKey).build());
+                var object = client.headObject(HeadObjectRequest.builder().bucket(settings.bucket()).key(objectKey)
+                    .checksumMode(ChecksumMode.ENABLED).build());
                 return new StorageObjectMetadata(objectKey, object.contentLength(), object.contentType(), object.eTag(),
                     object.checksumSHA256());
             });

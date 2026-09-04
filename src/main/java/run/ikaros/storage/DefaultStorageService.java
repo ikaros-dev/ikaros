@@ -186,13 +186,25 @@ public class DefaultStorageService implements StorageService {
             if (actual.sizeBytes() != request.sizeBytes()) {
                 return Mono.<Void>error(new ConflictException("已上传对象大小与提交声明不一致"));
             }
-            String expectedChecksum = Base64.getEncoder().encodeToString(HexFormat.of().parseHex(request.sha256()));
-            if (actual.checksumSha256() == null || !actual.checksumSha256().equals(expectedChecksum)) {
+            if (!checksumMatches(actual.checksumSha256(), request.sha256())) {
                 return Mono.<Void>error(new ConflictException("已上传对象 SHA-256 与提交声明不一致"));
             }
             return Mono.<Void>empty();
         }).onErrorMap(error -> error instanceof ConflictException ? error
             : new ConflictException("无法确认已上传对象，请检查上传是否完成"));
+    }
+
+    private boolean checksumMatches(String actual, String expectedHex) {
+        if (actual == null || expectedHex == null) return false;
+        String normalizedActual = actual.trim();
+        String normalizedExpected = expectedHex.trim();
+        String expectedBase64 = Base64.getEncoder().encodeToString(HexFormat.of().parseHex(normalizedExpected));
+        if (normalizedActual.equals(expectedBase64) || normalizedActual.equalsIgnoreCase(normalizedExpected)) return true;
+        try {
+            return HexFormat.of().formatHex(Base64.getDecoder().decode(normalizedActual)).equalsIgnoreCase(normalizedExpected);
+        } catch (IllegalArgumentException error) {
+            return false;
+        }
     }
 
     private String safeFileName(String fileName) {
