@@ -31,7 +31,7 @@ async function createCollection() {
   catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "集合创建失败"; }
   finally { saving.value = false; }
 }
-function openDetail(item: Collection) { router.push({ path: "/console/collections", query: { id: item.id } }); }
+function openDetail(item: Collection) { router.push({ path: "/resource-center/resource-collections", query: { id: item.id } }); }
 onMounted(load);
 </script>
 
