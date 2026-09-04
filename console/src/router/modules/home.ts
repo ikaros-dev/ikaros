@@ -4,6 +4,7 @@ const DashboardPage = () => import("@/views/dashboard/index.vue");
 const CollectionsPage = () => import("@/views/collections/index.vue");
 const DocumentsPage = () => import("@/views/documents/index.vue");
 const PlanningTodayPage = () => import("@/views/planning/Today.vue");
+const PlanningProjectsPage = () => import("@/views/planning/Projects.vue");
 
 type ModuleOptions = {
   path: string;
@@ -125,7 +126,7 @@ export default {
     { path: "/console/storage/cache", name: "StorageCacheSpecRoute", component: () => import("@/views/storage/Cache.vue"), meta: { title: "缓存与我的下载", showLink: false } },
     { path: "/console/storage/backup", name: "StorageBackupSpecRoute", component: () => import("@/views/storage/Backup.vue"), meta: { title: "备份与恢复", showLink: false } },
     { path: "/console/planning/today", name: "PlanningTodaySpecRoute", component: PlanningTodayPage, meta: { title: "今日计划", showLink: false } },
-    { path: "/console/planning/projects", name: "PlanningProjectsSpecRoute", component: ModulePage, meta: { title: "项目管理", showLink: false, description: "管理项目、任务和目标。", endpoint: "/planning/projects", columns: ["id", "name", "status", "createdAt"], icon: "ep:calendar" } },
+    { path: "/console/planning/projects", name: "PlanningProjectsSpecRoute", component: PlanningProjectsPage, meta: { title: "项目管理", showLink: false } },
     { path: "/console/planning/calendar", name: "PlanningCalendarSpecRoute", component: ModulePage, meta: { title: "日历", showLink: false, description: "按时间查看计划事项。", endpoint: "/planning/calendar", columns: ["id", "title", "startAt", "endAt"], icon: "ep:calendar" } },
     { path: "/console/planning/goals", name: "PlanningGoalsSpecRoute", component: ModulePage, meta: { title: "目标", showLink: false, description: "跟踪目标、关键结果与进度。", endpoint: "/planning/goals", columns: ["id", "title", "status", "progress"], icon: "ep:aim" } },
     { path: "/console/planning/focus", name: "PlanningFocusSpecRoute", component: ModulePage, meta: { title: "专注", showLink: false, description: "管理专注会话和今日投入。", endpoint: "/planning/focus-sessions", columns: ["id", "status", "startedAt", "durationSeconds"], icon: "ep:timer" } },
@@ -210,7 +211,7 @@ export default {
     subsystem("/planning-center", "PlanningCenter", "计划与财务", "ep:calendar", [
       moduleRoute({ path: "/planning", name: "Planning", title: "生产力与计划", description: "管理项目、任务和目标。", endpoint: "/planning/projects", createEndpoint: "/planning/projects", createFields: [{ name: "name", label: "项目名称", required: true }, { name: "description", label: "描述" }], columns: ["id", "name", "status", "createdAt"], icon: "ep:calendar" }),
       { path: "/planning/today", name: "PlanningToday", component: PlanningTodayPage, meta: { title: "今日计划", description: "查看今日任务、优先级和完成进度。", icon: "ep:calendar" } },
-      moduleRoute({ path: "/planning/projects", name: "PlanningProjects", title: "项目管理", description: "管理项目、任务和目标。", endpoint: "/planning/projects", columns: ["id", "name", "status", "createdAt"], icon: "ep:calendar" }),
+      { path: "/planning/projects", name: "PlanningProjects", component: PlanningProjectsPage, meta: { title: "项目管理", description: "管理项目、任务和目标。", icon: "ep:calendar" } },
       moduleRoute({ path: "/planning/calendar", name: "PlanningCalendar", title: "日历", description: "按时间查看计划事项。", endpoint: "/planning/calendar", columns: ["id", "title", "startAt", "endAt"], icon: "ep:calendar" }),
       moduleRoute({ path: "/planning/goals", name: "PlanningGoals", title: "目标", description: "跟踪目标、关键结果与进度。", endpoint: "/planning/goals", columns: ["id", "title", "status", "progress"], icon: "ep:aim" }),
       moduleRoute({ path: "/planning/focus", name: "PlanningFocus", title: "专注", description: "管理专注会话和今日投入。", endpoint: "/planning/focus-sessions", columns: ["id", "status", "startedAt", "durationSeconds"], icon: "ep:timer" }),
