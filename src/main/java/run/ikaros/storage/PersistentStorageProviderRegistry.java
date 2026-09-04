@@ -89,7 +89,8 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
                 }
                 return encode(requestedMetadata == null ? readMetadata(current.providerMetadata()) : requestedMetadata)
                     .flatMap(metadata -> repository.save(new StorageProviderEntity(current.id(), current.providerKey(),
-                        type, tier, current.status(), secret, metadata, current.createdAt(), Instant.now())))
+                        type, tier, current.status(), secret, metadata, current.accessKeyIdCiphertext(),
+                        current.secretAccessKeyCiphertext(), current.sessionTokenCiphertext(), current.createdAt(), Instant.now())))
                     .map(this::toModel)
                     .flatMap(provider -> emit("storage.provider.updated", provider,
                         "{\"provider_id\":\"" + provider.id()
@@ -136,6 +137,7 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
         return repository.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
             .map(current -> new StorageProviderEntity(current.id(), current.providerKey(), current.providerType(),
                 current.tier(), status.name(), current.secretReference(), current.providerMetadata(),
+                current.accessKeyIdCiphertext(), current.secretAccessKeyCiphertext(), current.sessionTokenCiphertext(),
                 current.createdAt(), Instant.now()))
             .flatMap(repository::save).map(this::toModel)
             .flatMap(provider -> {

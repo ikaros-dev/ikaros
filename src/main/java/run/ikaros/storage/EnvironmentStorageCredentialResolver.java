@@ -24,7 +24,30 @@ public class EnvironmentStorageCredentialResolver implements StorageCredentialRe
         if (secretReference != null && secretReference.startsWith("secret://provider/")) {
             String key = secretReference.substring("secret://provider/".length());
             return providers.findByProviderKey(key).switchIfEmpty(Mono.error(new ConflictException("Storage Provider 不存在: " + key)))
-                .flatMap(provider -> { if (provider.accessKeyIdCiphertext() == null || provider.secretAccessKeyCiphertext() == null) return Mono.error(new ConflictException("Provider 未配置 AccessKey/SecretKey")); String access = cipher.decrypt(provider.accessKeyIdCiphertext()); String secret = cipher.decrypt(provider.secretAccessKeyCiphertext()); String session = cipher.decrypt(provider.sessionTokenCiphertext()); return Mono.just(session == null ? StaticCredentialsProvider.create(AwsBasicCredentials.create(access, secret)) : StaticCredentialsProvider.create(AwsSessionCredentials.create(access, secret, session))); });
+                .flatMap(provider -> {
+                    if (provider.accessKeyIdCiphertext() == null || provider.secretAccessKeyCiphertext() == null) {
+                        return Mono.error(new ConflictException("Provider 未配置 AccessKey/SecretKey"));
+                    }
+                    String accessCiphertext = cipher.reEncrypt(provider.accessKeyIdCiphertext());
+                    String secretCiphertext = cipher.reEncrypt(provider.secretAccessKeyCiphertext());
+                    String sessionCiphertext = cipher.reEncrypt(provider.sessionTokenCiphertext());
+                    Mono<StorageProviderEntity> refreshed = accessCiphertext.equals(provider.accessKeyIdCiphertext())
+                        && secretCiphertext.equals(provider.secretAccessKeyCiphertext())
+                        && java.util.Objects.equals(sessionCiphertext, provider.sessionTokenCiphertext())
+                        ? Mono.just(provider)
+                        : providers.save(new StorageProviderEntity(provider.id(), provider.providerKey(), provider.providerType(),
+                            provider.tier(), provider.status(), provider.secretReference(), provider.providerMetadata(),
+                            accessCiphertext, secretCiphertext, sessionCiphertext, provider.createdAt(), java.time.Instant.now()));
+                    return refreshed.flatMap(saved -> {
+                        String access = cipher.decrypt(saved.accessKeyIdCiphertext());
+                        String secret = cipher.decrypt(saved.secretAccessKeyCiphertext());
+                        String session = cipher.decrypt(saved.sessionTokenCiphertext());
+                        AwsCredentialsProvider credentials = session == null
+                            ? StaticCredentialsProvider.create(AwsBasicCredentials.create(access, secret))
+                            : StaticCredentialsProvider.create(AwsSessionCredentials.create(access, secret, session));
+                        return Mono.just(credentials);
+                    });
+                });
         }
         if (secretReference == null || !secretReference.startsWith("secret://env/")) {
             return Mono.error(new ConflictException("不支持的 Storage Provider secret reference；请使用 secret://default 或 secret://env/NAME"));
