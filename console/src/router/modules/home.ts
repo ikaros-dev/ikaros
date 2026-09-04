@@ -230,8 +230,8 @@ export default {
       { path: "/backup", name: "Backup", component: () => import("@/views/storage/Backup.vue"), meta: { title: "备份恢复", icon: "ep:files" } }
     ]),
     subsystem("/ingestion-center", "IngestionCenter", "导入与处理", "ep:upload", [
-      moduleRoute({ path: "/ingestion", name: "Ingestion", title: "内容导入", description: "查看导入来源和扫描任务。", endpoint: "/ingestion/sources", columns: ["id", "name", "status", "createdAt"], icon: "ep:upload" }),
-      moduleRoute({ path: "/tasks", name: "BackgroundTasks", title: "后台任务", description: "查看后台任务、进度和执行尝试。", endpoint: "/background-tasks", columns: ["id", "type", "status", "createdAt"], icon: "ep:operation" })
+      { path: "/ingestion", name: "Ingestion", component: () => import("@/views/ingestion/index.vue"), meta: { title: "内容导入", icon: "ep:upload" } },
+      { path: "/tasks", name: "BackgroundTasks", component: OpsBackgroundPage, meta: { title: "后台任务", icon: "ep:operation" } }
     ]),
     subsystem("/collaboration-center", "CollaborationCenter", "协作与分享", "ep:chat-line-round", [
       moduleRoute({ path: "/rooms", name: "Rooms", title: "协作房间", description: "查看共享协作房间及其状态。", endpoint: "/rooms", columns: ["id", "name", "status", "createdAt"], icon: "ep:chat-line-round" }),
