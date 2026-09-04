@@ -80,6 +80,8 @@ public class StorageCredentialCipher {
         return value == null || value.isBlank() || !needsReEncryption(value) ? value : encrypt(decrypt(value));
     }
 
+    public String activeKeyVersion() { return activeKeyVersion; }
+
     private byte[] crypt(int mode, byte[] key, byte[] iv, byte[] input) throws GeneralSecurityException {
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         cipher.init(mode, new SecretKeySpec(key, "AES"), new GCMParameterSpec(TAG_LENGTH, iv));
