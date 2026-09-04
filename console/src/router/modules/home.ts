@@ -25,6 +25,8 @@ const AnnouncementsPage = () => import("@/views/communications/Announcements.vue
 const NotificationsPage = () => import("@/views/communications/Notifications.vue");
 const SecurityUsersPage = () => import("@/views/security/Users.vue");
 const SecurityPermissionsPage = () => import("@/views/security/Permissions.vue");
+const SecuritySessionsPage = () => import("@/views/security/Sessions.vue");
+const SecurityAuthenticationPage = () => import("@/views/security/Authentication.vue");
 
 type ModuleOptions = {
   path: string;
@@ -94,8 +96,8 @@ export default {
     subsystem("/security-center", "SecurityCenter", "身份安全", "ep:lock", [
       { path: "/users", name: "SecurityUsers", component: SecurityUsersPage, meta: { title: "安全用户", description: "管理用户、账号状态和安全策略。", icon: "ep:user" } },
       { path: "/permissions", name: "SecurityPermissions", component: SecurityPermissionsPage, meta: { title: "权限", description: "管理权限注册表和授权能力。", icon: "ep:lock" } },
-      moduleRoute({ path: "/sessions", name: "SecuritySessions", title: "会话", description: "查看活动会话和登录设备。", endpoint: "/security/sessions", columns: ["id", "device", "ipAddress", "lastSeenAt"], icon: "ep:connection" }),
-      moduleRoute({ path: "/authentication", name: "SecurityAuthentication", title: "认证设置", description: "管理认证方式和验证挑战。", endpoint: "/security/verification-challenges", columns: ["id", "method", "status", "expiresAt"], icon: "ep:key" })
+      { path: "/sessions", name: "SecuritySessions", component: SecuritySessionsPage, meta: { title: "会话", description: "查看活动会话和登录设备。", icon: "ep:connection" } },
+      { path: "/authentication", name: "SecurityAuthentication", component: SecurityAuthenticationPage, meta: { title: "认证设置", description: "管理认证方式和验证挑战。", icon: "ep:key" } }
     ]),
     subsystem("/integration-center", "IntegrationCenter", "集成自动化", "ep:connection", [
       moduleRoute({ path: "/automation", name: "IntegrationAutomation", title: "自动化", description: "管理自动化规则和触发器。", endpoint: "/integration/automation", columns: ["id", "name", "status", "updatedAt"], icon: "ep:connection" }),
@@ -185,8 +187,8 @@ export default {
     { path: "/console/ops/background", name: "OpsBackgroundSpecRoute", component: ModulePage, meta: { title: "后台任务", showLink: false, description: "查看可持久访问的后台操作进度。", endpoint: "/background-tasks", columns: ["id", "type", "status", "progress", "createdAt"], icon: "ep:loading" } },
     { path: "/console/security/users", name: "SecurityUsersSpecRoute", component: SecurityUsersPage, meta: { title: "安全用户", showLink: false } },
     { path: "/console/security/permissions", name: "SecurityPermissionsSpecRoute", component: SecurityPermissionsPage, meta: { title: "权限", showLink: false } },
-    { path: "/console/security/sessions", name: "SecuritySessionsSpecRoute", component: ModulePage, meta: { title: "会话", showLink: false, description: "查看活动会话和登录设备。", endpoint: "/security/sessions", columns: ["id", "device", "ipAddress", "lastSeenAt"], icon: "ep:connection" } },
-    { path: "/console/security/authentication", name: "SecurityAuthenticationSpecRoute", component: ModulePage, meta: { title: "认证设置", showLink: false, description: "管理认证方式和验证挑战。", endpoint: "/security/verification-challenges", columns: ["id", "method", "status", "expiresAt"], icon: "ep:key" } },
+    { path: "/console/security/sessions", name: "SecuritySessionsSpecRoute", component: SecuritySessionsPage, meta: { title: "会话", showLink: false } },
+    { path: "/console/security/authentication", name: "SecurityAuthenticationSpecRoute", component: SecurityAuthenticationPage, meta: { title: "认证设置", showLink: false } },
     { path: "/console/passwords", name: "PasswordsSpecRoute", component: ModulePage, meta: { title: "密码管理", showLink: false, description: "管理密码条目和安全状态。", endpoint: "/passwords", columns: ["id", "title", "username", "updatedAt"], icon: "ep:lock" } },
     { path: "/console/passwords/generator", name: "PasswordGeneratorSpecRoute", component: ModulePage, meta: { title: "密码生成器", showLink: false, description: "生成符合策略的随机密码。", endpoint: "/passwords/generator", columns: ["id", "length", "strength", "createdAt"], icon: "ep:magic-stick" } },
     { path: "/console/passwords/health", name: "PasswordHealthSpecRoute", component: ModulePage, meta: { title: "密码健康", showLink: false, description: "检查重复、弱密码和泄露风险。", endpoint: "/passwords/health", columns: ["id", "title", "risk", "updatedAt"], icon: "ep:warning" } },
