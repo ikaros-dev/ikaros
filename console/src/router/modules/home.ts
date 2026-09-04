@@ -13,6 +13,7 @@ const FinanceAccountsPage = () => import("@/views/finance/Accounts.vue");
 const FinanceTransactionsPage = () => import("@/views/finance/Transactions.vue");
 const FinanceBudgetsPage = () => import("@/views/finance/Budgets.vue");
 const FinanceReconcilePage = () => import("@/views/finance/Reconcile.vue");
+const PrivateNotesPage = () => import("@/views/notes/index.vue");
 
 type ModuleOptions = {
   path: string;
@@ -118,7 +119,7 @@ export default {
       moduleRoute({ path: "/devices", name: "PasswordDevices", title: "密码设备", description: "管理密码库授权设备。", endpoint: "/passwords/devices", columns: ["id", "name", "status", "lastSeenAt"], icon: "ep:mobile-phone" })
     ]),
     subsystem("/notes-center", "NotesCenter", "私密笔记", "ep:lock", [
-      moduleRoute({ path: "/notes", name: "PrivateNotes", title: "私密笔记", description: "在加密边界内管理个人笔记。", endpoint: "/private-notes/notes", columns: ["id", "title", "updatedAt", "status"], icon: "ep:document" }),
+      { path: "/notes", name: "PrivateNotes", component: PrivateNotesPage, meta: { title: "私密笔记", description: "在加密边界内管理个人笔记。", icon: "ep:document" } },
       moduleRoute({ path: "/conflicts", name: "PrivateNotesConflicts", title: "笔记冲突", description: "处理同步冲突并保留版本历史。", endpoint: "/private-notes/conflicts", columns: ["id", "noteId", "status", "createdAt"], icon: "ep:warning" }),
       moduleRoute({ path: "/recovery", name: "PrivateNotesRecovery", title: "笔记恢复", description: "查看恢复状态和安全恢复操作。", endpoint: "/private-notes/recovery", columns: ["id", "status", "createdAt", "updatedAt"], icon: "ep:refresh" })
     ]),
@@ -143,7 +144,7 @@ export default {
     { path: "/console/finance/transactions", name: "FinanceTransactionsSpecRoute", component: FinanceTransactionsPage, meta: { title: "交易记录", showLink: false } },
     { path: "/console/finance/budgets", name: "FinanceBudgetsSpecRoute", component: FinanceBudgetsPage, meta: { title: "预算", showLink: false } },
     { path: "/console/finance/reconcile", name: "FinanceReconcileSpecRoute", component: FinanceReconcilePage, meta: { title: "对账", showLink: false } },
-    { path: "/console/private-notes", name: "PrivateNotesSpecRoute", component: ModulePage, meta: { title: "私密笔记", showLink: false, description: "在加密边界内管理个人笔记。", endpoint: "/private-notes/notes", columns: ["id", "title", "updatedAt", "status"], icon: "ep:lock" } },
+    { path: "/console/private-notes", name: "PrivateNotesSpecRoute", component: PrivateNotesPage, meta: { title: "私密笔记", showLink: false } },
     { path: "/console/private-notes/conflicts", name: "PrivateNotesConflictsSpecRoute", component: ModulePage, meta: { title: "笔记冲突", showLink: false, description: "处理同步冲突并保留版本历史。", endpoint: "/private-notes/conflicts", columns: ["id", "noteId", "status", "createdAt"], icon: "ep:warning" } },
     { path: "/console/private-notes/recovery", name: "PrivateNotesRecoverySpecRoute", component: ModulePage, meta: { title: "笔记恢复", showLink: false, description: "查看恢复状态和安全恢复操作。", endpoint: "/private-notes/recovery", columns: ["id", "status", "createdAt", "updatedAt"], icon: "ep:refresh" } },
     { path: "/console/account/profile", name: "AccountProfileSpecRoute", component: ModulePage, meta: { title: "个人资料", showLink: false, description: "查看和维护个人资料。", endpoint: "/me", columns: ["id", "username", "displayName", "email", "status"], icon: "ep:user" } },
