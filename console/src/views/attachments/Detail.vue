@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
+import { http } from "@/utils/http";
+const route = useRoute(); const data = ref<Record<string, any> | null>(null); const loading = ref(false); const error = ref("");
+async function load() { loading.value = true; error.value = ""; try { data.value = await http.get(`/attachments/${route.params.attachmentId}`); } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "附件详情加载失败"; } finally { loading.value = false; } }
+onMounted(load);
+</script>
+<template><main class="p-4 md:p-6"><div class="flex justify-between mb-6"><div><h1 class="text-2xl font-semibold">附件详情</h1><p class="mt-1 text-[var(--el-text-color-secondary)]">{{ route.params.attachmentId }}</p></div><div class="flex gap-2"><el-button @click="$router.back()">返回</el-button><el-button :loading="loading" @click="load">刷新</el-button></div></div><el-alert v-if="error" :title="error" type="error" show-icon :closable="false"/><el-skeleton v-if="loading" :rows="8" animated/><el-card v-else-if="data" shadow="never" class="mt-4"><el-descriptions :column="1" border><el-descriptions-item label="Attachment ID">{{ data.id }}</el-descriptions-item><el-descriptions-item label="文件名">{{ data.fileName }}</el-descriptions-item><el-descriptions-item label="角色">{{ data.kind }}</el-descriptions-item><el-descriptions-item label="MIME">{{ data.mediaType || '-' }}</el-descriptions-item><el-descriptions-item label="大小">{{ data.sizeBytes }} Bytes</el-descriptions-item><el-descriptions-item label="Blob ID">{{ data.blobId || '-' }}</el-descriptions-item><el-descriptions-item label="SHA-256">{{ data.sha256 || '-' }}</el-descriptions-item><el-descriptions-item label="可用性">{{ data.availability || '-' }}</el-descriptions-item></el-descriptions></el-card><el-empty v-else description="暂无附件数据"/></main></template>

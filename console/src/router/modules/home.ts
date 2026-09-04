@@ -54,7 +54,10 @@ export default {
       moduleRoute({ path: "/games", name: "Games", title: "游戏档案", description: "管理游戏、版本和数字资产。", endpoint: "/games", columns: ["id", "name", "status", "createdAt"], icon: "ep:monitor" })
     ]),
     subsystem("/storage-center", "StorageCenter", "存储与云盘", "ep:box", [
+      { path: "/attachments", name: "Attachments", component: () => import("@/views/attachments/index.vue"), meta: { title: "附件与 Blob", icon: "ep:paperclip" } },
+      { path: "/console/attachments/:attachmentId", name: "AttachmentDetail", component: () => import("@/views/attachments/Detail.vue"), meta: { title: "附件详情", showLink: false } },
       { path: "/drive", name: "Drive", component: () => import("@/views/drive/index.vue"), meta: { title: "个人云盘", icon: "ep:folder-opened" } },
+      { path: "/console/drive/nodes/:nodeId", name: "DriveNodeDetail", component: () => import("@/views/drive/NodeDetail.vue"), meta: { title: "文件详情", showLink: false } },
       moduleRoute({ path: "/storage", name: "Storage", title: "存储管理", description: "管理存储 Provider 和恢复请求。", endpoint: "/admin/storage-providers", columns: ["id", "name", "status", "createdAt"], icon: "ep:box" }),
       moduleRoute({ path: "/backup", name: "Backup", title: "备份恢复", description: "管理恢复点和备份验证。", endpoint: "/admin/backup/restore-points", columns: ["id", "status", "createdAt", "verifiedAt"], icon: "ep:files" })
     ]),
