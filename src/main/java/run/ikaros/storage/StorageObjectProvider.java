@@ -10,6 +10,8 @@ public interface StorageObjectProvider {
 
     Mono<StorageUploadIntent> createUploadIntent(StorageProvider provider, StorageUploadRequest request);
 
+    Mono<StorageReadIntent> createReadIntent(StorageProvider provider, String objectKey);
+
     Mono<StorageObjectMetadata> verify(StorageProvider provider, String objectKey);
 
 }

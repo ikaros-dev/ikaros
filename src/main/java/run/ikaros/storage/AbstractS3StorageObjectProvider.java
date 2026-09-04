@@ -13,7 +13,9 @@ import java.util.HexFormat;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 /** S3 API implementation shared by cloud vendors exposing S3-compatible APIs. */
@@ -36,6 +38,19 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
                         .checksumSHA256(checksumHeader(request.sha256())).build()).build();
                 String url = presigner.presignPutObject(presign).url().toString();
                 return new StorageUploadIntent("PUT", url, request.objectKey(), Instant.now().plus(timeout));
+            }
+        })).subscribeOn(Schedulers.boundedElastic());
+    }
+
+    @Override
+    public Mono<StorageReadIntent> createReadIntent(StorageProvider provider, String objectKey) {
+        return credentialResolver.resolve(provider.secretReference()).flatMap(credentials -> Mono.fromCallable(() -> {
+            S3Settings settings = S3Settings.from(provider);
+            try (S3Presigner presigner = S3Presigner.builder().region(Region.of(settings.region()))
+                .endpointOverride(settings.endpoint()).credentialsProvider(credentials).build()) {
+                GetObjectPresignRequest presign = GetObjectPresignRequest.builder().signatureDuration(timeout)
+                    .getObjectRequest(GetObjectRequest.builder().bucket(settings.bucket()).key(objectKey).build()).build();
+                return new StorageReadIntent("GET", presigner.presignGetObject(presign).url().toString(), Instant.now().plus(timeout));
             }
         })).subscribeOn(Schedulers.boundedElastic());
     }

@@ -24,10 +24,19 @@ import org.springframework.http.ResponseEntity;
 public class AttachmentController {
     private final StorageService storageService;
     private final DeliveryGrantService deliveryGrantService;
+    private final AttachmentPreviewService previewService;
 
-    public AttachmentController(StorageService storageService, DeliveryGrantService deliveryGrantService) {
+    public AttachmentController(StorageService storageService, DeliveryGrantService deliveryGrantService,
+                                AttachmentPreviewService previewService) {
         this.storageService = storageService;
         this.deliveryGrantService = deliveryGrantService;
+        this.previewService = previewService;
+    }
+
+    @GetMapping("/{attachmentId}/preview-url")
+    public Mono<AttachmentPreviewUrlView> previewUrl(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+                                                     @PathVariable UUID attachmentId) {
+        return previewService.issue(actorId, attachmentId);
     }
 
     @Operation(summary = "查询附件元数据", description = "按 Attachment 身份读取元数据，并校验所属 Resource 的访问权。")

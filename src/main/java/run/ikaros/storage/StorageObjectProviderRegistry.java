@@ -18,6 +18,10 @@ public class StorageObjectProviderRegistry {
         return find(provider).createUploadIntent(provider, request);
     }
 
+    public Mono<StorageReadIntent> createReadIntent(StorageProvider provider, String objectKey) {
+        return find(provider).createReadIntent(provider, objectKey);
+    }
+
     public Mono<StorageObjectMetadata> verify(StorageProvider provider, String objectKey) {
         return find(provider).verify(provider, objectKey);
     }
