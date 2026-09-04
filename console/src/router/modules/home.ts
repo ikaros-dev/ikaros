@@ -22,6 +22,7 @@ const AiPersonasPage = () => import("@/views/ai/Personas.vue");
 const AiPrivacyPage = () => import("@/views/ai/Privacy.vue");
 const AiJobsPage = () => import("@/views/ai/Jobs.vue");
 const AnnouncementsPage = () => import("@/views/communications/Announcements.vue");
+const NotificationsPage = () => import("@/views/communications/Notifications.vue");
 
 type ModuleOptions = {
   path: string;
@@ -103,7 +104,7 @@ export default {
     ]),
     subsystem("/communications-center", "CommunicationsCenter", "沟通与审计", "ep:notification", [
       { path: "/announcements", name: "Announcements", component: AnnouncementsPage, meta: { title: "公告", description: "发布和管理系统公告。", icon: "ep:notification" } },
-      moduleRoute({ path: "/notifications", name: "Notifications", title: "通知", description: "查看通知投递和用户触达状态。", endpoint: "/communications/notifications", columns: ["id", "channel", "status", "createdAt"], icon: "ep:bell" }),
+      { path: "/notifications", name: "Notifications", component: NotificationsPage, meta: { title: "通知", description: "查看通知投递和用户触达状态。", icon: "ep:bell" } },
       moduleRoute({ path: "/audit", name: "CommunicationsAudit", title: "沟通审计", description: "审计公告和通知操作记录。", endpoint: "/communications/audit", columns: ["id", "action", "actorId", "createdAt"], icon: "ep:document" })
     ]),
     subsystem("/analytics-center", "AnalyticsCenter", "数据分析", "ep:data-analysis", [
@@ -165,7 +166,7 @@ export default {
     { path: "/console/ai/privacy", name: "AiPrivacySpecRoute", component: AiPrivacyPage, meta: { title: "AI 隐私", showLink: false } },
     { path: "/console/ai/jobs", name: "AiJobsSpecRoute", component: AiJobsPage, meta: { title: "AI 任务", showLink: false } },
     { path: "/console/communications/announcements", name: "AnnouncementsSpecRoute", component: AnnouncementsPage, meta: { title: "公告", showLink: false } },
-    { path: "/console/communications/notifications", name: "NotificationsSpecRoute", component: ModulePage, meta: { title: "通知", showLink: false, description: "查看通知投递和用户触达状态。", endpoint: "/communications/notifications", columns: ["id", "channel", "status", "createdAt"], icon: "ep:bell" } },
+    { path: "/console/communications/notifications", name: "NotificationsSpecRoute", component: NotificationsPage, meta: { title: "通知", showLink: false } },
     { path: "/console/communications/audit", name: "CommunicationsAuditSpecRoute", component: ModulePage, meta: { title: "沟通审计", showLink: false, description: "审计公告和通知操作记录。", endpoint: "/communications/audit", columns: ["id", "action", "actorId", "createdAt"], icon: "ep:document" } },
     { path: "/console/analytics", name: "AnalyticsSpecRoute", component: ModulePage, meta: { title: "数据分析", showLink: false, description: "查看跨模块运营指标。", endpoint: "/analytics/overview", columns: ["metric", "value", "period", "updatedAt"], icon: "ep:data-analysis" } },
     { path: "/console/analytics/content", name: "AnalyticsContentSpecRoute", component: ModulePage, meta: { title: "内容分析", showLink: false, description: "分析内容规模和使用情况。", endpoint: "/analytics/content", columns: ["metric", "value", "period"], icon: "ep:document" } },
