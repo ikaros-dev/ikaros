@@ -1,6 +1,7 @@
 const Layout = () => import("@/layout/index.vue");
 const ModulePage = () => import("@/views/modules/ModulePage.vue");
 const DashboardPage = () => import("@/views/dashboard/index.vue");
+const CollectionsPage = () => import("@/views/collections/index.vue");
 
 type ModuleOptions = {
   path: string;
@@ -42,7 +43,7 @@ export default {
     { path: "/console/dashboard", name: "DashboardSpecRoute", component: DashboardPage, meta: { title: "仪表盘", showLink: false } },
     { path: "/console/resources", name: "ResourcesSpecRoute", component: ModulePage, meta: { title: "资源管理", showLink: false, description: "管理资源、标题、标签和生命周期。", endpoint: "/resources", createEndpoint: "/resources", createFields: [{ name: "type", label: "类型", required: true, defaultValue: "OTHER" }, { name: "title", label: "标题", required: true }, { name: "locale", label: "语言", required: true, defaultValue: "zh-CN" }], deleteEndpoint: "/resources", detailPath: "/console/resources/{id}", actions: [{ name: "archive", label: "归档", path: "/resources/{id}/actions/archive", confirm: "确定归档此资源吗？" }, { name: "restore", label: "恢复", path: "/resources/{id}/actions/restore" }], columns: ["id", "resourceType", "status", "createdAt"] } },
     { path: "/console/resources/:resourceId", name: "ResourceDetailSpecRoute", component: () => import("@/views/resources/Detail.vue"), meta: { title: "资源详情", showLink: false } },
-    { path: "/console/collections", name: "CollectionsSpecRoute", component: ModulePage, meta: { title: "收藏集合", showLink: false, description: "管理资源集合及其成员。", endpoint: "/collections", columns: ["id", "name", "description", "createdAt"] } },
+    { path: "/console/collections", name: "CollectionsSpecRoute", component: CollectionsPage, meta: { title: "收藏集合", showLink: false } },
     { path: "/console/documents", name: "DocumentsSpecRoute", component: ModulePage, meta: { title: "文档管理", showLink: false, description: "管理个人文档和工作副本。", endpoint: "/documents", columns: ["id", "title", "status", "updatedAt"] } },
     { path: "/console/media", name: "MediaSpecRoute", component: () => import("@/views/media/index.vue"), meta: { title: "媒体库", showLink: false } },
     { path: "/console/sharing", name: "SharingSpecRoute", component: () => import("@/views/sharing/index.vue"), meta: { title: "分享协作", showLink: false } },
@@ -175,7 +176,7 @@ export default {
     subsystem("/resource-center", "ResourceCenter", "资源中心", "ep:files", [
       moduleRoute({ path: "/resources", name: "Resources", title: "资源管理", description: "管理资源、标题、标签和生命周期。", endpoint: "/resources", createEndpoint: "/resources", deleteEndpoint: "/resources", actions: [{ name: "archive", label: "归档", path: "/resources/{id}/actions/archive", confirm: "确定归档此资源吗？" }, { name: "restore", label: "恢复", path: "/resources/{id}/actions/restore" }], createFields: [{ name: "type", label: "类型", required: true, defaultValue: "OTHER" }, { name: "title", label: "标题", required: true }, { name: "locale", label: "语言", required: true, defaultValue: "zh-CN" }], columns: ["id", "resourceType", "status", "createdAt"], icon: "ep:files" }),
       moduleRoute({ path: "/documents", name: "Documents", title: "文档管理", description: "管理个人文档和工作副本。", endpoint: "/documents", createEndpoint: "/documents", createFields: [{ name: "title", label: "标题", required: true }, { name: "kind", label: "类型", required: true, defaultValue: "DOCUMENT" }, { name: "locale", label: "语言", defaultValue: "zh-CN" }, { name: "content", label: "内容" }], columns: ["id", "title", "status", "updatedAt"], icon: "ep:document" }),
-      moduleRoute({ path: "/collections", name: "Collections", title: "收藏集合", description: "管理资源集合及其成员。", endpoint: "/collections", createEndpoint: "/collections", createFields: [{ name: "name", label: "名称", required: true }, { name: "description", label: "描述" }], columns: ["id", "name", "description", "createdAt"], icon: "ep:collection" }),
+      { path: "/collections", name: "Collections", component: CollectionsPage, meta: { title: "收藏集合", description: "管理资源集合及其成员。", icon: "ep:collection" } },
       { path: "/activity", name: "Activity", component: () => import("@/views/workbench/Activity.vue"), meta: { title: "资源活动", icon: "ep:histogram" } },
       { path: "/console/activity", name: "WorkbenchActivity", component: () => import("@/views/workbench/Activity.vue"), meta: { title: "我的活动与收藏", showLink: false } }
     ]),
