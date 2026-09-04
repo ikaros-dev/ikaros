@@ -184,25 +184,17 @@ function dynamicRouteTag(value: string): void {
   const hasValue = multiTags.value.some(item => {
     return item.path === value;
   });
+  if (hasValue) return;
 
-  function concatPath(arr: object[], value: string) {
-    if (!hasValue) {
-      arr.forEach((arrItem: any) => {
-        if (arrItem.path === value) {
-          useMultiTagsStoreHook().handleTags("push", {
-            path: value,
-            meta: arrItem.meta,
-            name: arrItem.name
-          });
-        } else {
-          if (arrItem.children && arrItem.children.length > 0) {
-            concatPath(arrItem.children, value);
-          }
-        }
-      });
-    }
-  }
-  concatPath(router.options.routes as any, value);
+  const resolved = router.resolve(value);
+  const matched = resolved.matched[resolved.matched.length - 1];
+  if (!matched?.name || !matched.meta?.title) return;
+
+  useMultiTagsStoreHook().handleTags("push", {
+    path: resolved.fullPath,
+    meta: matched.meta,
+    name: matched.name
+  });
 }
 
 /** 刷新路由 */
