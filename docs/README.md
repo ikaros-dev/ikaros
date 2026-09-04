@@ -12,6 +12,8 @@
 
 - [安全、认证、授权与密码学](01-platform-foundation/Security-Identity-Authorization-Crypto-Subsystem-Design.md)
 - [私密数据安全基础层](01-platform-foundation/Secure-Data-Foundation-Design.md)
+- [Attachment / Blob / Storage](01-platform-foundation/Attachment-Blob-Storage-Subsystem-Design.md)
+- [Archive Base / Restore / Promotion Policy](01-platform-foundation/Archive-Base-Restore-Promotion-Policy.md)
 - [平台管理与系统运维](01-platform-foundation/Platform-Administration-Operations-Subsystem-Design.md)
 - [平台联动与自动化](01-platform-foundation/Platform-Integration-Automation-Design.md)
 
@@ -19,6 +21,8 @@
 
 在平台基础之上扩展生产力、私密内容、密码管理和个人财务等领域能力。
 
+- [媒体 CDN / Archive / Restore](02-domain-capabilities/Media-Delivery-CDN-Archive-Restore-Design.md)
+- [媒体 Archive Working Set Policy](02-domain-capabilities/Media-Archive-Working-Set-Policy.md)
 - [效率与计划](02-domain-capabilities/Productivity-Planning-Subsystem-Design.md)
 - [私密笔记](02-domain-capabilities/Private-Notes-Subsystem-Design.md)
 - [密码管理](02-domain-capabilities/Password-Manager-Subsystem-Design.md)
