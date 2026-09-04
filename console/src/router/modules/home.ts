@@ -41,6 +41,7 @@ export default {
     { path: "/console/search", name: "WorkbenchSearch", component: () => import("@/views/workbench/Search.vue"), meta: { title: "全局搜索", showLink: false } },
     { path: "/console/dashboard", name: "DashboardSpecRoute", component: DashboardPage, meta: { title: "仪表盘", showLink: false } },
     { path: "/console/resources", name: "ResourcesSpecRoute", component: ModulePage, meta: { title: "资源管理", showLink: false, description: "管理资源、标题、标签和生命周期。", endpoint: "/resources", columns: ["id", "resourceType", "status", "createdAt"] } },
+    { path: "/console/resources/:resourceId", name: "ResourceDetailSpecRoute", component: () => import("@/views/resources/Detail.vue"), meta: { title: "资源详情", showLink: false } },
     { path: "/console/collections", name: "CollectionsSpecRoute", component: ModulePage, meta: { title: "收藏集合", showLink: false, description: "管理资源集合及其成员。", endpoint: "/collections", columns: ["id", "name", "description", "createdAt"] } },
     { path: "/console/documents", name: "DocumentsSpecRoute", component: ModulePage, meta: { title: "文档管理", showLink: false, description: "管理个人文档和工作副本。", endpoint: "/documents", columns: ["id", "title", "status", "updatedAt"] } },
     { path: "/console/media", name: "MediaSpecRoute", component: ModulePage, meta: { title: "媒体库", showLink: false, description: "查看媒体资源和播放内容。", endpoint: "/media/subjects", columns: ["id", "title", "mediaType", "status"] } },

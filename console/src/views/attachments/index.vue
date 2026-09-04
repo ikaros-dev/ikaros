@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
 import { http } from "@/utils/http";
 
 type Placement = Record<string, unknown>;
 type Attachment = Record<string, any> & { placements?: Placement[] };
 const resourceId = ref("");
+const route = useRoute();
 const attachments = ref<Attachment[]>([]);
 const selected = ref<Attachment | null>(null);
 const detailVisible = computed({ get: () => Boolean(selected.value), set: (value: boolean) => { if (!value) selected.value = null; } });
@@ -46,6 +48,7 @@ async function commitUpload() {
   } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "附件提交失败，请确认对象已存在于 Provider"; }
   finally { uploadLoading.value = false; }
 }
+onMounted(() => { const value = route.query.resourceId; if (typeof value === "string" && value) { resourceId.value = value; load(); } });
 </script>
 
 <template>
