@@ -234,11 +234,11 @@ export default {
       { path: "/tasks", name: "BackgroundTasks", component: OpsBackgroundPage, meta: { title: "后台任务", icon: "ep:operation" } }
     ]),
     subsystem("/collaboration-center", "CollaborationCenter", "协作与分享", "ep:chat-line-round", [
-      moduleRoute({ path: "/rooms", name: "Rooms", title: "协作房间", description: "查看共享协作房间及其状态。", endpoint: "/rooms", columns: ["id", "name", "status", "createdAt"], icon: "ep:chat-line-round" }),
+      { path: "/rooms", name: "Rooms", component: () => import("@/views/sharing/index.vue"), meta: { title: "协作房间", icon: "ep:chat-line-round" } },
       { path: "/sharing", name: "Sharing", component: () => import("@/views/sharing/index.vue"), meta: { title: "分享协作", icon: "ep:share" } }
     ]),
     subsystem("/planning-center", "PlanningCenter", "计划与财务", "ep:calendar", [
-      moduleRoute({ path: "/planning", name: "Planning", title: "生产力与计划", description: "管理项目、任务和目标。", endpoint: "/planning/projects", createEndpoint: "/planning/projects", createFields: [{ name: "name", label: "项目名称", required: true }, { name: "description", label: "描述" }], columns: ["id", "name", "status", "createdAt"], icon: "ep:calendar" }),
+      { path: "/planning", name: "Planning", component: () => import("@/views/planning/Projects.vue"), meta: { title: "生产力与计划", icon: "ep:calendar" } },
       { path: "/planning/today", name: "PlanningToday", component: PlanningTodayPage, meta: { title: "今日计划", description: "查看今日任务、优先级和完成进度。", icon: "ep:calendar" } },
       { path: "/planning/projects", name: "PlanningProjects", component: PlanningProjectsPage, meta: { title: "项目管理", description: "管理项目、任务和目标。", icon: "ep:calendar" } },
       { path: "/planning/calendar", name: "PlanningCalendar", component: PlanningCalendarPage, meta: { title: "日历", description: "按时间查看计划事项。", icon: "ep:calendar" } },
