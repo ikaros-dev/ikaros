@@ -46,6 +46,12 @@ async function executeAction(action: { path: string; label: string; method?: str
 const loading = ref(false);
 const error = ref("");
 const rows = ref<Record<string, unknown>[]>([]);
+const filterText = ref("");
+const filteredRows = computed(() => {
+  const keyword = filterText.value.trim().toLowerCase();
+  if (!keyword) return rows.value;
+  return rows.value.filter(row => JSON.stringify(row).toLowerCase().includes(keyword));
+});
 function openDetail(row: Record<string, unknown>) { if (detailPath.value && row.id) window.location.assign(detailPath.value.replace("{id}", String(row.id))); }
 
 async function load() {
@@ -67,13 +73,13 @@ onMounted(load);
       <template #header>
         <div class="flex items-center justify-between gap-4">
           <div><h2 class="text-xl font-semibold">{{ title }}</h2><p class="mt-1 text-sm text-[var(--el-text-color-secondary)]">{{ description }}</p></div>
-          <div class="flex gap-2"><el-button v-if="createEndpoint" type="primary" @click="openCreate">新建</el-button><el-button :loading="loading" @click="load">刷新</el-button></div>
+          <div class="flex gap-2"><el-input v-model="filterText" clearable placeholder="筛选当前结果" class="w-48" /><el-button v-if="createEndpoint" type="primary" @click="openCreate">新建</el-button><el-button :loading="loading" @click="load">刷新</el-button></div>
         </div>
       </template>
       <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" class="mb-4" />
       <el-skeleton v-if="loading" :rows="5" animated />
-      <el-empty v-else-if="!rows.length && !error" description="暂无数据" />
-      <el-table v-else :data="rows" stripe :row-class-name="detailPath ? () => 'cursor-pointer' : undefined" @row-click="openDetail">
+      <el-empty v-else-if="!filteredRows.length && !error" :description="rows.length ? '没有匹配结果' : '暂无数据'" />
+      <el-table v-else :data="filteredRows" stripe :row-class-name="detailPath ? () => 'cursor-pointer' : undefined" @row-click="openDetail">
         <el-table-column v-for="column in columns" :key="column" :prop="column" :label="column" min-width="160" show-overflow-tooltip />
         <el-table-column label="原始数据" min-width="220"><template #default="scope"><span class="text-xs text-[var(--el-text-color-secondary)]">{{ JSON.stringify(scope.row) }}</span></template></el-table-column>
         <el-table-column v-if="deleteEndpoint || actions.length" label="操作" width="180" fixed="right"><template #default="scope"><el-button v-for="action in actions" :key="action.name" link @click="executeAction(action, scope.row)">{{ action.label }}</el-button><el-button v-if="deleteEndpoint" link type="danger" @click="remove(scope.row)">删除</el-button></template></el-table-column>
