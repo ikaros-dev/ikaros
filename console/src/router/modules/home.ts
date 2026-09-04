@@ -62,21 +62,21 @@ function moduleRoute(options: ModuleOptions) {
 const subsystemRanks: Record<string, number> = {
   "/platform-config": 10,
   "/identity-center": 20,
-  "/resource-center": 30,
-  "/storage-center": 40,
-  "/content-center": 50,
-  "/planning-center": 60,
-  "/finance-center": 70,
-  "/operations-center": 80,
-  "/edge-acceleration": 90,
-  "/ingestion-center": 100,
-  "/collaboration-center": 110,
-  "/ai-center": 120,
-  "/integration-center": 130,
-  "/analytics-center": 140,
-  "/password-center": 150,
-  "/private-notes": 160,
-  "/account-center": 170
+  "/operations-center": 30,
+  "/integration-center": 40,
+  "/password-center": 50,
+  "/storage-center": 60,
+  "/edge-acceleration": 70,
+  "/content-center": 80,
+  "/resource-center": 90,
+  "/planning-center": 100,
+  "/finance-center": 110,
+  "/ingestion-center": 120,
+  "/private-notes": 130,
+  "/account-center": 140,
+  "/collaboration-center": 150,
+  "/ai-center": 160,
+  "/analytics-center": 170
 };
 
 function subsystem(path: string, name: string, title: string, icon: string, children: any[]) {
