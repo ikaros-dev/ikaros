@@ -24,6 +24,7 @@ const AiJobsPage = () => import("@/views/ai/Jobs.vue");
 const AnnouncementsPage = () => import("@/views/communications/Announcements.vue");
 const NotificationsPage = () => import("@/views/communications/Notifications.vue");
 const SecurityUsersPage = () => import("@/views/security/Users.vue");
+const SecurityPermissionsPage = () => import("@/views/security/Permissions.vue");
 
 type ModuleOptions = {
   path: string;
@@ -92,7 +93,7 @@ export default {
     ]),
     subsystem("/security-center", "SecurityCenter", "身份安全", "ep:lock", [
       { path: "/users", name: "SecurityUsers", component: SecurityUsersPage, meta: { title: "安全用户", description: "管理用户、账号状态和安全策略。", icon: "ep:user" } },
-      moduleRoute({ path: "/permissions", name: "SecurityPermissions", title: "权限", description: "管理权限注册表和授权能力。", endpoint: "/admin/permissions", columns: ["code", "name", "description"], icon: "ep:lock" }),
+      { path: "/permissions", name: "SecurityPermissions", component: SecurityPermissionsPage, meta: { title: "权限", description: "管理权限注册表和授权能力。", icon: "ep:lock" } },
       moduleRoute({ path: "/sessions", name: "SecuritySessions", title: "会话", description: "查看活动会话和登录设备。", endpoint: "/security/sessions", columns: ["id", "device", "ipAddress", "lastSeenAt"], icon: "ep:connection" }),
       moduleRoute({ path: "/authentication", name: "SecurityAuthentication", title: "认证设置", description: "管理认证方式和验证挑战。", endpoint: "/security/verification-challenges", columns: ["id", "method", "status", "expiresAt"], icon: "ep:key" })
     ]),
@@ -183,7 +184,7 @@ export default {
     { path: "/console/ops/jobs", name: "OpsJobsSpecRoute", component: ModulePage, meta: { title: "运维任务", showLink: false, description: "查看运维任务及执行结果。", endpoint: "/ops/jobs", columns: ["id", "type", "status", "createdAt"], icon: "ep:operation" } },
     { path: "/console/ops/background", name: "OpsBackgroundSpecRoute", component: ModulePage, meta: { title: "后台任务", showLink: false, description: "查看可持久访问的后台操作进度。", endpoint: "/background-tasks", columns: ["id", "type", "status", "progress", "createdAt"], icon: "ep:loading" } },
     { path: "/console/security/users", name: "SecurityUsersSpecRoute", component: SecurityUsersPage, meta: { title: "安全用户", showLink: false } },
-    { path: "/console/security/permissions", name: "SecurityPermissionsSpecRoute", component: ModulePage, meta: { title: "权限", showLink: false, description: "管理权限注册表和授权能力。", endpoint: "/admin/permissions", columns: ["code", "name", "description"], icon: "ep:lock" } },
+    { path: "/console/security/permissions", name: "SecurityPermissionsSpecRoute", component: SecurityPermissionsPage, meta: { title: "权限", showLink: false } },
     { path: "/console/security/sessions", name: "SecuritySessionsSpecRoute", component: ModulePage, meta: { title: "会话", showLink: false, description: "查看活动会话和登录设备。", endpoint: "/security/sessions", columns: ["id", "device", "ipAddress", "lastSeenAt"], icon: "ep:connection" } },
     { path: "/console/security/authentication", name: "SecurityAuthenticationSpecRoute", component: ModulePage, meta: { title: "认证设置", showLink: false, description: "管理认证方式和验证挑战。", endpoint: "/security/verification-challenges", columns: ["id", "method", "status", "expiresAt"], icon: "ep:key" } },
     { path: "/console/passwords", name: "PasswordsSpecRoute", component: ModulePage, meta: { title: "密码管理", showLink: false, description: "管理密码条目和安全状态。", endpoint: "/passwords", columns: ["id", "title", "username", "updatedAt"], icon: "ep:lock" } },
