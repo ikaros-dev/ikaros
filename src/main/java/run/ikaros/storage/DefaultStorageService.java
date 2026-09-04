@@ -174,10 +174,19 @@ public class DefaultStorageService implements StorageService {
             ? "attachments/" + UUID.randomUUID() + "/" + safeFileName(request.fileName()) : request.objectKey();
         return owned(ownerId, resourceId)
             .then(providerRegistry.requireWritableByKey(request.provider()))
-            .flatMap(provider -> objectProviderRegistry.createUploadIntent(provider,
-                new StorageUploadRequest(objectKey, request.sizeBytes(), request.mediaType(), request.sha256()))
-                .map(intent -> new StorageUploadIntentView(provider.providerKey(), provider.tier(), intent.method(),
-                    intent.url(), intent.objectKey(), intent.expiresAt(), request.sha256())));
+            .flatMap(provider -> blobRepository.findBySha256(request.sha256().toLowerCase())
+                .flatMap(blob -> {
+                    if (blob.sizeBytes() != request.sizeBytes()) {
+                        return Mono.error(new ConflictException("相同 SHA-256 的 Blob 大小不一致"));
+                    }
+                    return placementRepository.findFirstByBlobIdAndProvider(blob.id(), provider.providerKey())
+                        .map(placement -> new StorageUploadIntentView(provider.providerKey(), provider.tier(), "SKIP", "",
+                            placement.objectKey(), Instant.now(), request.sha256(), true));
+                })
+                .switchIfEmpty(Mono.defer(() -> objectProviderRegistry.createUploadIntent(provider,
+                    new StorageUploadRequest(objectKey, request.sizeBytes(), request.mediaType(), request.sha256()))
+                    .map(intent -> new StorageUploadIntentView(provider.providerKey(), provider.tier(), intent.method(),
+                        intent.url(), intent.objectKey(), intent.expiresAt(), request.sha256(), false)))));
     }
 
     private Mono<Void> verifyUploadedObject(StorageProvider provider, CommitUploadRequest request) {

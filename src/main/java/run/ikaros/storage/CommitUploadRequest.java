@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Size;
 public record CommitUploadRequest(
     @NotBlank @Pattern(regexp = "^[A-Fa-f0-9]{64}$") String sha256,
     @NotBlank @Pattern(regexp = "^[A-Fa-f0-9]{64}$") String uploadSha256,
+    boolean deduplicated,
     @PositiveOrZero long sizeBytes,
     @NotBlank @Size(max = 256) String mediaType,
     @NotBlank @Size(max = 512) String fileName,
@@ -21,7 +22,7 @@ public record CommitUploadRequest(
 ) {
     public CommitUploadRequest(String sha256, long sizeBytes, String mediaType, String fileName,
                                AttachmentKind kind, String provider, StorageTier tier, String objectKey) {
-        this(sha256, sha256, sizeBytes, mediaType, fileName, kind, provider, tier, objectKey, null);
+        this(sha256, sha256, false, sizeBytes, mediaType, fileName, kind, provider, tier, objectKey, null);
     }
 
     AttachBlobRequest asAttachment() {
