@@ -31,6 +31,7 @@ const OpsHealthPage = () => import("@/views/operations/Health.vue");
 const OpsJobsPage = () => import("@/views/operations/Jobs.vue");
 const OpsBackgroundPage = () => import("@/views/operations/Background.vue");
 const PlatformParametersPage = () => import("@/views/platform/Parameters.vue");
+const PlatformDictionariesPage = () => import("@/views/platform/Dictionaries.vue");
 
 type ModuleOptions = {
   path: string;
@@ -126,7 +127,7 @@ export default {
     ]),
     subsystem("/configuration-center", "ConfigurationCenter", "平台配置", "ep:setting", [
       { path: "/parameters", name: "PlatformParameters", component: PlatformParametersPage, meta: { title: "平台参数", description: "管理平台运行参数。", icon: "ep:setting" } },
-      moduleRoute({ path: "/dictionaries", name: "PlatformDictionaries", title: "数据字典", description: "管理平台字典项。", endpoint: "/platform/dictionaries", columns: ["code", "name", "status", "updatedAt"], icon: "ep:list" }),
+      { path: "/dictionaries", name: "PlatformDictionaries", component: PlatformDictionariesPage, meta: { title: "数据字典", description: "管理平台字典项。", icon: "ep:list" } },
       moduleRoute({ path: "/menus", name: "PlatformMenus", title: "平台菜单", description: "管理菜单和导航结构。", endpoint: "/platform/menus", columns: ["id", "name", "path", "status"], icon: "ep:menu" })
     ]),
     subsystem("/password-center", "PasswordCenter", "密码管理", "ep:key", [
@@ -184,7 +185,7 @@ export default {
     { path: "/console/analytics/metrics", name: "AnalyticsMetricsSpecRoute", component: ModulePage, meta: { title: "指标", showLink: false, description: "浏览系统注册指标。", endpoint: "/analytics/metrics", columns: ["name", "value", "unit", "updatedAt"], icon: "ep:trend-charts" } },
     { path: "/console/analytics/reports", name: "AnalyticsReportsSpecRoute", component: ModulePage, meta: { title: "分析报告", showLink: false, description: "管理分析报告和导出任务。", endpoint: "/analytics/reports", columns: ["id", "name", "status", "createdAt"], icon: "ep:document" } },
     { path: "/console/platform/parameters", name: "PlatformParametersSpecRoute", component: PlatformParametersPage, meta: { title: "平台参数", showLink: false } },
-    { path: "/console/platform/dictionaries", name: "PlatformDictionariesSpecRoute", component: ModulePage, meta: { title: "数据字典", showLink: false, description: "管理平台字典项。", endpoint: "/platform/dictionaries", columns: ["code", "name", "status", "updatedAt"], icon: "ep:list" } },
+    { path: "/console/platform/dictionaries", name: "PlatformDictionariesSpecRoute", component: PlatformDictionariesPage, meta: { title: "数据字典", showLink: false } },
     { path: "/console/platform/menus", name: "PlatformMenusSpecRoute", component: ModulePage, meta: { title: "平台菜单", showLink: false, description: "管理菜单和导航结构。", endpoint: "/platform/menus", columns: ["id", "name", "path", "status"], icon: "ep:menu" } },
     { path: "/console/ops/health", name: "OpsHealthSpecRoute", component: OpsHealthPage, meta: { title: "系统健康", showLink: false } },
     { path: "/console/ops/jobs", name: "OpsJobsSpecRoute", component: OpsJobsPage, meta: { title: "运维任务", showLink: false } },
