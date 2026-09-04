@@ -42,6 +42,9 @@ public class BlobGarbageCollector {
     }
 
     private Mono<Integer> deletePlacements(BlobEntity blob, java.util.List<BlobPlacementEntity> all) {
+        if (all.stream().anyMatch(placement -> placement.durabilityRole() == PlacementDurabilityRole.ARCHIVE_BASE)) {
+            return Mono.error(new ConflictException("Blob 包含受保护的 Archive Base，不能由 GC 删除"));
+        }
         return reactor.core.publisher.Flux.fromIterable(all)
             .concatMap(placement -> providers.getByKey(placement.provider())
                 .switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
