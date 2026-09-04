@@ -107,11 +107,11 @@ export default {
       { path: "/authentication", name: "SecurityAuthentication", component: SecurityAuthenticationPage, meta: { title: "认证设置", description: "管理认证方式和验证挑战。", icon: "ep:key" } }
     ]),
     subsystem("/integration-center", "IntegrationCenter", "集成自动化", "ep:connection", [
-      moduleRoute({ path: "/automation", name: "IntegrationAutomation", title: "自动化", description: "管理自动化规则和触发器。", endpoint: "/integration/automation", columns: ["id", "name", "status", "updatedAt"], icon: "ep:connection" }),
-      moduleRoute({ path: "/executions", name: "IntegrationExecutions", title: "自动化执行", description: "查看自动化执行记录。", endpoint: "/integration/executions", columns: ["id", "automationId", "status", "createdAt"], icon: "ep:operation" }),
-      moduleRoute({ path: "/events", name: "IntegrationEvents", title: "集成事件", description: "查看外部集成事件和投递状态。", endpoint: "/integration/events", columns: ["id", "type", "status", "createdAt"], icon: "ep:bell" }),
-      moduleRoute({ path: "/sync", name: "IntegrationSync", title: "同步", description: "管理外部数据同步任务。", endpoint: "/integration/sync", columns: ["id", "source", "status", "updatedAt"], icon: "ep:refresh" }),
-      moduleRoute({ path: "/plugins", name: "IntegrationPlugins", title: "插件", description: "管理集成插件及其权限。", endpoint: "/integration/plugins", columns: ["id", "name", "status", "version"], icon: "ep:cpu" })
+      { path: "/automation", name: "IntegrationAutomation", component: () => import("@/views/integration/index.vue"), meta: { title: "自动化", icon: "ep:connection" } },
+      { path: "/executions", name: "IntegrationExecutions", component: () => import("@/views/integration/index.vue"), meta: { title: "自动化执行", icon: "ep:operation" } },
+      { path: "/events", name: "IntegrationEvents", component: () => import("@/views/integration/index.vue"), meta: { title: "集成事件", icon: "ep:bell" } },
+      { path: "/sync", name: "IntegrationSync", component: () => import("@/views/integration/index.vue"), meta: { title: "同步", icon: "ep:refresh" } },
+      { path: "/plugins", name: "IntegrationPlugins", component: () => import("@/views/integration/index.vue"), meta: { title: "插件", icon: "ep:cpu" } }
     ]),
     subsystem("/communications-center", "CommunicationsCenter", "沟通与审计", "ep:notification", [
       { path: "/announcements", name: "Announcements", component: AnnouncementsPage, meta: { title: "公告", description: "发布和管理系统公告。", icon: "ep:notification" } },
