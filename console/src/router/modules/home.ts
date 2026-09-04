@@ -18,6 +18,7 @@ const AccountProfilePage = () => import("@/views/account/Profile.vue");
 const AccountPreferencesPage = () => import("@/views/account/Preferences.vue");
 const AiAssistantPage = () => import("@/views/ai/Assistant.vue");
 const AiModelsPage = () => import("@/views/ai/Models.vue");
+const AiPersonasPage = () => import("@/views/ai/Personas.vue");
 
 type ModuleOptions = {
   path: string;
@@ -75,7 +76,7 @@ export default {
     subsystem("/ai-center", "AiCenter", "AI 智能", "ep:magic-stick", [
       { path: "/assistant", name: "AiAssistant", component: AiAssistantPage, meta: { title: "AI 助手", description: "与 AI 助手协作处理内容和任务。", icon: "ep:chat-dot-round" } },
       { path: "/models", name: "AiModels", component: AiModelsPage, meta: { title: "AI 模型", description: "查看可用模型和能力配置。", icon: "ep:cpu" } },
-      moduleRoute({ path: "/personas", name: "AiPersonas", title: "AI 人格", description: "管理助手人格和提示配置。", endpoint: "/ai/personas", columns: ["id", "name", "status", "updatedAt"], icon: "ep:user" }),
+      { path: "/personas", name: "AiPersonas", component: AiPersonasPage, meta: { title: "AI 人格", description: "管理助手人格和提示配置。", icon: "ep:user" } },
       moduleRoute({ path: "/privacy", name: "AiPrivacy", title: "AI 隐私", description: "管理 AI 数据使用和隐私边界。", endpoint: "/ai/privacy", columns: ["key", "value", "updatedAt"], icon: "ep:lock" }),
       moduleRoute({ path: "/jobs", name: "AiJobs", title: "AI 任务", description: "查看 AI 后台任务及执行状态。", endpoint: "/ai/jobs", columns: ["id", "type", "status", "createdAt"], icon: "ep:operation" })
     ]),
@@ -157,7 +158,7 @@ export default {
     { path: "/console/account/security", name: "AccountSecuritySpecRoute", component: ModulePage, meta: { title: "账户安全", showLink: false, description: "管理认证方式和安全状态。", endpoint: "/security/verification-challenges", columns: ["id", "status", "createdAt", "expiresAt"], icon: "ep:lock" } },
     { path: "/console/ai/assistant", name: "AiAssistantSpecRoute", component: AiAssistantPage, meta: { title: "AI 助手", showLink: false } },
     { path: "/console/ai/models", name: "AiModelsSpecRoute", component: AiModelsPage, meta: { title: "AI 模型", showLink: false } },
-    { path: "/console/ai/personas", name: "AiPersonasSpecRoute", component: ModulePage, meta: { title: "AI 人格", showLink: false, description: "管理助手人格和提示配置。", endpoint: "/ai/personas", columns: ["id", "name", "status", "updatedAt"], icon: "ep:user" } },
+    { path: "/console/ai/personas", name: "AiPersonasSpecRoute", component: AiPersonasPage, meta: { title: "AI 人格", showLink: false } },
     { path: "/console/ai/privacy", name: "AiPrivacySpecRoute", component: ModulePage, meta: { title: "AI 隐私", showLink: false, description: "管理 AI 数据使用和隐私边界。", endpoint: "/ai/privacy", columns: ["key", "value", "updatedAt"], icon: "ep:lock" } },
     { path: "/console/ai/jobs", name: "AiJobsSpecRoute", component: ModulePage, meta: { title: "AI 任务", showLink: false, description: "查看 AI 后台任务及执行状态。", endpoint: "/ai/jobs", columns: ["id", "type", "status", "createdAt"], icon: "ep:operation" } },
     { path: "/console/communications/announcements", name: "AnnouncementsSpecRoute", component: ModulePage, meta: { title: "公告", showLink: false, description: "发布和管理系统公告。", endpoint: "/communications/announcements", columns: ["id", "title", "status", "publishedAt"], icon: "ep:notification" } },
