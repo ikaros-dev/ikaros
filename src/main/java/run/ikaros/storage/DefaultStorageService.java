@@ -177,34 +177,21 @@ public class DefaultStorageService implements StorageService {
             .flatMap(provider -> objectProviderRegistry.createUploadIntent(provider,
                 new StorageUploadRequest(objectKey, request.sizeBytes(), request.mediaType(), request.sha256()))
                 .map(intent -> new StorageUploadIntentView(provider.providerKey(), provider.tier(), intent.method(),
-                    intent.url(), intent.objectKey(), intent.expiresAt())));
+                    intent.url(), intent.objectKey(), intent.expiresAt(), request.sha256())));
     }
 
     private Mono<Void> verifyUploadedObject(StorageProvider provider, CommitUploadRequest request) {
         if (provider.tier() != request.tier()) return Mono.error(new ConflictException("Placement tier 与 Storage Provider 配置不一致"));
-        return objectProviderRegistry.verify(provider, request.objectKey(), request.sha256()).flatMap(actual -> {
+        if (!request.sha256().equalsIgnoreCase(request.uploadSha256())) {
+            return Mono.error(new ConflictException("上传意图 SHA-256 与提交声明不一致"));
+        }
+        return objectProviderRegistry.verify(provider, request.objectKey()).flatMap(actual -> {
             if (actual.sizeBytes() != request.sizeBytes()) {
                 return Mono.<Void>error(new ConflictException("已上传对象大小与提交声明不一致"));
-            }
-            if (!checksumMatches(actual.checksumSha256(), request.sha256())) {
-                return Mono.<Void>error(new ConflictException("已上传对象 SHA-256 与提交声明不一致"));
             }
             return Mono.<Void>empty();
         }).onErrorMap(error -> error instanceof ConflictException ? error
             : new ConflictException("无法确认已上传对象，请检查上传是否完成"));
-    }
-
-    private boolean checksumMatches(String actual, String expectedHex) {
-        if (actual == null || expectedHex == null) return false;
-        String normalizedActual = actual.trim();
-        String normalizedExpected = expectedHex.trim();
-        String expectedBase64 = Base64.getEncoder().encodeToString(HexFormat.of().parseHex(normalizedExpected));
-        if (normalizedActual.equals(expectedBase64) || normalizedActual.equalsIgnoreCase(normalizedExpected)) return true;
-        try {
-            return HexFormat.of().formatHex(Base64.getDecoder().decode(normalizedActual)).equalsIgnoreCase(normalizedExpected);
-        } catch (IllegalArgumentException error) {
-            return false;
-        }
     }
 
     private String safeFileName(String fileName) {

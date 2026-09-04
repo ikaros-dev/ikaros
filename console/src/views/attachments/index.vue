@@ -59,7 +59,7 @@ async function commitUpload() {
     } });
     const uploaded = await fetch(intent.url, { method: intent.method || "PUT", headers: { "Content-Type": mediaType, "x-amz-checksum-sha256": checksumSha256 }, body: file.value });
     if (!uploaded.ok) throw new Error(`对象上传失败（HTTP ${uploaded.status}）`);
-    await http.post(`/resources/${resourceId.value.trim()}/attachments/commit`, { data: { sha256, sizeBytes: file.value.size, mediaType, fileName: file.value.name, kind: upload.value.kind, provider: intent.provider, tier: intent.tier, objectKey: intent.objectKey, idempotencyKey: crypto.randomUUID() } });
+    await http.post(`/resources/${resourceId.value.trim()}/attachments/commit`, { data: { sha256, uploadSha256: intent.sha256 || sha256, sizeBytes: file.value.size, mediaType, fileName: file.value.name, kind: upload.value.kind, provider: intent.provider, tier: intent.tier, objectKey: intent.objectKey, idempotencyKey: crypto.randomUUID() } });
     uploadDialog.value = false; await load();
   } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "附件提交失败，请确认对象已存在于 Provider"; }
   finally { uploadLoading.value = false; }

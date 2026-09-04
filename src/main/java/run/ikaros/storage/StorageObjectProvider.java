@@ -12,7 +12,4 @@ public interface StorageObjectProvider {
 
     Mono<StorageObjectMetadata> verify(StorageProvider provider, String objectKey);
 
-    default Mono<StorageObjectMetadata> verify(StorageProvider provider, String objectKey, String expectedSha256) {
-        return verify(provider, objectKey);
-    }
 }

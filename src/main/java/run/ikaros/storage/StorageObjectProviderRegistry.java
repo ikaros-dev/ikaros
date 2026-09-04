@@ -22,10 +22,6 @@ public class StorageObjectProviderRegistry {
         return find(provider).verify(provider, objectKey);
     }
 
-    public Mono<StorageObjectMetadata> verify(StorageProvider provider, String objectKey, String expectedSha256) {
-        return find(provider).verify(provider, objectKey, expectedSha256);
-    }
-
     private StorageObjectProvider find(StorageProvider provider) {
         return providers.stream().filter(candidate -> candidate.supports(provider)).findFirst()
             .orElseThrow(() -> new ConflictException("未配置 Storage Provider 物理 adapter: " + provider.providerType()));
