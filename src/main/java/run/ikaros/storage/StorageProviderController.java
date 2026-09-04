@@ -19,11 +19,14 @@ import reactor.core.publisher.Mono;
 public class StorageProviderController {
     private final StorageProviderRegistry registry;
     private final StorageProviderCredentialRotationService credentialRotation;
+    private final StorageProviderCredentialService credentialService;
 
     public StorageProviderController(StorageProviderRegistry registry,
-                                     StorageProviderCredentialRotationService credentialRotation) {
+                                     StorageProviderCredentialRotationService credentialRotation,
+                                     StorageProviderCredentialService credentialService) {
         this.registry = registry;
         this.credentialRotation = credentialRotation;
+        this.credentialService = credentialService;
     }
 
     @PostMapping
@@ -52,6 +55,13 @@ public class StorageProviderController {
     @PostMapping("/{providerId}/actions/rotate-credentials")
     public Mono<StorageCredentialRotationView> rotateCredentials(@PathVariable UUID providerId) {
         return credentialRotation.rotate(providerId);
+    }
+
+    @PostMapping("/{providerId}/credentials")
+    public Mono<ResponseEntity<Void>> replaceCredentials(@PathVariable UUID providerId,
+                                                          @Valid @RequestBody ReplaceStorageProviderCredentialsRequest request) {
+        return credentialService.replace(providerId, request)
+            .thenReturn(ResponseEntity.noContent().build());
     }
 
     @PostMapping("/actions/rotate-credentials")
