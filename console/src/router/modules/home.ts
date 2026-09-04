@@ -41,7 +41,7 @@ export default {
     { path: "/console/search", name: "WorkbenchSearch", component: () => import("@/views/workbench/Search.vue"), meta: { title: "全局搜索", showLink: false } },
     { path: "/console/attachments", name: "AttachmentsSpecRoute", component: () => import("@/views/attachments/index.vue"), meta: { title: "附件与 Blob", showLink: false } },
     { path: "/console/storage/tiers", name: "StorageTiersSpecRoute", component: () => import("@/views/storage/Tiers.vue"), meta: { title: "持久化存储层", showLink: false } },
-    { path: "/console/storage/archive", name: "StorageArchiveSpecRoute", component: ModulePage, meta: { title: "归档与恢复", showLink: false, description: "查看归档资源、恢复队列和回收站操作。", endpoint: "/storage/restore-requests", columns: ["id", "resourceId", "status", "createdAt"], icon: "ep:refresh-left" } },
+    { path: "/console/storage/archive", name: "StorageArchiveSpecRoute", component: () => import("@/views/storage/Archive.vue"), meta: { title: "归档与恢复", showLink: false } },
     { path: "/console/storage/cache", name: "StorageCacheSpecRoute", component: ModulePage, meta: { title: "缓存与我的下载", showLink: false, description: "查看服务端缓存与客户端下载元数据。", endpoint: "/storage/cache", columns: ["id", "blobId", "resourceId", "status", "createdAt"], icon: "ep:coffee-cup" } },
     { path: "/console/storage/backup", name: "StorageBackupSpecRoute", component: ModulePage, meta: { title: "备份与恢复", showLink: false, description: "管理备份集与恢复向导。", endpoint: "/admin/backup/restore-points", columns: ["id", "status", "createdAt", "verifiedAt"], icon: "ep:files" } },
     subsystem("/resource-center", "ResourceCenter", "资源中心", "ep:files", [
@@ -64,7 +64,7 @@ export default {
       { path: "/drive", name: "Drive", component: () => import("@/views/drive/index.vue"), meta: { title: "个人云盘", icon: "ep:folder-opened" } },
       { path: "/console/drive/nodes/:nodeId", name: "DriveNodeDetail", component: () => import("@/views/drive/NodeDetail.vue"), meta: { title: "文件详情", showLink: false } },
       { path: "/storage/tiers", name: "StorageTiers", component: () => import("@/views/storage/Tiers.vue"), meta: { title: "持久化存储层", icon: "ep:box" } },
-      moduleRoute({ path: "/storage/archive", name: "StorageArchive", title: "归档与恢复", description: "查看归档资源、恢复队列和回收站操作。恢复与清理均为异步后台操作。", endpoint: "/storage/restore-requests", columns: ["id", "resourceId", "status", "createdAt"], icon: "ep:refresh-left" }),
+      { path: "/storage/archive", name: "StorageArchive", component: () => import("@/views/storage/Archive.vue"), meta: { title: "归档与恢复", icon: "ep:refresh-left" } },
       moduleRoute({ path: "/backup", name: "Backup", title: "备份恢复", description: "管理恢复点和备份验证。", endpoint: "/admin/backup/restore-points", columns: ["id", "status", "createdAt", "verifiedAt"], icon: "ep:files" })
     ]),
     subsystem("/ingestion-center", "IngestionCenter", "导入与处理", "ep:upload", [
