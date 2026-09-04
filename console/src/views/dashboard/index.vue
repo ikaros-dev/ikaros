@@ -1,56 +1,12 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-
-const router = useRouter();
-
-const subsystems = [
-  { title: "资源中心", description: "资源、文档、集合与活动", path: "/resources", icon: "ep:files" },
-  { title: "内容与媒体", description: "媒体、阅读、音乐与照片", path: "/media", icon: "ep:video-camera" },
-  { title: "存储与云盘", description: "云盘空间、存储与备份", path: "/drive", icon: "ep:box" },
-  { title: "身份与安全", description: "用户、角色与权限", path: "/account", icon: "ep:lock" }
-];
-
-const today = computed(() => new Intl.DateTimeFormat("zh-CN", {
-  dateStyle: "full"
-}).format(new Date()));
+import { http } from "@/utils/http";
+type Row = Record<string, any>;
+const router = useRouter(); const loading = ref(false); const error = ref(""); const resources = ref<Row[]>([]); const tasks = ref<Row[]>([]); const providers = ref<Row[]>([]); const refreshedAt = ref("");
+const failedTasks = computed(() => tasks.value.filter(item => ["FAILED", "ERROR"].includes(String(item.status).toUpperCase())).length);
+const runningTasks = computed(() => tasks.value.filter(item => ["RUNNING", "PROCESSING"].includes(String(item.status).toUpperCase())).length);
+async function load() { loading.value = true; error.value = ""; try { const results = await Promise.allSettled([http.get<unknown, unknown>("/resources"), http.get<unknown, unknown>("/background-tasks"), http.get<unknown, unknown>("/storage/providers")]); const value = (index: number) => results[index].status === "fulfilled" && Array.isArray(results[index].value) ? results[index].value as Row[] : []; resources.value = value(0); tasks.value = value(1); providers.value = value(2); refreshedAt.value = new Date().toLocaleString("zh-CN"); } catch (e: any) { error.value = e?.message || "仪表盘加载失败"; } finally { loading.value = false; } }
+onMounted(load);
 </script>
-
-<template>
-  <main class="p-4 md:p-6">
-    <section class="mb-6">
-      <p class="text-sm text-[var(--el-text-color-secondary)]">{{ today }}</p>
-      <h1 class="mt-2 text-3xl font-semibold">仪表盘</h1>
-      <p class="mt-2 text-[var(--el-text-color-secondary)]">Ikaros 管理控制台概览</p>
-    </section>
-
-    <el-row :gutter="16" class="mb-6">
-      <el-col :xs="24" :sm="12" :lg="6" class="mb-4">
-        <el-card shadow="never"><p class="text-sm text-[var(--el-text-color-secondary)]">资源中心</p><strong class="mt-2 block text-2xl">资源管理</strong><span class="mt-1 block text-xs text-[var(--el-text-color-secondary)]">统一管理核心资源</span></el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :lg="6" class="mb-4">
-        <el-card shadow="never"><p class="text-sm text-[var(--el-text-color-secondary)]">系统状态</p><strong class="mt-2 block text-2xl text-green-600">运行中</strong><span class="mt-1 block text-xs text-[var(--el-text-color-secondary)]">服务可正常访问</span></el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :lg="6" class="mb-4">
-        <el-card shadow="never"><p class="text-sm text-[var(--el-text-color-secondary)]">后台任务</p><strong class="mt-2 block text-2xl">任务中心</strong><span class="mt-1 block text-xs text-[var(--el-text-color-secondary)]">查看处理进度</span></el-card>
-      </el-col>
-      <el-col :xs="24" :sm="12" :lg="6" class="mb-4">
-        <el-card shadow="never"><p class="text-sm text-[var(--el-text-color-secondary)]">安全中心</p><strong class="mt-2 block text-2xl">身份安全</strong><span class="mt-1 block text-xs text-[var(--el-text-color-secondary)]">管理访问控制</span></el-card>
-      </el-col>
-    </el-row>
-
-    <el-card shadow="never">
-      <template #header><span class="font-semibold">子系统快捷入口</span></template>
-      <el-row :gutter="16">
-        <el-col v-for="item in subsystems" :key="item.path" :xs="24" :sm="12" :lg="6" class="mb-4">
-          <el-card shadow="hover" class="cursor-pointer" @click="router.push(item.path)">
-            <div class="flex items-center gap-3">
-              <IconifyIconOnline :icon="item.icon" width="28" height="28" />
-              <div><strong>{{ item.title }}</strong><p class="mt-1 text-xs text-[var(--el-text-color-secondary)]">{{ item.description }}</p></div>
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
-    </el-card>
-  </main>
-</template>
+<template><main class="p-4 md:p-6"><div class="flex justify-between items-start mb-6"><div><p class="text-sm text-[var(--el-text-color-secondary)]">{{ new Date().toLocaleDateString('zh-CN', { dateStyle: 'full' }) }}</p><h1 class="mt-2 text-3xl font-semibold">概览</h1><p class="mt-2 text-[var(--el-text-color-secondary)]">快速了解你的 Ikaros 工作空间。</p></div><div class="flex gap-2"><el-button @click="router.push('/console/storage/tiers')">配置存储</el-button><el-button :loading="loading" @click="load">刷新</el-button></div></div><el-alert v-if="error" :title="error" type="warning" show-icon :closable="false" class="mb-4"/><el-card shadow="never" class="mb-6"><div class="flex flex-wrap items-center justify-between gap-3"><div><span class="text-xl font-medium">欢迎回到 Ikaros</span><p class="mt-1 text-sm text-[var(--el-text-color-secondary)]">服务器环境：{{ import.meta.env.MODE }}</p></div><span class="text-sm text-[var(--el-text-color-secondary)]">最近刷新：{{ refreshedAt || '尚未刷新' }}</span></div></el-card><section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 mb-6"><el-card shadow="never"><div class="text-sm text-[var(--el-text-color-secondary)]">资源</div><div class="text-2xl font-semibold mt-2">{{ resources.length }}</div><div class="text-xs mt-1">当前可见 Resource</div></el-card><el-card shadow="never"><div class="text-sm text-[var(--el-text-color-secondary)]">存储 Provider</div><div class="text-2xl font-semibold mt-2">{{ providers.length }}</div><div class="text-xs mt-1">已配置持久化后端</div></el-card><el-card shadow="never"><div class="text-sm text-[var(--el-text-color-secondary)]">今天</div><div class="text-2xl font-semibold mt-2">—</div><div class="text-xs mt-1">计划模块待接入</div></el-card><el-card shadow="never"><div class="text-sm text-[var(--el-text-color-secondary)]">后台任务</div><div class="text-2xl font-semibold mt-2">{{ runningTasks }} / {{ failedTasks }}</div><div class="text-xs mt-1">运行中 / 失败</div></el-card><el-card shadow="never"><div class="text-sm text-[var(--el-text-color-secondary)]">系统状态</div><div class="text-2xl font-semibold mt-2 text-green-600">正常</div><div class="text-xs mt-1">独立 Widget 加载</div></el-card></section><section class="grid grid-cols-1 lg:grid-cols-2 gap-4"><el-card shadow="never"><template #header><div class="flex justify-between"><span class="font-medium">继续处理</span><el-button link @click="router.push('/console/resources')">查看全部</el-button></div></template><el-empty v-if="!resources.length" description="暂无待处理资源"/><div v-for="item in resources.slice(0, 6)" :key="item.id" class="flex items-center justify-between py-3 border-b last:border-0"><div><div class="font-medium">{{ item.title || item.name || item.id }}</div><div class="text-xs text-[var(--el-text-color-secondary)]">{{ item.resourceType || item.type || 'Resource' }} · {{ item.status || '未知状态' }}</div></div><el-button link @click="router.push(`/console/resources/${item.id}`)">继续</el-button></div></el-card><el-card shadow="never"><template #header><div class="flex justify-between"><span class="font-medium">待处理事项</span><el-button link @click="router.push('/console/ops/background')">后台任务</el-button></div></template><el-empty v-if="!failedTasks" description="暂无待处理事项"/><div v-else class="flex items-center justify-between py-3"><span>存在失败的后台任务</span><el-tag type="danger">{{ failedTasks }} 项</el-tag></div><div class="mt-4 text-sm text-[var(--el-text-color-secondary)]">单个 Widget 请求失败不会影响其他数据区域。</div></el-card></section></main></template>
