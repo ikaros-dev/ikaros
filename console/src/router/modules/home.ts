@@ -103,7 +103,7 @@ export default {
     subsystem("/security-center", "SecurityCenter", "身份安全", "ep:lock", [
       { path: "/users", name: "SecurityUsers", component: SecurityUsersPage, meta: { title: "安全用户", description: "管理用户、账号状态和安全策略。", icon: "ep:user" } },
       { path: "/permissions", name: "SecurityPermissions", component: SecurityPermissionsPage, meta: { title: "权限", description: "管理权限注册表和授权能力。", icon: "ep:lock" } },
-      { path: "/sessions", name: "SecuritySessions", component: SecuritySessionsPage, meta: { title: "会话", description: "查看活动会话和登录设备。", icon: "ep:connection" } },
+      { path: "/sessions", name: "SecuritySessions", component: SecuritySessionsPage, meta: { title: "JWT 状态", description: "查看本地 Access / Refresh Token 状态。", icon: "ep:key" } },
       { path: "/authentication", name: "SecurityAuthentication", component: SecurityAuthenticationPage, meta: { title: "认证设置", description: "管理认证方式和验证挑战。", icon: "ep:key" } }
     ]),
     subsystem("/integration-center", "IntegrationCenter", "集成自动化", "ep:connection", [
@@ -203,7 +203,7 @@ export default {
     { path: "/console/ops/background", name: "OpsBackgroundSpecRoute", component: OpsBackgroundPage, meta: { title: "后台任务", showLink: false } },
     { path: "/console/security/users", name: "SecurityUsersSpecRoute", component: SecurityUsersPage, meta: { title: "安全用户", showLink: false } },
     { path: "/console/security/permissions", name: "SecurityPermissionsSpecRoute", component: SecurityPermissionsPage, meta: { title: "权限", showLink: false } },
-    { path: "/console/security/sessions", name: "SecuritySessionsSpecRoute", component: SecuritySessionsPage, meta: { title: "会话", showLink: false } },
+    { path: "/console/security/sessions", name: "SecuritySessionsSpecRoute", component: SecuritySessionsPage, meta: { title: "JWT 状态", showLink: false } },
     { path: "/console/security/authentication", name: "SecurityAuthenticationSpecRoute", component: SecurityAuthenticationPage, meta: { title: "认证设置", showLink: false } },
     { path: "/console/passwords", name: "PasswordsSpecRoute", component: () => import("@/views/password/index.vue"), meta: { title: "密码管理", showLink: false } },
     { path: "/console/passwords/generator", name: "PasswordGeneratorSpecRoute", component: () => import("@/views/password/index.vue"), meta: { title: "密码生成器", showLink: false } },
