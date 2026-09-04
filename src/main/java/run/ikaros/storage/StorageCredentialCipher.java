@@ -22,6 +22,7 @@ public class StorageCredentialCipher {
     public String encrypt(String value) {
         if (value == null || value.isBlank()) return null;
         try { byte[] iv = new byte[12]; random.nextBytes(iv); Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding"); cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key(), "AES"), new GCMParameterSpec(128, iv)); byte[] encrypted = cipher.doFinal(value.getBytes(StandardCharsets.UTF_8)); return Base64.getEncoder().encodeToString(iv) + ":" + Base64.getEncoder().encodeToString(encrypted); }
+        catch (ConflictException error) { throw error; }
         catch (Exception error) { throw new ConflictException("Storage credential 加密失败"); }
     }
 

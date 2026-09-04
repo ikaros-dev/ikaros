@@ -20,6 +20,8 @@ springdoc:
     path: /swagger-ui.html
 
 ikaros:
+  storage:
+    credential-encryption-key: ${IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEY:}
   security:
     jwt:
       issuer: ${IKAROS_JWT_ISSUER:ikaros}
