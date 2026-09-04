@@ -251,11 +251,11 @@ export default {
       { path: "/finance/reconcile", name: "FinanceReconcile", component: FinanceReconcilePage, meta: { title: "对账", description: "检查账户与交易记录的一致性。", icon: "ep:finished" } }
     ]),
     subsystem("/identity-center", "IdentityCenter", "身份与安全", "ep:lock", [
-      moduleRoute({ path: "/account", name: "Account", title: "我的账户", description: "查看当前登录用户资料。", endpoint: "/me", columns: ["id", "username", "displayName", "email", "status"], icon: "ep:user-filled" }),
-      moduleRoute({ path: "/security", name: "Security", title: "安全中心", description: "查看安全验证挑战和会话状态。", endpoint: "/security/verification-challenges", columns: ["id", "status", "createdAt", "expiresAt"], icon: "ep:warning" }),
-      moduleRoute({ path: "/users", name: "Users", title: "用户管理", description: "管理用户状态、角色和账号信息。", endpoint: "/admin/users", columns: ["id", "username", "displayName", "status"], icon: "ep:user" }),
-      moduleRoute({ path: "/roles", name: "Roles", title: "角色管理", description: "查看角色及其权限配置。", endpoint: "/admin/roles", columns: ["id", "code", "name", "description"], icon: "ep:key" }),
-      moduleRoute({ path: "/permissions", name: "Permissions", title: "权限管理", description: "查看系统权限注册表。", endpoint: "/admin/permissions", columns: ["code", "name", "description"], icon: "ep:lock" })
+      { path: "/account", name: "Account", component: () => import("@/views/account/Profile.vue"), meta: { title: "我的账户", icon: "ep:user-filled" } },
+      { path: "/security", name: "Security", component: SecurityAuthenticationPage, meta: { title: "安全中心", icon: "ep:warning" } },
+      { path: "/users", name: "Users", component: SecurityUsersPage, meta: { title: "用户管理", icon: "ep:user" } },
+      { path: "/roles", name: "Roles", component: SecurityPermissionsPage, meta: { title: "角色管理", icon: "ep:key" } },
+      { path: "/permissions", name: "Permissions", component: SecurityPermissionsPage, meta: { title: "权限管理", icon: "ep:lock" } }
     ])
   ]
 } satisfies RouteConfigsTable;
