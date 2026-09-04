@@ -164,6 +164,11 @@ export default {
     { path: "/console/storage/archive", name: "StorageArchiveSpecRoute", component: () => import("@/views/storage/Archive.vue"), meta: { title: "归档与恢复", showLink: false } },
     { path: "/console/storage/cache", name: "StorageCacheSpecRoute", component: () => import("@/views/storage/Cache.vue"), meta: { title: "缓存与我的下载", showLink: false } },
     { path: "/console/storage/backup", name: "StorageBackupSpecRoute", component: () => import("@/views/storage/Backup.vue"), meta: { title: "备份与恢复", showLink: false } },
+    { path: "/console/storage/delivery/reliability", name: "StorageDeliveryReliabilityRoute", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "Delivery Reliability", showLink: false } },
+    { path: "/console/storage/delivery/failover", name: "StorageDeliveryFailoverRoute", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "Failover 观测", showLink: false } },
+    { path: "/console/storage/delivery/restore", name: "StorageDeliveryRestoreRoute", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "Restore Reconciliation", showLink: false } },
+    { path: "/console/storage/delivery/budget", name: "StorageDeliveryBudgetRoute", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "Traffic Budget", showLink: false } },
+    { path: "/console/storage/delivery/purge", name: "StorageDeliveryPurgeRoute", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "CDN Purge", showLink: false } },
     { path: "/console/planning/today", name: "PlanningTodaySpecRoute", component: PlanningTodayPage, meta: { title: "今日计划", showLink: false } },
     { path: "/console/planning/projects", name: "PlanningProjectsSpecRoute", component: PlanningProjectsPage, meta: { title: "项目管理", showLink: false } },
     { path: "/console/planning/calendar", name: "PlanningCalendarSpecRoute", component: PlanningCalendarPage, meta: { title: "日历", showLink: false } },
@@ -239,6 +244,11 @@ export default {
       { path: "/storage/archive", name: "StorageArchive", component: () => import("@/views/storage/Archive.vue"), meta: { title: "归档与恢复", icon: "ep:refresh-left" } },
       { path: "/storage/cache", name: "StorageCache", component: () => import("@/views/storage/Cache.vue"), meta: { title: "缓存与我的下载", icon: "ep:coffee-cup" } },
       { path: "/backup", name: "Backup", component: () => import("@/views/storage/Backup.vue"), meta: { title: "备份恢复", icon: "ep:files" } }
+      ,{ path: "/delivery/reliability", name: "StorageDeliveryReliability", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "Delivery Reliability", icon: "ep:monitor" } },
+      { path: "/delivery/failover", name: "StorageDeliveryFailover", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "Failover 观测", icon: "ep:warning" } },
+      { path: "/delivery/restore", name: "StorageDeliveryRestore", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "Restore 协调", icon: "ep:refresh" } },
+      { path: "/delivery/budget", name: "StorageDeliveryBudget", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "Traffic Budget", icon: "ep:data-line" } },
+      { path: "/delivery/purge", name: "StorageDeliveryPurge", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "CDN Purge", icon: "ep:delete" } }
     ]),
     subsystem("/ingestion-center", "IngestionCenter", "导入与处理", "ep:upload", [
       { path: "/ingestion", name: "Ingestion", component: () => import("@/views/ingestion/index.vue"), meta: { title: "内容导入", icon: "ep:upload" } },
