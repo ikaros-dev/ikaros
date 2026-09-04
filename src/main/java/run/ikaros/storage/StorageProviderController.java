@@ -54,6 +54,11 @@ public class StorageProviderController {
         return credentialRotation.rotate(providerId);
     }
 
+    @PostMapping("/actions/rotate-credentials")
+    public Mono<StorageCredentialBatchRotationView> rotateAllCredentials() {
+        return credentialRotation.rotateAll();
+    }
+
     @DeleteMapping("/{providerId}")
     public Mono<ResponseEntity<Void>> disable(@PathVariable UUID providerId) {
         return registry.disable(providerId).thenReturn(ResponseEntity.noContent().build());

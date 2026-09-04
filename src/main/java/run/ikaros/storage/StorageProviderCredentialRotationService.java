@@ -10,6 +10,7 @@ import run.ikaros.common.NotFoundException;
 
 @Service
 public class StorageProviderCredentialRotationService {
+    private static final int MAX_BATCH_PROVIDERS = 100;
     private final StorageProviderRepository providers;
     private final StorageCredentialCipher cipher;
 
@@ -22,6 +23,16 @@ public class StorageProviderCredentialRotationService {
         return providers.findById(providerId)
             .switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
             .flatMap(this::rotate);
+    }
+
+    public Mono<StorageCredentialBatchRotationView> rotateAll() {
+        return providers.findAll()
+            .take(MAX_BATCH_PROVIDERS)
+            .concatMap(this::rotate)
+            .collectList()
+            .map(results -> new StorageCredentialBatchRotationView(cipher.activeKeyVersion(), results.size(),
+                (int) results.stream().filter(result -> result.rotatedFields() > 0).count(),
+                results.stream().mapToInt(StorageCredentialRotationView::rotatedFields).sum()));
     }
 
     private Mono<StorageCredentialRotationView> rotate(StorageProviderEntity provider) {
