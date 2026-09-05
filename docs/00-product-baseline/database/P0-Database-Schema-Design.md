@@ -4,7 +4,7 @@
 |---|---|
 | 文档名称 | Ikaros V2 P0 Database Schema Design |
 | 适用版本 | Ikaros V2 |
-| 文档版本 | v0.1 |
+| 文档版本 | v0.2 |
 | 状态 | Draft / Implementation Contract |
 | 产品基线 | `../Product-Requirements-Document.md` |
 | 系统基线 | `../System-Overview-Design.md` |
@@ -14,6 +14,8 @@
 > 本文档把 V2 已经确定的数据库原则向下收敛为首批可以直接映射到 Flyway Migration、Repository 与 Integration Test 的 P0 Schema Contract。
 >
 > 本文档开始锁定 P0 的物理 Schema、Table、Column、Constraint 与关键 Index 名称。实现若需要偏离本文档，必须先修改本文档或通过明确 ADR 记录偏离原因，不能由 Repository 实现静默产生另一套数据库事实。
+>
+> Identity 登录认证采用无状态 JWT。数据库不持久化 Login Session / Security Session、Access Token / Refresh Token Digest、单设备登录状态或 `last_seen` 会话记录；用户级提前失效旧 JWT 通过 `identity.user_account.security_version` 完成。
 
 ---
 
@@ -27,7 +29,7 @@
 2. Storage：Attachment、Blob、Placement、Storage Provider、Retention Hold。
 3. Integration：Durable Event Outbox 与 Consumer Inbox。
 4. Operations：Background Task 与 Attempt。
-5. Identity / Authorization：User、Permission Registry、Role、Binding、Session。
+5. Identity / Authorization：User、Permission Registry、Role、Binding、JWT Security Version。
 
 本轮不展开：
 
@@ -721,9 +723,12 @@ CHECK attempt_no >= 1
 UNIQUE(normalized_username)
 UNIQUE(normalized_email) WHERE normalized_email IS NOT NULL
 CHECK status in ('ACTIVE','DISABLED','LOCKED','DELETED')
+CHECK security_version >= 0
 ```
 
 只保存现代密码哈希结果，不保存密码明文、可逆密码或日志副本。
+
+`security_version` 是用户级 Token Security Epoch。签发 JWT 时把当前值写入 Token；请求认证时除了校验签名、`exp` 等标准约束，还必须要求 Token 中的 `security_version` 与用户当前值一致。提升该值即可使此前签发的所有 JWT 提前失效，而无需枚举或持久化 Session。
 
 ---
 
@@ -819,33 +824,47 @@ FK role_id -> identity.role(id) ON DELETE RESTRICT
 
 ---
 
-## 23. `identity.session`
+## 23. Stateless JWT Authentication Persistence Boundary
 
-| Column | Type | Null |
-|---|---|---:|
-| `id` | uuid | NO |
-| `user_id` | uuid | NO |
-| `session_token_digest` | text | NO |
-| `refresh_token_digest` | text | YES |
-| `security_version` | bigint | NO |
-| `svl` | integer | NO |
-| `created_at` | timestamptz | NO |
-| `last_seen_at` | timestamptz | YES |
-| `expires_at` | timestamptz | NO |
-| `revoked_at` | timestamptz | YES |
-| `revoke_reason` | text | YES |
-| `client_metadata` | jsonb | YES |
+P0 **不定义**：
 
 ```text
-FK user_id -> identity.user_account(id) ON DELETE RESTRICT
-UNIQUE(session_token_digest)
-CHECK svl >= 0
-CHECK expires_at > created_at
+identity.session
+security_session
+login_session
 ```
 
-原始 Session Token / Refresh Token 不落库，只保存不可逆 Digest 或等价服务端安全表示。
+也不持久化：
 
-Session 有效性必须同时检查用户当前 `security_version`。
+- Access Token / Refresh Token 原文；
+- Access Token / Refresh Token Digest；
+- Session ID / `sid` 作为登录状态主键；
+- 每设备登录记录；
+- `last_seen_at` 登录会话状态；
+- 单 Session `revoked_at` / `revoke_reason`。
+
+JWT 是自包含签名凭据。认证至少校验：
+
+```text
+signature
+issuer / audience（启用时）
+exp / nbf / iat
+subject = user_id
+security_version == identity.user_account.security_version
+user status allows authentication
+```
+
+当前设备 Logout 由客户端删除本地 Token 与 Credential Cache 完成，不产生数据库 Session 变更。
+
+需要让目标用户全部旧 Token 提前失效时，执行 `identity.invalidate-user-tokens`，在事务中提升：
+
+```text
+identity.user_account.security_version
+```
+
+并发布 `identity.user.tokens-invalidated`。
+
+Step-up Verification 的 OTP Challenge 可以按验证子系统需要短期持久化，但它是一次性 Challenge，不是登录 Session。验证成功后签发的 Step-up Grant 应为短期、Purpose-bound 的签名凭据；服务端不因此创建 `SecuritySession` 行。
 
 ---
 
@@ -936,6 +955,8 @@ V2_0008__seed_builtin_roles.sql
 
 版本号命名可根据项目最终 Flyway Version Policy 调整，但顺序依赖不得倒置。
 
+`identity_foundation` 不创建登录 Session 表；Identity 持久化基线只保留账号、权限、角色、绑定、凭据/验证所需数据以及用户级 `security_version`。
+
 ### 28.1 Migration 原则
 
 - Production 禁止 Hibernate/ORM 自动建表作为 Schema Source of Truth。
@@ -983,7 +1004,7 @@ P0 至少将以下不变量下降到 Constraint：
 | Attempt Number 不重复 | UNIQUE(task,attempt_no) |
 | Username / Email 规范化唯一 | UNIQUE |
 | Role Permission 不重复 | PK |
-| Session Token Digest 不重复 | UNIQUE |
+| User security_version 非负 | CHECK |
 
 以下不变量不能只靠单行 Constraint，需要 Command + Transaction + Integration Test：
 
@@ -993,6 +1014,7 @@ P0 至少将以下不变量下降到 Constraint：
 - Blob GC 前不存在有效业务引用和 Hold；
 - Background Task Lease 恢复；
 - Resource ACL / RBAC / Share 的最终授权判定；
+- JWT `security_version` 与当前用户版本的一致性校验；
 - Cross-domain Event Consumer 最终一致性。
 
 ---
@@ -1025,6 +1047,7 @@ P0 至少将以下不变量下降到 Constraint：
 - [ ] Background Task claim/lease 基础并发测试通过。
 - [ ] Storage Blob/Placement 唯一性与 GC eligibility 基础测试通过。
 - [ ] Permission Registry seed 与 Built-in Role seed 可重复执行且结果稳定。
+- [ ] Identity 基线不存在登录 Session / Token Digest 表，旧 JWT 失效仅依赖受控 Token 验证策略与 `security_version`。
 
 ---
 
