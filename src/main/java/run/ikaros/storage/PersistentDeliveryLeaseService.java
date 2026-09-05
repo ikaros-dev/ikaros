@@ -41,6 +41,11 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
 
     @Override
     public Mono<DeliveryLeaseView> create(UUID actorId, UUID attachmentId, DeliveryLeaseRequest request) {
+        return create(actorId, attachmentId, request, null);
+    }
+
+    @Override
+    public Mono<DeliveryLeaseView> create(UUID actorId, UUID attachmentId, DeliveryLeaseRequest request, UUID requestedBindingId) {
         if (request == null || request.deliveryGrant() == null || request.deliveryGrant().isBlank())
             return Mono.error(new ConflictException("创建 Delivery Lease 必须提供有效 Grant"));
         int ttl = ttl(request.ttlSeconds());
@@ -48,7 +53,7 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
             .filter(g -> g.attachmentId().equals(attachmentId) && g.ownerId().equals(actorId)
                 && g.revokedAt() == null && g.expiresAt().isAfter(Instant.now()))
             .switchIfEmpty(Mono.error(new NotFoundException("Delivery Grant 不存在或已失效")))
-            .flatMap(grant -> ownedAttachment(actorId, attachmentId).flatMap(attachment -> select(attachment.blobId()).flatMap(selection -> {
+            .flatMap(grant -> ownedAttachment(actorId, attachmentId).flatMap(attachment -> select(attachment.blobId(), requestedBindingId).flatMap(selection -> {
                 Instant now = Instant.now();
                 return leases.save(new MediaDeliveryLeaseEntity(null, attachment.id(), attachment.blobId(), actorId,
                     grant.id(), selection.bindingId(), 1, now, selection.reason(), selection.fallbackIndex(),
@@ -143,6 +148,10 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
     }
 
     private Mono<Selection> select(UUID blobId) {
+        return select(blobId, null);
+    }
+
+    private Mono<Selection> select(UUID blobId, UUID requestedBindingId) {
         return placements.findAllByBlobIdOrderByCreatedAtAsc(blobId)
             .filterWhen(this::isReadablePlacement)
             .index()
@@ -150,7 +159,8 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
                 .filter(provider -> provider.status() != StorageProviderStatus.DISABLED
                     && provider.status() != StorageProviderStatus.FAILED)
                 .flatMap(provider -> bindings.findAllByStorageProviderIdOrderByPriorityAsc(provider.id())
-                    .filter(binding -> binding.enabled()
+                    .filter(binding -> (requestedBindingId == null || binding.id().equals(requestedBindingId))
+                        && binding.enabled()
                         && (indexed.getT1() == 0 || binding.fallbackParticipation()))
                     .next()
                     .flatMap(binding -> deliveryProviders.findByProviderKey(binding.deliveryProviderKey())

@@ -92,7 +92,7 @@ public class AttachmentPreviewService {
         DeliveryGrantRequest request = new DeliveryGrantRequest(900, null, null, DeliveryIntent.PLAYBACK, null, true);
         return deliveryGrants.issue(actorId, attachmentId, request)
             .flatMap(grant -> deliveryLeases.create(actorId, attachmentId,
-                    new DeliveryLeaseRequest(grant.token(), request.ttlSeconds()))
+                    new DeliveryLeaseRequest(grant.token(), request.ttlSeconds()), binding.id())
                 .flatMap(lease -> deliveryContracts.contract(attachmentId, grant, lease)
                     .filter(contract -> contract.deliveryProviderId() != null
                         && contract.rangeSupported() == (binding.rangePolicy() != DeliveryBindingRangePolicy.UNSUPPORTED))

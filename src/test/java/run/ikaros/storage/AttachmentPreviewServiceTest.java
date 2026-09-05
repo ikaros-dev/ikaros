@@ -76,12 +76,13 @@ class AttachmentPreviewServiceTest {
         when(deliveryProvider.enabled()).thenReturn(true);
         when(deliveryProvider.healthStatus()).thenReturn(DeliveryProviderHealthStatus.HEALTHY);
         when(grants.issue(eq(actorId), eq(attachmentId), any())).thenReturn(Mono.just(grant));
-        when(leases.create(eq(actorId), eq(attachmentId), any())).thenReturn(Mono.just(lease));
+        when(leases.create(eq(actorId), eq(attachmentId), any(), eq(binding.id()))).thenReturn(Mono.just(lease));
         when(contracts.contract(attachmentId, grant, lease)).thenReturn(Mono.just(contract));
 
         StepVerifier.create(service.issue(actorId, attachmentId))
             .assertNext(result -> assertThat(result.url()).contains("delivery_grant=token"))
             .verifyComplete();
+        verify(leases).create(eq(actorId), eq(attachmentId), any(), eq(binding.id()));
     }
 
     @Test
