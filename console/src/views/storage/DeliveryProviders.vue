@@ -53,6 +53,7 @@ const bindingSaving = ref(false);
 const bindingError = ref("");
 const selectedDeliveryProvider = ref<Provider | null>(null);
 const selectedStorageProvider = ref<Provider | null>(null);
+const editingBinding = ref<Provider | null>(null);
 const bindings = ref<Provider[]>([]);
 const bindingForm = ref({
   deliveryProviderKey: "",
@@ -200,6 +201,7 @@ function closeBindingDialog() {
   bindings.value = [];
   selectedDeliveryProvider.value = null;
   selectedStorageProvider.value = null;
+  editingBinding.value = null;
 }
 async function loadBindings(storageProviderId: string) {
   bindingLoading.value = true;
@@ -218,6 +220,7 @@ async function loadBindings(storageProviderId: string) {
 }
 async function openBindingDialog(row: Provider) {
   selectedDeliveryProvider.value = row;
+  editingBinding.value = null;
   selectedStorageProvider.value = null;
   bindingForm.value = {
     deliveryProviderKey: String(row.providerKey || ""),
@@ -236,7 +239,20 @@ async function selectStorageProvider(row: Provider) {
   selectedStorageProvider.value = row;
   await loadBindings(String(row.id));
 }
-async function createBinding() {
+function editBinding(row: Provider) {
+  editingBinding.value = row;
+  bindingForm.value = {
+    deliveryProviderKey: String(row.deliveryProviderKey || ""),
+    originType: String(row.originType || "STORAGE_PROVIDER"),
+    authMode: String(row.authMode || "DELIVERY_GRANT"),
+    priority: Number(row.priority || 0),
+    enabled: Boolean(row.enabled),
+    cacheKeyPolicy: String(row.cacheKeyPolicy || "CONTENT_IDENTITY"),
+    rangePolicy: String(row.rangePolicy || "PASSTHROUGH"),
+    fallbackParticipation: Boolean(row.fallbackParticipation)
+  };
+}
+async function saveBinding() {
   const providerId = String(selectedStorageProvider.value?.id || "");
   if (!providerId || !bindingForm.value.deliveryProviderKey) {
     bindingError.value = "请选择存储 Provider";
@@ -245,10 +261,24 @@ async function createBinding() {
   bindingSaving.value = true;
   bindingError.value = "";
   try {
-    await http.post(`/storage/providers/${providerId}/delivery-bindings`, {
-      data: bindingForm.value
-    });
-    ElMessage.success("Delivery Binding 已创建，附件现在可以使用该分发路径");
+    if (editingBinding.value?.id) {
+      await http.put(
+        `/storage/providers/${providerId}/delivery-bindings/${editingBinding.value.id}`,
+        {
+          headers: {
+            "If-Match": `"${editingBinding.value.version ?? 0}"`
+          },
+          data: bindingForm.value
+        }
+      );
+      ElMessage.success("Delivery Binding 已更新");
+      editingBinding.value = null;
+    } else {
+      await http.post(`/storage/providers/${providerId}/delivery-bindings`, {
+        data: bindingForm.value
+      });
+      ElMessage.success("Delivery Binding 已创建，附件现在可以使用该分发路径");
+    }
     await loadBindings(providerId);
   } catch (e: any) {
     bindingError.value =
@@ -616,7 +646,7 @@ onMounted(load);
 
     <el-dialog
       v-model="bindingDialog"
-      title="创建 Delivery Binding"
+      :title="editingBinding ? '编辑 Delivery Binding' : '创建 Delivery Binding'"
       width="720px"
       @closed="closeBindingDialog"
     >
@@ -701,12 +731,12 @@ onMounted(load);
           <template #default="{ row }">{{ row.enabled ? "启用" : "停用" }}</template>
         </el-table-column>
         <el-table-column label="操作" width="80">
-          <template #default="{ row }"><el-button link type="danger" @click="removeBinding(row)">解绑</el-button></template>
+          <template #default="{ row }"><el-button link type="primary" @click="editBinding(row)">编辑</el-button><el-button link type="danger" @click="removeBinding(row)">解绑</el-button></template>
         </el-table-column>
       </el-table>
       <template #footer>
         <el-button @click="closeBindingDialog">关闭</el-button>
-        <el-button type="primary" :loading="bindingSaving" :disabled="!selectedStorageProvider" @click="createBinding">创建绑定</el-button>
+        <el-button type="primary" :loading="bindingSaving" :disabled="!selectedStorageProvider" @click="saveBinding">{{ editingBinding ? "保存修改" : "创建绑定" }}</el-button>
       </template>
     </el-dialog>
   </main>
