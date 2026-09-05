@@ -14,7 +14,6 @@ public class AttachmentPreviewService {
     private final BlobRepository blobs;
     private final BlobPlacementRepository placements;
     private final StorageProviderRegistry providers;
-    private final StorageObjectProviderRegistry objects;
     private final MediaDeliveryBindingRepository bindings;
     private final DeliveryProviderRepository deliveryProviders;
     private final DeliveryGrantService deliveryGrants;
@@ -23,11 +22,11 @@ public class AttachmentPreviewService {
 
     public AttachmentPreviewService(AttachmentRepository attachments, ResourceRepository resources, BlobRepository blobs,
                                      BlobPlacementRepository placements, StorageProviderRegistry providers,
-                                     StorageObjectProviderRegistry objects, MediaDeliveryBindingRepository bindings,
+                                     MediaDeliveryBindingRepository bindings,
                                      DeliveryProviderRepository deliveryProviders, DeliveryGrantService deliveryGrants,
                                      DeliveryLeaseService deliveryLeases, DeliveryGrantContractService deliveryContracts) {
         this.attachments = attachments; this.resources = resources; this.blobs = blobs; this.placements = placements;
-        this.providers = providers; this.objects = objects; this.bindings = bindings; this.deliveryProviders = deliveryProviders;
+        this.providers = providers; this.bindings = bindings; this.deliveryProviders = deliveryProviders;
         this.deliveryGrants = deliveryGrants;
         this.deliveryLeases = deliveryLeases; this.deliveryContracts = deliveryContracts;
     }
@@ -39,8 +38,7 @@ public class AttachmentPreviewService {
             .flatMap(attachment -> blobs.findById(attachment.blobId())
                 .switchIfEmpty(Mono.error(new NotFoundException("Attachment 对应的 Blob 不存在")))
                 .flatMap(blob -> preferDeliveryBinding(actorId, attachmentId, blob)
-                    .switchIfEmpty(Mono.defer(() -> fallbackToStorage(blob)))
-                    .switchIfEmpty(Mono.error(new StorageUnavailableException("附件没有可用存储 Placement")))));
+                    .switchIfEmpty(Mono.error(new StorageUnavailableException("附件没有可用 Delivery Binding")))));
     }
 
     private Mono<AttachmentPreviewUrlView> preferDeliveryBinding(UUID actorId, UUID attachmentId, BlobEntity blob) {
@@ -79,15 +77,5 @@ public class AttachmentPreviewService {
                 .onErrorResume(error -> deliveryGrants.revoke(actorId, grant.id())
                     .onErrorResume(revokeError -> Mono.empty())
                     .then(Mono.error(error))));
-    }
-
-    private Mono<AttachmentPreviewUrlView> fallbackToStorage(BlobEntity blob) {
-        return placements.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
-                    .filter(placement -> placement.placementState() == PlacementState.ACTIVE)
-                    .concatMap(placement -> providers.getByKey(placement.provider())
-                        .flatMap(provider -> objects.createReadIntent(provider, placement.objectKey())
-                            .map(intent -> new AttachmentPreviewUrlView(intent.method(), intent.url(), intent.expiresAt(), true,
-                                blob.mediaType()))))
-                    .next();
     }
 }
