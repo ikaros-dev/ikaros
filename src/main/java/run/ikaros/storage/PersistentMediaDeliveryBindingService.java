@@ -87,7 +87,7 @@ public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindi
                 }
                 if (!binding.enabled()) return Mono.<Void>empty();
                 MediaDeliveryBindingEntity disabled = new MediaDeliveryBindingEntity(binding.id(), binding.storageProviderId(),
-                    binding.deliveryProviderKey(), binding.originType(), binding.authMode(), binding.priority(), false,
+                    binding.deliveryProviderKey(), binding.priority(), false,
                     binding.cacheKeyPolicy(), binding.rangePolicy(), binding.fallbackParticipation(), binding.createdAt(),
                     Instant.now(), binding.version());
                 return bindings.save(disabled)
@@ -100,7 +100,7 @@ public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindi
                                                    MediaDeliveryBindingRequest request) {
         Instant now = Instant.now();
         return bindings.save(new MediaDeliveryBindingEntity(old == null ? null : old.id(), providerId,
-            request.deliveryProviderKey().trim(), DeliveryBindingOriginType.STORAGE_PROVIDER, DeliveryBindingAuthMode.DELIVERY_GRANT, request.priority(),
+            request.deliveryProviderKey().trim(), request.priority(),
             request.enabled(), request.cacheKeyPolicy(), request.rangePolicy(), request.fallbackParticipation(),
             old == null ? now : old.createdAt(), now, old == null ? null : old.version()));
     }

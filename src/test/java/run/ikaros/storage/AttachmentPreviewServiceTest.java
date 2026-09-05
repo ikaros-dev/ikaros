@@ -60,7 +60,7 @@ class AttachmentPreviewServiceTest {
     @Test
     void prefersDeliveryBinding() {
         MediaDeliveryBindingEntity binding = new MediaDeliveryBindingEntity(UUID.randomUUID(), storageProviderId, "cdn",
-            DeliveryBindingOriginType.STORAGE_PROVIDER, DeliveryBindingAuthMode.DELIVERY_GRANT, 1, true,
+            1, true,
             DeliveryBindingCacheKeyPolicy.CONTENT_IDENTITY, DeliveryBindingRangePolicy.PASSTHROUGH, true,
             Instant.now(), Instant.now(), 0L);
         DeliveryProviderEntity deliveryProvider = mock(DeliveryProviderEntity.class);
