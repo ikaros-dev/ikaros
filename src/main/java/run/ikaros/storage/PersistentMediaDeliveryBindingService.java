@@ -31,7 +31,6 @@ public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindi
 
     @Override
     public Mono<MediaDeliveryBindingView> create(UUID providerId, MediaDeliveryBindingRequest request) {
-        validate(request);
         return providers.get(providerId).switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
             .then(deliveryProviders.findByProviderKey(request.deliveryProviderKey().trim())
                 .switchIfEmpty(Mono.error(new NotFoundException("Delivery Provider 不存在")))
@@ -63,7 +62,6 @@ public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindi
 
     private Mono<MediaDeliveryBindingView> updateInternal(UUID id, MediaDeliveryBindingRequest request,
                                                           Long expectedVersion) {
-        validate(request);
         return bindings.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Delivery Binding 不存在")))
             .flatMap(old -> {
                 long actualVersion = old.version() == null ? 0 : old.version();
@@ -102,22 +100,14 @@ public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindi
                                                    MediaDeliveryBindingRequest request) {
         Instant now = Instant.now();
         return bindings.save(new MediaDeliveryBindingEntity(old == null ? null : old.id(), providerId,
-            request.deliveryProviderKey().trim(), request.originType(), request.authMode(), request.priority(),
+            request.deliveryProviderKey().trim(), DeliveryBindingOriginType.STORAGE_PROVIDER, DeliveryBindingAuthMode.DELIVERY_GRANT, request.priority(),
             request.enabled(), request.cacheKeyPolicy(), request.rangePolicy(), request.fallbackParticipation(),
             old == null ? now : old.createdAt(), now, old == null ? null : old.version()));
     }
 
-    private void validate(MediaDeliveryBindingRequest request) {
-        if (request.originType() == DeliveryBindingOriginType.SERVER_PROXY
-            && !request.fallbackParticipation()) return;
-        if (request.originType() == DeliveryBindingOriginType.SERVER_PROXY
-            && request.fallbackParticipation() && request.priority() < 0)
-            throw new IllegalArgumentException("Server Proxy Binding 优先级无效");
-    }
-
     private MediaDeliveryBindingView view(MediaDeliveryBindingEntity e) {
-        return new MediaDeliveryBindingView(e.id(), e.storageProviderId(), e.deliveryProviderKey(), e.originType(),
-            e.authMode(), e.priority(), e.enabled(), e.cacheKeyPolicy(), e.rangePolicy(), e.fallbackParticipation(),
+        return new MediaDeliveryBindingView(e.id(), e.storageProviderId(), e.deliveryProviderKey(), e.priority(), e.enabled(),
+            e.cacheKeyPolicy(), e.rangePolicy(), e.fallbackParticipation(),
             e.createdAt(), e.updatedAt(), e.version());
     }
 

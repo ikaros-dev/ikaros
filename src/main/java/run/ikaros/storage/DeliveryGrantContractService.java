@@ -40,7 +40,7 @@ public class DeliveryGrantContractService {
                 .flatMap(providerAndBlob -> {
                     DeliveryProviderEntity deliveryProvider = providerAndBlob.getT1();
                     BlobEntity blob = providerAndBlob.getT2();
-                    if (binding.originType() != DeliveryBindingOriginType.STORAGE_PROVIDER) {
+                    if (deliveryProvider.providerType() == DeliveryProviderType.SERVER_PROXY) {
                         return Mono.just(new DeliveryGrantContractView(grant.id(), grant.attachmentId(), lease.id(),
                             deliveryProvider.id(), grant.method(), deliveryUrl(deliveryProvider, attachmentId, grant.token()), grant.expiresAt(),
                             binding.rangePolicy() != DeliveryBindingRangePolicy.UNSUPPORTED,

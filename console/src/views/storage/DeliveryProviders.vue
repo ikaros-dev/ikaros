@@ -57,8 +57,6 @@ const editingBinding = ref<Provider | null>(null);
 const bindings = ref<Provider[]>([]);
 const bindingForm = ref({
   deliveryProviderKey: "",
-  originType: "STORAGE_PROVIDER",
-  authMode: "DELIVERY_GRANT",
   priority: 100,
   enabled: true,
   cacheKeyPolicy: "CONTENT_IDENTITY",
@@ -225,8 +223,6 @@ async function openBindingDialog(row: Provider) {
   selectedStorageProvider.value = null;
   bindingForm.value = {
     deliveryProviderKey: String(row.providerKey || ""),
-    originType: "STORAGE_PROVIDER",
-    authMode: "DELIVERY_GRANT",
     priority: 100,
     enabled: true,
     cacheKeyPolicy: "CONTENT_IDENTITY",
@@ -244,8 +240,6 @@ function editBinding(row: Provider) {
   editingBinding.value = row;
   bindingForm.value = {
     deliveryProviderKey: String(row.deliveryProviderKey || ""),
-    originType: String(row.originType || "STORAGE_PROVIDER"),
-    authMode: String(row.authMode || "DELIVERY_GRANT"),
     priority: Number(row.priority || 0),
     enabled: Boolean(row.enabled),
     cacheKeyPolicy: String(row.cacheKeyPolicy || "CONTENT_IDENTITY"),
@@ -709,7 +703,7 @@ onMounted(load);
         class="mb-4"
       />
       <el-alert
-        title="Binding 决定哪些存储 Provider 的附件可以使用当前分发 Provider。通常使用存储源直接交付和 Delivery Grant。"
+        title="Binding 只建立存储 Provider 与分发 Provider 的关联。CDN 回源、缓存和鉴权规则请在 ESA / EdgeOne 控制台配置。"
         type="info"
         :closable="false"
         class="mb-4"
@@ -735,25 +729,6 @@ onMounted(load);
           </el-select>
         </el-form-item>
         <div class="grid grid-cols-2 gap-3">
-          <el-form-item label="源站类型">
-            <el-select v-model="bindingForm.originType" class="w-full">
-              <el-option label="存储 Provider 直出" value="STORAGE_PROVIDER" />
-              <el-option label="服务端代理" value="SERVER_PROXY" />
-            </el-select>
-            <div class="text-xs text-[var(--el-text-color-secondary)] mt-1">
-              决定附件内容从哪里读取；通常选择存储 Provider 直出，服务端代理适合需要由 Ikaros 统一转发的场景。
-            </div>
-          </el-form-item>
-          <el-form-item label="鉴权模式">
-            <el-select v-model="bindingForm.authMode" class="w-full">
-              <el-option label="Delivery Grant" value="DELIVERY_GRANT" />
-              <el-option label="Provider 签名" value="PROVIDER_SIGNED" />
-              <el-option label="服务端鉴权" value="SERVER_AUTH" />
-            </el-select>
-            <div class="text-xs text-[var(--el-text-color-secondary)] mt-1">
-              决定访问凭证如何生成；Delivery Grant 使用 Ikaros 的短时授权，安全性和通用性通常最好。
-            </div>
-          </el-form-item>
           <el-form-item label="优先级">
             <el-input-number v-model="bindingForm.priority" :min="0" :max="9999" class="w-full" />
             <div class="text-xs text-[var(--el-text-color-secondary)] mt-1">
