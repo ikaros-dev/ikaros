@@ -26,6 +26,6 @@ public class BackgroundTaskWorker {
         dispatcher.dispatchOnce(runnerId, LEASE_DURATION)
             .onErrorResume(NotFoundException.class, ignored -> reactor.core.publisher.Mono.empty())
             .doOnError(error -> log.warn("Background task worker failed: {}", error.getMessage()))
-            .subscribe();
+            .subscribe(ignored -> { }, ignored -> { });
     }
 }

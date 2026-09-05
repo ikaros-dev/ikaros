@@ -159,7 +159,10 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
             .one();
     }
 
-    private String json(Object value) { return value == null ? "{}" : value.toString(); }
+    private Json json(Object value) {
+        if (value instanceof Json json) return json;
+        return Json.of(value == null ? "{}" : value.toString());
+    }
 
     private Mono<Void> expireDue(Instant now) {
         return reactor.core.publisher.Flux.concat(
