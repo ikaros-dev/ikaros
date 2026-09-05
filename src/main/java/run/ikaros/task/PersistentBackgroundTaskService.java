@@ -17,6 +17,7 @@ import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;
 import run.ikaros.event.DurableEventService;
+import io.r2dbc.postgresql.codec.Json;
 
 @Primary
 @Service
@@ -166,7 +167,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
             tasks.findAllByStatusAndTimeoutAtLessThanEqual(TaskStatus.RUNNING.name(), now))
             .concatMap(task -> tasks.save(new BackgroundTaskEntity(task.id(), task.taskType(), TaskStatus.TIMED_OUT.name(),
                 task.payload(), task.idempotencyKey(), task.availableAt(), task.timeoutAt(), null, null, null, task.attempt(),
-                task.cancelRequestedAt(), task.progress(), "{\"code\":\"TASK_TIMEOUT\"}", task.createdAt(), Instant.now(), task.parentTaskId()))
+                task.cancelRequestedAt(), task.progress(), Json.of("{\"code\":\"TASK_TIMEOUT\"}"), task.createdAt(), Instant.now(), task.parentTaskId()))
                 .flatMap(saved -> finishAttempt(task, TaskStatus.TIMED_OUT.name(), "TASK_TIMEOUT")
                     .then(events.append("operations.background-task.timed-out", 1, "background_task", saved.id(),
                         "{\"task_id\":\"" + saved.id() + "\",\"attempt_no\":" + saved.attempt() + "}"))))
@@ -188,7 +189,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
         return leased(taskId, leaseToken)
             .flatMap(task -> encode(progress).flatMap(json -> tasks.save(copy(task, TaskStatus.valueOf(task.status()),
                 task.leaseOwner(), task.leaseToken(), task.leaseExpiresAt(), task.attempt(),
-                task.cancelRequestedAt(), json, task.result()))))
+                task.cancelRequestedAt(), Json.of(json), task.result()))))
             .flatMap(this::view);
     }
 
@@ -196,7 +197,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     public Mono<BackgroundTask> complete(UUID taskId, UUID leaseToken, Map<String, Object> result) {
         return leased(taskId, leaseToken).flatMap(task -> encode(result).flatMap(json -> tasks.save(copy(task,
             TaskStatus.SUCCEEDED, task.leaseOwner(), task.leaseToken(), task.leaseExpiresAt(), task.attempt(),
-            task.cancelRequestedAt(), task.progress(), json))
+            task.cancelRequestedAt(), task.progress(), Json.of(json)))
             .flatMap(saved -> finishAttempt(task, TaskStatus.SUCCEEDED.name(), null)
                 .then(events.append("operations.background-task.succeeded", 1, "background_task", saved.id(),
                     "{\"task_id\":\"" + saved.id() + "\",\"attempt_no\":" + saved.attempt() + "}"))
@@ -212,7 +213,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
                 BackgroundTaskEntity failed = new BackgroundTaskEntity(task.id(), task.taskType(),
                     retryable ? TaskStatus.PENDING.name() : TaskStatus.FAILED.name(), task.payload(), task.idempotencyKey(),
                     availableAt, task.timeoutAt(), retryable ? null : task.leaseOwner(), retryable ? null : task.leaseToken(),
-                    retryable ? null : task.leaseExpiresAt(), task.attempt(), task.cancelRequestedAt(), task.progress(), json,
+                    retryable ? null : task.leaseExpiresAt(), task.attempt(), task.cancelRequestedAt(), task.progress(), Json.of(json),
                     task.createdAt(), Instant.now(), task.parentTaskId());
                 return tasks.save(failed).flatMap(saved -> finishAttempt(task, TaskStatus.FAILED.name(), message(error))
                     .then(events.append("operations.background-task.failed", 1, "background_task", saved.id(),
@@ -251,7 +252,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
                 }
                 Instant now = Instant.now();
                 return tasks.save(new BackgroundTaskEntity(null, old.taskType(), TaskStatus.PENDING.name(), old.payload(), null,
-                    now, timeoutAtJson(old.payload(), now), null, null, null, 0, null, "{}", "{}", now, now, old.id()));
+                    now, timeoutAtJson(old.payload(), now), null, null, null, 0, null, Json.of("{}"), Json.of("{}"), now, now, old.id()));
             }).flatMap(saved -> events.append("operations.background-task.retry-requested", 1, "background_task", saved.parentTaskId(),
                 "{\"task_id\":\"" + saved.parentTaskId() + "\",\"next_attempt_no\":" + (saved.attempt() + 1) + "}").then(view(saved)));
     }
@@ -296,10 +297,10 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     private Mono<BackgroundTask> view(BackgroundTaskEntity entity) {
         try {
             return Mono.just(new BackgroundTask(entity.id(), entity.taskType(), TaskStatus.valueOf(entity.status()),
-                mapper.readValue(entity.payload(), new TypeReference<>() { }), entity.idempotencyKey(), entity.availableAt(), entity.timeoutAt(),
+                mapper.readValue(text(entity.payload()), new TypeReference<>() { }), entity.idempotencyKey(), entity.availableAt(), entity.timeoutAt(),
                 entity.leaseOwner(), entity.leaseToken(), entity.leaseExpiresAt(), entity.attempt(),
-                entity.cancelRequestedAt(), mapper.readValue(entity.progress(), new TypeReference<>() { }),
-                mapper.readValue(entity.result(), new TypeReference<>() { }), entity.createdAt(), entity.updatedAt(), entity.parentTaskId()));
+                entity.cancelRequestedAt(), mapper.readValue(text(entity.progress()), new TypeReference<>() { }),
+                mapper.readValue(text(entity.result()), new TypeReference<>() { }), entity.createdAt(), entity.updatedAt(), entity.parentTaskId()));
         } catch (JacksonException | IllegalArgumentException error) {
             return Mono.error(new IllegalStateException("Task 数据损坏", error));
         }
@@ -313,10 +314,12 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     }
 
     private BackgroundTaskEntity copy(BackgroundTaskEntity old, TaskStatus status, String owner, UUID token,
-                                      Instant expires, int attempt, Instant cancelled, String progress, String result) {
+                                      Instant expires, int attempt, Instant cancelled, Json progress, Json result) {
         return new BackgroundTaskEntity(old.id(), old.taskType(), status.name(), old.payload(), old.idempotencyKey(),
             old.availableAt(), old.timeoutAt(), owner, token, expires, attempt, cancelled, progress, result, old.createdAt(), Instant.now(), old.parentTaskId());
     }
+
+    private String text(Json value) { return value == null ? "{}" : value.asString(); }
 
     private Instant timeoutAt(Map<String, Object> payload, Instant createdAt) {
         Object value = payload == null ? null : payload.get("timeout_seconds");
@@ -325,8 +328,8 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
         catch (NumberFormatException ignored) { return null; }
     }
 
-    private Instant timeoutAtJson(String payload, Instant createdAt) {
-        try { return timeoutAt(mapper.readValue(payload, new TypeReference<>() { }), createdAt); }
+    private Instant timeoutAtJson(Json payload, Instant createdAt) {
+        try { return timeoutAt(mapper.readValue(text(payload), new TypeReference<>() { }), createdAt); }
         catch (JacksonException ignored) { return null; }
     }
 }
