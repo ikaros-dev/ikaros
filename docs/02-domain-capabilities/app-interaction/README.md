@@ -55,9 +55,9 @@ App 面向 Desktop 与 Mobile，暂定 Flutter 技术栈，并统一采用 Mater
 | `AI-Persona-System-Design.md` | Persona 选择、用户覆盖、会话人格切换、场景化表达设置 |
 | `Data-Analytics-Statistics-Subsystem-Design.md` | 个人内容、消费、效率、创作、财务与存储使用洞察 |
 | `Platform-Integration-Automation-Design.md` | 用户 Automation、执行记录、Import / Sync、Activity、跨对象跳转 |
-| `Security-Identity-Authorization-Crypto-Subsystem-Design.md` | 登录、Step-up Verification、会话、安全设置、恢复流程 |
+| `Security-Identity-Authorization-Crypto-Subsystem-Design.md` | 登录、JWT 无状态认证、Step-up Verification、Token 安全、恢复流程 |
 | `Secure-Data-Foundation-Design.md` | Secure Domain 锁定、解锁、密文缓存、安全预览、导出边界 |
-| `Platform-Administration-Operations-Subsystem-Design.md` | 仅引用通知、用户自己的活跃会话等用户级能力；管理员页面仍留在 CMS |
+| `Platform-Administration-Operations-Subsystem-Design.md` | 仅引用通知、当前用户自己的认证 / Token 安全等用户级能力；管理员页面仍留在 CMS |
 
 ---
 
@@ -128,7 +128,7 @@ App 面向 Desktop 与 Mobile，暂定 Flutter 技术栈，并统一采用 Mater
 #### 我的
 
 - 个人资料
-- 安全与会话
+- 安全与认证
 - 通知偏好
 - 外观与可访问性
 - 客户端设置
@@ -347,7 +347,7 @@ UI 必须使用状态 Chip + 解释文本。例如：
 
 ### Access
 
-- [登录、服务端连接、安全与会话](./access/authentication-security.md)
+- [登录、服务端连接与安全认证](./access/authentication-security.md)
 
 ### Home
 
@@ -442,7 +442,7 @@ UI 必须使用状态 Chip + 解释文本。例如：
 例如：
 
 - App 可查看自己的 Automation Rule；CMS 可管理系统级 Rule。
-- App 可查看自己的 Session 并撤销；CMS 可查看有权限的系统会话治理页。
+- App 可查看自己的登录 / Token 安全状态，并发起“使所有设备重新登录”；CMS 可管理用户安全策略，但两端都不构造服务端登录 Session 列表。
 - App 可查看自己的下载与缓存；CMS 管理 Storage Provider、Placement、GC。
 - App 可选择 Persona；CMS 管理 Persona 定义与发布版本。
 
@@ -512,7 +512,7 @@ App 应关注当前用户自己的：
 
 - 数据与 Resource。
 - Personal Drive、Drive File / Folder / Revision 与设备备份同步状态。
-- 设备与 Session。
+- 设备与登录 / Token 安全状态。
 - 通知与 Activity。
 - Download / Offline / Sync 状态。
 - 用户级 Automation / Integration。
@@ -544,6 +544,7 @@ Scheduled Time ≠ Deadline
 Time Block ≠ Task
 Goal ≠ Task List
 Transfer ≠ Expense + Income
+Login ≠ Server Session
 Login ≠ Secure Vault Unlock
 Account Recovery ≠ Vault Recovery
 AI Suggestion ≠ Business Fact
@@ -698,55 +699,3 @@ Room
 具体面向最终用户展示的中文文案可以在客户端实现阶段继续优化，但不得因此改变领域语义。
 
 ---
-
-## 18. 文档演进原则
-
-后续新增或调整 V2 功能时，推荐按照以下顺序演进：
-
-```text
-1. Product Requirement
-        ↓
-2. System / Subsystem / Domain Design
-        ↓
-3. App Interaction Design
-        ↓
-4. Flutter Implementation
-        ↓
-5. Interaction Feedback
-        ↓
-6. Design Document Revision
-```
-
-原则上不采用长期的“先实现页面，再根据代码反推产品设计”流程。
-
-如果开发过程中发现交互文档无法合理实现，应先判断问题属于：
-
-1. 页面交互设计问题。
-2. 领域模型缺少能力。
-3. API 能力不足。
-4. 平台能力缺失。
-5. 客户端技术限制。
-
-然后回到对应设计层解决，而不是在 Flutter 页面内部引入隐式业务规则。
-
----
-
-## 19. 设计文档定位
-
-Ikaros V2 App 相关文档的职责层级为：
-
-```text
-PRD
-定义“为什么做、做什么”
-
-System / Subsystem Design
-定义“业务世界如何运作，以及系统级约束是什么”
-
-App Interaction Design
-定义“用户如何看到并操作这些能力”
-
-Flutter App
-定义“客户端如何实现这些交互”
-```
-
-因此 `docs/v2/app-interaction/` 应作为 V2 App UI / UX 的长期维护基线，而不是一次性的页面草稿。
