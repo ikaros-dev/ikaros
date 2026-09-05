@@ -29,6 +29,7 @@ const providerTypes: Array<{
 ];
 
 const providers = ref<Provider[]>([]);
+const storageProviders = ref<Provider[]>([]);
 const loading = ref(false);
 const saving = ref(false);
 const error = ref("");
@@ -45,6 +46,23 @@ const form = ref({
   region: "",
   zoneId: "",
   enabled: true
+});
+const bindingDialog = ref(false);
+const bindingLoading = ref(false);
+const bindingSaving = ref(false);
+const bindingError = ref("");
+const selectedDeliveryProvider = ref<Provider | null>(null);
+const selectedStorageProvider = ref<Provider | null>(null);
+const bindings = ref<Provider[]>([]);
+const bindingForm = ref({
+  deliveryProviderKey: "",
+  originType: "STORAGE_PROVIDER",
+  authMode: "DELIVERY_GRANT",
+  priority: 100,
+  enabled: true,
+  cacheKeyPolicy: "CONTENT_IDENTITY",
+  rangePolicy: "PASSTHROUGH",
+  fallbackParticipation: true
 });
 
 const selectedType = computed(
@@ -158,15 +176,102 @@ async function load() {
   loading.value = true;
   error.value = "";
   try {
-    const result = await http.get<unknown, unknown>(
-      "/admin/delivery-providers"
-    );
-    providers.value = Array.isArray(result) ? (result as Provider[]) : [];
+    const [deliveryResult, storageResult] = await Promise.all([
+      http.get<unknown, unknown>("/admin/delivery-providers"),
+      http.get<unknown, unknown>("/storage/providers")
+    ]);
+    providers.value = Array.isArray(deliveryResult)
+      ? (deliveryResult as Provider[])
+      : [];
+    storageProviders.value = Array.isArray(storageResult)
+      ? (storageResult as Provider[])
+      : [];
   } catch (e: any) {
     error.value =
       e?.response?.data?.detail || e?.message || "分发 Provider 加载失败";
   } finally {
     loading.value = false;
+  }
+}
+function closeBindingDialog() {
+  if (bindingSaving.value) return;
+  bindingDialog.value = false;
+  bindingError.value = "";
+  bindings.value = [];
+  selectedDeliveryProvider.value = null;
+  selectedStorageProvider.value = null;
+}
+async function loadBindings(storageProviderId: string) {
+  bindingLoading.value = true;
+  bindingError.value = "";
+  try {
+    const result = await http.get<unknown, unknown>(
+      `/storage/providers/${storageProviderId}/delivery-bindings`
+    );
+    bindings.value = Array.isArray(result) ? (result as Provider[]) : [];
+  } catch (e: any) {
+    bindingError.value =
+      e?.response?.data?.detail || e?.message || "绑定列表加载失败";
+  } finally {
+    bindingLoading.value = false;
+  }
+}
+async function openBindingDialog(row: Provider) {
+  selectedDeliveryProvider.value = row;
+  selectedStorageProvider.value = null;
+  bindingForm.value = {
+    deliveryProviderKey: String(row.providerKey || ""),
+    originType: "STORAGE_PROVIDER",
+    authMode: "DELIVERY_GRANT",
+    priority: 100,
+    enabled: true,
+    cacheKeyPolicy: "CONTENT_IDENTITY",
+    rangePolicy: "PASSTHROUGH",
+    fallbackParticipation: true
+  };
+  bindingError.value = "";
+  bindingDialog.value = true;
+}
+async function selectStorageProvider(row: Provider) {
+  selectedStorageProvider.value = row;
+  await loadBindings(String(row.id));
+}
+async function createBinding() {
+  const providerId = String(selectedStorageProvider.value?.id || "");
+  if (!providerId || !bindingForm.value.deliveryProviderKey) {
+    bindingError.value = "请选择存储 Provider";
+    return;
+  }
+  bindingSaving.value = true;
+  bindingError.value = "";
+  try {
+    await http.post(`/storage/providers/${providerId}/delivery-bindings`, {
+      data: bindingForm.value
+    });
+    ElMessage.success("Delivery Binding 已创建，附件现在可以使用该分发路径");
+    await loadBindings(providerId);
+  } catch (e: any) {
+    bindingError.value =
+      e?.response?.data?.detail || e?.message || "Delivery Binding 创建失败";
+  } finally {
+    bindingSaving.value = false;
+  }
+}
+async function removeBinding(row: Provider) {
+  if (!row.id) return;
+  try {
+    await ElMessageBox.confirm(
+      "解绑后，使用该存储 Provider 的附件将不再通过此分发 Provider 预览。",
+      "确认解绑",
+      { type: "warning", confirmButtonText: "确认解绑", cancelButtonText: "取消" }
+    );
+    await http.request("delete", `/storage/providers/${selectedStorageProvider.value?.id}/delivery-bindings/${row.id}`);
+    await loadBindings(String(selectedStorageProvider.value?.id));
+    ElMessage.success("Delivery Binding 已解绑");
+  } catch (e: any) {
+    if (e === "cancel" || e === "close") return;
+    bindingError.value =
+      e?.response?.data?.detail || e?.message || "Delivery Binding 解绑失败";
   }
 }
 async function save() {
@@ -326,8 +431,14 @@ onMounted(load);
           width="110"
         />
         <el-table-column prop="updatedAt" label="最近更新" min-width="180" />
-        <el-table-column label="操作" width="120" fixed="right"
+        <el-table-column label="操作" width="190" fixed="right"
           ><template #default="{ row }"
+            ><el-button
+              link
+              type="primary"
+              :disabled="!row.id || !storageProviders.length"
+              @click="openBindingDialog(row)"
+              >绑定存储</el-button
             ><el-button
               link
               type="primary"
@@ -502,5 +613,101 @@ onMounted(load);
         </div></template
       >
     </el-drawer>
+
+    <el-dialog
+      v-model="bindingDialog"
+      title="创建 Delivery Binding"
+      width="720px"
+      @closed="closeBindingDialog"
+    >
+      <el-alert
+        v-if="bindingError"
+        :title="bindingError"
+        type="error"
+        show-icon
+        :closable="false"
+        class="mb-4"
+      />
+      <el-alert
+        title="Binding 决定哪些存储 Provider 的附件可以使用当前分发 Provider。通常使用存储源直接交付和 Delivery Grant。"
+        type="info"
+        :closable="false"
+        class="mb-4"
+      />
+      <el-form label-position="top">
+        <el-form-item label="分发 Provider" required>
+          <el-input :model-value="selectedDeliveryProvider?.displayName || selectedDeliveryProvider?.providerKey || ''" disabled />
+        </el-form-item>
+        <el-form-item label="存储 Provider" required>
+          <el-select
+            v-model="selectedStorageProvider"
+            value-key="id"
+            class="w-full"
+            placeholder="选择附件实际存储所在的 Provider"
+            @change="selectStorageProvider"
+          >
+            <el-option
+              v-for="item in storageProviders"
+              :key="item.id"
+              :label="`${item.providerKey} · ${item.providerType || 'Storage'}`"
+              :value="item"
+            />
+          </el-select>
+        </el-form-item>
+        <div class="grid grid-cols-2 gap-3">
+          <el-form-item label="源站类型">
+            <el-select v-model="bindingForm.originType" class="w-full">
+              <el-option label="存储 Provider 直出" value="STORAGE_PROVIDER" />
+              <el-option label="服务端代理" value="SERVER_PROXY" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="鉴权模式">
+            <el-select v-model="bindingForm.authMode" class="w-full">
+              <el-option label="Delivery Grant" value="DELIVERY_GRANT" />
+              <el-option label="Provider 签名" value="PROVIDER_SIGNED" />
+              <el-option label="服务端鉴权" value="SERVER_AUTH" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="优先级">
+            <el-input-number v-model="bindingForm.priority" :min="0" :max="9999" class="w-full" />
+          </el-form-item>
+          <el-form-item label="范围请求">
+            <el-select v-model="bindingForm.rangePolicy" class="w-full">
+              <el-option label="透传 Range" value="PASSTHROUGH" />
+              <el-option label="固定分片" value="FIXED_CHUNK" />
+              <el-option label="不支持 Range" value="UNSUPPORTED" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="缓存 Key">
+            <el-select v-model="bindingForm.cacheKeyPolicy" class="w-full">
+              <el-option label="内容身份" value="CONTENT_IDENTITY" />
+              <el-option label="完整请求" value="FULL_REQUEST" />
+              <el-option label="不缓存" value="NO_CACHE" />
+            </el-select>
+          </el-form-item>
+        </div>
+        <el-checkbox v-model="bindingForm.enabled">立即启用</el-checkbox>
+        <el-checkbox v-model="bindingForm.fallbackParticipation" class="ml-4">参与故障回退</el-checkbox>
+      </el-form>
+      <el-divider />
+      <div class="font-medium mb-2">当前存储 Provider 的绑定</div>
+      <el-skeleton v-if="bindingLoading" :rows="2" animated />
+      <el-empty v-else-if="!selectedStorageProvider" description="选择存储 Provider 后查看已有绑定" />
+      <el-empty v-else-if="!bindings.length" description="暂无绑定" />
+      <el-table v-else :data="bindings" size="small">
+        <el-table-column prop="deliveryProviderKey" label="分发 Provider" />
+        <el-table-column prop="priority" label="优先级" width="90" />
+        <el-table-column prop="enabled" label="状态" width="80">
+          <template #default="{ row }">{{ row.enabled ? "启用" : "停用" }}</template>
+        </el-table-column>
+        <el-table-column label="操作" width="80">
+          <template #default="{ row }"><el-button link type="danger" @click="removeBinding(row)">解绑</el-button></template>
+        </el-table-column>
+      </el-table>
+      <template #footer>
+        <el-button @click="closeBindingDialog">关闭</el-button>
+        <el-button type="primary" :loading="bindingSaving" :disabled="!selectedStorageProvider" @click="createBinding">创建绑定</el-button>
+      </template>
+    </el-dialog>
   </main>
 </template>
