@@ -12,6 +12,8 @@
 | 验收测试 | `testing/P0-Acceptance-Invariant-Test-Matrix.md` |
 
 > 本矩阵冻结 P0 Engineering Foundation / Core Platform 的首批实现切片，不提前伪造 Phase 1+ 专业领域中尚未冻结的 Schema/API。
+>
+> Identity 登录认证采用无状态 JWT。P0 不建立 Login Session / Security Session 持久化实体，不保存 Session / Refresh Token Digest 作为登录态；用户级 Token 提前失效统一通过 `security_version`。
 
 ## 1. 可追溯规则
 
@@ -43,9 +45,9 @@ PRD / 系统需求
 | `FR-STORAGE-06` 内容完整性 | `storage.verify-blob` | Blob 完整性状态 | 内部 / 异步 | verified / integrity-failed | `P0-STO-008~010`, `P0-REC-007` |
 | Blob GC 安全 | `storage.request-blob-gc` | 引用复核 + Background Task | `contract-deferred` | gc-requested / purged | `P0-STO-011~015`, `P0-CON-007` |
 | Background Task | get/list/attempts/cancel/retry | Task + 不可变 Attempt 历史 | get/list/attempts/cancel | `operations.background-task.*` | `P0-TASK-001~012`、恢复类门禁 |
-| `FR-AUTH-01` Identity | Current User / Session 契约 | User + Session Digest / Security Version | `getCurrentUser`, `listSessions` | Identity / Session 事件 | `P0-ID-009~014` |
+| `FR-AUTH-01` Identity | Current User / JWT Validation / `identity.invalidate-user-tokens` | User + `security_version`；无 Login Session / Token Digest 登录态表 | `getCurrentUser`, `invalidateCurrentUserTokens` | `identity.user.tokens-invalidated` + Identity 事件 | `P0-ID-009~015` |
 | `FR-AUTH-02` Authorization | Role / Permission / User 契约 | Permission / Role / Binding 表 | Users/Roles/Permissions 查询 | Role/User 事件 | `P0-ID-004~008`, `P0-API-014` |
-| Durable Event | Event Envelope + Producer/Consumer 矩阵 | Outbox + Inbox 原子性 | N/A | 43 个 P0 v1 Event Type | `P0-EVT-001~014`, `P0-REC-001~005` |
+| Durable Event | Event Envelope + Producer/Consumer 矩阵 | Outbox + Inbox 原子性 | N/A | 42 个 P0 v1 Event Type | `P0-EVT-001~014`, `P0-REC-001~005` |
 | `FR-PLUGIN-01/02` Plugin 边界 | Runtime/Capability/Permission 契约 | Plugin 自有持久化边界 | N/A | 仅通过 Capability 中介 | `P0-PLG-001~008`, `P0-SEC-008` |
 
 ## 3. Phase 1 前已知需补充的内容
