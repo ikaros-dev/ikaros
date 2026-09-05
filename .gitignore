@@ -4,3 +4,4 @@ target/
 *.iml
 /src/main/resources/application-local.yaml
 /.pnpm-store/
+/.idea/

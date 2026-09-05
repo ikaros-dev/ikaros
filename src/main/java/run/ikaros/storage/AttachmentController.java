@@ -3,7 +3,10 @@ package run.ikaros.storage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.util.UUID;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import run.ikaros.common.PageResponse;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -19,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 /** Attachment 身份级读取接口。 */
+@Validated
 @RestController
 @RequestMapping({"/api/attachments"})
 public class AttachmentController {
@@ -31,6 +36,32 @@ public class AttachmentController {
         this.storageService = storageService;
         this.deliveryGrantService = deliveryGrantService;
         this.previewService = previewService;
+    }
+
+    @Operation(summary = "分页查询附件", description = "按当前用户查询未归档、未删除附件；可选 Resource ID 为空时返回当前用户的全部附件。")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "附件列表查询成功"),
+        @ApiResponse(responseCode = "400", description = "Resource ID 或分页参数不合法", content = @io.swagger.v3.oas.annotations.media.Content)
+    })
+    @GetMapping
+    public Mono<PageResponse<AttachmentView>> list(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @RequestParam(required = false) String resourceId,
+        @RequestParam(defaultValue = "0") @Min(0) int page,
+        @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+    ) {
+        return storageService.listPage(actorId, parseResourceId(resourceId), page, size);
+    }
+
+    private UUID parseResourceId(String resourceId) {
+        if (resourceId == null || resourceId.isBlank()) {
+            return null;
+        }
+        try {
+            return UUID.fromString(resourceId.trim());
+        } catch (IllegalArgumentException error) {
+            throw new IllegalArgumentException("Resource ID 不合法");
+        }
     }
 
     @GetMapping("/{attachmentId}/preview-url")

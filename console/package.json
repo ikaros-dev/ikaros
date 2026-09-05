@@ -1,6 +1,6 @@
 {
-  "name": "pure-admin-thin",
-  "version": "6.2.0",
+  "name": "ikaros-console",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -32,19 +32,19 @@
     "vite",
     "esm"
   ],
-  "homepage": "https://github.com/pure-admin/pure-admin-thin/tree/i18n",
+  "homepage": "https://ikaros.run",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pure-admin/pure-admin-thin.git"
+    "url": "git+https://github.com/ikaros-dev/ikaros.git"
   },
   "bugs": {
-    "url": "https://github.com/pure-admin/vue-pure-admin/issues"
+    "url": "https://github.com/ikaros-dev/ikaros/issues"
   },
-  "license": "MIT",
+  "license": "AGPL3",
   "author": {
-    "name": "xiaoxian521",
-    "email": "pureadmin@163.com",
-    "url": "https://github.com/xiaoxian521"
+    "name": "chiveaho",
+    "email": "chivehao@iakros.run",
+    "url": "https://github.com/chivehao"
   },
   "dependencies": {
     "@pureadmin/descriptions": "^1.2.1",

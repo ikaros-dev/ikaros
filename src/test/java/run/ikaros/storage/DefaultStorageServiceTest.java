@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.audit.AuditService;
+import run.ikaros.common.PageResponse;
 import run.ikaros.resource.ResourceEntity;
 import run.ikaros.resource.ResourceLifecycle;
 import run.ikaros.resource.ResourceRepository;
@@ -162,6 +164,39 @@ class DefaultStorageServiceTest {
         assertThat(capture.getValue().archivedAt()).isNotNull().isAfterOrEqualTo(now);
         assertThat(capture.getValue().deletedAt()).isNull();
         verify(events).append(eq("storage.attachment.archived"), eq(1), eq("attachment"), eq(attachmentId), any());
+    }
+
+    @Test
+    void listsAllOwnerAttachmentsWithPaginationWhenResourceFilterIsMissing() {
+        UUID ownerId = UUID.randomUUID();
+        UUID firstResourceId = UUID.randomUUID();
+        UUID secondResourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        AttachmentEntity first = new AttachmentEntity(UUID.randomUUID(), firstResourceId, UUID.randomUUID(),
+            "first.txt", AttachmentKind.ORIGINAL, now, null, 0L);
+        AttachmentEntity second = new AttachmentEntity(UUID.randomUUID(), secondResourceId, UUID.randomUUID(),
+            "second.txt", AttachmentKind.SUBTITLE, now.plusSeconds(1), null, 0L);
+        BlobEntity firstBlob = new BlobEntity(first.blobId(), "f".repeat(64), 10L, "text/plain",
+            BlobAvailability.AVAILABLE, now, 0L);
+        BlobEntity secondBlob = new BlobEntity(second.blobId(), "s".repeat(64), 20L, "text/plain",
+            BlobAvailability.AVAILABLE, now, 0L);
+        when(attachmentRepository.search(ownerId, null, 0, 20)).thenReturn(Flux.just(first, second));
+        when(attachmentRepository.countSearch(ownerId, null)).thenReturn(Mono.just(2L));
+        when(blobRepository.findById(first.blobId())).thenReturn(Mono.just(firstBlob));
+        when(blobRepository.findById(second.blobId())).thenReturn(Mono.just(secondBlob));
+        when(placementRepository.findAllByBlobIdOrderByCreatedAtAsc(first.blobId())).thenReturn(Flux.empty());
+        when(placementRepository.findAllByBlobIdOrderByCreatedAtAsc(second.blobId())).thenReturn(Flux.empty());
+
+        StepVerifier.create(service.listPage(ownerId, null, 0, 20))
+            .assertNext(page -> {
+                assertThat(page).isEqualTo(new PageResponse<>(
+                    List.of(new AttachmentView(first.id(), first.fileName(), first.attachmentKind(), first.blobId(),
+                            firstBlob.sha256(), firstBlob.sizeBytes(), firstBlob.mediaType(), firstBlob.availability(), List.of()),
+                        new AttachmentView(second.id(), second.fileName(), second.attachmentKind(), second.blobId(),
+                            secondBlob.sha256(), secondBlob.sizeBytes(), secondBlob.mediaType(), secondBlob.availability(), List.of())),
+                    2, 0, 20));
+            })
+            .verifyComplete();
     }
 
     @Test

@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PageResponse;
 import run.ikaros.common.StorageUnavailableException;
 import run.ikaros.event.DurableEventService;
 import run.ikaros.resource.ResourceRepository;
@@ -25,6 +26,7 @@ import run.ikaros.task.BackgroundTaskService;
  */
 @Service
 public class DefaultStorageService implements StorageService {
+    private static final int MAX_PAGE_SIZE = 100;
     private static final int MAX_UNPAGED_RESULTS = 100;
     private final ResourceRepository resourceRepository;
     private final AttachmentRepository attachmentRepository;
@@ -218,6 +220,25 @@ public class DefaultStorageService implements StorageService {
                 .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
                 .flatMap(blob -> toView(attachment, blob)))
             .collectList();
+    }
+
+    @Override
+    public Mono<PageResponse<AttachmentView>> listPage(UUID ownerId, UUID resourceId, int page, int size) {
+        if (page < 0 || size < 1 || size > MAX_PAGE_SIZE) {
+            return Mono.error(new IllegalArgumentException("分页参数不合法"));
+        }
+        long offset = (long) page * size;
+        Mono<List<AttachmentView>> items = attachmentRepository.search(ownerId, resourceId, offset, size)
+            .flatMap(this::view)
+            .collectList();
+        return Mono.zip(items, attachmentRepository.countSearch(ownerId, resourceId))
+            .map(result -> new PageResponse<>(result.getT1(), result.getT2(), page, size));
+    }
+
+    private Mono<AttachmentView> view(AttachmentEntity attachment) {
+        return blobRepository.findById(attachment.blobId())
+            .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
+            .flatMap(blob -> toView(attachment, blob));
     }
 
     @Override
