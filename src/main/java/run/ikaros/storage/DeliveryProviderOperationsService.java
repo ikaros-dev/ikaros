@@ -12,6 +12,7 @@ import run.ikaros.task.BackgroundTaskService;
 
 @Service
 public class DeliveryProviderOperationsService {
+    static final UUID SYSTEM_ACTOR_ID = new UUID(0L, 0L);
     private final DeliveryProviderRepository providers;
     private final BackgroundTaskService tasks;
     private final DurableEventService events;
@@ -20,8 +21,9 @@ public class DeliveryProviderOperationsService {
         DurableEventService events) { this.providers = providers; this.tasks = tasks; this.events = events; }
 
     public Mono<BackgroundTask> probe(UUID providerId, UUID actorId, String idempotencyKey) {
+        UUID requestedBy = actorId == null ? SYSTEM_ACTOR_ID : actorId;
         return require(providerId).then(tasks.submit("storage.delivery-provider-probe",
-            Map.of("provider_id", providerId.toString(), "requested_by", actorId.toString()),
+            Map.of("provider_id", providerId.toString(), "requested_by", requestedBy.toString()),
             "storage.delivery-provider-probe:" + providerId + ":" + idempotencyKey))
             .flatMap(task -> events.append("storage.delivery-provider.probe-requested", 1, "delivery_provider", providerId,
                 "{\"delivery_provider_id\":\"" + providerId + "\",\"task_id\":\"" + task.id() + "\"}").thenReturn(task));

@@ -24,9 +24,12 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
     private final DeliveryProviderRepository providers;
     private final ObjectMapper mapper;
     private final DurableEventService events;
+    private final DeliveryProviderOperationsService operations;
 
     public PersistentDeliveryProviderService(DeliveryProviderRepository providers, ObjectMapper mapper,
-        DurableEventService events) { this.providers = providers; this.mapper = mapper; this.events = events; }
+        DurableEventService events, DeliveryProviderOperationsService operations) {
+        this.providers = providers; this.mapper = mapper; this.events = events; this.operations = operations;
+    }
 
     @Override public Mono<DeliveryProviderView> create(DeliveryProviderWriteRequest request) {
         return create(request, null);
@@ -46,6 +49,8 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
              .onErrorMap(DuplicateKeyException.class, e -> new ConflictException("Delivery Provider 标识已存在"))))
             .flatMap(saved -> emit("storage.delivery-provider.created", saved,
                 "{\"delivery_provider_id\":\"" + saved.id() + "\",\"provider_type\":\"" + saved.providerType() + "\"}")
+                .then(operations.probe(saved.id(), DeliveryProviderOperationsService.SYSTEM_ACTOR_ID,
+                    "auto-create:" + saved.id()))
                 .thenReturn(view(saved)));
     }
 

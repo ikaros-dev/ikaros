@@ -29,7 +29,7 @@ public class DeliveryProviderController {
         return service.update(providerId, request, IfMatchVersion.parse(ifMatch))
             .map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view));
     }
-    @PostMapping("/{providerId}/probe") public Mono<ResponseEntity<BackgroundTask>> probe(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+    @PostMapping("/{providerId}/probe") public Mono<ResponseEntity<BackgroundTask>> probe(@RequestHeader(value="X-Ikaros-Actor-Id", required=false) UUID actorId,
         @RequestHeader(value="Idempotency-Key", required=false) String idempotencyKey, @PathVariable UUID providerId) {
         if (idempotencyKey == null || idempotencyKey.isBlank()) return Mono.error(new IllegalArgumentException("缺少 Idempotency-Key"));
         return operations.probe(providerId, actorId, idempotencyKey).map(task -> accepted(task));

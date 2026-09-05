@@ -35,6 +35,7 @@ const error = ref("");
 const drawer = ref(false);
 const step = ref(0);
 const initialFormSnapshot = ref("");
+const probingIds = ref<Set<string>>(new Set());
 const form = ref({
   providerKey: "",
   displayName: "",
@@ -195,6 +196,59 @@ async function save() {
     saving.value = false;
   }
 }
+function isProbing(id: unknown) {
+  return probingIds.value.has(String(id));
+}
+function setProbing(id: unknown, probing: boolean) {
+  const next = new Set(probingIds.value);
+  if (probing) next.add(String(id));
+  else next.delete(String(id));
+  probingIds.value = next;
+}
+async function waitForProbe(taskId: string, providerId: string) {
+  if (!taskId) {
+    setProbing(providerId, false);
+    return;
+  }
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    await new Promise(resolve => window.setTimeout(resolve, 1000));
+    try {
+      const task = await http.get<any, any>(`/background-tasks/${taskId}`);
+      if (
+        ["SUCCEEDED", "FAILED", "CANCELLED", "TIMED_OUT"].includes(
+          String(task?.status)
+        )
+      ) {
+        await load();
+        setProbing(providerId, false);
+        return;
+      }
+    } catch {
+      setProbing(providerId, false);
+      return;
+    }
+  }
+  await load();
+  setProbing(providerId, false);
+}
+async function probe(row: Provider) {
+  const providerId = String(row.id || "");
+  if (!providerId || isProbing(providerId)) return;
+  setProbing(providerId, true);
+  try {
+    const task = await http.post<any, any>(
+      `/admin/delivery-providers/${providerId}/probe`,
+      { headers: { "Idempotency-Key": crypto.randomUUID() } }
+    );
+    ElMessage.info("已提交检测，正在等待结果");
+    await waitForProbe(String(task?.id || ""), providerId);
+  } catch (e: any) {
+    ElMessage.error(
+      e?.response?.data?.detail || e?.message || "Provider 检测提交失败"
+    );
+    setProbing(providerId, false);
+  }
+}
 function healthType(status: string): "success" | "warning" | "danger" | "info" {
   return (
     (
@@ -249,9 +303,14 @@ onMounted(load);
         <el-table-column prop="providerType" label="类型" width="150" />
         <el-table-column label="健康状态" width="140"
           ><template #default="{ row }"
-            ><el-tag :type="healthType(row.healthStatus)">{{
-              row.healthStatus || "UNKNOWN"
-            }}</el-tag></template
+            ><el-tag
+              :type="
+                isProbing(row.id) ? 'warning' : healthType(row.healthStatus)
+              "
+              >{{
+                isProbing(row.id) ? "检测中" : row.healthStatus || "UNKNOWN"
+              }}</el-tag
+            ></template
           ></el-table-column
         >
         <el-table-column label="启用状态" width="120"
@@ -267,6 +326,18 @@ onMounted(load);
           width="110"
         />
         <el-table-column prop="updatedAt" label="最近更新" min-width="180" />
+        <el-table-column label="操作" width="120" fixed="right"
+          ><template #default="{ row }"
+            ><el-button
+              link
+              type="primary"
+              :loading="isProbing(row.id)"
+              :disabled="!row.id"
+              @click="probe(row)"
+              >{{ isProbing(row.id) ? "检测中" : "立即检测" }}</el-button
+            ></template
+          ></el-table-column
+        >
       </el-table>
     </el-card>
 
