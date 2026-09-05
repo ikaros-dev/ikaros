@@ -68,7 +68,8 @@ const selectedType = computed(
   () => providerTypes.find(item => item.value === form.value.providerType)!
 );
 const isCdn = computed(() => form.value.providerType === "CDN");
-const endpointLabel = computed(() => (isCdn.value ? "CDN 加速域名" : "交付 Endpoint"));
+const needsEndpoint = computed(() => isCdn.value || form.value.providerType === "SERVER_PROXY");
+const endpointLabel = computed(() => (isCdn.value ? "CDN 加速域名" : "服务端代理基址"));
 const isValidKey = computed(() =>
   /^[a-z][a-z0-9-]{1,63}$/.test(form.value.providerKey)
 );
@@ -150,16 +151,16 @@ function nextStep() {
     error.value = "该内部标识已存在，请换一个标识";
     return;
   }
-  if (isCdn.value && !form.value.endpoint.trim()) {
-    error.value = "CDN Endpoint 不能为空";
+  if (needsEndpoint.value && !form.value.endpoint.trim()) {
+    error.value = isCdn.value ? "CDN Endpoint 不能为空" : "服务端代理基址不能为空";
     return;
   }
   if (
-    isCdn.value &&
+    needsEndpoint.value &&
     form.value.endpoint &&
-    !/^https:\/\/[^\s]+$/i.test(form.value.endpoint.trim())
+    !/^https?:\/\/[^\s]+$/i.test(form.value.endpoint.trim())
   ) {
-    error.value = "CDN Endpoint 必须是 https:// 开头的地址";
+    error.value = "Endpoint 必须是 http:// 或 https:// 开头的地址";
     return;
   }
   if (
@@ -599,14 +600,14 @@ onMounted(load);
               该标识已存在，请换一个标识。
             </div></el-form-item
           >
-          <el-form-item v-if="isCdn" :label="endpointLabel" required
+          <el-form-item v-if="needsEndpoint" :label="endpointLabel" required
             ><el-input
               v-model="form.endpoint"
               placeholder="https://cdn.example.com"
             />
             <div class="text-xs text-[var(--el-text-color-secondary)] mt-1">
-              填写 ESA / EdgeOne 控制台中已经启用的对外加速域名，不要填写控制台地址；仅支持 HTTPS。
-              系统会将附件的 object key 拼接到此域名后，由 CDN 现有回源规则读取存储。
+              <template v-if="isCdn">填写 ESA / EdgeOne 控制台中已经启用的对外加速域名，不要填写控制台地址；系统会将附件 object key 拼接到此域名后，由 CDN 现有回源规则读取存储。</template>
+              <template v-else>填写客户端可以访问的 Ikaros 服务端代理基址，例如 https://media.example.com；系统会在其后拼接附件代理路径。</template>
             </div></el-form-item
           >
           <div v-if="!isCdn" class="grid grid-cols-2 gap-3">
@@ -647,7 +648,7 @@ onMounted(load);
           ><el-descriptions-item label="类型"
             >{{ selectedType.label }} ·
             {{ selectedType.description }}</el-descriptions-item
-          ><el-descriptions-item v-if="isCdn" label="加速域名">{{
+          ><el-descriptions-item v-if="needsEndpoint" :label="isCdn ? '加速域名' : '代理基址'">{{
             form.endpoint
           }}</el-descriptions-item
           ><el-descriptions-item v-if="!isCdn" label="凭据">{{

@@ -49,6 +49,7 @@ public class HttpDeliveryProviderProbe implements DeliveryProviderProbe {
     }
 
     private String endpoint(DeliveryProviderEntity provider) {
+        if (provider.providerType() == DeliveryProviderType.DIRECT) return null;
         try {
             Map<String, Object> config = mapper.readValue(provider.config() == null ? "{}" : provider.config().asString(),
                 new TypeReference<>() { });

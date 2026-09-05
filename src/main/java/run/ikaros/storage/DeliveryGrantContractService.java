@@ -96,9 +96,17 @@ public class DeliveryGrantContractService {
     }
 
     private String deliveryUrl(DeliveryProviderEntity provider, UUID attachmentId, String token) {
-        // CDN is a cache/proxy layer, not a URL signer. Without an explicit
-        // route contract, its endpoint cannot safely be combined with this
-        // origin API path. Keep the Ikaros grant URL until such a route exists.
-        return "/api/attachments/" + attachmentId + "/content?delivery_grant=" + token;
+        String path = "/api/attachments/" + attachmentId + "/content?delivery_grant=" + token;
+        try {
+            Map<String, Object> config = mapper.readValue(provider.config() == null ? "{}" : provider.config().asString(),
+                new TypeReference<>() { });
+            Object configuredEndpoint = config.get("endpoint");
+            if (configuredEndpoint == null || configuredEndpoint.toString().isBlank()) return path;
+            URI endpoint = URI.create(configuredEndpoint.toString().trim());
+            if (endpoint.getScheme() == null || endpoint.getHost() == null) return path;
+            return endpoint.toString().replaceAll("/+\\z", "") + path;
+        } catch (JacksonException | IllegalArgumentException ignored) {
+            return path;
+        }
     }
 }
