@@ -262,7 +262,7 @@ async function saveBinding() {
   bindingError.value = "";
   try {
     if (editingBinding.value?.id) {
-      await http.put(
+      await http.request("put",
         `/storage/providers/${providerId}/delivery-bindings/${editingBinding.value.id}`,
         {
           headers: {
@@ -690,6 +690,9 @@ onMounted(load);
               <el-option label="存储 Provider 直出" value="STORAGE_PROVIDER" />
               <el-option label="服务端代理" value="SERVER_PROXY" />
             </el-select>
+            <div class="text-xs text-[var(--el-text-color-secondary)] mt-1">
+              决定附件内容从哪里读取；通常选择存储 Provider 直出，服务端代理适合需要由 Ikaros 统一转发的场景。
+            </div>
           </el-form-item>
           <el-form-item label="鉴权模式">
             <el-select v-model="bindingForm.authMode" class="w-full">
@@ -697,9 +700,15 @@ onMounted(load);
               <el-option label="Provider 签名" value="PROVIDER_SIGNED" />
               <el-option label="服务端鉴权" value="SERVER_AUTH" />
             </el-select>
+            <div class="text-xs text-[var(--el-text-color-secondary)] mt-1">
+              决定访问凭证如何生成；Delivery Grant 使用 Ikaros 的短时授权，安全性和通用性通常最好。
+            </div>
           </el-form-item>
           <el-form-item label="优先级">
             <el-input-number v-model="bindingForm.priority" :min="0" :max="9999" class="w-full" />
+            <div class="text-xs text-[var(--el-text-color-secondary)] mt-1">
+              数值越小越优先；主分发路径可设为 0，备用路径设置更大的值。
+            </div>
           </el-form-item>
           <el-form-item label="范围请求">
             <el-select v-model="bindingForm.rangePolicy" class="w-full">
@@ -707,6 +716,9 @@ onMounted(load);
               <el-option label="固定分片" value="FIXED_CHUNK" />
               <el-option label="不支持 Range" value="UNSUPPORTED" />
             </el-select>
+            <div class="text-xs text-[var(--el-text-color-secondary)] mt-1">
+              决定是否支持视频拖动、断点续传等分段读取；对象存储和 CDN 通常选择透传 Range。
+            </div>
           </el-form-item>
           <el-form-item label="缓存 Key">
             <el-select v-model="bindingForm.cacheKeyPolicy" class="w-full">
@@ -714,10 +726,23 @@ onMounted(load);
               <el-option label="完整请求" value="FULL_REQUEST" />
               <el-option label="不缓存" value="NO_CACHE" />
             </el-select>
+            <div class="text-xs text-[var(--el-text-color-secondary)] mt-1">
+              决定 CDN 或缓存如何区分请求；内容身份适合同一附件复用缓存，完整请求适合需要区分查询参数的场景。
+            </div>
           </el-form-item>
         </div>
-        <el-checkbox v-model="bindingForm.enabled">立即启用</el-checkbox>
-        <el-checkbox v-model="bindingForm.fallbackParticipation" class="ml-4">参与故障回退</el-checkbox>
+        <div>
+          <el-checkbox v-model="bindingForm.enabled">立即启用</el-checkbox>
+          <div class="text-xs text-[var(--el-text-color-secondary)] ml-1 mt-1">
+            只有启用的 Binding 才会参与附件预览地址选择。
+          </div>
+        </div>
+        <div class="mt-3">
+          <el-checkbox v-model="bindingForm.fallbackParticipation">参与故障回退</el-checkbox>
+          <div class="text-xs text-[var(--el-text-color-secondary)] ml-1 mt-1">
+            当前路径不可用时允许切换到其他可用 Binding；建议主、备分发路径都开启。
+          </div>
+        </div>
       </el-form>
       <el-divider />
       <div class="font-medium mb-2">当前存储 Provider 的绑定</div>
