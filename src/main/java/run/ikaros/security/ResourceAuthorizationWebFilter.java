@@ -68,6 +68,7 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             return "GET".equals(method) ? PlatformPermission.STORAGE_DELIVERY_READ
                 : PlatformPermission.STORAGE_DELIVERY_MANAGE;
         }
+        if (path.contains("/delivery-bindings")) return PlatformPermission.STORAGE_DELIVERY_MANAGE;
         if (path.contains("restore-budget")) return PlatformPermission.STORAGE_TIERING_MANAGE;
         if (path.startsWith("/api/admin/backup")) return PlatformPermission.STORAGE_RESTORE_MANAGE;
         if (path.contains("/storage/placements")) return PlatformPermission.STORAGE_TIERING_MANAGE;
