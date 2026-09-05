@@ -1,13 +1,8 @@
 package run.ikaros.storage;
 
-import java.net.URI;
-import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.ObjectMapper;
 
 @Service
 public class DeliveryGrantContractService {
@@ -17,19 +12,16 @@ public class DeliveryGrantContractService {
     private final StorageProviderRegistry storageProviders;
     private final BlobPlacementRepository placements;
     private final StorageObjectProviderRegistry storageObjects;
-    private final ObjectMapper mapper;
 
     public DeliveryGrantContractService(BlobRepository blobs, MediaDeliveryBindingRepository bindings,
                                         DeliveryProviderRepository providers, StorageProviderRegistry storageProviders,
-                                        BlobPlacementRepository placements, StorageObjectProviderRegistry storageObjects,
-                                        ObjectMapper mapper) {
+                                        BlobPlacementRepository placements, StorageObjectProviderRegistry storageObjects) {
         this.blobs = blobs;
         this.bindings = bindings;
         this.providers = providers;
         this.storageProviders = storageProviders;
         this.placements = placements;
         this.storageObjects = storageObjects;
-        this.mapper = mapper;
     }
 
     public Mono<DeliveryGrantContractView> contract(UUID attachmentId, DeliveryGrantView grant,
@@ -63,19 +55,9 @@ public class DeliveryGrantContractService {
     }
 
     private String deliveryUrl(DeliveryProviderEntity provider, UUID attachmentId, String token) {
-        String localPath = "/api/attachments/" + attachmentId + "/content?delivery_grant=" + token;
-        if (provider.providerType() == DeliveryProviderType.SERVER_PROXY) return localPath;
-        try {
-            Map<String, Object> config = mapper.readValue(provider.config() == null ? "{}" : provider.config().asString(),
-                new TypeReference<>() { });
-            Object configuredEndpoint = config.get("endpoint");
-            if (configuredEndpoint == null || configuredEndpoint.toString().isBlank()) return localPath;
-            URI endpoint = URI.create(configuredEndpoint.toString().trim());
-            if (endpoint.getScheme() == null || endpoint.getHost() == null) return localPath;
-            String base = endpoint.toString().replaceAll("/+\\z", "");
-            return base + localPath;
-        } catch (IllegalArgumentException | JacksonException ignored) {
-            return localPath;
-        }
+        // CDN is a cache/proxy layer, not a URL signer. Without an explicit
+        // route contract, its endpoint cannot safely be combined with this
+        // origin API path. Keep the Ikaros grant URL until such a route exists.
+        return "/api/attachments/" + attachmentId + "/content?delivery_grant=" + token;
     }
 }
