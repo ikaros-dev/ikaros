@@ -1,8 +1,13 @@
 package run.ikaros.storage;
 
+import java.net.URI;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 @Service
 public class DeliveryGrantContractService {
@@ -12,16 +17,19 @@ public class DeliveryGrantContractService {
     private final StorageProviderRegistry storageProviders;
     private final BlobPlacementRepository placements;
     private final StorageObjectProviderRegistry storageObjects;
+    private final ObjectMapper mapper;
 
     public DeliveryGrantContractService(BlobRepository blobs, MediaDeliveryBindingRepository bindings,
                                         DeliveryProviderRepository providers, StorageProviderRegistry storageProviders,
-                                        BlobPlacementRepository placements, StorageObjectProviderRegistry storageObjects) {
+                                        BlobPlacementRepository placements, StorageObjectProviderRegistry storageObjects,
+                                        ObjectMapper mapper) {
         this.blobs = blobs;
         this.bindings = bindings;
         this.providers = providers;
         this.storageProviders = storageProviders;
         this.placements = placements;
         this.storageObjects = storageObjects;
+        this.mapper = mapper;
     }
 
     public Mono<DeliveryGrantContractView> contract(UUID attachmentId, DeliveryGrantView grant,
@@ -49,9 +57,31 @@ public class DeliveryGrantContractService {
             .flatMap(storageProvider -> placements.findFirstByBlobIdAndProvider(lease.blobId(), storageProvider.providerKey())
                 .flatMap(placement -> storageObjects.createReadIntent(storageProvider, placement.objectKey())))
             .map(read -> new DeliveryGrantContractView(grant.id(), grant.attachmentId(), lease.id(),
-                deliveryProvider.id(), read.method(), read.url(), read.expiresAt(),
+                deliveryProvider.id(), read.method(), replaceHost(read.url(), deliveryProvider), read.expiresAt(),
                 binding.rangePolicy() != DeliveryBindingRangePolicy.UNSUPPORTED,
                 blob.mediaType(), blob.sizeBytes(), grant.revocationLevel()));
+    }
+
+    private String replaceHost(String presignedUrl, DeliveryProviderEntity deliveryProvider) {
+        try {
+            Map<String, Object> config = mapper.readValue(
+                deliveryProvider.config() == null ? "{}" : deliveryProvider.config().asString(),
+                new TypeReference<>() { });
+            Object configuredEndpoint = config.get("endpoint");
+            if (configuredEndpoint == null || configuredEndpoint.toString().isBlank()) return presignedUrl;
+            URI deliveryEndpoint = URI.create(configuredEndpoint.toString().trim());
+            URI storageUrl = URI.create(presignedUrl);
+            if (deliveryEndpoint.getScheme() == null || deliveryEndpoint.getHost() == null
+                || storageUrl.getRawPath() == null) return presignedUrl;
+            StringBuilder result = new StringBuilder()
+                .append(deliveryEndpoint.getScheme()).append("://").append(deliveryEndpoint.getRawAuthority())
+                .append(storageUrl.getRawPath());
+            if (storageUrl.getRawQuery() != null) result.append('?').append(storageUrl.getRawQuery());
+            if (storageUrl.getRawFragment() != null) result.append('#').append(storageUrl.getRawFragment());
+            return result.toString();
+        } catch (IllegalArgumentException | JacksonException ignored) {
+            return presignedUrl;
+        }
     }
 
     private String deliveryUrl(DeliveryProviderEntity provider, UUID attachmentId, String token) {
