@@ -1,0 +1,50 @@
+[
+  {
+    "__typename": "IssueFieldSingleSelect",
+    "id": "IFSS_kgDOAWROQQ",
+    "name": "Priority",
+    "options": [
+      {
+        "id": "IFSSO_kgDOAm9xfw",
+        "name": "Urgent"
+      },
+      {
+        "id": "IFSSO_kgDOAm9xgA",
+        "name": "High"
+      },
+      {
+        "id": "IFSSO_kgDOAm9xgQ",
+        "name": "Medium"
+      },
+      {
+        "id": "IFSSO_kgDOAm9xgg",
+        "name": "Low"
+      }
+    ]
+  },
+  {
+    "__typename": "IssueFieldDate"
+  },
+  {
+    "__typename": "IssueFieldDate"
+  },
+  {
+    "__typename": "IssueFieldSingleSelect",
+    "id": "IFSS_kgDOAWRORA",
+    "name": "Effort",
+    "options": [
+      {
+        "id": "IFSSO_kgDOAm9xgw",
+        "name": "High"
+      },
+      {
+        "id": "IFSSO_kgDOAm9xhA",
+        "name": "Medium"
+      },
+      {
+        "id": "IFSSO_kgDOAm9xhQ",
+        "name": "Low"
+      }
+    ]
+  }
+]
