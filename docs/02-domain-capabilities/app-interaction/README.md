@@ -699,3 +699,55 @@ Room
 具体面向最终用户展示的中文文案可以在客户端实现阶段继续优化，但不得因此改变领域语义。
 
 ---
+
+## 18. 文档演进原则
+
+后续新增或调整 V2 功能时，推荐按照以下顺序演进：
+
+```text
+1. Product Requirement
+        ↓
+2. System / Subsystem / Domain Design
+        ↓
+3. App Interaction Design
+        ↓
+4. Flutter Implementation
+        ↓
+5. Interaction Feedback
+        ↓
+6. Design Document Revision
+```
+
+原则上不采用长期的“先实现页面，再根据代码反推产品设计”流程。
+
+如果开发过程中发现交互文档无法合理实现，应先判断问题属于：
+
+1. 页面交互设计问题。
+2. 领域模型缺少能力。
+3. API 能力不足。
+4. 平台能力缺失。
+5. 客户端技术限制。
+
+然后回到对应设计层解决，而不是在 Flutter 页面内部引入隐式业务规则。
+
+---
+
+## 19. 设计文档定位
+
+Ikaros V2 App 相关文档的职责层级为：
+
+```text
+PRD
+定义“为什么做、做什么”
+
+System / Subsystem Design
+定义“业务世界如何运作，以及系统级约束是什么”
+
+App Interaction Design
+定义“用户如何看到并操作这些能力”
+
+Flutter App
+定义“客户端如何实现这些交互”
+```
+
+因此 `docs/v2/app-interaction/` 应作为 V2 App UI / UX 的长期维护基线，而不是一次性的页面草稿。
