@@ -4,6 +4,7 @@ import java.util.List;
 import java.time.Duration;
 import java.util.UUID;
 import reactor.core.publisher.Mono;
+import run.ikaros.common.PageResponse;
 import run.ikaros.task.BackgroundTask;
 
 /**
@@ -43,6 +44,17 @@ public interface StorageService {
      * @return Attachment 列表
      */
     Mono<List<AttachmentView>> list(UUID ownerId, UUID resourceId);
+
+    /**
+     * 按当前用户和可选 Resource 条件分页查询未归档、未删除附件。
+     *
+     * @param ownerId 当前拥有者标识
+     * @param resourceId 可选 Resource 标识，为 null 时查询当前用户的全部附件
+     * @param page 从零开始的页码
+     * @param size 每页记录数
+     * @return 分页附件结果
+     */
+    Mono<PageResponse<AttachmentView>> listPage(UUID ownerId, UUID resourceId, int page, int size);
 
     /**
      * 按附件身份读取元数据，并校验其所属 Resource 的访问权。
