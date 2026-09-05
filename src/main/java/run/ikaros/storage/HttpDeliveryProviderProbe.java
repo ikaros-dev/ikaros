@@ -4,6 +4,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -21,16 +22,18 @@ public class HttpDeliveryProviderProbe implements DeliveryProviderProbe {
     private final StorageProviderRegistry storageProviders;
     private final BlobPlacementRepository placements;
     private final StorageObjectProviderRegistry storageObjects;
+    private final int serverPort;
 
     public HttpDeliveryProviderProbe(ObjectMapper mapper, MediaDeliveryBindingRepository bindings,
         StorageProviderRegistry storageProviders, BlobPlacementRepository placements,
-        StorageObjectProviderRegistry storageObjects) {
+        StorageObjectProviderRegistry storageObjects, @Value("${server.port:8080}") int serverPort) {
         this.client = WebClient.builder().build();
         this.mapper = mapper;
         this.bindings = bindings;
         this.storageProviders = storageProviders;
         this.placements = placements;
         this.storageObjects = storageObjects;
+        this.serverPort = serverPort;
     }
 
     @Override
@@ -46,6 +49,9 @@ public class HttpDeliveryProviderProbe implements DeliveryProviderProbe {
                 .onErrorReturn(DeliveryProviderHealthStatus.UNHEALTHY);
         }
         String endpoint = endpoint(provider);
+        if (endpoint == null && provider.providerType() == DeliveryProviderType.SERVER_PROXY) {
+            endpoint = "http://127.0.0.1:" + serverPort;
+        }
         if (endpoint == null) return Mono.just(DeliveryProviderHealthStatus.UNKNOWN);
         return provider.providerType() == DeliveryProviderType.SERVER_PROXY
             ? checkServerProxy(endpoint) : check(endpoint);
