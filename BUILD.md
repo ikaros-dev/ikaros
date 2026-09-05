@@ -146,6 +146,34 @@ pnpm typecheck
 
 ## Git 工作流
 
+### 提交 PR 后
+
+更新本地主分支：
+
+```shell
+git checkout main | git pull upstream main | git push origin main | git remote prune origin
+```
+
+查看本地分支，并删除工作分支：
+
+```shell
+git branch
+git branch -D {you_branch_name}
+```
+
+上游 PR 合并后，更新本地主分支。
+
+如已添加上游仓库可跳过此命令：
+
+```shell
+git remote add upstream https://github.com/ikaros-dev/ikaros.git
+```
+
+```shell
+git checkout main
+git pull upstream main
+```
+
 查看当前分支和工作区状态：
 
 ```shell
