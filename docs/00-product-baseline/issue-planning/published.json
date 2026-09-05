@@ -5357,13 +5357,663 @@
       "statusSet": true
     },
     "C23": {
-      "dependenciesSet": [],
+      "dependenciesSet": [
+        "A22-03",
+        "A16-06"
+      ],
       "id": "I_kwDOHfE8gc8AAAABP1aO0w",
-      "bodyFinalized": false,
-      "statusSet": false,
-      "projectItemId": null,
+      "bodyFinalized": true,
+      "statusSet": true,
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5j6r8",
       "url": "https://github.com/ikaros-dev/ikaros/issues/1334",
       "number": 1334
+    },
+    "C23-01": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1335",
+      "number": 1335,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP12xZQ",
+      "dependenciesSet": [
+        "A22-03",
+        "A16-06"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kOzM"
+    },
+    "C23-02": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1336",
+      "number": 1336,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP12yUA",
+      "dependenciesSet": [
+        "A22-03",
+        "A16-06",
+        "C23-01"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kO0M"
+    },
+    "C23-03": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1337",
+      "number": 1337,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP12zNg",
+      "dependenciesSet": [
+        "A22-03",
+        "A16-06",
+        "C23-01"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kO08"
+    },
+    "C23-04": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1338",
+      "number": 1338,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP120DA",
+      "dependenciesSet": [
+        "A22-03",
+        "A16-06",
+        "C23-01"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kO18"
+    },
+    "C23-05": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1339",
+      "number": 1339,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP1207w",
+      "dependenciesSet": [
+        "A22-03",
+        "A16-06",
+        "C23-01",
+        "C23-04"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kO20"
+    },
+    "C23-06": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1340",
+      "number": 1340,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP1216w",
+      "dependenciesSet": [
+        "A22-03",
+        "A16-06",
+        "C23-01",
+        "C23-05"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kO4U"
+    },
+    "R01": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1341",
+      "number": 1341,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP122zA",
+      "dependenciesSet": [
+        "A04-01",
+        "A15-01"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kO5U"
+    },
+    "R01-02": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1342",
+      "number": 1342,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP1259A",
+      "dependenciesSet": [
+        "A04-01",
+        "A15-01"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kO8s"
+    },
+    "R01-01": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1343",
+      "number": 1343,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP1262Q",
+      "dependenciesSet": [
+        "A04-01",
+        "A15-01",
+        "R01-02"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kO9k"
+    },
+    "R01-03": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1344",
+      "number": 1344,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP127xw",
+      "dependenciesSet": [
+        "A04-01",
+        "A15-01"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kO-0"
+    },
+    "R01-04": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1345",
+      "number": 1345,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP128mg",
+      "dependenciesSet": [
+        "A04-01",
+        "A15-01",
+        "R01-01"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPAI"
+    },
+    "R01-05": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1346",
+      "number": 1346,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP129ew",
+      "dependenciesSet": [
+        "A04-01",
+        "A15-01"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPBw"
+    },
+    "R01-06": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1347",
+      "number": 1347,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP12-Uw",
+      "dependenciesSet": [
+        "A04-01",
+        "A15-01",
+        "R01-04"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPCw"
+    },
+    "R02": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1348",
+      "number": 1348,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP12_NQ",
+      "dependenciesSet": [
+        "R01-04"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPDo"
+    },
+    "R02-01": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1349",
+      "number": 1349,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP13ARQ",
+      "dependenciesSet": [
+        "R01-04"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPEw"
+    },
+    "R02-02": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1350",
+      "number": 1350,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP13DAQ",
+      "dependenciesSet": [
+        "R01-04",
+        "R02-01"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPGo"
+    },
+    "R02-03": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1351",
+      "number": 1351,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP13D8g",
+      "dependenciesSet": [
+        "R01-04",
+        "R02-01",
+        "R02-02"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPHY"
+    },
+    "R02-04": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1352",
+      "number": 1352,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP13E4Q",
+      "dependenciesSet": [
+        "R01-04",
+        "R02-01",
+        "R02-03"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPIU"
+    },
+    "R02-05": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1353",
+      "number": 1353,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP13Fvw",
+      "dependenciesSet": [
+        "R01-04",
+        "R02-01"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPJU"
+    },
+    "R02-06": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1354",
+      "number": 1354,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP13GwQ",
+      "dependenciesSet": [
+        "R01-04",
+        "R02-01",
+        "R02-05"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPKs"
+    },
+    "R03": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1355",
+      "number": 1355,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP13H5w",
+      "dependenciesSet": [
+        "A09-02",
+        "A16-05"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPLk"
+    },
+    "R03-01": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1356",
+      "number": 1356,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP13I1Q",
+      "dependenciesSet": [
+        "A09-02",
+        "A16-05"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPNM"
+    },
+    "R03-02": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1357",
+      "number": 1357,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP13JxA",
+      "dependenciesSet": [
+        "A09-02",
+        "A16-05",
+        "R03-01"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPOU"
+    },
+    "R03-03": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1358",
+      "number": 1358,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP13Muw",
+      "dependenciesSet": [
+        "A09-02",
+        "A16-05",
+        "R03-01",
+        "R03-02"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPRw"
+    },
+    "R03-04": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1359",
+      "number": 1359,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP13Nvg",
+      "dependenciesSet": [
+        "A09-02",
+        "A16-05",
+        "R03-01"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPSg"
+    },
+    "R03-05": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1360",
+      "number": 1360,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP13Osw",
+      "dependenciesSet": [
+        "A09-02",
+        "A16-05",
+        "R03-01",
+        "A20-03",
+        "R03-03"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPUI"
+    },
+    "R04": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1361",
+      "number": 1361,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP13PpQ",
+      "dependenciesSet": [
+        "A01-01",
+        "R02-04"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPVY"
+    },
+    "R04-01": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1362",
+      "number": 1362,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP13QhA",
+      "dependenciesSet": [
+        "A01-01",
+        "R02-04"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPWc"
+    },
+    "R04-02": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1363",
+      "number": 1363,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP13Rhg",
+      "dependenciesSet": [
+        "A01-01",
+        "R02-04",
+        "R04-01"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPYA"
+    },
+    "R04-03": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1364",
+      "number": 1364,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP13Sig",
+      "dependenciesSet": [
+        "A01-01",
+        "R02-04",
+        "R04-01",
+        "R04-02"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPZc"
+    },
+    "R04-04": {
+      "statusSet": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1365",
+      "number": 1365,
+      "bodyFinalized": true,
+      "id": "I_kwDOHfE8gc8AAAABP13Thg",
+      "dependenciesSet": [
+        "A01-01",
+        "R02-04",
+        "R04-01",
+        "R04-03"
+      ],
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPak"
+    },
+    "R04-05": {
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1366",
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPdQ",
+      "id": "I_kwDOHfE8gc8AAAABP13Wag",
+      "bodyFinalized": true,
+      "number": 1366,
+      "statusSet": true,
+      "dependenciesSet": [
+        "A01-01",
+        "R02-04",
+        "R04-01",
+        "R04-03"
+      ]
+    },
+    "R04-06": {
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1367",
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPeM",
+      "id": "I_kwDOHfE8gc8AAAABP13XSQ",
+      "bodyFinalized": true,
+      "number": 1367,
+      "statusSet": true,
+      "dependenciesSet": [
+        "A01-01",
+        "R02-04",
+        "R04-01",
+        "R04-04",
+        "R04-05"
+      ]
+    },
+    "R04-07": {
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1368",
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPfI",
+      "id": "I_kwDOHfE8gc8AAAABP13YLg",
+      "bodyFinalized": true,
+      "number": 1368,
+      "statusSet": true,
+      "dependenciesSet": [
+        "A01-01",
+        "R02-04",
+        "R04-01"
+      ]
+    },
+    "R05": {
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1369",
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPgU",
+      "id": "I_kwDOHfE8gc8AAAABP13ZAg",
+      "bodyFinalized": true,
+      "number": 1369,
+      "statusSet": true,
+      "dependenciesSet": [
+        "A09-02",
+        "A19-01",
+        "A16-05"
+      ]
+    },
+    "R05-01": {
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1370",
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPg8",
+      "id": "I_kwDOHfE8gc8AAAABP13Z8w",
+      "bodyFinalized": true,
+      "number": 1370,
+      "statusSet": true,
+      "dependenciesSet": [
+        "A09-02",
+        "A19-01",
+        "A16-05"
+      ]
+    },
+    "R05-02": {
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1371",
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPh4",
+      "id": "I_kwDOHfE8gc8AAAABP13a9g",
+      "bodyFinalized": true,
+      "number": 1371,
+      "statusSet": true,
+      "dependenciesSet": [
+        "A09-02",
+        "A19-01",
+        "A16-05",
+        "R05-01"
+      ]
+    },
+    "R05-03": {
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1372",
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPjc",
+      "id": "I_kwDOHfE8gc8AAAABP13cCw",
+      "bodyFinalized": true,
+      "number": 1372,
+      "statusSet": true,
+      "dependenciesSet": [
+        "A09-02",
+        "A19-01",
+        "A16-05",
+        "R05-01"
+      ]
+    },
+    "R05-04": {
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1373",
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPlo",
+      "id": "I_kwDOHfE8gc8AAAABP13dIQ",
+      "bodyFinalized": true,
+      "number": 1373,
+      "statusSet": true,
+      "dependenciesSet": [
+        "A09-02",
+        "A19-01",
+        "A16-05",
+        "R05-01"
+      ]
+    },
+    "R05-05": {
+      "bodyFinalized": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1374",
+      "dependenciesSet": [
+        "A09-02",
+        "A19-01",
+        "A16-05",
+        "R05-01"
+      ],
+      "number": 1374,
+      "id": "I_kwDOHfE8gc8AAAABP13nyQ",
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPs4",
+      "statusSet": true
+    },
+    "R06": {
+      "bodyFinalized": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1375",
+      "dependenciesSet": [
+        "A02-03",
+        "R02-04",
+        "R04-06",
+        "R05-02",
+        "R05-03",
+        "R05-04",
+        "R05-05"
+      ],
+      "number": 1375,
+      "id": "I_kwDOHfE8gc8AAAABP13ozw",
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPt4",
+      "statusSet": true
+    },
+    "R06-01": {
+      "bodyFinalized": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1376",
+      "dependenciesSet": [
+        "A02-03",
+        "R02-04",
+        "R04-06",
+        "R05-02",
+        "R05-03",
+        "R05-04",
+        "R05-05"
+      ],
+      "number": 1376,
+      "id": "I_kwDOHfE8gc8AAAABP13ppg",
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPuo",
+      "statusSet": true
+    },
+    "R06-02": {
+      "bodyFinalized": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1377",
+      "dependenciesSet": [
+        "A02-03",
+        "R02-04",
+        "R04-06",
+        "R05-02",
+        "R05-03",
+        "R05-04",
+        "R05-05",
+        "R06-01"
+      ],
+      "number": 1377,
+      "id": "I_kwDOHfE8gc8AAAABP13qiw",
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPvM",
+      "statusSet": true
+    },
+    "R06-03": {
+      "bodyFinalized": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1378",
+      "dependenciesSet": [
+        "A02-03",
+        "R02-04",
+        "R04-06",
+        "R05-02",
+        "R05-03",
+        "R05-04",
+        "R05-05",
+        "R06-01"
+      ],
+      "number": 1378,
+      "id": "I_kwDOHfE8gc8AAAABP13riQ",
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPwI",
+      "statusSet": true
+    },
+    "R06-04": {
+      "bodyFinalized": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1379",
+      "dependenciesSet": [
+        "A02-03",
+        "R02-04",
+        "R04-06",
+        "R05-02",
+        "R05-03",
+        "R05-04",
+        "R05-05",
+        "R06-01"
+      ],
+      "number": 1379,
+      "id": "I_kwDOHfE8gc8AAAABP13sbg",
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPwo",
+      "statusSet": true
+    },
+    "R06-05": {
+      "bodyFinalized": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1380",
+      "dependenciesSet": [
+        "A02-03",
+        "R02-04",
+        "R04-06",
+        "R05-02",
+        "R05-03",
+        "R05-04",
+        "R05-05",
+        "R06-01"
+      ],
+      "number": 1380,
+      "id": "I_kwDOHfE8gc8AAAABP13tcw",
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPxU",
+      "statusSet": true
+    },
+    "R06-06": {
+      "bodyFinalized": true,
+      "url": "https://github.com/ikaros-dev/ikaros/issues/1381",
+      "dependenciesSet": [
+        "A02-03",
+        "R02-04",
+        "R04-06",
+        "R05-02",
+        "R05-03",
+        "R05-04",
+        "R05-05",
+        "R06-01",
+        "R06-02",
+        "R06-03",
+        "R06-04",
+        "R06-05"
+      ],
+      "number": 1381,
+      "id": "I_kwDOHfE8gc8AAAABP13uhg",
+      "projectItemId": "PVTI_lADOBtsLNc4AHtJozg5kPxw",
+      "statusSet": true
     }
   },
   "projectUrl": "https://github.com/orgs/ikaros-dev/projects/4",
@@ -5434,5 +6084,5 @@
     "workflow/afk": "LA_kwDOHfE8gc8AAAACz38Byw",
     "workflow/hitl": "LA_kwDOHfE8gc8AAAACz38CwQ"
   },
-  "updatedAt": "2026-09-05T11:29:57.2056672Z"
+  "updatedAt": "2026-09-05T12:52:06.5676823Z"
 }

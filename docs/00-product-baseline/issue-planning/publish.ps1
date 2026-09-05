@@ -69,6 +69,11 @@ function Set-RelationsAndStatus($spec, $saved, [bool]$finalize = $false) {
 
 function Set-BatchMetadata([string[]]$Keys) {
     if (-not $Keys.Count) { return }
+    $edgeCount = ($Keys | ForEach-Object { @($byKey[$_].dependencies).Count } | Measure-Object -Sum).Sum
+    if ($Keys.Count -gt 1 -and $edgeCount -gt 10) {
+        foreach ($singleKey in $Keys) { Set-BatchMetadata @($singleKey) }
+        return
+    }
     $ids = @($Keys | ForEach-Object { $checkpoint.issues[$_].id })
     $snapshot = Invoke-GitHubGraphQL 'query($ids:[ID!]!){nodes(ids:$ids){... on Issue{id projectItems(first:20){nodes{id project{id}}} blockedBy(first:100){nodes{id}}}}}' @{ids=$ids}
     $actualById=@{}
