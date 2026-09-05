@@ -35,8 +35,9 @@ public class AttachmentController {
 
     @GetMapping("/{attachmentId}/preview-url")
     public Mono<AttachmentPreviewUrlView> previewUrl(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
-                                                     @PathVariable UUID attachmentId) {
-        return previewService.issue(actorId, attachmentId);
+                                                     @PathVariable UUID attachmentId,
+                                                     @RequestParam(value = "delivery_provider", required = false) String deliveryProviderKey) {
+        return previewService.issue(actorId, attachmentId, deliveryProviderKey);
     }
 
     @Operation(summary = "查询附件元数据", description = "按 Attachment 身份读取元数据，并校验所属 Resource 的访问权。")

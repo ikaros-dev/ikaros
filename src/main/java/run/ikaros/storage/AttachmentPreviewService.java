@@ -34,21 +34,30 @@ public class AttachmentPreviewService {
     }
 
     public Mono<AttachmentPreviewUrlView> issue(UUID actorId, UUID attachmentId) {
+        return issue(actorId, attachmentId, null);
+    }
+
+    public Mono<AttachmentPreviewUrlView> issue(UUID actorId, UUID attachmentId, String requestedProviderKey) {
         return attachments.findById(attachmentId).filter(a -> a.deletedAt() == null)
             .flatMap(attachment -> resources.findByIdAndOwnerId(attachment.resourceId(), actorId).thenReturn(attachment))
             .switchIfEmpty(Mono.error(new NotFoundException("Attachment 不存在或无权访问")))
             .flatMap(attachment -> blobs.findById(attachment.blobId())
                 .switchIfEmpty(Mono.error(new NotFoundException("Attachment 对应的 Blob 不存在")))
-                .flatMap(blob -> preferDeliveryBinding(actorId, attachmentId, blob)
+                .flatMap(blob -> preferDeliveryBinding(actorId, attachmentId, blob, requestedProviderKey)
                     .switchIfEmpty(Mono.error(new StorageUnavailableException("附件没有可用 Delivery Binding")))));
     }
 
-    private Mono<AttachmentPreviewUrlView> preferDeliveryBinding(UUID actorId, UUID attachmentId, BlobEntity blob) {
+    private Mono<AttachmentPreviewUrlView> preferDeliveryBinding(UUID actorId, UUID attachmentId, BlobEntity blob,
+                                                                  String requestedProviderKey) {
         return resolveBindings(blob).collectList()
             .flatMap(candidates -> {
                 if (candidates.isEmpty()) return Mono.error(new StorageUnavailableException("附件没有可用 Delivery Binding"));
                 DeliveryCandidate selected = candidates.stream()
-                    .min(Comparator.comparingInt(candidate -> candidate.binding().priority())).orElseThrow();
+                    .filter(candidate -> requestedProviderKey != null && !requestedProviderKey.isBlank()
+                        && candidate.provider().providerKey().equals(requestedProviderKey.trim()))
+                    .findFirst()
+                    .orElseGet(() -> candidates.stream()
+                        .min(Comparator.comparingInt(candidate -> candidate.binding().priority())).orElseThrow());
                 List<AttachmentDeliveryProviderOptionView> options = candidates.stream()
                     .sorted(Comparator.comparingInt(candidate -> candidate.binding().priority()))
                     .map(candidate -> option(candidate, candidate == selected)).toList();
