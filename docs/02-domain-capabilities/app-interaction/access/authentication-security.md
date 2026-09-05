@@ -101,6 +101,8 @@ Desktop：页面中央 420–480dp Login Card；左上角返回服务器列表�
 
 `保持登录` 只决定客户端如何安全保存 / 刷新 Token，不代表服务端创建长期 Session。
 
+若实现启用 Refresh Token，则 Refresh Token 也必须遵守无状态认证约束：它不能映射到服务端 Session 或 Token Digest 登录态，并且必须绑定并校验当前用户的 `security_version`。`security_version` 提升后，旧 Refresh Token 不得再换取新的 Access Token。
+
 ### 4.3 交互
 
 - Enter 提交。
@@ -140,6 +142,7 @@ Desktop：页面中央 420–480dp Login Card；左上角返回服务器列表�
 - 错误次数接近限制时显示剩余尝试次数（若安全策略允许）。
 - OTP 不进入剪贴板历史提示、Analytics 或普通日志。
 - 验证成功后，服务端签发短时、Purpose-bound 的 Step-up Grant；Grant 可以是独立签名 JWT，不建立服务端 Session。
+- Step-up Grant 必须绑定并校验 `purpose`、`target_reference`（适用时）、`exp` 和达到的 SVL；错误用途、错误目标、过期或等级不足均不得复用。
 - Step-up Grant 到期后自然失效；高风险动作要求 fresh verification 时必须重新验证。
 - 验证成功后自动回到原动作并继续。
 
@@ -197,7 +200,7 @@ identity.invalidate-user-tokens
 security_version
 ```
 
-后，之前签发且携带旧版本的 JWT 均不再被接受。
+后，之前签发且携带旧版本的 Access / Refresh JWT 均不再被接受；旧 Refresh JWT 也不能用于签发新的 Access JWT。
 
 该操作：
 
