@@ -44,15 +44,39 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
 
     @Override
     public Mono<StorageReadIntent> createReadIntent(StorageProvider provider, String objectKey) {
+        return createReadIntent(provider, objectKey, null);
+    }
+
+    @Override
+    public Mono<StorageReadIntent> createReadIntent(StorageProvider provider, String objectKey, URI signingEndpoint) {
         return credentialResolver.resolve(provider.secretReference()).flatMap(credentials -> Mono.fromCallable(() -> {
             S3Settings settings = S3Settings.from(provider);
+            URI endpoint = signingEndpoint == null ? settings.endpoint()
+                : endpointWithoutBucketPrefix(signingEndpoint, settings.bucket());
             try (S3Presigner presigner = S3Presigner.builder().region(Region.of(settings.region()))
-                .endpointOverride(settings.endpoint()).credentialsProvider(credentials).build()) {
+                .endpointOverride(endpoint).credentialsProvider(credentials).build()) {
                 GetObjectPresignRequest presign = GetObjectPresignRequest.builder().signatureDuration(timeout)
                     .getObjectRequest(GetObjectRequest.builder().bucket(settings.bucket()).key(objectKey).build()).build();
                 return new StorageReadIntent("GET", presigner.presignGetObject(presign).url().toString(), Instant.now().plus(timeout));
             }
         })).subscribeOn(Schedulers.boundedElastic());
+    }
+
+    /**
+     * S3 virtual-hosted addressing adds the bucket to the endpoint host. A CDN
+     * endpoint may already contain that bucket prefix, so remove it before
+     * handing the endpoint to the SDK; the SDK then adds it exactly once.
+     */
+    private URI endpointWithoutBucketPrefix(URI endpoint, String bucket) {
+        String host = endpoint.getHost();
+        String prefix = bucket + ".";
+        if (host == null || !host.regionMatches(true, 0, prefix, 0, prefix.length())) return endpoint;
+        try {
+            return new URI(endpoint.getScheme(), endpoint.getUserInfo(), host.substring(prefix.length()),
+                endpoint.getPort(), endpoint.getPath(), endpoint.getQuery(), endpoint.getFragment());
+        } catch (java.net.URISyntaxException error) {
+            throw new IllegalArgumentException("S3 signing endpoint 无效", error);
+        }
     }
 
     private String checksumHeader(String sha256) {

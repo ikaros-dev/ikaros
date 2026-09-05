@@ -60,7 +60,7 @@ class AttachmentPreviewServiceTest {
     @Test
     void prefersDeliveryBinding() {
         MediaDeliveryBindingEntity binding = new MediaDeliveryBindingEntity(UUID.randomUUID(), storageProviderId, "cdn",
-            DeliveryBindingOriginType.STORAGE_PROVIDER, DeliveryBindingAuthMode.DELIVERY_GRANT, 1, true,
+            1, true,
             DeliveryBindingCacheKeyPolicy.CONTENT_IDENTITY, DeliveryBindingRangePolicy.PASSTHROUGH, true,
             Instant.now(), Instant.now(), 0L);
         DeliveryProviderEntity deliveryProvider = mock(DeliveryProviderEntity.class);
@@ -76,12 +76,13 @@ class AttachmentPreviewServiceTest {
         when(deliveryProvider.enabled()).thenReturn(true);
         when(deliveryProvider.healthStatus()).thenReturn(DeliveryProviderHealthStatus.HEALTHY);
         when(grants.issue(eq(actorId), eq(attachmentId), any())).thenReturn(Mono.just(grant));
-        when(leases.create(eq(actorId), eq(attachmentId), any())).thenReturn(Mono.just(lease));
+        when(leases.create(eq(actorId), eq(attachmentId), any(), eq(binding.id()))).thenReturn(Mono.just(lease));
         when(contracts.contract(attachmentId, grant, lease)).thenReturn(Mono.just(contract));
 
         StepVerifier.create(service.issue(actorId, attachmentId))
             .assertNext(result -> assertThat(result.url()).contains("delivery_grant=token"))
             .verifyComplete();
+        verify(leases).create(eq(actorId), eq(attachmentId), any(), eq(binding.id()));
     }
 
     @Test

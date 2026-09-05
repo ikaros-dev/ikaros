@@ -5,6 +5,5 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record MediaDeliveryBindingRequest(@NotBlank String deliveryProviderKey,
-    @NotNull DeliveryBindingOriginType originType, @NotNull DeliveryBindingAuthMode authMode,
     @Min(0) int priority, boolean enabled, @NotNull DeliveryBindingCacheKeyPolicy cacheKeyPolicy,
     @NotNull DeliveryBindingRangePolicy rangePolicy, boolean fallbackParticipation) {}

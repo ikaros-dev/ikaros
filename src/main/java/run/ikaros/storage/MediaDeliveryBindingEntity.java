@@ -12,8 +12,6 @@ public record MediaDeliveryBindingEntity(
     @Id UUID id,
     @Column("storage_provider_id") UUID storageProviderId,
     @Column("delivery_provider_key") String deliveryProviderKey,
-    @Column("origin_type") DeliveryBindingOriginType originType,
-    @Column("auth_mode") DeliveryBindingAuthMode authMode,
     int priority,
     boolean enabled,
     @Column("cache_key_policy") DeliveryBindingCacheKeyPolicy cacheKeyPolicy,

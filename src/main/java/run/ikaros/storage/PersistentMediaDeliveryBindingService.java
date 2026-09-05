@@ -15,20 +15,22 @@ import run.ikaros.event.DurableEventService;
 public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindingService {
     private final StorageProviderRegistry providers;
     private final MediaDeliveryBindingRepository bindings;
+    private final MediaDeliveryLeaseRepository leases;
     private final DeliveryProviderRepository deliveryProviders;
     private final DurableEventService events;
 
     public PersistentMediaDeliveryBindingService(StorageProviderRegistry providers, MediaDeliveryBindingRepository bindings,
-                                                 DeliveryProviderRepository deliveryProviders, DurableEventService events) {
+                                                 MediaDeliveryLeaseRepository leases, DeliveryProviderRepository deliveryProviders,
+                                                 DurableEventService events) {
         this.providers = providers;
         this.bindings = bindings;
+        this.leases = leases;
         this.deliveryProviders = deliveryProviders;
         this.events = events;
     }
 
     @Override
     public Mono<MediaDeliveryBindingView> create(UUID providerId, MediaDeliveryBindingRequest request) {
-        validate(request);
         return providers.get(providerId).switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
             .then(deliveryProviders.findByProviderKey(request.deliveryProviderKey().trim())
                 .switchIfEmpty(Mono.error(new NotFoundException("Delivery Provider 不存在")))
@@ -60,7 +62,6 @@ public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindi
 
     private Mono<MediaDeliveryBindingView> updateInternal(UUID id, MediaDeliveryBindingRequest request,
                                                           Long expectedVersion) {
-        validate(request);
         return bindings.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Delivery Binding 不存在")))
             .flatMap(old -> {
                 long actualVersion = old.version() == null ? 0 : old.version();
@@ -78,31 +79,24 @@ public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindi
     @Override
     public Mono<Void> delete(UUID id) {
         return bindings.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Delivery Binding 不存在")))
-            .flatMap(binding -> bindings.delete(binding)
+            .flatMap(binding -> leases.findAllByBindingId(binding.id()).flatMap(leases::delete).then()
+                .then(bindings.delete(binding))
                 .then(events.append("storage.delivery-binding.removed", 1, "delivery_binding", binding.id(),
-                    "{\"binding_id\":\"" + binding.id() + "\"}").then()));
+                    "{\"binding_id\":\"" + binding.id() + "\",\"leases_removed\":true}").then()));
     }
 
     private Mono<MediaDeliveryBindingEntity> save(MediaDeliveryBindingEntity old, UUID providerId,
                                                    MediaDeliveryBindingRequest request) {
         Instant now = Instant.now();
         return bindings.save(new MediaDeliveryBindingEntity(old == null ? null : old.id(), providerId,
-            request.deliveryProviderKey().trim(), request.originType(), request.authMode(), request.priority(),
+            request.deliveryProviderKey().trim(), request.priority(),
             request.enabled(), request.cacheKeyPolicy(), request.rangePolicy(), request.fallbackParticipation(),
             old == null ? now : old.createdAt(), now, old == null ? null : old.version()));
     }
 
-    private void validate(MediaDeliveryBindingRequest request) {
-        if (request.originType() == DeliveryBindingOriginType.SERVER_PROXY
-            && !request.fallbackParticipation()) return;
-        if (request.originType() == DeliveryBindingOriginType.SERVER_PROXY
-            && request.fallbackParticipation() && request.priority() < 0)
-            throw new IllegalArgumentException("Server Proxy Binding 优先级无效");
-    }
-
     private MediaDeliveryBindingView view(MediaDeliveryBindingEntity e) {
-        return new MediaDeliveryBindingView(e.id(), e.storageProviderId(), e.deliveryProviderKey(), e.originType(),
-            e.authMode(), e.priority(), e.enabled(), e.cacheKeyPolicy(), e.rangePolicy(), e.fallbackParticipation(),
+        return new MediaDeliveryBindingView(e.id(), e.storageProviderId(), e.deliveryProviderKey(), e.priority(), e.enabled(),
+            e.cacheKeyPolicy(), e.rangePolicy(), e.fallbackParticipation(),
             e.createdAt(), e.updatedAt(), e.version());
     }
 

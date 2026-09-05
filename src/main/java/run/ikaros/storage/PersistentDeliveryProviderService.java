@@ -3,6 +3,7 @@ package run.ikaros.storage;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
+import io.r2dbc.postgresql.codec.Json;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +24,43 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
     private final DeliveryProviderRepository providers;
     private final ObjectMapper mapper;
     private final DurableEventService events;
+    private final DeliveryProviderOperationsService operations;
+    private final MediaDeliveryBindingRepository bindings;
 
     public PersistentDeliveryProviderService(DeliveryProviderRepository providers, ObjectMapper mapper,
-        DurableEventService events) { this.providers = providers; this.mapper = mapper; this.events = events; }
+        DurableEventService events, DeliveryProviderOperationsService operations, MediaDeliveryBindingRepository bindings) {
+        this.providers = providers; this.mapper = mapper; this.events = events; this.operations = operations; this.bindings = bindings;
+    }
+
+    @Override public Mono<DeliveryProviderView> enable(UUID id) { return changeEnabled(id, true); }
+
+    @Override public Mono<DeliveryProviderView> disable(UUID id) { return changeEnabled(id, false); }
+
+    private Mono<DeliveryProviderView> changeEnabled(UUID id, boolean enabled) {
+        return providers.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Delivery Provider 不存在")))
+            .flatMap(old -> {
+                if (old.enabled() == enabled) return Mono.just(view(old));
+                DeliveryProviderEntity replacement = replacement(old, enabled);
+                return providers.save(replacement)
+                    .flatMap(saved -> emit(enabled ? "storage.delivery-provider.enabled" : "storage.delivery-provider.disabled", saved,
+                        "{\"delivery_provider_id\":\"" + saved.id() + "\"}").thenReturn(view(saved)));
+            });
+    }
+
+    @Override public Mono<Void> delete(UUID id) {
+        return providers.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Delivery Provider 不存在")))
+            .flatMap(provider -> bindings.existsByDeliveryProviderKey(provider.providerKey()).flatMap(referenced -> {
+                if (referenced) return Mono.error(new ConflictException("Delivery Provider 仍被 Delivery Binding 引用，请先删除或停用相关 Binding"));
+                return providers.delete(provider).then(emit("storage.delivery-provider.removed", provider,
+                    "{\"delivery_provider_id\":\"" + provider.id() + "\"}"));
+            }));
+    }
+
+    private DeliveryProviderEntity replacement(DeliveryProviderEntity old, boolean enabled) {
+        return new DeliveryProviderEntity(old.id(), old.providerKey(), old.providerType(), old.displayName(), old.credentialRef(),
+            old.config(), old.capabilities(), old.grantRevocationMode(), old.signingKeyVersion(), old.healthStatus(), enabled,
+            old.createdAt(), Instant.now(), old.version(), old.idempotencyKey());
+    }
 
     @Override public Mono<DeliveryProviderView> create(DeliveryProviderWriteRequest request) {
         return create(request, null);
@@ -39,12 +74,14 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
             .switchIfEmpty(providers.findByProviderKey(request.providerKey().trim())
             .flatMap(old -> Mono.<DeliveryProviderEntity>error(new ConflictException("Delivery Provider 标识已存在")))
             .switchIfEmpty(Mono.defer(() -> { Instant now = Instant.now(); return providers.save(new DeliveryProviderEntity(null,
-                request.providerKey().trim(), request.providerType(), request.displayName().trim(), request.credentialRef(), config,
-                "{}", DeliveryGrantRevocationLevel.IMMEDIATE, 1, DeliveryProviderHealthStatus.UNKNOWN,
+                request.providerKey().trim(), request.providerType(), request.displayName().trim(), request.credentialRef(), Json.of(config),
+                Json.of("{}"), DeliveryGrantRevocationLevel.IMMEDIATE, 1, DeliveryProviderHealthStatus.UNKNOWN,
                 request.enabled() == null || request.enabled(), now, now, null, idempotencyKey)); }))
              .onErrorMap(DuplicateKeyException.class, e -> new ConflictException("Delivery Provider 标识已存在"))))
             .flatMap(saved -> emit("storage.delivery-provider.created", saved,
                 "{\"delivery_provider_id\":\"" + saved.id() + "\",\"provider_type\":\"" + saved.providerType() + "\"}")
+                .then(operations.probe(saved.id(), DeliveryProviderOperationsService.SYSTEM_ACTOR_ID,
+                    "auto-create:" + saved.id()))
                 .thenReturn(view(saved)));
     }
 
@@ -64,7 +101,7 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
                 }
                 DeliveryProviderEntity replacement = new DeliveryProviderEntity(
                     old.id(), request.providerKey().trim(), request.providerType(), request.displayName().trim(),
-                    request.credentialRef(), config, old.capabilities(), old.grantRevocationMode(), old.signingKeyVersion(),
+                    request.credentialRef(), Json.of(config), old.capabilities(), old.grantRevocationMode(), old.signingKeyVersion(),
                     old.healthStatus(), request.enabled() == null ? old.enabled() : request.enabled(), old.createdAt(),
                     Instant.now(), old.version(), old.idempotencyKey());
                 return providers.save(replacement)
@@ -108,6 +145,6 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
     private DeliveryProviderView view(DeliveryProviderEntity e) { return new DeliveryProviderView(e.id(), e.providerKey(), e.providerType(), e.displayName(),
         e.credentialRef(), decode(e.config()), decode(e.capabilities()), e.grantRevocationMode(), e.signingKeyVersion(), e.healthStatus(), e.enabled(),
         e.createdAt(), e.updatedAt(), e.version() == null ? 0 : e.version()); }
-    private Map<String, Object> decode(String value) { try { return mapper.readValue(value == null ? "{}" : value, new TypeReference<>() {}); }
+    private Map<String, Object> decode(Json value) { try { return mapper.readValue(value == null ? "{}" : value.asString(), new TypeReference<>() {}); }
         catch (JacksonException e) { throw new ConflictException("Delivery Provider 配置数据损坏"); } }
 }
