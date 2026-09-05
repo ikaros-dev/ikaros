@@ -1,6 +1,8 @@
 package run.ikaros.storage;
 
 import java.util.UUID;
+import java.util.Comparator;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
@@ -42,24 +44,38 @@ public class AttachmentPreviewService {
     }
 
     private Mono<AttachmentPreviewUrlView> preferDeliveryBinding(UUID actorId, UUID attachmentId, BlobEntity blob) {
-        return resolveBinding(blob)
-            .flatMap(binding -> issueBindingUrl(actorId, attachmentId, binding));
+        return resolveBindings(blob).collectList()
+            .flatMap(candidates -> {
+                if (candidates.isEmpty()) return Mono.error(new StorageUnavailableException("附件没有可用 Delivery Binding"));
+                DeliveryCandidate selected = candidates.stream()
+                    .min(Comparator.comparingInt(candidate -> candidate.binding().priority())).orElseThrow();
+                List<AttachmentDeliveryProviderOptionView> options = candidates.stream()
+                    .sorted(Comparator.comparingInt(candidate -> candidate.binding().priority()))
+                    .map(candidate -> option(candidate, candidate == selected)).toList();
+                return issueBindingUrl(actorId, attachmentId, selected.binding())
+                    .map(url -> new AttachmentPreviewUrlView(url.method(), url.url(), url.expiresAt(), url.rangeSupported(),
+                        url.contentType(), option(selected, true), options));
+            });
     }
 
-    private Mono<MediaDeliveryBindingEntity> resolveBinding(BlobEntity blob) {
+    private reactor.core.publisher.Flux<DeliveryCandidate> resolveBindings(BlobEntity blob) {
         return placements.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
             .filter(placement -> placement.placementState() == PlacementState.ACTIVE)
             .concatMap(placement -> providers.getByKey(placement.provider())
                 .filter(provider -> provider.status() != StorageProviderStatus.DISABLED
                     && provider.status() != StorageProviderStatus.FAILED)
-                .flatMap(provider -> bindings.findAllByStorageProviderIdOrderByPriorityAsc(provider.id())
+                .flatMapMany(provider -> bindings.findAllByStorageProviderIdOrderByPriorityAsc(provider.id())
                     .filter(MediaDeliveryBindingEntity::enabled)
                     .concatMap(binding -> deliveryProviders.findByProviderKey(binding.deliveryProviderKey())
                         .filter(deliveryProvider -> deliveryProvider.enabled()
                             && deliveryProvider.healthStatus() != DeliveryProviderHealthStatus.UNHEALTHY)
-                        .map(ignored -> binding))
-                    .next()))
-            .next();
+                        .map(deliveryProvider -> new DeliveryCandidate(binding, deliveryProvider)))));
+    }
+
+    private AttachmentDeliveryProviderOptionView option(DeliveryCandidate candidate, boolean selected) {
+        DeliveryProviderEntity provider = candidate.provider();
+        return new AttachmentDeliveryProviderOptionView(candidate.binding().id(), provider.id(), provider.providerKey(),
+            provider.displayName(), provider.providerType(), candidate.binding().priority(), selected);
     }
 
     private Mono<AttachmentPreviewUrlView> issueBindingUrl(UUID actorId, UUID attachmentId,
@@ -78,4 +94,6 @@ public class AttachmentPreviewService {
                     .onErrorResume(revokeError -> Mono.empty())
                     .then(Mono.error(error))));
     }
+
+    private record DeliveryCandidate(MediaDeliveryBindingEntity binding, DeliveryProviderEntity provider) { }
 }
