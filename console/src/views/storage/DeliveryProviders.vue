@@ -261,7 +261,7 @@ async function removeBinding(row: Provider) {
   if (!row.id) return;
   try {
     await ElMessageBox.confirm(
-      "解绑后，使用该存储 Provider 的附件将不再通过此分发 Provider 预览。",
+      "解绑后，使用该存储 Provider 的附件将不再通过此分发 Provider 预览；如果存在历史租约，系统会自动停用而不是删除。",
       "确认解绑",
       { type: "warning", confirmButtonText: "确认解绑", cancelButtonText: "取消" }
     );

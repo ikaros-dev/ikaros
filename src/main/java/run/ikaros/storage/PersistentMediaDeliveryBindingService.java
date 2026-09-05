@@ -15,13 +15,16 @@ import run.ikaros.event.DurableEventService;
 public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindingService {
     private final StorageProviderRegistry providers;
     private final MediaDeliveryBindingRepository bindings;
+    private final MediaDeliveryLeaseRepository leases;
     private final DeliveryProviderRepository deliveryProviders;
     private final DurableEventService events;
 
     public PersistentMediaDeliveryBindingService(StorageProviderRegistry providers, MediaDeliveryBindingRepository bindings,
-                                                 DeliveryProviderRepository deliveryProviders, DurableEventService events) {
+                                                 MediaDeliveryLeaseRepository leases, DeliveryProviderRepository deliveryProviders,
+                                                 DurableEventService events) {
         this.providers = providers;
         this.bindings = bindings;
+        this.leases = leases;
         this.deliveryProviders = deliveryProviders;
         this.events = events;
     }
@@ -78,9 +81,21 @@ public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindi
     @Override
     public Mono<Void> delete(UUID id) {
         return bindings.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Delivery Binding 不存在")))
-            .flatMap(binding -> bindings.delete(binding)
-                .then(events.append("storage.delivery-binding.removed", 1, "delivery_binding", binding.id(),
-                    "{\"binding_id\":\"" + binding.id() + "\"}").then()));
+            .flatMap(binding -> leases.existsByBindingId(binding.id()).flatMap(referenced -> {
+                if (!referenced) {
+                    return bindings.delete(binding)
+                        .then(events.append("storage.delivery-binding.removed", 1, "delivery_binding", binding.id(),
+                            "{\"binding_id\":\"" + binding.id() + "\"}").then());
+                }
+                if (!binding.enabled()) return Mono.<Void>empty();
+                MediaDeliveryBindingEntity disabled = new MediaDeliveryBindingEntity(binding.id(), binding.storageProviderId(),
+                    binding.deliveryProviderKey(), binding.originType(), binding.authMode(), binding.priority(), false,
+                    binding.cacheKeyPolicy(), binding.rangePolicy(), binding.fallbackParticipation(), binding.createdAt(),
+                    Instant.now(), binding.version());
+                return bindings.save(disabled)
+                    .flatMap(saved -> events.append("storage.delivery-binding.disabled", 1, "delivery_binding", saved.id(),
+                        "{\"binding_id\":\"" + saved.id() + "\",\"reason\":\"referenced_by_delivery_lease\"}").then());
+            }));
     }
 
     private Mono<MediaDeliveryBindingEntity> save(MediaDeliveryBindingEntity old, UUID providerId,
