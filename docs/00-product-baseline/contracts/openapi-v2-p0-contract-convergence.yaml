@@ -76,7 +76,7 @@ paths:
       operationId: listBackgroundTaskAttempts
       x-ikaros-contract-id: operations.list-task-attempts
       responses:
-        '200': { description: 任务尝试历史, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/BackgroundTaskAttempt' } } } } }
+        '200': { description: 任务尝试历史, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/BackgroundTaskAttempt' } } } }
   /admin/blobs/{blob_id}/placements:
     parameters:
       - { name: blob_id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -84,7 +84,7 @@ paths:
       operationId: listBlobPlacements
       x-ikaros-contract-id: storage.list-blob-placements
       responses:
-        '200': { description: Blob 存储位置列表, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/BlobPlacement' } } } } }
+        '200': { description: Blob 存储位置列表, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/BlobPlacement' } } } }
   /admin/storage-providers/{provider_id}:
     parameters:
       - { name: provider_id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -99,12 +99,12 @@ paths:
       x-ikaros-contract-id: identity.get-current-user
       responses:
         '200': { description: 当前用户, content: { application/json: { schema: { $ref: './openapi-v2-p0.yaml#/components/schemas/User' } } } }
-  /me/sessions:
-    get:
-      operationId: listSessions
-      x-ikaros-contract-id: identity.list-sessions
+  /me/actions/invalidate-tokens:
+    post:
+      operationId: invalidateCurrentUserTokens
+      x-ikaros-contract-id: identity.invalidate-user-tokens
       responses:
-        '200': { description: 会话列表, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/SessionSummary' } } } } }
+        '204': { description: 已提升 security_version，当前用户此前签发的 JWT 均失效 }
   /admin/users/{user_id}:
     parameters:
       - { name: user_id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -156,13 +156,3 @@ components:
         provider_id: { type: string, format: uuid }
         state: { type: string }
         tier: { type: string }
-    SessionSummary:
-      type: object
-      required: [id, user_id, security_version, svl, created_at, expires_at]
-      properties:
-        id: { type: string, format: uuid }
-        user_id: { type: string, format: uuid }
-        security_version: { type: integer, minimum: 0 }
-        svl: { type: integer, minimum: 0 }
-        created_at: { type: string, format: date-time }
-        expires_at: { type: string, format: date-time }
