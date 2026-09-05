@@ -14,13 +14,21 @@ public class DeliveryGrantContractService {
     private final BlobRepository blobs;
     private final MediaDeliveryBindingRepository bindings;
     private final DeliveryProviderRepository providers;
+    private final StorageProviderRegistry storageProviders;
+    private final BlobPlacementRepository placements;
+    private final StorageObjectProviderRegistry storageObjects;
     private final ObjectMapper mapper;
 
     public DeliveryGrantContractService(BlobRepository blobs, MediaDeliveryBindingRepository bindings,
-                                        DeliveryProviderRepository providers, ObjectMapper mapper) {
+                                        DeliveryProviderRepository providers, StorageProviderRegistry storageProviders,
+                                        BlobPlacementRepository placements, StorageObjectProviderRegistry storageObjects,
+                                        ObjectMapper mapper) {
         this.blobs = blobs;
         this.bindings = bindings;
         this.providers = providers;
+        this.storageProviders = storageProviders;
+        this.placements = placements;
+        this.storageObjects = storageObjects;
         this.mapper = mapper;
     }
 
@@ -29,10 +37,29 @@ public class DeliveryGrantContractService {
         return bindings.findById(lease.bindingId())
             .flatMap(binding -> providers.findByProviderKey(binding.deliveryProviderKey())
                 .zipWith(blobs.findById(lease.blobId()))
-                .map(providerAndBlob -> new DeliveryGrantContractView(grant.id(), grant.attachmentId(), lease.id(),
-                    providerAndBlob.getT1().id(), grant.method(), deliveryUrl(providerAndBlob.getT1(), attachmentId, grant.token()), grant.expiresAt(),
-                    binding.rangePolicy() != DeliveryBindingRangePolicy.UNSUPPORTED,
-                    providerAndBlob.getT2().mediaType(), providerAndBlob.getT2().sizeBytes(), grant.revocationLevel())));
+                .flatMap(providerAndBlob -> {
+                    DeliveryProviderEntity deliveryProvider = providerAndBlob.getT1();
+                    BlobEntity blob = providerAndBlob.getT2();
+                    if (deliveryProvider.providerType() != DeliveryProviderType.DIRECT) {
+                        return Mono.just(new DeliveryGrantContractView(grant.id(), grant.attachmentId(), lease.id(),
+                            deliveryProvider.id(), grant.method(), deliveryUrl(deliveryProvider, attachmentId, grant.token()), grant.expiresAt(),
+                            binding.rangePolicy() != DeliveryBindingRangePolicy.UNSUPPORTED,
+                            blob.mediaType(), blob.sizeBytes(), grant.revocationLevel()));
+                    }
+                    return directReadContract(attachmentId, lease, grant, binding, deliveryProvider, blob);
+                }));
+    }
+
+    private Mono<DeliveryGrantContractView> directReadContract(UUID attachmentId, DeliveryLeaseView lease,
+                                                                 DeliveryGrantView grant, MediaDeliveryBindingEntity binding,
+                                                                 DeliveryProviderEntity deliveryProvider, BlobEntity blob) {
+        return storageProviders.get(binding.storageProviderId())
+            .flatMap(storageProvider -> placements.findFirstByBlobIdAndProvider(lease.blobId(), storageProvider.providerKey())
+                .flatMap(placement -> storageObjects.createReadIntent(storageProvider, placement.objectKey())))
+            .map(read -> new DeliveryGrantContractView(grant.id(), grant.attachmentId(), lease.id(),
+                deliveryProvider.id(), read.method(), read.url(), read.expiresAt(),
+                binding.rangePolicy() != DeliveryBindingRangePolicy.UNSUPPORTED,
+                blob.mediaType(), blob.sizeBytes(), grant.revocationLevel()));
     }
 
     private String deliveryUrl(DeliveryProviderEntity provider, UUID attachmentId, String token) {
