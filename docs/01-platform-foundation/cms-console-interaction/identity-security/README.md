@@ -31,7 +31,7 @@
 Tabs：
 - `概览`。
 - `角色与权限`。
-- `会话与设备`。
+- `认证与设备安全`。
 - `安全事件`。
 - `活动/审计引用`。
 
@@ -39,9 +39,15 @@ Tabs：
 
 角色 Tab 展示 Direct Role 和 Inherited/Effective Permission。`分配角色` 使用可搜索 Multi-select，并展示角色描述和风险级别。
 
+`认证与设备安全` 只展示可持久化的账号安全事实，例如 MFA 配置、Trusted Device（未来启用时）、最近高风险验证摘要和当前 `security_version`。不得构造 Login Session / Security Session 列表，也不得显示 Session ID、单设备登录状态或“撤销某个 Session”。
+
 Backend Policy 必须阻止把当前唯一管理员账户的最后一个管理员等价角色移除；前端在操作区域解释为什么不可执行。
 
-禁用账户 Dialog 明确说明对 Session、API Token、Automation 和用户拥有数据的影响。**禁用账户不会删除数据。**
+禁用账户 Dialog 明确说明：
+- 账号将不能继续通过认证；
+- 按 Security Policy 提升 `security_version` 后，此前签发的 JWT 会失效；
+- API Credential / Automation 是否受影响由对应独立凭据与策略决定；
+- **禁用账户不会删除数据。**
 
 ### Role 列表 / 编辑器
 
@@ -73,68 +79,60 @@ Review Dialog 按风险分组展示新增/删除权限。提升到安全管理�
 
 Effective Permission Inspector 解释权限来源：Direct、Role、Inherited、Owner-specific，或被 Policy Deny。
 
-## 3. 活跃会话
-
-**路由：** `/console/security/sessions`
-
-### 摘要卡片
-- 活跃 Session 数。
-- 当前 Session。
-- 活跃用户数。
-- 可疑/最近 Security Alert 数。
-
-### Session 表格
-
-列：
-- 用户；
-- 设备/客户端；
-- 平台/浏览器/App；
-- Policy 允许时显示模糊 Network/Location；
-- 签发时间；
-- 最近活动；
-- 过期时间；
-- Authentication Strength/MFA；
-- 状态；
-- 操作。
-
-当前 Session 显示 `当前会话` Chip。
-
-Session 详情 Side Sheet：
-- 缩短 Session ID + 显式复制完整 ID 操作；
-- 用户；
-- 设备/客户端；
-- 签发/最近活动/过期时间；
-- Auth Method/MFA；
-- 根据隐私 Policy 展示 IP/Network Metadata；
-- Token/Session Scope；
-- 关联 Security Event。
-
-操作：
-- `撤销会话`。
-- `撤销该用户的其他所有会话`。
-- 只有授权管理员显示 `撤销全部会话`。
-
-撤销 Dialog 说明 Refresh/Access Token 和 Device Authorization 是否受影响。撤销当前 Session 时，在服务端确认成功后立即退出登录。
-
-## 4. 认证、密钥与恢复
+## 3. 认证、Token 安全、密钥与恢复
 
 **路由：** `/console/security/authentication`
 
-Tabs：`认证策略`、`密钥与 Secret`、`恢复`、启用时的 `OAuth/API 访问`。
+Tabs：`认证策略`、`Token 安全`、`密钥与 Secret`、`恢复`、启用时的 `OAuth/API 访问`。
 
-### 认证策略
+> 平台登录认证使用无状态 JWT。服务端不建立或持久化 Login Session / Security Session，所以 CMS 不提供 `/console/security/sessions`、活跃 Session 表、Session Detail 或单 Session 撤销操作。
+
+### 3.1 认证策略
 
 Card/Form 分组：
 - Password/Login Policy；
 - MFA 要求；
-- Session Lifetime/Idle Timeout；
+- JWT Access / Refresh Token TTL；
 - Login Rate Limit/Lockout；
-- Trusted Device Policy；
+- Trusted Device Policy（未来启用时，作为独立安全对象）；
 - External Identity Provider。
 
 每个 Policy Field 显示当前 Effective Value 和简短影响说明。`保存策略` 先显示 Diff Review，并可要求重新认证。
 
-### 密钥与 Secret
+Token TTL 只控制签名 Token 的有效期，不等同于 Session Lifetime / Idle Timeout。
+
+### 3.2 Token 安全
+
+页面展示的是用户级 Token 安全状态，而不是 Session 列表。
+
+管理员可查看：
+- 用户当前 `security_version`；
+- 账号状态；
+- 最近 Token Invalidation 安全事件；
+- JWT Signing Key 当前版本 / 状态摘要（只读链接到密钥管理）；
+- Security Policy 是否会在密码修改、账号禁用等动作后自动提升 `security_version`。
+
+高风险操作：
+- `使该用户所有旧 Token 失效`。
+- 具备平台级权限时可对明确用户集合批量执行 Token Invalidation，但必须显示影响数量并要求 Step-up Verification。
+
+操作语义：
+
+```text
+identity.invalidate-user-tokens
+        ↓
+increment user.security_version
+        ↓
+all JWTs carrying the previous security_version are rejected
+```
+
+不提供：
+- 单 Token / 单 Session 撤销；
+- 当前 Session Chip；
+- 活跃用户数从 Session 表推导；
+- Session IP / User-Agent / Last Seen 列表。
+
+### 3.3 密钥与 Secret
 
 按用途分表：Signing/Encryption Key、API Credential、Integration Secret Reference。Secret Material 绝不能与普通设置混在一起展示。
 
@@ -151,21 +149,24 @@ Key 行字段：Key Name/ID、用途、Algorithm/Type、状态（`Active`、`Ret
 
 Private Key/Secret 生成后默认永不再次显示，除非产品明确设计了一次性导出流程。
 
-### 恢复
+### 3.4 恢复
 
 展示管理员/系统和各 Protected Vault Domain 的 Recovery Readiness，但不展示 Recovery Material 本身。
 
 操作：生成/轮换 Recovery Code/Material、验证恢复能力、使旧 Recovery Set 失效。一次性 Code 展示页面要求用户明确确认已安全保存。
 
-### OAuth/API 访问
+### 3.5 OAuth/API 访问
 
 Client/Token 表格：Client Name、Owner、Scope、Created、Last Used、Expiry、Status。
+
+这里的 OAuth/API Token 是独立 Credential，不等同于用户登录 Session。
 
 创建 Token 时先审阅 Scope，创建结果中的 Secret **只展示一次**。撤销立即生效且不可撤销。
 
 ## 通用安全行为
 - 所有安全敏感修改都产生 Audit Event。
-- Re-authentication Dialog 必须说明为什么需要重新认证，并在成功后恢复用户刚才待执行的操作。
+- Re-authentication / Step-up Dialog 必须说明为什么需要重新认证，并在成功后恢复用户刚才待执行的操作。
+- Step-up 成功后使用短期、Purpose-bound Verification Grant，不创建 Security Session。
 - Permission Denied 页面不能泄露隐藏 Secret Field。
 - ID 可以通过显式操作复制，但敏感标识在 Table 中默认缩短显示。
 - Security Event Severity 必须同时使用文字、图标和颜色表达。
