@@ -18,8 +18,8 @@ public class HttpDeliveryProviderProbe implements DeliveryProviderProbe {
     private final WebClient client;
     private final ObjectMapper mapper;
 
-    public HttpDeliveryProviderProbe(WebClient.Builder builder, ObjectMapper mapper) {
-        this.client = builder.build();
+    public HttpDeliveryProviderProbe(ObjectMapper mapper) {
+        this.client = WebClient.builder().build();
         this.mapper = mapper;
     }
 
