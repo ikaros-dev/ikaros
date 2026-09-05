@@ -1,0 +1,140 @@
+{
+  "project": {
+    "id": "PVT_kwDOBtsLNc4AHtJo",
+    "number": 4,
+    "title": "Ikaros Project",
+    "url": "https://github.com/orgs/ikaros-dev/projects/4",
+    "closed": false,
+    "fields": {
+      "nodes": [
+        {
+          "__typename": "ProjectV2Field",
+          "id": "PVTF_lADOBtsLNc4AHtJozgE4ZQU",
+          "name": "Title",
+          "dataType": "TITLE"
+        },
+        {
+          "__typename": "ProjectV2Field",
+          "id": "PVTF_lADOBtsLNc4AHtJozgE4ZQY",
+          "name": "Assignees",
+          "dataType": "ASSIGNEES"
+        },
+        {
+          "__typename": "ProjectV2SingleSelectField",
+          "id": "PVTSSF_lADOBtsLNc4AHtJozgE4ZQc",
+          "name": "Status",
+          "options": [
+            {
+              "id": "81e3b835",
+              "name": "🆕 New"
+            },
+            {
+              "id": "9e151f52",
+              "name": "📋 Backlog"
+            },
+            {
+              "id": "3932f1aa",
+              "name": "🔖 Ready"
+            },
+            {
+              "id": "27d2b9bf",
+              "name": "🏗 In progress"
+            },
+            {
+              "id": "e5d02883",
+              "name": "👀 In review"
+            },
+            {
+              "id": "2e5d67b0",
+              "name": "✅ Done"
+            }
+          ]
+        },
+        {
+          "__typename": "ProjectV2Field",
+          "id": "PVTF_lADOBtsLNc4AHtJozgE4ZQg",
+          "name": "Labels",
+          "dataType": "LABELS"
+        },
+        {
+          "__typename": "ProjectV2Field",
+          "id": "PVTF_lADOBtsLNc4AHtJozgE4ZQk",
+          "name": "Linked pull requests",
+          "dataType": "LINKED_PULL_REQUESTS"
+        },
+        {
+          "__typename": "ProjectV2Field",
+          "id": "PVTF_lADOBtsLNc4AHtJozgE4ZQo",
+          "name": "Reviewers",
+          "dataType": "REVIEWERS"
+        },
+        {
+          "__typename": "ProjectV2Field",
+          "id": "PVTF_lADOBtsLNc4AHtJozgE4ZQs",
+          "name": "Repository",
+          "dataType": "REPOSITORY"
+        },
+        {
+          "__typename": "ProjectV2Field",
+          "id": "PVTF_lADOBtsLNc4AHtJozgE4ZQw",
+          "name": "Milestone",
+          "dataType": "MILESTONE"
+        },
+        {
+          "__typename": "ProjectV2Field",
+          "id": "PVTF_lADOBtsLNc4AHtJozgW2dFc",
+          "name": "Parent issue",
+          "dataType": "PARENT_ISSUE"
+        },
+        {
+          "__typename": "ProjectV2Field",
+          "id": "PVTF_lADOBtsLNc4AHtJozgW2dFg",
+          "name": "Sub-issues progress",
+          "dataType": "SUB_ISSUES_PROGRESS"
+        },
+        {
+          "__typename": "ProjectV2Field",
+          "id": "PVTF_lADOBtsLNc4AHtJozhDJO3o",
+          "name": "Created",
+          "dataType": "CREATED"
+        },
+        {
+          "__typename": "ProjectV2Field",
+          "id": "PVTF_lADOBtsLNc4AHtJozhDJO4I",
+          "name": "Updated",
+          "dataType": "UPDATED"
+        },
+        {
+          "__typename": "ProjectV2Field",
+          "id": "PVTF_lADOBtsLNc4AHtJozhDJO4Y",
+          "name": "Closed",
+          "dataType": "CLOSED"
+        }
+      ]
+    }
+  },
+  "repository": {
+    "id": "R_kgDOHfE8gQ",
+    "defaultBranchRef": {
+      "name": "main",
+      "target": {
+        "oid": "bbe2c09fe4f18b4d1edd3a194956c7c313f1fb2d"
+      }
+    }
+  },
+  "viewer": "chivehao",
+  "issueTypes": [
+    {
+      "id": "IT_kwDOBtsLNc4BEOSd",
+      "name": "Task"
+    },
+    {
+      "id": "IT_kwDOBtsLNc4BEOSg",
+      "name": "Bug"
+    },
+    {
+      "id": "IT_kwDOBtsLNc4BEOSh",
+      "name": "Feature"
+    }
+  ]
+}
