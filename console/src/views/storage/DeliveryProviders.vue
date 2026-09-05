@@ -14,7 +14,7 @@ const providerTypes: Array<{
   {
     value: "CDN",
     label: "CDN",
-    description: "通过第三方边缘网络分发，适合公开或高频访问内容。"
+    description: "登记已在 ESA / EdgeOne 控制台配置好的加速域名和回源规则。"
   },
   {
     value: "DIRECT",
@@ -70,6 +70,7 @@ const selectedType = computed(
   () => providerTypes.find(item => item.value === form.value.providerType)!
 );
 const isCdn = computed(() => form.value.providerType === "CDN");
+const endpointLabel = computed(() => (isCdn.value ? "CDN 加速域名" : "交付 Endpoint"));
 const isValidKey = computed(() =>
   /^[a-z][a-z0-9-]{1,63}$/.test(form.value.providerKey)
 );
@@ -423,7 +424,7 @@ onMounted(load);
       class="mb-4"
     />
     <el-alert
-      title="添加后 Provider 默认不会改变已有 Binding；请在绑定策略中选择并设置优先级。"
+      title="CDN Provider 只登记已有的加速域名和回源规则，不会自动调用 ESA / EdgeOne API 修改控制台配置。"
       type="info"
       show-icon
       :closable="false"
@@ -555,17 +556,17 @@ onMounted(load);
               该标识已存在，请换一个标识。
             </div></el-form-item
           >
-          <el-form-item v-if="isCdn" label="CDN Endpoint" required
+          <el-form-item v-if="isCdn" :label="endpointLabel" required
             ><el-input
               v-model="form.endpoint"
               placeholder="https://cdn.example.com"
             />
             <div class="text-xs text-[var(--el-text-color-secondary)] mt-1">
-              填写对外分发域名或 CDN 接入地址，不要填写控制台地址；仅支持
-              HTTPS。
+              填写 ESA / EdgeOne 控制台中已经启用的对外加速域名，不要填写控制台地址；仅支持 HTTPS。
+              系统会将附件的 object key 拼接到此域名后，由 CDN 现有回源规则读取存储。
             </div></el-form-item
           >
-          <div class="grid grid-cols-2 gap-3">
+          <div v-if="!isCdn" class="grid grid-cols-2 gap-3">
             <el-form-item label="Region"
               ><el-input
                 v-model="form.region"
@@ -574,7 +575,7 @@ onMounted(load);
               ><el-input v-model="form.zoneId" placeholder="可选"
             /></el-form-item>
           </div>
-          <el-form-item v-if="isCdn" label="签名密钥引用"
+          <el-form-item v-if="!isCdn" label="签名密钥引用"
             ><el-input
               v-model="form.credentialRef"
               placeholder="secret://delivery/cdn-prod"
@@ -603,10 +604,10 @@ onMounted(load);
           ><el-descriptions-item label="类型"
             >{{ selectedType.label }} ·
             {{ selectedType.description }}</el-descriptions-item
-          ><el-descriptions-item v-if="isCdn" label="分发地址">{{
+          ><el-descriptions-item v-if="isCdn" label="加速域名">{{
             form.endpoint
           }}</el-descriptions-item
-          ><el-descriptions-item label="凭据">{{
+          ><el-descriptions-item v-if="!isCdn" label="凭据">{{
             form.credentialRef
               ? "已填写 Secret 引用（不会保存密钥明文）"
               : "未配置"
