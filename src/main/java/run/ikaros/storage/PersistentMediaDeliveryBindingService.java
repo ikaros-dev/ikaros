@@ -79,21 +79,10 @@ public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindi
     @Override
     public Mono<Void> delete(UUID id) {
         return bindings.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Delivery Binding 不存在")))
-            .flatMap(binding -> leases.existsByBindingId(binding.id()).flatMap(referenced -> {
-                if (!referenced) {
-                    return bindings.delete(binding)
-                        .then(events.append("storage.delivery-binding.removed", 1, "delivery_binding", binding.id(),
-                            "{\"binding_id\":\"" + binding.id() + "\"}").then());
-                }
-                if (!binding.enabled()) return Mono.<Void>empty();
-                MediaDeliveryBindingEntity disabled = new MediaDeliveryBindingEntity(binding.id(), binding.storageProviderId(),
-                    binding.deliveryProviderKey(), binding.priority(), false,
-                    binding.cacheKeyPolicy(), binding.rangePolicy(), binding.fallbackParticipation(), binding.createdAt(),
-                    Instant.now(), binding.version());
-                return bindings.save(disabled)
-                    .flatMap(saved -> events.append("storage.delivery-binding.disabled", 1, "delivery_binding", saved.id(),
-                        "{\"binding_id\":\"" + saved.id() + "\",\"reason\":\"referenced_by_delivery_lease\"}").then());
-            }));
+            .flatMap(binding -> leases.findAllByBindingId(binding.id()).flatMap(leases::delete).then()
+                .then(bindings.delete(binding))
+                .then(events.append("storage.delivery-binding.removed", 1, "delivery_binding", binding.id(),
+                    "{\"binding_id\":\"" + binding.id() + "\",\"leases_removed\":true}").then()));
     }
 
     private Mono<MediaDeliveryBindingEntity> save(MediaDeliveryBindingEntity old, UUID providerId,

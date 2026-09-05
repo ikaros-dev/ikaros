@@ -8,7 +8,7 @@ import reactor.core.publisher.Flux;
 
 public interface MediaDeliveryLeaseRepository extends ReactiveCrudRepository<MediaDeliveryLeaseEntity, UUID> {
     Mono<MediaDeliveryLeaseEntity> findByIdAndOwnerId(UUID id, UUID ownerId);
-    Mono<Boolean> existsByBindingId(UUID bindingId);
+    Flux<MediaDeliveryLeaseEntity> findAllByBindingId(UUID bindingId);
     Mono<Boolean> existsByBlobIdAndReleasedAtIsNullAndLeaseExpiresAtAfter(UUID blobId, Instant now);
     Flux<MediaDeliveryLeaseEntity> findAllByReleasedAtIsNullAndLeaseExpiresAtBefore(Instant now);
 }
