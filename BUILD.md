@@ -1,185 +1,237 @@
-# 注意
-这个文档是旧版本的文档，很多内容不正确，待更新。
+# Ikaros 构建与本地开发
 
+本文档对应当前仓库结构：后端是 Maven 单模块 Spring Boot 应用，前端位于 `console/`，数据库使用 PostgreSQL，表结构由应用启动时的 `r2dbc-migrate` 自动升级。
 
-# 编译环境
+## 环境要求
 
-- JDK: 21
-- Gradle: 8.14.5
-- SpringBoot: 4.0.1
-- CheckStyle: 9.3
-- Vue: 3
-- IDE: IntelliJ IDEA
-- Database: PostgreSQL 18+
+- JDK 21
+- Maven 3.9+
+- Node.js 20.19+ 或 22.13+
+- pnpm 9+
+- PostgreSQL 18+
+- Docker Desktop（运行 Testcontainers 测试时需要）
 
-您可以通过`git`拉取代码库
+当前主要版本：Spring Boot 4.0.5、Spring Framework 7.0.6、R2DBC PostgreSQL、r2dbc-migrate 4.0.1、Vue 3.5、Vite 7。
+
+## 获取代码
+
 ```shell
 git clone https://github.com/ikaros-dev/ikaros.git
 cd ikaros
+git submodule update --init --recursive
 ```
 
-拉取代码后需要进行
-git module 初始化
+## PostgreSQL
 
-需要初始化是由于主题使用的是git module关联的另一个仓库
+可以使用 Docker 启动本地数据库：
 
-```git
-git submodule init
-git submodule update
+```shell
+docker run -d --name ikarosdb_dev -p 5432:5432 `
+  -e POSTGRES_DB=ikaros `
+  -e POSTGRES_USER=ikaros `
+  -e POSTGRES_PASSWORD=openpostgresql `
+  postgres:18-alpine
 ```
 
-执行gradle任务前，默认会走一遍单元测试， 如需跳过，加上`-x test` 即可。
-
-建议先使用`java -version`检查下jdk版本，如本地JDK版本不是21编译会报错。
-
-跳过测试编译(Windows)
-
-```
-.\gradlew.bat clean build -x test
-```
-
-Mac或者Linux
-
-```
-./gradlew clean build -x test
-```
-
-本地运行，复制并更名`config/server/resource/application-local.yaml.example`到`src/main/resource/application-local.yaml`
-, 可以根据需要酌情修改，
-
-我建议是本地跑个 [docker for windows](https://docs.docker.com/desktop/install/windows-install/)
-，装好PG方便开发。
-
-IDEA的checkstyle插件配置，安装好插件`CheckStyle-IDEA`，进行配置
-
-配置插件过程中版本选择`9.3`，
-扫描范围包括测试代码，描述可以填比如`Ikaros Checks`，
-还会让填变量值，填入如下值
+默认连接配置：
 
 ```text
-checkstyle-suppressions.xml
-checkstyle-xpath-suppressions.xml
+R2DBC URL: r2dbc:postgresql://localhost:5432/ikaros
+用户名:    ikaros
+密码:      openpostgresql
 ```
-下一步直到完成后，勾选这个配置，确定保存。
 
-commit之前，用checkstyle检查下代码，确认没有问题后再commit。
-如果没过checkstyle检查的，GitHub的CI过不了。
+可通过 `IKAROS_R2DBC_URL`、`IKAROS_DB_USERNAME`、`IKAROS_DB_PASSWORD` 覆盖。应用启动时会执行 `src/main/resources/db/migration/` 下的版本化 SQL，不要手动重复执行迁移脚本。
 
-编译打包，告警可以忽视
+## 后端配置与运行
+
+主配置文件是 `src/main/resources/application.yaml`，默认 HTTP 端口为 `10000`。本地私有配置使用未提交的 `src/main/resources/application-local.yaml`，该文件按需创建。
+
+```shell
+mvn spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+IntelliJ IDEA 运行配置：主类 `run.ikaros.IkarosApplication`，Active profiles 设置为 `local`，项目 JDK 使用 21。
+
+应用启动后：
+
+- API：`http://localhost:10000/api`
+- OpenAPI：`http://localhost:10000/openapi.json`
+- Swagger UI：`http://localhost:10000/swagger-ui.html`
+- 就绪检查：`http://localhost:10000/api/health/ready`
+
+存储 Provider 的凭据使用加密密钥保护。开发环境建议配置 `IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEY`；共享环境还必须覆盖 `IKAROS_JWT_SECRET`，不要使用默认密钥。
+
+## 前端开发
+
+```shell
+cd console
+pnpm install
+pnpm dev
+```
+
+前端默认运行在 `http://localhost:8848`。`console/.env.development` 会把 `/api` 代理到 `http://localhost:10000`；后端端口改变时修改 `VITE_API_PROXY`。
+
+```shell
+pnpm dev          # 开发服务器
+pnpm build        # 生产构建
+pnpm preview      # 预览构建产物
+pnpm typecheck    # TypeScript 与 Vue 类型检查
+pnpm lint         # ESLint、Prettier、Stylelint
+```
+
+## 构建与测试
+
+```shell
+mvn compile
+mvn test
+mvn -Dtest=AttachmentPreviewServiceTest test
+mvn clean package -DskipTests
+```
+
+运行完整测试前需要启动 Docker Desktop，因为部分测试使用 Testcontainers。Spring Boot JAR 位于 `target/ikaros-2.0.0-SNAPSHOT.jar`，运行方式：
+
+```shell
+java -jar target/ikaros-2.0.0-SNAPSHOT.jar --spring.profiles.active=local
+```
+
+## 存储与 Delivery Provider 验证
+
+附件访问链路至少需要：启用且可读的 Storage Provider、启用的 Delivery Provider，以及两者之间的 Delivery Binding。Binding 的 `priority` 数值越小，默认选择优先级越高。
+
+Delivery Provider 的分发类型：
+
+- `DIRECT`：使用 Storage Provider 生成的 presigned URL。
+- `SERVER_PROXY`：使用 Ikaros 的 `/api/attachments/{id}/content` 代理接口；未配置代理基址时返回相对地址。
+- `CDN`：使用已在 ESA、EdgeOne 等云服务商控制台配置好的 CDN 对外域名，由 CDN 回源 Storage Provider。
+
+预览接口可以通过 Provider Key 选择分发配置：
 
 ```text
-.\gradlew.bat clean bootJar -x test
+GET /api/attachments/{attachmentId}/preview-url?delivery_provider={providerKey}
 ```
 
-## 代码格式化
+不传、传空值或传入无效 Provider Key 时，服务端按 Binding 优先级选择默认 Provider。响应会返回所有可选 Provider，但只为当前选中的 Provider 生成访问 URL。
 
-`Setting` => `Editor` => `Code Style` => `Java`
-
-=> `Scheme` 选择 `Project`
-
-选择右边设置，导入checkstyle文件
-(如没有该项，则需要先安装checkstyle-idea插件)
-
-最后OK保存
-
-## 本地开发
-
-因为本地开发需要本地起一个postgres18数据库，加上测试用的`testcontainer`需要容器环境，
-
-所有建议你本地安装好Docker环境，Windows推荐使用`Docker Desktop`。
-
-这里给个参考配置：
-```shell
-docker run -d \
---name ikarosdb_dev \
--p 5432:5432 \
--e POSTGRES_DB=ikaros \
--e POSTGRES_USER=ikaros \
--e POSTGRES_PASSWORD=openpostgresql \
-postgres:18.3-alpine
-```
-当然如果不运行测试，Windows本地也可安装PG18数据库，下载地址：<https://www.enterprisedb.com/downloads/postgres-postgresql-downloads>，安装时端口使用`5432`，然后通过pgAdmin或psql执行以下命令创建用户和数据库：
-
-```sql
-CREATE USER ikaros WITH PASSWORD 'openpostgresql';
-CREATE DATABASE ikaros OWNER ikaros;
-GRANT ALL PRIVILEGES ON DATABASE ikaros TO ikaros;
-```
-
-也可使用`psql`命令行快速完成：
-```shell
-psql -U postgres -c "CREATE USER ikaros WITH PASSWORD 'openpostgresql';"
-psql -U postgres -c "CREATE DATABASE ikaros OWNER ikaros;"
-psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE ikaros TO ikaros;"
-```
-
-
-在`IkarosApplication`的运行配置里，将`Active profiles` 配置成：`dev,local`，社区版则添加VM设置`-Dspring.profiles.active=dev,local`
-
-这里的`local`请先确保您已经进行了上面的`application-local.yaml.example`实例文件复制移动重命名
-
-### Console编译
-需要先运行任务进行Console的前端文件编译：
+创建或手动检测 Delivery Provider 会生成后台任务：
 
 ```text
-./gradlew buildFrontend -x test
+GET /api/background-tasks
+GET /api/background-tasks/{taskId}
 ```
 
-## IDEA格式化配置
+`UNKNOWN` 表示尚未得到有效探测结果，不等同于健康。需要确认 Provider 已绑定到可读的 Storage Provider，再手动触发检测；任务完成后结果会写回 Provider。
 
-1. 打开 `Setting` => `Editor` => `Code Style` => `Java`
-2. 选择 `Scheme` => 选择 `Project`
-3. 点击右边小齿轮 => `Import Scheme` => `Checkstyle configuration`
-4. 选择项目目录 `config/checkstyle` 下的 配置文件`checkstyle.xml` 保存导入
-5. 保存设置
+## 常见问题
 
-## Fast Jar
-需要有`Java21`的运行环境
+### 启动时报数据库连接错误
 
-请先按照上放先进行`build`
+确认 PostgreSQL 已启动，并检查 `IKAROS_R2DBC_URL`、用户名和密码。
 
-打`Fast Jar`包，在项目根目录运行下方命令
-```shell
-# linux
-./gradlew clean bootJar -x test
-# windows
-./gradlew.bat clean bootJar -x test
-```
-打包后的文件在`server/build/libs/`目录下
+### 前端页面能打开但 API 请求失败
 
-在打包文件所在目录，`Linux` 运行
-```shell
-java -jar ./ikaros-server.jar
-```
+确认后端运行在 `10000` 端口；如果端口不同，修改 `console/.env.development` 中的 `VITE_API_PROXY` 后重启 Vite。
+
+### 预览接口返回“附件没有可用 Delivery Binding”
+
+检查附件是否存在活动 Blob Placement，并确认对应 Storage Provider、Delivery Provider 和 Binding 都处于可用状态。被禁用的 Binding/Provider 或健康状态为 `UNHEALTHY` 的 Provider 不会参与选择。
+
+## 提交前检查
 
 ```shell
-java -jar ikaros-server.jar --spring.profiles.active=dev,local
+mvn test
+cd console
+pnpm typecheck
 ```
 
-# 提交PR后
+## Git 工作流
 
-更新本地主分支
-```
+### 提交 PR 后
+
+更新本地主分支：
+
+```shell
 git checkout main | git pull upstream main | git push origin main | git remote prune origin
 ```
 
-查看本地分支，并删除工作分支
-```
+查看本地分支，并删除工作分支：
+
+```shell
 git branch
 git branch -D {you_branch_name}
 ```
 
-上游PR合并后，更新本地主分支
+上游 PR 合并后，更新本地主分支。
 
-如已添加上游仓库可跳过此命令
-```text
+如已添加上游仓库可跳过此命令：
+
+```shell
 git remote add upstream https://github.com/ikaros-dev/ikaros.git
 ```
 
-```text
+```shell
 git checkout main
 git pull upstream main
 ```
 
-# 更多
-<https://docs.ikaros.run>
+查看当前分支和工作区状态：
+
+```shell
+git status
+git branch
+git log --oneline -10
+```
+
+提交本地修改前，先确认差异内容：
+
+```shell
+git diff
+git diff --check
+```
+
+提交修改：
+
+```shell
+git add <文件路径>
+git commit -m "type(scope): description"
+```
+
+添加上游仓库（只需执行一次）：
+
+```shell
+git remote add upstream https://github.com/ikaros-dev/ikaros.git
+```
+
+同步上游主分支：
+
+```shell
+git fetch upstream
+git switch main
+git pull --ff-only upstream main
+```
+
+查看远程仓库和远程分支：
+
+```shell
+git remote -v
+git branch -r
+```
+
+确认分支已经合并且不再需要时，可以删除本地工作分支：
+
+```shell
+git branch -d <branch-name>
+```
+
+`git branch -D` 会强制删除未合并分支，除非明确确认，否则不要使用。推送远程分支前请先确认目标仓库和分支：
+
+```shell
+git push origin <branch-name>
+```
+
+## 相关文档
+
+- [README.md](README.md)
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [CHANGELOG.md](CHANGELOG.md)
+- [在线文档](https://docs.ikaros.run/)
