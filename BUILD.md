@@ -144,6 +144,63 @@ cd console
 pnpm typecheck
 ```
 
+## Git 工作流
+
+查看当前分支和工作区状态：
+
+```shell
+git status
+git branch
+git log --oneline -10
+```
+
+提交本地修改前，先确认差异内容：
+
+```shell
+git diff
+git diff --check
+```
+
+提交修改：
+
+```shell
+git add <文件路径>
+git commit -m "type(scope): description"
+```
+
+添加上游仓库（只需执行一次）：
+
+```shell
+git remote add upstream https://github.com/ikaros-dev/ikaros.git
+```
+
+同步上游主分支：
+
+```shell
+git fetch upstream
+git switch main
+git pull --ff-only upstream main
+```
+
+查看远程仓库和远程分支：
+
+```shell
+git remote -v
+git branch -r
+```
+
+确认分支已经合并且不再需要时，可以删除本地工作分支：
+
+```shell
+git branch -d <branch-name>
+```
+
+`git branch -D` 会强制删除未合并分支，除非明确确认，否则不要使用。推送远程分支前请先确认目标仓库和分支：
+
+```shell
+git push origin <branch-name>
+```
+
 ## 相关文档
 
 - [README.md](README.md)
