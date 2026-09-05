@@ -48,6 +48,7 @@ async function load(resetPage = true) {
 
 function changePage() { load(false); }
 function changePageSize() { load(); }
+function reload() { load(); }
 
 function placementSummary(item: Attachment) {
   const placements = item.placements || [];
@@ -90,7 +91,7 @@ onMounted(async () => { try { const result = await http.get<unknown, unknown>("/
   <main class="p-4 md:p-6">
     <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
       <div><h1 class="text-2xl font-semibold">附件与 Blob</h1><p class="mt-1 text-[var(--el-text-color-secondary)]">Resource → Attachment → Blob → Placement</p></div>
-      <div class="flex gap-2"><el-input v-model="resourceId" placeholder="Resource ID（留空查询全部）" clearable @keyup.enter="load" /><el-button type="primary" :loading="loading" @click="load">查询附件</el-button><el-button @click="uploadDialog = true">上传附件</el-button></div>
+      <div class="flex gap-2"><el-input v-model="resourceId" placeholder="Resource ID（留空查询全部）" clearable @keyup.enter="reload" /><el-button type="primary" :loading="loading" @click="reload">查询附件</el-button><el-button @click="uploadDialog = true">上传附件</el-button></div>
     </div>
     <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" class="mb-4" />
     <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -104,7 +105,6 @@ onMounted(async () => { try { const result = await http.get<unknown, unknown>("/
       <el-empty v-else-if="!loaded" description="暂无附件查询结果" />
       <el-empty v-else-if="!attachments.length" :description="allAttachments ? '暂无附件' : '该资源暂无附件'" />
       <el-table v-else :data="attachments" stripe @row-click="row => selected = row">
-        <el-table-column v-if="allAttachments" prop="resourceId" label="Resource ID" min-width="220" />
         <el-table-column prop="fileName" label="文件名" min-width="220" />
         <el-table-column prop="kind" label="角色" width="130" />
         <el-table-column label="Blob / SHA-256" min-width="240"><template #default="{ row }"><div>{{ row.blobId || '-' }}</div><div class="text-xs text-[var(--el-text-color-secondary)]">{{ row.sha256 || '-' }}</div></template></el-table-column>
@@ -114,7 +114,7 @@ onMounted(async () => { try { const result = await http.get<unknown, unknown>("/
       </el-table>
       <el-pagination v-if="allAttachments && loaded" class="mt-4 justify-end" v-model:current-page="page" v-model:page-size="pageSize" :page-sizes="[10, 20, 50, 100]" :total="total" layout="total, sizes, prev, pager, next, jumper" @current-change="changePage" @size-change="changePageSize" />
     </el-card>
-    <el-drawer v-model="detailVisible" title="附件详情" size="420px"><template v-if="selected"><el-descriptions :column="1" border><el-descriptions-item label="Attachment ID">{{ selected.id }}</el-descriptions-item><el-descriptions-item label="文件名">{{ selected.fileName }}</el-descriptions-item><el-descriptions-item label="MIME">{{ selected.mediaType || '-' }}</el-descriptions-item><el-descriptions-item label="Blob ID">{{ selected.blobId || '-' }}</el-descriptions-item><el-descriptions-item label="SHA-256">{{ selected.sha256 || '-' }}</el-descriptions-item><el-descriptions-item label="大小">{{ selected.sizeBytes }} Bytes</el-descriptions-item></el-descriptions><el-button class="mt-4" @click="$router.push(`/storage-center/attachments/${selected.id}`)">打开完整详情</el-button></template></el-drawer>
+    <el-drawer v-model="detailVisible" title="附件详情" size="420px"><template v-if="selected"><el-descriptions :column="1" border><el-descriptions-item label="Attachment ID">{{ selected.id }}</el-descriptions-item><el-descriptions-item label="Resource ID">{{ selected.resourceId || '-' }}</el-descriptions-item><el-descriptions-item label="文件名">{{ selected.fileName }}</el-descriptions-item><el-descriptions-item label="MIME">{{ selected.mediaType || '-' }}</el-descriptions-item><el-descriptions-item label="Blob ID">{{ selected.blobId || '-' }}</el-descriptions-item><el-descriptions-item label="SHA-256">{{ selected.sha256 || '-' }}</el-descriptions-item><el-descriptions-item label="大小">{{ selected.sizeBytes }} Bytes</el-descriptions-item></el-descriptions><el-button class="mt-4" @click="$router.push(`/storage-center/attachments/${selected.id}`)">打开完整详情</el-button></template></el-drawer>
     <el-dialog v-model="uploadDialog" title="上传附件" width="520px"><el-alert title="选择文件后将先上传到 Provider，再提交 Attachment 关系。Object Key 留空则由后端生成。" type="info" :closable="false" class="mb-4"/><el-form label-position="top"><el-form-item label="文件" required><input type="file" @change="file = ($event.target as HTMLInputElement).files?.[0] || null" /></el-form-item><el-form-item label="Object Key"><el-input v-model="upload.objectKey" placeholder="留空自动生成" /></el-form-item><el-form-item label="Provider"><el-select v-model="upload.provider" class="w-full" placeholder="请选择已启用 Provider"><el-option v-for="provider in providerOptions" :key="provider.providerKey" :label="`${provider.providerKey} (${provider.providerType})`" :value="provider.providerKey" /></el-select></el-form-item><el-form-item label="Attachment 角色"><el-select v-model="upload.kind" class="w-full"><el-option label="原始内容" value="ORIGINAL"/><el-option label="封面" value="COVER"/><el-option label="字幕" value="SUBTITLE"/><el-option label="派生内容" value="DERIVED"/></el-select></el-form-item></el-form><template #footer><el-button @click="uploadDialog = false">取消</el-button><el-button type="primary" :loading="uploadLoading" @click="commitUpload">上传并提交附件</el-button></template></el-dialog>
   </main>
 </template>
