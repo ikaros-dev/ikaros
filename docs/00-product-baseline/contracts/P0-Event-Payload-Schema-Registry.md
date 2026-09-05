@@ -4,7 +4,7 @@
 |---|---|
 | 文档名称 | P0 Event Payload Schema Registry |
 | 适用版本 | Ikaros V2 |
-| 文档版本 | v0.1 |
+| 文档版本 | v0.2 |
 | 状态 | Draft / Contract Registry |
 | Catalog | `P0-Command-Query-Event-Catalog.md` |
 
@@ -380,16 +380,7 @@ Payload 与 attached 相同 identity key。
 
 同上。
 
-### `identity.session.revoked@1`
-
-```json
-{
-  "session_id": "uuid",
-  "user_id": "uuid"
-}
-```
-
-### `identity.user.sessions-revoked@1`
+### `identity.user.tokens-invalidated@1`
 
 ```json
 {
@@ -397,6 +388,8 @@ Payload 与 attached 相同 identity key。
   "security_version": 3
 }
 ```
+
+该事件表示用户级 Token Security Version 已提升。它不对应某个登录 Session，也不包含 JWT、Token Digest 或客户端设备信息。
 
 ### `storage.delivery-provider.created@1`
 
