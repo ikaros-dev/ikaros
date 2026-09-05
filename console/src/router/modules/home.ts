@@ -184,6 +184,7 @@ export default {
       { path: "backup", name: "Backup", component: () => import("@/views/storage/Backup.vue"), meta: { title: "备份恢复", icon: "ep:files" } },
     ]),
     subsystem("/edge-acceleration", "EdgeAccelerationCenter", "边缘加速", "ep:connection", [
+      { path: "providers", name: "DeliveryProviders", component: () => import("@/views/storage/DeliveryProviders.vue"), meta: { title: "分发 Provider", icon: "ep:cloudy" } },
       { path: "reliability", name: "StorageDeliveryReliability", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "投递可靠性", icon: "ep:monitor" } },
       { path: "failover", name: "StorageDeliveryFailover", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "故障切换", icon: "ep:warning" } },
       { path: "restore", name: "StorageDeliveryRestore", component: () => import("@/views/storage/Delivery.vue"), meta: { title: "恢复协调", icon: "ep:refresh" } },
