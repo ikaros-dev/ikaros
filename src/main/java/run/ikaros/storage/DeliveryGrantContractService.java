@@ -1,8 +1,13 @@
 package run.ikaros.storage;
 
+import java.net.URI;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 @Service
 public class DeliveryGrantContractService {
@@ -12,16 +17,19 @@ public class DeliveryGrantContractService {
     private final StorageProviderRegistry storageProviders;
     private final BlobPlacementRepository placements;
     private final StorageObjectProviderRegistry storageObjects;
+    private final ObjectMapper mapper;
 
     public DeliveryGrantContractService(BlobRepository blobs, MediaDeliveryBindingRepository bindings,
                                         DeliveryProviderRepository providers, StorageProviderRegistry storageProviders,
-                                        BlobPlacementRepository placements, StorageObjectProviderRegistry storageObjects) {
+                                        BlobPlacementRepository placements, StorageObjectProviderRegistry storageObjects,
+                                        ObjectMapper mapper) {
         this.blobs = blobs;
         this.bindings = bindings;
         this.providers = providers;
         this.storageProviders = storageProviders;
         this.placements = placements;
         this.storageObjects = storageObjects;
+        this.mapper = mapper;
     }
 
     public Mono<DeliveryGrantContractView> contract(UUID attachmentId, DeliveryGrantView grant,
@@ -38,8 +46,22 @@ public class DeliveryGrantContractService {
                             binding.rangePolicy() != DeliveryBindingRangePolicy.UNSUPPORTED,
                             blob.mediaType(), blob.sizeBytes(), grant.revocationLevel()));
                     }
+                    if (deliveryProvider.providerType() == DeliveryProviderType.CDN) {
+                        return cdnContract(attachmentId, lease, grant, binding, deliveryProvider, blob);
+                    }
                     return directReadContract(attachmentId, lease, grant, binding, deliveryProvider, blob);
                 }));
+    }
+
+    private Mono<DeliveryGrantContractView> cdnContract(UUID attachmentId, DeliveryLeaseView lease,
+                                                          DeliveryGrantView grant, MediaDeliveryBindingEntity binding,
+                                                          DeliveryProviderEntity deliveryProvider, BlobEntity blob) {
+        return storageProviders.get(binding.storageProviderId())
+            .flatMap(storageProvider -> placements.findFirstByBlobIdAndProvider(lease.blobId(), storageProvider.providerKey()))
+            .map(placement -> new DeliveryGrantContractView(grant.id(), grant.attachmentId(), lease.id(),
+                deliveryProvider.id(), "GET", cdnUrl(deliveryProvider, placement.objectKey()), grant.expiresAt(),
+                binding.rangePolicy() != DeliveryBindingRangePolicy.UNSUPPORTED,
+                blob.mediaType(), blob.sizeBytes(), grant.revocationLevel()));
     }
 
     private Mono<DeliveryGrantContractView> directReadContract(UUID attachmentId, DeliveryLeaseView lease,
@@ -52,6 +74,25 @@ public class DeliveryGrantContractService {
                 deliveryProvider.id(), read.method(), read.url(), read.expiresAt(),
                 binding.rangePolicy() != DeliveryBindingRangePolicy.UNSUPPORTED,
                 blob.mediaType(), blob.sizeBytes(), grant.revocationLevel()));
+    }
+
+    private String cdnUrl(DeliveryProviderEntity provider, String objectKey) {
+        try {
+            Map<String, Object> config = mapper.readValue(provider.config() == null ? "{}" : provider.config().asString(),
+                new TypeReference<>() { });
+            Object configuredEndpoint = config.get("endpoint");
+            if (configuredEndpoint == null || configuredEndpoint.toString().isBlank()) {
+                throw new IllegalStateException("CDN Provider 未配置 endpoint");
+            }
+            URI endpoint = URI.create(configuredEndpoint.toString().trim());
+            if (endpoint.getScheme() == null || endpoint.getHost() == null) {
+                throw new IllegalStateException("CDN Provider endpoint 无效");
+            }
+            String base = endpoint.toString().replaceAll("/+\\z", "");
+            return base + "/" + objectKey;
+        } catch (JacksonException | IllegalArgumentException error) {
+            throw new IllegalStateException("CDN Provider 配置数据损坏", error);
+        }
     }
 
     private String deliveryUrl(DeliveryProviderEntity provider, UUID attachmentId, String token) {
