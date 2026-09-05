@@ -2,6 +2,7 @@ package run.ikaros.storage;
 
 import java.time.Instant;
 import java.util.UUID;
+import io.r2dbc.postgresql.codec.Json;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Column;
@@ -10,7 +11,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Table("media_delivery_provider")
 public record DeliveryProviderEntity(@Id UUID id, @Column("provider_key") String providerKey,
     @Column("provider_type") DeliveryProviderType providerType, @Column("display_name") String displayName,
-    @Column("credential_ref") String credentialRef, String config, String capabilities,
+    @Column("credential_ref") String credentialRef, Json config, Json capabilities,
     @Column("grant_revocation_mode") DeliveryGrantRevocationLevel grantRevocationMode,
     @Column("signing_key_version") long signingKeyVersion, @Column("health_status") DeliveryProviderHealthStatus healthStatus,
     boolean enabled, @Column("created_at") Instant createdAt, @Column("updated_at") Instant updatedAt,
@@ -19,7 +20,8 @@ public record DeliveryProviderEntity(@Id UUID id, @Column("provider_key") String
         String credentialRef, String config, String capabilities, DeliveryGrantRevocationLevel grantRevocationMode,
         long signingKeyVersion, DeliveryProviderHealthStatus healthStatus, boolean enabled, Instant createdAt,
         Instant updatedAt, Long version) {
-        this(id, providerKey, providerType, displayName, credentialRef, config, capabilities, grantRevocationMode,
+        this(id, providerKey, providerType, displayName, credentialRef, Json.of(config == null ? "{}" : config),
+            Json.of(capabilities == null ? "{}" : capabilities), grantRevocationMode,
             signingKeyVersion, healthStatus, enabled, createdAt, updatedAt, version, null);
     }
 }

@@ -3,6 +3,7 @@ package run.ikaros.storage;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
+import io.r2dbc.postgresql.codec.Json;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,8 +40,8 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
             .switchIfEmpty(providers.findByProviderKey(request.providerKey().trim())
             .flatMap(old -> Mono.<DeliveryProviderEntity>error(new ConflictException("Delivery Provider 标识已存在")))
             .switchIfEmpty(Mono.defer(() -> { Instant now = Instant.now(); return providers.save(new DeliveryProviderEntity(null,
-                request.providerKey().trim(), request.providerType(), request.displayName().trim(), request.credentialRef(), config,
-                "{}", DeliveryGrantRevocationLevel.IMMEDIATE, 1, DeliveryProviderHealthStatus.UNKNOWN,
+                request.providerKey().trim(), request.providerType(), request.displayName().trim(), request.credentialRef(), Json.of(config),
+                Json.of("{}"), DeliveryGrantRevocationLevel.IMMEDIATE, 1, DeliveryProviderHealthStatus.UNKNOWN,
                 request.enabled() == null || request.enabled(), now, now, null, idempotencyKey)); }))
              .onErrorMap(DuplicateKeyException.class, e -> new ConflictException("Delivery Provider 标识已存在"))))
             .flatMap(saved -> emit("storage.delivery-provider.created", saved,
@@ -64,7 +65,7 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
                 }
                 DeliveryProviderEntity replacement = new DeliveryProviderEntity(
                     old.id(), request.providerKey().trim(), request.providerType(), request.displayName().trim(),
-                    request.credentialRef(), config, old.capabilities(), old.grantRevocationMode(), old.signingKeyVersion(),
+                    request.credentialRef(), Json.of(config), old.capabilities(), old.grantRevocationMode(), old.signingKeyVersion(),
                     old.healthStatus(), request.enabled() == null ? old.enabled() : request.enabled(), old.createdAt(),
                     Instant.now(), old.version(), old.idempotencyKey());
                 return providers.save(replacement)
@@ -108,6 +109,6 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
     private DeliveryProviderView view(DeliveryProviderEntity e) { return new DeliveryProviderView(e.id(), e.providerKey(), e.providerType(), e.displayName(),
         e.credentialRef(), decode(e.config()), decode(e.capabilities()), e.grantRevocationMode(), e.signingKeyVersion(), e.healthStatus(), e.enabled(),
         e.createdAt(), e.updatedAt(), e.version() == null ? 0 : e.version()); }
-    private Map<String, Object> decode(String value) { try { return mapper.readValue(value == null ? "{}" : value, new TypeReference<>() {}); }
+    private Map<String, Object> decode(Json value) { try { return mapper.readValue(value == null ? "{}" : value.asString(), new TypeReference<>() {}); }
         catch (JacksonException e) { throw new ConflictException("Delivery Provider 配置数据损坏"); } }
 }
