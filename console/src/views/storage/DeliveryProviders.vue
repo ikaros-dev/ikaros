@@ -151,8 +151,8 @@ function nextStep() {
     error.value = "该内部标识已存在，请换一个标识";
     return;
   }
-  if (needsEndpoint.value && !form.value.endpoint.trim()) {
-    error.value = isCdn.value ? "CDN Endpoint 不能为空" : "服务端代理基址不能为空";
+  if (isCdn.value && !form.value.endpoint.trim()) {
+    error.value = "CDN Endpoint 不能为空";
     return;
   }
   if (
@@ -600,14 +600,14 @@ onMounted(load);
               该标识已存在，请换一个标识。
             </div></el-form-item
           >
-          <el-form-item v-if="needsEndpoint" :label="endpointLabel" required
+          <el-form-item v-if="needsEndpoint" :label="endpointLabel" :required="isCdn"
             ><el-input
               v-model="form.endpoint"
               placeholder="https://cdn.example.com"
             />
             <div class="text-xs text-[var(--el-text-color-secondary)] mt-1">
               <template v-if="isCdn">填写 ESA / EdgeOne 控制台中已经启用的对外加速域名，不要填写控制台地址；系统会将附件 object key 拼接到此域名后，由 CDN 现有回源规则读取存储。</template>
-              <template v-else>填写客户端可以访问的 Ikaros 服务端代理基址，例如 https://media.example.com；系统会在其后拼接附件代理路径。</template>
+              <template v-else>可选。填写后生成绝对代理 URL，例如 https://media.example.com；不填写则生成相对地址，由当前站点承载请求。</template>
             </div></el-form-item
           >
           <div v-if="!isCdn" class="grid grid-cols-2 gap-3">
