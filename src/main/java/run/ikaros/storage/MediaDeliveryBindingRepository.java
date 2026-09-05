@@ -8,5 +8,6 @@ import reactor.core.publisher.Mono;
 public interface MediaDeliveryBindingRepository extends ReactiveCrudRepository<MediaDeliveryBindingEntity, UUID> {
     Flux<MediaDeliveryBindingEntity> findAllByStorageProviderIdOrderByPriorityAsc(UUID storageProviderId);
     Mono<MediaDeliveryBindingEntity> findByStorageProviderIdAndDeliveryProviderKey(UUID storageProviderId, String deliveryProviderKey);
+    Flux<MediaDeliveryBindingEntity> findAllByDeliveryProviderKeyAndEnabledTrueOrderByPriorityAsc(String deliveryProviderKey);
     Mono<Boolean> existsByDeliveryProviderKey(String deliveryProviderKey);
 }

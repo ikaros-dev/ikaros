@@ -17,27 +17,56 @@ public class HttpDeliveryProviderProbe implements DeliveryProviderProbe {
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
     private final WebClient client;
     private final ObjectMapper mapper;
+    private final MediaDeliveryBindingRepository bindings;
+    private final StorageProviderRegistry storageProviders;
+    private final BlobPlacementRepository placements;
+    private final StorageObjectProviderRegistry storageObjects;
 
-    public HttpDeliveryProviderProbe(ObjectMapper mapper) {
+    public HttpDeliveryProviderProbe(ObjectMapper mapper, MediaDeliveryBindingRepository bindings,
+        StorageProviderRegistry storageProviders, BlobPlacementRepository placements,
+        StorageObjectProviderRegistry storageObjects) {
         this.client = WebClient.builder().build();
         this.mapper = mapper;
+        this.bindings = bindings;
+        this.storageProviders = storageProviders;
+        this.placements = placements;
+        this.storageObjects = storageObjects;
     }
 
     @Override
     public boolean supports(DeliveryProviderEntity provider) {
-        return endpoint(provider) != null;
+        return true;
     }
 
     @Override
     public Mono<DeliveryProviderHealthStatus> probe(DeliveryProviderEntity provider) {
+        if (provider.providerType() == DeliveryProviderType.DIRECT) {
+            return directUrl(provider).flatMap(this::check)
+                .switchIfEmpty(Mono.just(DeliveryProviderHealthStatus.UNKNOWN))
+                .onErrorReturn(DeliveryProviderHealthStatus.UNHEALTHY);
+        }
         String endpoint = endpoint(provider);
         if (endpoint == null) return Mono.just(DeliveryProviderHealthStatus.UNKNOWN);
+        return check(endpoint);
+    }
+
+    private Mono<DeliveryProviderHealthStatus> check(String endpoint) {
         return client.head()
             .uri(URI.create(endpoint))
             .header("User-Agent", "Ikaros-Delivery-Health-Check")
             .exchangeToMono(response -> Mono.just(classify(response.statusCode())))
             .timeout(TIMEOUT)
             .onErrorReturn(DeliveryProviderHealthStatus.UNHEALTHY);
+    }
+
+    private Mono<String> directUrl(DeliveryProviderEntity provider) {
+        return bindings.findAllByDeliveryProviderKeyAndEnabledTrueOrderByPriorityAsc(provider.providerKey())
+            .next()
+            .flatMap(binding -> storageProviders.get(binding.storageProviderId()))
+            .flatMap(storageProvider -> placements.findFirstByProviderAndPlacementState(storageProvider.providerKey(), PlacementState.ACTIVE)
+                .flatMap(placement -> storageObjects.createReadIntent(storageProvider, placement.objectKey())))
+            .map(StorageReadIntent::url)
+            .switchIfEmpty(Mono.empty());
     }
 
     private DeliveryProviderHealthStatus classify(HttpStatusCode status) {

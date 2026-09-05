@@ -29,6 +29,8 @@ public interface BlobPlacementRepository extends ReactiveCrudRepository<BlobPlac
 
     Mono<BlobPlacementEntity> findFirstByBlobIdAndProvider(UUID blobId, String provider);
 
+    Mono<BlobPlacementEntity> findFirstByProviderAndPlacementState(String provider, PlacementState placementState);
+
     Mono<Void> deleteByBlobId(UUID blobId);
 
     Mono<Long> countByProviderAndPlacementState(String provider, PlacementState placementState);
