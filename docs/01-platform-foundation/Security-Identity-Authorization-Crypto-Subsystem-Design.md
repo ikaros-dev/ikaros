@@ -5,7 +5,7 @@
 | 文档名称 | Security / Identity / Authorization / Crypto Subsystem Design |
 | 适用版本 | Ikaros V2 |
 | 文档状态 | Draft |
-| 设计目标 | 统一负责身份认证、授权、Step-up Verification、安全会话、Secure Domain 加解密、密钥版本与恢复 |
+| 设计目标 | 统一负责身份认证、JWT Token 校验、授权、Step-up Verification、Secure Domain 加解密、密钥版本与恢复 |
 
 ---
 
@@ -16,9 +16,10 @@ Ikaros V2 需要一个统一的 **Security Subsystem**，作为平台身份、�
 该子系统负责：
 
 - Authentication：确认“你是谁”
+- Stateless JWT Validation：校验签名、有效期、用户状态与 `security_version`
 - Authorization：确认“你可以做什么”
-- Step-up Verification：高风险操作前提升认证保证等级
-- Secure Session：管理高敏感业务解锁状态
+- Step-up Verification：高风险操作前提升认证保证等级，并签发短期 Purpose-bound Grant
+- Secure Domain Unlock：管理客户端 / Secure Domain 的敏感数据解锁边界，不等同于服务端登录 Session
 - Key Management：密钥创建、包装、版本、轮换、恢复与撤销
 - Crypto Capability：对 Secure Domain 数据执行受控加密与解密
 - Security Audit：记录所有高风险认证、授权、密钥与解密行为
@@ -32,11 +33,11 @@ Identity
    +
 Authentication
    +
+Stateless JWT Validation
+   +
 Authorization
    +
-Verification Assurance
-   +
-Secure Session
+Verification Assurance / Step-up Grant
    +
 Key Management
    +
@@ -44,6 +45,32 @@ Crypto Capability
 ```
 
 的统一平台能力。
+
+### 1.1 登录认证明确采用无状态 JWT
+
+Ikaros V2 登录认证基于 JWT Token，服务端不建立、持久化或管理：
+
+```text
+Login Session
+Security Session
+Session ID / sid
+Per-device Session
+Session Token Digest
+Refresh Token Digest as session state
+```
+
+JWT 是自包含签名凭据。服务端对请求进行 Token 校验，不依赖“查找当前登录会话”来恢复认证状态。
+
+因此：
+
+- 不存在“活跃登录会话列表”；
+- 不存在“撤销单个服务端 Session”；
+- 普通 Logout 只清除客户端本地 Token / Credential Cache；
+- Token 正常失效依赖 `exp`；
+- 需要让某用户全部既有 JWT 提前失效时，提升该用户的 `security_version`；
+- Step-up Verification 产生短时、Purpose-bound 的签名 Grant，而不是修改服务端 Session 状态。
+
+业务领域中的 `Playback Session`、`Reading Session`、`Upload Session`、AI Conversation 等独立业务对象不属于这里所说的登录 Session，不受此规则影响。
 
 ---
 
@@ -230,7 +257,7 @@ OTP 必须：
 - 短时有效
 - Purpose-bound
 - User-bound
-- Session / Challenge-bound
+- Challenge-bound
 - 验证成功后立即失效
 - 超时失效
 - 达到失败次数后锁定 Challenge
@@ -259,6 +286,8 @@ VerificationChallenge
 ```
 
 只保存 OTP 的不可逆校验值，不保存可直接读取的 OTP 明文。
+
+`VerificationChallenge` 是一次性验证对象，不是登录 Session。
 
 ### 4.3 Purpose Binding
 
@@ -445,51 +474,90 @@ SVL-4
 
 ---
 
-## 8. Step-up Authentication
+## 8. Stateless JWT 与 Step-up Verification
 
-普通登录 Session 应记录当前认证保证状态。
+### 8.1 普通登录 JWT
 
-例如：
+普通登录成功后签发自包含 JWT。至少需要表达：
 
 ```text
-SecuritySession
-├── user_id
-├── login_method
-├── current_svl
-├── verified_methods
+AccessJwt
+├── sub = user_id
+├── security_version
+├── iat
+├── exp
+├── issuer / audience（启用时）
+└── authorization snapshot / references（按实现策略）
+```
+
+服务端不为该 Token 建立 `SecuritySession` 行，也不要求 JWT 包含 `sid` 来关联服务端登录状态。
+
+每次请求至少校验：
+
+```text
+signature valid
+AND exp / nbf / iat valid
+AND subject user exists and is allowed to authenticate
+AND token.security_version == user.security_version
+```
+
+JWT 正常到期由 `exp` 控制。
+
+需要提前使该用户所有旧 JWT 失效时：
+
+```text
+identity.invalidate-user-tokens
+        ↓
+increment user.security_version
+        ↓
+all JWTs carrying previous security_version become invalid
+```
+
+这是一种用户级 Token Epoch，不是 Session Store。
+
+### 8.2 Step-up 使用短期 Verification Grant
+
+完成 Email OTP / SMS / Identity / Face Verification 后，不修改某个服务端 Session 的 `current_svl`。
+
+Security Subsystem 签发短期、Purpose-bound 的验证结果，例如：
+
+```text
+VerificationGrant
+├── sub = user_id
+├── method
+├── achieved_svl
+├── purpose
+├── target_reference?
 ├── verified_at
-├── expires_at
-└── device_context
+├── iat
+└── exp
 ```
 
-用户普通登录后：
+`VerificationGrant` 可以实现为独立签名 JWT 或等价不可伪造凭据。
+
+高风险 Command 在执行时同时校验：
 
 ```text
-current_svl = SVL-0
+Access JWT
+AND Permission
+AND Verification Grant
+AND purpose / target binding
+AND achieved_svl >= minimum_svl
+AND Security Policy
 ```
 
-完成 Email OTP：
+Verification Grant 只证明一次短期提升验证，不延长普通 Access JWT 生命周期，也不形成服务端登录 Session。
 
-```text
-current_svl = SVL-1
-```
-
-未来完成 Face Verification：
-
-```text
-current_svl = SVL-4
-```
-
-### 8.1 Verification 有独立有效期
+### 8.3 Verification 有独立有效期
 
 高等级验证不能无限有效。
 
 例如：
 
 ```text
-Login Session TTL       30 days
-SVL-1 Step-up TTL       short-lived
-SVL-4 Step-up TTL       very short-lived
+Access JWT TTL          deployment policy
+SVL-1 Step-up Grant TTL short-lived
+SVL-4 Step-up Grant TTL very short-lived
 ```
 
 具体时长属于详细设计和安全策略。
@@ -500,7 +568,7 @@ SVL-4 Step-up TTL       very short-lived
 fresh_verification = true
 ```
 
-即使当前 Session 曾经达到足够 SVL，也需要重新验证。
+即使客户端仍持有未过期的旧 Step-up Grant，也可以要求重新验证。
 
 ---
 
@@ -816,7 +884,7 @@ Set new version → ACTIVE
         ↓
 Re-wrap Key Chain if required
         ↓
-Invalidate old Secure Sessions
+Raise user.security_version if policy requires old JWT invalidation
         ↓
 Security Audit
         ↓
@@ -1011,11 +1079,12 @@ KEY_RECOVERY
 KEY_SNAPSHOT_ACCESS
 RECOVERY_POLICY_CHANGE
 TRUSTED_DEVICE_CHANGE
+TOKEN_INVALIDATION
 ```
 
 对于普通解密操作，可以采用安全聚合或采样策略避免产生不可控日志量；高风险密钥操作必须完整审计。
 
-Audit 不得保存明文 Secret。
+Audit 不得保存明文 Secret、JWT 或 Step-up Grant。
 
 ---
 
@@ -1132,7 +1201,8 @@ Security Subsystem 的以下信息默认禁止进入 AI Context：
 - Key Material
 - Wrapped Key Snapshot
 - Recovery Key
-- Secure Session Key
+- JWT / Refresh Token
+- Step-up Verification Grant
 - Password / TOTP / Passkey Secret
 
 AI 可以协助解释安全状态，例如：
@@ -1161,6 +1231,7 @@ security.key.reset.requested
 security.key.rotated
 security.recovery.completed
 security.device.revoked
+identity.user.tokens-invalidated
 ```
 
 但 Automation 不能自动降低安全策略。
@@ -1251,7 +1322,7 @@ VerificationResult
 └── risk_flags
 ```
 
-Security Subsystem 再根据 Policy 决定是否允许目标 Command。
+Security Subsystem 再根据 Policy 决定是否允许目标 Command，并按需签发短期 Verification Grant。
 
 ---
 
@@ -1260,11 +1331,13 @@ Security Subsystem 再根据 Policy 决定是否允许目标 Command。
 ### P0
 
 - Security Subsystem 基础模型
+- Stateless JWT Authentication / Validation
+- User `security_version` Token Invalidation
 - Email OTP Provider
 - Verification Challenge
 - Purpose Binding
 - Rate Limit
-- Step-up Session
+- Short-lived Step-up Verification Grant
 - Security Policy
 - Permission + SVL 双重校验
 - Key Ring
@@ -1301,6 +1374,9 @@ Security Subsystem 再根据 Policy 决定是否允许目标 Command。
 
 本阶段不实现：
 
+- 服务端 Login Session / Security Session Store
+- 单 Session 查询 / 撤销
+- 活跃会话 / 活跃设备登录列表
 - SMS 实际发送与验证
 - 身份证 OCR / 实名认证 Provider
 - 人脸模型
@@ -1310,7 +1386,7 @@ Security Subsystem 再根据 Policy 决定是否允许目标 Command。
 - Hardware Security Key
 - 复杂 Risk Engine
 
-但数据模型和 Provider Extension Point 必须允许未来增加。
+但数据模型和 Provider Extension Point 必须允许未来增加认证方式；新增认证方式也不应默认引入服务端 Login Session。
 
 ---
 
@@ -1381,14 +1457,25 @@ EMAIL_OTP / SVL-1
 
 其他认证方式保留架构，不提前增加实现复杂度。
 
+### 原则八
+
+```text
+JWT Authentication
+!=
+Server Session
+```
+
+JWT 登录状态不在服务端持久化为 Session；正常失效依赖 Token TTL，用户级紧急失效依赖 `security_version`，Step-up 使用独立短期 Grant。
+
 ---
 
 ## 33. 后续详细设计
 
 后续应继续形成：
 
-- Security Database Schema Design
+- Stateless JWT Token / Claim / Rotation Design
 - Email OTP Protocol Design
+- Step-up Verification Grant Design
 - Key Ring / Key Snapshot Schema
 - Private Notes Recovery Flow
 - Password Vault Recovery Policy
