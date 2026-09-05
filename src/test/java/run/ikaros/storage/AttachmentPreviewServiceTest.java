@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import run.ikaros.common.StorageUnavailableException;
 import run.ikaros.resource.ResourceEntity;
 import run.ikaros.resource.ResourceRepository;
 
@@ -20,7 +21,6 @@ class AttachmentPreviewServiceTest {
     private final BlobRepository blobs = mock(BlobRepository.class);
     private final BlobPlacementRepository placements = mock(BlobPlacementRepository.class);
     private final StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
-    private final StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
     private final MediaDeliveryBindingRepository bindings = mock(MediaDeliveryBindingRepository.class);
     private final DeliveryProviderRepository deliveryProviders = mock(DeliveryProviderRepository.class);
     private final DeliveryGrantService grants = mock(DeliveryGrantService.class);
@@ -39,7 +39,7 @@ class AttachmentPreviewServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new AttachmentPreviewService(attachments, resources, blobs, placements, providers, objects,
+        service = new AttachmentPreviewService(attachments, resources, blobs, placements, providers,
             bindings, deliveryProviders, grants, leases, contracts);
         actorId = UUID.randomUUID(); attachmentId = UUID.randomUUID(); blobId = UUID.randomUUID();
         resourceId = UUID.randomUUID(); storageProviderId = UUID.randomUUID();
@@ -58,7 +58,7 @@ class AttachmentPreviewServiceTest {
     }
 
     @Test
-    void prefersDeliveryBindingOverStorageSignedUrl() {
+    void prefersDeliveryBinding() {
         MediaDeliveryBindingEntity binding = new MediaDeliveryBindingEntity(UUID.randomUUID(), storageProviderId, "cdn",
             DeliveryBindingOriginType.STORAGE_PROVIDER, DeliveryBindingAuthMode.DELIVERY_GRANT, 1, true,
             DeliveryBindingCacheKeyPolicy.CONTENT_IDENTITY, DeliveryBindingRangePolicy.PASSTHROUGH, true,
@@ -82,22 +82,18 @@ class AttachmentPreviewServiceTest {
         StepVerifier.create(service.issue(actorId, attachmentId))
             .assertNext(result -> assertThat(result.url()).contains("delivery_grant=token"))
             .verifyComplete();
-        verifyNoInteractions(objects);
     }
 
     @Test
-    void fallsBackToStorageSignedUrlWhenNoDeliveryBindingExists() {
+    void rejectsPreviewWhenNoDeliveryBindingExists() {
         when(bindings.findAllByStorageProviderIdOrderByPriorityAsc(storageProviderId)).thenReturn(Flux.empty());
-        StorageReadIntent intent = new StorageReadIntent("GET", "https://storage.example/video.mp4?signature=x",
-            Instant.now().plusSeconds(60));
-        when(objects.createReadIntent(provider, "video.mp4")).thenReturn(Mono.just(intent));
 
         StepVerifier.create(service.issue(actorId, attachmentId))
-            .assertNext(result -> {
-                assertThat(result.url()).startsWith("https://storage.example");
-                assertThat(result.rangeSupported()).isTrue();
+            .expectErrorSatisfies(error -> {
+                assertThat(error).isInstanceOf(StorageUnavailableException.class);
+                assertThat(error).hasMessage("附件没有可用 Delivery Binding");
             })
-            .verifyComplete();
+            .verify();
         verifyNoInteractions(grants, leases, contracts);
     }
 }
