@@ -1,5 +1,6 @@
 package run.ikaros.storage;
 
+import java.net.URI;
 import java.util.List;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -20,6 +21,11 @@ public class StorageObjectProviderRegistry {
 
     public Mono<StorageReadIntent> createReadIntent(StorageProvider provider, String objectKey) {
         return find(provider).createReadIntent(provider, objectKey);
+    }
+
+    public Mono<StorageReadIntent> createReadIntent(StorageProvider provider, String objectKey,
+                                                    URI signingEndpoint) {
+        return find(provider).createReadIntent(provider, objectKey, signingEndpoint);
     }
 
     public Mono<StorageObjectMetadata> verify(StorageProvider provider, String objectKey) {

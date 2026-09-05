@@ -57,9 +57,11 @@ public class DeliveryGrantContractService {
                                                           DeliveryGrantView grant, MediaDeliveryBindingEntity binding,
                                                           DeliveryProviderEntity deliveryProvider, BlobEntity blob) {
         return storageProviders.get(binding.storageProviderId())
-            .flatMap(storageProvider -> placements.findFirstByBlobIdAndProvider(lease.blobId(), storageProvider.providerKey()))
-            .map(placement -> new DeliveryGrantContractView(grant.id(), grant.attachmentId(), lease.id(),
-                deliveryProvider.id(), "GET", cdnUrl(deliveryProvider, placement.objectKey()), grant.expiresAt(),
+            .flatMap(storageProvider -> placements.findFirstByBlobIdAndProvider(lease.blobId(), storageProvider.providerKey())
+                .flatMap(placement -> storageObjects.createReadIntent(storageProvider, placement.objectKey(),
+                    cdnEndpoint(deliveryProvider))))
+            .map(read -> new DeliveryGrantContractView(grant.id(), grant.attachmentId(), lease.id(),
+                deliveryProvider.id(), read.method(), read.url(), grant.expiresAt(),
                 binding.rangePolicy() != DeliveryBindingRangePolicy.UNSUPPORTED,
                 blob.mediaType(), blob.sizeBytes(), grant.revocationLevel()));
     }
@@ -76,7 +78,7 @@ public class DeliveryGrantContractService {
                 blob.mediaType(), blob.sizeBytes(), grant.revocationLevel()));
     }
 
-    private String cdnUrl(DeliveryProviderEntity provider, String objectKey) {
+    private URI cdnEndpoint(DeliveryProviderEntity provider) {
         try {
             Map<String, Object> config = mapper.readValue(provider.config() == null ? "{}" : provider.config().asString(),
                 new TypeReference<>() { });
@@ -88,8 +90,7 @@ public class DeliveryGrantContractService {
             if (endpoint.getScheme() == null || endpoint.getHost() == null) {
                 throw new IllegalStateException("CDN Provider endpoint 无效");
             }
-            String base = endpoint.toString().replaceAll("/+\\z", "");
-            return base + "/" + objectKey;
+            return endpoint;
         } catch (JacksonException | IllegalArgumentException error) {
             throw new IllegalStateException("CDN Provider 配置数据损坏", error);
         }

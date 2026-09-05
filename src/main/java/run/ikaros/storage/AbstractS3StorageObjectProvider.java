@@ -44,10 +44,16 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
 
     @Override
     public Mono<StorageReadIntent> createReadIntent(StorageProvider provider, String objectKey) {
+        return createReadIntent(provider, objectKey, null);
+    }
+
+    @Override
+    public Mono<StorageReadIntent> createReadIntent(StorageProvider provider, String objectKey, URI signingEndpoint) {
         return credentialResolver.resolve(provider.secretReference()).flatMap(credentials -> Mono.fromCallable(() -> {
             S3Settings settings = S3Settings.from(provider);
+            URI endpoint = signingEndpoint == null ? settings.endpoint() : signingEndpoint;
             try (S3Presigner presigner = S3Presigner.builder().region(Region.of(settings.region()))
-                .endpointOverride(settings.endpoint()).credentialsProvider(credentials).build()) {
+                .endpointOverride(endpoint).credentialsProvider(credentials).build()) {
                 GetObjectPresignRequest presign = GetObjectPresignRequest.builder().signatureDuration(timeout)
                     .getObjectRequest(GetObjectRequest.builder().bucket(settings.bucket()).key(objectKey).build()).build();
                 return new StorageReadIntent("GET", presigner.presignGetObject(presign).url().toString(), Instant.now().plus(timeout));
