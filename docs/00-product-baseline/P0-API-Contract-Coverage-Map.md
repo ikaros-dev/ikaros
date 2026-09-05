@@ -53,8 +53,10 @@ CI 应校验：`operationId` 唯一性、method/path 唯一性、Registry → Op
 - `storage.list-blob-placements`
 - `storage.get-provider`
 - `identity.get-current-user`
-- `identity.list-sessions`
+- `identity.invalidate-user-tokens`
 - `identity.get-user`
+
+其中原 `identity.list-sessions` 已由 `identity.invalidate-user-tokens` 替换。JWT 登录不提供服务端 Session 列表；用户级紧急失效通过提升 `security_version` 完成。该替换保持 P0 公开操作总数不变。
 
 精确的机器可读列表见 `contracts/P0-HTTP-Operation-Registry.yaml`。
 
@@ -65,13 +67,13 @@ CI 应校验：`operationId` 唯一性、method/path 唯一性、Registry → Op
 - External Identity、Tag、Collection、User State 相关的 Resource 变更契约；
 - Storage Attachment 生命周期、Blob 校验/GC、Provider 更新/启用/禁用/排空；
 - `operations.retry-background-task`；
-- 基础 OpenAPI 尚未公开的 Identity 用户/角色/会话变更命令。
+- 基础 OpenAPI 尚未公开的 Identity 用户/角色/Token 安全变更命令。
 
 禁止为这些能力自行臆造 Controller 路由。
 
 ## 事件机器契约
 
-`contracts/schema/p0-event-v1.schema.json` 冻结 P0 事件 Envelope、UUIDv7 Event ID、Schema Version、Producer Namespace，以及当前 **43 个 P0 v1 Event Type**。每种事件的 Payload 字段级约束仍由 `P0-Event-Payload-Schema-Registry.md` 管理，并应在 Phase 0 实现阶段扩展为机器可执行的兼容性检查（`P0-EVT-004/013/014`）。
+`contracts/schema/p0-event-v1.schema.json` 冻结 P0 事件 Envelope、UUIDv7 Event ID、Schema Version、Producer Namespace，以及当前 **42 个 P0 v1 Event Type**。本次无状态 JWT 收敛删除 `identity.session.revoked`、`identity.user.sessions-revoked`，新增 `identity.user.tokens-invalidated`。每种事件的 Payload 字段级约束仍由 `P0-Event-Payload-Schema-Registry.md` 管理，并应在 Phase 0 实现阶段扩展为机器可执行的兼容性检查（`P0-EVT-004/013/014`）。
 
 ## 变更检查清单
 

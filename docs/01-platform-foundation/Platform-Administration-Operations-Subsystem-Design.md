@@ -48,7 +48,7 @@ Platform Administration & Operations
 │   ├── Role
 │   ├── Permission
 │   ├── Role Binding
-│   └── Session / Online User
+│   └── Token Security / Online Presence
 │
 ├── Platform Configuration
 │   ├── Parameter
@@ -185,18 +185,20 @@ Scheduled Job
 
 Scheduled Job 可以触发 Background Task，但它不是 Background Task 本身，更不能与用户 Todo Task 共用同一业务模型。
 
-### 2.7 在线用户是 Session 语义
+### 2.7 在线用户不是登录 Session 语义
 
-HTTP 本身是无状态的，因此“在线用户”不能简单理解为某个绝对实时的在线布尔值。
+Ikaros 登录认证基于无状态 JWT，服务端不建立或持久化 Login Session / Security Session，因此“在线用户”不能通过“活跃 Session”推导。
 
 系统需要区分：
 
-- Active Session
-- 最近活动时间
-- WebSocket / Room 等实时连接
-- Access Token / Refresh Token 生命周期
+- 最近认证 / 最近受保护请求活动时间
+- WebSocket / Room / Collaboration 等实时连接
+- JWT Token 的签名、有效期与 `security_version`
+- Trusted Device 等独立安全对象（未来能力）
 
-后台展示的“在线用户”应以活跃 Session 为主要产品语义。
+后台如果展示“在线 / 最近活跃用户”，它只能是 **Operational Presence**：基于近期活动遥测或实时连接得到的近似运行状态，而不是认证状态，也不能作为授权依据。
+
+JWT 是否仍可用于认证，只由 Token 校验与当前用户安全状态决定；在线 Presence 与 Token 有效性彼此独立。
 
 ### 2.8 子系统监控不意味着微服务
 
@@ -363,7 +365,7 @@ Operation Log 记录具有审计价值的平台操作。
 
 ### 3.11 Login Log
 
-Login Log 记录身份验证与 Session 建立相关事件。
+Login Log 记录身份验证、Token 签发结果和认证失败等安全事件，不代表服务端建立登录 Session。
 
 ### 3.12 Scheduled Job
 
@@ -373,11 +375,17 @@ Scheduled Job 描述“何时触发某个动作”。
 
 Job Run 表示 Scheduled Job 的一次具体执行记录。
 
-### 3.14 Session
+### 3.14 Token Security
 
-Session 表示用户的一次登录会话或授权会话。
+Token Security 表示 JWT 的有效期、签名验证、用户 `security_version` 与用户状态等认证安全语义。
 
-### 3.15 Subsystem Health
+它不是一个服务端 Session 实体，也不要求维护每个 Token 的服务端登录记录。
+
+### 3.15 Online Presence
+
+Online Presence 表示基于最近活动或实时连接得到的运行态近似信息，仅用于运维展示，不作为认证、授权或 Token 有效性的事实来源。
+
+### 3.16 Subsystem Health
 
 Subsystem Health 表示某个系统组件在某一时刻的健康状态。
 
@@ -427,7 +435,7 @@ Subsystem Health 表示某个系统组件在某一时刻的健康状态。
 
 管理员可以禁用用户。
 
-禁用后应阻止新的受保护请求，并根据策略撤销或终止现有 Session。
+禁用后应立即阻止该用户继续通过受保护请求认证；Security Policy 可以同步提升用户 `security_version`，使此前签发的全部 JWT 提前失效。
 
 ### FR-USER-05 用户锁定
 
@@ -529,56 +537,66 @@ Permission 应由系统核心或插件声明，而不是由管理员自由创建
 
 ---
 
-## 7. 在线用户与 Session 管理
+## 7. Token 安全与在线状态管理
 
-### FR-SESSION-01 活跃 Session 列表
+### FR-TOKEN-01 用户级 Token 安全状态
 
-管理员应能够查看当前活跃 Session。
-
-至少包括：
+管理员可以在有权限时查看用户级认证安全摘要，例如：
 
 - User
-- Session ID / 安全展示标识
-- 登录时间
-- 最近活动时间
-- 登录方式
-- Client / Device
-- IP
-- User Agent 摘要
+- Account Status
+- `security_version`
+- 最近登录 / 认证时间
+- 最近 Token Invalidation 时间
+- 最近活动时间（如系统保留）
 
-### FR-SESSION-02 在线状态
+不得展示或依赖“Active Session Count”“Session ID”“服务端登录设备列表”等不存在的登录 Session 数据。
 
-系统可以根据最近活动窗口标记：
+### FR-PRESENCE-01 在线状态
+
+系统可以根据最近活动窗口或实时连接近似标记：
 
 - Active
 - Idle
-- Offline / Expired
+- Offline / Unknown
 
 具体阈值可配置。
 
-### FR-SESSION-03 实时连接
+该状态属于运维 Presence，不代表用户持有有效 JWT，也不能用于权限判定。
+
+### FR-PRESENCE-02 实时连接
 
 如果用户当前存在 WebSocket / Room / Collaboration 连接，可以额外显示实时连接状态。
 
-该状态与 HTTP Session 活跃状态分开。
+实时连接是独立 Runtime Connection，可以拥有 Connection ID 与断开操作；它不等于 JWT 登录 Session，也不代表其它 HTTP Token 同时失效。
 
-### FR-SESSION-04 强制下线
+### FR-TOKEN-02 使用户旧 Token 失效
 
-具有权限的管理员可以撤销某个 Session。
+具有权限的管理员可以要求某个用户重新认证。
 
-用户下一个受保护请求必须失效。
+标准语义为：
 
-### FR-SESSION-05 全部下线
+```text
+identity.invalidate-user-tokens
+        ↓
+increment user.security_version
+        ↓
+previous JWTs are rejected on subsequent protected requests
+```
 
-管理员可以使某个 User 的全部 Session 失效。
+不提供“撤销某一个服务端 Session”的能力。
 
-### FR-SESSION-06 自助设备管理
+### FR-TOKEN-03 当前设备退出
 
-用户本人应能够查看并撤销自己的登录设备 / Session。
+用户在自己的客户端执行普通 Logout 时，只删除本机 Token / Credential Cache，并清理本机敏感解锁状态。
 
-### FR-SESSION-07 Session Security
+如果用户希望其它设备也重新认证，应显式执行用户级 Token Invalidation，而不是枚举并撤销登录 Session。
 
-Session Token、Refresh Token 的实际完整值不得在管理页面显示。
+### FR-TOKEN-04 Token Security
+
+JWT、Refresh Token、Step-up Verification Grant 的实际完整值不得在管理页面、Audit Log 或运行日志中显示。
+
+服务端也不为了管理页面建立 Token Digest / Session Store 来模拟有状态登录会话。
 
 ---
 
@@ -896,14 +914,12 @@ In-App + Email
 
 ### FR-AUDIT-01 审计范围
 
-具有管理或安全意义的操作需要进入 Operation Log。
-
 典型操作包括：
 
 - 用户创建 / 禁用 / 删除
 - Role 修改
 - Permission 修改
-- Session 强制下线
+- 用户级旧 Token 失效 / 强制重新认证
 - 系统参数修改
 - Secret 轮换
 - 公告发布
@@ -1007,9 +1023,11 @@ IP、User Agent 等安全数据需考虑隐私与保留期限，避免无限期�
 - IP
 - User Agent
 
-### FR-LOGIN-LOG-05 Session 关联
+### FR-LOGIN-LOG-05 Token 安全关联
 
-成功登录事件可以关联产生的 Session。
+成功登录事件可以记录非敏感的 Token 签发摘要，例如 Token 类型、签发时间、到期时间和当时的 `security_version`。
+
+不得记录 JWT / Refresh Token 原文，也不创建用于关联登录状态的 Session ID。
 
 ### FR-LOGIN-LOG-06 异常检测基础
 
@@ -1036,6 +1054,7 @@ Operation Log 和 Login Log 之外，系统可以统一生成 Security Event。
 - Share Token 大量访问
 - Secret 被轮换
 - Storage Credential 失效
+- 用户旧 Token 被统一失效
 
 Security Event 可以触发 Notification。
 
@@ -1505,12 +1524,16 @@ Notification
 
 ---
 
-## 26. User Disable → Session Revocation
+## 26. User Disable → Token Invalidation
 
 ```text
 User Disabled
      ↓
-Revoke Sessions
+Deny authentication / protected requests
+     ↓
+Increment security_version when policy requires
+     ↓
+Previous JWTs become invalid
      ↓
 Audit Log
      ↓
@@ -1550,7 +1573,7 @@ System
 │   ├── Users
 │   ├── Roles
 │   ├── Permissions
-│   └── Online Sessions
+│   └── Token Security / Online Presence
 │
 ├── Configuration
 │   ├── Parameters
@@ -1586,7 +1609,7 @@ System
 System Dashboard 可以聚合：
 
 - Overall Health
-- Active Users / Sessions
+- Recently Active Users / Realtime Connections
 - Running Background Tasks
 - Failed Jobs
 - Storage Health
@@ -1609,7 +1632,7 @@ Dashboard 应以“快速判断是否需要管理员处理”为目标，不堆�
 USER
 ROLE
 PERMISSION
-SESSION
+TOKEN_SECURITY
 PARAMETER
 DICTIONARY
 MENU
@@ -1620,6 +1643,8 @@ SCHEDULER
 HEALTH
 ALERT
 ```
+
+Online Presence 读取属于运维可观测性能力，不作为认证授权域。
 
 每个 Domain 根据实际需要拥有：
 
@@ -1641,7 +1666,7 @@ ALERT
 以下操作应考虑单独 Permission 或二次确认：
 
 - 禁用管理员账户
-- 强制所有用户下线
+- 使用户或批量用户的旧 JWT 失效、强制重新认证
 - 授予 Super Admin
 - 修改关键 Storage 参数
 - 修改 Secret
@@ -1665,9 +1690,13 @@ Announcement
 Draft → Scheduled → Published → Expired / Withdrawn
 ```
 
+JWT 登录认证不定义服务端 Session 生命周期。Token 自身按签名声明和 `exp` 到期；用户级提前失效由单调递增的安全版本控制：
+
 ```text
-Session
-Active → Idle → Expired / Revoked
+User Token Security Epoch
+security_version N → security_version N+1
+                     ↓
+            all JWTs with older version are rejected
 ```
 
 ```text
@@ -1754,6 +1783,7 @@ user.created
 user.disabled
 user.login.succeeded
 user.login.failed
+identity.user.tokens-invalidated
 role.assigned
 parameter.changed
 announcement.published
@@ -1786,9 +1816,9 @@ alert.resolved
 
 高风险管理操作必须可审计。
 
-### NFR-PLATFORM-04 Session Revocation
+### NFR-PLATFORM-04 Token Invalidation
 
-管理员撤销 Session 后需要可靠生效。
+当用户 `security_version` 被提升后，服务端必须在后续受保护请求中可靠拒绝携带旧版本的 JWT；不能因为没有 Session Store 而跳过该校验。
 
 ---
 
@@ -1838,7 +1868,8 @@ V2 Platform P0 应至少包含：
 - Role Management
 - Permission Registry
 - Platform RBAC
-- Session / Online User
+- Stateless JWT Token Security / User-level Token Invalidation
+- Online Presence / Recent Activity（仅运维展示）
 - Operation Log
 - Login Log
 - Parameter Management
@@ -1865,7 +1896,7 @@ V2 Platform P0 应至少包含：
 - Runtime Metrics Dashboard
 - Storage Metrics
 - Scheduler Metrics
-- Session Device Management
+- Trusted Device / Online Presence Diagnostics
 
 ---
 
@@ -1889,13 +1920,14 @@ V2 Platform P0 应至少包含：
 
 - User
 - Authentication
-- Session
+- Stateless JWT Token / Claims
+- Token Invalidation / `security_version`
+- Online Presence Boundary
 - Role
 - Permission
 - Platform RBAC
 - Resource ACL
 - 2FA
-- Token
 
 ---
 
@@ -1987,6 +2019,7 @@ Ikaros V2
 ├── Platform Administration
 │   ├── Identity
 │   ├── RBAC
+│   ├── Token Security
 │   ├── Configuration
 │   ├── Announcement
 │   ├── Notification
@@ -1994,7 +2027,7 @@ Ikaros V2
 │
 └── System Operations
     ├── Scheduler
-    ├── Session
+    ├── Online Presence
     ├── Health
     ├── Metrics
     └── Alert
@@ -2008,5 +2041,6 @@ Ikaros V2
 - Announcement 与 Notification 永远分层。
 - Scheduled Job、Background Task、Productivity Task 永远使用不同领域语义。
 - Audit Log、Activity、Runtime Log 永远区分用途。
+- JWT Authentication 与 Online Presence 永远分离，平台不建立 Login Session Store。
 - Subsystem Health 不要求微服务化。
 - 内置监控提供开箱即用体验，同时保持对外部可观测性体系开放。

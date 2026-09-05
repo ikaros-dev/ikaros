@@ -8,7 +8,7 @@
 - 可访问性。
 - 通知偏好入口。
 - AI Persona / Privacy 入口。
-- 安全与会话入口。
+- 安全与认证入口。
 - Server Profiles。
 - Download / Cache 设置。
 - Local Device 设置。
@@ -35,7 +35,9 @@ App 不提供用户 / 角色 / 平台参数等管理员设置。
 - Notifications 未读。
 - Downloads。
 - Pending Sync。
-- Active Sessions。
+- Token / Login State（仅异常、即将过期或需要重新认证时显示）。
+
+不展示 Active Session Count；JWT 无状态认证没有服务端登录 Session 可计数。
 
 只有有数据 / 异常时显示 Badge。
 
@@ -44,7 +46,7 @@ App 不提供用户 / 角色 / 平台参数等管理员设置。
 #### Account
 
 - 个人资料。
-- 安全与会话。
+- 安全与认证。
 - 通知。
 
 #### Experience
@@ -146,15 +148,18 @@ Tap 进入 AI 专属 Persona / Memory / Privacy 页面，不在 Account 复制�
 
 ---
 
-## 8. 安全与会话入口
+## 8. 安全与认证入口
 
 Card：
 
-- Active Session Count。
+- 当前登录状态。
+- JWT 有效期 / 是否即将需要重新认证。
 - Current Verification Level / Recent Step-up 摘要。
-- Secure Domains：Locked / Unlocked（只显示状态，不显示内容）。
+- Secure Domains：Locked / Unlocked（只显示本机状态，不显示内容）。
 
-Tap 进入 Access 文档定义的安全页。
+不得显示 Active Session Count、Session ID 或服务端设备会话列表。
+
+Tap 进入 Access 文档定义的“登录状态与令牌安全 / 安全设置”页面。
 
 ---
 
@@ -287,6 +292,8 @@ Dialog 显示：
 
 - `退出并保留离线下载`（安全允许时）。
 - `退出并清除此账号本机数据`。
+
+普通 Logout 只清除本机 JWT / 认证缓存，不调用“撤销当前会话”接口；如用户需要让其他设备上的旧 JWT 一并失效，应使用“使所有设备重新登录”。
 
 Password / Private Vault 必须先 Lock，清理解密 Key Material。
 

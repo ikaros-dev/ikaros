@@ -4,7 +4,7 @@
 |---|---|
 | 文档名称 | Ikaros V2 P0 Acceptance / Invariant Test Matrix |
 | 适用版本 | Ikaros V2 |
-| 文档版本 | v0.1 |
+| 文档版本 | v0.2 |
 | 状态 | Draft / Engineering Gate |
 | Roadmap 基线 | `../Implementation-Roadmap-and-Dependency-Graph.md` |
 | Module 基线 | `../Module-Package-Ownership-Design.md` |
@@ -244,7 +244,7 @@ P0-ARCH-001 ~ P0-ARCH-010 = PASS
 
 ---
 
-# Part G — Identity / Authorization / Session
+# Part G — Identity / Authorization / Stateless JWT
 
 ## 16. User / Role
 
@@ -259,16 +259,17 @@ P0-ARCH-001 ~ P0-ARCH-010 = PASS
 | `P0-ID-007` | Permission Key 不存在时 role update 失败 | DB/MODULE | FK/validation test |
 | `P0-ID-008` | 替换高风险 role permissions 需要 Step-up | SECURITY/E2E | insufficient SVL rejected |
 
-## 17. Session
+## 17. Stateless JWT / Step-up
 
 | ID | Invariant | Level | Acceptance |
 |---|---|---|---|
-| `P0-ID-009` | 原始 session token 不落库 | SECURITY/DB | only digest present |
-| `P0-ID-010` | revoked session 立即拒绝 | SECURITY/E2E | token rejected after revoke |
-| `P0-ID-011` | security_version 提升使旧 session 失效 | SECURITY/E2E | old session rejected |
-| `P0-ID-012` | disabled user 的 session 失效 | SECURITY/INTEGRATION | disable command + auth check |
-| `P0-ID-013` | token/credential 不进入 Event | SECURITY/CONTRACT | serialization scan |
+| `P0-ID-009` | Access / Refresh JWT 原文及其 Digest 不作为登录态持久化 | SECURITY/DB | schema has no Login Session / Token Digest state; DB/log scan finds no reusable token material |
+| `P0-ID-010` | 每次 JWT 接受都校验签名、时间约束、主体状态与 `security_version` | SECURITY/E2E | invalid signature/expired token/disabled subject/version mismatch are rejected |
+| `P0-ID-011` | `identity.invalidate-user-tokens` 提升 `security_version` 后全部旧 Access / Refresh JWT 失效 | SECURITY/E2E | old access token rejected and old refresh token cannot mint a new access token |
+| `P0-ID-012` | disabled user 的既有 Access / Refresh JWT 均被拒绝 | SECURITY/INTEGRATION | disable command + access/refresh auth checks |
+| `P0-ID-013` | JWT / Refresh Token / Credential / Verification Grant 不进入 Event | SECURITY/CONTRACT | serialization scan |
 | `P0-ID-014` | Authentication / Authorization / Step-up 可独立失败 | SECURITY | separate fixtures verify distinct error semantics |
+| `P0-ID-015` | Verification Grant 必须校验 `purpose`、`target_reference`（适用时）、`exp` 与目标 SVL | SECURITY/E2E | wrong purpose/target, expired grant or insufficient SVL rejected |
 
 ---
 
@@ -457,16 +458,17 @@ Task reaches SUCCEEDED once
 
 ---
 
-## 28. E2E-06 Disable User Revokes Effective Session
+## 28. E2E-06 Disable User Invalidates JWT
 
 ```text
-User has active session security_version=5
+User holds Access / Refresh JWT with security_version=5
 Admin passes required authorization/step-up
 DisableUser
-User security_version increments
+User becomes disabled and/or security_version increments according to command semantics
 identity.user.disabled event emitted
-Old session request rejected immediately/effectively
-No password/token data appears in event or audit payload
+Old Access JWT request rejected
+Old Refresh JWT cannot mint a new Access JWT
+No password/token/grant data appears in event or audit payload
 ```
 
 ---

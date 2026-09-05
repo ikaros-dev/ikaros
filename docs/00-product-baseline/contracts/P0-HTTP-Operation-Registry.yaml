@@ -31,5 +31,5 @@ operations:
   - { method: GET, path: '/admin/blobs/{blob_id}/placements', operation_id: listBlobPlacements, contract_id: storage.list-blob-placements, source: contracts/openapi-v2-p0-contract-convergence.yaml }
   - { method: GET, path: '/admin/storage-providers/{provider_id}', operation_id: getStorageProvider, contract_id: storage.get-provider, source: contracts/openapi-v2-p0-contract-convergence.yaml }
   - { method: GET, path: /me, operation_id: getCurrentUser, contract_id: identity.get-current-user, source: contracts/openapi-v2-p0-contract-convergence.yaml }
-  - { method: GET, path: /me/sessions, operation_id: listSessions, contract_id: identity.list-sessions, source: contracts/openapi-v2-p0-contract-convergence.yaml }
+  - { method: POST, path: /me/actions/invalidate-tokens, operation_id: invalidateCurrentUserTokens, contract_id: identity.invalidate-user-tokens, source: contracts/openapi-v2-p0-contract-convergence.yaml }
   - { method: GET, path: '/admin/users/{user_id}', operation_id: getUser, contract_id: identity.get-user, source: contracts/openapi-v2-p0-contract-convergence.yaml }

@@ -31,8 +31,8 @@
         "attachment.purged", "ingestion.import.started", "ingestion.plan.generated", "source.item.unavailable",
         "operations.background-task.created", "operations.background-task.started", "operations.background-task.succeeded", "operations.background-task.failed",
         "operations.background-task.cancel-requested", "operations.background-task.cancelled", "operations.background-task.retry-requested", "operations.background-task.timed-out",
-        "identity.user.created", "identity.user.disabled", "identity.user.enabled", "identity.user.sessions-revoked", "identity.role.created",
-        "identity.role.permissions-replaced", "identity.user.role-assigned", "identity.user.role-removed", "identity.session.revoked"
+        "identity.user.created", "identity.user.disabled", "identity.user.enabled", "identity.user.tokens-invalidated", "identity.role.created",
+        "identity.role.permissions-replaced", "identity.user.role-assigned", "identity.user.role-removed"
       ]
     },
     "schema_version": { "type": "integer", "const": 1 },

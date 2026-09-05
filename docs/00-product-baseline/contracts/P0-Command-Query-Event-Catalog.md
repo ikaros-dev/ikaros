@@ -4,7 +4,7 @@
 |---|---|
 | 文档名称 | P0 Command / Query / Event Catalog |
 | 适用版本 | Ikaros V2 |
-| 文档版本 | v0.1 |
+| 文档版本 | v0.2 |
 | 状态 | Draft / Implementation Contract |
 | API 基线 | `../API-Convention-Design.md` |
 | Integration 基线 | `../Platform-Integration-Automation-Design.md` |
@@ -14,6 +14,8 @@
 > 本文档把 P0 领域能力从“概念上存在 Command / Query / Event”收敛为可编码、可授权、可测试、可映射到 HTTP/OpenAPI 的稳定 Catalog。
 >
 > HTTP 不是内部业务边界。Controller 必须调用这里定义的 Application Command / Query；模块间调用同样使用公开 Application API / Capability，不允许因为模块化单体而直接写对方 Repository。
+>
+> Identity 登录认证采用无状态 JWT。P0 不定义 Login Session / Security Session 持久化实体，也不提供单 Session 查询、撤销或事件契约。当前设备退出由客户端删除本地 Token；需要提前使用户全部既有 JWT 失效时，通过提升 `security_version` 完成。
 
 ---
 
@@ -294,8 +296,11 @@ Attachment Content Query 必须支持 HTTP Range，并在返回内容前重新�
 | `identity.replace-role-permissions` | `identity.role.manage` | REQUIRED | `identity.role.permissions-replaced` |
 | `identity.assign-role` | `identity.role.manage` | policy | `identity.user.role-assigned` |
 | `identity.remove-role` | `identity.role.manage` | policy | `identity.user.role-removed` |
-| `identity.revoke-session` | current user or `identity.user.manage` | policy | `identity.session.revoked` |
-| `identity.revoke-all-user-sessions` | current user or `identity.user.manage` | REQUIRED | `identity.user.sessions-revoked` |
+| `identity.invalidate-user-tokens` | current user or `identity.user.manage` | REQUIRED | `identity.user.tokens-invalidated` |
+
+`identity.invalidate-user-tokens` 不枚举或撤销某个服务端 Session。它原子提升目标用户的 `security_version`；后续请求中，携带旧 `security_version` 的 JWT 被拒绝。
+
+当前设备普通 Logout 不是服务端 Command，只清除客户端本地 Token / Credential Cache。
 
 Permission Registry 本身默认来自 code + deterministic migration seed。
 
@@ -312,7 +317,8 @@ P0 不提供任意 HTTP CRUD 修改 `permission_registry` 的能力。
 | `identity.get-user` | self or `identity.user.read` | `GET /admin/users/{user_id}` |
 | `identity.list-roles` | `identity.user.read` | `GET /admin/roles` |
 | `identity.list-permissions` | `identity.user.read` | `GET /admin/permissions` |
-| `identity.list-sessions` | self or admin policy | `GET /me/sessions` / admin equivalent |
+
+P0 不提供 `identity.list-sessions`。JWT 登录没有服务端 Session 列表可查询。
 
 ---
 
@@ -429,16 +435,16 @@ Error Event 只包含可安全公开的 classification / summary，不复制 sta
 | `identity.role.permissions-replaced` | 1 | `role_id, permission_keys[]` |
 | `identity.user.role-assigned` | 1 | `user_id, role_id` |
 | `identity.user.role-removed` | 1 | `user_id, role_id` |
-| `identity.session.revoked` | 1 | `session_id, user_id` |
-| `identity.user.sessions-revoked` | 1 | `user_id, security_version` |
+| `identity.user.tokens-invalidated` | 1 | `user_id, security_version` |
 
 禁止 Event 包含：
 
 - password hash；
-- token digest；
+- JWT / Refresh Token；
+- Token digest；
+- Step-up Grant；
 - OTP；
-- credential；
-- private session metadata。
+- credential。
 
 ---
 
@@ -455,7 +461,8 @@ Error Event 只包含可安全公开的 classification / summary，不复制 sta
 | `storage.blob.integrity-failed` | Storage | Operations alerting | Notification |
 | `storage.provider.*` | Storage | Operations projection | Audit/Analytics |
 | `operations.background-task.*` | Operations | none | Notification, Analytics |
-| `identity.user.disabled` | Identity | session/security invalidation | Audit, Notification |
+| `identity.user.disabled` | Identity | token/security-version invalidation | Audit, Notification |
+| `identity.user.tokens-invalidated` | Identity | authorization/token acceptance cache invalidation | Audit, Notification |
 | `identity.role.permissions-replaced` | Identity | authorization cache invalidation | Audit |
 
 “Required Consumer”失败不会回滚 producer 已提交事实，但必须进入 retry / DLQ / reconciliation 可观测流程。
@@ -492,6 +499,7 @@ P0 Operation ID 必须映射到 Catalog：
 | `POST /api/admin/users` | `createUser` | `identity.create-user` |
 | `GET /api/admin/roles` | `listRoles` | `identity.list-roles` |
 | `GET /api/admin/permissions` | `listPermissions` | `identity.list-permissions` |
+| `POST /api/me/actions/invalidate-tokens` | `invalidateCurrentUserTokens` | `identity.invalidate-user-tokens` |
 
 后续增加 endpoint 时必须先存在对应 Query / Command Contract，禁止 Controller-first。
 

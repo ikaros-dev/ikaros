@@ -1,4 +1,4 @@
-# Access：登录、服务端连接、安全与会话
+# Access：登录、服务端连接与安全认证
 
 ## 1. 页面目录
 
@@ -7,9 +7,11 @@
 - 登录。
 - Email OTP / Step-up Verification。
 - 登录失败 / 兼容性错误。
-- 我的活跃会话。
+- 登录状态与令牌安全。
 - 安全设置。
 - Secure Domain 恢复入口。
+
+> Ikaros 登录认证基于 JWT Token，为无状态认证模型。服务端不建立、持久化或管理“登录会话 / 安全会话”，因此客户端也不提供活跃会话列表、单会话撤销、Session Detail 等交互。本文中的“登录状态”仅表示客户端本地是否持有当前可用 Token。
 
 ---
 
@@ -31,7 +33,7 @@ App Bar：`服务器` + `添加`。
 - Base URL，展示 Host，完整 URL 放详情。
 - 当前连接状态：Online / Offline / Unknown。
 - 最近连接时间。
-- 当前账号名称（如已登录）。
+- 当前账号名称（如本机已保存登录凭据 / Token）。
 - 服务端版本。
 - `默认` Chip。
 
@@ -97,13 +99,17 @@ Desktop：页面中央 420–480dp Login Card；左上角返回服务器列表�
 
 不在第一屏直接显示 Secure Vault 解锁字段，因为 Ikaros Login 与 Vault Unlock 必须分离。
 
+`保持登录` 只决定客户端如何安全保存 / 刷新 Token，不代表服务端创建长期 Session。
+
+若实现启用 Refresh Token，则 Refresh Token 也必须遵守无状态认证约束：它不能映射到服务端 Session 或 Token Digest 登录态，并且必须绑定并校验当前用户的 `security_version`。`security_version` 提升后，旧 Refresh Token 不得再换取新的 Access Token。
+
 ### 4.3 交互
 
 - Enter 提交。
 - 提交时按钮 Loading。
 - 401：只显示“凭据无效”，不把服务端内部异常完整暴露。
 - 需要额外验证：转 Step-up 页面。
-- 成功：返回原 Deep Link 或首页。
+- 成功：安全保存 JWT Token，并返回原 Deep Link 或首页。
 
 ---
 
@@ -135,43 +141,73 @@ Desktop：页面中央 420–480dp Login Card；左上角返回服务器列表�
 - 明确显示验证用途，不允许用户误以为验证码可用于任何操作。
 - 错误次数接近限制时显示剩余尝试次数（若安全策略允许）。
 - OTP 不进入剪贴板历史提示、Analytics 或普通日志。
+- 验证成功后，服务端签发短时、Purpose-bound 的 Step-up Grant；Grant 可以是独立签名 JWT，不建立服务端 Session。
+- Step-up Grant 必须绑定并校验 `purpose`、`target_reference`（适用时）、`exp` 和达到的 SVL；错误用途、错误目标、过期或等级不足均不得复用。
+- Step-up Grant 到期后自然失效；高风险动作要求 fresh verification 时必须重新验证。
 - 验证成功后自动回到原动作并继续。
 
 ---
 
-## 6. 我的活跃会话页
+## 6. 登录状态与令牌安全页
 
 ### 6.1 入口
 
-我的 → 安全与会话。
+我的 → 安全与认证。
 
 ### 6.2 页面字段
 
-顶部：
+顶部显示：
 
 - 当前账号。
-- `撤销其他会话` Outlined Button。
+- 当前 Server。
+- JWT 有效期 / 下次需要重新认证的时间。
+- 最近一次 Step-up Verification 摘要（存在且允许展示时）。
+- `退出当前设备`。
+- `使所有设备重新登录` 高风险操作。
 
-每个 Session Card：
+不得展示：
 
-- 设备类型图标。
-- Device Name。
-- Client：Android / Windows / iOS / Web 等。
-- 最近活动时间。
-- 大致位置 / IP 分类（服务端提供且允许时，不强求精确地址）。
-- 登录方式。
-- `当前设备` Chip。
-- 安全状态，例如“最近完成 Step-up”。
+- Active Session Count。
+- 服务端“活跃设备”列表。
+- Session ID。
+- Last Seen Session。
+- 单设备 / 单 Session 撤销按钮。
 
-### 6.3 交互
+原因是 JWT 登录为无状态认证，服务端不存在可枚举的登录 Session 实体。
 
-Tap：打开 Session Detail Bottom Sheet / Side Sheet。
+### 6.3 退出当前设备
 
-非当前 Session：`撤销会话`。
+`退出当前设备` 的语义是：
 
-当前 Session：提供 `退出当前设备`，操作后返回登录页。
+1. 清除本机 Access / Refresh Token 与相关认证缓存。
+2. Lock Password Manager / Private Notes 等本机 Secure Domain。
+3. 清理解密 Key Material。
+4. 返回登录页。
 
-`撤销其他会话` 必须 Dialog 确认，并说明不会删除账号数据。
+普通退出不向服务端发送“撤销当前 Session”命令，因为服务端没有当前 Session。
+
+### 6.4 使所有设备重新登录
+
+当用户怀疑 Token 泄露、修改关键安全设置或希望强制所有客户端重新认证时，可执行：
+
+```text
+identity.invalidate-user-tokens
+```
+
+服务端提升用户：
+
+```text
+security_version
+```
+
+后，之前签发且携带旧版本的 Access / Refresh JWT 均不再被接受；旧 Refresh JWT 也不能用于签发新的 Access JWT。
+
+该操作：
+
+- 必须 Step-up Verification。
+- 会使当前设备自己的旧 Token 同时失效。
+- 完成后当前客户端清理本机 Token 并返回登录页。
+- UI 文案使用“使所有设备重新登录 / 使所有旧 Token 失效”，不使用“撤销所有会话”。
 
 ---
 
@@ -185,6 +221,9 @@ Tap：打开 Session Detail Bottom Sheet / Side Sheet。
 - 修改密码。
 - 双重验证（当服务端支持）。
 - Recovery 设置。
+- 使所有旧 Token 失效。
+
+密码修改、账号禁用、关键凭据变更等操作是否自动提升 `security_version`，由 Security Policy 决定。
 
 ### 7.2 Step-up Verification
 
@@ -197,6 +236,8 @@ Tap：打开 Session Detail Bottom Sheet / Side Sheet。
 - 最近验证。
 - 安全等级说明。
 
+这里展示的是验证能力与最近验证事实，不是服务端 Session 状态。
+
 ### 7.3 本机解锁
 
 - 使用系统生物识别解锁 Password Manager。
@@ -205,6 +246,8 @@ Tap：打开 Session Detail Bottom Sheet / Side Sheet。
 - 阻止敏感页面截图（平台支持时）。
 
 这些开关只影响本机，必须标记 `此设备`。
+
+本机 Secure Domain 的 Locked / Unlocked 状态属于客户端安全状态，不等同于服务端登录 Session。
 
 ---
 
@@ -264,4 +307,4 @@ Tap：打开 Session Detail Bottom Sheet / Side Sheet。
 - Compact：全屏独立页面。
 - Medium：表单居中，最大 560dp。
 - Expanded：安全设置可使用左侧 Section Navigation + 右侧设置内容。
-- Session 页在 >=840dp 使用列表 + 右侧详情 Pane。
+- 登录状态与令牌安全页在大屏仍使用单一安全摘要页，不构造 Session 列表 / 详情双栏。

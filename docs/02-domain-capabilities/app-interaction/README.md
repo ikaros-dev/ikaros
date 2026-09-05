@@ -55,9 +55,9 @@ App 面向 Desktop 与 Mobile，暂定 Flutter 技术栈，并统一采用 Mater
 | `AI-Persona-System-Design.md` | Persona 选择、用户覆盖、会话人格切换、场景化表达设置 |
 | `Data-Analytics-Statistics-Subsystem-Design.md` | 个人内容、消费、效率、创作、财务与存储使用洞察 |
 | `Platform-Integration-Automation-Design.md` | 用户 Automation、执行记录、Import / Sync、Activity、跨对象跳转 |
-| `Security-Identity-Authorization-Crypto-Subsystem-Design.md` | 登录、Step-up Verification、会话、安全设置、恢复流程 |
+| `Security-Identity-Authorization-Crypto-Subsystem-Design.md` | 登录、JWT 无状态认证、Step-up Verification、Token 安全、恢复流程 |
 | `Secure-Data-Foundation-Design.md` | Secure Domain 锁定、解锁、密文缓存、安全预览、导出边界 |
-| `Platform-Administration-Operations-Subsystem-Design.md` | 仅引用通知、用户自己的活跃会话等用户级能力；管理员页面仍留在 CMS |
+| `Platform-Administration-Operations-Subsystem-Design.md` | 仅引用通知、当前用户自己的认证 / Token 安全等用户级能力；管理员页面仍留在 CMS |
 
 ---
 
@@ -128,7 +128,7 @@ App 面向 Desktop 与 Mobile，暂定 Flutter 技术栈，并统一采用 Mater
 #### 我的
 
 - 个人资料
-- 安全与会话
+- 安全与认证
 - 通知偏好
 - 外观与可访问性
 - 客户端设置
@@ -347,7 +347,7 @@ UI 必须使用状态 Chip + 解释文本。例如：
 
 ### Access
 
-- [登录、服务端连接、安全与会话](./access/authentication-security.md)
+- [登录、服务端连接与安全认证](./access/authentication-security.md)
 
 ### Home
 
@@ -442,7 +442,7 @@ UI 必须使用状态 Chip + 解释文本。例如：
 例如：
 
 - App 可查看自己的 Automation Rule；CMS 可管理系统级 Rule。
-- App 可查看自己的 Session 并撤销；CMS 可查看有权限的系统会话治理页。
+- App 可查看自己的登录 / Token 安全状态，并发起“使所有设备重新登录”；CMS 可管理用户安全策略，但两端都不构造服务端登录 Session 列表。
 - App 可查看自己的下载与缓存；CMS 管理 Storage Provider、Placement、GC。
 - App 可选择 Persona；CMS 管理 Persona 定义与发布版本。
 
@@ -512,7 +512,7 @@ App 应关注当前用户自己的：
 
 - 数据与 Resource。
 - Personal Drive、Drive File / Folder / Revision 与设备备份同步状态。
-- 设备与 Session。
+- 设备与登录 / Token 安全状态。
 - 通知与 Activity。
 - Download / Offline / Sync 状态。
 - 用户级 Automation / Integration。
@@ -544,6 +544,7 @@ Scheduled Time ≠ Deadline
 Time Block ≠ Task
 Goal ≠ Task List
 Transfer ≠ Expense + Income
+Login ≠ Server Session
 Login ≠ Secure Vault Unlock
 Account Recovery ≠ Vault Recovery
 AI Suggestion ≠ Business Fact

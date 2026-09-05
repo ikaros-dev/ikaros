@@ -10,9 +10,9 @@
 
 Router 定义每个受保护 Route 所需的最小“查看/进入”能力。
 
-- 未认证：401 → 登录/会话恢复。
+- 未认证：401 → 登录/重新认证。
 - 已认证但无 Route Capability：403。
-- Secure Domain 未解锁：不是 403，进入 Vault Unlock / Secure Session 流程。
+- Secure Domain 未解锁：不是 403，进入 Vault Unlock / Secure Domain Unlock 流程。
 - 后端策略要求隐藏实体存在性时，详情页可返回 404，但列表/菜单权限仍按 Capability 处理。
 
 ### 1.2 菜单层
@@ -39,7 +39,7 @@ Router 定义每个受保护 Route 所需的最小“查看/进入”能力。
 | 个人资料 | `/console/account/profile` | 头像菜单 | `account.self.read` | `account.self.update` | 邮箱/登录标识变更可要求 Step-up |
 | 偏好设置 | `/console/account/preferences` | 头像菜单 | `account.preference.read` | `account.preference.update` | 策略锁定项只读 |
 | 个人通知 | `/console/account/notifications` | 头像菜单 | `account.notification.read` | `account.notification.update` | 强制安全通知不可关闭 |
-| 我的安全 | `/console/account/security` | 头像菜单 | `account.security.read` | `account.security.update` | 改密、恢复、撤销会话可要求 Step-up |
+| 我的安全 | `/console/account/security` | 头像菜单 | `account.security.read` | `account.security.update` | 改密、恢复、使旧 Token 失效可要求 Step-up |
 
 ## 3. 工作台
 
@@ -126,12 +126,12 @@ Router 定义每个受保护 Route 所需的最小“查看/进入”能力。
 
 ## 9. 私密笔记
 
-Secure Session 未解锁时即使拥有 Permission 也只显示锁定界面。
+Secure Domain 未解锁时即使拥有 Permission 也只显示锁定界面。这里的 Unlock State 是客户端 / Secure Domain 安全状态，不是服务端登录 Session。
 
 | 页面 | Route | 查看能力 | 写操作能力 | Step-up / 高风险 |
 |---|---|---|---|---|
-| 保险库 | `/console/private-notes` | `private_note.read` | `private_note.write` | 需要有效 Secure Session |
-| 版本与冲突 | `/console/private-notes/conflicts` | `private_note.version.read` | `private_note.conflict.resolve` | Secure Session |
+| 保险库 | `/console/private-notes` | `private_note.read` | `private_note.write` | 需要有效 Secure Domain Unlock State |
+| 版本与冲突 | `/console/private-notes/conflicts` | `private_note.version.read` | `private_note.conflict.resolve` | Secure Domain Unlock State |
 | 恢复与导出 | `/console/private-notes/recovery` | `private_note.recovery.read` | `private_note.export` / `private_note.restore` | 明文导出、恢复、密钥操作要求 Step-up |
 | 密钥/恢复材料操作 | 页面内动作 | — | `private_note.key.reset` / 对应 canonical key | Required SVL + Policy |
 
@@ -139,7 +139,7 @@ Secure Session 未解锁时即使拥有 Permission 也只显示锁定界面。
 
 | 页面 | Route | 查看能力 | 写操作能力 | Step-up / 高风险 |
 |---|---|---|---|---|
-| 密码保险库 | `/console/passwords` | `password_vault.read` | `password_vault.write` | Reveal/Copy 可按策略要求 Step-up/Secure Session |
+| 密码保险库 | `/console/passwords` | `password_vault.read` | `password_vault.write` | Reveal/Copy 可按策略要求 Step-up / Secure Domain Unlock |
 | 生成器 | `/console/passwords/generator` | `password_generator.use` | — | 生成值不进入日志/遥测 |
 | 健康与安全发送 | `/console/passwords/health` | `password_health.read` | `password_send.create` / `password_send.revoke` | 明文/发送敏感操作按策略验证 |
 | 设备与访问 | `/console/passwords/devices` | `password_device.read` | `password_device.revoke` | 撤销设备、改变 Vault 策略可要求 Step-up |
@@ -185,11 +185,12 @@ Secure Session 未解锁时即使拥有 Permission 也只显示锁定界面。
 |---|---|---|---|---|
 | 用户与角色 | `/console/security/users` | `user.read` | `user.manage` / `role.assign` | 禁用管理员、凭据操作按策略 |
 | 权限矩阵 | `/console/security/permissions` | `permission.read` | `permission.manage` | 权限提升/高风险 Capability 变更必须 Step-up |
-| 活跃会话 | `/console/security/sessions` | `session.read` | `session.revoke` | 全局撤销可要求 Step-up |
-| 认证策略 | `/console/security/authentication` | `security.policy.read` | `security.policy.manage` | Step-up |
+| 认证与 Token 安全 | `/console/security/authentication` | `security.policy.read` | `security.policy.manage` / `identity.invalidate-user-tokens` | 策略变更、用户级 Token Invalidation 要求 Step-up |
 | Keys & Secrets | 同上 Tab | `security.key.read` | `security.key.manage` | Required SVL + Policy |
 | Recovery | 同上 Tab | `security.recovery.read` | `security.recovery.manage` | Required SVL + Policy |
 | OAuth/API Access | 同上 Tab | `security.api_access.read` | `security.api_access.manage` | Token 创建/高权限 Scope 可 Step-up |
+
+不登记 `/console/security/sessions`，也不定义 `session.read` / `session.revoke` 作为 JWT 登录态能力；服务端无可枚举 Login Session。
 
 ### 14.1 Permission 与 Verification 的硬规则
 
