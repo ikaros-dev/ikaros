@@ -41,18 +41,39 @@ public class HttpDeliveryProviderProbe implements DeliveryProviderProbe {
     @Override
     public Mono<DeliveryProviderHealthStatus> probe(DeliveryProviderEntity provider) {
         if (provider.providerType() == DeliveryProviderType.DIRECT) {
-            return directUrl(provider).flatMap(this::check)
+            return directUrl(provider).flatMap(this::checkStorageRead)
                 .switchIfEmpty(Mono.just(DeliveryProviderHealthStatus.UNKNOWN))
                 .onErrorReturn(DeliveryProviderHealthStatus.UNHEALTHY);
         }
         String endpoint = endpoint(provider);
         if (endpoint == null) return Mono.just(DeliveryProviderHealthStatus.UNKNOWN);
-        return check(endpoint);
+        return provider.providerType() == DeliveryProviderType.SERVER_PROXY
+            ? checkServerProxy(endpoint) : check(endpoint);
     }
 
     private Mono<DeliveryProviderHealthStatus> check(String endpoint) {
         return client.head()
             .uri(URI.create(endpoint))
+            .header("User-Agent", "Ikaros-Delivery-Health-Check")
+            .exchangeToMono(response -> Mono.just(classify(response.statusCode())))
+            .timeout(TIMEOUT)
+            .onErrorReturn(DeliveryProviderHealthStatus.UNHEALTHY);
+    }
+
+    private Mono<DeliveryProviderHealthStatus> checkStorageRead(String endpoint) {
+        return client.get()
+            .uri(URI.create(endpoint))
+            .header("Range", "bytes=0-0")
+            .header("User-Agent", "Ikaros-Delivery-Health-Check")
+            .exchangeToMono(response -> Mono.just(classify(response.statusCode())))
+            .timeout(TIMEOUT)
+            .onErrorReturn(DeliveryProviderHealthStatus.UNHEALTHY);
+    }
+
+    private Mono<DeliveryProviderHealthStatus> checkServerProxy(String endpoint) {
+        String healthEndpoint = endpoint.replaceAll("/+\\z", "") + "/api/health/ready";
+        return client.get()
+            .uri(URI.create(healthEndpoint))
             .header("User-Agent", "Ikaros-Delivery-Health-Check")
             .exchangeToMono(response -> Mono.just(classify(response.statusCode())))
             .timeout(TIMEOUT)
