@@ -29,6 +29,11 @@ public class DeliveryProviderController {
         return service.update(providerId, request, IfMatchVersion.parse(ifMatch))
             .map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view));
     }
+    @PostMapping("/{providerId}/enable") public Mono<DeliveryProviderView> enable(@PathVariable UUID providerId) { return service.enable(providerId); }
+    @PostMapping("/{providerId}/disable") public Mono<DeliveryProviderView> disable(@PathVariable UUID providerId) { return service.disable(providerId); }
+    @DeleteMapping("/{providerId}") public Mono<ResponseEntity<Void>> delete(@PathVariable UUID providerId) {
+        return service.delete(providerId).thenReturn(ResponseEntity.noContent().build());
+    }
     @PostMapping("/{providerId}/probe") public Mono<ResponseEntity<BackgroundTask>> probe(@RequestHeader(value="X-Ikaros-Actor-Id", required=false) UUID actorId,
         @RequestHeader(value="Idempotency-Key", required=false) String idempotencyKey, @PathVariable UUID providerId) {
         if (idempotencyKey == null || idempotencyKey.isBlank()) return Mono.error(new IllegalArgumentException("缺少 Idempotency-Key"));

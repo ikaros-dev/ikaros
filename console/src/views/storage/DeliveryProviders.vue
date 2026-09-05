@@ -385,6 +385,43 @@ async function probe(row: Provider) {
     setProbing(providerId, false);
   }
 }
+async function toggleProvider(row: Provider) {
+  const providerId = String(row.id || "");
+  if (!providerId) return;
+  const enabled = Boolean(row.enabled);
+  try {
+    await ElMessageBox.confirm(
+      enabled
+        ? "停用后，使用该 Provider 的新交付请求将不会再选择它。确定停用吗？"
+        : "启用后，该 Provider 可以重新参与交付。确定启用吗？",
+      enabled ? "确认停用" : "确认启用",
+      { type: enabled ? "warning" : "info", confirmButtonText: enabled ? "停用" : "启用", cancelButtonText: "取消" }
+    );
+    await http.post(`/admin/delivery-providers/${providerId}/${enabled ? "disable" : "enable"}`);
+    await load();
+    ElMessage.success(enabled ? "分发 Provider 已停用" : "分发 Provider 已启用");
+  } catch (e: any) {
+    if (e === "cancel" || e === "close") return;
+    ElMessage.error(e?.response?.data?.detail || e?.message || "Provider 状态更新失败");
+  }
+}
+async function deleteProvider(row: Provider) {
+  const providerId = String(row.id || "");
+  if (!providerId) return;
+  try {
+    await ElMessageBox.confirm(
+      "删除后 Provider 配置不可恢复；如果仍被 Delivery Binding 引用，删除会被拒绝。确定删除吗？",
+      "确认删除分发 Provider",
+      { type: "warning", confirmButtonText: "删除", cancelButtonText: "取消" }
+    );
+    await http.request("delete", `/admin/delivery-providers/${providerId}`);
+    await load();
+    ElMessage.success("分发 Provider 已删除");
+  } catch (e: any) {
+    if (e === "cancel" || e === "close") return;
+    ElMessage.error(e?.response?.data?.detail || e?.message || "Provider 删除失败");
+  }
+}
 function healthType(status: string): "success" | "warning" | "danger" | "info" {
   return (
     (
@@ -462,7 +499,7 @@ onMounted(load);
           width="110"
         />
         <el-table-column prop="updatedAt" label="最近更新" min-width="180" />
-        <el-table-column label="操作" width="190" fixed="right"
+        <el-table-column label="操作" width="330" fixed="right"
           ><template #default="{ row }"
             ><el-button
               link
@@ -477,6 +514,18 @@ onMounted(load);
               :disabled="!row.id"
               @click="probe(row)"
               >{{ isProbing(row.id) ? "检测中" : "立即检测" }}</el-button
+            ><el-button
+              link
+              :type="row.enabled ? 'warning' : 'success'"
+              :disabled="!row.id"
+              @click="toggleProvider(row)"
+              >{{ row.enabled ? "停用" : "启用" }}</el-button
+            ><el-button
+              link
+              type="danger"
+              :disabled="!row.id"
+              @click="deleteProvider(row)"
+              >删除</el-button
             ></template
           ></el-table-column
         >

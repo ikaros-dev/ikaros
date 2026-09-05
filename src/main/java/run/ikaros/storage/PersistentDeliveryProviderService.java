@@ -25,10 +25,41 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
     private final ObjectMapper mapper;
     private final DurableEventService events;
     private final DeliveryProviderOperationsService operations;
+    private final MediaDeliveryBindingRepository bindings;
 
     public PersistentDeliveryProviderService(DeliveryProviderRepository providers, ObjectMapper mapper,
-        DurableEventService events, DeliveryProviderOperationsService operations) {
-        this.providers = providers; this.mapper = mapper; this.events = events; this.operations = operations;
+        DurableEventService events, DeliveryProviderOperationsService operations, MediaDeliveryBindingRepository bindings) {
+        this.providers = providers; this.mapper = mapper; this.events = events; this.operations = operations; this.bindings = bindings;
+    }
+
+    @Override public Mono<DeliveryProviderView> enable(UUID id) { return changeEnabled(id, true); }
+
+    @Override public Mono<DeliveryProviderView> disable(UUID id) { return changeEnabled(id, false); }
+
+    private Mono<DeliveryProviderView> changeEnabled(UUID id, boolean enabled) {
+        return providers.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Delivery Provider 不存在")))
+            .flatMap(old -> {
+                if (old.enabled() == enabled) return Mono.just(view(old));
+                DeliveryProviderEntity replacement = replacement(old, enabled);
+                return providers.save(replacement)
+                    .flatMap(saved -> emit(enabled ? "storage.delivery-provider.enabled" : "storage.delivery-provider.disabled", saved,
+                        "{\"delivery_provider_id\":\"" + saved.id() + "\"}").thenReturn(view(saved)));
+            });
+    }
+
+    @Override public Mono<Void> delete(UUID id) {
+        return providers.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Delivery Provider 不存在")))
+            .flatMap(provider -> bindings.existsByDeliveryProviderKey(provider.providerKey()).flatMap(referenced -> {
+                if (referenced) return Mono.error(new ConflictException("Delivery Provider 仍被 Delivery Binding 引用，请先删除或停用相关 Binding"));
+                return providers.delete(provider).then(emit("storage.delivery-provider.removed", provider,
+                    "{\"delivery_provider_id\":\"" + provider.id() + "\"}"));
+            }));
+    }
+
+    private DeliveryProviderEntity replacement(DeliveryProviderEntity old, boolean enabled) {
+        return new DeliveryProviderEntity(old.id(), old.providerKey(), old.providerType(), old.displayName(), old.credentialRef(),
+            old.config(), old.capabilities(), old.grantRevocationMode(), old.signingKeyVersion(), old.healthStatus(), enabled,
+            old.createdAt(), Instant.now(), old.version(), old.idempotencyKey());
     }
 
     @Override public Mono<DeliveryProviderView> create(DeliveryProviderWriteRequest request) {
