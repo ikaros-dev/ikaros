@@ -1,0 +1,166 @@
+package run.ikaros.authentication;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+import run.ikaros.authorization.api.RoleMembershipQuery;
+import run.ikaros.operations.api.AuditService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
+
+/** 验证平台用户服务的创建、查询与状态规则。 */
+class DefaultUserServiceTest {
+    private PlatformUserRepository userRepository;
+    private RoleMembershipQuery roleMembershipQuery;
+    private AuditService auditService;
+    private DefaultUserService service;
+
+    @BeforeEach
+    void setUp() {
+        userRepository = mock(PlatformUserRepository.class);
+        roleMembershipQuery = mock(RoleMembershipQuery.class);
+        when(roleMembershipQuery.roleCodesFor(any())).thenReturn(Mono.just(List.of()));
+        auditService = mock(AuditService.class);
+        service = new DefaultUserService(userRepository, roleMembershipQuery, auditService);
+    }
+
+    @Test
+    void createsPendingUserAndWritesAuditEvent() {
+        UUID actorId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity saved = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
+            UserStatus.PENDING, now, now, null, 0L);
+        when(userRepository.save(any())).thenReturn(Mono.just(saved));
+        when(auditService.record(eq(actorId), eq("identity.user.create"), eq("USER"), eq(userId), eq("{}")))
+            .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.create(actorId, new CreateUserRequest("alice", "Alice", "Alice@Example.COM")))
+            .assertNext(user -> {
+                assertThat(user.status()).isEqualTo(UserStatus.PENDING);
+                assertThat(user.email()).isEqualTo("alice@example.com");
+            })
+            .verifyComplete();
+        verify(auditService).record(actorId, "identity.user.create", "USER", userId, "{}");
+    }
+
+    @Test
+    void listsUsersWithStatusFilterAndPaging() {
+        Instant now = Instant.now();
+        PlatformUserEntity active = new PlatformUserEntity(UUID.randomUUID(), "alice", "Alice", null,
+            UserStatus.ACTIVE, now.plusSeconds(1), now, null, 0L);
+        PlatformUserEntity pending = new PlatformUserEntity(UUID.randomUUID(), "bob", "Bob", null,
+            UserStatus.PENDING, now, now, null, 0L);
+        when(userRepository.findAll()).thenReturn(Flux.just(pending, active));
+
+        StepVerifier.create(service.list(UserStatus.ACTIVE, "ali", 0, 20))
+            .assertNext(result -> {
+                assertThat(result.total()).isEqualTo(1);
+                assertThat(result.items()).extracting(UserView::username).containsExactly("alice");
+            })
+            .verifyComplete();
+    }
+
+    @Test
+    void changesUserStatusAndWritesAuditEvent() {
+        UUID actorId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity user = new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, now, now, null, 1L);
+        PlatformUserEntity locked = new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.LOCKED, now, now, null, 2L);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(user));
+        when(userRepository.save(any())).thenReturn(Mono.just(locked));
+        when(auditService.record(eq(actorId), eq("identity.user.status.change"), eq("USER"), eq(userId), eq("{}")))
+            .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.changeStatus(actorId, userId, UserStatus.LOCKED))
+            .assertNext(view -> assertThat(view.status()).isEqualTo(UserStatus.LOCKED))
+            .verifyComplete();
+        verify(auditService).record(actorId, "identity.user.status.change", "USER", userId, "{}");
+    }
+
+    @Test
+    void rejectsInvalidPagingBeforeQuery() {
+        StepVerifier.create(service.list(null, null, -1, 20))
+            .expectError(IllegalArgumentException.class)
+            .verify();
+        StepVerifier.create(service.list(null, null, 0, 101))
+            .expectError(IllegalArgumentException.class)
+            .verify();
+    }
+
+    @Test
+    void emitsNonSensitiveEventWhenUserIsDisabled() {
+        UUID actorId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity user = new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, now, now, null, 1L);
+        PlatformUserEntity disabled = new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.DISABLED, now, now, null, 3L);
+        DurableEventPublisher events = mock(DurableEventPublisher.class);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(user));
+        when(userRepository.save(any())).thenReturn(Mono.just(disabled));
+        when(events.append(any(EventAppendRequest.class)))
+            .thenReturn(Mono.empty());
+        when(auditService.record(eq(actorId), eq("identity.user.status.change"), eq("USER"), eq(userId), eq("{}")))
+            .thenReturn(Mono.empty());
+        DefaultUserService eventService = new DefaultUserService(userRepository, roleMembershipQuery, auditService, events);
+
+        StepVerifier.create(eventService.changeStatus(actorId, userId, UserStatus.DISABLED))
+            .assertNext(view -> assertThat(view.status()).isEqualTo(UserStatus.DISABLED))
+            .verifyComplete();
+        verify(events).append(argThat(request -> request.eventType().equals("authentication.user.disabled")
+            && request.producerSubsystem().equals("authentication") && request.subjectType().equals("user")
+            && request.subjectId().equals(userId)));
+    }
+
+    @Test
+    void emitsCreatedAndEnabledLifecycleEvents() {
+        UUID actorId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        DurableEventPublisher events = mock(DurableEventPublisher.class);
+        PlatformUserEntity created = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
+            UserStatus.PENDING, now, now, null, 0L);
+        PlatformUserEntity disabled = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
+            UserStatus.DISABLED, now, now, null, 1L);
+        PlatformUserEntity enabled = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
+            UserStatus.ACTIVE, now, now, null, 2L);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(created), Mono.just(disabled));
+        when(userRepository.save(any())).thenReturn(Mono.just(created), Mono.just(disabled), Mono.just(enabled));
+        when(events.append(any(EventAppendRequest.class)))
+            .thenReturn(Mono.empty());
+        when(auditService.record(any(), any(String.class), eq("USER"), eq(userId), eq("{}")))
+            .thenReturn(Mono.empty());
+        DefaultUserService eventService = new DefaultUserService(userRepository, roleMembershipQuery, auditService, events);
+
+        StepVerifier.create(eventService.create(actorId,
+                new CreateUserRequest("alice", "Alice", "alice@example.com")))
+            .assertNext(view -> assertThat(view.status()).isEqualTo(UserStatus.PENDING)).verifyComplete();
+        StepVerifier.create(eventService.changeStatus(actorId, userId, UserStatus.DISABLED)).expectNextCount(1).verifyComplete();
+        StepVerifier.create(eventService.changeStatus(actorId, userId, UserStatus.ACTIVE)).expectNextCount(1).verifyComplete();
+        verify(events).append(argThat(request -> request.eventType().equals("authentication.user.created")
+            && request.producerSubsystem().equals("authentication") && request.subjectType().equals("user")
+            && request.subjectId().equals(userId)));
+        verify(events).append(argThat(request -> request.eventType().equals("authentication.user.enabled")
+            && request.producerSubsystem().equals("authentication") && request.subjectType().equals("user")
+            && request.subjectId().equals(userId)));
+    }
+
+}

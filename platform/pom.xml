@@ -24,6 +24,7 @@
         <module>operations</module>
         <module>authorization-api</module>
         <module>authentication-api</module>
+        <module>authentication</module>
         <module>authorization</module>
     </modules>
 </project>

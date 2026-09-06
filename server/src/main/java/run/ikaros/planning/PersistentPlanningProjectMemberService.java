@@ -7,7 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.identity.PlatformUserRepository;
+import run.ikaros.authentication.PlatformUserRepository;
 
 @Service
 public class PersistentPlanningProjectMemberService implements PlanningProjectMemberService {

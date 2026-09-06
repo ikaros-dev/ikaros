@@ -102,6 +102,20 @@ authorization-api     -> authorization
 
 `authentication-api` 对外提供 `AuthenticatedPrincipal` 与 `SecurityVerificationLevel`；`authorization` 实现可以依赖这些公开认证契约，但不得依赖 Authentication 实现模块。Authentication 实现通过 `authorization-api` 获取权限快照和角色成员查询能力。
 
+Java 包命名与 Maven 模块保持业务语义一致：
+
+```text
+run.ikaros.authentication.api                 -> authentication-api
+run.ikaros.authentication                     -> authentication
+run.ikaros.authentication.verification        -> authentication
+run.ikaros.authentication.security            -> authentication
+run.ikaros.authorization.api                  -> authorization-api
+run.ikaros.authorization                      -> authorization
+run.ikaros.authorization.security             -> authorization
+run.ikaros.foundation.api                     -> foundation-api
+run.ikaros.foundation                         -> foundation
+```
+
 ---
 
 ## 3. 每个业务模块的内部结构
