@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 class ControllerArchitectureTest {
     @Test
     void controllersDoNotDependOnRepositories() throws IOException {
-        Path sourceRoot = Path.of("server", "src", "main", "java");
+        Path sourceRoot = Path.of("application", "src", "main", "java");
         try (Stream<Path> files = Files.walk(sourceRoot)) {
             files.filter(path -> path.toString().endsWith("Controller.java"))
                 .forEach(path -> {
