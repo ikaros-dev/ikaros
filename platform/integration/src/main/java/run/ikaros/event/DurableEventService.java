@@ -11,10 +11,13 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import run.ikaros.foundation.PrincipalContext;
 import run.ikaros.foundation.PrincipalContexts;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
+import run.ikaros.integration.api.EventReference;
 
 /** Outbox 写入与 Inbox 幂等消费边界。 */
 @Service
-public class DurableEventService {
+public class DurableEventService implements DurableEventPublisher {
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final java.util.regex.Pattern EVENT_TYPE =
         java.util.regex.Pattern.compile("[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*");
@@ -29,8 +32,25 @@ public class DurableEventService {
         this.transaction = transaction;
     }
 
+    @Override
+    public Mono<EventReference> append(EventAppendRequest request) {
+        if (request == null || request.producerSubsystem() == null || request.producerSubsystem().isBlank()
+            || request.subjectType() == null || request.subjectType().isBlank()) {
+            return Mono.error(new IllegalArgumentException("事件 Producer 和 Subject 不合法"));
+        }
+        return appendValidated(request.eventType(), request.schemaVersion(), request.producerSubsystem(),
+            request.subjectType(), request.subjectId(), request.payloadJson())
+            .map(saved -> new EventReference(saved.id(), saved.eventType(), saved.schemaVersion()));
+    }
+
     public Mono<OutboxEventEntity> append(String eventType, int schemaVersion, String aggregateType,
                                          UUID aggregateId, String payloadJson) {
+        return appendValidated(eventType, schemaVersion, eventType == null ? null : eventType.substring(0, eventType.indexOf('.')),
+            aggregateType, aggregateId, payloadJson);
+    }
+
+    private Mono<OutboxEventEntity> appendValidated(String eventType, int schemaVersion, String producerSubsystem,
+                                                    String subjectType, UUID subjectId, String payloadJson) {
         if (eventType == null || !EVENT_TYPE.matcher(eventType).matches() || schemaVersion < 1 || payloadJson == null) {
             return Mono.error(new IllegalArgumentException("事件类型、版本和 Payload 不合法"));
         }
@@ -49,13 +69,13 @@ public class DurableEventService {
             return Mono.error(new IllegalArgumentException("事件 Payload 不得包含 Secret 或 Token"));
         }
         return PrincipalContexts.current()
-            .flatMap(context -> appendNow(eventType, schemaVersion, aggregateType, aggregateId, payloadJson, context))
-            .switchIfEmpty(appendNow(eventType, schemaVersion, aggregateType, aggregateId, payloadJson, null));
+            .flatMap(context -> appendNow(eventType, schemaVersion, producerSubsystem, subjectType, subjectId, payloadJson, context))
+            .switchIfEmpty(appendNow(eventType, schemaVersion, producerSubsystem, subjectType, subjectId, payloadJson, null));
     }
 
-    private Mono<OutboxEventEntity> appendNow(String eventType, int schemaVersion, String aggregateType,
-                                              UUID aggregateId, String payloadJson, PrincipalContext context) {
-        return outbox.save(new OutboxEventEntity(null, eventType, schemaVersion, aggregateType, aggregateId,
+    private Mono<OutboxEventEntity> appendNow(String eventType, int schemaVersion, String producerSubsystem,
+                                              String subjectType, UUID subjectId, String payloadJson, PrincipalContext context) {
+        return outbox.save(new OutboxEventEntity(null, eventType, schemaVersion, producerSubsystem, subjectType, subjectId,
             payloadJson, Instant.now(), 0, null, null,
             context == null ? null : context.requestId(),
             context == null ? null : context.correlationId(),
