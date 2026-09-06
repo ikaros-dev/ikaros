@@ -18,7 +18,6 @@ class DefaultAccessControlServiceTest {
     private PlatformUserRepository userRepository;
     private UserRoleRepository userRoleRepository;
     private RolePermissionRepository permissionRepository;
-    private SecuritySessionRepository sessionRepository;
     private DefaultAccessControlService service;
 
     @BeforeEach
@@ -26,16 +25,13 @@ class DefaultAccessControlServiceTest {
         userRepository = mock(PlatformUserRepository.class);
         userRoleRepository = mock(UserRoleRepository.class);
         permissionRepository = mock(RolePermissionRepository.class);
-        sessionRepository = mock(SecuritySessionRepository.class);
-        service = new DefaultAccessControlService(userRepository, userRoleRepository, permissionRepository,
-            sessionRepository);
+        service = new DefaultAccessControlService(userRepository, userRoleRepository, permissionRepository);
     }
 
     @Test
     void requiresActiveUserPermissionAndFreshSvlTogether() {
         UUID userId = UUID.randomUUID();
         UUID roleId = UUID.randomUUID();
-        UUID sessionId = UUID.randomUUID();
         Instant now = Instant.now();
         when(userRepository.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
             UserStatus.ACTIVE, now, now, null, 0L)));
@@ -44,26 +40,22 @@ class DefaultAccessControlServiceTest {
         when(permissionRepository.findByRoleIdAndPermissionKey(roleId, PlatformPermission.RESOURCE_DELETE.key()))
             .thenReturn(Mono.just(new RolePermissionEntity(UUID.randomUUID(), roleId,
                 PlatformPermission.RESOURCE_DELETE.key(), now, 0L)));
-        when(sessionRepository.findById(sessionId)).thenReturn(Mono.just(new SecuritySessionEntity(sessionId, userId,
-            "EMAIL_OTP", 1, now, now.plusSeconds(300), now.plusSeconds(3600), null, now, now, 0L)));
         SecurityPolicy policy = new SecurityPolicy("DELETE_RESOURCE", PlatformPermission.RESOURCE_DELETE,
             SecurityVerificationLevel.SVL_1, true);
 
-        StepVerifier.create(service.require(userId, sessionId, policy)).verifyComplete();
+        StepVerifier.create(service.require(userId, SecurityVerificationLevel.SVL_1,
+            now.plusSeconds(300), policy)).verifyComplete();
     }
 
     @Test
     void rejectsHighSvlSessionWithoutRolePermission() {
         UUID userId = UUID.randomUUID();
-        UUID sessionId = UUID.randomUUID();
         Instant now = Instant.now();
         when(userRepository.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
             UserStatus.ACTIVE, now, now, null, 0L)));
         when(userRoleRepository.findAllByUserId(userId)).thenReturn(Flux.empty());
-        when(sessionRepository.findById(sessionId)).thenReturn(Mono.just(new SecuritySessionEntity(sessionId, userId,
-            "EMAIL_OTP", 4, now, now.plusSeconds(300), now.plusSeconds(3600), null, now, now, 0L)));
-
-        StepVerifier.create(service.require(userId, sessionId, new SecurityPolicy("MANAGE_USERS",
+        StepVerifier.create(service.require(userId, SecurityVerificationLevel.SVL_4, now.plusSeconds(300),
+            new SecurityPolicy("MANAGE_USERS",
                 PlatformPermission.SYSTEM_USER_MANAGE, SecurityVerificationLevel.SVL_1, true)))
             .expectErrorSatisfies(error -> {
                 assertThat(error).isInstanceOf(ForbiddenException.class);
@@ -75,15 +67,12 @@ class DefaultAccessControlServiceTest {
     @Test
     void rejectsSessionFromOlderUserSecurityVersion() {
         UUID userId = UUID.randomUUID();
-        UUID sessionId = UUID.randomUUID();
         Instant now = Instant.now();
         when(userRepository.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
             UserStatus.ACTIVE, now, now, null, 2L, 0L)));
         when(userRoleRepository.findAllByUserId(userId)).thenReturn(Flux.empty());
-        when(sessionRepository.findById(sessionId)).thenReturn(Mono.just(new SecuritySessionEntity(sessionId, userId,
-            1L, "EMAIL_OTP", 4, now, now.plusSeconds(300), now.plusSeconds(3600), null, now, now, 0L)));
-
-        StepVerifier.create(service.require(userId, sessionId, new SecurityPolicy("READ",
+        StepVerifier.create(service.require(userId, SecurityVerificationLevel.SVL_0, null,
+            new SecurityPolicy("READ",
                 PlatformPermission.RESOURCE_READ, SecurityVerificationLevel.SVL_0, false)))
             .expectError(ForbiddenException.class)
             .verify();

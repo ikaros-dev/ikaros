@@ -20,16 +20,14 @@ import run.ikaros.common.PageResponse;
 class IdentityControllerTest {
     private UserService userService;
     private RoleService roleService;
-    private SecuritySessionService sessionService;
     private WebTestClient client;
 
     @BeforeEach
     void setUp() {
         userService = mock(UserService.class);
         roleService = mock(RoleService.class);
-        sessionService = mock(SecuritySessionService.class);
         client = WebTestClient.bindToController(new UserController(userService), new RoleController(roleService),
-            new SecuritySessionController(sessionService)).build();
+            new PermissionController()).build();
     }
 
     @Test
@@ -75,19 +73,4 @@ class IdentityControllerTest {
         verify(roleService).grantPermission(actorId, roleId, PlatformPermission.SYSTEM_AUDIT_READ);
     }
 
-    @Test
-    void exposesActiveSessionListingAndScopedRevocationEndpoints() {
-        UUID actorId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-        UUID sessionId = UUID.randomUUID();
-        SessionView session = new SessionView(sessionId, userId, "EMAIL_OTP", SecurityVerificationLevel.SVL_1,
-            Instant.now(), Instant.now().plusSeconds(300), Instant.now().plusSeconds(3600), Instant.now());
-        when(sessionService.listActive(userId)).thenReturn(Flux.just(session));
-        when(sessionService.revoke(actorId, userId, sessionId)).thenReturn(Mono.empty());
-
-        client.get().uri("/api/users/{userId}/sessions", userId).exchange().expectStatus().isOk();
-        client.delete().uri("/api/users/{userId}/sessions/{sessionId}", userId, sessionId)
-            .header("X-Ikaros-Actor-Id", actorId.toString()).exchange().expectStatus().isNoContent();
-        verify(sessionService).revoke(actorId, userId, sessionId);
-    }
 }

@@ -143,7 +143,7 @@ class ResourceAuthorizationWebFilterTest {
         WebFilterChain chain = mock(WebFilterChain.class);
         when(chain.filter(exchange)).thenReturn(Mono.empty());
         exchange.getAttributes().put(JwtPrincipal.EXCHANGE_ATTRIBUTE,
-            new JwtPrincipal(actor, session, java.util.List.of("system.role.manage")));
+            new JwtPrincipal(actor, session, 0L, java.util.List.of("system.role.manage")));
 
         new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
         verify(chain).filter(exchange);

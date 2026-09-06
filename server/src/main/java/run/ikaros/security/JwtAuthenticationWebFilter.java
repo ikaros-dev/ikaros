@@ -11,15 +11,19 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 import run.ikaros.identity.JwtTokenService;
+import run.ikaros.identity.PlatformUserRepository;
+import run.ikaros.identity.UserStatus;
 
 /** 校验 Bearer access token，并把 JWT 主体暴露给后续过滤器和旧业务控制器。 */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class JwtAuthenticationWebFilter implements WebFilter {
     private final JwtTokenService tokens;
+    private final PlatformUserRepository users;
 
-    public JwtAuthenticationWebFilter(JwtTokenService tokens) {
+    public JwtAuthenticationWebFilter(JwtTokenService tokens, PlatformUserRepository users) {
         this.tokens = tokens;
+        this.users = users;
     }
 
     @Override
@@ -34,12 +38,21 @@ public class JwtAuthenticationWebFilter implements WebFilter {
         }
         try {
             JwtTokenService.Claims claims = tokens.verifyAccess(authorization.substring(7).trim());
-            JwtPrincipal principal = new JwtPrincipal(claims.userId(), claims.sessionId(), claims.permissions());
-            ServerWebExchange enriched = exchange.mutate().request(exchange.getRequest().mutate()
-                .header("X-Ikaros-Actor-Id", claims.userId().toString())
-                .header("X-Ikaros-Session-Id", claims.sessionId().toString()).build()).build();
-            enriched.getAttributes().put(JwtPrincipal.EXCHANGE_ATTRIBUTE, principal);
-            return chain.filter(enriched);
+            return users.findById(claims.userId())
+                .filter(user -> user.status() == UserStatus.ACTIVE
+                    && user.securityVersion() == claims.securityVersion())
+                .map(user -> {
+                    JwtPrincipal principal = new JwtPrincipal(claims.userId(), claims.tokenId(),
+                        claims.securityVersion(), claims.permissions());
+                    ServerWebExchange enriched = exchange.mutate().request(exchange.getRequest().mutate()
+                        .header("X-Ikaros-Actor-Id", claims.userId().toString())
+                        .header("X-Ikaros-Token-Id", claims.tokenId().toString()).build()).build();
+                    enriched.getAttributes().put(JwtPrincipal.EXCHANGE_ATTRIBUTE, principal);
+                    return enriched;
+                })
+                .flatMap(enriched -> chain.filter(enriched).thenReturn(true))
+                .defaultIfEmpty(false)
+                .flatMap(continued -> continued ? Mono.empty() : reject(exchange, HttpStatus.UNAUTHORIZED));
         } catch (RuntimeException invalidToken) {
             return reject(exchange, HttpStatus.UNAUTHORIZED);
         }

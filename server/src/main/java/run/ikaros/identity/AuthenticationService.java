@@ -19,7 +19,6 @@ public class AuthenticationService {
     private static final int KEY_BITS = 256;
     private final PlatformUserRepository users;
     private final PasswordCredentialRepository credentials;
-    private final SecuritySessionService sessions;
     private final UserService userService;
     private final PlatformRoleRepository roles;
     private final UserRoleRepository userRoles;
@@ -28,12 +27,11 @@ public class AuthenticationService {
     private final SecureRandom random = new SecureRandom();
 
     public AuthenticationService(PlatformUserRepository users, PasswordCredentialRepository credentials,
-                                  SecuritySessionService sessions, UserService userService,
+                                  UserService userService,
                                   PlatformRoleRepository roles, UserRoleRepository userRoles,
                                   RolePermissionRepository rolePermissions, JwtTokenService tokens) {
         this.users = users;
         this.credentials = credentials;
-        this.sessions = sessions;
         this.userService = userService;
         this.roles = roles;
         this.userRoles = userRoles;
@@ -68,9 +66,10 @@ public class AuthenticationService {
         try {
             JwtTokenService.Claims claims = tokens.verifyRefresh(refreshToken);
             return users.findById(claims.userId())
-                .filter(user -> user.status() == UserStatus.ACTIVE)
+                .filter(user -> user.status() == UserStatus.ACTIVE
+                    && user.securityVersion() == claims.securityVersion())
                 .switchIfEmpty(Mono.error(new NotFoundException("用户不存在或已停用")))
-                .flatMap(user -> issue(user, claims.sessionId()));
+                .flatMap(this::issue);
         } catch (RuntimeException invalidToken) {
             return Mono.error(new NotFoundException("刷新令牌无效或已过期"));
         }
@@ -88,15 +87,10 @@ public class AuthenticationService {
     }
 
     private Mono<AuthenticationView> issue(PlatformUserEntity user) {
-        return sessions.open(user.id(), "PASSWORD", Instant.now().plusSeconds(30L * 24 * 3600))
-            .flatMap(session -> issue(user, session.id()));
-    }
-
-    private Mono<AuthenticationView> issue(PlatformUserEntity user, UUID sessionId) {
         return userService.get(user.id()).zipWith(userPermissions(user.id()))
             .map(data -> {
-                JwtTokenService.TokenPair pair = tokens.issue(user.id(), sessionId, data.getT2());
-                return new AuthenticationView(user.id(), sessionId, pair.accessToken(), pair.refreshToken(),
+                JwtTokenService.TokenPair pair = tokens.issue(user.id(), user.securityVersion(), data.getT2());
+                return new AuthenticationView(user.id(), pair.accessToken(), pair.refreshToken(),
                     pair.accessTokenExpiresAt(), data.getT1(), data.getT2());
             });
     }

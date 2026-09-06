@@ -14,7 +14,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 import run.ikaros.identity.SecurityVerificationLevel;
 
-/** 验证会话 Step-up 的 HTTP 合约。 */
+/** 验证无状态 Step-up Grant 的 HTTP 合约。 */
 class StepUpVerificationControllerTest {
     private StepUpVerificationService stepUpService;
     private WebTestClient client;
@@ -26,23 +26,22 @@ class StepUpVerificationControllerTest {
     }
 
     @Test
-    void exposesSessionBoundIssueAndVerificationEndpoints() {
+    void exposesStatelessIssueAndVerificationEndpoints() {
         UUID userId = UUID.randomUUID();
-        UUID sessionId = UUID.randomUUID();
         UUID challengeId = UUID.randomUUID();
         Instant now = Instant.now();
-        when(stepUpService.issueEmailOtp(userId, sessionId)).thenReturn(Mono.just(new VerificationChallengeView(challengeId,
+        when(stepUpService.issueEmailOtp(userId)).thenReturn(Mono.just(new VerificationChallengeView(challengeId,
             VerificationMethod.EMAIL_OTP, VerificationPurpose.LOGIN_STEP_UP, now.plusSeconds(300),
             VerificationChallengeStatus.ISSUED)));
-        when(stepUpService.verifyEmailOtp(any(), any(), any(), any())).thenReturn(Mono.just(new VerificationResult(
+        when(stepUpService.verifyEmailOtp(any(), any(), any())).thenReturn(Mono.just(new VerificationResult(
             challengeId, VerificationMethod.EMAIL_OTP, SecurityVerificationLevel.SVL_1, userId, now,
             now.plusSeconds(300))));
 
-        client.post().uri("/api/security/sessions/{sessionId}/step-up", sessionId)
+        client.post().uri("/api/security/step-up")
             .header("X-Ikaros-Actor-Id", userId.toString()).exchange().expectStatus().isAccepted();
-        client.post().uri("/api/security/sessions/{sessionId}/step-up/{challengeId}/verify", sessionId, challengeId)
+        client.post().uri("/api/security/step-up/{challengeId}/verify", challengeId)
             .header("X-Ikaros-Actor-Id", userId.toString()).bodyValue(Map.of("code", "123456"))
             .exchange().expectStatus().isOk();
-        verify(stepUpService).issueEmailOtp(userId, sessionId);
+        verify(stepUpService).issueEmailOtp(userId);
     }
 }

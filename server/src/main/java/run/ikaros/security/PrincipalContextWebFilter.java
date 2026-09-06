@@ -24,10 +24,10 @@ public class PrincipalContextWebFilter implements WebFilter {
         String actor = exchange.getRequest().getHeaders().getFirst("X-Ikaros-Actor-Id");
         try {
             UUID actorId = actor == null || actor.isBlank() ? null : UUID.fromString(actor);
-            String session = exchange.getRequest().getHeaders().getFirst("X-Ikaros-Session-Id");
-            UUID sessionId = session == null || session.isBlank() ? null : UUID.fromString(session);
+            String token = exchange.getRequest().getHeaders().getFirst("X-Ikaros-Token-Id");
+            UUID tokenId = token == null || token.isBlank() ? null : UUID.fromString(token);
             String causationId = exchange.getRequest().getHeaders().getFirst("X-Causation-Id");
-            PrincipalContext context = new PrincipalContext(actorId, sessionId, requestId, correlationId,
+            PrincipalContext context = new PrincipalContext(actorId, tokenId, requestId, correlationId,
                 causationId, false);
             return chain.filter(exchange).contextWrite(ctx -> ctx.put(PrincipalContext.CONTEXT_KEY, context));
         } catch (IllegalArgumentException invalidIdentity) {
