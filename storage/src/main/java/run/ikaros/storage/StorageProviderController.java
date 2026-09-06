@@ -1,0 +1,78 @@
+package run.ikaros.storage;
+
+import run.ikaros.storage.api.*;
+
+import jakarta.validation.Valid;
+import java.net.URI;
+import java.util.UUID;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+@RestController
+@RequestMapping({"/api/storage/providers", "/api/admin/storage-providers"})
+public class StorageProviderController {
+    private final StorageProviderRegistry registry;
+    private final StorageProviderCredentialRotationService credentialRotation;
+    private final StorageProviderCredentialService credentialService;
+
+    public StorageProviderController(StorageProviderRegistry registry,
+                                     StorageProviderCredentialRotationService credentialRotation,
+                                     StorageProviderCredentialService credentialService) {
+        this.registry = registry;
+        this.credentialRotation = credentialRotation;
+        this.credentialService = credentialService;
+    }
+
+    @PostMapping
+    public Mono<ResponseEntity<StorageProvider>> register(@Valid @RequestBody RegisterStorageProviderRequest request) {
+        return registry.register(request.providerKey(), request.providerType(), request.tier(),
+                request.secretReference(), request.metadata(), request.accessKeyId(), request.secretAccessKey(), request.sessionToken())
+            .map(provider -> ResponseEntity.created(URI.create("/api/storage/providers/" + provider.id()))
+                .body(provider));
+    }
+
+    @GetMapping
+    public Flux<StorageProvider> list() {
+        return registry.list();
+    }
+
+    @GetMapping("/{providerId}")
+    public Mono<StorageProvider> get(@PathVariable UUID providerId) {
+        return registry.get(providerId);
+    }
+
+    @PostMapping("/{providerId}/enable")
+    public Mono<StorageProvider> enable(@PathVariable UUID providerId) {
+        return registry.enable(providerId);
+    }
+
+    @PostMapping("/{providerId}/actions/rotate-credentials")
+    public Mono<StorageCredentialRotationView> rotateCredentials(@PathVariable UUID providerId) {
+        return credentialRotation.rotate(providerId);
+    }
+
+    @PostMapping("/{providerId}/credentials")
+    public Mono<ResponseEntity<Void>> replaceCredentials(@PathVariable UUID providerId,
+                                                          @Valid @RequestBody ReplaceStorageProviderCredentialsRequest request) {
+        return credentialService.replace(providerId, request)
+            .thenReturn(ResponseEntity.noContent().build());
+    }
+
+    @PostMapping("/actions/rotate-credentials")
+    public Mono<StorageCredentialBatchRotationView> rotateAllCredentials() {
+        return credentialRotation.rotateAll();
+    }
+
+    @DeleteMapping("/{providerId}")
+    public Mono<ResponseEntity<Void>> disable(@PathVariable UUID providerId) {
+        return registry.disable(providerId).thenReturn(ResponseEntity.noContent().build());
+    }
+}

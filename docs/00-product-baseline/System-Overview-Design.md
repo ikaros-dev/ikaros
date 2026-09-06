@@ -399,7 +399,7 @@ Ikaros Server 负责：
 
 对外部客户端而言，一个 Ikaros Server 所代表的 Instance 是默认业务与配置边界。
 
-客户端在建立会话后可以读取当前 Instance 的基本能力、应用时区和必要公开配置，但不得自行构造 Tenant 语义或假设不同用户属于不同租户。
+客户端完成认证后可以读取当前 Instance 的基本能力、应用时区和必要公开配置，但不得自行构造 Tenant 语义或假设不同用户属于不同租户。
 
 ---
 
@@ -736,7 +736,7 @@ Analytics 数据属于派生数据，不能反过来成为业务状态真相源�
 - User；
 - Role；
 - Permission；
-- Session；
+- Token Invalidation / Verification；
 - Parameter；
 - Dictionary；
 - Menu；
@@ -1228,7 +1228,7 @@ Redis 不是强制依赖。
 可用于：
 
 - 热点缓存；
-- 短期 Session 辅助；
+- 短期 Verification Grant 辅助；
 - 分布式锁；
 - Rate Limit；
 - 临时状态；
@@ -2496,8 +2496,8 @@ V2 必须允许非核心能力故障时继续提供核心服务。
 | Analytics 异常 | 核心业务不受影响，统计延迟更新 |
 | 单个 Storage Replica 异常 | 尝试其他可用副本并标记异常 |
 | 冷存储内容未恢复 | 返回 Restoring 状态，而不是假装资源不存在 |
-| Drive 客户端暂时离线 | Server 端文件事实继续可用；客户端恢复连接后基于稳定 Cursor / Mapping 收敛，不静默覆盖冲突 |
-| 单个 Plugin 崩溃 | 隔离插件故障，避免拖垮整个 Server |
+| Drive 客户端暂时离线 | application 端文件事实继续可用；客户端恢复连接后基于稳定 Cursor / Mapping 收敛，不静默覆盖冲突 |
+| 单个 Plugin 崩溃 | 隔离插件故障，避免拖垮整个 application |
 
 ---
 
@@ -2508,7 +2508,7 @@ V2 必须允许非核心能力故障时继续提供核心服务。
 推荐概念结构：
 
 ```text
-server
+application
 └── subsystem
     ├── resource
     ├── drive

@@ -13,11 +13,50 @@
 
     <groupId>run.ikaros</groupId>
     <artifactId>ikaros</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
     <name>Ikaros</name>
     <description>自托管的个人数字内容平台</description>
 
+    <modules>
+        <module>common-api</module>
+        <module>common</module>
+        <module>sync-api</module>
+        <module>resource-api</module>
+        <module>resource</module>
+        <module>integration-api</module>
+        <module>integration</module>
+        <module>operations-api</module>
+        <module>operations</module>
+        <module>authorization-api</module>
+        <module>authentication-api</module>
+        <module>authentication</module>
+        <module>authorization</module>
+        <module>storage-api</module>
+        <module>media-api</module>
+        <module>media</module>
+        <module>storage</module>
+        <module>drive</module>
+        <module>sync</module>
+        <module>backup</module>
+        <module>password-manager</module>
+        <module>plugin</module>
+        <module>reading</module>
+        <module>search</module>
+        <module>sharing</module>
+        <module>document</module>
+        <module>game</module>
+        <module>music</module>
+        <module>photo</module>
+        <module>private-notes</module>
+        <module>finance</module>
+        <module>ingestion</module>
+        <module>planning</module>
+        <module>application</module>
+    </modules>
+
     <properties>
+        <revision>2.0.0-SNAPSHOT</revision>
         <java.version>21</java.version>
         <springdoc.version>3.0.3</springdoc.version>
         <r2dbc-migrate.version>4.0.1</r2dbc-migrate.version>
@@ -36,89 +75,25 @@
         </dependencies>
     </dependencyManagement>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-r2dbc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>name.nkonev.r2dbc-migrate</groupId>
-            <artifactId>r2dbc-migrate-spring-boot-starter</artifactId>
-            <version>${r2dbc-migrate.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
-            <version>${springdoc.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>r2dbc-postgresql</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.auth0</groupId>
-            <artifactId>java-jwt</artifactId>
-            <version>${java-jwt.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>s3</artifactId>
-            <version>${aws-sdk.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-testcontainers</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${testcontainers.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>${testcontainers.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>r2dbc</artifactId>
-            <version>${testcontainers.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <release>${java.version}</release>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <release>${java.version}</release>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <workingDirectory>${maven.multiModuleProjectDirectory}</workingDirectory>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 </project>

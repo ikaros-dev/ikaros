@@ -483,6 +483,7 @@ SVL-4
 ```text
 AccessJwt
 ├── sub = user_id
+├── jti = token_id
 ├── security_version
 ├── iat
 ├── exp
@@ -490,7 +491,7 @@ AccessJwt
 └── authorization snapshot / references（按实现策略）
 ```
 
-服务端不为该 Token 建立 `SecuritySession` 行，也不要求 JWT 包含 `sid` 来关联服务端登录状态。
+服务端不为该 Token 建立 `SecuritySession` 行，也不要求 JWT 包含 `sid` 来关联服务端登录状态。`jti` 仅用于 Token 追踪、审计关联和问题排查；它不被持久化，也不承担单 Token 撤销职责。
 
 每次请求至少校验：
 
@@ -524,6 +525,7 @@ Security Subsystem 签发短期、Purpose-bound 的验证结果，例如：
 ```text
 VerificationGrant
 ├── sub = user_id
+├── jti = grant_id
 ├── method
 ├── achieved_svl
 ├── purpose
@@ -1231,7 +1233,7 @@ security.key.reset.requested
 security.key.rotated
 security.recovery.completed
 security.device.revoked
-identity.user.tokens-invalidated
+authentication.user.tokens-invalidated
 ```
 
 但 Automation 不能自动降低安全策略。

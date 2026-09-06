@@ -90,7 +90,7 @@ PostgreSQL 负责保存：
 - 领域实体与领域状态；
 - Resource / Collection / Relation 等平台关系数据；
 - Attachment / Blob / Placement 的元数据与状态；
-- Identity / Permission / Session / Security Policy；
+- Identity / Permission / Security Policy / Verification Challenge；
 - Productivity、Accounting 等普通业务数据；
 - Background Task / Scheduled Job / Job Run；
 - Event Outbox 与幂等消费记录；
@@ -242,7 +242,7 @@ V2 初期采用模块化单体并共享一个 PostgreSQL，但每一份业务数
 | Resource / Content Core | Resource、Title/Alias、Metadata、Metadata Provenance、External Identity、Collection、Tag、Lifecycle、User State 等 | 普通业务真相 |
 | Storage | Attachment、Blob、Placement/Replica、Derived Attachment、完整性与恢复状态 | 普通业务真相 + 内容元数据 |
 | Integration | Durable Event / Outbox、跨领域 Generic Relation、Automation Rule/Run、消费幂等记录、Integration Trace 元数据 | 平台联动真相/执行状态 |
-| Identity / Security | User Identity、Role、Permission Registry、Role Binding、Session、Verification Challenge、Security Policy、KeyRing / KeyVersion / WrappedKeySnapshot / RecoveryOperation | 身份、安全真相；部分高敏感 |
+| Identity / Security | User Identity、Role、Permission Registry、Role Binding、Verification Challenge、Security Policy、KeyRing / KeyVersion / WrappedKeySnapshot / RecoveryOperation | 身份、安全真相；部分高敏感 |
 | Administration / Operations | Application Parameter、Dictionary、Menu、Announcement、Notification 元数据、Audit、Login Log、Security Event、Scheduled Job、Job Run、Health History、Alert | 平台管理与运维真相/历史 |
 | Productivity / Planning | Task、Project、Goal、OKR、Milestone、Calendar、Time Block、Reminder、Habit、Focus、Review | 普通业务真相 |
 | Personal Finance / Accounting | Ledger、Account、Transaction、Split、Category、Payee、Budget、Scheduled Transaction、Reconciliation、Exchange Rate | Sensitive 普通业务真相，不默认 E2EE |

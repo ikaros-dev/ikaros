@@ -10,7 +10,7 @@
 | 基线 | `P0-Database-Schema-Design.md` |
 | 领域设计 | `../../02-domain-capabilities/Media-Delivery-CDN-Archive-Restore-Design.md` |
 
-> 本文档把 Media Delivery / Restore 的持久化契约与当前 `run.ikaros.storage` Entity、Repository 以及 `src/main/resources/db/migration/` 对齐。
+> 本文档把 Media Delivery / Restore 的持久化契约与当前 `run.ikaros.storage` Entity、Repository 以及 Storage Owner 模块的 `storage/src/main/resources/db/migration/` 对齐。
 >
 > **重要**：早期设计使用 `storage.delivery_provider`、`storage.delivery_binding` 等逻辑命名。当前工程采用单 PostgreSQL 数据库中的扁平物理表名，例如 `media_delivery_provider`、`media_delivery_binding`、`media_delivery_lease`、`storage_restore_request`。Storage 仍是这些表的领域 Owner，但文档不得再把逻辑 Schema 名误写成当前物理表名。
 
@@ -42,7 +42,7 @@ background_task
 platform_user
 ```
 
-所有结构变更必须通过 `r2dbc-migrate` 执行的 `src/main/resources/db/migration/V...__....sql` 演进。已经进入共享环境的 migration 不原地修改；需要修正时追加新 migration。
+所有结构变更必须通过 Storage Owner 模块的 `storage/src/main/resources/db/migration/V...__....sql` 演进，并由 `application` 聚合运行时 classpath 后交给 `r2dbc-migrate` 执行。已经进入共享环境的 migration 不原地修改；需要修正时追加新 migration。
 
 ---
 
@@ -318,7 +318,9 @@ selected_attachment_ids
 created_at / updated_at / version
 ```
 
-Restore Scope 和状态以当前 enum / service 为准。`background_task_id` 将外部 Provider 恢复操作放入可靠 Background Task，而不是在 HTTP/数据库长事务中同步等待。
+Restore Request 的 Storage scope 统一为 `ATTACHMENT_SET`；`scope_id` 必须允许为空，并在该 scope 下固定为 `NULL`。Attachment 集合由 Request Item / Attachment 引用表达，不使用 Episode、Season 或其他业务领域 ID 作为 Storage scope。`background_task_id` 将外部 Provider 恢复操作放入可靠 Background Task，而不是在 HTTP/数据库长事务中同步等待。
+
+新的批量 Command 要求 `idempotency_key` 非空。幂等唯一性至少按 `actor_id + idempotency_key` 保证；相同 Key 对应不同 Attachment 集合或恢复参数时必须返回冲突，而不是复用错误请求。
 
 ---
 
@@ -433,8 +435,8 @@ V202609060600__DDL_MEDIA_DELIVERY_BINDING_REMOVE_UNUSED_COLUMNS.sql
 
 工程规则：
 
-1. migration 路径统一为 `src/main/resources/db/migration/`；
-2. 由应用启动阶段的 `r2dbc-migrate` 执行；
+1. migration 由 Storage Owner 模块持有，路径为 `storage/src/main/resources/db/migration/`；
+2. 由 `application` 聚合各 Owner 模块后，在应用启动阶段统一交给 `r2dbc-migrate` 执行；
 3. 不引入 Flyway/JDBC 第二数据库访问栈；
 4. 已发布 migration 不原地编辑；
 5. Entity / Repository / API 与 migration 冲突时，必须先明确当前代码与实际数据库状态，再通过追加 migration + 文档更新收敛；

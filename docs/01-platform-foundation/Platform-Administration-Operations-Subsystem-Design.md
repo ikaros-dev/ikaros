@@ -1783,7 +1783,7 @@ user.created
 user.disabled
 user.login.succeeded
 user.login.failed
-identity.user.tokens-invalidated
+authentication.user.tokens-invalidated
 role.assigned
 parameter.changed
 announcement.published

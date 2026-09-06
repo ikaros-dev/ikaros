@@ -1,0 +1,35 @@
+package run.ikaros.event;
+
+import java.time.Instant;
+import java.util.UUID;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
+
+/** 事务内写入、发布后只更新投递元数据的 Outbox 事件。 */
+@Table("event_outbox")
+public record OutboxEventEntity(
+    @Id UUID id,
+    @Column("event_type") String eventType,
+    @Column("schema_version") int schemaVersion,
+    @Column("producer_subsystem") String producerSubsystem,
+    @Column("subject_type") String subjectType,
+    @Column("subject_id") UUID subjectId,
+    @Column("payload_json") String payloadJson,
+    @Column("occurred_at") Instant occurredAt,
+    @Column("attempt_count") int attemptCount,
+    @Column("last_attempt_at") Instant lastAttemptAt,
+    @Column("dispatched_at") Instant dispatchedAt,
+    @Column("request_id") String requestId,
+    @Column("correlation_id") String correlationId,
+    @Column("causation_id") String causationId,
+    @Column("actor_id") UUID actorId
+) {
+    public OutboxEventEntity(UUID id, String eventType, int schemaVersion, String aggregateType, UUID aggregateId,
+                             String payloadJson, Instant occurredAt, int attemptCount, Instant lastAttemptAt,
+                             Instant dispatchedAt) {
+        this(id, eventType, schemaVersion, eventType.substring(0, eventType.indexOf('.')), aggregateType, aggregateId,
+            payloadJson, occurredAt, attemptCount,
+            lastAttemptAt, dispatchedAt, null, null, null, null);
+    }
+}

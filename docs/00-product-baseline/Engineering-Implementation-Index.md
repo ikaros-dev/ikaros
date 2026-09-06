@@ -34,7 +34,7 @@
 
 - Java 21 / Spring Boot 4.x / WebFlux / Reactor / R2DBC 的默认技术路径；
 - Server / Worker 运行时拓扑；
-- 根 `pom.xml` 单模块 Maven 构建与 Java Package / ArchUnit 模块边界；
+- 根 `pom.xml` 聚合的 Maven Multi-Module 构建与 Java Package / ArchUnit 模块边界；
 - Spring Composition Root 与 Bean 可见性；
 - Reactive Event Loop / Blocking Adapter 规则；
 - Reactive Transaction 与 PostgreSQL Schema Ownership；
@@ -105,7 +105,7 @@
 - Attachment / Blob / Storage；
 - Event Outbox / Consumer Inbox；
 - Background Task / Attempt；
-- Identity / Permission / Role / Session；
+- Identity / Permission / Role / Verification Challenge；
 - 字段、Constraint、Index、Transaction Boundary 与首批 `r2dbc-migrate` 顺序。
 
 它回答：
@@ -136,7 +136,7 @@
 - Resource / Storage invariant；
 - Outbox / Inbox replay；
 - Background Task crash recovery；
-- Identity / Authorization / Session；
+- Identity / Authorization / Stateless JWT；
 - OpenAPI Contract；
 - Security leakage；
 - Concurrency；
@@ -211,9 +211,9 @@ Automated Contract / Integration / E2E Tests
 
 ### P0 Implementation
 
-- 单 Maven 工程中的 Platform Foundation module skeleton；
-- 单 Maven 工程中的 Resource / Storage / Identity / Integration / Operations module skeleton；
-- Java Package Ownership + ArchUnit 边界测试，不依赖构建子模块提供编译隔离；
+- Maven Multi-Module 中的 Platform Foundation module skeleton；
+- Maven Multi-Module 中的 Resource / Storage / Authentication / Authorization / Integration / Operations module skeleton；
+- Maven 子模块依赖方向、Java Package Ownership + ArchUnit 边界测试；
 - 首批 `r2dbc-migrate` V2 migrations；
 - Permission Registry / Built-in Role deterministic seed；
 - Resource / Storage Application Command / Query handlers；

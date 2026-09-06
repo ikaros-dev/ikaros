@@ -44,7 +44,7 @@
 
 `docs/v2` 中的完整设计内容已按主题汇总到上述阶段目录：
 
-- [V2 总索引与覆盖矩阵](00-product-baseline/V2-Document-Index.md)
+- [文档索引与覆盖矩阵](00-product-baseline/Document-Index.md)
 - [平台基础详细设计](01-platform-foundation/)
 - [领域能力详细设计](02-domain-capabilities/)
 - [AI 与分析详细设计](03-ai-and-analytics/)

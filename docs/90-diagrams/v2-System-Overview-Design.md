@@ -2508,7 +2508,7 @@ V2 必须允许非核心能力故障时继续提供核心服务。
 推荐概念结构：
 
 ```text
-server
+application
 └── subsystem
     ├── resource
     ├── drive

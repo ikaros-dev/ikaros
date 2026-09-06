@@ -48,7 +48,7 @@
 
 ## 总体工程基线
 
-- V2 默认采用 Modular Monolith；当前构建必须使用根 `pom.xml` 的单模块 Maven。不得在普通功能开发中切换 Gradle 或 Maven Multi-Module；如确需改变，先走 ADR/设计变更。
+- V2 默认采用 Modular Monolith；当前构建使用根 `pom.xml` 聚合的 Maven Multi-Module。不得切换 Gradle 或其他构建系统；如需改变 Maven Multi-Module 拓扑，先走 ADR/设计变更。
 - 后端基线为 Java 21、Spring Boot 4.x、Spring WebFlux、Project Reactor、PostgreSQL 18+、R2DBC、`r2dbc-migrate`。业务运行时不得引入 JPA/JDBC 作为第二套持久化栈，也不得为迁移引入 Flyway/JDBC 第二访问栈。
 - Server 是默认且唯一的 Spring Composition Root。模块通过显式 Module Configuration 组装；禁止依赖全仓库隐式扫描来碰巧发现 Bean。
 - Ikaros 是单 Instance、多 User 的默认模型，不得为假设性的 SaaS 多租户在所有业务表机械增加 `tenant_id`。未来引入 Multi-Tenant 必须先走 ADR 和完整隔离设计。
@@ -70,7 +70,7 @@
 - 模块内部默认使用 `api / application / domain / adapter / persistence / config` 分层：Controller/Adapter 进入 Application Contract，Application 编排授权、事务与端口，Domain 保持业务不变量与状态转换，Persistence/Provider 作为实现细节。
 - `domain` 必须尽量保持 Plain Java：不得依赖 WebFlux、R2DBC、Redis、HTTP、Storage SDK，不启动线程、不产生网络 IO、不直接读取 Spring SecurityContext。
 - 跨模块只能依赖公开 API/Capability、Command/Query 或 Durable Event；禁止依赖其他模块的 Entity、Service 实现、Repository、Persistence Package、私有 SQL 或内部 Spring Bean。
-- 禁止跨模块 Repository 注入、跨 Schema 随意 JOIN、通过 `ApplicationContext.getBean()` 或 Bean Name 猜测内部组件、让业务模块反向依赖 `server`。
+- 禁止跨模块 Repository 注入、跨 Schema 随意 JOIN、通过 `ApplicationContext.getBean()` 或 Bean Name 猜测内部组件、让业务模块反向依赖 `application`。
 - 跨模块双向依赖必须通过 Event、更小的 Capability Contract、Integration 协议或重新划分所有权解决；禁止把依赖不清的类型/实体/工具全部塞进 `common`。
 - Controller 不得直接写 Repository，也不得横跨多个 Repository 拼接业务事务；请求必须进入唯一 Owner 的 Application API。
 - Worker 不是数据库超级用户。Worker 必须通过 Background Task Claim、Task Handler Contract、目标领域 Application API、明确拥有的数据表或 Event/Outbox 工作，不得任意执行跨领域 SQL。
@@ -84,7 +84,7 @@
 - 领域状态变更与对应 Outbox INSERT 必须在同一事务原子提交；事务内默认禁止调用不可回滚的外部 API。跨领域流程使用 Command、Durable Event、Saga/Process Manager 或 Background Task，不建立系统级超级事务。
 - 并发写默认使用乐观并发与 revision/version；唯一性和关键不变量必须尽量下降为数据库 Constraint，并用真实 PostgreSQL 集成测试验证。
 - Blob 内容身份不可变：不得更新已存在 Blob 的 `content_hash`/`size_bytes` 来改变其内容；Attachment 替换内容应创建新的不可变绑定。Blob GC 必须同时检查有效业务引用、Retention Hold、Placement 状态和审计条件。
-- 所有生产 DDL 必须进入版本化 `src/main/resources/db/migration/V<monotonic-version>__<description>.sql`，由 `r2dbc-migrate` 执行。已进入共享/正式环境的 Migration 不得原地修改；修复只能追加新 Migration。
+- 所有生产 DDL 必须进入对应 Owner 实现模块的版本化 `<owner-module>/src/main/resources/db/migration/V<monotonic-version>__<description>.sql`，由 `application` 聚合运行时 classpath 并交给 `r2dbc-migrate` 执行。各模块共享全局单调版本序列；已进入共享/正式环境的 Migration 不得原地修改，修复只能追加新 Migration。
 - Migration 与业务 Persistence 职责分离。不得由 Repository、`DatabaseClient` 或启动逻辑偷偷修改 Schema、模拟 Migration History 或执行不可控的大规模数据重写。
 - Schema 变更遵循 Expand → Migrate → Contract；大规模 Backfill 不得塞进启动阻塞 DDL；Seed Permission/Built-in Role 必须 deterministic；不得提供假装安全的 destructive down migration。
 - Migration 完成前普通业务不得 Ready，Outbox Dispatcher 不得消费，Worker 不得 Claim，Scheduler 不得提交依赖新 Schema 的任务；Migration 失败时必须启动失败或保持 Readiness Down，不得带旧 Schema 提供部分业务能力。
@@ -151,7 +151,7 @@
 
 以下变化不能仅通过普通功能代码完成，必须先补 ADR/设计/契约/测试：
 
-- 改变 Maven 单模块、Modular Monolith、Java/Spring/WebFlux/Reactor/R2DBC/PostgreSQL 主基线；
+- 改变 Maven Multi-Module、Modular Monolith、Java/Spring/WebFlux/Reactor/R2DBC/PostgreSQL 主基线；
 - 引入第二套业务关系数据库、JPA/JDBC 主栈、Flyway、Kafka/RabbitMQ 替代 Outbox；
 - 改变 UUIDv7、带时区时间、Instance 边界、Resource-centric、Attachment/Blob/Placement 分离；
 - 改变 Owner Schema、跨模块依赖、Outbox/Inbox 至少一次投递、Consumer 幂等或 Background Task/Lease 语义；

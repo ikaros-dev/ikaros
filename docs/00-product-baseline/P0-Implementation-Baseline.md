@@ -21,7 +21,7 @@ Phase 1+ 领域实现 = 按各模块的 Definition of Ready 独立门禁
 Phase 0 工程实施统一采用：
 
 ```text
-Build = 根 pom.xml 单模块 Maven
+Build = 根 pom.xml 聚合的 Maven Multi-Module
 Migration = r2dbc-migrate + PostgreSQL R2DBC
 Module Boundary = Java Package Ownership + Spring Composition Boundary + Architecture Test
 ```
@@ -56,8 +56,9 @@ Media Delivery / Restore 的独立 P0 Addendum 继续作为专项规范性扩展
 
 如果没有先修改设计文档或 ADR，Phase 0 实现不得自行改变：
 
-- 构建系统使用根 `pom.xml` 的单模块 Maven；P0 不切换 Gradle，也不以 Maven 多模块替代当前工程基线；
-- 逻辑模块边界通过 Java Package Ownership、显式 Spring Composition Boundary 与 Architecture Test 强制，不依赖构建子模块提供隔离；
+- 构建系统使用根 `pom.xml` 聚合的 Maven Multi-Module；P0 不迁移 Gradle；
+- 每个业务或平台能力默认拆为 `<business-name>-api` 与不带后缀的业务实现模块；
+- 逻辑模块边界通过 Maven 子模块依赖方向、Java Package Ownership、显式 Spring Composition Boundary 与 Architecture Test 共同强制；
 - 数据库 Schema Migration 使用 `r2dbc-migrate` + PostgreSQL R2DBC，不引入 Flyway/JDBC 第二数据库访问栈；
 - UUID 公开身份标识策略；
 - PostgreSQL Owner Schema 边界；
@@ -93,13 +94,13 @@ Media Delivery / Restore 的独立 P0 Addendum 继续作为专项规范性扩展
 建议按以下顺序推进：
 
 ```text
-单 Maven 工程中的逻辑模块骨架
+Maven Multi-Module 中的逻辑模块骨架
  -> 架构边界测试
  -> r2dbc-migrate P0 基础 Schema
  -> UUIDv7 / Clock / Problem / Principal
  -> Transaction + Outbox / Inbox
  -> Background Task Runtime
- -> Resource / Storage / Identity Application API
+ -> Resource / Storage / Authentication / Authorization Application API
  -> OpenAPI Controller / DTO
  -> 契约 / 恢复 / 并发 / 安全测试
  -> P0 E2E 门禁

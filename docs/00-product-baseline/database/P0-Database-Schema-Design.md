@@ -561,6 +561,8 @@ blob_retention_active_idx(blob_id, retention_until)
 
 Event 内容一旦写入即为不可变事实。
 
+`producer_subsystem`、`subject_type` 与 `subject_id` 是 Event Envelope 的正式持久化字段。由 Integration Owner 的追加 Migration 通过 Expand / Migrate 建立并从现有 `aggregate_type / aggregate_id` 回填；旧字段删除属于后续独立 Contract 步骤，不能与本次扩展混合。
+
 | Column | Type | Null |
 |---|---|---:|
 | `event_id` | uuid | NO |
@@ -854,6 +856,8 @@ security_version == identity.user_account.security_version
 user status allows authentication
 ```
 
+每枚 Access JWT、Refresh JWT 和 Step-up Verification Grant 都必须携带唯一 `jti`。`jti` 只用于 Token / Grant 追踪、审计关联和问题排查，不作为登录 Session 主键；服务端不持久化 `jti`，也不维护基于 `jti` 的撤销黑名单。
+
 当前设备 Logout 由客户端删除本地 Token 与 Credential Cache 完成，不产生数据库 Session 变更。
 
 需要让目标用户全部旧 Token 提前失效时，执行 `identity.invalidate-user-tokens`，在事务中提升：
@@ -862,7 +866,7 @@ user status allows authentication
 identity.user_account.security_version
 ```
 
-并发布 `identity.user.tokens-invalidated`。
+并发布 `authentication.user.tokens-invalidated`。
 
 Step-up Verification 的 OTP Challenge 可以按验证子系统需要短期持久化，但它是一次性 Challenge，不是登录 Session。验证成功后签发的 Step-up Grant 应为短期、Purpose-bound 的签名凭据；服务端不因此创建 `SecuritySession` 行。
 

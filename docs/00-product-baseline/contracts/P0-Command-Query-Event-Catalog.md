@@ -59,7 +59,7 @@ Event Type 使用过去式事实语义：
 resource.resource.created
 resource.resource.archived
 storage.attachment.created
-identity.user.disabled
+authentication.user.disabled
 ```
 
 禁止使用命令式事件名：
@@ -289,14 +289,14 @@ Attachment Content Query 必须支持 HTTP Range，并在返回内容前重新�
 
 | Command ID | Permission | Step-up | Events |
 |---|---|---:|---|
-| `identity.create-user` | `identity.user.manage` | policy | `identity.user.created` |
-| `identity.disable-user` | `identity.user.manage` | REQUIRED for privileged targets | `identity.user.disabled` |
-| `identity.enable-user` | `identity.user.manage` | policy | `identity.user.enabled` |
-| `identity.create-role` | `identity.role.manage` | policy | `identity.role.created` |
-| `identity.replace-role-permissions` | `identity.role.manage` | REQUIRED | `identity.role.permissions-replaced` |
-| `identity.assign-role` | `identity.role.manage` | policy | `identity.user.role-assigned` |
-| `identity.remove-role` | `identity.role.manage` | policy | `identity.user.role-removed` |
-| `identity.invalidate-user-tokens` | current user or `identity.user.manage` | REQUIRED | `identity.user.tokens-invalidated` |
+| `identity.create-user` | `identity.user.manage` | policy | `authentication.user.created` |
+| `identity.disable-user` | `identity.user.manage` | REQUIRED for privileged targets | `authentication.user.disabled` |
+| `identity.enable-user` | `identity.user.manage` | policy | `authentication.user.enabled` |
+| `identity.create-role` | `identity.role.manage` | policy | `authorization.role.created` |
+| `identity.replace-role-permissions` | `identity.role.manage` | REQUIRED | `authorization.role.permissions-replaced` |
+| `identity.assign-role` | `identity.role.manage` | policy | `authorization.user.role-assigned` |
+| `identity.remove-role` | `identity.role.manage` | policy | `authorization.user.role-removed` |
+| `identity.invalidate-user-tokens` | current user or `identity.user.manage` | REQUIRED | `authentication.user.tokens-invalidated` |
 
 `identity.invalidate-user-tokens` 不枚举或撤销某个服务端 Session。它原子提升目标用户的 `security_version`；后续请求中，携带旧 `security_version` 的 JWT 被拒绝。
 
@@ -358,6 +358,24 @@ Rules：
 - unknown optional fields must be ignored safely；
 - at-least-once delivery；
 - consumer key + event ID idempotency。
+
+### 10.1 Event Publisher Contract
+
+业务模块不得依赖 Outbox Entity、Repository 或 Dispatcher。跨模块发布统一依赖 `integration-api` 的 `DurableEventPublisher`：
+
+```text
+append(EventAppendRequest) -> EventReference
+```
+
+`EventAppendRequest` 至少包含：
+
+- `event_type`；
+- `schema_version`；
+- `producer_subsystem`；
+- `subject_type` 与可选的 `subject_id`；
+- 结构化 JSON object `payload`。
+
+`event_id`、`occurred_at`、Actor、`request_id`、`correlation_id` 与 `causation_id` 由 Integration 结合 Foundation `PrincipalContext` 生成或补全。`EventReference` 只包含公开事件标识和版本信息，不暴露 `OutboxEventEntity` 等 Persistence 类型。
 
 ---
 
@@ -428,14 +446,14 @@ Error Event 只包含可安全公开的 classification / summary，不复制 sta
 
 | Event Type | v | Minimum Payload |
 |---|---:|---|
-| `identity.user.created` | 1 | `user_id` |
-| `identity.user.disabled` | 1 | `user_id, security_version` |
-| `identity.user.enabled` | 1 | `user_id, security_version` |
-| `identity.role.created` | 1 | `role_id, role_key` |
-| `identity.role.permissions-replaced` | 1 | `role_id, permission_keys[]` |
-| `identity.user.role-assigned` | 1 | `user_id, role_id` |
-| `identity.user.role-removed` | 1 | `user_id, role_id` |
-| `identity.user.tokens-invalidated` | 1 | `user_id, security_version` |
+| `authentication.user.created` | 1 | `user_id` |
+| `authentication.user.disabled` | 1 | `user_id, security_version` |
+| `authentication.user.enabled` | 1 | `user_id, security_version` |
+| `authorization.role.created` | 1 | `role_id, role_key` |
+| `authorization.role.permissions-replaced` | 1 | `role_id, permission_keys[]` |
+| `authorization.user.role-assigned` | 1 | `user_id, role_id` |
+| `authorization.user.role-removed` | 1 | `user_id, role_id` |
+| `authentication.user.tokens-invalidated` | 1 | `user_id, security_version` |
 
 禁止 Event 包含：
 
@@ -461,9 +479,9 @@ Error Event 只包含可安全公开的 classification / summary，不复制 sta
 | `storage.blob.integrity-failed` | Storage | Operations alerting | Notification |
 | `storage.provider.*` | Storage | Operations projection | Audit/Analytics |
 | `operations.background-task.*` | Operations | none | Notification, Analytics |
-| `identity.user.disabled` | Identity | token/security-version invalidation | Audit, Notification |
-| `identity.user.tokens-invalidated` | Identity | authorization/token acceptance cache invalidation | Audit, Notification |
-| `identity.role.permissions-replaced` | Identity | authorization cache invalidation | Audit |
+| `authentication.user.disabled` | Authentication | token/security-version invalidation | Audit, Notification |
+| `authentication.user.tokens-invalidated` | Authentication | authorization/token acceptance cache invalidation | Audit, Notification |
+| `authorization.role.permissions-replaced` | Authorization | authorization cache invalidation | Audit |
 
 “Required Consumer”失败不会回滚 producer 已提交事实，但必须进入 retry / DLQ / reconciliation 可观测流程。
 

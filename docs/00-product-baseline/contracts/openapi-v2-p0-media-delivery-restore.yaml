@@ -64,19 +64,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem'
 
-  /attachments/{attachment_id}/restore-requests:
+  /restore-requests:
     post:
-      operationId: storage.request-restore-attachment
-      summary: Request restore for one attachment
+      operationId: storage.request-attachment-restores
+      summary: Request restore for one or more attachments
       parameters:
-        - $ref: '#/components/parameters/AttachmentId'
         - $ref: '#/components/parameters/IdempotencyKeyRequired'
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RestoreOptions'
+              $ref: '#/components/schemas/AttachmentRestoreRequest'
       responses:
         '202':
           description: Restore request accepted, queued, partially accepted or attached to existing operations
@@ -93,41 +92,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem'
 
-  /media/seasons/{season_id}/restore-requests:
-    post:
-      operationId: storage.request-restore-season
-      summary: Request restore for a season
-      parameters:
-        - name: season_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - $ref: '#/components/parameters/IdempotencyKeyRequired'
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RestoreOptions'
-      responses:
-        '202':
-          description: Restore request accepted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestoreRequest'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '409':
-          description: Budget confirmation required or request rejected
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-
-  /restore-requests:
     get:
       operationId: storage.list-restore-requests
       summary: List restore requests visible to the caller
@@ -155,6 +119,40 @@ paths:
                       $ref: '#/components/schemas/RestoreRequest'
                   next_cursor:
                     type: [string, 'null']
+
+  /media/seasons/{season_id}/restore-requests:
+    post:
+      operationId: media.request-restore-season
+      summary: Request restore for a season
+      parameters:
+        - name: season_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/IdempotencyKeyRequired'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestoreOptions'
+      responses:
+        '202':
+          description: Media expands the season to attachment IDs and submits one aggregate restore request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestoreRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Budget confirmation required or request rejected
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
 
   /restore-requests/{request_id}:
     get:
@@ -550,12 +548,28 @@ components:
           type: [string, 'null']
           description: Opaque confirmation reference, not payment data
 
+    AttachmentRestoreRequest:
+      type: object
+      required: [attachment_ids]
+      properties:
+        attachment_ids:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            format: uuid
+        restore_class:
+          type: [string, 'null']
+        budget_confirmation_token:
+          type: [string, 'null']
+          description: Opaque confirmation reference, not payment data
+
     RestoreRequest:
       type: object
       required:
         - id
         - scope_type
-        - scope_id
         - status
         - item_count
         - total_bytes
@@ -569,9 +583,9 @@ components:
           format: uuid
         scope_type:
           type: string
-          enum: [ATTACHMENT, EPISODE, SEASON, RESOURCE_SET]
+          enum: [ATTACHMENT_SET]
         scope_id:
-          type: string
+          type: [string, 'null']
           format: uuid
         status:
           type: string

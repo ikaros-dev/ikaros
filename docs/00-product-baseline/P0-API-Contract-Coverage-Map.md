@@ -73,7 +73,7 @@ CI 应校验：`operationId` 唯一性、method/path 唯一性、Registry → Op
 
 ## 事件机器契约
 
-`contracts/schema/p0-event-v1.schema.json` 冻结 P0 事件 Envelope、UUIDv7 Event ID、Schema Version、Producer Namespace，以及当前 **42 个 P0 v1 Event Type**。本次无状态 JWT 收敛删除 `identity.session.revoked`、`identity.user.sessions-revoked`，新增 `identity.user.tokens-invalidated`。每种事件的 Payload 字段级约束仍由 `P0-Event-Payload-Schema-Registry.md` 管理，并应在 Phase 0 实现阶段扩展为机器可执行的兼容性检查（`P0-EVT-004/013/014`）。
+`contracts/schema/p0-event-v1.schema.json` 冻结 P0 事件 Envelope、UUIDv7 Event ID、Schema Version、Producer Namespace，以及当前 **42 个 P0 v1 Event Type**。本次无状态 JWT 收敛删除 `authentication.session.revoked`、`authentication.user.sessions-revoked`，新增 `authentication.user.tokens-invalidated`。用户与 Token 失效事件由 Authentication 产生，角色与权限事件由 Authorization 产生。每种事件的 Payload 字段级约束仍由 `P0-Event-Payload-Schema-Registry.md` 管理，并应在 Phase 0 实现阶段扩展为机器可执行的兼容性检查（`P0-EVT-004/013/014`）。
 
 ## 变更检查清单
 
