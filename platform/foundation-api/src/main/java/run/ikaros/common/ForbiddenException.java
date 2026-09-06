@@ -1,6 +1,6 @@
 package run.ikaros.common;
 
-/** 表示当前身份无权执行请求操作。 */
+/** 表示当前主体无权执行请求操作。 */
 public class ForbiddenException extends RuntimeException {
     private final String code;
 
@@ -13,5 +13,7 @@ public class ForbiddenException extends RuntimeException {
         this.code = code;
     }
 
-    public String code() { return code; }
+    public String code() {
+        return code;
+    }
 }
