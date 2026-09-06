@@ -197,10 +197,13 @@ Persistence 是模块私有实现，其他模块不得直接依赖。
 - UUIDv7；
 - Clock；
 - timezone abstraction；
+- `PrincipalContext` immutable value contract；
 - shared error primitive；
 - correlation / request context；
 - common serialization primitive；
 - basic transaction abstraction。
+
+`PrincipalContext` 属于 `foundation-api` 的公开契约。Reactor Context 的访问工具 `PrincipalContexts` 属于 `foundation` 实现模块，供需要读取请求级上下文的基础设施实现使用；它不是业务领域契约。
 
 禁止加入任何业务实体。
 
@@ -220,15 +223,21 @@ Persistence 是模块私有实现，其他模块不得直接依赖。
 
 ### 4.3 `platform.security`
 
-拥有：
+Authentication 拥有：
 
-- Principal；
-- Authentication；
+- JWT Principal；
+- 用户身份、认证和会话；
+- HTTP Authentication Adapter；
+- OTP / Step-up Verification；
+
+Authorization 拥有：
+
 - Permission Registry；
 - Security Policy；
-- Step-up Verification；
-- Secure Session；
-- crypto capability / key management。
+- Access Control；
+- Resource Authorization；
+
+Authentication 和 Authorization 均可依赖 `foundation-api` 的 `PrincipalContext`，但不得依赖 `PrincipalContexts` 的实现细节。
 
 其他领域可以依赖 Security API，但不得直接读写 Security persistence。
 

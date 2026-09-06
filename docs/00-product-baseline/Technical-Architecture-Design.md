@@ -985,7 +985,7 @@ Controller 的 Security Rule 只能作为第一道门。真正的业务 Command 
 
 ### 21.3 Security Context
 
-Spring Security Reactive Context 用于认证传播，但业务 Handler 应获得明确的 `PrincipalContext` / `ExecutionContext`。禁止业务 Repository 自行读取 SecurityContext 来决定 SQL 行为。
+Spring Security Reactive Context 用于认证传播，但业务 Handler 应获得明确的 `PrincipalContext` / `ExecutionContext`。`PrincipalContext` 是 `platform.foundation-api` 的公开值契约；Reactor Context 的读取工具由 `platform.foundation` 实现模块提供。Authentication 负责把已认证的主体转换为 `PrincipalContext`，业务 Repository 禁止自行读取 SecurityContext 来决定 SQL 行为。
 
 ### 21.4 Object-level Authorization
 
@@ -1307,7 +1307,8 @@ Phase 0 的首批代码按 Maven Multi-Module 的依赖顺序落地：
    - UUIDv7
    - Clock
    - Timezone
-   - ExecutionContext
+   - PrincipalContext contract
+   - Reactor Context accessor
    - Error primitive
 
 2. platform.integration

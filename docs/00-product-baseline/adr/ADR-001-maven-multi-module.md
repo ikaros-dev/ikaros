@@ -27,6 +27,7 @@ Ikaros V2 采用 Modular Monolith，但当前仓库使用根 `pom.xml` 的单模
 8. 所有模块立即执行严格边界。跨模块直接依赖 Entity、Repository、Persistence、私有 SQL、内部 Service 或内部 Spring Bean 均视为架构错误。
 9. 每个业务 Owner 的生产 Migration 由对应实现模块持有，路径为 `<owner-module>/src/main/resources/db/migration/V<monotonic-version>__<description>.sql`。`server` 只聚合各实现模块的运行时 classpath 并统一执行 `r2dbc-migrate`，不拥有业务 Migration。
 10. 所有实现模块共享全局单调 Migration 版本序列；模块发现顺序不得决定 Schema 结构，文件名和描述必须可识别 Owner。
+11. `PrincipalContext` 是 `foundation-api` 的公开值契约；`PrincipalContexts` 是 `foundation` 的 Reactor Context 运行时访问工具。Authentication 负责写入上下文，Integration 与 Operations 只能依赖 Foundation，不依赖 Authentication 实现。
 
 ## 模块命名与归属
 
