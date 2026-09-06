@@ -28,6 +28,13 @@ Authentication 需要在登录、注册和刷新 Token 时把用户权限写入 
      -> Mono<Void>
    ```
 
+   Authentication 用户视图需要展示角色编码时，通过角色成员查询 Capability 获取，不直接读取角色绑定：
+
+   ```text
+   RoleMembershipQuery.roleCodesFor(UUID subjectId)
+     -> Mono<List<String>>
+   ```
+
 3. `PermissionSnapshot` 至少包含 `subject_id` 和去重、稳定排序后的 `permission_keys`；不得暴露 Role、Permission、Binding Entity、Repository 或 Persistence 类型。
 4. Authentication 在注册、登录和刷新时调用该 Capability；调用失败或返回不可用结果时，认证签发失败，不签发权限不完整的 JWT。
 5. Access JWT 携带本次签发时取得的 `permissions` 快照；Refresh JWT 不承担请求授权，可不携带权限快照。刷新成功后重新读取最新权限并签发新的 Access JWT。
@@ -35,6 +42,7 @@ Authentication 需要在登录、注册和刷新 Token 时把用户权限写入 
 7. 需要立即使用户既有 JWT 失效时，使用既有的用户级 Token 失效 Command，提升该用户的 `security_version`。高风险权限变更是否同时触发该 Command，由对应 Command Contract 单独声明，不由 Capability 隐式完成。
 8. `authorization` 不依赖 `authentication` 实现；对象级授权、Security Policy 和最终 Allow / Deny 仍由 Authorization 或目标业务 Owner 权威判断，JWT 权限快照不能替代 Resource ACL、Share 或 Membership 判断。
 9. `InitialRoleAssigner` 只由用户创建流程调用，用于保持首个用户等系统初始化角色分配的同步语义；它不返回 Role Entity，也不允许调用方直接写入角色绑定。
+10. `RoleMembershipQuery` 只返回稳定排序的角色编码；Authentication 可以用它组装 `UserView`，但不得因此获得角色、绑定或权限 Persistence 的访问权。
 
 ## Maven 依赖方向
 
