@@ -130,15 +130,15 @@ Cache Key Policy 具体内容默认不进入 Event；消费者需要当前配置
 ```json
 {
   "request_id": "uuid",
-  "scope_type": "SEASON",
-  "scope_id": "uuid",
+  "scope_type": "ATTACHMENT_SET",
+  "scope_id": null,
   "item_count": 24,
   "total_bytes": 25769803776,
   "budget_decision": "ACCEPTED"
 }
 ```
 
-不在 Event 中展开所有 Attachment / Placement ID，避免大 Payload；消费者需要 Item 明细时查询 Projection / API。
+`ATTACHMENT_SET` 的 `scope_id` 固定为 `null`。不在 Event 中展开所有 Attachment / Placement ID，避免大 Payload；消费者需要 Item 明细时查询 Projection / API。
 
 ---
 

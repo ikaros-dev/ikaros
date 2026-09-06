@@ -71,20 +71,19 @@ Built-in Role 的具体映射仍由 deterministic migration seed 决定。
 
 | Command ID | Permission | Idempotency | Async | Result | Events |
 |---|---|---|---:|---|---|
-| `storage.request-restore` | `storage.restore.request` + target ACL | REQUIRED | yes | RestoreRequest | `storage.restore-request.requested` |
+| `storage.request-attachment-restores` | `storage.restore.request` + Attachment ACL | REQUIRED | yes | RestoreRequest | `storage.restore-request.requested` |
 | `storage.cancel-restore-request` | request actor or `storage.restore.manage` | NATURAL | cooperative | RestoreRequest | `storage.restore-request.cancel-requested` |
 | `storage.retry-restore-failed-items` | actor or `storage.restore.manage` | REQUIRED | yes | RestoreRequest | `storage.restore-request.retry-requested` |
 | `storage.promote-placement` | `storage.tiering.manage` | REQUIRED | yes | BackgroundTask ref | `storage.placement.promotion-requested` |
 | `storage.demote-placement` | `storage.tiering.manage` | REQUIRED | yes | BackgroundTask ref | `storage.placement.demotion-requested` |
 | `storage.update-restore-budget-policy` | `storage.tiering.manage` | OPTIONAL | no | RestoreBudgetPolicy | `storage.restore-budget.updated` |
 
-### 3.1 `storage.request-restore`
+### 3.1 `storage.request-attachment-restores`
 
 Input：
 
 ```text
-scope_type: ATTACHMENT | EPISODE | SEASON | RESOURCE_SET
-scope_id: uuid
+attachment_ids: uuid[] (至少一个，去重)
 restore_class?: stable provider-neutral code
 idempotency_key: required at HTTP boundary
 budget_override_confirmation?: token/reference
@@ -92,12 +91,15 @@ budget_override_confirmation?: token/reference
 
 Rules：
 
-1. Scope 必须解析为当前 Actor 有读取权限的 Attachment 集合。
-2. 服务端先计算 Item Count / Logical Bytes，再执行 Budget Guard。
-3. 相同 Idempotency Key 返回原 Restore Request。
-4. 不同 Request 命中同一归档 Placement 时必须复用 Active Restore Operation。
-5. 外部 Provider API 调用交给 Background Task，不在 HTTP 事务内等待恢复完成。
-6. 返回 `202 Accepted`，并返回 Restore Request，而不是只返回 Background Task ID。
+1. Storage 只接受已经解析出的 Attachment ID 集合，不接受 Episode、Season 或其他业务领域 ID。
+2. 服务端必须逐个校验 Attachment 存在、当前 Actor 可读取，并计算 Item Count / Logical Bytes，再执行 Budget Guard。
+3. 每次调用创建一个聚合 Restore Request，持久化 `scope = ATTACHMENT_SET`、`scope_id = NULL` 和 Attachment 集合。
+4. 相同 Actor 使用相同 Idempotency Key 时返回原 Restore Request；相同 Key 对应不同请求内容必须失败。
+5. 不同 Request 命中同一归档 Placement 时必须复用 Active Restore Operation。
+6. 外部 Provider API 调用交给 Background Task，不在 HTTP 事务内等待恢复完成。
+7. 返回 `202 Accepted`，并返回 Restore Request，而不是只返回 Background Task ID。
+
+Season / Episode 等业务范围由 Media 模块负责展开，然后调用该 Command。Storage 不得通过 Repository、Entity、SQL 或其他内部依赖反向查询 Media。
 
 ### 3.2 Restore Budget
 

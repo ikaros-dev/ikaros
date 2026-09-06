@@ -318,7 +318,9 @@ selected_attachment_ids
 created_at / updated_at / version
 ```
 
-Restore Scope 和状态以当前 enum / service 为准。`background_task_id` 将外部 Provider 恢复操作放入可靠 Background Task，而不是在 HTTP/数据库长事务中同步等待。
+Restore Request 的 Storage scope 统一为 `ATTACHMENT_SET`；`scope_id` 必须允许为空，并在该 scope 下固定为 `NULL`。Attachment 集合由 Request Item / Attachment 引用表达，不使用 Episode、Season 或其他业务领域 ID 作为 Storage scope。`background_task_id` 将外部 Provider 恢复操作放入可靠 Background Task，而不是在 HTTP/数据库长事务中同步等待。
+
+新的批量 Command 要求 `idempotency_key` 非空。幂等唯一性至少按 `actor_id + idempotency_key` 保证；相同 Key 对应不同 Attachment 集合或恢复参数时必须返回冲突，而不是复用错误请求。
 
 ---
 
