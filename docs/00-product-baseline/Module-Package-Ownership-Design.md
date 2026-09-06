@@ -123,6 +123,8 @@ run.ikaros.foundation.api                     -> foundation-api
 run.ikaros.foundation                         -> foundation
 ```
 
+Migration 也遵循相同的 Owner 边界：Foundation 的公共 UUID 数据库能力由 `foundation` 持有；Resource、Storage、Operations 分别持有自己的业务表与约束迁移；`server` 只聚合这些实现模块的运行时 classpath 并执行迁移，不持有业务 DDL。当前 Storage 尚未完成实现模块抽取，其迁移仍处于过渡位置，待 `storage` 模块建立后随代码一并迁移。
+
 ---
 
 ## 3. 每个业务模块的内部结构
