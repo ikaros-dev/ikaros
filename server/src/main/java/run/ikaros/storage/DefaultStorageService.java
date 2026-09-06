@@ -21,8 +21,8 @@ import run.ikaros.common.StorageUnavailableException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
 import run.ikaros.resource.api.ResourceOwnershipQuery;
-import run.ikaros.task.BackgroundTask;
-import run.ikaros.task.BackgroundTaskService;
+import run.ikaros.operations.task.BackgroundTask;
+import run.ikaros.operations.task.BackgroundTaskService;
 import run.ikaros.operations.api.TaskReference;
 
 /**

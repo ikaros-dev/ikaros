@@ -14,9 +14,8 @@ import run.ikaros.common.NotFoundException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
 import run.ikaros.resource.api.ResourceOwnershipQuery;
-import run.ikaros.task.BackgroundTaskService;
-import run.ikaros.media.MediaEpisodeRepository;
-import run.ikaros.media.MediaSeasonRepository;
+import run.ikaros.operations.task.BackgroundTaskService;
+import run.ikaros.media.api.MediaRestoreTargetQuery;
 
 @Service
 public class StorageRestoreRequestService {
@@ -27,18 +26,17 @@ public class StorageRestoreRequestService {
     private final StorageRestoreRequestRepository requests;
     private final BackgroundTaskService tasks;
     private final StorageRestoreBudgetService budget;
-    private final MediaSeasonRepository seasons;
-    private final MediaEpisodeRepository episodes;
+    private final MediaRestoreTargetQuery mediaTargets;
     private final DurableEventPublisher events;
 
     public StorageRestoreRequestService(AttachmentRepository attachments, ResourceOwnershipQuery resources,
         BlobRepository blobs, BlobPlacementRepository placements, StorageRestoreRequestRepository requests,
-        BackgroundTaskService tasks, StorageRestoreBudgetService budget, MediaSeasonRepository seasons,
-        MediaEpisodeRepository episodes, DurableEventPublisher events) {
+        BackgroundTaskService tasks, StorageRestoreBudgetService budget, MediaRestoreTargetQuery mediaTargets,
+        DurableEventPublisher events) {
         this.attachments = attachments; this.resources = resources; this.blobs = blobs;
         this.placements = placements; this.requests = requests; this.tasks = tasks;
         this.budget = budget;
-        this.seasons = seasons; this.episodes = episodes; this.events = events;
+        this.mediaTargets = mediaTargets; this.events = events;
     }
 
     public Mono<StorageRestoreRequestView> requestAttachment(UUID actorId, RequestAttachmentRestore request,
@@ -101,10 +99,9 @@ public class StorageRestoreRequestService {
 
     private Mono<StorageRestoreRequestEntity> createSeasonRequest(UUID actorId, UUID seasonId,
         String budgetConfirmationToken, String idempotencyKey) {
-        return seasons.findById(seasonId).filter(s -> s.ownerId().equals(actorId))
-            .switchIfEmpty(Mono.error(new NotFoundException("Season 不存在或无权访问")))
-            .thenMany(episodes.findAllByOwnerIdAndSeasonIdOrderByEpisodeNumberAsc(actorId, seasonId))
-            .flatMap(e -> attachments.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(e.resourceId()))
+        return mediaTargets.requireOwnedSeason(actorId, seasonId)
+            .thenMany(mediaTargets.findOwnedEpisodeResourceIds(actorId, seasonId))
+            .flatMap(resourceId -> attachments.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(resourceId))
             .flatMap(a -> blobs.findById(a.blobId()).flatMap(blob -> placements.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
                 .filter(p -> p.placementState() == PlacementState.ACTIVE).hasElements()
                 .flatMap(readable -> readable ? Mono.empty() : Mono.just(new RestoreCandidate(a.id(), blob.sizeBytes())))))

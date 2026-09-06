@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.task.BackgroundTask;
-import run.ikaros.task.BackgroundTaskDispatcher;
-import run.ikaros.media.MediaEpisodeRepository;
+import run.ikaros.operations.task.BackgroundTask;
+import run.ikaros.operations.task.BackgroundTaskDispatcher;
+import run.ikaros.media.api.MediaRestoreTargetQuery;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
 
@@ -27,18 +27,18 @@ public class StorageRestoreTaskHandler {
     private final StorageRestoreExecutor executor;
     private final StorageRestoreOperationRepository operations;
     private final StorageRestoreRequestItemRepository items;
-    private final MediaEpisodeRepository episodes;
+    private final MediaRestoreTargetQuery mediaTargets;
     private final DurableEventPublisher events;
 
     public StorageRestoreTaskHandler(BackgroundTaskDispatcher dispatcher, StorageRestoreRequestRepository requests,
         AttachmentRepository attachments, BlobRepository blobs, BlobPlacementRepository placements,
         StorageProviderRegistry providers, StorageRestoreExecutor executor,
-        StorageRestoreOperationRepository operations, StorageRestoreRequestItemRepository items, MediaEpisodeRepository episodes,
+        StorageRestoreOperationRepository operations, StorageRestoreRequestItemRepository items, MediaRestoreTargetQuery mediaTargets,
         DurableEventPublisher events) {
         this.dispatcher = dispatcher; this.requests = requests; this.attachments = attachments;
         this.blobs = blobs; this.placements = placements; this.providers = providers; this.executor = executor;
         this.operations = operations; this.items = items;
-        this.episodes = episodes;
+        this.mediaTargets = mediaTargets;
         this.events = events;
     }
 
@@ -68,8 +68,8 @@ public class StorageRestoreTaskHandler {
 
     private Mono<Map<String, Object>> restoreSeason(StorageRestoreRequestEntity request, UUID requestId, UUID taskId,
         String restoreClass, UUID seasonId, boolean retryFailedOnly, String selectedAttachmentIds) {
-        return episodes.findAllByOwnerIdAndSeasonIdOrderByEpisodeNumberAsc(request.actorId(), seasonId)
-            .flatMap(episode -> attachments.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(episode.resourceId()))
+        return mediaTargets.findOwnedEpisodeResourceIds(request.actorId(), seasonId)
+            .flatMap(resourceId -> attachments.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(resourceId))
             .filter(attachment -> selectedAttachmentIds == null || java.util.Set.of(selectedAttachmentIds.split(","))
                 .contains(attachment.id().toString()))
             .concatMap(attachment -> restoreAttachment(request, attachment, requestId, taskId, restoreClass, false, retryFailedOnly))

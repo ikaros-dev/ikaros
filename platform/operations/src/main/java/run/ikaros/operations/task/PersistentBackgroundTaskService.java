@@ -1,4 +1,4 @@
-package run.ikaros.task;
+package run.ikaros.operations.task;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;

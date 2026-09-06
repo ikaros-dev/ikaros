@@ -5,7 +5,7 @@ import java.util.Map;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import run.ikaros.task.BackgroundTaskService;
+import run.ikaros.operations.task.BackgroundTaskService;
 
 /** Releases queued restore requests when the instance budget has capacity again. */
 @Component

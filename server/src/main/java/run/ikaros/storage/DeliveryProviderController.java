@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.IfMatchVersion;
-import run.ikaros.task.BackgroundTask;
+import run.ikaros.operations.task.BackgroundTask;
 
 @RestController
 @RequestMapping("/api/admin/delivery-providers")

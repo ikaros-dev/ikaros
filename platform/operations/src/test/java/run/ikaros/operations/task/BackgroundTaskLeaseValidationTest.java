@@ -1,4 +1,4 @@
-package run.ikaros.task;
+package run.ikaros.operations.task;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

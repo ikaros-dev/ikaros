@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import run.ikaros.task.BackgroundTask;
-import run.ikaros.task.BackgroundTaskDispatcher;
+import run.ikaros.operations.task.BackgroundTask;
+import run.ikaros.operations.task.BackgroundTaskDispatcher;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
 

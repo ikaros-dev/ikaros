@@ -1,4 +1,4 @@
-package run.ikaros.task;
+package run.ikaros.operations.task;
 
 import java.time.Duration;
 import java.time.Instant;

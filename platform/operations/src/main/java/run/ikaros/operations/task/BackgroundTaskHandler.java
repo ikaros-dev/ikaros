@@ -1,4 +1,4 @@
-package run.ikaros.task;
+package run.ikaros.operations.task;
 
 import reactor.core.publisher.Mono;
 

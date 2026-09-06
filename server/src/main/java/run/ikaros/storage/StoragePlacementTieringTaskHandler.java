@@ -12,8 +12,8 @@ import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
-import run.ikaros.task.BackgroundTask;
-import run.ikaros.task.BackgroundTaskDispatcher;
+import run.ikaros.operations.task.BackgroundTask;
+import run.ikaros.operations.task.BackgroundTaskDispatcher;
 
 @Component
 public class StoragePlacementTieringTaskHandler {

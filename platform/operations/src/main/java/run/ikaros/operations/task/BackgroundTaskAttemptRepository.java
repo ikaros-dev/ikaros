@@ -1,4 +1,4 @@
-package run.ikaros.task;
+package run.ikaros.operations.task;
 
 import java.util.UUID;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;

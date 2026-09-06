@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import run.ikaros.task.BackgroundTask;
-import run.ikaros.task.BackgroundTaskDispatcher;
+import run.ikaros.operations.task.BackgroundTask;
+import run.ikaros.operations.task.BackgroundTaskDispatcher;
 
 @Component
 public class StorageProviderDrainTaskHandler {

@@ -3,7 +3,7 @@ package run.ikaros.storage;
 import run.ikaros.storage.api.*;
 
 import java.util.UUID;
-import run.ikaros.task.BackgroundTask;
+import run.ikaros.operations.task.BackgroundTask;
 import reactor.core.publisher.Mono;
 
 public interface StoragePlacementTieringService {
