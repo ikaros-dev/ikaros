@@ -3,6 +3,7 @@ package run.ikaros.identity;
 import java.util.UUID;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.authorization.api.PlatformPermission;
 
 /**
  * 平台角色与权限注册表的业务边界。

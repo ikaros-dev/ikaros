@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import run.ikaros.authorization.api.PlatformPermission;
 import run.ikaros.authentication.api.SecurityVerificationLevel;
 import run.ikaros.common.ForbiddenException;
 

@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
+import run.ikaros.authorization.api.PlatformPermission;
 
 @RestController
 @RequestMapping({"/api/permissions", "/api/admin/permissions"})

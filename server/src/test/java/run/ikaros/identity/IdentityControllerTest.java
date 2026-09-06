@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.authorization.api.PlatformPermission;
 import run.ikaros.common.PageResponse;
 
 /** 验证身份与访问管理控制器的 HTTP 合约。 */

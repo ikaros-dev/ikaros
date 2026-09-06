@@ -1,5 +1,7 @@
 package run.ikaros.identity;
 
+import run.ikaros.authorization.api.PlatformPermission;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;

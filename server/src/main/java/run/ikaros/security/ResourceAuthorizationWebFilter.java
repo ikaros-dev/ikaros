@@ -12,10 +12,10 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 import run.ikaros.identity.AccessControlService;
-import run.ikaros.identity.PlatformPermission;
 import run.ikaros.identity.SecurityPolicy;
 import run.ikaros.authentication.api.AuthenticatedPrincipal;
 import run.ikaros.authentication.api.SecurityVerificationLevel;
+import run.ikaros.authorization.api.PlatformPermission;
 
 /** Resource HTTP 入口的统一 RBAC + Session 校验。 */
 @Component
