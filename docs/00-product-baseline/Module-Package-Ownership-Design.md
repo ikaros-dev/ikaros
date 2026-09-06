@@ -244,6 +244,8 @@ Persistence 是模块私有实现，其他模块不得直接依赖。
 
 `PrincipalContext` 属于 `foundation-api` 的公开契约。Reactor Context 的访问工具 `PrincipalContexts` 属于 `foundation` 实现模块，供需要读取请求级上下文的基础设施实现使用；它不是业务领域契约。
 
+`UuidV7Generator` 属于 `foundation-api` 的公开能力，`DefaultUuidV7Generator` 由 `foundation` 提供实现。需要创建平台内部实体标识的模块只能依赖该契约，不得复制 UUIDv7 算法或直接依赖其他模块的生成实现。
+
 跨模块复用的稳定错误原语和分页值类型属于 `foundation-api`；HTTP 异常映射器仍属于 `server`，不得反向进入 Foundation API。
 
 禁止加入任何业务实体。
