@@ -19,10 +19,12 @@ import run.ikaros.common.PageResponse;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
 import io.r2dbc.postgresql.codec.Json;
+import run.ikaros.operations.api.BackgroundTask;
+import run.ikaros.operations.api.TaskStatus;
 
 @Primary
 @Service
-public class PersistentBackgroundTaskService implements BackgroundTaskService {
+public class PersistentBackgroundTaskService implements BackgroundTaskOperations {
     private static final int MAX_ATTEMPTS = 3;
     private static final int MAX_UNPAGED_RESULTS = 100;
     private final BackgroundTaskRepository tasks;
@@ -47,6 +49,11 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
         Flux<BackgroundTaskEntity> source = status == null ? tasks.findAllByOrderByCreatedAtDesc() :
             tasks.findAllByStatusOrderByCreatedAtDesc(status.name());
         return source.take(MAX_UNPAGED_RESULTS).flatMap(this::view);
+    }
+
+    @Override
+    public Mono<BackgroundTask> findByTaskTypeAndIdempotencyKey(String taskType, String idempotencyKey) {
+        return tasks.findByTaskTypeAndIdempotencyKey(taskType, idempotencyKey).flatMap(this::view);
     }
 
     @Override

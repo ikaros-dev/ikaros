@@ -7,16 +7,19 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.operations.api.BackgroundTask;
+import run.ikaros.operations.api.BackgroundTaskHandler;
+import run.ikaros.operations.api.BackgroundTaskService;
 
 /** 统一的 Task claim/handler/complete 运行链，业务 Handler 不直接操作 Task persistence。 */
 @Service
-public class BackgroundTaskDispatcher {
+public class BackgroundTaskDispatcher implements run.ikaros.operations.api.BackgroundTaskDispatcher {
     private final BackgroundTaskService tasks;
     private final Map<String, BackgroundTaskHandler> handlers = new ConcurrentHashMap<>();
 
     public BackgroundTaskDispatcher(BackgroundTaskService tasks) { this.tasks = tasks; }
 
-    public void register(String taskType, BackgroundTaskHandler handler) {
+    @Override public void register(String taskType, BackgroundTaskHandler handler) {
         if (taskType == null || taskType.isBlank() || handler == null) {
             throw new IllegalArgumentException("Task Handler 注册参数不合法");
         }
@@ -25,7 +28,7 @@ public class BackgroundTaskDispatcher {
         }
     }
 
-    public Mono<BackgroundTask> dispatchOnce(String runnerId, Duration leaseDuration) {
+    @Override public Mono<BackgroundTask> dispatchOnce(String runnerId, Duration leaseDuration) {
         return tasks.claim(runnerId, leaseDuration).flatMap(task -> {
             BackgroundTaskHandler handler = handlers.get(task.taskType());
             if (handler == null) {

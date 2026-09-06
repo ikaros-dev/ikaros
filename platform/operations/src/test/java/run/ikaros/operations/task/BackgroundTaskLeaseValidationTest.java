@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
+import run.ikaros.operations.api.BackgroundTask;
 
 class BackgroundTaskLeaseValidationTest {
     @Test

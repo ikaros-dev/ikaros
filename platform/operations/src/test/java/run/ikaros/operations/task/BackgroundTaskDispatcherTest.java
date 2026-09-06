@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.time.Duration;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import run.ikaros.operations.api.BackgroundTask;
+import run.ikaros.operations.api.TaskStatus;
 
 class BackgroundTaskDispatcherTest {
     @Test

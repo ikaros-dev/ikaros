@@ -30,5 +30,6 @@
         <module>authorization</module>
         <module>storage-api</module>
         <module>media-api</module>
+        <module>storage</module>
     </modules>
 </project>

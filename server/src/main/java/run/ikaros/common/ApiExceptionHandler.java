@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ServerWebInputException;
+import run.ikaros.storage.InvalidRangeException;
+import run.ikaros.storage.StorageUnavailableException;
 
 /**
  * 将领域异常收敛为稳定的 RFC 9457 问题响应。

@@ -15,13 +15,15 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.PageResponse;
+import run.ikaros.operations.api.BackgroundTask;
+import run.ikaros.operations.api.TaskStatus;
 
 @RestController
 @RequestMapping({"/api/background-tasks"})
 public class BackgroundTaskController {
-    private final BackgroundTaskService service;
+    private final BackgroundTaskOperations service;
 
-    public BackgroundTaskController(BackgroundTaskService service) {
+    public BackgroundTaskController(BackgroundTaskOperations service) {
         this.service = service;
     }
 

@@ -13,9 +13,11 @@ import reactor.core.publisher.Flux;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;
+import run.ikaros.operations.api.BackgroundTask;
+import run.ikaros.operations.api.TaskStatus;
 
 @Service
-public class InMemoryBackgroundTaskService implements BackgroundTaskService {
+public class InMemoryBackgroundTaskService implements BackgroundTaskOperations {
     private static final int MAX_ATTEMPTS = 3;
     private static final int MAX_UNPAGED_RESULTS = 100;
     private final Map<UUID, BackgroundTask> tasks = new ConcurrentHashMap<>();
@@ -24,6 +26,13 @@ public class InMemoryBackgroundTaskService implements BackgroundTaskService {
     @Override
     public Mono<BackgroundTask> get(UUID taskId) {
         return Mono.justOrEmpty(tasks.get(taskId)).switchIfEmpty(Mono.error(new NotFoundException("Task 不存在")));
+    }
+
+    @Override
+    public Mono<BackgroundTask> findByTaskTypeAndIdempotencyKey(String taskType, String idempotencyKey) {
+        return Mono.justOrEmpty(tasks.values().stream()
+            .filter(task -> task.taskType().equals(taskType) && java.util.Objects.equals(task.idempotencyKey(), idempotencyKey))
+            .findFirst());
     }
 
     @Override

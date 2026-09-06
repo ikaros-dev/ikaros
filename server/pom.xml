@@ -77,6 +77,11 @@
         </dependency>
         <dependency>
             <groupId>run.ikaros</groupId>
+            <artifactId>storage</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>run.ikaros</groupId>
             <artifactId>media-api</artifactId>
             <version>${project.version}</version>
         </dependency>

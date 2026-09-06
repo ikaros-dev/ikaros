@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.operations.task.BackgroundTaskService;
+import run.ikaros.operations.api.BackgroundTaskService;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
 @Service

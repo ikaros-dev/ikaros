@@ -9,7 +9,7 @@ import run.ikaros.common.NotFoundException;
 import run.ikaros.resource.api.CreateResourceRequest;
 import run.ikaros.resource.api.ResourceService;
 import run.ikaros.resource.api.ResourceType;
-import run.ikaros.storage.AttachmentRepository;
+import run.ikaros.storage.api.AttachmentReferenceQuery;
 
 @Service
 public class PersistentPhotoService implements PhotoService {
@@ -18,19 +18,18 @@ public class PersistentPhotoService implements PhotoService {
     private final PhotoAssetRepository assets;
     private final PhotoAlbumRepository albums;
     private final PhotoAlbumMemberRepository members;
-    private final AttachmentRepository attachments;
+    private final AttachmentReferenceQuery attachments;
 
-    public PersistentPhotoService(ResourceService r, PhotoRepository p, PhotoAssetRepository a, PhotoAlbumRepository l, PhotoAlbumMemberRepository m, AttachmentRepository at) {
+    public PersistentPhotoService(ResourceService r, PhotoRepository p, PhotoAssetRepository a, PhotoAlbumRepository l, PhotoAlbumMemberRepository m, AttachmentReferenceQuery at) {
         resources = r; photos = p; assets = a; albums = l; members = m; attachments = at;
     }
 
     @Override public Mono<PhotoView> create(UUID o, CreatePhotoRequest r) {
         String locale = r.locale() == null || r.locale().isBlank() ? "en-US" : r.locale();
         return resources.create(o, new CreateResourceRequest(ResourceType.PHOTO, r.title(), locale))
-            .flatMap(x -> attachments.findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(r.attachmentId(), x.id())
-                .switchIfEmpty(Mono.error(new NotFoundException("Photo Attachment 不属于该 Resource")))
+            .flatMap(x -> attachments.requireActiveForResource(o, x.id(), r.attachmentId())
                 .flatMap(a -> photos.save(new PhotoEntity(null, o, x.id(), null, null, null, null, null, null, null, null, null, null, null, null))
-                    .flatMap(p -> assets.save(new PhotoAssetEntity(null, o, p.id(), a.id(), PhotoAssetRole.ORIGINAL_PRIMARY, true, "AVAILABLE", null)).thenReturn(p))))
+                    .flatMap(p -> assets.save(new PhotoAssetEntity(null, o, p.id(), a.attachmentId(), PhotoAssetRole.ORIGINAL_PRIMARY, true, "AVAILABLE", null)).thenReturn(p))))
             .map(this::photoView);
     }
 

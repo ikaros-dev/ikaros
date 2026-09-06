@@ -9,23 +9,22 @@ import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.resource.api.ResourceService;
 import run.ikaros.resource.api.ResourceType;
-import run.ikaros.storage.AttachmentRepository;
+import run.ikaros.storage.api.AttachmentReferenceQuery;
 
 @Service
 public class PersistentMediaReleaseService implements MediaReleaseService {
     private final ResourceService resources;
-    private final AttachmentRepository attachments;
+    private final AttachmentReferenceQuery attachments;
     private final MediaReleaseRepository releases;
 
-    public PersistentMediaReleaseService(ResourceService resources, AttachmentRepository attachments,
+    public PersistentMediaReleaseService(ResourceService resources, AttachmentReferenceQuery attachments,
         MediaReleaseRepository releases) { this.resources = resources; this.attachments = attachments; this.releases = releases; }
 
     @Override public Mono<MediaReleaseView> add(UUID ownerId, UUID resourceId, CreateMediaReleaseRequest request) {
         return resources.get(ownerId, resourceId).flatMap(resource -> {
             if (resource.type() != ResourceType.VIDEO) return Mono.error(new ConflictException("只有 VIDEO Resource 可以添加 Media Release"));
-            return attachments.findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(request.attachmentId(), resourceId)
-                .switchIfEmpty(Mono.error(new NotFoundException("Attachment 不属于该 Resource")))
-                .flatMap(attachment -> releases.save(new MediaReleaseEntity(null, ownerId, resourceId, attachment.id(),
+            return attachments.requireActiveForResource(ownerId, resourceId, request.attachmentId())
+                .flatMap(attachment -> releases.save(new MediaReleaseEntity(null, ownerId, resourceId, attachment.attachmentId(),
                     request.releaseGroup(), request.versionLabel(), MediaReleaseState.AVAILABLE, request.contentFingerprint(),
                     Instant.now(), Instant.now(), null)));
         }).map(this::view);

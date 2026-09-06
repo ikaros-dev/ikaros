@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.operations.api.BackgroundTaskDispatcher;
 
 /** Periodically claims and executes one durable background task. */
 @Component

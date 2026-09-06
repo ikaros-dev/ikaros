@@ -120,9 +120,10 @@ run.ikaros.relation                           -> resource
 run.ikaros.progress                            -> resource
 run.ikaros.activity                            -> resource
 run.ikaros.storage.api                       -> storage-api
-run.ikaros.storage                           -> storage (implementation during extraction)
+run.ikaros.storage                           -> storage
 run.ikaros.media.api                         -> media-api
 run.ikaros.media                             -> media
+run.ikaros.operations.api                    -> operations-api
 run.ikaros.operations.task                   -> platform-operations
 run.ikaros.foundation.api                     -> foundation-api
 run.ikaros.foundation                         -> foundation
@@ -132,9 +133,9 @@ run.ikaros.foundation                         -> foundation
 
 `AttachmentReferenceQuery` 是带 `actorId` 的对象级授权能力，负责校验附件可读性及其与 Resource 的活动归属；`AttachmentAvailabilityQuery` 只返回稳定的五态业务结果。Blob、Placement、Provider、Restore Repository 和内部实体均属于 Storage 实现边界。
 
-Storage 的 Season Restore 不得直接依赖 Media Entity 或 Repository；Storage 通过 `media-api` 的 `MediaRestoreTargetQuery` 获取已授权的 Episode Resource ID。后台任务运行时、Task Entity、Claim/Lease/Attempt 和任务 Migration 由 `platform-operations` 的 `run.ikaros.operations.task` 所有，业务模块只通过任务能力提交或注册 Handler。
+Storage 的 Season Restore 不得直接依赖 Media Entity 或 Repository；Storage 通过 `media-api` 的 `MediaRestoreTargetQuery` 获取已授权的 Episode Resource ID。后台任务的提交、生命周期、派发和 Handler 注册契约由 `operations-api` 提供；Task Entity、Claim/Lease/Attempt 和任务 Migration 由 `platform-operations` 的 `run.ikaros.operations.task` 所有，业务模块不得依赖其实现类型。
 
-Migration 也遵循相同的 Owner 边界：Foundation 的公共 UUID 数据库能力由 `foundation` 持有；Resource、Storage、Operations 分别持有自己的业务表与约束迁移；`server` 只聚合这些实现模块的运行时 classpath 并执行迁移，不持有业务 DDL。当前 Storage 尚未完成实现模块抽取，其迁移仍处于过渡位置，待 `storage` 模块建立后随代码一并迁移。
+Migration 也遵循相同的 Owner 边界：Foundation 的公共 UUID 数据库能力由 `foundation` 持有；Resource、Storage、Operations 分别持有自己的业务表与约束迁移。Storage 迁移位于 `platform/storage/src/main/resources/db/migration`，Operations 任务迁移位于 `platform/operations/src/main/resources/db/migration`；`server` 只聚合这些实现模块的运行时 classpath 并执行迁移，不持有业务 DDL。
 
 ---
 

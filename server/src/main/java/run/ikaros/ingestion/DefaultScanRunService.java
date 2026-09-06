@@ -8,8 +8,8 @@ import reactor.core.publisher.Mono;
 import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.operations.task.BackgroundTask;
-import run.ikaros.operations.task.BackgroundTaskService;
+import run.ikaros.operations.api.BackgroundTask;
+import run.ikaros.operations.api.BackgroundTaskService;
 
 @Service
 public class DefaultScanRunService implements ScanRunService {
