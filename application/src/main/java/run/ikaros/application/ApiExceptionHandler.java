@@ -1,4 +1,4 @@
-package run.ikaros.common;
+package run.ikaros.application;
 
 import jakarta.validation.ConstraintViolationException;
 import java.time.Instant;
@@ -8,6 +8,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ServerWebInputException;
+import run.ikaros.common.ConflictException;
+import run.ikaros.common.ForbiddenException;
+import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
+import run.ikaros.common.PreconditionRequiredException;
 import run.ikaros.storage.InvalidRangeException;
 import run.ikaros.storage.StorageUnavailableException;
 
