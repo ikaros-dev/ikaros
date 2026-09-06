@@ -48,7 +48,7 @@
 
 ## 总体工程基线
 
-- V2 默认采用 Modular Monolith；当前构建必须使用根 `pom.xml` 的单模块 Maven。不得在普通功能开发中切换 Gradle 或 Maven Multi-Module；如确需改变，先走 ADR/设计变更。
+- V2 默认采用 Modular Monolith；当前构建使用根 `pom.xml` 聚合的 Maven Multi-Module。不得切换 Gradle 或其他构建系统；如需改变 Maven Multi-Module 拓扑，先走 ADR/设计变更。
 - 后端基线为 Java 21、Spring Boot 4.x、Spring WebFlux、Project Reactor、PostgreSQL 18+、R2DBC、`r2dbc-migrate`。业务运行时不得引入 JPA/JDBC 作为第二套持久化栈，也不得为迁移引入 Flyway/JDBC 第二访问栈。
 - Server 是默认且唯一的 Spring Composition Root。模块通过显式 Module Configuration 组装；禁止依赖全仓库隐式扫描来碰巧发现 Bean。
 - Ikaros 是单 Instance、多 User 的默认模型，不得为假设性的 SaaS 多租户在所有业务表机械增加 `tenant_id`。未来引入 Multi-Tenant 必须先走 ADR 和完整隔离设计。
@@ -151,7 +151,7 @@
 
 以下变化不能仅通过普通功能代码完成，必须先补 ADR/设计/契约/测试：
 
-- 改变 Maven 单模块、Modular Monolith、Java/Spring/WebFlux/Reactor/R2DBC/PostgreSQL 主基线；
+- 改变 Maven Multi-Module、Modular Monolith、Java/Spring/WebFlux/Reactor/R2DBC/PostgreSQL 主基线；
 - 引入第二套业务关系数据库、JPA/JDBC 主栈、Flyway、Kafka/RabbitMQ 替代 Outbox；
 - 改变 UUIDv7、带时区时间、Instance 边界、Resource-centric、Attachment/Blob/Placement 分离；
 - 改变 Owner Schema、跨模块依赖、Outbox/Inbox 至少一次投递、Consumer 幂等或 Background Task/Lease 语义；

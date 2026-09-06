@@ -26,7 +26,7 @@ Ikaros V2 的工程实现不能只做到“代码能运行”，还必须让系�
 本文档重点解决以下问题：
 
 1. V2 的后端技术栈和进程模型是什么。
-2. 模块化单体如何在单 Maven 工程的 Java Package 和 Spring Runtime 中形成真实、可验证的边界。
+2. 模块化单体如何在 Maven Multi-Module、Java Package 和 Spring Runtime 中形成真实、可验证的边界。
 3. HTTP / Realtime 请求如何进入 Application Command / Query。
 4. Domain、Application、Persistence、Infrastructure 的职责如何在代码中落地。
 5. WebFlux / Reactor 下哪些代码可以运行在 Event Loop，哪些必须隔离。
@@ -67,7 +67,7 @@ Ikaros V2 的默认工程架构冻结为：
 | Metrics | Micrometer / Actuator |
 | Trace Context | W3C Trace Context；支持 OpenTelemetry 接入 |
 | Test | JUnit 5 + Reactor Test + Testcontainers PostgreSQL + Architecture Test |
-| Build | Maven Single Module（根 `pom.xml`） |
+| Build | Maven Multi-Module（根 `pom.xml` 聚合） |
 | Deployment | Docker / Docker Compose first |
 
 说明：
@@ -159,52 +159,92 @@ Worker 不暴露普通业务 HTTP API，主要负责 Claim Background Task、长
 
 ---
 
-## 4. Maven 单模块工程拓扑
+## 4. Maven Multi-Module 工程拓扑
 
 ### 4.1 原则
 
-V2 P0 统一使用仓库根 `pom.xml` 的 **Maven Single Module** 构建，不切换 Gradle，也不以 Maven Multi-Module 作为当前工程基线。
+V2 P0 使用仓库根 `pom.xml` 聚合的 **Maven Multi-Module** 构建，不迁移到 Gradle。模块化单体仍运行在单一 Server 进程中，但通过 Maven 子模块、Java Package Ownership、显式 Spring 组装和 Architecture Test 共同形成真实边界。
 
-模块化单体的边界不依赖构建子模块提供编译隔离，而通过以下机制共同强制：
+每个业务或平台能力默认拆为公开契约模块和业务实现模块：
 
+```text
+<business-name>-api  -> <business-name>
+```
+
+其中 `-api` 只包含稳定跨模块契约，业务名模块包含 Domain、Application、Adapter、Persistence 和配置实现。
+
+模块边界通过以下机制共同强制：
+
+- Maven 子模块依赖方向；
 - Java Package Ownership；
 - `api / application / domain / adapter / persistence / config` 的逻辑分层；
 - 显式 Spring Module Configuration 与 Composition Root；
 - ArchUnit / Architecture Test；
 - Code Review 与 CI Gate。
 
-未来若单模块规模增长到确有必要引入物理构建模块，必须通过 ADR / 设计修改重新定义迁移收益与边界；不得在普通功能实现中顺手改变构建系统。
+构建拓扑决议及模块命名以 `ADR-001-maven-multi-module.md` 为准。任何再次改变 Maven Multi-Module 拓扑的行为，仍必须通过新的 ADR / 设计修改。
 
 ### 4.2 P0 推荐结构
 
-单 Maven 工程内推荐按逻辑 package 表达模块边界：
+Maven 工程按逻辑模块和公开契约表达边界：
 
 ```text
 ikaros
 ├── pom.xml
-└── src/main/java/run/ikaros
-    ├── server
-    ├── platform
-    │   ├── foundation
-    │   ├── integration
-    │   ├── security
-    │   ├── task
-    │   ├── operations
-    │   ├── pluginapi
-    │   └── pluginruntime
-    └── modules
-        ├── resource
-        │   ├── api
-        │   ├── application
-        │   ├── domain
-        │   ├── adapter
-        │   └── persistence
-        ├── storage
-        │   ├── api
-        │   ├── application
-        │   ├── domain
-        │   ├── adapter
-        │   └── persistence
+├── server
+├── test-support
+├── platform
+│   ├── foundation-api
+│   ├── foundation
+│   ├── integration-api
+│   ├── integration
+│   ├── authentication-api
+│   ├── authentication
+│   ├── authorization-api
+│   ├── authorization
+│   ├── task-api
+│   ├── task
+│   ├── operations-api
+│   ├── operations
+│   ├── plugin-api
+│   └── plugin
+└── modules
+    ├── resource-api
+    ├── resource
+    ├── storage-api
+    ├── storage
+    ├── ingestion-api
+    ├── ingestion
+    ├── drive-api
+    ├── drive
+    ├── sync-api
+    ├── sync
+    ├── sharing-api
+    ├── sharing
+    ├── search-api
+    ├── search
+    ├── backup-api
+    ├── backup
+    ├── media-api
+    ├── media
+    ├── reading-api
+    ├── reading
+    ├── music-api
+    ├── music
+    ├── photo-api
+    ├── photo
+    ├── document-api
+    ├── document
+    ├── game-api
+    ├── game
+    ├── productivity-api
+    ├── productivity
+    ├── finance-api
+    ├── finance
+    ├── private-notes-api
+    ├── private-notes
+    ├── password-manager-api
+    └── password-manager
         └── identity
             ├── api
             ├── application
@@ -251,7 +291,7 @@ api -> implementation package
 
 ### 4.5 循环依赖
 
-任何跨逻辑模块的循环依赖都是架构错误，即使单 Maven 工程在编译期能够通过。
+任何跨逻辑模块的循环依赖都是架构错误，即使 Maven Multi-Module 在局部构建中能够通过。
 
 出现业务双向依赖时，优先使用 Event、更小的 Capability Contract、Integration Module 中的稳定协调协议或重新划分所有权。禁止通过把两边代码搬进 `common` 解决循环依赖。
 
@@ -325,7 +365,7 @@ Adapter 不得把技术细节泄露给 Domain。
 
 ### 6.1 Server 是唯一 Composition Root
 
-单 Maven 工程中，`server` 仍作为逻辑 Composition Root；只有应用启动层应负责启动完整 Spring ApplicationContext。
+Maven Multi-Module 中，`server` 仍作为唯一 Composition Root；只有应用启动层应负责启动完整 Spring ApplicationContext。
 
 业务模块通过显式 Module Configuration 注册，例如：
 
@@ -624,7 +664,7 @@ Migration 和业务 Persistence 可以共享同一套 PostgreSQL 连接参数与
 
 ### 13.2 Migration Script Contract
 
-当前单 Maven 工程的默认脚本目录：
+当前 Maven Multi-Module 的默认脚本目录仍由负责迁移的模块管理；P0 基础 Migration 默认位于：
 
 ```text
 src/main/resources/db/migration/
@@ -1155,7 +1195,7 @@ CI 必须执行 Architecture Boundary Test，至少验证：
 - API package 不依赖 implementation package；
 - `server` Composition Root 不被业务模块反向依赖。
 
-单 Maven 工程默认使用 ArchUnit + Maven test/verify 生命周期实现这些边界检查；构建能通过不代表逻辑模块依赖合法。
+Maven Multi-Module 使用 Maven 依赖方向、ArchUnit 与 Maven test/verify 生命周期共同实现这些边界检查；单个模块构建能通过不代表整体依赖合法。
 
 ### 28.6 Contract Test
 
@@ -1260,7 +1300,7 @@ Worker 不能因为执行 FFmpeg 就拥有 Media Domain Schema。
 
 ## 33. P0 代码骨架建议
 
-Phase 0 的首批代码可以在单 Maven 工程内按以下逻辑 package 顺序落地：
+Phase 0 的首批代码按 Maven Multi-Module 的依赖顺序落地：
 
 ```text
 1. platform.foundation
@@ -1425,7 +1465,7 @@ P0 实现合并前至少具备以下自动化检查：
 
 以下变化必须新增或修改 ADR，不能直接在实现中发生：
 
-- 从 Maven Single Module 切换到 Gradle、Maven Multi-Module 或其他构建拓扑；
+- 改变 Maven Multi-Module 的聚合、模块命名或依赖拓扑；
 - 从 Modular Monolith 拆成 Microservice；
 - 引入第二个业务关系数据库；
 - 放弃 R2DBC 改用 JPA/JDBC 主栈；
@@ -1446,7 +1486,7 @@ P0 实现合并前至少具备以下自动化检查：
 
 一个 P0 模块不能只因为“Controller 能返回 200”就视为完成。
 
-技术架构层 DoD 至少要求：Maven 单模块工程基线明确且 Package Ownership 清晰；Package Boundary 通过 Architecture Test；Domain 不依赖 Infrastructure；Command / Query 契约已实现；Permission 在 Application Boundary 生效；PostgreSQL Schema / Constraint 已通过 Testcontainers；Reactive Transaction 正确；Durable Event 进入 Outbox；Consumer 支持 Inbox 幂等；长任务进入 Background Task；HTTP 与 OpenAPI 一致；Error 使用统一 Problem Contract；Metrics / Trace / Correlation 可观测；无不受控 Blocking Call；无跨 Owner Repository / SQL；Cache / Search 关闭后核心业务仍正确；Crash / Retry / Duplicate Delivery 有自动化测试。
+技术架构层 DoD 至少要求：Maven Multi-Module 构建拓扑明确且 Package Ownership 清晰；API 与业务实现模块依赖方向正确；Package Boundary 通过 Architecture Test；Domain 不依赖 Infrastructure；Command / Query 契约已实现；Permission 在 Application Boundary 生效；PostgreSQL Schema / Constraint 已通过 Testcontainers；Reactive Transaction 正确；Durable Event 进入 Outbox；Consumer 支持 Inbox 幂等；长任务进入 Background Task；HTTP 与 OpenAPI 一致；Error 使用统一 Problem Contract；Metrics / Trace / Correlation 可观测；无不受控 Blocking Call；无跨 Owner Repository / SQL；Cache / Search 关闭后核心业务仍正确；Crash / Retry / Duplicate Delivery 有自动化测试。
 
 ---
 

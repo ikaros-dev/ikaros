@@ -30,7 +30,7 @@ V2 采用 Modular Monolith。模块化单体必须同时满足：
 3. 模块之间允许依赖什么；
 4. 哪些依赖明确禁止；
 5. API、Application、Domain、Persistence 如何分层；
-6. 单 Maven 工程中的 Java Package 与 Spring 组装如何表达和强制模块边界。
+6. Maven Multi-Module 中的 Java Package 与 Spring 组装如何表达和强制模块边界。
 
 ---
 
@@ -72,7 +72,33 @@ ikaros-v2
 └── password-manager
 ```
 
-P0 以上述内容作为**逻辑模块拓扑**，统一位于根 `pom.xml` 的单 Maven 工程中，不要求、也不应自行拆成 Gradle 或 Maven subproject。无论物理目录如何组织，**逻辑边界与依赖规则都必须通过 Java Package Ownership、Spring 组装边界和 Architecture Test 保持一致**。
+P0 以上述内容作为**逻辑模块拓扑**，统一由根 `pom.xml` 聚合为 Maven Multi-Module。每个业务或平台能力默认拆成 `<business-name>-api` 与不带后缀的业务实现模块。`server` 是唯一 Composition Root，`test-support` 只提供测试基础设施。详细构建决策见 `adr/ADR-001-maven-multi-module.md`。
+
+当前包归属决议：
+
+- `collection`、`metadata`、`relation`、`progress`、`activity` 归属 `resource`，当前不独立拆分；
+- `identity`、`security`、`verification` 归属 `platform-security`，按职责拆为 `authentication` 与 `authorization`；
+- `audit` 归属 `platform-operations`；
+- `offline` 归属 `sync`；
+- `planning` 归属 `productivity`；
+- `notes` 归属 `private-notes`；
+- `password` 归属 `password-manager`。
+
+认证与授权的职责边界：
+
+- `authentication`：用户身份、登录、注册、JWT、Principal、Session、OTP 和 Step-up Verification；
+- `authorization`：Role、Permission、Access Control、Security Policy 和 Resource Authorization。
+
+目标模块采用以下命名：
+
+```text
+resource-api          -> resource
+storage-api           -> storage
+authentication-api    -> authentication
+authorization-api     -> authorization
+```
+
+`-api` 模块只暴露稳定契约；不带后缀的业务模块拥有完整实现。跨模块不得依赖其他模块的 Entity、Repository、Persistence Package、私有 SQL、内部 Service 或内部 Spring Bean。
 
 ---
 
@@ -122,7 +148,7 @@ P0 以上述内容作为**逻辑模块拓扑**，统一位于根 `pom.xml` 的�
 - Outbox append；
 - background task submission。
 
-Application 层可以依赖 Domain 与公开 Platform Contract，但不应被其他领域直接依赖其 implementation package。
+Application 层可以依赖 Domain 与公开 Platform Contract；其他领域只能依赖该模块的 `-api`，不得依赖业务实现模块的内部 package。
 
 ### 3.3 `domain`
 
@@ -468,9 +494,9 @@ Plugin 不属于可信任的任意内部模块。
 
 ## 12. Build-time Boundary Enforcement
 
-P0 使用单 Maven 工程，因此不能依赖构建子模块天然阻止非法依赖。边界检查至少采用：
+P0 使用 Maven Multi-Module，构建子模块依赖方向与 Java Package 规则共同阻止非法依赖。边界检查至少采用：
 
-1. **Java Package Ownership 与公开 `api` package 约定**；
+1. **Maven 子模块依赖方向、Java Package Ownership 与公开 `-api` 模块约定**；
 2. **ArchUnit / architecture test，并接入 Maven `test` / `verify` 生命周期**。
 
 应自动检测：
