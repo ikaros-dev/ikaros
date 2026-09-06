@@ -776,6 +776,15 @@ P0 采用：
 
 敏感信息必须执行 Data Minimization，不得因为“事件在内网”就把 Secret 或 Secure Plaintext 放入 Outbox。
 
+在 Maven Multi-Module 中，业务模块通过 `integration-api` 的 `DurableEventPublisher` 发布事件：
+
+```text
+DurableEventPublisher.append(EventAppendRequest)
+  -> Mono<EventReference>
+```
+
+`EventAppendRequest` 至少携带 event type、schema version、producer subsystem、subject type、subject id 和结构化 JSON object payload。Integration 从 Foundation 的 `PrincipalContext` 补全 actor、request、correlation 和 causation context，并负责生成 event id / occurred_at。`OutboxEventEntity`、Repository、Inbox 与 Dispatcher 不属于公开 API。
+
 ---
 
 ## 15. 非持久内部事件

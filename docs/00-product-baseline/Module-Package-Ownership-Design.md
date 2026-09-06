@@ -212,12 +212,18 @@ Persistence 是模块私有实现，其他模块不得直接依赖。
 拥有：
 
 - Event Envelope；
+- `DurableEventPublisher` 公开事件发布契约；
+- `EventAppendRequest` 与 `EventReference` 公开值类型；
 - Outbox Runtime；
 - Event Dispatcher；
 - consumer idempotency；
 - Correlation / Causation；
 - Automation integration primitives；
 - cross-domain relation infrastructure（若采用统一平台 Relation）。
+
+其他模块只能依赖 `integration-api` 的事件发布契约。`OutboxEventEntity`、`OutboxEventRepository`、Inbox 和 Dispatcher 只能由 `integration` 实现模块使用；业务模块不得直接写 Outbox 或驱动派发。
+
+`EventAppendRequest` 至少包含 `event_type`、`schema_version`、`producer_subsystem`、`subject_type`、`subject_id` 和结构化 Payload。Actor、request / correlation / causation context 由 Integration 从 Foundation 上下文补全。发布结果只返回 `EventReference`，不得暴露 Persistence 类型。
 
 不得成为一个拥有所有业务规则的“超级服务层”。
 

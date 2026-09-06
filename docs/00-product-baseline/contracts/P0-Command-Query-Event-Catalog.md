@@ -359,6 +359,24 @@ Rules：
 - at-least-once delivery；
 - consumer key + event ID idempotency。
 
+### 10.1 Event Publisher Contract
+
+业务模块不得依赖 Outbox Entity、Repository 或 Dispatcher。跨模块发布统一依赖 `integration-api` 的 `DurableEventPublisher`：
+
+```text
+append(EventAppendRequest) -> EventReference
+```
+
+`EventAppendRequest` 至少包含：
+
+- `event_type`；
+- `schema_version`；
+- `producer_subsystem`；
+- `subject_type` 与可选的 `subject_id`；
+- 结构化 JSON object `payload`。
+
+`event_id`、`occurred_at`、Actor、`request_id`、`correlation_id` 与 `causation_id` 由 Integration 结合 Foundation `PrincipalContext` 生成或补全。`EventReference` 只包含公开事件标识和版本信息，不暴露 `OutboxEventEntity` 等 Persistence 类型。
+
 ---
 
 ## 11. Resource Events
