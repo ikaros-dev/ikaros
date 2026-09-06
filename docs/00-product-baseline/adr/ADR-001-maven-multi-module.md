@@ -29,6 +29,7 @@ Ikaros V2 采用 Modular Monolith，但当前仓库使用根 `pom.xml` 的单模
 10. 所有实现模块共享全局单调 Migration 版本序列；模块发现顺序不得决定 Schema 结构，文件名和描述必须可识别 Owner。
 11. `PrincipalContext` 是 `foundation-api` 的公开值契约；`PrincipalContexts` 是 `foundation` 的 Reactor Context 运行时访问工具。Authentication 负责写入上下文，Integration 与 Operations 只能依赖 Foundation，不依赖 Authentication 实现。
 12. Integration 对外只通过 `integration-api` 暴露 `DurableEventPublisher.append(EventAppendRequest)`，返回 `EventReference`。Outbox Entity、Repository、Inbox 和 Dispatcher 均属于 Integration 实现模块，不得进入业务模块依赖。
+13. `event_outbox` 由 Integration Owner 追加 Migration 增加 `producer_subsystem`、`subject_type` 与 `subject_id` 正式字段；现有 `aggregate_type / aggregate_id` 数据先通过 Expand / Migrate 回填，待所有实现和契约切换完成后再单独评估 Contract，不在本步骤删除旧字段。
 
 ## 模块命名与归属
 

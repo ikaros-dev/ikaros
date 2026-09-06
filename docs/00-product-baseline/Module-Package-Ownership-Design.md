@@ -225,6 +225,8 @@ Persistence 是模块私有实现，其他模块不得直接依赖。
 
 `EventAppendRequest` 至少包含 `event_type`、`schema_version`、`producer_subsystem`、`subject_type`、`subject_id` 和结构化 Payload。Actor、request / correlation / causation context 由 Integration 从 Foundation 上下文补全。发布结果只返回 `EventReference`，不得暴露 Persistence 类型。
 
+`event_outbox` 的 `producer_subsystem`、`subject_type` 和 `subject_id` 由 Integration Owner 的追加 Migration 建立。旧 `aggregate_type / aggregate_id` 字段在契约切换前保留，不能把兼容性回填和字段删除混在同一个 Migration 中。
+
 不得成为一个拥有所有业务规则的“超级服务层”。
 
 ### 4.3 `platform.security`

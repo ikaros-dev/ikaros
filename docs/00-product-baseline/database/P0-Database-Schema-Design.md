@@ -561,6 +561,8 @@ blob_retention_active_idx(blob_id, retention_until)
 
 Event 内容一旦写入即为不可变事实。
 
+`producer_subsystem`、`subject_type` 与 `subject_id` 是 Event Envelope 的正式持久化字段。由 Integration Owner 的追加 Migration 通过 Expand / Migrate 建立并从现有 `aggregate_type / aggregate_id` 回填；旧字段删除属于后续独立 Contract 步骤，不能与本次扩展混合。
+
 | Column | Type | Null |
 |---|---|---:|
 | `event_id` | uuid | NO |
