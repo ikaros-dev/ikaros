@@ -12,12 +12,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.common.StorageUnavailableException;
-import run.ikaros.resource.ResourceEntity;
-import run.ikaros.resource.ResourceRepository;
+import run.ikaros.resource.api.ResourceOwnershipQuery;
 
 class AttachmentPreviewServiceTest {
     private final AttachmentRepository attachments = mock(AttachmentRepository.class);
-    private final ResourceRepository resources = mock(ResourceRepository.class);
+    private final ResourceOwnershipQuery resources = mock(ResourceOwnershipQuery.class);
     private final BlobRepository blobs = mock(BlobRepository.class);
     private final BlobPlacementRepository placements = mock(BlobPlacementRepository.class);
     private final StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
@@ -51,7 +50,7 @@ class AttachmentPreviewServiceTest {
         provider = new StorageProvider(storageProviderId, "oss", "S3", StorageTier.HOT, StorageProviderStatus.ENABLED,
             "secret://oss", Map.of(), now, now);
         when(attachments.findById(attachmentId)).thenReturn(Mono.just(attachment));
-        when(resources.findByIdAndOwnerId(resourceId, actorId)).thenReturn(Mono.just(mock(ResourceEntity.class)));
+        when(resources.requireOwned(actorId, resourceId)).thenReturn(Mono.empty());
         when(blobs.findById(blobId)).thenReturn(Mono.just(blob));
         when(placements.findAllByBlobIdOrderByCreatedAtAsc(blobId)).thenReturn(Flux.just(placement));
         when(providers.getByKey("oss")).thenReturn(Mono.just(provider));

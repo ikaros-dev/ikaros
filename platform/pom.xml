@@ -18,6 +18,8 @@
     <modules>
         <module>foundation-api</module>
         <module>foundation</module>
+        <module>resource-api</module>
+        <module>resource</module>
         <module>integration-api</module>
         <module>integration</module>
         <module>operations-api</module>

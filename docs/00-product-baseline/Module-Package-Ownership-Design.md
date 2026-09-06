@@ -112,6 +112,13 @@ run.ikaros.authentication.security            -> authentication
 run.ikaros.authorization.api                  -> authorization-api
 run.ikaros.authorization                      -> authorization
 run.ikaros.authorization.security             -> authorization
+run.ikaros.resource.api                       -> resource-api
+run.ikaros.resource                         -> resource
+run.ikaros.collection                        -> resource
+run.ikaros.metadata                          -> resource
+run.ikaros.relation                           -> resource
+run.ikaros.progress                            -> resource
+run.ikaros.activity                            -> resource
 run.ikaros.foundation.api                     -> foundation-api
 run.ikaros.foundation                         -> foundation
 ```
@@ -216,6 +223,7 @@ Persistence 是模块私有实现，其他模块不得直接依赖。
 - `PrincipalContext` immutable value contract；
 - shared error primitive（`ConflictException`、`ForbiddenException`、`NotFoundException`）；
 - `PageResponse` common public response value；
+- `IfMatchVersion`、`PreconditionFailedException` 和 `PreconditionRequiredException` 等稳定 HTTP 并发控制原语；
 - correlation / request context；
 - common serialization primitive；
 - basic transaction abstraction。
@@ -442,6 +450,8 @@ class DriveService {
 ```
 
 如果 Drive 需要提交内容，应调用 Storage Command。
+
+Storage 等模块需要校验 Resource 归属时，只能依赖 `resource-api` 的最小 `ResourceOwnershipQuery` Capability；该 Capability 由 `resource` 实现并在内部使用 `ResourceRepository`。调用方不得直接注入或引用 `ResourceEntity`、`ResourceRepository`。
 
 ### 8.2 Cross-schema FK
 

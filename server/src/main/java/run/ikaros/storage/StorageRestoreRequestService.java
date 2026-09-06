@@ -11,7 +11,7 @@ import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
-import run.ikaros.resource.ResourceRepository;
+import run.ikaros.resource.api.ResourceOwnershipQuery;
 import run.ikaros.task.BackgroundTaskService;
 import run.ikaros.media.MediaEpisodeRepository;
 import run.ikaros.media.MediaSeasonRepository;
@@ -19,7 +19,7 @@ import run.ikaros.media.MediaSeasonRepository;
 @Service
 public class StorageRestoreRequestService {
     private final AttachmentRepository attachments;
-    private final ResourceRepository resources;
+    private final ResourceOwnershipQuery resources;
     private final BlobRepository blobs;
     private final BlobPlacementRepository placements;
     private final StorageRestoreRequestRepository requests;
@@ -29,7 +29,7 @@ public class StorageRestoreRequestService {
     private final MediaEpisodeRepository episodes;
     private final DurableEventPublisher events;
 
-    public StorageRestoreRequestService(AttachmentRepository attachments, ResourceRepository resources,
+    public StorageRestoreRequestService(AttachmentRepository attachments, ResourceOwnershipQuery resources,
         BlobRepository blobs, BlobPlacementRepository placements, StorageRestoreRequestRepository requests,
         BackgroundTaskService tasks, StorageRestoreBudgetService budget, MediaSeasonRepository seasons,
         MediaEpisodeRepository episodes, DurableEventPublisher events) {
@@ -251,8 +251,7 @@ public class StorageRestoreRequestService {
     private Mono<AttachmentEntity> authorizedAttachment(UUID actorId, UUID id) {
         return attachments.findById(id).filter(a -> a.deletedAt() == null)
             .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或已删除")))
-            .flatMap(a -> resources.findByIdAndOwnerId(a.resourceId(), actorId)
-                .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或无权访问"))).thenReturn(a));
+            .flatMap(a -> resources.requireOwned(actorId, a.resourceId()).thenReturn(a));
     }
 
     private StorageRestoreRequestView view(StorageRestoreRequestEntity r) {

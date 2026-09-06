@@ -4,7 +4,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.resource.ResourceService;
+import run.ikaros.resource.api.ResourceService;
 
 @Service
 public class PersistentPlaybackSourceService implements PlaybackSourceService {

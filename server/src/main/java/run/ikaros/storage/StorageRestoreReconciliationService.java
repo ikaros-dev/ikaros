@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.resource.ResourceRepository;
+import run.ikaros.resource.api.ResourceOwnershipQuery;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
 
@@ -17,13 +17,13 @@ public class StorageRestoreReconciliationService {
     private final BlobPlacementRepository placements;
     private final BlobRepository blobs;
     private final AttachmentRepository attachments;
-    private final ResourceRepository resources;
+    private final ResourceOwnershipQuery resources;
     private final StorageProviderRegistry providers;
     private final List<StorageRestoreStatusQuery> queries;
     private final DurableEventPublisher events;
 
     public StorageRestoreReconciliationService(StorageRestoreOperationRepository operations, BlobPlacementRepository placements,
-        BlobRepository blobs, AttachmentRepository attachments, ResourceRepository resources, StorageProviderRegistry providers,
+        BlobRepository blobs, AttachmentRepository attachments, ResourceOwnershipQuery resources, StorageProviderRegistry providers,
         List<StorageRestoreStatusQuery> queries, DurableEventPublisher events) {
         this.operations = operations; this.placements = placements; this.blobs = blobs; this.attachments = attachments;
         this.resources = resources; this.providers = providers; this.queries = queries; this.events = events;
@@ -91,7 +91,7 @@ public class StorageRestoreReconciliationService {
 
     private Mono<Void> ownerCanAccess(UUID actorId, UUID blobId) {
         return attachments.findAllByBlobIdAndArchivedAtIsNullAndDeletedAtIsNull(blobId)
-            .flatMap(a -> resources.findByIdAndOwnerId(a.resourceId(), actorId))
+            .flatMap(a -> resources.requireOwned(actorId, a.resourceId()).thenReturn(a))
             .next()
             .switchIfEmpty(Mono.error(new ConflictException("Restore Operation 无权访问"))).then();
     }

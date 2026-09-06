@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.resource.CreateResourceRequest;
-import run.ikaros.resource.ResourceService;
-import run.ikaros.resource.ResourceType;
+import run.ikaros.resource.api.CreateResourceRequest;
+import run.ikaros.resource.api.ResourceService;
+import run.ikaros.resource.api.ResourceType;
 import run.ikaros.storage.AttachmentRepository;
 
 @Service

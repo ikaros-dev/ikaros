@@ -3,7 +3,7 @@ package run.ikaros.media;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import run.ikaros.resource.ResourceService;
+import run.ikaros.resource.api.ResourceService;
 import run.ikaros.storage.AttachmentRepository;
 import run.ikaros.storage.BlobAvailability;
 import run.ikaros.storage.BlobEntity;

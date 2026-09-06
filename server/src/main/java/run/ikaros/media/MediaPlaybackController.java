@@ -7,7 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import org.springframework.http.ResponseEntity;
 import run.ikaros.common.IfMatchVersion;
-import run.ikaros.progress.ResourceProgressView;
+import run.ikaros.resource.api.ResourceProgressView;
 
 @RestController
 @RequestMapping("/api/media/playback")

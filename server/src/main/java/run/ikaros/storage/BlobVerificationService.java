@@ -9,14 +9,14 @@ import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
-import run.ikaros.resource.ResourceRepository;
+import run.ikaros.resource.api.ResourceOwnershipQuery;
 
 @Service
 public class BlobVerificationService {
     private final BlobRepository blobs;
     private final BlobPlacementRepository placements;
     private final AttachmentRepository attachments;
-    private final ResourceRepository resources;
+    private final ResourceOwnershipQuery resources;
     private final StorageProviderRegistry providers;
     private final List<StorageContentReader> readers;
     private final BlobIntegrityService integrity;
@@ -24,7 +24,7 @@ public class BlobVerificationService {
     private final TransactionalOperator transaction;
 
     public BlobVerificationService(BlobRepository blobs, BlobPlacementRepository placements, AttachmentRepository attachments,
-        ResourceRepository resources, StorageProviderRegistry providers, List<StorageContentReader> readers,
+        ResourceOwnershipQuery resources, StorageProviderRegistry providers, List<StorageContentReader> readers,
         BlobIntegrityService integrity, DurableEventPublisher events, TransactionalOperator transaction) {
         this.blobs = blobs; this.placements = placements; this.attachments = attachments; this.resources = resources;
         this.providers = providers; this.readers = List.copyOf(readers); this.integrity = integrity;
@@ -66,7 +66,7 @@ public class BlobVerificationService {
     private Mono<BlobEntity> ownedBlob(UUID actorId, UUID blobId) {
         return blobs.findById(blobId).switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在")))
             .flatMap(blob -> attachments.findFirstByBlobIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(blob.id())
-                .flatMap(attachment -> resources.findByIdAndOwnerId(attachment.resourceId(), actorId).thenReturn(blob)))
+                .flatMap(attachment -> resources.requireOwned(actorId, attachment.resourceId()).thenReturn(blob)))
             .switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在或无权访问")));
     }
 }

@@ -10,14 +10,14 @@ import run.ikaros.common.PreconditionFailedException;
 import run.ikaros.common.StorageUnavailableException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
-import run.ikaros.resource.ResourceRepository;
+import run.ikaros.resource.api.ResourceOwnershipQuery;
 
 @Service
 public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
     private static final int DEFAULT_TTL_SECONDS = 120;
     private static final int MAX_TTL_SECONDS = 1800;
     private final AttachmentRepository attachments;
-    private final ResourceRepository resources;
+    private final ResourceOwnershipQuery resources;
     private final MediaDeliveryGrantRepository grants;
     private final MediaDeliveryLeaseRepository leases;
     private final BlobPlacementRepository placements;
@@ -27,7 +27,7 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
     private final DurableEventPublisher events;
     private final StorageRestoreOperationRepository restoreOperations;
 
-    public PersistentDeliveryLeaseService(AttachmentRepository attachments, ResourceRepository resources,
+    public PersistentDeliveryLeaseService(AttachmentRepository attachments, ResourceOwnershipQuery resources,
                                           MediaDeliveryGrantRepository grants, MediaDeliveryLeaseRepository leases,
                                           BlobPlacementRepository placements, StorageProviderRegistry providerRegistry,
                                           MediaDeliveryBindingRepository bindings, DeliveryProviderRepository deliveryProviders,
@@ -125,7 +125,7 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
 
     private Mono<AttachmentEntity> ownedAttachment(UUID actorId, UUID id) {
         return attachments.findById(id).filter(a -> a.deletedAt() == null)
-            .flatMap(a -> resources.findByIdAndOwnerId(a.resourceId(), actorId).thenReturn(a))
+            .flatMap(a -> resources.requireOwned(actorId, a.resourceId()).thenReturn(a))
             .switchIfEmpty(Mono.error(new NotFoundException("Attachment 不存在或无权访问")));
     }
 

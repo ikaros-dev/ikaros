@@ -22,10 +22,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.PageResponse;
-import run.ikaros.resource.ResourceEntity;
-import run.ikaros.resource.ResourceLifecycle;
-import run.ikaros.resource.ResourceRepository;
-import run.ikaros.resource.ResourceType;
+import run.ikaros.resource.api.ResourceOwnershipQuery;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
 
@@ -33,7 +30,7 @@ import run.ikaros.integration.api.EventAppendRequest;
  * 验证 Attachment、Blob 与 Placement 的存储边界。
  */
 class DefaultStorageServiceTest {
-    private ResourceRepository resourceRepository;
+    private ResourceOwnershipQuery resourceOwnership;
     private AttachmentRepository attachmentRepository;
     private BlobRepository blobRepository;
     private BlobPlacementRepository placementRepository;
@@ -43,7 +40,7 @@ class DefaultStorageServiceTest {
 
     @BeforeEach
     void setUp() {
-        resourceRepository = mock(ResourceRepository.class);
+        resourceOwnership = mock(ResourceOwnershipQuery.class);
         attachmentRepository = mock(AttachmentRepository.class);
         blobRepository = mock(BlobRepository.class);
         placementRepository = mock(BlobPlacementRepository.class);
@@ -51,7 +48,7 @@ class DefaultStorageServiceTest {
         auditService = mock(AuditService.class);
         TransactionalOperator transaction = mock(TransactionalOperator.class);
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        service = new DefaultStorageService(resourceRepository, attachmentRepository, blobRepository,
+        service = new DefaultStorageService(resourceOwnership, attachmentRepository, blobRepository,
             placementRepository, derivedAttachmentRepository, auditService, transaction);
     }
 
@@ -62,8 +59,6 @@ class DefaultStorageServiceTest {
         UUID blobId = UUID.randomUUID();
         UUID attachmentId = UUID.randomUUID();
         Instant now = Instant.now();
-        ResourceEntity resource = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
-            ResourceLifecycle.ACTIVE, now, now, null, 0L);
         BlobEntity blob = new BlobEntity(blobId, "a".repeat(64), 2048L, "video/mp4",
             BlobAvailability.AVAILABLE, now, 0L);
         AttachmentEntity attachment = new AttachmentEntity(attachmentId, resourceId, blobId, "episode.mp4",
@@ -73,7 +68,7 @@ class DefaultStorageServiceTest {
         AttachBlobRequest request = new AttachBlobRequest("A".repeat(64), 2048L, "video/mp4", "episode.mp4",
             AttachmentKind.ORIGINAL, "nas", StorageTier.WARM, "media/episode.mp4");
 
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource));
+        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.empty());
         when(blobRepository.findBySha256("a".repeat(64))).thenReturn(Mono.just(blob));
         when(placementRepository.findByProviderAndObjectKey("nas", "media/episode.mp4")).thenReturn(Mono.just(placement));
         when(attachmentRepository.save(any(AttachmentEntity.class))).thenReturn(Mono.just(attachment));
@@ -104,8 +99,6 @@ class DefaultStorageServiceTest {
         UUID ownerId = UUID.randomUUID(); UUID resourceId = UUID.randomUUID();
         UUID sourceId = UUID.randomUUID(); UUID derivedId = UUID.randomUUID(); UUID blobId = UUID.randomUUID();
         Instant now = Instant.now();
-        ResourceEntity resource = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO, ResourceLifecycle.ACTIVE,
-            now, now, null, 0L);
         AttachmentEntity source = new AttachmentEntity(sourceId, resourceId, UUID.randomUUID(), "source.mp4",
             AttachmentKind.ORIGINAL, now, null, 0L);
         BlobEntity blob = new BlobEntity(blobId, "b".repeat(64), 100L, "image/jpeg", BlobAvailability.AVAILABLE, now, 0L);
@@ -116,7 +109,7 @@ class DefaultStorageServiceTest {
         AttachBlobRequest content = new AttachBlobRequest("B".repeat(64), 100L, "image/jpeg", "cover.jpg",
             AttachmentKind.ORIGINAL, "nas", StorageTier.HOT, "derived/cover.jpg");
         when(attachmentRepository.findById(sourceId)).thenReturn(Mono.just(source));
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource));
+        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.empty());
         when(blobRepository.findBySha256("b".repeat(64))).thenReturn(Mono.just(blob));
         when(placementRepository.findByProviderAndObjectKey("nas", "derived/cover.jpg")).thenReturn(Mono.just(placement));
         when(attachmentRepository.save(any(AttachmentEntity.class))).thenReturn(Mono.just(derived));
@@ -140,14 +133,12 @@ class DefaultStorageServiceTest {
         UUID attachmentId = UUID.randomUUID();
         UUID blobId = UUID.randomUUID();
         Instant now = Instant.now();
-        ResourceEntity resource = new ResourceEntity(resourceId, ownerId, ResourceType.BOOK,
-            ResourceLifecycle.ACTIVE, now, now, null, 0L);
         AttachmentEntity attachment = new AttachmentEntity(attachmentId, resourceId, blobId, "book.pdf",
             AttachmentKind.ORIGINAL, now, null, 0L);
         AttachmentEntity archived = new AttachmentEntity(attachmentId, resourceId, blobId, "book.pdf",
             AttachmentKind.ORIGINAL, now, null, 1L, null, now);
         DurableEventPublisher events = mock(DurableEventPublisher.class);
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource));
+        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.empty());
         when(attachmentRepository.findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(
             attachmentId, resourceId)).thenReturn(Mono.just(attachment));
         when(attachmentRepository.save(any(AttachmentEntity.class))).thenReturn(Mono.just(archived));
@@ -157,7 +148,7 @@ class DefaultStorageServiceTest {
             .thenReturn(Mono.empty());
         TransactionalOperator transaction = mock(TransactionalOperator.class);
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        DefaultStorageService eventService = new DefaultStorageService(resourceRepository, attachmentRepository,
+        DefaultStorageService eventService = new DefaultStorageService(resourceOwnership, attachmentRepository,
             blobRepository, placementRepository, derivedAttachmentRepository, auditService, transaction, null, null, events);
 
         StepVerifier.create(eventService.archive(ownerId, resourceId, attachmentId)).verifyComplete();

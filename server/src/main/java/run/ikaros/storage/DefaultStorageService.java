@@ -18,7 +18,7 @@ import run.ikaros.common.PageResponse;
 import run.ikaros.common.StorageUnavailableException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
-import run.ikaros.resource.ResourceRepository;
+import run.ikaros.resource.api.ResourceOwnershipQuery;
 import run.ikaros.task.BackgroundTask;
 import run.ikaros.task.BackgroundTaskService;
 
@@ -29,7 +29,7 @@ import run.ikaros.task.BackgroundTaskService;
 public class DefaultStorageService implements StorageService {
     private static final int MAX_PAGE_SIZE = 100;
     private static final int MAX_UNPAGED_RESULTS = 100;
-    private final ResourceRepository resourceRepository;
+    private final ResourceOwnershipQuery resourceOwnership;
     private final AttachmentRepository attachmentRepository;
     private final BlobRepository blobRepository;
     private final BlobPlacementRepository placementRepository;
@@ -45,25 +45,25 @@ public class DefaultStorageService implements StorageService {
     /**
      * 创建存储服务。
      *
-     * @param resourceRepository Resource 仓储
+     * @param resourceOwnership Resource 所有权能力
      * @param attachmentRepository Attachment 仓储
      * @param blobRepository Blob 仓储
      * @param placementRepository Placement 仓储
      * @param auditService 审计服务
      * @param transactionalOperator 响应式事务操作器
      */
-    public DefaultStorageService(ResourceRepository resourceRepository,
+    public DefaultStorageService(ResourceOwnershipQuery resourceOwnership,
                                  AttachmentRepository attachmentRepository,
                                  BlobRepository blobRepository,
                                  BlobPlacementRepository placementRepository,
                                  DerivedAttachmentRepository derivedAttachmentRepository,
                                  AuditService auditService,
                                  TransactionalOperator transactionalOperator) {
-        this(resourceRepository, attachmentRepository, blobRepository, placementRepository,
+        this(resourceOwnership, attachmentRepository, blobRepository, placementRepository,
             derivedAttachmentRepository, auditService, transactionalOperator, null, null, null);
     }
 
-    public DefaultStorageService(ResourceRepository resourceRepository,
+    public DefaultStorageService(ResourceOwnershipQuery resourceOwnership,
                                  AttachmentRepository attachmentRepository,
                                  BlobRepository blobRepository,
                                  BlobPlacementRepository placementRepository,
@@ -71,11 +71,11 @@ public class DefaultStorageService implements StorageService {
                                  AuditService auditService,
                                  TransactionalOperator transactionalOperator,
                                  StorageProviderRegistry providerRegistry) {
-        this(resourceRepository, attachmentRepository, blobRepository, placementRepository,
+        this(resourceOwnership, attachmentRepository, blobRepository, placementRepository,
             derivedAttachmentRepository, auditService, transactionalOperator, providerRegistry, null, null);
     }
 
-    public DefaultStorageService(ResourceRepository resourceRepository,
+    public DefaultStorageService(ResourceOwnershipQuery resourceOwnership,
                                  AttachmentRepository attachmentRepository,
                                  BlobRepository blobRepository,
                                  BlobPlacementRepository placementRepository,
@@ -84,12 +84,12 @@ public class DefaultStorageService implements StorageService {
                                  TransactionalOperator transactionalOperator,
                                  StorageProviderRegistry providerRegistry,
                                  BackgroundTaskService taskService) {
-        this(resourceRepository, attachmentRepository, blobRepository, placementRepository, derivedAttachmentRepository,
+        this(resourceOwnership, attachmentRepository, blobRepository, placementRepository, derivedAttachmentRepository,
             auditService, transactionalOperator, providerRegistry, taskService, null);
     }
 
     @org.springframework.beans.factory.annotation.Autowired
-    public DefaultStorageService(ResourceRepository resourceRepository,
+    public DefaultStorageService(ResourceOwnershipQuery resourceOwnership,
                                  AttachmentRepository attachmentRepository,
                                  BlobRepository blobRepository,
                                  BlobPlacementRepository placementRepository,
@@ -99,7 +99,7 @@ public class DefaultStorageService implements StorageService {
                                  StorageProviderRegistry providerRegistry,
                                  BackgroundTaskService taskService,
                                  DurableEventPublisher eventService) {
-        this.resourceRepository = resourceRepository;
+        this.resourceOwnership = resourceOwnership;
         this.attachmentRepository = attachmentRepository;
         this.blobRepository = blobRepository;
         this.placementRepository = placementRepository;
@@ -413,8 +413,6 @@ public class DefaultStorageService implements StorageService {
     }
 
     private Mono<Void> owned(UUID ownerId, UUID resourceId) {
-        return resourceRepository.findByIdAndOwnerId(resourceId, ownerId)
-            .switchIfEmpty(Mono.error(new NotFoundException("资源不存在或无权访问")))
-            .then();
+        return resourceOwnership.requireOwned(ownerId, resourceId);
     }
 }

@@ -8,11 +8,11 @@ import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PreconditionFailedException;
-import run.ikaros.progress.ProgressType;
-import run.ikaros.progress.ResourceProgressService;
-import run.ikaros.progress.ResourceProgressView;
-import run.ikaros.progress.SetProgressRequest;
-import run.ikaros.resource.ResourceService;
+import run.ikaros.resource.api.ProgressType;
+import run.ikaros.resource.api.ResourceProgressService;
+import run.ikaros.resource.api.ResourceProgressView;
+import run.ikaros.resource.api.SetProgressRequest;
+import run.ikaros.resource.api.ResourceService;
 
 @Service
 public class PersistentMediaPlaybackService implements MediaPlaybackService {

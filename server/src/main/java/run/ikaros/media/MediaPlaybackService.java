@@ -3,7 +3,7 @@ package run.ikaros.media;
 import java.util.UUID;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import run.ikaros.progress.ResourceProgressView;
+import run.ikaros.resource.api.ResourceProgressView;
 
 public interface MediaPlaybackService {
     Mono<PlaybackSessionView> start(UUID ownerId, UUID resourceId, StartPlaybackRequest request);

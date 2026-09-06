@@ -7,12 +7,12 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.StorageUnavailableException;
-import run.ikaros.resource.ResourceRepository;
+import run.ikaros.resource.api.ResourceOwnershipQuery;
 
 @Service
 public class AttachmentPreviewService {
     private final AttachmentRepository attachments;
-    private final ResourceRepository resources;
+    private final ResourceOwnershipQuery resources;
     private final BlobRepository blobs;
     private final BlobPlacementRepository placements;
     private final StorageProviderRegistry providers;
@@ -22,7 +22,7 @@ public class AttachmentPreviewService {
     private final DeliveryLeaseService deliveryLeases;
     private final DeliveryGrantContractService deliveryContracts;
 
-    public AttachmentPreviewService(AttachmentRepository attachments, ResourceRepository resources, BlobRepository blobs,
+    public AttachmentPreviewService(AttachmentRepository attachments, ResourceOwnershipQuery resources, BlobRepository blobs,
                                      BlobPlacementRepository placements, StorageProviderRegistry providers,
                                      MediaDeliveryBindingRepository bindings,
                                      DeliveryProviderRepository deliveryProviders, DeliveryGrantService deliveryGrants,
@@ -39,7 +39,7 @@ public class AttachmentPreviewService {
 
     public Mono<AttachmentPreviewUrlView> issue(UUID actorId, UUID attachmentId, String requestedProviderKey) {
         return attachments.findById(attachmentId).filter(a -> a.deletedAt() == null)
-            .flatMap(attachment -> resources.findByIdAndOwnerId(attachment.resourceId(), actorId).thenReturn(attachment))
+            .flatMap(attachment -> resources.requireOwned(actorId, attachment.resourceId()).thenReturn(attachment))
             .switchIfEmpty(Mono.error(new NotFoundException("Attachment 不存在或无权访问")))
             .flatMap(attachment -> blobs.findById(attachment.blobId())
                 .switchIfEmpty(Mono.error(new NotFoundException("Attachment 对应的 Blob 不存在")))

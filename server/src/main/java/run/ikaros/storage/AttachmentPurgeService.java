@@ -10,25 +10,24 @@ import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
-import run.ikaros.resource.ResourceRepository;
+import run.ikaros.resource.api.ResourceOwnershipQuery;
 
 @Service
 public class AttachmentPurgeService {
     private final AttachmentRepository attachments;
-    private final ResourceRepository resources;
+    private final ResourceOwnershipQuery resources;
     private final AuditService audit;
     private final DurableEventPublisher events;
     private final TransactionalOperator transaction;
 
-    public AttachmentPurgeService(AttachmentRepository attachments, ResourceRepository resources, AuditService audit,
+    public AttachmentPurgeService(AttachmentRepository attachments, ResourceOwnershipQuery resources, AuditService audit,
                                   DurableEventPublisher events, TransactionalOperator transaction) {
         this.attachments = attachments; this.resources = resources; this.audit = audit;
         this.events = events; this.transaction = transaction;
     }
 
     public Mono<Void> purge(UUID actorId, UUID resourceId, UUID attachmentId) {
-        return resources.findByIdAndOwnerId(resourceId, actorId)
-            .switchIfEmpty(Mono.error(new NotFoundException("资源不存在或无权访问")))
+        return resources.requireOwned(actorId, resourceId)
             .then(attachments.findById(attachmentId)
                 .filter(a -> a.resourceId().equals(resourceId))
                 .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或无权访问"))))

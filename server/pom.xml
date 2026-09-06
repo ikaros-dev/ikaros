@@ -42,6 +42,16 @@
         </dependency>
         <dependency>
             <groupId>run.ikaros</groupId>
+            <artifactId>resource-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>run.ikaros</groupId>
+            <artifactId>resource</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>run.ikaros</groupId>
             <artifactId>authentication-api</artifactId>
             <version>${project.version}</version>
         </dependency>

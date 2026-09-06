@@ -14,18 +14,18 @@ import run.ikaros.common.ConflictException;
 import run.ikaros.common.InvalidRangeException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PreconditionFailedException;
-import run.ikaros.resource.ResourceRepository;
+import run.ikaros.resource.api.ResourceOwnershipQuery;
 
 @Service
 public class PersistentDeliveryGrantService implements DeliveryGrantService {
     private static final int DEFAULT_TTL_SECONDS = 300;
     private static final int MAX_TTL_SECONDS = 3600;
     private final AttachmentRepository attachments;
-    private final ResourceRepository resources;
+    private final ResourceOwnershipQuery resources;
     private final MediaDeliveryGrantRepository grants;
     private final SecureRandom random = new SecureRandom();
 
-    public PersistentDeliveryGrantService(AttachmentRepository attachments, ResourceRepository resources,
+    public PersistentDeliveryGrantService(AttachmentRepository attachments, ResourceOwnershipQuery resources,
                                           MediaDeliveryGrantRepository grants) {
         this.attachments = attachments;
         this.resources = resources;
@@ -92,7 +92,7 @@ public class PersistentDeliveryGrantService implements DeliveryGrantService {
 
     private Mono<AttachmentEntity> ownedAttachment(UUID actorId, UUID id) {
         return attachments.findById(id).filter(a -> a.deletedAt() == null)
-            .flatMap(a -> resources.findByIdAndOwnerId(a.resourceId(), actorId).thenReturn(a))
+            .flatMap(a -> resources.requireOwned(actorId, a.resourceId()).thenReturn(a))
             .switchIfEmpty(Mono.error(new NotFoundException("Attachment 不存在或无权访问")));
     }
 
