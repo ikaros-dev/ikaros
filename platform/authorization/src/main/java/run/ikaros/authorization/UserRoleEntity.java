@@ -1,4 +1,4 @@
-package run.ikaros.identity;
+package run.ikaros.authorization;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -8,17 +8,14 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 /**
- * 平台角色的持久化模型，角色与权限通过独立绑定表关联。
+ * 用户与平台角色的多对多绑定记录。
  */
-@Table("platform_role")
-public record PlatformRoleEntity(
+@Table("user_role")
+public record UserRoleEntity(
     @Id UUID id,
-    @Column("role_code") String code,
-    String name,
-    String description,
-    @Column("built_in") boolean builtIn,
+    @Column("user_id") UUID userId,
+    @Column("role_id") UUID roleId,
     @Column("created_at") Instant createdAt,
-    @Column("updated_at") Instant updatedAt,
     @Version Long version
 ) {
 }

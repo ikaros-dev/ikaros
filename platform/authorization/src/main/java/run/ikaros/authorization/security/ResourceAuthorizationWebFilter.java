@@ -1,4 +1,4 @@
-package run.ikaros.security;
+package run.ikaros.authorization.security;
 
 import java.util.UUID;
 import org.springframework.core.Ordered;
@@ -11,13 +11,13 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
-import run.ikaros.identity.AccessControlService;
-import run.ikaros.identity.SecurityPolicy;
+import run.ikaros.authorization.AccessControlService;
+import run.ikaros.authorization.SecurityPolicy;
 import run.ikaros.authentication.api.AuthenticatedPrincipal;
 import run.ikaros.authentication.api.SecurityVerificationLevel;
 import run.ikaros.authorization.api.PlatformPermission;
 
-/** Resource HTTP 入口的统一 RBAC + Session 校验。 */
+/** Resource HTTP 入口的统一 RBAC + JWT 校验。 */
 @Component
 @Order(Ordered.LOWEST_PRECEDENCE)
 public class ResourceAuthorizationWebFilter implements WebFilter {

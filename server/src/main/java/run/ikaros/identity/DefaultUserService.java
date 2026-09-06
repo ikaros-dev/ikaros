@@ -2,7 +2,6 @@ package run.ikaros.identity;
 
 import java.time.Instant;
 import java.util.Comparator;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,16 +13,16 @@ import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
+import run.ikaros.authorization.api.RoleMembershipQuery;
 
 /**
- * 默认用户服务，维护用户状态、角色绑定与对应审计记录。
+ * 默认用户服务，维护用户身份状态与对应审计记录。
  */
 @Service
 public class DefaultUserService implements UserService {
     private static final int MAX_PAGE_SIZE = 100;
     private final PlatformUserRepository userRepository;
-    private final PlatformRoleRepository roleRepository;
-    private final UserRoleRepository userRoleRepository;
+    private final RoleMembershipQuery roleMembershipQuery;
     private final AuditService auditService;
     private final DurableEventPublisher eventService;
 
@@ -31,22 +30,20 @@ public class DefaultUserService implements UserService {
      * 创建用户服务。
      *
      * @param userRepository 用户仓储
-     * @param roleRepository 角色仓储
-     * @param userRoleRepository 用户角色绑定仓储
+     * @param roleMembershipQuery 角色成员查询能力
      * @param auditService 审计服务
      */
-    public DefaultUserService(PlatformUserRepository userRepository, PlatformRoleRepository roleRepository,
-                              UserRoleRepository userRoleRepository, AuditService auditService) {
-        this(userRepository, roleRepository, userRoleRepository, auditService, null);
+    public DefaultUserService(PlatformUserRepository userRepository, RoleMembershipQuery roleMembershipQuery,
+                              AuditService auditService) {
+        this(userRepository, roleMembershipQuery, auditService, null);
     }
 
     @Autowired
-    public DefaultUserService(PlatformUserRepository userRepository, PlatformRoleRepository roleRepository,
-                              UserRoleRepository userRoleRepository, AuditService auditService,
+    public DefaultUserService(PlatformUserRepository userRepository, RoleMembershipQuery roleMembershipQuery,
+                              AuditService auditService,
                               DurableEventPublisher eventService) {
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.userRoleRepository = userRoleRepository;
+        this.roleMembershipQuery = roleMembershipQuery;
         this.auditService = auditService;
         this.eventService = eventService;
     }
@@ -115,57 +112,14 @@ public class DefaultUserService implements UserService {
             "{\"user_id\":\"" + user.id() + "\"}")).then();
     }
 
-    @Override
-    public Mono<Void> assignRole(UUID actorId, UUID userId, UUID roleId) {
-        Instant now = Instant.now();
-        return Mono.zip(requiredUser(userId), requiredRole(roleId))
-            .flatMap(ignored -> userRoleRepository.findByUserIdAndRoleId(userId, roleId)
-                .hasElement()
-                .flatMap(exists -> exists ? Mono.just(false) : userRoleRepository.save(new UserRoleEntity(
-                    null, userId, roleId, now, null
-                )).thenReturn(true)))
-            .flatMap(created -> created ? emitRoleAssigned(userId, roleId) : Mono.empty())
-            .then(auditService.record(actorId, "identity.user.role.assign", "USER", userId, "{}"));
-    }
-
-    private Mono<Void> emitRoleAssigned(UUID userId, UUID roleId) {
-        if (eventService == null) return Mono.empty();
-        return eventService.append(new EventAppendRequest("authorization.user.role-assigned", 1, "authorization", "user", userId,
-            "{\"user_id\":\"" + userId + "\",\"role_id\":\"" + roleId + "\"}")).then();
-    }
-
-    @Override
-    public Mono<Void> removeRole(UUID actorId, UUID userId, UUID roleId) {
-        return Mono.zip(requiredUser(userId), requiredRole(roleId))
-            .flatMap(ignored -> userRoleRepository.findByUserIdAndRoleId(userId, roleId)
-                .flatMap(binding -> userRoleRepository.deleteByUserIdAndRoleId(userId, roleId)
-                    .then(emitRoleRemoved(userId, roleId)))
-                .switchIfEmpty(Mono.empty()))
-            .then(auditService.record(actorId, "identity.user.role.remove", "USER", userId, "{}"));
-    }
-
-    private Mono<Void> emitRoleRemoved(UUID userId, UUID roleId) {
-        if (eventService == null) return Mono.empty();
-        return eventService.append(new EventAppendRequest("authorization.user.role-removed", 1, "authorization", "user", userId,
-            "{\"user_id\":\"" + userId + "\",\"role_id\":\"" + roleId + "\"}")).then();
-    }
 
     private Mono<PlatformUserEntity> requiredUser(UUID userId) {
         return userRepository.findById(userId)
             .switchIfEmpty(Mono.error(new NotFoundException("用户不存在")));
     }
 
-    private Mono<PlatformRoleEntity> requiredRole(UUID roleId) {
-        return roleRepository.findById(roleId)
-            .switchIfEmpty(Mono.error(new NotFoundException("角色不存在")));
-    }
-
     private Mono<UserView> toView(PlatformUserEntity user) {
-        return userRoleRepository.findAllByUserId(user.id())
-            .flatMap(binding -> roleRepository.findById(binding.roleId()))
-            .map(PlatformRoleEntity::code)
-            .sort()
-            .collectList()
+        return roleMembershipQuery.roleCodesFor(user.id())
             .map(roles -> new UserView(user.id(), user.username(), user.displayName(), user.email(), user.status(), roles,
                 user.createdAt(), user.lastLoginAt()));
     }

@@ -14,7 +14,6 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -120,35 +119,4 @@ public class UserController {
         return userService.changeStatus(actorId, userId, status);
     }
 
-    /**
-     * 为用户绑定一个平台角色。
-     *
-     * @param actorId 当前管理主体
-     * @param userId 用户标识
-     * @param roleId 角色标识
-     * @return 无响应体的完成信号
-     */
-    @Operation(summary = "为用户分配角色", description = "建立用户与角色的幂等绑定，并写入审计记录。"
-        + "平台权限通过角色组合获得，高等级身份验证不会自动增加角色权限。")
-    @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "角色已分配或原本已存在"),
-        @ApiResponse(responseCode = "404", description = "用户或角色不存在", content = @Content)
-    })
-    @PostMapping("/{userId}/roles/{roleId}")
-    public Mono<ResponseEntity<Void>> assignRole(
-        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
-        @PathVariable UUID userId,
-        @PathVariable UUID roleId
-    ) {
-        return userService.assignRole(actorId, userId, roleId).thenReturn(ResponseEntity.noContent().build());
-    }
-
-    @DeleteMapping("/{userId}/roles/{roleId}")
-    public Mono<ResponseEntity<Void>> removeRole(
-        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
-        @PathVariable UUID userId,
-        @PathVariable UUID roleId
-    ) {
-        return userService.removeRole(actorId, userId, roleId).thenReturn(ResponseEntity.noContent().build());
-    }
 }

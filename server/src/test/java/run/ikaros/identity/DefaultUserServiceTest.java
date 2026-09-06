@@ -9,32 +9,32 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import run.ikaros.authorization.api.PlatformPermission;
+import run.ikaros.authorization.api.RoleMembershipQuery;
 import run.ikaros.operations.api.AuditService;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
 
-/** 验证平台用户服务的创建、查询、状态与角色绑定规则。 */
+/** 验证平台用户服务的创建、查询与状态规则。 */
 class DefaultUserServiceTest {
     private PlatformUserRepository userRepository;
-    private PlatformRoleRepository roleRepository;
-    private UserRoleRepository userRoleRepository;
+    private RoleMembershipQuery roleMembershipQuery;
     private AuditService auditService;
     private DefaultUserService service;
 
     @BeforeEach
     void setUp() {
         userRepository = mock(PlatformUserRepository.class);
-        roleRepository = mock(PlatformRoleRepository.class);
-        userRoleRepository = mock(UserRoleRepository.class);
+        roleMembershipQuery = mock(RoleMembershipQuery.class);
+        when(roleMembershipQuery.roleCodesFor(any())).thenReturn(Mono.just(List.of()));
         auditService = mock(AuditService.class);
-        service = new DefaultUserService(userRepository, roleRepository, userRoleRepository, auditService);
+        service = new DefaultUserService(userRepository, roleMembershipQuery, auditService);
     }
 
     @Test
@@ -45,7 +45,6 @@ class DefaultUserServiceTest {
         PlatformUserEntity saved = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
             UserStatus.PENDING, now, now, null, 0L);
         when(userRepository.save(any())).thenReturn(Mono.just(saved));
-        when(userRoleRepository.findAllByUserId(userId)).thenReturn(Flux.empty());
         when(auditService.record(eq(actorId), eq("identity.user.create"), eq("USER"), eq(userId), eq("{}")))
             .thenReturn(Mono.empty());
 
@@ -66,7 +65,6 @@ class DefaultUserServiceTest {
         PlatformUserEntity pending = new PlatformUserEntity(UUID.randomUUID(), "bob", "Bob", null,
             UserStatus.PENDING, now, now, null, 0L);
         when(userRepository.findAll()).thenReturn(Flux.just(pending, active));
-        when(userRoleRepository.findAllByUserId(active.id())).thenReturn(Flux.empty());
 
         StepVerifier.create(service.list(UserStatus.ACTIVE, "ali", 0, 20))
             .assertNext(result -> {
@@ -87,7 +85,6 @@ class DefaultUserServiceTest {
             UserStatus.LOCKED, now, now, null, 2L);
         when(userRepository.findById(userId)).thenReturn(Mono.just(user));
         when(userRepository.save(any())).thenReturn(Mono.just(locked));
-        when(userRoleRepository.findAllByUserId(userId)).thenReturn(Flux.empty());
         when(auditService.record(eq(actorId), eq("identity.user.status.change"), eq("USER"), eq(userId), eq("{}")))
             .thenReturn(Mono.empty());
 
@@ -119,13 +116,11 @@ class DefaultUserServiceTest {
         DurableEventPublisher events = mock(DurableEventPublisher.class);
         when(userRepository.findById(userId)).thenReturn(Mono.just(user));
         when(userRepository.save(any())).thenReturn(Mono.just(disabled));
-        when(userRoleRepository.findAllByUserId(userId)).thenReturn(Flux.empty());
         when(events.append(any(EventAppendRequest.class)))
             .thenReturn(Mono.empty());
         when(auditService.record(eq(actorId), eq("identity.user.status.change"), eq("USER"), eq(userId), eq("{}")))
             .thenReturn(Mono.empty());
-        DefaultUserService eventService = new DefaultUserService(userRepository, roleRepository, userRoleRepository,
-            auditService, events);
+        DefaultUserService eventService = new DefaultUserService(userRepository, roleMembershipQuery, auditService, events);
 
         StepVerifier.create(eventService.changeStatus(actorId, userId, UserStatus.DISABLED))
             .assertNext(view -> assertThat(view.status()).isEqualTo(UserStatus.DISABLED))
@@ -149,13 +144,11 @@ class DefaultUserServiceTest {
             UserStatus.ACTIVE, now, now, null, 2L);
         when(userRepository.findById(userId)).thenReturn(Mono.just(created), Mono.just(disabled));
         when(userRepository.save(any())).thenReturn(Mono.just(created), Mono.just(disabled), Mono.just(enabled));
-        when(userRoleRepository.findAllByUserId(userId)).thenReturn(Flux.empty());
         when(events.append(any(EventAppendRequest.class)))
             .thenReturn(Mono.empty());
         when(auditService.record(any(), any(String.class), eq("USER"), eq(userId), eq("{}")))
             .thenReturn(Mono.empty());
-        DefaultUserService eventService = new DefaultUserService(userRepository, roleRepository, userRoleRepository,
-            auditService, events);
+        DefaultUserService eventService = new DefaultUserService(userRepository, roleMembershipQuery, auditService, events);
 
         StepVerifier.create(eventService.create(actorId,
                 new CreateUserRequest("alice", "Alice", "alice@example.com")))
@@ -170,47 +163,4 @@ class DefaultUserServiceTest {
             && request.subjectId().equals(userId)));
     }
 
-    @Test
-    void assignsMissingRoleIdempotently() {
-        UUID actorId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-        UUID roleId = UUID.randomUUID();
-        Instant now = Instant.now();
-        PlatformUserEntity user = new PlatformUserEntity(userId, "alice", "Alice", null,
-            UserStatus.ACTIVE, now, now, null, 0L);
-        PlatformRoleEntity role = new PlatformRoleEntity(roleId, "NORMAL_USER", "普通用户", null,
-            false, now, now, 0L);
-        when(userRepository.findById(userId)).thenReturn(Mono.just(user));
-        when(roleRepository.findById(roleId)).thenReturn(Mono.just(role));
-        when(userRoleRepository.findByUserIdAndRoleId(userId, roleId)).thenReturn(Mono.empty());
-        when(userRoleRepository.save(any())).thenReturn(Mono.just(new UserRoleEntity(UUID.randomUUID(), userId, roleId,
-            now, 0L)));
-        when(auditService.record(eq(actorId), eq("identity.user.role.assign"), eq("USER"), eq(userId), eq("{}")))
-            .thenReturn(Mono.empty());
-
-        StepVerifier.create(service.assignRole(actorId, userId, roleId)).verifyComplete();
-        verify(userRoleRepository).save(any(UserRoleEntity.class));
-    }
-
-    @Test
-    void removesExistingRoleAndAuditsChange() {
-        UUID actorId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-        UUID roleId = UUID.randomUUID();
-        Instant now = Instant.now();
-        PlatformUserEntity user = new PlatformUserEntity(userId, "alice", "Alice", null,
-            UserStatus.ACTIVE, now, now, null, 0L);
-        PlatformRoleEntity role = new PlatformRoleEntity(roleId, "NORMAL_USER", "普通用户", null,
-            false, now, now, 0L);
-        when(userRepository.findById(userId)).thenReturn(Mono.just(user));
-        when(roleRepository.findById(roleId)).thenReturn(Mono.just(role));
-        when(userRoleRepository.findByUserIdAndRoleId(userId, roleId))
-            .thenReturn(Mono.just(new UserRoleEntity(UUID.randomUUID(), userId, roleId, now, 0L)));
-        when(userRoleRepository.deleteByUserIdAndRoleId(userId, roleId)).thenReturn(Mono.empty());
-        when(auditService.record(eq(actorId), eq("identity.user.role.remove"), eq("USER"), eq(userId), eq("{}")))
-            .thenReturn(Mono.empty());
-
-        StepVerifier.create(service.removeRole(actorId, userId, roleId)).verifyComplete();
-        verify(userRoleRepository).deleteByUserIdAndRoleId(userId, roleId);
-    }
 }

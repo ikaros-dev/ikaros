@@ -1,4 +1,4 @@
-package run.ikaros.identity;
+package run.ikaros.authorization;
 
 import java.time.Instant;
 import java.util.List;

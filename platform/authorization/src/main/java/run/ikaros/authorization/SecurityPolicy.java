@@ -1,4 +1,4 @@
-package run.ikaros.identity;
+package run.ikaros.authorization;
 
 import run.ikaros.authentication.api.SecurityVerificationLevel;
 import run.ikaros.authorization.api.PlatformPermission;

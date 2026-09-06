@@ -1,4 +1,4 @@
-package run.ikaros.identity;
+package run.ikaros.authorization;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;

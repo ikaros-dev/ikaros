@@ -10,6 +10,9 @@ import javax.crypto.spec.PBEKeySpec;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import run.ikaros.authorization.api.InitialRoleAssigner;
+import run.ikaros.authorization.api.PermissionSnapshot;
+import run.ikaros.authorization.api.PermissionSnapshotQuery;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 
@@ -20,23 +23,21 @@ public class AuthenticationService {
     private final PlatformUserRepository users;
     private final PasswordCredentialRepository credentials;
     private final UserService userService;
-    private final PlatformRoleRepository roles;
-    private final UserRoleRepository userRoles;
-    private final RolePermissionRepository rolePermissions;
     private final JwtTokenService tokens;
+    private final InitialRoleAssigner initialRoleAssigner;
+    private final PermissionSnapshotQuery permissionSnapshotQuery;
     private final SecureRandom random = new SecureRandom();
 
     public AuthenticationService(PlatformUserRepository users, PasswordCredentialRepository credentials,
-                                  UserService userService,
-                                  PlatformRoleRepository roles, UserRoleRepository userRoles,
-                                  RolePermissionRepository rolePermissions, JwtTokenService tokens) {
+                                  UserService userService, JwtTokenService tokens,
+                                  InitialRoleAssigner initialRoleAssigner,
+                                  PermissionSnapshotQuery permissionSnapshotQuery) {
         this.users = users;
         this.credentials = credentials;
         this.userService = userService;
-        this.roles = roles;
-        this.userRoles = userRoles;
-        this.rolePermissions = rolePermissions;
         this.tokens = tokens;
+        this.initialRoleAssigner = initialRoleAssigner;
+        this.permissionSnapshotQuery = permissionSnapshotQuery;
     }
 
     public Mono<AuthenticationView> register(RegisterRequest request) {
@@ -81,24 +82,18 @@ public class AuthenticationService {
 
     private Mono<Void> assignAdminIfFirstUser(PlatformUserEntity user) {
         return users.count().flatMap(count -> count == 1
-            ? roles.findByCode("admin").switchIfEmpty(Mono.error(new IllegalStateException("内置 admin 角色未初始化")))
-                .flatMap(role -> userRoles.save(new UserRoleEntity(null, user.id(), role.id(), Instant.now(), null))).then()
+            ? initialRoleAssigner.assignInitialRole(user.id(), "admin")
             : Mono.empty());
     }
 
     private Mono<AuthenticationView> issue(PlatformUserEntity user) {
-        return userService.get(user.id()).zipWith(userPermissions(user.id()))
+        return userService.get(user.id()).zipWith(permissionSnapshotQuery.permissionsFor(user.id())
+            .map(PermissionSnapshot::permissionKeys))
             .map(data -> {
                 JwtTokenService.TokenPair pair = tokens.issue(user.id(), user.securityVersion(), data.getT2());
                 return new AuthenticationView(user.id(), pair.accessToken(), pair.refreshToken(),
                     pair.accessTokenExpiresAt(), data.getT1(), data.getT2());
             });
-    }
-
-    private Mono<java.util.List<String>> userPermissions(UUID userId) {
-        return userRoles.findAllByUserId(userId)
-            .flatMap(binding -> rolePermissions.findAllByRoleId(binding.roleId()))
-            .map(RolePermissionEntity::permissionKey).distinct().sort().collectList();
     }
 
     private String hash(String password) {

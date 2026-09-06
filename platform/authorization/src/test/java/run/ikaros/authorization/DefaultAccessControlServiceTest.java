@@ -1,4 +1,4 @@
-package run.ikaros.identity;
+package run.ikaros.authorization;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -17,17 +17,15 @@ import run.ikaros.common.ForbiddenException;
 
 /** 验证权限与安全验证等级必须同时成立。 */
 class DefaultAccessControlServiceTest {
-    private PlatformUserRepository userRepository;
     private UserRoleRepository userRoleRepository;
     private RolePermissionRepository permissionRepository;
     private DefaultAccessControlService service;
 
     @BeforeEach
     void setUp() {
-        userRepository = mock(PlatformUserRepository.class);
         userRoleRepository = mock(UserRoleRepository.class);
         permissionRepository = mock(RolePermissionRepository.class);
-        service = new DefaultAccessControlService(userRepository, userRoleRepository, permissionRepository);
+        service = new DefaultAccessControlService(userRoleRepository, permissionRepository);
     }
 
     @Test
@@ -35,8 +33,6 @@ class DefaultAccessControlServiceTest {
         UUID userId = UUID.randomUUID();
         UUID roleId = UUID.randomUUID();
         Instant now = Instant.now();
-        when(userRepository.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
-            UserStatus.ACTIVE, now, now, null, 0L)));
         when(userRoleRepository.findAllByUserId(userId)).thenReturn(Flux.just(new UserRoleEntity(UUID.randomUUID(), userId,
             roleId, now, 0L)));
         when(permissionRepository.findByRoleIdAndPermissionKey(roleId, PlatformPermission.RESOURCE_DELETE.key()))
@@ -50,11 +46,9 @@ class DefaultAccessControlServiceTest {
     }
 
     @Test
-    void rejectsHighSvlSessionWithoutRolePermission() {
+    void rejectsHighSvlTokenWithoutRolePermission() {
         UUID userId = UUID.randomUUID();
         Instant now = Instant.now();
-        when(userRepository.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
-            UserStatus.ACTIVE, now, now, null, 0L)));
         when(userRoleRepository.findAllByUserId(userId)).thenReturn(Flux.empty());
         StepVerifier.create(service.require(userId, SecurityVerificationLevel.SVL_4, now.plusSeconds(300),
             new SecurityPolicy("MANAGE_USERS",
@@ -67,15 +61,18 @@ class DefaultAccessControlServiceTest {
     }
 
     @Test
-    void rejectsSessionFromOlderUserSecurityVersion() {
+    void rejectsExpiredVerification() {
         UUID userId = UUID.randomUUID();
         Instant now = Instant.now();
-        when(userRepository.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
-            UserStatus.ACTIVE, now, now, null, 2L, 0L)));
-        when(userRoleRepository.findAllByUserId(userId)).thenReturn(Flux.empty());
+        UUID roleId = UUID.randomUUID();
+        when(userRoleRepository.findAllByUserId(userId)).thenReturn(Flux.just(new UserRoleEntity(UUID.randomUUID(), userId,
+            roleId, now, 0L)));
+        when(permissionRepository.findByRoleIdAndPermissionKey(roleId, PlatformPermission.RESOURCE_READ.key()))
+            .thenReturn(Mono.just(new RolePermissionEntity(UUID.randomUUID(), roleId,
+                PlatformPermission.RESOURCE_READ.key(), now, 0L)));
         StepVerifier.create(service.require(userId, SecurityVerificationLevel.SVL_0, null,
             new SecurityPolicy("READ",
-                PlatformPermission.RESOURCE_READ, SecurityVerificationLevel.SVL_0, false)))
+                PlatformPermission.RESOURCE_READ, SecurityVerificationLevel.SVL_0, true)))
             .expectError(ForbiddenException.class)
             .verify();
     }

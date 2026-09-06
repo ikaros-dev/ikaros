@@ -1,4 +1,4 @@
-package run.ikaros.security;
+package run.ikaros.authorization.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -9,13 +9,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.WebFilterChain;
-import run.ikaros.identity.AccessControlService;
+import run.ikaros.authorization.AccessControlService;
 import run.ikaros.authentication.api.AuthenticatedPrincipal;
 import reactor.core.publisher.Mono;
 
 class ResourceAuthorizationWebFilterTest {
     @Test
-    void rejectsResourceRequestWithoutSession() {
+    void rejectsResourceRequestWithoutToken() {
         UUID actor = UUID.randomUUID();
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/resources")
             .header("X-Ikaros-Actor-Id", actor.toString()).build());
@@ -26,7 +26,7 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
-    void rejectsDeliveryAdminRequestWithoutSession() {
+    void rejectsDeliveryAdminRequestWithoutToken() {
         UUID actor = UUID.randomUUID();
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
             "/api/admin/delivery-providers").header("X-Ikaros-Actor-Id", actor.toString()).build());
@@ -38,7 +38,7 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
-    void rejectsStorageProviderAdminAliasWithoutSession() {
+    void rejectsStorageProviderAdminAliasWithoutToken() {
         UUID actor = UUID.randomUUID();
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
             "/api/admin/storage-providers").header("X-Ikaros-Actor-Id", actor.toString()).build());
@@ -50,7 +50,7 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
-    void rejectsRestoreRequestWithoutSession() {
+    void rejectsRestoreRequestWithoutToken() {
         UUID actor = UUID.randomUUID();
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(
             "/api/attachments/" + UUID.randomUUID() + "/restore-requests")
@@ -63,7 +63,7 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
-    void rejectsDeliveryGrantWithoutSession() {
+    void rejectsDeliveryGrantWithoutToken() {
         UUID actor = UUID.randomUUID();
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(
             "/api/attachments/" + UUID.randomUUID() + "/delivery-grants")
@@ -76,7 +76,7 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
-    void rejectsBlobPlacementAdminQueryWithoutSession() {
+    void rejectsBlobPlacementAdminQueryWithoutToken() {
         UUID actor = UUID.randomUUID();
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
             "/api/admin/blobs/" + UUID.randomUUID() + "/placements")
@@ -89,7 +89,7 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
-    void rejectsIdentityAdministrationWithoutSession() {
+    void rejectsIdentityAdministrationWithoutToken() {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/admin/users")
             .header("X-Ikaros-Actor-Id", UUID.randomUUID().toString()).build());
         WebFilterChain chain = mock(WebFilterChain.class);
@@ -100,7 +100,7 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
-    void rejectsBackupAdministrationWithoutSession() {
+    void rejectsBackupAdministrationWithoutToken() {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
             "/api/admin/backup/restore-points").build());
         WebFilterChain chain = mock(WebFilterChain.class);
@@ -111,7 +111,7 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
-    void rejectsUnlistedApiRouteWithoutSession() {
+    void rejectsUnlistedApiRouteWithoutToken() {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
             "/api/finance/ledgers").build());
         WebFilterChain chain = mock(WebFilterChain.class);
@@ -122,7 +122,7 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
-    void letsDeliveryGrantContentReachGrantAuthorizationWithoutSession() {
+    void letsDeliveryGrantContentReachGrantAuthorizationWithoutToken() {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
             "/api/attachments/" + UUID.randomUUID() + "/content")
             .header("X-Ikaros-Delivery-Grant", "opaque-grant").build());

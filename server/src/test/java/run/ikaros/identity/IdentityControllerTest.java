@@ -14,6 +14,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.authorization.PermissionController;
+import run.ikaros.authorization.RoleController;
+import run.ikaros.authorization.RoleService;
+import run.ikaros.authorization.RoleView;
 import run.ikaros.authorization.api.PlatformPermission;
 import run.ikaros.common.PageResponse;
 
@@ -32,17 +36,15 @@ class IdentityControllerTest {
     }
 
     @Test
-    void exposesUserCreationListingStatusAndRoleBindingEndpoints() {
+    void exposesUserCreationListingAndStatusEndpoints() {
         UUID actorId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
-        UUID roleId = UUID.randomUUID();
         UserView user = new UserView(userId, "alice", "Alice", "alice@example.com", UserStatus.PENDING,
             List.of(), Instant.now(), null);
         when(userService.create(any(), any())).thenReturn(Mono.just(user));
         when(userService.list(any(), any(), any(Integer.class), any(Integer.class)))
             .thenReturn(Mono.just(new PageResponse<>(List.of(user), 1, 0, 20)));
         when(userService.changeStatus(any(), any(), any())).thenReturn(Mono.just(user));
-        when(userService.assignRole(any(), any(), any())).thenReturn(Mono.empty());
 
         client.post().uri("/api/users").header("X-Ikaros-Actor-Id", actorId.toString())
             .bodyValue(Map.of("username", "alice", "displayName", "Alice", "email", "alice@example.com"))
@@ -50,9 +52,6 @@ class IdentityControllerTest {
         client.get().uri("/api/users?status=PENDING&query=ali").exchange().expectStatus().isOk();
         client.post().uri("/api/users/{userId}/status/{status}", userId, UserStatus.ACTIVE)
             .header("X-Ikaros-Actor-Id", actorId.toString()).exchange().expectStatus().isOk();
-        client.post().uri("/api/users/{userId}/roles/{roleId}", userId, roleId)
-            .header("X-Ikaros-Actor-Id", actorId.toString()).exchange().expectStatus().isNoContent();
-        verify(userService).assignRole(actorId, userId, roleId);
     }
 
     @Test

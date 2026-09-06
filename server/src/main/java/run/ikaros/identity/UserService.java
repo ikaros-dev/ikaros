@@ -40,16 +40,4 @@ public interface UserService {
      */
     Mono<UserView> changeStatus(UUID actorId, UUID userId, UserStatus status);
 
-    /**
-     * 为用户绑定平台角色。
-     *
-     * @param actorId 执行绑定的管理主体
-     * @param userId 用户标识
-     * @param roleId 角色标识
-     * @return 完成信号
-     */
-    Mono<Void> assignRole(UUID actorId, UUID userId, UUID roleId);
-
-    /** 解除用户与平台角色的绑定。 */
-    Mono<Void> removeRole(UUID actorId, UUID userId, UUID roleId);
 }
