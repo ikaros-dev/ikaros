@@ -328,15 +328,15 @@ Payload 与 attached 相同 identity key。
 }
 ```
 
-## 5. Identity Payloads
+## 5. Authentication / Authorization Payloads
 
-### `identity.user.created@1`
+### `authentication.user.created@1`
 
 ```json
 { "user_id": "uuid" }
 ```
 
-### `identity.user.disabled@1`
+### `authentication.user.disabled@1`
 
 ```json
 {
@@ -345,11 +345,11 @@ Payload 与 attached 相同 identity key。
 }
 ```
 
-### `identity.user.enabled@1`
+### `authentication.user.enabled@1`
 
 同上。
 
-### `identity.role.created@1`
+### `authorization.role.created@1`
 
 ```json
 {
@@ -358,7 +358,7 @@ Payload 与 attached 相同 identity key。
 }
 ```
 
-### `identity.role.permissions-replaced@1`
+### `authorization.role.permissions-replaced@1`
 
 ```json
 {
@@ -367,7 +367,7 @@ Payload 与 attached 相同 identity key。
 }
 ```
 
-### `identity.user.role-assigned@1`
+### `authorization.user.role-assigned@1`
 
 ```json
 {
@@ -376,11 +376,11 @@ Payload 与 attached 相同 identity key。
 }
 ```
 
-### `identity.user.role-removed@1`
+### `authorization.user.role-removed@1`
 
 同上。
 
-### `identity.user.tokens-invalidated@1`
+### `authentication.user.tokens-invalidated@1`
 
 ```json
 {

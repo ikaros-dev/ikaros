@@ -864,7 +864,7 @@ user status allows authentication
 identity.user_account.security_version
 ```
 
-并发布 `identity.user.tokens-invalidated`。
+并发布 `authentication.user.tokens-invalidated`。
 
 Step-up Verification 的 OTP Challenge 可以按验证子系统需要短期持久化，但它是一次性 Challenge，不是登录 Session。验证成功后签发的 Step-up Grant 应为短期、Purpose-bound 的签名凭据；服务端不因此创建 `SecuritySession` 行。
 

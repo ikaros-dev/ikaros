@@ -465,7 +465,7 @@ User holds Access / Refresh JWT with security_version=5
 Admin passes required authorization/step-up
 DisableUser
 User becomes disabled and/or security_version increments according to command semantics
-identity.user.disabled event emitted
+authentication.user.disabled event emitted
 Old Access JWT request rejected
 Old Refresh JWT cannot mint a new Access JWT
 No password/token/grant data appears in event or audit payload

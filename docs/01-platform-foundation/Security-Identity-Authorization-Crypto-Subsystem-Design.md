@@ -1231,7 +1231,7 @@ security.key.reset.requested
 security.key.rotated
 security.recovery.completed
 security.device.revoked
-identity.user.tokens-invalidated
+authentication.user.tokens-invalidated
 ```
 
 但 Automation 不能自动降低安全策略。
