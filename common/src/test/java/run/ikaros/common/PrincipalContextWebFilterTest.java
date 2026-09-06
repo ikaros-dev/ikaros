@@ -1,4 +1,4 @@
-package run.ikaros.foundation;
+package run.ikaros.common;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.UUID;
@@ -7,7 +7,7 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
-import run.ikaros.foundation.PrincipalContexts;
+import run.ikaros.common.PrincipalContexts;
 
 class PrincipalContextWebFilterTest {
     @Test

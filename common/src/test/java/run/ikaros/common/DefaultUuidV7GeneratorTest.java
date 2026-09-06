@@ -1,4 +1,4 @@
-package run.ikaros.foundation;
+package run.ikaros.common;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

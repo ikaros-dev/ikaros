@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.foundation.api.UuidV7Generator;
+import run.ikaros.common.api.UuidV7Generator;
 import run.ikaros.sync.api.DeviceTrustQuery;
 
 @Primary

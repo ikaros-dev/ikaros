@@ -1,4 +1,4 @@
-package run.ikaros.foundation;
+package run.ikaros.common;
 
 import reactor.core.publisher.Mono;
 

@@ -1,11 +1,11 @@
-package run.ikaros.foundation;
+package run.ikaros.common;
 
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.stereotype.Component;
-import run.ikaros.foundation.api.UuidV7Generator;
+import run.ikaros.common.api.UuidV7Generator;
 
 /** Foundation 提供的线程安全 UUIDv7 生成实现。 */
 @Component

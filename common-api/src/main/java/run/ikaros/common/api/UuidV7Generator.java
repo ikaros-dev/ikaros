@@ -1,4 +1,4 @@
-package run.ikaros.foundation.api;
+package run.ikaros.common.api;
 
 import java.util.UUID;
 

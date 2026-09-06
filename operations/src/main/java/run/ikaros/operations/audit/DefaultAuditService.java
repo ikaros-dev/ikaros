@@ -4,8 +4,8 @@ import java.time.Instant;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import run.ikaros.foundation.PrincipalContext;
-import run.ikaros.foundation.PrincipalContexts;
+import run.ikaros.common.PrincipalContext;
+import run.ikaros.common.PrincipalContexts;
 import run.ikaros.operations.api.AuditService;
 
 /**

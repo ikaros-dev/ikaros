@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.foundation.api.UuidV7Generator;
+import run.ikaros.common.api.UuidV7Generator;
 import run.ikaros.sync.api.DeviceTrustQuery;
 
 @Service
