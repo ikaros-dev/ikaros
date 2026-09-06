@@ -4,16 +4,16 @@
 |---|---|
 | 文档名称 | Media Delivery / CDN / Archive Restore Design |
 | 适用版本 | Ikaros V2 |
-| 文档版本 | v0.1 |
-| 编写日期 | 2026-09-02 |
-| 状态 | 草案（Draft） |
+| 文档版本 | v0.2 |
+| 编写日期 | 2026-09-06 |
+| 状态 | Implementation-aligned Draft |
 | 系统级上位约束 | `System-Overview-Design.md` |
 | Storage 上位约束 | `Attachment-Blob-Storage-Subsystem-Design.md` |
 | Media 上位约束 | `Media-Video-Anime-Playback-Subsystem-Design.md` |
 
 > 本文档补充 Ikaros V2 在“大容量媒体库、对象存储、低带宽自托管 Server、CDN 交付、低频与归档存储”场景下的专项设计。
 >
-> 本文档不改变 Attachment / Blob / Placement 的身份模型，不把 CDN 变成持久化 Storage Provider，也不把播放业务状态下沉为云厂商专有字段。若与上位设计冲突，以上位设计为准。
+> **工程实施说明（2026-09-06）**：Delivery Provider / Delivery Binding 已进入实现阶段。涉及 Provider 类型、Binding 字段、选择顺序、健康过滤、预览 Provider 选择和 URL 生成的描述，以当前 `run.ikaros.storage` 实现与 `src/main/resources/db/migration/` 为工程事实基线；设计中尚未实现的能力必须明确标记为后续演进，不得反向要求当前代码保留已删除字段或伪造交付 URL。
 
 ---
 
@@ -21,22 +21,22 @@
 
 典型自托管实例可能具有以下特征：
 
-- Ikaros Server 部署在家庭网络、NAS 或中国大陆低带宽云服务器；
+- Ikaros Server 部署在家庭网络、NAS 或低带宽云服务器；
 - 视频主体位于对象存储；
-- 媒体库容量远大于月访问量，例如 10 TB 级媒体库；
+- 媒体库容量远大于月访问量；
 - 客户端需要稳定的 HTTP Range 播放能力；
 - Server 上行带宽不足以承担视频 Proxy 或 Server Cache 回源；
 - 用户可以接受长期未观看内容进入归档层，并在再次观看前等待 Restore；
 - CDN 可以承担面向客户端的大流量数据面。
 
-因此设计目标是：
+设计目标：
 
-1. **控制面与媒体数据面分离**：Ikaros Server 负责身份、授权、策略、状态和签名，不默认承载视频字节。
-2. **Delivery 与 Storage 分离**：Storage Provider 负责持久化字节；Delivery Provider 负责把可读取字节高效、安全地交付给客户端。
-3. **低带宽部署可用**：Server Cache / Server Proxy 必须是能力选项，而不是媒体播放的必要路径。
-4. **归档可感知**：Archive Restore 不只是后台运维动作，媒体业务与客户端必须能感知“已归档、恢复中、已就绪”。
-5. **成本可演进**：允许根据访问热度在 HOT / WARM / COLD / ARCHIVE 之间迁移，而不改变 Attachment 身份。
-6. **厂商无关**：设计表达能力和状态，不绑定阿里云 OSS、腾讯 COS 或其他具体厂商的产品名称与计费模型。
+1. **控制面与媒体数据面分离**：Ikaros Server 负责身份、授权、策略、状态和短期授权，不默认承载视频字节。
+2. **Delivery 与 Storage 分离**：Storage Provider 负责持久化字节；Delivery Provider 负责选择“如何交付”。
+3. **低带宽部署可用**：Server Proxy 是一种 Provider 类型，不是所有读取的必经路径。
+4. **归档可感知**：Archive Restore 是可观察的媒体可用性状态。
+5. **成本可演进**：允许 HOT / WARM / COLD / ARCHIVE 迁移而不改变 Attachment 身份。
+6. **厂商无关**：核心模型表达 Endpoint / Capability / Policy，不把云厂商产品名写成领域常量。
 
 ---
 
@@ -44,81 +44,77 @@
 
 ### 2.1 默认媒体读取链路
 
-在低带宽自托管场景，推荐链路为：
-
 ```text
 Client
-  │
-  │ 1. request playback / download authorization
+  │ request playback / preview / download authorization
   ▼
 Ikaros Server
-  │
-  │ permission + policy + availability resolution
-  │ issue short-lived delivery grant
+  │ permission + availability + delivery resolution
+  │ issue short-lived grant / lease
   ▼
 Client
-  │
-  │ 2. HTTP Range media traffic
+  │ HTTP / Range traffic
   ▼
-Delivery Provider / CDN
+Selected Delivery Path
   │
-  │ cache miss / origin fetch
-  ▼
-Storage Provider / Object Storage
+  ├─ DIRECT       -> Storage Provider signed/read URL
+  ├─ CDN          -> configured CDN endpoint + Storage object path/signing
+  └─ SERVER_PROXY -> Ikaros attachment content endpoint
 ```
 
 统一原则：
 
-- Ikaros Server 不应成为大文件媒体数据面的默认中转节点；
-- Server 不因“可以 Proxy”就默认 Proxy；
-- CDN / Delivery 可以直接从私有对象存储回源；
-- 客户端拿到的是短期 Delivery Grant，而不是 Storage Credential；
-- 对象存储仍然是 Blob Placement 的持久化真相；
-- CDN 缓存对象不是 Blob Replica，也不进入持久化 Replica 计数。
+- Ikaros Server 不应成为大文件数据面的默认中转节点；
+- Storage Provider 仍然拥有 Blob Placement 真相；
+- Delivery Provider 不拥有 Blob；
+- CDN 缓存不计入 Durable Blob Replica；
+- 客户端不得得到长期 Storage Credential；
+- URL 是一次交付合同的结果，不是 Attachment 的永久属性。
 
 ### 2.2 Server Proxy 的定位
 
-Server Proxy 仅作为以下场景的兼容或受控路径：
+`SERVER_PROXY` 用于客户端无法直接访问 Storage、需要 Server 侧处理或管理员明确选择代理路径的场景。当前实现会生成：
 
-- Storage / Delivery Provider 无法被客户端访问；
-- 必须进行 Server 侧内容处理；
-- 特定安全等级禁止外部 Delivery；
-- Provider 不支持所需 Range / Auth 能力；
-- 管理员显式选择 Server Proxy 部署模式。
+```text
+/api/attachments/{attachmentId}/content?delivery_grant={token}
+```
 
-对于低带宽 Server，媒体 Proxy 应允许全局关闭或按策略禁用。
+若 Delivery Provider 的 `config.endpoint` 是有效的绝对 HTTP(S) Endpoint，则以该 Endpoint 作为上述路径的外部基址；未配置时保留相对地址。
 
 ### 2.3 Server Cache 的定位
 
-Server Cache 仍保留在 Storage 设计中，但部署策略必须允许：
-
-```text
-server_media_cache = OFF
-```
-
-或只保留极小的：
-
-- 封面 / 缩略图；
-- 字幕；
-- Manifest；
-- 小型派生资源；
-- Metadata Cache。
-
-禁止把“大容量 Server Cache”当作 CDN 的前置依赖。
+Server Cache 是可选加速层，不是 Delivery Provider 的前置依赖。大容量 Server Cache 不得成为 CDN / DIRECT 的必要路径。
 
 ---
 
-## 3. Delivery Provider
+## 3. Delivery Provider 与 Binding 当前工程模型
 
-### 3.1 定位
+### 3.1 Delivery Provider 定位
 
-新增逻辑概念 `Delivery Provider`：
+`Delivery Provider` 表达：
 
-> Delivery Provider 表达“已经通过 Storage Availability Resolution 的 Blob，如何安全、高效地交付给客户端”。
+> 已经通过 Storage Availability Resolution 的 Blob，采用哪一种交付策略向客户端提供读取合同。
 
-Delivery Provider 不拥有 Blob，不负责持久化数据真相，不替代 Storage Provider。
+当前持久化实体为 `media_delivery_provider`，核心属性包括：
 
-### 3.2 推荐类型
+```text
+provider_key
+provider_type
+ display_name
+credential_ref
+config
+capabilities
+grant_revocation_mode
+signing_key_version
+health_status
+enabled
+idempotency_key
+version / timestamps
+```
+
+其中 Provider 自己拥有 **类型、Endpoint/配置、凭据引用、Capabilities、撤销/签名版本、健康状态和启停状态**。
+
+### 3.2 当前 Provider 类型
 
 ```text
 DeliveryProviderType
@@ -127,59 +123,169 @@ DeliveryProviderType
 └── SERVER_PROXY
 ```
 
-语义：
+当前语义：
 
-- `DIRECT`：客户端通过 Storage Provider 的临时授权直接读取；
-- `CDN`：客户端通过 CDN / Edge Delivery 读取，CDN 回源 Storage Provider；
-- `SERVER_PROXY`：字节经过 Ikaros Server 或专用 Delivery Worker。
+- `DIRECT`：由绑定的 Storage Provider 生成读取意图；若 Storage Provider 返回签名 URL，保留其真实签名 Host，不由 Delivery 层重写成虚构域名。
+- `CDN`：Delivery Provider 必须通过 `config.endpoint` 提供有效 CDN 对外 Endpoint；Storage Object Provider 使用真实 object key 与该 Endpoint 生成读取合同。
+- `SERVER_PROXY`：生成 Ikaros Attachment Content URL，可由 Provider `config.endpoint` 提供外部 Server 基址。
 
-### 3.3 Capability
+**禁止**根据 Binding 或 Provider Key 猜测 CDN 域名、Bucket 域名或厂商 URL。
 
-Delivery Provider 至少需要声明：
+### 3.3 Delivery Binding 职责
+
+当前 `media_delivery_binding` 只描述 Storage Provider 与 Delivery Provider 的路由关系。工程字段为：
 
 ```text
-DeliveryCapabilities
-├── signed_url
-├── range
-├── private_origin
-├── cache
-├── purge
-├── origin_auth
-├── origin_shield
-├── custom_domain
-├── https
-└── max_ttl
+storage_provider_id
+delivery_provider_key
+priority
+enabled
+cache_key_policy
+range_policy
+fallback_participation
+version / timestamps
 ```
 
-Capability 必须由 Provider Contract 探测 / 校验，不能由业务代码假定。
+约束与语义：
 
-### 3.4 Delivery Grant
+- `delivery_provider_key` 通过稳定 Provider Key 关联 Delivery Provider；当前不是 `delivery_provider_id` 字段。
+- 同一 `storage_provider_id + delivery_provider_key` 不能重复绑定。
+- `priority` 越小优先级越高。
+- `cache_key_policy` 当前值：`CONTENT_IDENTITY / FULL_REQUEST / NO_CACHE`。
+- `range_policy` 当前值：`PASSTHROUGH / FIXED_CHUNK / UNSUPPORTED`。
+- `fallback_participation` 决定该 Binding 是否参与后续 Placement 的 fallback 选择。
 
-短期交付授权建议表达：
+历史设计中的 `origin_type`、`auth_mode` 已从 Binding migration 中删除；Provider 类型和交付策略由 Delivery Provider 自己负责。没有新的 ADR / 设计变更时不得重新把这两个字段加回 Binding。
+
+### 3.4 Provider 与 Binding 的边界
+
+| 能力 | Delivery Provider | Delivery Binding |
+|---|---:|---:|
+| `DIRECT / CDN / SERVER_PROXY` 类型 | ✅ | ❌ |
+| Endpoint / CDN 外部域名 | ✅ `config` | ❌ |
+| Credential Reference | ✅ | ❌ |
+| Health / Enabled | ✅ | Binding 仅有自己的 Enabled |
+| Storage 来源 | ❌ | ✅ `storage_provider_id` |
+| Provider 关联 | Provider 自身 `provider_key` | ✅ `delivery_provider_key` |
+| 路由优先级 | ❌ | ✅ |
+| Range Policy | Provider 可声明 capability | ✅ 路由合同的实际 policy |
+| Cache Key Policy | Provider 可声明 capability | ✅ 路由合同的实际 policy |
+| Fallback Participation | ❌ | ✅ |
+| URL 生成策略 | ✅ 由 Provider Type 驱动 | ❌ 不自行生成域名 |
+
+### 3.5 可用候选过滤
+
+附件预览与 Delivery Lease 选择都必须先得到可读 Placement，并排除：
+
+- Storage Provider 为 `DISABLED` 或 `FAILED`；
+- Binding 为 disabled；
+- Delivery Provider 为 disabled；
+- Delivery Provider `health_status = UNHEALTHY`。
+
+`UNKNOWN` 表示尚未得到有效探测结论，不等同于 `HEALTHY`，但当前实现不会像 `UNHEALTHY` 一样直接排除。
+
+### 3.6 默认选择、显式选择与 Fallback
+
+附件预览接口：
 
 ```text
-DeliveryGrant
-├── attachment_id
-├── blob_id
-├── delivery_provider_id
-├── url
-├── method
-├── expires_at
-├── range_supported
-├── content_type
-├── content_length
-├── etag / checksum?
-└── trace_id
+GET /api/attachments/{attachmentId}/preview-url?delivery_provider={providerKey}
+```
+
+当前行为：
+
+- 未传、空值或指定 Key 不在可用候选中时，按候选 Binding 的最小 `priority` 选择默认 Provider；
+- 指定的 Provider Key 存在于可用候选时，优先选择该 Provider；
+- 响应可以返回所有可选 Provider，但只为当前 selected Provider 生成 URL；
+- 可选 Provider 信息本身不生成访问 URL。
+
+Delivery Lease 的持久选择会记录 `binding_id`、`selection_epoch`、`selected_at`、`selection_reason`、`fallback_index` 与健康快照信息。非首个 readable Placement 的 Binding 只有在 `fallback_participation = true` 时才参与 Lease fallback。
+
+### 3.7 URL 生成合同
+
+当前 URL 生成必须遵循：
+
+**DIRECT**
+
+```text
+Binding.storage_provider_id
+ -> StorageProviderRegistry
+ -> readable BlobPlacement
+ -> StorageObjectProvider.createReadIntent(objectKey)
+ -> use returned URL / method / expiry
+```
+
+Delivery Provider 不改写 Storage Provider 已签名 URL 的 Host。
+
+**CDN**
+
+```text
+DeliveryProvider.config.endpoint
+ + Binding.storage_provider_id
+ + BlobPlacement.object_key
+ -> StorageObjectProvider.createReadIntent(objectKey, cdnEndpoint)
+```
+
+`config.endpoint` 缺失或不是有效绝对 URI 时合同失败；不得退回“拼一个看起来像 CDN 的 URL”。
+
+**SERVER_PROXY**
+
+```text
+provider endpoint (optional)
+ + /api/attachments/{id}/content?delivery_grant={token}
+```
+
+### 3.8 Health Probe 与生命周期
+
+Delivery Provider 支持创建、启停、删除、健康探测等生命周期管理。探测按 Provider Type 执行；创建或手动探测可通过 Background Task 异步执行并把结果回写 `health_status`。
+
+Provider 被 Binding 引用时，其删除/禁用必须遵循引用安全规则；控制台不能通过直接删除配置制造悬空 Binding。
+
+### 3.9 Capability
+
+Delivery Provider 的 `capabilities` 是声明/探测得到的能力描述，不是授权真相。设计允许逐步表达：
+
+```text
+signed_url
+range
+private_origin
+cache
+purge
+origin_auth
+origin_shield
+custom_domain
+https
+max_ttl
+```
+
+业务代码不得仅凭 Provider Type 假定所有能力均存在。
+
+### 3.10 Delivery Grant
+
+短期 Delivery Grant / Contract 应至少能关联：
+
+```text
+grant_id
+attachment_id
+lease_id
+delivery_provider_id
+method
+url
+expires_at
+range_supported
+content_type
+content_length
+revocation_level
 ```
 
 约束：
 
-- Grant 必须在 Permission 通过后生成；
-- URL 必须短时有效；
-- 不得暴露 Storage Credential；
-- 不得把 URL 保存为 Attachment 的永久地址；
-- CDN 场景优先使用 CDN 自身 URL 鉴权 / Token，而不是把 Storage Presigned URL 当成最终播放 URL；
-- 私有 Origin 的访问授权由 Delivery Provider 与 Storage Provider 的集成完成。
+- Grant 必须在权限通过后生成；
+- URL 短时有效；
+- 不暴露 Storage Credential；
+- 不把签名 URL 保存为 Attachment 永久地址；
+- 生成合同失败时不得留下错误的长期 Active Lease；
+- Range 能力必须与 Binding `range_policy` 一致。
 
 ---
 
@@ -189,157 +295,63 @@ DeliveryGrant
 
 CDN Cache：
 
-- 是 Delivery 层的临时副本；
-- 可以随时失效、淘汰、重建；
+- 属于 Delivery 层临时副本；
+- 可以淘汰和重建；
 - 不参与 Blob Replica Durable Count；
 - 不改变 Placement Tier；
 - 不作为完整性真相源。
 
 ### 4.2 Range
 
-视频交付必须保证 Range-aware：
+视频交付必须 Range-aware：
 
-- Client → CDN 支持 Range；
-- CDN → Origin 支持 Range 或可安全降级；
-- 不得向播放器声明虚假的 Range 能力；
-- 对按请求范围计费的归档直读能力，必须避免无限制的超大 Range 预取。
+- Client → Delivery 支持 Range 时才能对外声明 Range；
+- Binding `range_policy = UNSUPPORTED` 时不得宣称支持；
+- Storage Provider / CDN 实际能力不足时应失败或降级，而不是返回虚假能力。
 
-推荐 Delivery Provider 支持可配置：
+### 4.3 Private Origin
 
-```text
-range_prefetch_window
-origin_range_window
-max_single_range
-```
-
-具体默认值由 Provider / 客户端实现根据媒体和厂商能力决定，设计层不固定 8 MB、16 MB 等厂商无关参数。
-
-### 4.3 私有回源
-
-推荐拓扑：
+推荐拓扑仍为：
 
 ```text
 Private Object Storage
         ↑
-  authenticated origin
+ authenticated origin
         ↑
       CDN
         ↑
- CDN short-lived grant
+ short-lived client contract
         ↑
       Client
 ```
 
-不推荐把公开 Bucket 作为简化 CDN 接入的默认方案。
+当前工程已经具备 CDN Endpoint + Storage Object Path 的基础交付合同；更复杂的 Origin Auth、Purge、Origin Shield 等属于能力扩展，不应通过重新增加 Binding `auth_mode` 来实现。
 
 ---
 
 ## 5. Archive Restore 作为媒体可用性状态
 
-### 5.1 Storage 状态与媒体状态分离
-
-Storage 继续拥有真实 Placement / Restore 状态；Media 只消费稳定的 Availability View。
-
-推荐媒体侧暴露：
+Storage 继续拥有 Placement / Restore 真相；Media 只消费稳定 Availability View。推荐状态：
 
 ```text
-MediaAvailability
-├── READY
-├── RESTORE_REQUIRED
-├── RESTORING
-├── READY_TEMPORARILY
-├── UNAVAILABLE
-├── MISSING
-└── CORRUPTED
+READY
+RESTORE_REQUIRED
+RESTORING
+READY_TEMPORARILY
+UNAVAILABLE
+MISSING
+CORRUPTED
 ```
 
-其中：
+其中 `READY_TEMPORARILY` 必须同时满足对应 Restore Operation 仍处于可用状态且 `restore_expires_at` 未过期，才能参与 Delivery Lease 选择。
 
-- `READY`：存在可立即读取的 Placement；
-- `RESTORE_REQUIRED`：仅有需要 Restore 的 Placement；
-- `RESTORING`：Restore Background Task 正在执行；
-- `READY_TEMPORARILY`：归档对象已产生具有过期时间的可读临时副本；
-- `UNAVAILABLE`：Provider 暂不可用或策略禁止读取；
-- `MISSING` / `CORRUPTED`：沿用 Storage 的严重故障语义。
-
-媒体子系统不得直接修改 Placement 状态。
-
-### 5.2 Restore Request
-
-业务侧可以请求：
-
-```text
-RestoreScope
-├── ATTACHMENT
-├── EPISODE
-├── SEASON
-└── RESOURCE_SET
-```
-
-Storage 最终仍按 Blob / Placement 执行 Restore；Scope 只是业务聚合请求。
-
-Restore Request 应返回或关联 Background Task ID，并允许读取：
-
-- 当前状态；
-- 已完成数量 / 总数量；
-- Provider 可提供时的预计可用时间范围；
-- 临时恢复副本过期时间；
-- 部分失败列表。
-
-不得承诺云厂商无法保证的精确完成时刻。
-
-### 5.3 恢复本季与顺序预热
-
-对于剧集媒体，推荐支持两类策略：
-
-**显式恢复本季**
-
-用户可以主动恢复整个 Season / Resource Set。
-
-**顺序预热**
-
-用户恢复或播放 Episode N 后，可以按配置后台恢复：
-
-```text
-N + 1
-N + 2
-N + 3
-...
-```
-
-约束：
-
-- 预热数量必须受策略和成本预算限制；
-- 不得因为播放一集无上限恢复整个媒体库；
-- 对大 Season 可分批创建子任务；
-- 用户显式“恢复本季”的意图优先于自动预热策略。
+业务侧可按 `ATTACHMENT / EPISODE / SEASON / RESOURCE_SET` 聚合 Restore 意图，Storage 最终按 Blob / Placement 执行。Restore 外部调用应由 Background Task 承担，不在数据库长事务中调用 Provider API。
 
 ---
 
-## 6. Storage Heat 与 Tier Promotion
+## 6. Storage Heat、Tier 与 Working Set
 
-### 6.1 不使用单一 last_accessed_at 决策
-
-大文件 Range 请求不得逐请求热写数据库；同时，仅凭单一 `last_accessed_at` 也不足以表达业务热度。
-
-推荐派生 `Storage Heat Score`，输入可包括：
-
-```text
-recent_playback
-play_count_window
-currently_watching
-favorite / pinned
-recently_added
-restore_frequency
-manual_keep_hot
-collection_context
-```
-
-Heat Score 是派生值，不是 Resource 或 Blob 的核心真相。
-
-### 6.2 Promotion / Demotion
-
-允许策略表达：
+Heat Score、Promotion / Demotion、Working Set Budget 仍是后续策略层设计：
 
 ```text
 ARCHIVE
@@ -347,42 +359,17 @@ ARCHIVE
 READY_TEMPORARILY
   ↓ sustained access / explicit promote
 WARM / HOT
-  ↓ long-term inactivity
+  ↓ long inactivity
 COLD / ARCHIVE
 ```
 
-典型媒体策略可为：
-
-```text
-currently watching       -> WARM/HOT
-recently accessed        -> WARM
-long inactive            -> ARCHIVE
-manual pinned            -> never auto-demote below configured tier
-```
-
-具体天数、容量阈值和 Tier 映射必须是实例策略，不写死在领域模型中。
-
-### 6.3 Working Set Budget
-
-推荐 Storage Policy 支持可选工作集预算：
-
-```text
-working_set.max_bytes
-working_set.target_tier
-working_set.eviction_policy
-```
-
-当热数据超过预算时，根据 Heat Score、Pinned、当前播放状态等选择 Demotion 候选。
+当前播放、Active Delivery Lease、Manual Hold 等必须在不可逆清理或 Demotion 前重新检查，避免正在交付的 Blob 被错误迁移/清理。
 
 ---
 
 ## 7. 生命周期与成本安全
 
-### 7.1 Minimum Storage Duration
-
-不同 Provider 的低频 / 归档 Tier 可能有最短存储周期和提前删除费用。
-
-Storage Provider Capability / Cost Metadata 可以表达：
+Storage Provider 可以逐步声明：
 
 ```text
 minimum_storage_duration
@@ -393,180 +380,126 @@ restore_copy_ttl_range
 retrieval_billing_model
 ```
 
-这些字段用于策略决策与 UI 风险提示，不把公开价格表硬编码为领域常量。
-
-### 7.2 防止 Tier 抖动
-
-Promotion / Demotion 必须支持：
-
-- minimum residency；
-- cooldown；
-- manual hold；
-- active restore protection；
-- current playback protection。
-
-禁止同一 Blob 因短期访问波动在 Hot / Archive 间频繁搬迁。
+这些字段用于策略和风险提示，不把云厂商公开价格表硬编码为领域常量。Promotion / Demotion 应支持 minimum residency、cooldown、manual hold、active restore protection 与 current playback protection。
 
 ---
 
-## 8. Provider Contract 扩展
+## 8. Provider Contract Test
 
-Storage Provider 在已有 Put / Head / Read / Range / Restore 能力基础上，归档相关能力建议显式声明：
+Delivery Provider / Binding 至少覆盖：
 
-```text
-ArchiveCapabilities
-├── supports_restore
-├── restore_modes[]
-├── restore_latency_range
-├── supports_direct_archive_read
-├── temporary_restore_copy
-├── restore_ttl_configurable
-└── restore_status_query
-```
-
-Delivery Provider Contract Test 至少覆盖：
-
-- Signed URL / Token；
-- Expiration；
-- Range；
-- Private Origin；
-- Origin Auth failure；
-- CDN cache miss；
-- 401 / 403 不泄露 Origin Credential；
-- URL 不可作为永久 Attachment 地址使用。
+- Provider Key 唯一；
+- 相同 Storage Provider 不可重复绑定同一 `delivery_provider_key`；
+- disabled / `UNHEALTHY` Provider 不参与选择；
+- Binding priority 默认选择；
+- 显式 Provider 选择；
+- fallback participation；
+- DIRECT 保留 Storage Provider 签名 URL Host；
+- CDN 缺少有效 Endpoint 时失败；
+- CDN URL 基于配置 Endpoint 与真实 object path，不凭空生成；
+- SERVER_PROXY 相对/绝对 Endpoint 行为；
+- Range Policy 与响应合同一致；
+- Secret / Credential 不进入普通响应或日志。
 
 ---
 
 ## 9. 事件与可观测性
 
-建议稳定事件：
+建议稳定观察：
 
 ```text
+storage.delivery-lease.created
+storage.delivery-lease.released
 storage.restore.requested
 storage.restore.started
 storage.restore.succeeded
 storage.restore.failed
-storage.placement.promoted
-storage.placement.demoted
-delivery.grant.issued
 delivery.provider.degraded
 ```
 
-高频 CDN 请求不得逐请求写 Durable Event。
-
-Analytics 可以聚合：
-
-- CDN Delivered Bytes；
-- Origin Bytes；
-- Cache Hit Ratio；
-- Restore Bytes；
-- Restore Frequency；
-- Tier Physical Bytes；
-- Promotion / Demotion Bytes；
-- Server Proxy Bytes。
-
-对于低带宽部署，应能明确观察到：
-
-> `Server Proxy Bytes ≈ 0` 是否成立。
+高频媒体请求不得逐请求制造无界 Durable Event。Analytics 可以聚合 CDN Delivered Bytes、Origin Bytes、Cache Hit Ratio、Restore Bytes、Tier Physical Bytes 和 Server Proxy Bytes。
 
 ---
 
-## 10. 推荐部署 Profile：低带宽 Server + 对象存储 + CDN
+## 10. 推荐部署 Profile
 
-建议提供一个非强制的部署 Profile：
+低带宽 Server + 对象存储 + CDN 可采用：
 
 ```text
-profile: LOW_BANDWIDTH_OBJECT_STORAGE_CDN
-
 media_delivery:
   preferred: CDN
   server_proxy: disabled_by_default
-  server_media_cache: disabled_by_default
 
 storage:
   durable_provider: object_storage
-  tiering: enabled
   archive_restore: enabled_when_supported
 
 client:
   range_required: true
-  direct_origin_url: false_by_default
 ```
 
-该 Profile 只是默认配置集合，不改变系统能力模型。
+Profile 只是默认策略集合，不改变 Provider / Binding 数据模型。
 
 ---
 
-## 11. 与现有 V2 文档的边界
+## 11. 与其他 V2 文档的边界
 
 ### Attachment / Blob / Storage
 
-继续拥有：
+继续拥有 Blob / Placement、Storage Provider、Restore 真相、Delivery Provider / Binding、Delivery Grant / Lease、Tier 与 Storage Policy。
 
-- Blob / Placement；
-- Storage Provider / Tier；
-- Restore 真相状态；
-- Migration / Promotion / Demotion；
-- Storage Policy；
-- Server Cache。
+### Media / Playback
 
-本文补充 Delivery 与媒体归档使用方式，不改变其所有权。
-
-### Media / Video / Anime Playback
-
-继续拥有：
-
-- Episode / Season / Playback Session；
-- 播放 UI 语义；
-- 当前观看状态；
-- “恢复本集 / 本季”的业务入口；
-- MediaAvailability 到播放器 UX 的映射。
+继续拥有 Episode / Season / Playback Session、播放 UX、当前观看状态以及 Restore 业务入口。
 
 ### Background Task
 
-继续拥有 Restore / Promotion / Demotion 的统一异步执行状态、重试、超时、取消和 Attempt。
+继续拥有健康探测、Restore / Promotion / Demotion 等异步执行的 Attempt、Retry、Progress、Lease 与 Crash Recovery。
 
 ### Platform Administration
 
-继续拥有 Provider 配置、健康检查、策略管理、审计和危险操作确认。
+提供 Provider / Binding 配置入口、健康结果、审计和危险操作确认，但不绕过 Storage Application Contract 直接改表。
 
 ---
 
-## 12. P0 / P1 建议
+## 12. P0 / 后续演进
 
-### P0
+### 当前 P0 已有工程基线
 
-- Delivery Provider 抽象；
-- DIRECT / SERVER_PROXY 基础实现；
-- MediaAvailability；
-- Restore Request + Background Task；
-- Range-aware Delivery Grant；
-- Server Media Cache 可关闭。
+- Delivery Provider：`DIRECT / CDN / SERVER_PROXY`；
+- Delivery Provider 生命周期与健康探测；
+- Storage Provider ↔ Delivery Provider Binding；
+- Binding priority / Range / Cache Key / Fallback Participation；
+- Attachment Preview 可选 Delivery Provider；
+- DIRECT / CDN / SERVER_PROXY URL 合同；
+- Delivery Grant / Lease 与 Binding 选择记录；
+- Archive Restore / Temporary Ready 基础状态。
 
-### P1
+### 后续演进
 
-- CDN Delivery Provider；
-- Private Origin Auth；
-- Season Restore；
-- 顺序预热；
+- 更完整的 Private Origin Auth / Purge / Origin Shield；
+- Season Restore 与顺序预热；
 - Storage Heat Score；
 - Working Set Budget；
 - 自动 Promotion / Demotion；
-- Delivery / Restore Analytics。
+- Delivery / Restore Analytics；
+- 更细粒度 Provider Capability Contract Test。
 
 ---
 
 ## 13. 验收原则
 
-至少需要验证：
+至少验证：
 
-1. 关闭 Server Media Cache 后，远程媒体仍可通过 Delivery Provider 正常 Range 播放。
-2. CDN 模式下，媒体字节不经过 Ikaros Server 数据面。
-3. 私有 Object Storage 不向客户端泄露长期 Credential。
-4. Archive-only Episode 返回 `RESTORE_REQUIRED`，而不是模糊 404 / 500。
-5. Restore 中返回 `RESTORING` 并关联可查询任务。
-6. Restore 完成后无需替换 Attachment ID 即可播放。
-7. “恢复本季”可聚合多个 Blob Restore，并允许部分失败重试。
-8. 自动预热受数量 / 容量预算限制。
-9. 当前播放或 Pinned 媒体不会被自动 Demote。
-10. CDN 缓存不会被误计为 Durable Blob Replica。
+1. 有可读 Placement、可用 Binding 和可用 Delivery Provider 时能够生成预览/读取合同。
+2. 无可用 Delivery Binding 时明确返回 Storage Unavailable，而不是伪造 URL。
+3. `priority` 数值更小的 Binding 默认优先。
+4. 显式选择一个可用 `delivery_provider` 时使用对应 Provider；无效 Key 回落到可用默认候选。
+5. disabled 或 `UNHEALTHY` Delivery Provider 不参与选择。
+6. DIRECT 不改写 Storage Provider 返回的签名 Host。
+7. CDN 必须依赖 Delivery Provider 的有效 `config.endpoint`，不能从 Binding 猜测域名。
+8. SERVER_PROXY 未配置 Endpoint 时可以返回相对 Attachment Content URL。
+9. Binding 不再拥有 `origin_type / auth_mode`；Provider Type 是交付策略来源。
+10. Range Support 与 Binding `range_policy` 一致。
+11. Delivery Lease 记录实际 `binding_id` 与选择信息，Active Lease 可保护正在交付的 Blob。
+12. CDN Cache 不计为 Durable Blob Replica，Restore 完成也不改变 Attachment Identity。

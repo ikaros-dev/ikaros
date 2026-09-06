@@ -4,470 +4,459 @@
 |---|---|
 | 文档名称 | P0 Media Delivery / Restore Schema Addendum |
 | 适用版本 | Ikaros V2 |
-| 状态 | Draft / Implementation Contract |
+| 文档版本 | v0.2 |
+| 基线日期 | 2026-09-06 |
+| 状态 | Implementation-aligned Contract |
 | 基线 | `P0-Database-Schema-Design.md` |
-| 领域设计 | `../Media-Delivery-CDN-Archive-Restore-Design.md` |
-| 工程补充 | `../Media-Delivery-CDN-Archive-Restore-Engineering-Addendum.md` |
+| 领域设计 | `../../02-domain-capabilities/Media-Delivery-CDN-Archive-Restore-Design.md` |
 
-> 本文档是 `P0-Database-Schema-Design.md` 的规范性扩展。它不修改既有 `storage.blob`、`storage.attachment`、`storage.storage_provider`、`storage.blob_placement`、`operations.background_task` 的语义，而是在其上补齐 Delivery Provider、Restore Request / Operation、Delivery Lease 与 Restore Budget 的 P0 持久化契约。
+> 本文档把 Media Delivery / Restore 的持久化契约与当前 `run.ikaros.storage` Entity、Repository 以及 `src/main/resources/db/migration/` 对齐。
+>
+> **重要**：早期设计使用 `storage.delivery_provider`、`storage.delivery_binding` 等逻辑命名。当前工程采用单 PostgreSQL 数据库中的扁平物理表名，例如 `media_delivery_provider`、`media_delivery_binding`、`media_delivery_lease`、`storage_restore_request`。Storage 仍是这些表的领域 Owner，但文档不得再把逻辑 Schema 名误写成当前物理表名。
 
 ---
 
-## 1. Schema Ownership
+## 1. 当前物理表基线
 
-新增表仍由 Storage 子系统拥有，使用现有 `storage` Schema：
+与 Delivery / Restore 直接相关的当前表包括：
 
 ```text
-storage.delivery_provider
-storage.delivery_binding
-storage.restore_request
-storage.restore_request_item
-storage.restore_operation
-storage.delivery_lease
-storage.restore_budget_policy
+media_delivery_provider
+media_delivery_binding
+media_delivery_grant
+media_delivery_lease
+storage_restore_request
+storage_restore_request_item
+storage_restore_operation
+storage_restore_budget
 ```
 
-Background Task 继续由 `operations.background_task` / `operations.background_task_attempt` 拥有。
+相关基础表仍包括：
 
-Media 子系统只能通过 Storage Application Contract 消费 Availability / Restore 状态，不直接 UPDATE 这些表。
+```text
+attachment
+blob
+blob_placement
+storage_provider
+background_task
+platform_user
+```
+
+所有结构变更必须通过 `r2dbc-migrate` 执行的 `src/main/resources/db/migration/V...__....sql` 演进。已经进入共享环境的 migration 不原地修改；需要修正时追加新 migration。
 
 ---
 
-## 2. `storage.delivery_provider`
+## 2. `media_delivery_provider`
 
-Delivery Provider 表示“如何把已经可读的 Blob 交付给客户端”，不拥有 Blob Placement。
+Delivery Provider 表达“如何交付已经可读的 Blob”，不拥有 Blob Placement。
 
-| Column | Type | Null | Contract |
+当前字段：
+
+| Column | Type / Mapping | Null | 当前语义 |
 |---|---|---:|---|
-| `id` | uuid | NO | UUIDv7 |
-| `provider_key` | text | NO | stable instance-local key |
-| `provider_type` | text | NO | `DIRECT / CDN / SERVER_PROXY` |
-| `display_name` | text | NO | admin display |
-| `credential_ref` | text | YES | only `secret://` or equivalent |
-| `config` | jsonb | NO | non-secret provider config |
-| `capabilities` | jsonb | NO | probed / declared capabilities |
-| `grant_revocation_mode` | text | NO | revocation contract |
-| `signing_key_version` | bigint | NO | current key generation |
-| `enabled` | boolean | NO | routing eligibility |
-| `health_status` | text | NO | `UNKNOWN / HEALTHY / DEGRADED / UNHEALTHY` |
-| `version` | bigint | NO | optimistic concurrency |
-| `created_at` | timestamptz | NO | |
-| `updated_at` | timestamptz | NO | |
+| `id` | uuid | NO | `uuid_v7()` 默认 |
+| `provider_key` | varchar(128) | NO | 稳定、唯一 Provider Key |
+| `provider_type` | varchar(32) | NO | `DIRECT / CDN / SERVER_PROXY` |
+| `display_name` | varchar(256) | NO | 管理显示名 |
+| `credential_ref` | varchar(512) | YES | Credential / Secret Reference |
+| `config` | jsonb | NO | 非明文 Secret 的 Provider 配置 |
+| `capabilities` | jsonb | NO | 声明/探测能力 |
+| `grant_revocation_mode` | varchar(48) | NO | Grant 撤销语义 |
+| `signing_key_version` | bigint | NO | 当前签名 Key generation |
+| `health_status` | varchar(32) | NO | `UNKNOWN / HEALTHY / DEGRADED / UNHEALTHY` |
+| `enabled` | boolean | NO | 是否参与路由 |
+| `idempotency_key` | varchar(256) | YES | Provider 创建幂等键 |
+| `created_at` | timestamptz | NO | 创建时间 |
+| `updated_at` | timestamptz | NO | 更新时间 |
+| `version` | bigint | NO | Spring Data optimistic version |
 
-Constraints：
+当前 DB 约束包括：
 
 ```text
 UNIQUE(provider_key)
-CHECK provider_type in ('DIRECT','CDN','SERVER_PROXY')
-CHECK grant_revocation_mode in (
+provider_type IN ('DIRECT','CDN','SERVER_PROXY')
+grant_revocation_mode IN (
   'IMMEDIATE',
   'KEY_VERSION_BOUND',
   'TTL_BOUNDED',
   'NOT_REVOCABLE_BEFORE_EXPIRY'
 )
-CHECK health_status in ('UNKNOWN','HEALTHY','DEGRADED','UNHEALTHY')
-CHECK signing_key_version >= 1
-CHECK version >= 1
+signing_key_version >= 1
+health_status IN ('UNKNOWN','HEALTHY','DEGRADED','UNHEALTHY')
 ```
 
-安全规则：
+`idempotency_key` 通过 partial unique index 在非 null 时唯一。
 
-- `credential_ref` 禁止保存明文 Secret；
-- `config` 禁止保存完整 CDN token、签名 key 或 Storage Credential；
-- `capabilities` 是能力描述，不是业务授权真相。
+### 2.1 Provider 配置归属
 
-Indexes：
+Provider 自己拥有：
 
-```text
-delivery_provider_enabled_health_idx(enabled, health_status, provider_type)
-```
+- `provider_type`；
+- `credential_ref`；
+- `config.endpoint` 等交付配置；
+- `capabilities`；
+- `grant_revocation_mode`；
+- `signing_key_version`；
+- `health_status`；
+- `enabled`。
+
+这些字段不得复制到 Binding 形成第二套交付策略。
+
+### 2.2 Endpoint 语义
+
+当前实现读取 `config.endpoint`：
+
+- `CDN`：必须是有 scheme + host 的有效绝对 URI；用于构建基于真实 object path 的 CDN 读取合同；
+- `SERVER_PROXY`：可选；有效时作为 Ikaros attachment content path 的外部基址；未配置时返回相对 URL；
+- `DIRECT`：不使用 Delivery Provider Endpoint 重写 Storage Provider 已返回的签名 URL。
 
 ---
 
-## 3. `storage.delivery_binding`
+## 3. `media_delivery_binding`
 
-一个 Storage Provider 可以绑定多个 Delivery Provider。
+一个 Storage Provider 可以绑定多个 Delivery Provider。Binding 是**路由关系**，不是 Delivery Provider 的第二份配置。
 
-| Column | Type | Null | Contract |
+当前字段：
+
+| Column | Type | Null | 当前语义 |
 |---|---|---:|---|
-| `id` | uuid | NO | UUIDv7 |
-| `storage_provider_id` | uuid | NO | origin provider |
-| `delivery_provider_id` | uuid | NO | delivery path |
-| `priority` | integer | NO | smaller first |
-| `enabled` | boolean | NO | |
-| `origin_auth_ref` | text | YES | Secret Reference |
-| `cache_key_policy` | jsonb | NO | normalized cache identity policy |
-| `range_policy` | jsonb | NO | Range capability / limits |
-| `fallback_policy` | jsonb | NO | allowed next path classes |
-| `version` | bigint | NO | optimistic concurrency |
-| `created_at` | timestamptz | NO | |
-| `updated_at` | timestamptz | NO | |
+| `id` | uuid | NO | `uuid_v7()` 默认 |
+| `storage_provider_id` | uuid | NO | 绑定的 Storage Provider |
+| `delivery_provider_key` | varchar(128) | NO | 通过稳定 Key 关联 Delivery Provider |
+| `priority` | integer | NO | 越小越优先，默认 100 |
+| `enabled` | boolean | NO | Binding 是否参与候选 |
+| `cache_key_policy` | varchar(32) | NO | `CONTENT_IDENTITY / FULL_REQUEST / NO_CACHE` |
+| `range_policy` | varchar(32) | NO | `PASSTHROUGH / FIXED_CHUNK / UNSUPPORTED` |
+| `fallback_participation` | boolean | NO | 是否参与后续 Placement fallback |
+| `created_at` | timestamptz | NO | 创建时间 |
+| `updated_at` | timestamptz | NO | 更新时间 |
+| `version` | bigint | NO | optimistic version |
 
-Constraints：
-
-```text
-UNIQUE(storage_provider_id, delivery_provider_id)
-FK storage_provider_id -> storage.storage_provider(id) ON DELETE RESTRICT
-FK delivery_provider_id -> storage.delivery_provider(id) ON DELETE RESTRICT
-CHECK priority >= 0
-CHECK version >= 1
-```
-
-`cache_key_policy` 至少能够表达：
-
-```json
-{
-  "exclude_auth_query": true,
-  "auth_query_names": ["token", "signature", "expires"],
-  "query_allowlist": [],
-  "vary_header_allowlist": []
-}
-```
-
-任何把授权 Token 默认纳入 Cache Identity 的配置必须显式标记并在 Console 中产生性能风险提示。
-
-Indexes：
+当前约束：
 
 ```text
-delivery_binding_origin_priority_idx(storage_provider_id, enabled, priority, id)
-delivery_binding_delivery_idx(delivery_provider_id, enabled)
+FK storage_provider_id -> storage_provider(id)
+UNIQUE(storage_provider_id, delivery_provider_key)
+cache_key_policy IN ('CONTENT_IDENTITY','FULL_REQUEST','NO_CACHE')
+range_policy IN ('PASSTHROUGH','FIXED_CHUNK','UNSUPPORTED')
 ```
+
+当前路由索引：
+
+```text
+idx_media_delivery_binding_resolution(storage_provider_id, enabled, priority)
+```
+
+### 3.1 明确删除的旧字段
+
+当前 migration 已明确执行：
+
+```sql
+alter table media_delivery_binding
+    drop column if exists origin_type,
+    drop column if exists auth_mode;
+```
+
+因此：
+
+- `origin_type` 不再属于 Binding；交付类型由 `media_delivery_provider.provider_type` 决定；
+- `auth_mode` 不再属于 Binding；认证/签名/Endpoint 等交付细节由 Provider 配置、Storage Provider 能力和 Grant Contract 协作完成；
+- 早期设计中的 `origin_auth_ref`、`fallback_policy` JSON、`delivery_provider_id` 不是当前 Binding Entity 的字段，不得作为实现验收依据。
+
+### 3.2 Binding API 当前请求模型
+
+当前写请求对应：
+
+```text
+deliveryProviderKey
+priority
+enabled
+cacheKeyPolicy
+rangePolicy
+fallbackParticipation
+```
+
+文档和 Console 表单应使用该模型，不再要求 `origin_type / auth_mode / origin_auth_ref`。
 
 ---
 
-## 4. `storage.restore_request`
+## 4. Provider / Binding 选择不变量
 
-Restore Request 表示一次用户 / 系统业务意图，不等于具体 Provider Restore API 调用。
+Delivery 候选必须建立在可读 Blob Placement 上。
 
-| Column | Type | Null | Contract |
+必须排除：
+
+```text
+Storage Provider status = DISABLED / FAILED
+Binding enabled = false
+Delivery Provider enabled = false
+Delivery Provider health_status = UNHEALTHY
+```
+
+`UNKNOWN` 代表尚未获得有效健康结论，不等于 `HEALTHY`；当前实现仅将 `UNHEALTHY` 作为硬排除状态。
+
+### 4.1 Preview 选择
+
+Attachment Preview 会收集可用候选：
+
+```text
+active Blob Placement
+ -> readable Storage Provider
+ -> enabled Binding
+ -> enabled and not-UNHEALTHY Delivery Provider
+```
+
+选择规则：
+
+- 请求 `delivery_provider={providerKey}` 且候选中存在时，选择该 Provider；
+- 未请求、空值或 Key 不在候选中时，选择 `priority` 最小的 Binding；
+- 响应可返回候选 Provider 列表，但只为 selected Provider 生成 URL。
+
+### 4.2 Lease 选择
+
+Delivery Lease 将最终选择持久化到 `binding_id`。对非首个 readable Placement，Binding 只有 `fallback_participation = true` 才参与 fallback。
+
+---
+
+## 5. `media_delivery_lease`
+
+Delivery Lease 表示当前短期数据面保护，不是播放历史。
+
+当前 Entity 字段：
+
+| Column | Type | Null | 当前语义 |
 |---|---|---:|---|
-| `id` | uuid | NO | UUIDv7 |
-| `actor_type` | text | NO | user / system / automation |
-| `actor_id` | uuid | YES | |
-| `scope_type` | text | NO | `ATTACHMENT / EPISODE / SEASON / RESOURCE_SET` |
-| `scope_id` | uuid | NO | opaque cross-domain contract reference |
-| `requested_restore_class` | text | YES | provider-neutral requested class |
-| `status` | text | NO | aggregate request state |
-| `idempotency_key` | text | YES | API idempotency |
-| `item_count` | integer | NO | resolved item count |
-| `total_bytes` | bigint | NO | logical requested bytes |
-| `ready_items` | integer | NO | |
-| `failed_items` | integer | NO | |
-| `budget_decision` | text | NO | applied guard result |
-| `correlation_id` | uuid | YES | |
-| `error_summary` | text | YES | safe summary only |
-| `created_at` | timestamptz | NO | |
-| `updated_at` | timestamptz | NO | |
-| `completed_at` | timestamptz | YES | |
+| `id` | uuid | NO | Lease ID |
+| `attachment_id` | uuid | NO | Attachment |
+| `blob_id` | uuid | NO | Blob |
+| `owner_id` | uuid | NO | 当前授权用户 |
+| `grant_id` | uuid | YES | 对应 Delivery Grant |
+| `binding_id` | uuid | YES | 实际选择的 Binding |
+| `selection_epoch` | bigint | NO | 选择代数，当前初始 1 |
+| `selected_at` | timestamptz | YES | 选择时间 |
+| `selection_reason` | varchar(64) | NO | 当前 `PRIMARY / FAILOVER` 语义 |
+| `fallback_index` | integer | NO | Placement fallback 序号 |
+| `health_snapshot_version` | varchar(128) | YES | 选择时健康/Provider 快照标识 |
+| `lease_expires_at` | timestamptz | NO | 有限 TTL |
+| `released_at` | timestamptz | YES | 主动释放 |
+| `last_heartbeat_at` | timestamptz | NO | 最近续租/心跳 |
+| `created_at` | timestamptz | NO | 创建时间 |
+| `version` | bigint | NO | optimistic version |
 
-Constraints：
+基础 FK / index 由 migration 建立，包括 Attachment、Blob、Owner、Grant 与 `binding_id -> media_delivery_binding(id)`。
 
-```text
-CHECK scope_type in ('ATTACHMENT','EPISODE','SEASON','RESOURCE_SET')
-CHECK status in (
-  'PENDING','ACTIVE','PARTIAL','SUCCEEDED','FAILED',
-  'CANCEL_REQUESTED','CANCELLED'
-)
-CHECK item_count >= 0
-CHECK total_bytes >= 0
-CHECK ready_items >= 0 AND ready_items <= item_count
-CHECK failed_items >= 0 AND failed_items <= item_count
-CHECK budget_decision in ('ACCEPTED','PARTIAL','CONFIRMED','QUEUED','REJECTED')
-UNIQUE(actor_type, actor_id, idempotency_key)
-  WHERE idempotency_key IS NOT NULL
-```
-
-跨 Schema `scope_id` P0 不建立强 FK；Application Command 必须在解析 Scope 时验证引用。
-
-Indexes：
+Active Lease：
 
 ```text
-restore_request_actor_created_idx(actor_type, actor_id, created_at, id)
-restore_request_scope_idx(scope_type, scope_id, created_at, id)
-restore_request_status_idx(status, updated_at, id)
+released_at IS NULL
+AND lease_expires_at > now()
 ```
+
+当前 TTL 由应用层限制在 1..1800 秒。GC、不可逆清理、自动 Demotion 等操作必须尊重 Active Lease 保护。
 
 ---
 
-## 5. `storage.restore_operation`
+## 6. Delivery URL 不作为持久真相
 
-Restore Operation 是对具体归档 Placement 的去重后 Provider 操作。
+签名 URL、CDN URL、Server Proxy URL 都是短期 Contract 结果，不是 Attachment / Blob 永久字段。
 
-| Column | Type | Null | Contract |
-|---|---|---:|---|
-| `id` | uuid | NO | UUIDv7 |
-| `placement_id` | uuid | NO | concrete archive placement |
-| `operation_key` | text | NO | deterministic idempotency identity |
-| `restore_class` | text | NO | provider-normalized restore mode |
-| `restore_generation` | bigint | NO | monotonic generation per placement |
-| `status` | text | NO | operation state |
-| `background_task_id` | uuid | YES | execution identity |
-| `provider_request_ref` | text | YES | protected non-secret provider request ref |
-| `size_bytes` | bigint | NO | actual provider restore bytes basis |
-| `restore_expires_at` | timestamptz | YES | temporary readable copy expiry |
-| `started_at` | timestamptz | YES | |
-| `completed_at` | timestamptz | YES | |
-| `created_at` | timestamptz | NO | |
-| `updated_at` | timestamptz | NO | |
+当前生成规则：
 
-Constraints：
+### DIRECT
 
 ```text
-UNIQUE(operation_key)
-UNIQUE(placement_id, restore_generation)
-FK placement_id -> storage.blob_placement(id) ON DELETE RESTRICT
-CHECK restore_generation >= 1
-CHECK size_bytes >= 0
-CHECK status in (
-  'PENDING','RUNNING','READY_TEMPORARILY','SUCCEEDED','FAILED',
-  'CANCEL_REQUESTED','CANCELLED','EXPIRED'
-)
+binding.storage_provider_id
+ -> Storage Provider
+ -> readable placement.object_key
+ -> StorageObjectProvider.createReadIntent(...)
 ```
 
-`background_task_id` 是跨 Operations Schema 的稳定 Contract Reference；P0 可不建立跨 Schema FK，但 Application 层必须保持引用完整性。
+直接使用 Storage Provider 返回的 URL / method / expiry，不覆盖其签名 Host。
 
-核心不变量：
-
-> 同一 Placement 的语义等价 Restore 只能复用同一个 active `operation_key`；不同业务 Request 不得造成重复 Provider Restore。
-
-Indexes：
+### CDN
 
 ```text
-restore_operation_placement_status_idx(placement_id, status, updated_at, id)
-restore_operation_task_idx(background_task_id) WHERE background_task_id IS NOT NULL
-restore_operation_expiry_idx(restore_expires_at, id)
-  WHERE status = 'READY_TEMPORARILY'
+delivery_provider.config.endpoint
+ + binding.storage_provider_id
+ + placement.object_key
+ -> StorageObjectProvider.createReadIntent(..., cdnEndpoint)
 ```
+
+Endpoint 缺失/非法时失败，不根据 Provider Key 或 Bucket 名构造虚假 CDN URL。
+
+### SERVER_PROXY
+
+```text
+[delivery_provider.config.endpoint]
+ + /api/attachments/{attachmentId}/content?delivery_grant={token}
+```
+
+Endpoint 可省略，省略时合同允许相对地址。
+
+不得把完整 URL / Token 写入普通审计、Analytics 或 Attachment 永久列。
 
 ---
 
-## 6. `storage.restore_request_item`
+## 7. `storage_restore_request`
 
-连接业务 Restore Request 与去重后的 Restore Operation。
-
-| Column | Type | Null | Contract |
-|---|---|---:|---|
-| `request_id` | uuid | NO | |
-| `placement_id` | uuid | NO | resolved placement |
-| `operation_id` | uuid | YES | null when immediately ready / rejected |
-| `attachment_id` | uuid | YES | business traceability |
-| `item_status` | text | NO | |
-| `size_bytes` | bigint | NO | |
-| `error_code` | text | YES | stable safe code |
-| `created_at` | timestamptz | NO | |
-| `updated_at` | timestamptz | NO | |
-
-Constraints：
+Restore Request 表示业务 Restore 意图。当前 Entity 以物理表 `storage_restore_request` 持久化，主要字段：
 
 ```text
-PRIMARY KEY(request_id, placement_id)
-FK request_id -> storage.restore_request(id) ON DELETE CASCADE
-FK placement_id -> storage.blob_placement(id) ON DELETE RESTRICT
-FK operation_id -> storage.restore_operation(id) ON DELETE RESTRICT
-FK attachment_id -> storage.attachment(id) ON DELETE RESTRICT
-CHECK item_status in (
-  'PENDING','ATTACHED_TO_EXISTING','RESTORING','READY',
-  'READY_TEMPORARILY','FAILED','CANCELLED','REJECTED'
-)
-CHECK size_bytes >= 0
+id
+actor_id
+scope
+scope_id
+status
+total_items
+completed_items
+total_bytes
+error_summary
+idempotency_key
+background_task_id
+budget_decision
+selected_attachment_ids
+created_at / updated_at / version
 ```
 
-一个 `operation_id` 可以被多个 Request Item 引用，这是 Restore 合并的正式数据模型。
-
-Indexes：
-
-```text
-restore_request_item_operation_idx(operation_id, request_id)
-restore_request_item_attachment_idx(attachment_id, request_id)
-```
+Restore Scope 和状态以当前 enum / service 为准。`background_task_id` 将外部 Provider 恢复操作放入可靠 Background Task，而不是在 HTTP/数据库长事务中同步等待。
 
 ---
 
-## 7. `storage.delivery_lease`
+## 8. `storage_restore_operation`
 
-Delivery Lease 是当前数据面活动的短期保护租约，不是用户观看历史。
-
-| Column | Type | Null | Contract |
-|---|---|---:|---|
-| `id` | uuid | NO | UUIDv7 |
-| `attachment_id` | uuid | NO | |
-| `blob_id` | uuid | NO | |
-| `placement_id` | uuid | YES | selected readable placement when known |
-| `actor_type` | text | NO | |
-| `actor_id` | uuid | YES | |
-| `purpose` | text | NO | `PLAYBACK / DOWNLOAD` |
-| `delivery_provider_id` | uuid | YES | selected path |
-| `grant_key_version` | bigint | YES | token signing generation |
-| `expires_at` | timestamptz | NO | finite TTL |
-| `last_renewed_at` | timestamptz | NO | |
-| `released_at` | timestamptz | YES | explicit release |
-| `created_at` | timestamptz | NO | |
-
-Constraints：
+具体 Provider Restore 操作持久化在 `storage_restore_operation`，当前 Entity 主要字段：
 
 ```text
-FK attachment_id -> storage.attachment(id) ON DELETE RESTRICT
-FK blob_id -> storage.blob(id) ON DELETE RESTRICT
-FK placement_id -> storage.blob_placement(id) ON DELETE RESTRICT
-FK delivery_provider_id -> storage.delivery_provider(id) ON DELETE RESTRICT
-CHECK purpose in ('PLAYBACK','DOWNLOAD')
-CHECK expires_at > created_at
-CHECK grant_key_version IS NULL OR grant_key_version >= 1
+id
+placement_id
+provider_restore_class
+restore_generation
+operation_key
+status
+background_task_id
+provider_operation_id
+restore_expires_at
+error_summary
+created_at / updated_at / version
 ```
 
-Active Lease 定义：
-
-```text
-released_at IS NULL AND expires_at > now()
-```
-
-GC、自动 Demotion、Restore 临时副本清理、Provider Drain 在执行不可逆动作前必须重新检查 Active Lease。
-
-Indexes：
-
-```text
-delivery_lease_blob_active_idx(blob_id, expires_at)
-  WHERE released_at IS NULL
-
-delivery_lease_placement_active_idx(placement_id, expires_at)
-  WHERE released_at IS NULL
-
-delivery_lease_actor_idx(actor_type, actor_id, expires_at)
-```
+`operation_key` 用于相同语义 Restore 的幂等/去重。`READY_TEMPORARILY` Placement 只有对应 Operation 仍有效且 `restore_expires_at` 在未来时，才可进入 Delivery 选择。
 
 ---
 
-## 8. `storage.restore_budget_policy`
+## 9. `storage_restore_request_item`
 
-P0 使用结构化 Budget Policy，不把云厂商实时价格写入核心 Schema。
-
-| Column | Type | Null | Contract |
-|---|---|---:|---|
-| `id` | uuid | NO | UUIDv7 |
-| `scope_type` | text | NO | `INSTANCE / PROVIDER / STORAGE_POLICY` |
-| `scope_id` | uuid | YES | null for INSTANCE |
-| `max_bytes_per_request` | bigint | YES | |
-| `max_items_per_request` | integer | YES | |
-| `max_concurrent_operations` | integer | YES | |
-| `max_concurrent_bytes` | bigint | YES | |
-| `daily_requested_bytes` | bigint | YES | |
-| `daily_provider_restore_bytes` | bigint | YES | |
-| `auto_prefetch_max_bytes_per_trigger` | bigint | YES | |
-| `auto_prefetch_max_items_per_trigger` | integer | YES | |
-| `overflow_action` | text | NO | |
-| `enabled` | boolean | NO | |
-| `version` | bigint | NO | |
-| `created_at` | timestamptz | NO | |
-| `updated_at` | timestamptz | NO | |
-
-Constraints：
+Request 与具体 Placement / Operation 的关联使用 `storage_restore_request_item`，当前 Entity 字段：
 
 ```text
-CHECK scope_type in ('INSTANCE','PROVIDER','STORAGE_POLICY')
-CHECK (
-  (scope_type = 'INSTANCE' AND scope_id IS NULL)
-  OR
-  (scope_type <> 'INSTANCE' AND scope_id IS NOT NULL)
-)
-CHECK overflow_action in ('REJECT','REQUIRE_CONFIRMATION','QUEUE_AFTER_BUDGET_RESET','PARTIAL_ACCEPT')
-CHECK version >= 1
-CHECK max_bytes_per_request IS NULL OR max_bytes_per_request >= 0
-CHECK max_items_per_request IS NULL OR max_items_per_request >= 0
-CHECK max_concurrent_operations IS NULL OR max_concurrent_operations >= 0
-CHECK max_concurrent_bytes IS NULL OR max_concurrent_bytes >= 0
-CHECK daily_requested_bytes IS NULL OR daily_requested_bytes >= 0
-CHECK daily_provider_restore_bytes IS NULL OR daily_provider_restore_bytes >= 0
+id
+request_id
+placement_id
+operation_id
+status
+error_summary
+created_at / updated_at / version
 ```
 
-唯一性：
-
-```text
-UNIQUE(scope_type, scope_id)
-```
-
-Instance scope 的 null 唯一语义需要通过 partial unique index 保证：
-
-```text
-restore_budget_instance_uk(scope_type)
-  WHERE scope_type = 'INSTANCE'
-```
+多个 Request 可以协调到共享/去重后的 Restore Operation；业务层不得因为不同入口重复触发等价 Provider Restore。
 
 ---
 
-## 9. 不持久化完整 Delivery Grant URL
+## 10. `storage_restore_budget`
 
-P0 不新增 `delivery_grant` 明文 URL 表。
-
-原因：
-
-- URL 通常含短期 Token / Signature；
-- 高频播放会制造大量短命记录；
-- 完整 URL 不应进入普通审计 / Analytics。
-
-如果需要审计，只保存：
+当前 Restore Budget 表为 `storage_restore_budget`，Entity 字段：
 
 ```text
-grant_id
-attachment_id
-delivery_provider_id
-key_version
-expires_at
-actor reference
-result code
+id
+max_bytes_per_request
+max_items_per_request
+max_concurrent_operations
+max_concurrent_bytes
+daily_requested_bytes
+daily_provider_restore_bytes
+over_budget_action
+updated_at
+version
 ```
 
-不得保存完整签名 URL 或原始 Token。
+Budget 只表达实例策略和保护阈值，不硬编码云厂商实时价格。
 
 ---
 
-## 10. Transaction Boundaries
+## 11. Transaction Boundary
 
-### Request Restore
-
-一个事务内至少完成：
-
-```text
-validate permission
-resolve scope snapshot
-apply budget decision
-insert restore_request
-insert request_items
-attach existing operation OR create operation intent
-append Outbox Event
-```
-
-Provider API 调用不得放在持有数据库事务锁的长事务中；实际外部调用由 Background Task 执行。
-
-### Issue Delivery Grant
+### Issue Preview / Delivery Contract
 
 至少保证：
 
 ```text
-permission re-check
-availability resolution
-delivery provider resolution
-lease create/renew
-issue short-lived grant
+permission / ownership check
+ -> resolve Blob + readable Placement
+ -> resolve Storage Provider
+ -> resolve enabled Binding
+ -> resolve enabled/not-UNHEALTHY Delivery Provider
+ -> issue short-lived Grant
+ -> create Lease with binding_id
+ -> build Provider-type-specific contract
 ```
 
-如果签名 Provider 调用失败，Lease 不得被错误续租为长时间 Active。
+合同构建失败时，已签发 Grant 应尽力撤销，不能把失败合同当成成功交付状态。
+
+### Request Restore
+
+至少保证：
+
+```text
+validate permission
+ -> resolve scope
+ -> apply budget decision
+ -> persist request / items / operation intent
+ -> enqueue Background Task
+```
+
+实际 Provider API 调用不得在持有数据库事务锁的长事务中执行。
 
 ---
 
-## 11. Migration Order
+## 12. Migration Contract
 
-建议在既有 P0 Storage Migration 之后增加：
+当前实现的关键 Delivery migrations 包括：
 
 ```text
-1. storage.delivery_provider
-2. storage.delivery_binding
-3. storage.restore_budget_policy
-4. storage.restore_request
-5. storage.restore_operation
-6. storage.restore_request_item
-7. storage.delivery_lease
-8. indexes / partial unique constraints
-9. deterministic permission seed expansion
+V202609034500__DDL_MEDIA_DELIVERY_LEASE_P0.sql
+V202609034700__DDL_MEDIA_DELIVERY_BINDING_P0.sql
+V202609034900__DDL_MEDIA_DELIVERY_PROVIDER_P0.sql
+V202609035000__DDL_MEDIA_DELIVERY_SELECTION_P0.sql
+V202609035300__DDL_MEDIA_DELIVERY_PROVIDER_IDEMPOTENCY_P0.sql
+V202609060600__DDL_MEDIA_DELIVERY_BINDING_REMOVE_UNUSED_COLUMNS.sql
 ```
 
-所有 DDL 继续进入 versioned migration；不允许生产启动时动态建表。
+工程规则：
+
+1. migration 路径统一为 `src/main/resources/db/migration/`；
+2. 由应用启动阶段的 `r2dbc-migrate` 执行；
+3. 不引入 Flyway/JDBC 第二数据库访问栈；
+4. 已发布 migration 不原地编辑；
+5. Entity / Repository / API 与 migration 冲突时，必须先明确当前代码与实际数据库状态，再通过追加 migration + 文档更新收敛；
+6. Provider/Binding 相关文档不得继续引用已删除的 `origin_type / auth_mode` 或不存在的 `delivery_provider_id / origin_auth_ref / fallback_policy` 作为当前字段。
+
+---
+
+## 13. P0 Schema 验收
+
+至少验证：
+
+- `provider_key` 唯一；
+- Provider Type 非法值被拒绝；
+- 相同 Storage Provider + Delivery Provider Key 的重复 Binding 被拒绝；
+- Binding `cache_key_policy / range_policy` 只接受当前枚举值；
+- `origin_type / auth_mode` 不再是当前 Binding 字段；
+- Delivery Provider 类型/Endpoint 不从 Binding 推断；
+- Lease 持久化 `binding_id` 与选择信息；
+- Preview 默认按 Binding priority 选择，可显式选择可用 Provider；
+- disabled / `UNHEALTHY` Provider 不参与候选；
+- CDN Endpoint 缺失时不能构造虚假 URL；
+- DIRECT 保留 Storage Provider 的签名 URL Host；
+- Active Lease 能保护正在交付的 Blob；
+- Restore 外部调用由 Background Task 执行；
+- 所有变更均可通过 `r2dbc-migrate` 从受支持历史版本确定性升级。
