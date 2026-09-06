@@ -9,19 +9,20 @@ import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.task.BackgroundTaskService;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 @Service
 public class DefaultImportRunService implements ImportRunService {
     private static final int MAX_UNPAGED_RESULTS = 100;
     private final ImportPlanRepository plans; private final ImportRunRepository runs;
-    private final BackgroundTaskService tasks; private final AuditService audit; private final DurableEventService events;
+    private final BackgroundTaskService tasks; private final AuditService audit; private final DurableEventPublisher events;
     private final ImportPlanItemRepository planItems; private final ImportRunItemRepository runItems;
     public DefaultImportRunService(ImportPlanRepository plans, ImportRunRepository runs, BackgroundTaskService tasks, AuditService audit) {
         this(plans,runs,tasks,audit,null,null,null);
     }
     @org.springframework.beans.factory.annotation.Autowired
     public DefaultImportRunService(ImportPlanRepository plans, ImportRunRepository runs, BackgroundTaskService tasks,
-        AuditService audit, DurableEventService events, ImportPlanItemRepository planItems, ImportRunItemRepository runItems) {
+        AuditService audit, DurableEventPublisher events, ImportPlanItemRepository planItems, ImportRunItemRepository runItems) {
         this.plans=plans; this.runs=runs; this.tasks=tasks; this.audit=audit; this.events=events; this.planItems=planItems; this.runItems=runItems;
     }
     public Mono<ImportRunView> start(UUID ownerId, UUID planId, StartImportRequest request) {
@@ -36,9 +37,9 @@ public class DefaultImportRunService implements ImportRunService {
             .flatMap(run -> planItems == null ? Mono.just(run) : planItems.findAllByPlanIdOrderByCreatedAtAsc(planId)
                 .flatMap(item -> runItems.save(new ImportRunItemEntity(null, run.id(), item.id(), ImportItemStatus.PENDING.name(), 0, null,
                     run.id()+":"+item.id(), Instant.now(), null))).then(Mono.just(run)))
-            .flatMap(run -> (events == null ? Mono.empty() : events.append("ingestion.import.started", 1,
-                "ingestion_import_run", run.id(), "{\"run_id\":\"" + run.id() + "\",\"plan_id\":\""
-                    + run.planId() + "\"}").then()).then(audit.record(ownerId,"ingestion.import.start",
+            .flatMap(run -> (events == null ? Mono.empty() : events.append(new EventAppendRequest("ingestion.import.started", 1,
+                "ingestion", "ingestion_import_run", run.id(), "{\"run_id\":\"" + run.id() + "\",\"plan_id\":\""
+                    + run.planId() + "\"}")).then()).then(audit.record(ownerId,"ingestion.import.start",
                         "INGESTION_IMPORT_RUN",run.id(),"{}")).thenReturn(view(run)));
     }
     public Mono<List<ImportRunItemView>> items(UUID ownerId, UUID runId) { return owned(ownerId,runId)

@@ -6,12 +6,14 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import reactor.core.publisher.Mono;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 class InMemoryStorageProviderRegistryTest {
     @Test
@@ -26,8 +28,8 @@ class InMemoryStorageProviderRegistryTest {
 
     @Test
     void updatesProviderConfigurationAndPublishesChangedEvent() {
-        DurableEventService events = mock(DurableEventService.class);
-        when(events.append(any(), eq(1), eq("storage_provider"), any(UUID.class), any())).thenReturn(Mono.empty());
+        DurableEventPublisher events = mock(DurableEventPublisher.class);
+        when(events.append(any(EventAppendRequest.class))).thenReturn(Mono.empty());
         InMemoryStorageProviderRegistry registry = new InMemoryStorageProviderRegistry(events);
         StorageProvider provider = registry.register("local", "filesystem", StorageTier.HOT,
             "secret://storage/local", Map.of()).block();
@@ -38,6 +40,8 @@ class InMemoryStorageProviderRegistryTest {
         assertEquals("s3", updated.providerType());
         assertEquals(StorageTier.COLD, updated.tier());
         assertEquals("archive", updated.metadata().get("bucket"));
-        verify(events).append(eq("storage.provider.updated"), eq(1), eq("storage_provider"), eq(provider.id()), any());
+        verify(events).append(argThat(request -> request.eventType().equals("storage.provider.updated")
+            && request.producerSubsystem().equals("storage") && request.subjectType().equals("storage_provider")
+            && request.subjectId().equals(provider.id())));
     }
 }

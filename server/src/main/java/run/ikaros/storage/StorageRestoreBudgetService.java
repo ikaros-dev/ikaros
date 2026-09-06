@@ -8,15 +8,16 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.PreconditionFailedException;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 @Service
 public class StorageRestoreBudgetService {
     public static final UUID DEFAULT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private final StorageRestoreBudgetRepository budgets;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
 
-    public StorageRestoreBudgetService(StorageRestoreBudgetRepository budgets, DurableEventService events) {
+    public StorageRestoreBudgetService(StorageRestoreBudgetRepository budgets, DurableEventPublisher events) {
         this.budgets = budgets; this.events = events;
     }
 
@@ -35,9 +36,9 @@ public class StorageRestoreBudgetService {
             request.maxBytesPerRequest(), request.maxItemsPerRequest(), request.maxConcurrentOperations(),
             request.maxConcurrentBytes(), request.dailyRequestedBytes(), request.dailyProviderRestoreBytes(),
             request.overBudgetAction(), now, old.version())); })
-            .flatMap(saved -> events.append("storage.restore-budget.updated", 1, "restore_budget_policy", saved.id(),
+            .flatMap(saved -> events.append(new EventAppendRequest("storage.restore-budget.updated", 1, "storage", "restore_budget_policy", saved.id(),
                 "{\"policy_id\":\"" + saved.id() + "\",\"scope_type\":\"INSTANCE\",\"scope_id\":null,\"version\":"
-                    + (saved.version() == null ? 0 : saved.version()) + "}").thenReturn(view(saved)));
+                    + (saved.version() == null ? 0 : saved.version()) + "}")).thenReturn(view(saved)));
     }
 
     public Mono<Void> check(int items, long bytes) {

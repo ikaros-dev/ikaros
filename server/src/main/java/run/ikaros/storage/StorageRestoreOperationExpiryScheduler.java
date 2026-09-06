@@ -5,16 +5,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 /** 收敛临时恢复副本对应的已过期 Restore Operation。 */
 @Component
 public class StorageRestoreOperationExpiryScheduler {
     private final StorageRestoreOperationRepository operations;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
     private final AtomicBoolean running = new AtomicBoolean();
 
-    public StorageRestoreOperationExpiryScheduler(StorageRestoreOperationRepository operations, DurableEventService events) {
+    public StorageRestoreOperationExpiryScheduler(StorageRestoreOperationRepository operations, DurableEventPublisher events) {
         this.operations = operations;
         this.events = events;
     }
@@ -28,8 +29,8 @@ public class StorageRestoreOperationExpiryScheduler {
                 operation.providerRestoreClass(), operation.restoreGeneration(), operation.operationKey(), StorageRestoreOperationStatus.EXPIRED,
                 operation.backgroundTaskId(), operation.providerOperationId(), operation.restoreExpiresAt(),
                 operation.errorSummary(), operation.createdAt(), now, operation.version()))
-                .flatMap(expired -> events.append("storage.restore-operation.expired", 1, "restore_operation", expired.id(),
-                    "{\"operation_id\":\"" + expired.id() + "\",\"placement_id\":\"" + expired.placementId() + "\"}").then()))
+                .flatMap(expired -> events.append(new EventAppendRequest("storage.restore-operation.expired", 1, "storage", "restore_operation", expired.id(),
+                    "{\"operation_id\":\"" + expired.id() + "\",\"placement_id\":\"" + expired.placementId() + "\"}")).then()))
             .onErrorResume(ignored -> Mono.empty())
             .doFinally(ignored -> running.set(false))
             .subscribe();

@@ -2,6 +2,7 @@ package run.ikaros.storage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -25,7 +26,8 @@ import run.ikaros.resource.ResourceEntity;
 import run.ikaros.resource.ResourceLifecycle;
 import run.ikaros.resource.ResourceRepository;
 import run.ikaros.resource.ResourceType;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 /**
  * 验证 Attachment、Blob 与 Placement 的存储边界。
@@ -144,14 +146,14 @@ class DefaultStorageServiceTest {
             AttachmentKind.ORIGINAL, now, null, 0L);
         AttachmentEntity archived = new AttachmentEntity(attachmentId, resourceId, blobId, "book.pdf",
             AttachmentKind.ORIGINAL, now, null, 1L, null, now);
-        DurableEventService events = mock(DurableEventService.class);
+        DurableEventPublisher events = mock(DurableEventPublisher.class);
         when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource));
         when(attachmentRepository.findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(
             attachmentId, resourceId)).thenReturn(Mono.just(attachment));
         when(attachmentRepository.save(any(AttachmentEntity.class))).thenReturn(Mono.just(archived));
         when(auditService.record(eq(ownerId), eq("attachment.archive"), eq("ATTACHMENT"), eq(attachmentId), eq("{}")))
             .thenReturn(Mono.empty());
-        when(events.append(eq("storage.attachment.archived"), eq(1), eq("attachment"), eq(attachmentId), any()))
+        when(events.append(any(EventAppendRequest.class)))
             .thenReturn(Mono.empty());
         TransactionalOperator transaction = mock(TransactionalOperator.class);
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -163,7 +165,9 @@ class DefaultStorageServiceTest {
         verify(attachmentRepository).save(capture.capture());
         assertThat(capture.getValue().archivedAt()).isNotNull().isAfterOrEqualTo(now);
         assertThat(capture.getValue().deletedAt()).isNull();
-        verify(events).append(eq("storage.attachment.archived"), eq(1), eq("attachment"), eq(attachmentId), any());
+        verify(events).append(argThat(request -> request.eventType().equals("storage.attachment.archived")
+            && request.producerSubsystem().equals("storage") && request.subjectType().equals("attachment")
+            && request.subjectId().equals(attachmentId)));
     }
 
     @Test

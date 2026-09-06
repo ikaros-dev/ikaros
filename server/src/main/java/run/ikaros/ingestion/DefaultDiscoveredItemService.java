@@ -6,17 +6,18 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 @Service
 public class DefaultDiscoveredItemService implements DiscoveredItemService {
     private static final int MAX_UNPAGED_RESULTS = 100;
     private final ScanRunRepository scanRuns;
     private final DiscoveredItemRepository items;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
 
     public DefaultDiscoveredItemService(ScanRunRepository scanRuns, DiscoveredItemRepository items,
-                                        DurableEventService events) {
+                                        DurableEventPublisher events) {
         this.scanRuns = scanRuns;
         this.items = items;
         this.events = events;
@@ -48,9 +49,9 @@ public class DefaultDiscoveredItemService implements DiscoveredItemService {
                 .then(items.save(new DiscoveredItemEntity(item.id(), item.sourceId(), item.scanRunId(), item.relativeKey(),
                     item.sizeBytes(), item.modifiedAt(), item.etag(), item.mediaType(), "UNAVAILABLE",
                     item.scanGeneration(), item.createdAt(), item.version()))))
-            .flatMap(saved -> events.append("source.item.unavailable", 1, "ingestion_source_item", saved.id(),
+            .flatMap(saved -> events.append(new EventAppendRequest("source.item.unavailable", 1, "ingestion", "ingestion_source_item", saved.id(),
                 "{\"item_id\":\"" + saved.id() + "\",\"source_id\":\"" + saved.sourceId()
-                    + "\",\"reason\":\"" + (reason == null ? "unknown" : reason.replace("\"", "'")) + "\"}")
+                    + "\",\"reason\":\"" + (reason == null ? "unknown" : reason.replace("\"", "'")) + "\"}"))
                 .thenReturn(view(saved)));
     }
 

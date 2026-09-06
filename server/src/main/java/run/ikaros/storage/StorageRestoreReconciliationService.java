@@ -8,7 +8,8 @@ import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.resource.ResourceRepository;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 @Service
 public class StorageRestoreReconciliationService {
@@ -19,11 +20,11 @@ public class StorageRestoreReconciliationService {
     private final ResourceRepository resources;
     private final StorageProviderRegistry providers;
     private final List<StorageRestoreStatusQuery> queries;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
 
     public StorageRestoreReconciliationService(StorageRestoreOperationRepository operations, BlobPlacementRepository placements,
         BlobRepository blobs, AttachmentRepository attachments, ResourceRepository resources, StorageProviderRegistry providers,
-        List<StorageRestoreStatusQuery> queries, DurableEventService events) {
+        List<StorageRestoreStatusQuery> queries, DurableEventPublisher events) {
         this.operations = operations; this.placements = placements; this.blobs = blobs; this.attachments = attachments;
         this.resources = resources; this.providers = providers; this.queries = queries; this.events = events;
     }
@@ -35,14 +36,14 @@ public class StorageRestoreReconciliationService {
                 .flatMap(placement -> blobs.findById(placement.blobId())
                     .switchIfEmpty(Mono.error(new NotFoundException("Restore Blob 不存在")))
                     .flatMap(blob -> ownerCanAccess(actorId, blob.id()).thenReturn(new Context(operation, placement, blob)))))
-            .flatMap(context -> events.append("storage.restore.reconcile-requested", 1,
-                    "STORAGE_RESTORE_OPERATION", context.operation.id(),
-                    "{\"operation_id\":\"" + context.operation.id() + "\"}")
+            .flatMap(context -> events.append(new EventAppendRequest("storage.restore.reconcile-requested", 1,
+                    "storage", "STORAGE_RESTORE_OPERATION", context.operation.id(),
+                    "{\"operation_id\":\"" + context.operation.id() + "\"}"))
                 .then(queryAndApply(context)))
-            .flatMap(context -> events.append("storage.restore.reconciled", 1,
-                    "STORAGE_RESTORE_OPERATION", context.operation.id(),
+            .flatMap(context -> events.append(new EventAppendRequest("storage.restore.reconciled", 1,
+                    "storage", "STORAGE_RESTORE_OPERATION", context.operation.id(),
                     "{\"operation_id\":\"" + context.operation.id() + "\",\"status\":\""
-                        + context.operation.status() + "\"}").thenReturn(context))
+                        + context.operation.status() + "\"}")).thenReturn(context))
             .map(this::view);
     }
 
@@ -68,18 +69,18 @@ public class StorageRestoreReconciliationService {
             c.blob.mediaType(), BlobAvailability.AVAILABLE, c.blob.createdAt(), c.blob.version());
         StorageRestoreOperationEntity operation = updated(c.operation, StorageRestoreOperationStatus.SUCCEEDED, null);
         return placements.save(active).then(blobs.save(blob)).then(operations.save(operation))
-            .flatMap(saved -> events.append("storage.restore-operation.ready", 1, "restore_operation", saved.id(),
+            .flatMap(saved -> events.append(new EventAppendRequest("storage.restore-operation.ready", 1, "storage", "restore_operation", saved.id(),
                 "{\"operation_id\":\"" + saved.id() + "\",\"placement_id\":\"" + saved.placementId()
                     + "\",\"restore_expires_at\":" + (saved.restoreExpiresAt() == null ? "null"
-                        : "\"" + saved.restoreExpiresAt() + "\"") + "}").thenReturn(new Context(saved, active, blob)));
+                        : "\"" + saved.restoreExpiresAt() + "\"") + "}")).thenReturn(new Context(saved, active, blob)));
     }
 
     private Mono<Context> fail(Context c, String reason) {
         StorageRestoreOperationEntity operation = updated(c.operation, StorageRestoreOperationStatus.FAILED, reason);
         return operations.save(operation)
-            .flatMap(saved -> events.append("storage.restore-operation.failed", 1, "restore_operation", saved.id(),
+            .flatMap(saved -> events.append(new EventAppendRequest("storage.restore-operation.failed", 1, "storage", "restore_operation", saved.id(),
                 "{\"operation_id\":\"" + saved.id() + "\",\"placement_id\":\"" + saved.placementId()
-                    + "\",\"error_code\":\"restore-reconcile-failed\",\"retryable\":false}")
+                    + "\",\"error_code\":\"restore-reconcile-failed\",\"retryable\":false}"))
                 .thenReturn(new Context(saved, c.placement, c.blob)));
     }
 

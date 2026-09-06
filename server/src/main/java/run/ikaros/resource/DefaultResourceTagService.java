@@ -12,7 +12,8 @@ import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 /**
  * 默认用户标签服务实现，标签权限始终绑定当前用户和 Resource。
@@ -24,7 +25,7 @@ public class DefaultResourceTagService implements ResourceTagService {
     private final ResourceTagRepository tagRepository;
     private final AuditService auditService;
     private final TransactionalOperator transactionalOperator;
-    private final DurableEventService eventService;
+    private final DurableEventPublisher eventService;
 
     /** 创建用户标签服务。 */
     public DefaultResourceTagService(ResourceRepository resourceRepository, ResourceTagRepository tagRepository,
@@ -35,7 +36,7 @@ public class DefaultResourceTagService implements ResourceTagService {
     @Autowired
     public DefaultResourceTagService(ResourceRepository resourceRepository, ResourceTagRepository tagRepository,
                                      AuditService auditService, TransactionalOperator transactionalOperator,
-                                     DurableEventService eventService) {
+                                     DurableEventPublisher eventService) {
         this.resourceRepository = resourceRepository;
         this.tagRepository = tagRepository;
         this.auditService = auditService;
@@ -102,20 +103,20 @@ public class DefaultResourceTagService implements ResourceTagService {
 
     private Mono<Void> emitCreated(ResourceTagEntity tag) {
         if (eventService == null) return Mono.empty();
-        return eventService.append("resource.tag.created", 1, "resource_tag", tag.id(),
-            "{\"tag_id\":\"" + tag.id() + "\",\"scope_key\":\"user\"}").then();
+        return eventService.append(new EventAppendRequest("resource.tag.created", 1, "resource", "resource_tag", tag.id(),
+            "{\"tag_id\":\"" + tag.id() + "\",\"scope_key\":\"user\"}")).then();
     }
 
     private Mono<Void> emitAdded(ResourceTagEntity tag) {
         if (eventService == null) return Mono.empty();
-        return eventService.append("resource.tag.added", 1, "resource", tag.resourceId(),
-            "{\"resource_id\":\"" + tag.resourceId() + "\",\"tag_id\":\"" + tag.id() + "\"}").then();
+        return eventService.append(new EventAppendRequest("resource.tag.added", 1, "resource", "resource", tag.resourceId(),
+            "{\"resource_id\":\"" + tag.resourceId() + "\",\"tag_id\":\"" + tag.id() + "\"}")).then();
     }
 
     private Mono<Void> emitRemoved(ResourceTagEntity tag) {
         if (eventService == null) return Mono.empty();
-        return eventService.append("resource.tag.removed", 1, "resource", tag.resourceId(),
-            "{\"resource_id\":\"" + tag.resourceId() + "\",\"tag_id\":\"" + tag.id() + "\"}").then();
+        return eventService.append(new EventAppendRequest("resource.tag.removed", 1, "resource", "resource", tag.resourceId(),
+            "{\"resource_id\":\"" + tag.resourceId() + "\",\"tag_id\":\"" + tag.id() + "\"}")).then();
     }
 
     private Mono<ResourceEntity> owned(UUID ownerId, UUID resourceId) {

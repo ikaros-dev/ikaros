@@ -9,7 +9,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 import run.ikaros.resource.ResourceRepository;
 import run.ikaros.task.BackgroundTaskService;
 import run.ikaros.media.MediaEpisodeRepository;
@@ -26,12 +27,12 @@ public class StorageRestoreRequestService {
     private final StorageRestoreBudgetService budget;
     private final MediaSeasonRepository seasons;
     private final MediaEpisodeRepository episodes;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
 
     public StorageRestoreRequestService(AttachmentRepository attachments, ResourceRepository resources,
         BlobRepository blobs, BlobPlacementRepository placements, StorageRestoreRequestRepository requests,
         BackgroundTaskService tasks, StorageRestoreBudgetService budget, MediaSeasonRepository seasons,
-        MediaEpisodeRepository episodes, DurableEventService events) {
+        MediaEpisodeRepository episodes, DurableEventPublisher events) {
         this.attachments = attachments; this.resources = resources; this.blobs = blobs;
         this.placements = placements; this.requests = requests; this.tasks = tasks;
         this.budget = budget;
@@ -241,9 +242,9 @@ public class StorageRestoreRequestService {
                         request.scopeId(), StorageRestoreRequestStatus.REQUESTED, request.totalItems(), request.completedItems(),
                         request.totalBytes(), request.errorSummary(), request.idempotencyKey(), task.id(), request.createdAt(),
                         Instant.now(), request.budgetDecision(), request.selectedAttachmentIds(), request.version())))
-                    .flatMap(updated -> events.append("storage.restore-request.retry-requested", 1, "restore_request", updated.id(),
+                    .flatMap(updated -> events.append(new EventAppendRequest("storage.restore-request.retry-requested", 1, "storage", "restore_request", updated.id(),
                         "{\"request_id\":\"" + updated.id() + "\",\"failed_item_count\":"
-                            + Math.max(0, updated.totalItems() - updated.completedItems()) + "}").thenReturn(updated));
+                            + Math.max(0, updated.totalItems() - updated.completedItems()) + "}")).thenReturn(updated));
             }).map(this::view);
     }
 
@@ -261,10 +262,10 @@ public class StorageRestoreRequestService {
     }
 
     private Mono<StorageRestoreRequestEntity> emitRequested(Mono<StorageRestoreRequestEntity> saved) {
-        return saved.flatMap(request -> events.append("storage.restore-request.requested", 1, "restore_request", request.id(),
+        return saved.flatMap(request -> events.append(new EventAppendRequest("storage.restore-request.requested", 1, "storage", "restore_request", request.id(),
             "{\"request_id\":\"" + request.id() + "\",\"scope_type\":\"" + request.scope()
                 + "\",\"scope_id\":\"" + request.scopeId() + "\",\"item_count\":" + request.totalItems()
-                + ",\"total_bytes\":" + request.totalBytes() + ",\"budget_decision\":\"" + request.budgetDecision() + "\"}")
+                + ",\"total_bytes\":" + request.totalBytes() + ",\"budget_decision\":\"" + request.budgetDecision() + "\"}"))
             .thenReturn(request));
     }
 
@@ -273,8 +274,8 @@ public class StorageRestoreRequestService {
     }
 
     private Mono<StorageRestoreRequestEntity> emitCancelled(Mono<StorageRestoreRequestEntity> saved) {
-        return saved.flatMap(request -> events.append("storage.restore-request.cancel-requested", 1, "restore_request", request.id(),
-            "{\"request_id\":\"" + request.id() + "\"}").thenReturn(request));
+        return saved.flatMap(request -> events.append(new EventAppendRequest("storage.restore-request.cancel-requested", 1, "storage", "restore_request", request.id(),
+            "{\"request_id\":\"" + request.id() + "\"}")).thenReturn(request));
     }
 
     private record RestoreCandidate(UUID attachmentId, long bytes) {}

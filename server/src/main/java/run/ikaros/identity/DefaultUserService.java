@@ -12,7 +12,8 @@ import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 /**
  * 默认用户服务，维护用户状态、角色绑定与对应审计记录。
@@ -24,7 +25,7 @@ public class DefaultUserService implements UserService {
     private final PlatformRoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
     private final AuditService auditService;
-    private final DurableEventService eventService;
+    private final DurableEventPublisher eventService;
 
     /**
      * 创建用户服务。
@@ -42,7 +43,7 @@ public class DefaultUserService implements UserService {
     @Autowired
     public DefaultUserService(PlatformUserRepository userRepository, PlatformRoleRepository roleRepository,
                               UserRoleRepository userRoleRepository, AuditService auditService,
-                              DurableEventService eventService) {
+                              DurableEventPublisher eventService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userRoleRepository = userRoleRepository;
@@ -100,18 +101,18 @@ public class DefaultUserService implements UserService {
 
     private Mono<Void> emitStatusChanged(PlatformUserEntity user) {
         if (eventService == null) return Mono.empty();
-        String eventType = user.status() == UserStatus.DISABLED ? "identity.user.disabled"
-            : user.status() == UserStatus.ACTIVE ? "identity.user.enabled" : null;
+        String eventType = user.status() == UserStatus.DISABLED ? "authentication.user.disabled"
+            : user.status() == UserStatus.ACTIVE ? "authentication.user.enabled" : null;
         if (eventType == null) return Mono.empty();
-        return eventService.append(eventType, 1, "user", user.id(),
+        return eventService.append(new EventAppendRequest(eventType, 1, "authentication", "user", user.id(),
             "{\"user_id\":\"" + user.id() + "\",\"security_version\":"
-                + user.securityVersion() + "}").then();
+                + user.securityVersion() + "}")).then();
     }
 
     private Mono<Void> emitUserCreated(PlatformUserEntity user) {
         if (eventService == null) return Mono.empty();
-        return eventService.append("identity.user.created", 1, "user", user.id(),
-            "{\"user_id\":\"" + user.id() + "\"}").then();
+        return eventService.append(new EventAppendRequest("authentication.user.created", 1, "authentication", "user", user.id(),
+            "{\"user_id\":\"" + user.id() + "\"}")).then();
     }
 
     @Override
@@ -129,8 +130,8 @@ public class DefaultUserService implements UserService {
 
     private Mono<Void> emitRoleAssigned(UUID userId, UUID roleId) {
         if (eventService == null) return Mono.empty();
-        return eventService.append("identity.user.role-assigned", 1, "user", userId,
-            "{\"user_id\":\"" + userId + "\",\"role_id\":\"" + roleId + "\"}").then();
+        return eventService.append(new EventAppendRequest("authorization.user.role-assigned", 1, "authorization", "user", userId,
+            "{\"user_id\":\"" + userId + "\",\"role_id\":\"" + roleId + "\"}")).then();
     }
 
     @Override
@@ -145,8 +146,8 @@ public class DefaultUserService implements UserService {
 
     private Mono<Void> emitRoleRemoved(UUID userId, UUID roleId) {
         if (eventService == null) return Mono.empty();
-        return eventService.append("identity.user.role-removed", 1, "user", userId,
-            "{\"user_id\":\"" + userId + "\",\"role_id\":\"" + roleId + "\"}").then();
+        return eventService.append(new EventAppendRequest("authorization.user.role-removed", 1, "authorization", "user", userId,
+            "{\"user_id\":\"" + userId + "\",\"role_id\":\"" + roleId + "\"}")).then();
     }
 
     private Mono<PlatformUserEntity> requiredUser(UUID userId) {

@@ -16,7 +16,8 @@ import reactor.core.publisher.Flux;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 import io.r2dbc.postgresql.codec.Json;
 
 @Primary
@@ -27,11 +28,11 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
     private final BackgroundTaskRepository tasks;
     private final BackgroundTaskAttemptRepository attempts;
     private final ObjectMapper mapper;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
     private final DatabaseClient database;
 
     public PersistentBackgroundTaskService(BackgroundTaskRepository tasks, BackgroundTaskAttemptRepository attempts,
-                                           ObjectMapper mapper, DurableEventService events, DatabaseClient database) {
+                                           ObjectMapper mapper, DurableEventPublisher events, DatabaseClient database) {
         this.tasks = tasks; this.attempts = attempts; this.mapper = mapper; this.events = events; this.database = database;
     }
 
@@ -86,9 +87,9 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
         }));
         return reused.switchIfEmpty(created).flatMap(submission -> {
             BackgroundTaskEntity saved = submission.task();
-            Mono<Void> createdEvent = submission.created() ? events.append("operations.background-task.created", 1,
-                "background_task", saved.id(), "{\"task_id\":\"" + saved.id() + "\",\"task_type\":\""
-                    + saved.taskType() + "\",\"status\":\"" + saved.status() + "\"}").then() : Mono.empty();
+            Mono<Void> createdEvent = submission.created() ? events.append(new EventAppendRequest("operations.background-task.created", 1,
+                "operations", "background_task", saved.id(), "{\"task_id\":\"" + saved.id() + "\",\"task_type\":\""
+                    + saved.taskType() + "\",\"status\":\"" + saved.status() + "\"}")).then() : Mono.empty();
             return createdEvent.then(view(saved));
         });
     }
@@ -106,8 +107,8 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
             .switchIfEmpty(Mono.error(new NotFoundException("没有可执行的 Task")))
             .flatMap(claimed -> attempts.save(new BackgroundTaskAttemptEntity(null, claimed.id(), claimed.attempt(),
                 TaskStatus.RUNNING.name(), runnerId, claimed.leaseExpiresAt(), observedAt, observedAt, null, null, observedAt))
-                .then(events.append("operations.background-task.started", 1, "background_task", claimed.id(),
-                    "{\"task_id\":\"" + claimed.id() + "\",\"attempt_no\":" + claimed.attempt() + "}"))
+                .then(events.append(new EventAppendRequest("operations.background-task.started", 1, "operations", "background_task", claimed.id(),
+                    "{\"task_id\":\"" + claimed.id() + "\",\"attempt_no\":" + claimed.attempt() + "}")))
                 .then(view(claimed)));
     }
 
@@ -121,8 +122,8 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
                 .flatMap(requeued -> finishAttempt(expired,
                     expired.cancelRequestedAt() == null ? "LEASE_LOST" : TaskStatus.CANCELLED.name(), "Lease 已过期")
                     .then(expired.cancelRequestedAt() == null ? Mono.empty()
-                        : events.append("operations.background-task.cancelled", 1, "background_task", requeued.id(),
-                            "{\"task_id\":\"" + requeued.id() + "\",\"attempt_no\":" + requeued.attempt() + "}"))))
+                        : events.append(new EventAppendRequest("operations.background-task.cancelled", 1, "operations", "background_task", requeued.id(),
+                            "{\"task_id\":\"" + requeued.id() + "\",\"attempt_no\":" + requeued.attempt() + "}")))))
             .then();
     }
 
@@ -172,8 +173,8 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
                 task.payload(), task.idempotencyKey(), task.availableAt(), task.timeoutAt(), null, null, null, task.attempt(),
                 task.cancelRequestedAt(), task.progress(), Json.of("{\"code\":\"TASK_TIMEOUT\"}"), task.createdAt(), Instant.now(), task.parentTaskId()))
                 .flatMap(saved -> finishAttempt(task, TaskStatus.TIMED_OUT.name(), "TASK_TIMEOUT")
-                    .then(events.append("operations.background-task.timed-out", 1, "background_task", saved.id(),
-                        "{\"task_id\":\"" + saved.id() + "\",\"attempt_no\":" + saved.attempt() + "}"))))
+                    .then(events.append(new EventAppendRequest("operations.background-task.timed-out", 1, "operations", "background_task", saved.id(),
+                        "{\"task_id\":\"" + saved.id() + "\",\"attempt_no\":" + saved.attempt() + "}")))))
             .then();
     }
 
@@ -202,8 +203,8 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
             TaskStatus.SUCCEEDED, task.leaseOwner(), task.leaseToken(), task.leaseExpiresAt(), task.attempt(),
             task.cancelRequestedAt(), task.progress(), Json.of(json)))
             .flatMap(saved -> finishAttempt(task, TaskStatus.SUCCEEDED.name(), null)
-                .then(events.append("operations.background-task.succeeded", 1, "background_task", saved.id(),
-                    "{\"task_id\":\"" + saved.id() + "\",\"attempt_no\":" + saved.attempt() + "}"))
+                .then(events.append(new EventAppendRequest("operations.background-task.succeeded", 1, "operations", "background_task", saved.id(),
+                    "{\"task_id\":\"" + saved.id() + "\",\"attempt_no\":" + saved.attempt() + "}")))
                 .then(view(saved)))));
     }
 
@@ -219,10 +220,10 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
                     retryable ? null : task.leaseExpiresAt(), task.attempt(), task.cancelRequestedAt(), task.progress(), Json.of(json),
                     task.createdAt(), Instant.now(), task.parentTaskId());
                 return tasks.save(failed).flatMap(saved -> finishAttempt(task, TaskStatus.FAILED.name(), message(error))
-                    .then(events.append("operations.background-task.failed", 1, "background_task", saved.id(),
+                    .then(events.append(new EventAppendRequest("operations.background-task.failed", 1, "operations", "background_task", saved.id(),
                         "{\"task_id\":\"" + saved.id() + "\",\"attempt_no\":" + saved.attempt()
                             + ",\"error_classification\":\"" + safe(error == null ? null : error.get("code"))
-                            + "\",\"retryable\":" + retryable + "}"))
+                            + "\",\"retryable\":" + retryable + "}")))
                     .then(view(saved)));
             }));
     }
@@ -256,8 +257,8 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
                 Instant now = Instant.now();
                 return tasks.save(new BackgroundTaskEntity(null, old.taskType(), TaskStatus.PENDING.name(), old.payload(), null,
                     now, timeoutAtJson(old.payload(), now), null, null, null, 0, null, Json.of("{}"), Json.of("{}"), now, now, old.id()));
-            }).flatMap(saved -> events.append("operations.background-task.retry-requested", 1, "background_task", saved.parentTaskId(),
-                "{\"task_id\":\"" + saved.parentTaskId() + "\",\"next_attempt_no\":" + (saved.attempt() + 1) + "}").then(view(saved)));
+            }).flatMap(saved -> events.append(new EventAppendRequest("operations.background-task.retry-requested", 1, "operations", "background_task", saved.parentTaskId(),
+                "{\"task_id\":\"" + saved.parentTaskId() + "\",\"next_attempt_no\":" + (saved.attempt() + 1) + "}")).then(view(saved)));
     }
 
     @Override
@@ -272,8 +273,8 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
                 TaskStatus target = status == TaskStatus.RUNNING ? TaskStatus.RUNNING : TaskStatus.CANCELLED;
                 return tasks.save(copy(task, target, task.leaseOwner(), task.leaseToken(),
                     task.leaseExpiresAt(), task.attempt(), Instant.now(), task.progress(), task.result()))
-                    .flatMap(saved -> events.append("operations.background-task.cancel-requested", 1, "background_task", saved.id(),
-                        "{\"task_id\":\"" + saved.id() + "\"}").then(view(saved)));
+                    .flatMap(saved -> events.append(new EventAppendRequest("operations.background-task.cancel-requested", 1, "operations", "background_task", saved.id(),
+                        "{\"task_id\":\"" + saved.id() + "\"}")).then(view(saved)));
             });
     }
 
@@ -284,8 +285,8 @@ public class PersistentBackgroundTaskService implements BackgroundTaskService {
             return tasks.save(copy(task, TaskStatus.CANCELLED, task.leaseOwner(), task.leaseToken(), task.leaseExpiresAt(),
                 task.attempt(), task.cancelRequestedAt(), task.progress(), task.result()))
                 .flatMap(saved -> finishAttempt(task, TaskStatus.CANCELLED.name(), null)
-                    .then(events.append("operations.background-task.cancelled", 1, "background_task", saved.id(),
-                        "{\"task_id\":\"" + saved.id() + "\",\"attempt_no\":" + saved.attempt() + "}"))
+                    .then(events.append(new EventAppendRequest("operations.background-task.cancelled", 1, "operations", "background_task", saved.id(),
+                        "{\"task_id\":\"" + saved.id() + "\",\"attempt_no\":" + saved.attempt() + "}")))
                     .then(view(saved)));
         });
     }

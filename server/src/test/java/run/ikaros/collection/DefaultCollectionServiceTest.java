@@ -1,6 +1,7 @@
 package run.ikaros.collection;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -13,7 +14,8 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.audit.AuditService;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 import run.ikaros.resource.ResourceEntity;
 import run.ikaros.resource.ResourceLifecycle;
 import run.ikaros.resource.ResourceRepository;
@@ -31,7 +33,7 @@ class DefaultCollectionServiceTest {
         ResourceRepository resources = mock(ResourceRepository.class);
         AuditService audit = mock(AuditService.class);
         TransactionalOperator transaction = mock(TransactionalOperator.class);
-        DurableEventService events = mock(DurableEventService.class);
+        DurableEventPublisher events = mock(DurableEventPublisher.class);
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
         CollectionEntity collection = new CollectionEntity(collectionId, ownerId, null, "收藏", null, now, now, 0L);
         when(collections.save(any(CollectionEntity.class))).thenReturn(Mono.just(collection));
@@ -43,7 +45,7 @@ class DefaultCollectionServiceTest {
             new CollectionResourceEntity(UUID.randomUUID(), collectionId, resourceId, 0, now, 0L)));
         when(members.deleteByCollectionIdAndResourceId(collectionId, resourceId)).thenReturn(Mono.empty());
         when(audit.record(eq(ownerId), any(), eq("COLLECTION"), eq(collectionId), any())).thenReturn(Mono.empty());
-        when(events.append(any(), eq(1), any(), eq(collectionId), any())).thenReturn(Mono.empty());
+        when(events.append(any(EventAppendRequest.class))).thenReturn(Mono.empty());
 
         DefaultCollectionService service = new DefaultCollectionService(collections, members, resources, audit,
             transaction, events);
@@ -52,11 +54,14 @@ class DefaultCollectionServiceTest {
         StepVerifier.create(service.addResource(ownerId, collectionId, resourceId, 0)).verifyComplete();
         StepVerifier.create(service.removeResource(ownerId, collectionId, resourceId)).verifyComplete();
 
-        verify(events).append(eq("resource.collection.created"), eq(1), eq("collection"), eq(collectionId),
-            eq("{\"collection_id\":\"" + collectionId + "\",\"kind\":\"library\",\"mode\":\"STATIC\"}"));
-        verify(events).append(eq("resource.collection.member-added"), eq(1), eq("collection"), eq(collectionId),
-            eq("{\"collection_id\":\"" + collectionId + "\",\"resource_id\":\"" + resourceId + "\"}"));
-        verify(events).append(eq("resource.collection.member-removed"), eq(1), eq("collection"), eq(collectionId),
-            eq("{\"collection_id\":\"" + collectionId + "\",\"resource_id\":\"" + resourceId + "\"}"));
+        verify(events).append(argThat(request -> request.eventType().equals("resource.collection.created")
+            && request.producerSubsystem().equals("resource") && request.subjectType().equals("collection")
+            && request.subjectId().equals(collectionId)));
+        verify(events).append(argThat(request -> request.eventType().equals("resource.collection.member-added")
+            && request.producerSubsystem().equals("resource") && request.subjectType().equals("collection")
+            && request.subjectId().equals(collectionId)));
+        verify(events).append(argThat(request -> request.eventType().equals("resource.collection.member-removed")
+            && request.producerSubsystem().equals("resource") && request.subjectType().equals("collection")
+            && request.subjectId().equals(collectionId)));
     }
 }

@@ -16,7 +16,8 @@ import run.ikaros.common.ConflictException;
 import run.ikaros.common.PreconditionFailedException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 /**
  * 默认 Resource 服务实现，负责维护聚合内一致性并发布可审计的状态变化。
@@ -29,7 +30,7 @@ public class DefaultResourceService implements ResourceService {
     private final ExternalIdentityRepository identityRepository;
     private final AuditService auditService;
     private final TransactionalOperator transactionalOperator;
-    private final DurableEventService eventService;
+    private final DurableEventPublisher eventService;
     private final ResourceCreationIdempotencyRepository creationIdempotencyRepository;
 
     /**
@@ -55,7 +56,7 @@ public class DefaultResourceService implements ResourceService {
                                   ExternalIdentityRepository identityRepository,
                                   AuditService auditService,
                                   TransactionalOperator transactionalOperator,
-                                  DurableEventService eventService,
+                                  DurableEventPublisher eventService,
                                   ResourceCreationIdempotencyRepository creationIdempotencyRepository) {
         this.resourceRepository = resourceRepository;
         this.titleRepository = titleRepository;
@@ -71,7 +72,7 @@ public class DefaultResourceService implements ResourceService {
                                   ExternalIdentityRepository identityRepository,
                                   AuditService auditService,
                                   TransactionalOperator transactionalOperator,
-                                  DurableEventService eventService) {
+                                  DurableEventPublisher eventService) {
         this(resourceRepository, titleRepository, identityRepository, auditService, transactionalOperator,
             eventService, null);
     }
@@ -349,7 +350,7 @@ public class DefaultResourceService implements ResourceService {
         }
         String payload = "{\"resource_id\":\"" + resource.id() + "\",\"lifecycle\":\""
             + resource.lifecycle() + "\",\"version\":" + resource.version() + "}";
-        return eventService.append(eventType, 1, "resource", resource.id(), payload).then();
+        return eventService.append(new EventAppendRequest(eventType, 1, "resource", "resource", resource.id(), payload)).then();
     }
 
     private Mono<Void> emitExternalIdentity(String eventType, ExternalIdentityEntity identity) {
@@ -368,7 +369,7 @@ public class DefaultResourceService implements ResourceService {
             + "\"" + (namespace == null ? "" : ",\"namespace\":\"" + escapeJson(namespace) + "\"")
             + ",\"object_type\":\"" + escapeJson(identity.externalType())
             + "\",\"external_id\":\"" + escapeJson(identity.externalId()) + "\"}";
-        return eventService.append(eventType, 1, "resource", identity.resourceId(), payload).then();
+        return eventService.append(new EventAppendRequest(eventType, 1, "resource", "resource", identity.resourceId(), payload)).then();
     }
 
     private String escapeJson(String value) {

@@ -9,7 +9,8 @@ import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PreconditionFailedException;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 @Service
 public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindingService {
@@ -17,11 +18,11 @@ public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindi
     private final MediaDeliveryBindingRepository bindings;
     private final MediaDeliveryLeaseRepository leases;
     private final DeliveryProviderRepository deliveryProviders;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
 
     public PersistentMediaDeliveryBindingService(StorageProviderRegistry providers, MediaDeliveryBindingRepository bindings,
                                                  MediaDeliveryLeaseRepository leases, DeliveryProviderRepository deliveryProviders,
-                                                 DurableEventService events) {
+                                                 DurableEventPublisher events) {
         this.providers = providers;
         this.bindings = bindings;
         this.leases = leases;
@@ -38,10 +39,10 @@ public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindi
                     .flatMap(old -> Mono.<MediaDeliveryBindingEntity>error(new ConflictException("Delivery Binding 已存在")))
                     .switchIfEmpty(Mono.defer(() -> save(null, providerId, request)))
                     .onErrorMap(DuplicateKeyException.class, e -> new ConflictException("Delivery Binding 已存在"))
-                    .flatMap(saved -> events.append("storage.delivery-binding.created", 1, "delivery_binding", saved.id(),
+                    .flatMap(saved -> events.append(new EventAppendRequest("storage.delivery-binding.created", 1, "storage", "delivery_binding", saved.id(),
                         "{\"binding_id\":\"" + saved.id() + "\",\"storage_provider_id\":\"" + saved.storageProviderId()
                             + "\",\"delivery_provider_id\":\"" + deliveryProvider.id() + "\",\"priority\":"
-                            + saved.priority() + "}").thenReturn(view(saved)))));
+                            + saved.priority() + "}")).thenReturn(view(saved)))));
     }
 
     @Override
@@ -71,9 +72,9 @@ public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindi
                 return deliveryProviders.findByProviderKey(request.deliveryProviderKey().trim())
                     .switchIfEmpty(Mono.error(new NotFoundException("Delivery Provider 不存在")))
                     .then(save(old, old.storageProviderId(), request));
-            }).flatMap(saved -> events.append("storage.delivery-binding.updated", 1, "delivery_binding", saved.id(),
+            }).flatMap(saved -> events.append(new EventAppendRequest("storage.delivery-binding.updated", 1, "storage", "delivery_binding", saved.id(),
                 "{\"binding_id\":\"" + saved.id() + "\",\"changed_fields\":[\"configuration\"],\"version\":"
-                    + (saved.version() == null ? 0 : saved.version()) + "}").thenReturn(view(saved)));
+                    + (saved.version() == null ? 0 : saved.version()) + "}")).thenReturn(view(saved)));
     }
 
     @Override
@@ -81,8 +82,8 @@ public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindi
         return bindings.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Delivery Binding 不存在")))
             .flatMap(binding -> leases.findAllByBindingId(binding.id()).flatMap(leases::delete).then()
                 .then(bindings.delete(binding))
-                .then(events.append("storage.delivery-binding.removed", 1, "delivery_binding", binding.id(),
-                    "{\"binding_id\":\"" + binding.id() + "\",\"leases_removed\":true}").then()));
+                .then(events.append(new EventAppendRequest("storage.delivery-binding.removed", 1, "storage", "delivery_binding", binding.id(),
+                    "{\"binding_id\":\"" + binding.id() + "\",\"leases_removed\":true}")).then()));
     }
 
     private Mono<MediaDeliveryBindingEntity> save(MediaDeliveryBindingEntity old, UUID providerId,

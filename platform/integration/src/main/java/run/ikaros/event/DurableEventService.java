@@ -43,12 +43,6 @@ public class DurableEventService implements DurableEventPublisher {
             .map(saved -> new EventReference(saved.id(), saved.eventType(), saved.schemaVersion()));
     }
 
-    public Mono<OutboxEventEntity> append(String eventType, int schemaVersion, String aggregateType,
-                                         UUID aggregateId, String payloadJson) {
-        return appendValidated(eventType, schemaVersion, eventType == null ? null : eventType.substring(0, eventType.indexOf('.')),
-            aggregateType, aggregateId, payloadJson);
-    }
-
     private Mono<OutboxEventEntity> appendValidated(String eventType, int schemaVersion, String producerSubsystem,
                                                     String subjectType, UUID subjectId, String payloadJson) {
         if (eventType == null || !EVENT_TYPE.matcher(eventType).matches() || schemaVersion < 1 || payloadJson == null) {

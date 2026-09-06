@@ -12,7 +12,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 /** PostgreSQL-backed provider registry; secrets remain references, never plaintext. */
 @Primary
@@ -21,12 +22,12 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
     private static final int MAX_UNPAGED_RESULTS = 100;
     private final StorageProviderRepository repository;
     private final ObjectMapper mapper;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
     private final StorageCredentialCipher credentialCipher;
 
     @Autowired
     public PersistentStorageProviderRegistry(StorageProviderRepository repository, ObjectMapper mapper,
-                                             DurableEventService events, StorageCredentialCipher credentialCipher) {
+                                             DurableEventPublisher events, StorageCredentialCipher credentialCipher) {
         this.repository = repository;
         this.mapper = mapper;
         this.events = events;
@@ -179,7 +180,7 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
     }
 
     private Mono<Void> emit(String eventType, StorageProvider provider, String payload) {
-        return events.append(eventType, 1, "storage_provider", provider.id(), payload).then();
+        return events.append(new EventAppendRequest(eventType, 1, "storage", "storage_provider", provider.id(), payload)).then();
     }
 
     private StorageProvider toModel(StorageProviderEntity entity) {

@@ -12,7 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Mono;
 import run.ikaros.audit.AuditService;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 @Service
 public class DefaultIngestionSourceService implements IngestionSourceService {
@@ -20,7 +21,7 @@ public class DefaultIngestionSourceService implements IngestionSourceService {
     private final IngestionSourceRepository repository;
     private final AuditService auditService;
     private final ObjectMapper mapper;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
 
     public DefaultIngestionSourceService(IngestionSourceRepository repository, AuditService auditService,
                                          ObjectMapper mapper) {
@@ -29,7 +30,7 @@ public class DefaultIngestionSourceService implements IngestionSourceService {
 
     @Autowired
     public DefaultIngestionSourceService(IngestionSourceRepository repository, AuditService auditService,
-                                         ObjectMapper mapper, DurableEventService events) {
+                                         ObjectMapper mapper, DurableEventPublisher events) {
         this.repository = repository;
         this.auditService = auditService;
         this.mapper = mapper;
@@ -85,8 +86,8 @@ public class DefaultIngestionSourceService implements IngestionSourceService {
     private Mono<Void> emit(String type, UUID sourceId, UUID ownerId, String status) {
         if (events == null) return Mono.empty();
         String extra = status == null ? "" : ",\"status\":\"" + status + "\"";
-        return events.append(type, 1, "ingestion_source", sourceId,
-            "{\"source_id\":\"" + sourceId + "\",\"owner_id\":\"" + ownerId + "\"" + extra + "}").then();
+        return events.append(new EventAppendRequest(type, 1, "ingestion", "ingestion_source", sourceId,
+            "{\"source_id\":\"" + sourceId + "\",\"owner_id\":\"" + ownerId + "\"" + extra + "}")).then();
     }
 
     private Mono<IngestionSourceEntity> owned(UUID ownerId, UUID sourceId) {

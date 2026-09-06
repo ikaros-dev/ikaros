@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.task.BackgroundTask;
 import run.ikaros.task.BackgroundTaskDispatcher;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 /** storage.blob-gc 的受控执行 Handler；执行时重新判断引用，避免 TOCTOU 删除。 */
 @Component
@@ -16,10 +17,10 @@ public class BlobGcTaskHandler {
     private final BackgroundTaskDispatcher dispatcher;
     private final StorageService storage;
     private final BlobGarbageCollector collector;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
 
     public BlobGcTaskHandler(BackgroundTaskDispatcher dispatcher, StorageService storage,
-                             BlobGarbageCollector collector, DurableEventService events) {
+                             BlobGarbageCollector collector, DurableEventPublisher events) {
         this.dispatcher = dispatcher; this.storage = storage; this.collector = collector; this.events = events;
     }
 
@@ -35,10 +36,10 @@ public class BlobGcTaskHandler {
             .flatMapMany(reactor.core.publisher.Flux::fromIterable)
             .flatMap(candidate -> {
                 String requested = "{\"blob_id\":\"" + candidate.blobId() + "\",\"task_id\":\"" + task.id() + "\"}";
-                return events.append("storage.blob.gc-requested", 1, "blob", candidate.blobId(), requested)
+                return events.append(new EventAppendRequest("storage.blob.gc-requested", 1, "storage", "blob", candidate.blobId(), requested))
                     .then(collector.purge(candidate.blobId()))
-                    .flatMap(purgedCount -> events.append("storage.blob.purged", 1, "blob", candidate.blobId(),
-                        "{\"blob_id\":\"" + candidate.blobId() + "\",\"purged_placement_count\":" + purgedCount + "}")
+                    .flatMap(purgedCount -> events.append(new EventAppendRequest("storage.blob.purged", 1, "storage", "blob", candidate.blobId(),
+                        "{\"blob_id\":\"" + candidate.blobId() + "\",\"purged_placement_count\":" + purgedCount + "}"))
                         .thenReturn(candidate.blobId()));
             })
             .collectList()

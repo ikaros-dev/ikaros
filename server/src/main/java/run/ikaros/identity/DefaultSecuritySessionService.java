@@ -9,7 +9,8 @@ import reactor.core.publisher.Mono;
 import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 /**
  * 默认安全会话服务，只保存安全状态，不保存任何可复用的令牌原文。
@@ -19,7 +20,7 @@ public class DefaultSecuritySessionService implements SecuritySessionService {
     private final PlatformUserRepository userRepository;
     private final SecuritySessionRepository sessionRepository;
     private final AuditService auditService;
-    private final DurableEventService eventService;
+    private final DurableEventPublisher eventService;
 
     /**
      * 创建安全会话服务。
@@ -37,7 +38,7 @@ public class DefaultSecuritySessionService implements SecuritySessionService {
     @Autowired
     public DefaultSecuritySessionService(PlatformUserRepository userRepository,
                                          SecuritySessionRepository sessionRepository,
-                                         AuditService auditService, DurableEventService eventService) {
+                                         AuditService auditService, DurableEventPublisher eventService) {
         this.userRepository = userRepository;
         this.sessionRepository = sessionRepository;
         this.auditService = auditService;
@@ -125,15 +126,15 @@ public class DefaultSecuritySessionService implements SecuritySessionService {
 
     private Mono<Void> emitAllRevoked(PlatformUserEntity user) {
         if (eventService == null) return Mono.empty();
-        return eventService.append("identity.user.sessions-revoked", 1, "user", user.id(),
+        return eventService.append(new EventAppendRequest("authentication.user.sessions-revoked", 1, "authentication", "user", user.id(),
             "{\"user_id\":\"" + user.id() + "\",\"security_version\":"
-                + user.securityVersion() + "}").then();
+                + user.securityVersion() + "}")).then();
     }
 
     private Mono<Void> emitRevoked(SecuritySessionEntity session) {
         if (eventService == null) return Mono.empty();
-        return eventService.append("identity.session.revoked", 1, "session", session.id(),
-            "{\"session_id\":\"" + session.id() + "\",\"user_id\":\"" + session.userId() + "\"}").then();
+        return eventService.append(new EventAppendRequest("authentication.session.revoked", 1, "authentication", "session", session.id(),
+            "{\"session_id\":\"" + session.id() + "\",\"user_id\":\"" + session.userId() + "\"}")).then();
     }
 
     private Mono<PlatformUserEntity> activeUser(UUID userId) {

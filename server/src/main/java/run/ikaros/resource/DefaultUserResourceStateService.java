@@ -11,14 +11,15 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PreconditionFailedException;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 @Service
 public class DefaultUserResourceStateService implements UserResourceStateService {
     private final ResourceRepository resources;
     private final UserResourceStateRepository states;
     private final TransactionalOperator transaction;
-    private final DurableEventService eventService;
+    private final DurableEventPublisher eventService;
 
     public DefaultUserResourceStateService(ResourceRepository resources, UserResourceStateRepository states,
                                            TransactionalOperator transaction) {
@@ -27,7 +28,7 @@ public class DefaultUserResourceStateService implements UserResourceStateService
 
     @Autowired
     public DefaultUserResourceStateService(ResourceRepository resources, UserResourceStateRepository states,
-                                           TransactionalOperator transaction, DurableEventService eventService) {
+                                           TransactionalOperator transaction, DurableEventPublisher eventService) {
         this.resources = resources;
         this.states = states;
         this.transaction = transaction;
@@ -104,7 +105,8 @@ public class DefaultUserResourceStateService implements UserResourceStateService
         String payload = "{\"user_id\":\"" + current.userId() + "\",\"resource_id\":\""
             + current.resourceId() + "\",\"changed_fields\":[" + fields + "],\"version\":"
             + (current.version() == null ? 0 : current.version()) + "}";
-        return eventService.append("resource.user-state.changed", 1, "resource", current.resourceId(), payload).then();
+        return eventService.append(new EventAppendRequest("resource.user-state.changed", 1, "resource", "resource",
+            current.resourceId(), payload)).then();
     }
 
     private String quoteJson(String value) {

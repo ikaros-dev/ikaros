@@ -16,19 +16,20 @@ import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PreconditionFailedException;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 @Service
 public class PersistentDeliveryProviderService implements DeliveryProviderService {
     private static final int MAX_UNPAGED_RESULTS = 100;
     private final DeliveryProviderRepository providers;
     private final ObjectMapper mapper;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
     private final DeliveryProviderOperationsService operations;
     private final MediaDeliveryBindingRepository bindings;
 
     public PersistentDeliveryProviderService(DeliveryProviderRepository providers, ObjectMapper mapper,
-        DurableEventService events, DeliveryProviderOperationsService operations, MediaDeliveryBindingRepository bindings) {
+        DurableEventPublisher events, DeliveryProviderOperationsService operations, MediaDeliveryBindingRepository bindings) {
         this.providers = providers; this.mapper = mapper; this.events = events; this.operations = operations; this.bindings = bindings;
     }
 
@@ -126,7 +127,7 @@ public class PersistentDeliveryProviderService implements DeliveryProviderServic
     private Mono<String> encode(Map<String, Object> value) { try { return Mono.just(mapper.writeValueAsString(value == null ? Map.of() : value)); }
         catch (JacksonException e) { return Mono.error(new IllegalArgumentException("Delivery Provider config 无法序列化", e)); } }
     private Mono<Void> emit(String type, DeliveryProviderEntity provider, String payload) {
-        return events.append(type, 1, "delivery_provider", provider.id(), payload).then();
+        return events.append(new EventAppendRequest(type, 1, "storage", "delivery_provider", provider.id(), payload)).then();
     }
     private List<String> changedFields(DeliveryProviderEntity old, DeliveryProviderEntity saved) {
         List<String> fields = new ArrayList<>();

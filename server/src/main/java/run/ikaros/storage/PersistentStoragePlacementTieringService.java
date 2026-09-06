@@ -6,7 +6,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 import run.ikaros.task.BackgroundTask;
 import run.ikaros.task.BackgroundTaskService;
 import run.ikaros.task.BackgroundTaskRepository;
@@ -16,10 +17,10 @@ public class PersistentStoragePlacementTieringService implements StoragePlacemen
     private final BlobPlacementRepository placements;
     private final BackgroundTaskService tasks;
     private final BackgroundTaskRepository taskRepository;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
 
     public PersistentStoragePlacementTieringService(BlobPlacementRepository placements,
-        BackgroundTaskService tasks, BackgroundTaskRepository taskRepository, DurableEventService events) {
+        BackgroundTaskService tasks, BackgroundTaskRepository taskRepository, DurableEventPublisher events) {
         this.placements = placements;
         this.tasks = tasks;
         this.taskRepository = taskRepository;
@@ -61,9 +62,9 @@ public class PersistentStoragePlacementTieringService implements StoragePlacemen
                 return taskRepository.findByTaskTypeAndIdempotencyKey("storage.placement.tiering", idempotencyKey)
                     .flatMap(existing -> tasks.get(existing.id()))
                     .switchIfEmpty(Mono.defer(() -> tasks.submit("storage.placement.tiering", payload, idempotencyKey)
-                        .flatMap(task -> events.append(eventType, 1, "blob_placement", placementId,
+                        .flatMap(task -> events.append(new EventAppendRequest(eventType, 1, "storage", "blob_placement", placementId,
                             "{\"placement_id\":\"" + placementId + "\",\"blob_id\":\"" + placement.blobId()
-                                + "\",\"target_tier\":\"" + targetTier + "\"}").thenReturn(task))));
+                                + "\",\"target_tier\":\"" + targetTier + "\"}")).thenReturn(task))));
             });
     }
 }

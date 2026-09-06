@@ -7,7 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 import run.ikaros.resource.ResourceRepository;
 
 @Service
@@ -19,12 +20,12 @@ public class BlobVerificationService {
     private final StorageProviderRegistry providers;
     private final List<StorageContentReader> readers;
     private final BlobIntegrityService integrity;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
     private final TransactionalOperator transaction;
 
     public BlobVerificationService(BlobRepository blobs, BlobPlacementRepository placements, AttachmentRepository attachments,
         ResourceRepository resources, StorageProviderRegistry providers, List<StorageContentReader> readers,
-        BlobIntegrityService integrity, DurableEventService events, TransactionalOperator transaction) {
+        BlobIntegrityService integrity, DurableEventPublisher events, TransactionalOperator transaction) {
         this.blobs = blobs; this.placements = placements; this.attachments = attachments; this.resources = resources;
         this.providers = providers; this.readers = List.copyOf(readers); this.integrity = integrity;
         this.events = events; this.transaction = transaction;
@@ -58,7 +59,7 @@ public class BlobVerificationService {
             + "\",\"integrity_status\":\"" + result.status() + "\",\"verified_at\":\"" + now
             + "\",\"actual_sha256\":\"" + result.actualSha256() + "\",\"actual_size\":" + result.actualSize() + "}";
         return transaction.transactional(placements.save(updatedPlacement).then(blobs.save(updatedBlob))
-            .then(events.append(eventType, 1, "blob", blob.id(), payload)).thenReturn(
+            .then(events.append(new EventAppendRequest(eventType, 1, "storage", "blob", blob.id(), payload))).thenReturn(
                 new BlobVerificationView(blob.id(), placement.id(), result.status(), result.actualSha256(), result.actualSize(), now)));
     }
 

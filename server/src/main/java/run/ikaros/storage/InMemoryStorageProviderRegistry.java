@@ -10,19 +10,20 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 @Service
 public class InMemoryStorageProviderRegistry implements StorageProviderRegistry {
     private static final int MAX_UNPAGED_RESULTS = 100;
     private final Map<UUID, StorageProvider> providers = new ConcurrentHashMap<>();
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
 
     public InMemoryStorageProviderRegistry() {
         this(null);
     }
 
-    public InMemoryStorageProviderRegistry(DurableEventService events) {
+    public InMemoryStorageProviderRegistry(DurableEventPublisher events) {
         this.events = events;
     }
 
@@ -121,7 +122,7 @@ public class InMemoryStorageProviderRegistry implements StorageProviderRegistry 
         if (events == null) return Mono.empty();
         String payload = "{\"provider_id\":\"" + current.id() + "\",\"changed_fields\":"
             + changedFields(request) + "}";
-        return events.append("storage.provider.updated", 1, "storage_provider", current.id(), payload).then();
+        return events.append(new EventAppendRequest("storage.provider.updated", 1, "storage", "storage_provider", current.id(), payload)).then();
     }
 
     private String changedFields(UpdateStorageProviderRequest request) {

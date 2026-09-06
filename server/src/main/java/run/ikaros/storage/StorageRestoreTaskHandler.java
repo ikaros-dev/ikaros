@@ -11,7 +11,8 @@ import run.ikaros.common.NotFoundException;
 import run.ikaros.task.BackgroundTask;
 import run.ikaros.task.BackgroundTaskDispatcher;
 import run.ikaros.media.MediaEpisodeRepository;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 @Component
 public class StorageRestoreTaskHandler {
@@ -25,13 +26,13 @@ public class StorageRestoreTaskHandler {
     private final StorageRestoreOperationRepository operations;
     private final StorageRestoreRequestItemRepository items;
     private final MediaEpisodeRepository episodes;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
 
     public StorageRestoreTaskHandler(BackgroundTaskDispatcher dispatcher, StorageRestoreRequestRepository requests,
         AttachmentRepository attachments, BlobRepository blobs, BlobPlacementRepository placements,
         StorageProviderRegistry providers, StorageRestoreExecutor executor,
         StorageRestoreOperationRepository operations, StorageRestoreRequestItemRepository items, MediaEpisodeRepository episodes,
-        DurableEventService events) {
+        DurableEventPublisher events) {
         this.dispatcher = dispatcher; this.requests = requests; this.attachments = attachments;
         this.blobs = blobs; this.placements = placements; this.providers = providers; this.executor = executor;
         this.operations = operations; this.items = items;
@@ -126,9 +127,9 @@ public class StorageRestoreTaskHandler {
                 .thenReturn(Map.<String, Object>of("restore_request_id", requestId.toString(), "completed_items", 1));
         }
         return updateOperation(operation, StorageRestoreOperationStatus.IN_PROGRESS, null, null)
-            .flatMap(started -> events.append("storage.restore-operation.started", 1, "restore_operation", started.id(),
+            .flatMap(started -> events.append(new EventAppendRequest("storage.restore-operation.started", 1, "storage", "restore_operation", started.id(),
                 "{\"operation_id\":\"" + started.id() + "\",\"placement_id\":\"" + started.placementId()
-                    + "\",\"restore_class\":\"" + started.providerRestoreClass() + "\",\"size_bytes\":" + blob.sizeBytes() + "}").then())
+                    + "\",\"restore_class\":\"" + started.providerRestoreClass() + "\",\"size_bytes\":" + blob.sizeBytes() + "}")).then())
             .then(providers.getByKey(placement.provider()))
             .flatMap(provider -> {
                 if (!executor.supports(provider)) return Mono.error(new ConflictException("Provider 不支持恢复"));
@@ -140,18 +141,18 @@ public class StorageRestoreTaskHandler {
                 ? StorageRestoreOperationStatus.SUCCEEDED : StorageRestoreOperationStatus.READY_TEMPORARILY;
             Mono<Void> status = completeRequest ? updateStatus(request, StorageRestoreRequestStatus.COMPLETED).then() : Mono.empty();
             return updateOperation(operation, readyStatus, result.providerOperationId(), result.expiresAt())
-                .flatMap(ready -> events.append("storage.restore-operation.ready", 1, "restore_operation", ready.id(),
+                .flatMap(ready -> events.append(new EventAppendRequest("storage.restore-operation.ready", 1, "storage", "restore_operation", ready.id(),
                     "{\"operation_id\":\"" + ready.id() + "\",\"placement_id\":\"" + ready.placementId()
-                        + "\",\"restore_expires_at\":" + (ready.restoreExpiresAt() == null ? "null" : "\"" + ready.restoreExpiresAt() + "\"") + "}").then())
+                        + "\",\"restore_expires_at\":" + (ready.restoreExpiresAt() == null ? "null" : "\"" + ready.restoreExpiresAt() + "\"") + "}")).then())
                 .then(updateItem(request.id(), placement.id(),
                     readyStatus == StorageRestoreOperationStatus.READY_TEMPORARILY
                         ? StorageRestoreRequestItemStatus.READY_TEMPORARILY : StorageRestoreRequestItemStatus.READY, null))
                 .then(status)
                 .thenReturn(Map.<String, Object>of("restore_request_id", requestId.toString(), "completed_items", 1));
         }).onErrorResume(error -> updateOperation(operation, StorageRestoreOperationStatus.FAILED, null, null)
-            .flatMap(failed -> events.append("storage.restore-operation.failed", 1, "restore_operation", failed.id(),
+            .flatMap(failed -> events.append(new EventAppendRequest("storage.restore-operation.failed", 1, "storage", "restore_operation", failed.id(),
                 "{\"operation_id\":\"" + failed.id() + "\",\"placement_id\":\"" + failed.placementId()
-                    + "\",\"error_code\":\"restore-failed\",\"retryable\":false}").then())
+                    + "\",\"error_code\":\"restore-failed\",\"retryable\":false}")).then())
             .then(updateItem(request.id(), placement.id(), StorageRestoreRequestItemStatus.FAILED, error.getMessage()))
             .then(completeRequest ? updateStatus(request, StorageRestoreRequestStatus.FAILED).then() : Mono.empty())
             .thenReturn(Map.<String, Object>of("restore_request_id", requestId.toString(), "completed_items", 0)));
@@ -222,10 +223,10 @@ public class StorageRestoreTaskHandler {
             .flatMap(saved -> status == StorageRestoreRequestStatus.COMPLETED
                 || status == StorageRestoreRequestStatus.PARTIAL_FAILURE
                 || status == StorageRestoreRequestStatus.FAILED
-                    ? events.append("storage.restore-request.completed", 1, "restore_request", saved.id(),
+                    ? events.append(new EventAppendRequest("storage.restore-request.completed", 1, "storage", "restore_request", saved.id(),
                     "{\"request_id\":\"" + saved.id() + "\",\"status\":\"" + publicStatus(saved.status())
                         + "\",\"ready_items\":" + saved.completedItems() + ",\"failed_items\":"
-                        + Math.max(0, saved.totalItems() - saved.completedItems()) + "}").thenReturn(saved)
+                        + Math.max(0, saved.totalItems() - saved.completedItems()) + "}")).thenReturn(saved)
                 : Mono.just(saved));
     }
 

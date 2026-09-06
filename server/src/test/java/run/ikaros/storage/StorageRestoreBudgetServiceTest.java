@@ -9,12 +9,13 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.common.ConflictException;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 class StorageRestoreBudgetServiceTest {
     private final StorageRestoreBudgetRepository budgets = mock(StorageRestoreBudgetRepository.class);
     private final StorageRestoreBudgetService service = new StorageRestoreBudgetService(budgets,
-        mock(DurableEventService.class));
+        mock(DurableEventPublisher.class));
 
     @Test
     void confirmationIsRequiredWhenRequestExceedsSingleRequestBudget() {

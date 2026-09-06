@@ -2,6 +2,7 @@ package run.ikaros.identity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -15,7 +16,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.audit.AuditService;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 /** 验证平台用户服务的创建、查询、状态与角色绑定规则。 */
 class DefaultUserServiceTest {
@@ -113,11 +115,11 @@ class DefaultUserServiceTest {
             UserStatus.ACTIVE, now, now, null, 1L);
         PlatformUserEntity disabled = new PlatformUserEntity(userId, "alice", "Alice", null,
             UserStatus.DISABLED, now, now, null, 3L);
-        DurableEventService events = mock(DurableEventService.class);
+        DurableEventPublisher events = mock(DurableEventPublisher.class);
         when(userRepository.findById(userId)).thenReturn(Mono.just(user));
         when(userRepository.save(any())).thenReturn(Mono.just(disabled));
         when(userRoleRepository.findAllByUserId(userId)).thenReturn(Flux.empty());
-        when(events.append(eq("identity.user.disabled"), eq(1), eq("user"), eq(userId), any(String.class)))
+        when(events.append(any(EventAppendRequest.class)))
             .thenReturn(Mono.empty());
         when(auditService.record(eq(actorId), eq("identity.user.status.change"), eq("USER"), eq(userId), eq("{}")))
             .thenReturn(Mono.empty());
@@ -127,7 +129,9 @@ class DefaultUserServiceTest {
         StepVerifier.create(eventService.changeStatus(actorId, userId, UserStatus.DISABLED))
             .assertNext(view -> assertThat(view.status()).isEqualTo(UserStatus.DISABLED))
             .verifyComplete();
-        verify(events).append(eq("identity.user.disabled"), eq(1), eq("user"), eq(userId), any(String.class));
+        verify(events).append(argThat(request -> request.eventType().equals("authentication.user.disabled")
+            && request.producerSubsystem().equals("authentication") && request.subjectType().equals("user")
+            && request.subjectId().equals(userId)));
     }
 
     @Test
@@ -135,7 +139,7 @@ class DefaultUserServiceTest {
         UUID actorId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         Instant now = Instant.now();
-        DurableEventService events = mock(DurableEventService.class);
+        DurableEventPublisher events = mock(DurableEventPublisher.class);
         PlatformUserEntity created = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
             UserStatus.PENDING, now, now, null, 0L);
         PlatformUserEntity disabled = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
@@ -145,7 +149,7 @@ class DefaultUserServiceTest {
         when(userRepository.findById(userId)).thenReturn(Mono.just(created), Mono.just(disabled));
         when(userRepository.save(any())).thenReturn(Mono.just(created), Mono.just(disabled), Mono.just(enabled));
         when(userRoleRepository.findAllByUserId(userId)).thenReturn(Flux.empty());
-        when(events.append(any(String.class), eq(1), eq("user"), eq(userId), any(String.class)))
+        when(events.append(any(EventAppendRequest.class)))
             .thenReturn(Mono.empty());
         when(auditService.record(any(), any(String.class), eq("USER"), eq(userId), eq("{}")))
             .thenReturn(Mono.empty());
@@ -157,8 +161,12 @@ class DefaultUserServiceTest {
             .assertNext(view -> assertThat(view.status()).isEqualTo(UserStatus.PENDING)).verifyComplete();
         StepVerifier.create(eventService.changeStatus(actorId, userId, UserStatus.DISABLED)).expectNextCount(1).verifyComplete();
         StepVerifier.create(eventService.changeStatus(actorId, userId, UserStatus.ACTIVE)).expectNextCount(1).verifyComplete();
-        verify(events).append(eq("identity.user.created"), eq(1), eq("user"), eq(userId), any(String.class));
-        verify(events).append(eq("identity.user.enabled"), eq(1), eq("user"), eq(userId), any(String.class));
+        verify(events).append(argThat(request -> request.eventType().equals("authentication.user.created")
+            && request.producerSubsystem().equals("authentication") && request.subjectType().equals("user")
+            && request.subjectId().equals(userId)));
+        verify(events).append(argThat(request -> request.eventType().equals("authentication.user.enabled")
+            && request.producerSubsystem().equals("authentication") && request.subjectType().equals("user")
+            && request.subjectId().equals(userId)));
     }
 
     @Test

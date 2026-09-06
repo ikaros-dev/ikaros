@@ -8,7 +8,8 @@ import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PreconditionFailedException;
 import run.ikaros.common.StorageUnavailableException;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 import run.ikaros.resource.ResourceRepository;
 
 @Service
@@ -23,14 +24,14 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
     private final StorageProviderRegistry providerRegistry;
     private final MediaDeliveryBindingRepository bindings;
     private final DeliveryProviderRepository deliveryProviders;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
     private final StorageRestoreOperationRepository restoreOperations;
 
     public PersistentDeliveryLeaseService(AttachmentRepository attachments, ResourceRepository resources,
                                           MediaDeliveryGrantRepository grants, MediaDeliveryLeaseRepository leases,
                                           BlobPlacementRepository placements, StorageProviderRegistry providerRegistry,
                                           MediaDeliveryBindingRepository bindings, DeliveryProviderRepository deliveryProviders,
-                                          DurableEventService events, StorageRestoreOperationRepository restoreOperations) {
+                                          DurableEventPublisher events, StorageRestoreOperationRepository restoreOperations) {
         this.attachments = attachments;
         this.resources = resources;
         this.grants = grants;
@@ -58,9 +59,9 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
                 return leases.save(new MediaDeliveryLeaseEntity(null, attachment.id(), attachment.blobId(), actorId,
                     grant.id(), selection.bindingId(), 1, now, selection.reason(), selection.fallbackIndex(),
                     selection.healthSnapshotVersion(), now.plusSeconds(ttl), null, now, now, null))
-                    .flatMap(saved -> events.append("storage.delivery-lease.created", 1, "delivery_lease", saved.id(),
+                    .flatMap(saved -> events.append(new EventAppendRequest("storage.delivery-lease.created", 1, "storage", "delivery_lease", saved.id(),
                         "{\"lease_id\":\"" + saved.id() + "\",\"attachment_id\":\"" + saved.attachmentId()
-                            + "\",\"purpose\":\"DELIVERY\",\"expires_at\":\"" + saved.leaseExpiresAt() + "\"}")
+                            + "\",\"purpose\":\"DELIVERY\",\"expires_at\":\"" + saved.leaseExpiresAt() + "\"}"))
                         .thenReturn(view(saved)));
             })));
     }
@@ -112,8 +113,8 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
             return leases.save(new MediaDeliveryLeaseEntity(old.id(), old.attachmentId(), old.blobId(), old.ownerId(),
                 old.grantId(), old.bindingId(), old.selectionEpoch(), old.selectedAt(), old.selectionReason(), old.fallbackIndex(),
                 old.healthSnapshotVersion(), old.leaseExpiresAt(), Instant.now(), old.lastHeartbeatAt(), old.createdAt(), old.version()))
-                .flatMap(saved -> events.append("storage.delivery-lease.released", 1, "delivery_lease", saved.id(),
-                    "{\"lease_id\":\"" + saved.id() + "\",\"attachment_id\":\"" + saved.attachmentId() + "\"}").then());
+                .flatMap(saved -> events.append(new EventAppendRequest("storage.delivery-lease.released", 1, "storage", "delivery_lease", saved.id(),
+                    "{\"lease_id\":\"" + saved.id() + "\",\"attachment_id\":\"" + saved.attachmentId() + "\"}")).then());
         });
     }
 

@@ -12,7 +12,8 @@ import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 import run.ikaros.resource.ResourceRepository;
 
 /**
@@ -26,7 +27,7 @@ public class DefaultCollectionService implements CollectionService {
     private final ResourceRepository resourceRepository;
     private final AuditService auditService;
     private final TransactionalOperator transactionalOperator;
-    private final DurableEventService eventService;
+    private final DurableEventPublisher eventService;
 
     /**
      * 创建 Collection 服务。
@@ -52,7 +53,7 @@ public class DefaultCollectionService implements CollectionService {
                                     ResourceRepository resourceRepository,
                                     AuditService auditService,
                                     TransactionalOperator transactionalOperator,
-                                    DurableEventService eventService) {
+                                    DurableEventPublisher eventService) {
         this.collectionRepository = collectionRepository;
         this.collectionResourceRepository = collectionResourceRepository;
         this.resourceRepository = resourceRepository;
@@ -162,12 +163,13 @@ public class DefaultCollectionService implements CollectionService {
         if (eventService == null) return Mono.empty();
         String payload = "{\"collection_id\":\"" + collection.id()
             + "\",\"kind\":\"library\",\"mode\":\"STATIC\"}";
-        return eventService.append("resource.collection.created", 1, "collection", collection.id(), payload).then();
+        return eventService.append(new EventAppendRequest("resource.collection.created", 1, "resource", "collection",
+            collection.id(), payload)).then();
     }
 
     private Mono<Void> emitMembership(String eventType, UUID collectionId, UUID resourceId) {
         if (eventService == null) return Mono.empty();
         String payload = "{\"collection_id\":\"" + collectionId + "\",\"resource_id\":\"" + resourceId + "\"}";
-        return eventService.append(eventType, 1, "collection", collectionId, payload).then();
+        return eventService.append(new EventAppendRequest(eventType, 1, "resource", "collection", collectionId, payload)).then();
     }
 }

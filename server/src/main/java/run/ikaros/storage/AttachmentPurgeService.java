@@ -8,7 +8,8 @@ import reactor.core.publisher.Mono;
 import run.ikaros.audit.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 import run.ikaros.resource.ResourceRepository;
 
 @Service
@@ -16,11 +17,11 @@ public class AttachmentPurgeService {
     private final AttachmentRepository attachments;
     private final ResourceRepository resources;
     private final AuditService audit;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
     private final TransactionalOperator transaction;
 
     public AttachmentPurgeService(AttachmentRepository attachments, ResourceRepository resources, AuditService audit,
-                                  DurableEventService events, TransactionalOperator transaction) {
+                                  DurableEventPublisher events, TransactionalOperator transaction) {
         this.attachments = attachments; this.resources = resources; this.audit = audit;
         this.events = events; this.transaction = transaction;
     }
@@ -39,7 +40,7 @@ public class AttachmentPurgeService {
                     + Instant.now() + "\"}";
                 return transaction.transactional(attachments.delete(attachment)
                     .then(audit.record(actorId, "attachment.purge", "ATTACHMENT", attachment.id(), "{}"))
-                    .then(events.append("attachment.purged", 1, "attachment", attachment.id(), payload))).then();
+                    .then(events.append(new EventAppendRequest("attachment.purged", 1, "storage", "attachment", attachment.id(), payload)))).then();
             });
     }
 }

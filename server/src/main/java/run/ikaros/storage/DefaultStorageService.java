@@ -16,7 +16,8 @@ import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;
 import run.ikaros.common.StorageUnavailableException;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 import run.ikaros.resource.ResourceRepository;
 import run.ikaros.task.BackgroundTask;
 import run.ikaros.task.BackgroundTaskService;
@@ -37,7 +38,7 @@ public class DefaultStorageService implements StorageService {
     private final TransactionalOperator transactionalOperator;
     private final StorageProviderRegistry providerRegistry;
     private final BackgroundTaskService taskService;
-    private final DurableEventService eventService;
+    private final DurableEventPublisher eventService;
     private List<StorageContentReader> contentReaders = List.of();
     private StorageObjectProviderRegistry objectProviderRegistry;
 
@@ -97,7 +98,7 @@ public class DefaultStorageService implements StorageService {
                                  TransactionalOperator transactionalOperator,
                                  StorageProviderRegistry providerRegistry,
                                  BackgroundTaskService taskService,
-                                 DurableEventService eventService) {
+                                 DurableEventPublisher eventService) {
         this.resourceRepository = resourceRepository;
         this.attachmentRepository = attachmentRepository;
         this.blobRepository = blobRepository;
@@ -399,7 +400,7 @@ public class DefaultStorageService implements StorageService {
         }
         String payload = "{\"attachment_id\":\"" + attachment.id() + "\",\"resource_id\":\""
             + attachment.resourceId() + "\",\"blob_id\":\"" + attachment.blobId() + "\"}";
-        return eventService.append(eventType, 1, "attachment", attachment.id(), payload).then();
+        return eventService.append(new EventAppendRequest(eventType, 1, "storage", "attachment", attachment.id(), payload)).then();
     }
 
     private Mono<AttachmentView> toView(AttachmentEntity attachment, BlobEntity blob) {

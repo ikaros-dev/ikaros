@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 import run.ikaros.task.BackgroundTask;
 import run.ikaros.task.BackgroundTaskDispatcher;
 
@@ -21,11 +22,11 @@ public class StoragePlacementTieringTaskHandler {
     private final StorageRestoreExecutor restoreExecutor;
     private final StorageContentCopier copier;
     private final MediaDeliveryLeaseRepository leases;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
 
     public StoragePlacementTieringTaskHandler(BackgroundTaskDispatcher dispatcher, BlobPlacementRepository placements,
         BlobRepository blobs, StorageProviderRegistry providers, StorageRestoreExecutor restoreExecutor,
-        StorageContentCopier copier, MediaDeliveryLeaseRepository leases, DurableEventService events) {
+        StorageContentCopier copier, MediaDeliveryLeaseRepository leases, DurableEventPublisher events) {
         this.dispatcher = dispatcher;
         this.placements = placements;
         this.blobs = blobs;
@@ -48,8 +49,8 @@ public class StoragePlacementTieringTaskHandler {
             .flatMap(placement -> "DEMOTE".equals(direction)
                 ? demote(placement, targetTier)
                 : promote(placement, targetTier))
-            .flatMap(saved -> events.append("storage.placement.tiering-completed", 1, "blob_placement", saved.id(),
-                "{\"placement_id\":\"" + saved.id() + "\",\"target_tier\":\"" + saved.storageTier() + "\"}")
+            .flatMap(saved -> events.append(new EventAppendRequest("storage.placement.tiering-completed", 1, "storage", "blob_placement", saved.id(),
+                "{\"placement_id\":\"" + saved.id() + "\",\"target_tier\":\"" + saved.storageTier() + "\"}"))
                 .thenReturn(Map.of("placement_id", saved.id().toString(), "target_tier", saved.storageTier().name())));
     }
 

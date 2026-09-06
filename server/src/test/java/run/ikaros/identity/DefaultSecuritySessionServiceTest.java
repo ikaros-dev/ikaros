@@ -3,6 +3,7 @@ package run.ikaros.identity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -16,7 +17,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.audit.AuditService;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 /** 验证安全会话的创建、升级、查询和撤销规则。 */
 class DefaultSecuritySessionServiceTest {
@@ -106,10 +108,10 @@ class DefaultSecuritySessionServiceTest {
         Instant now = Instant.now();
         SecuritySessionEntity session = new SecuritySessionEntity(sessionId, userId, "EMAIL_OTP", 0, null, null,
             now.plusSeconds(3600), null, now, now, 0L);
-        DurableEventService events = mock(DurableEventService.class);
+        DurableEventPublisher events = mock(DurableEventPublisher.class);
         when(sessionRepository.findById(sessionId)).thenReturn(Mono.just(session));
         when(sessionRepository.save(any())).thenReturn(Mono.just(session));
-        when(events.append(eq("identity.session.revoked"), eq(1), eq("session"), eq(sessionId), any(String.class)))
+        when(events.append(any(EventAppendRequest.class)))
             .thenReturn(Mono.empty());
         when(auditService.record(eq(actorId), eq("identity.session.revoke"), eq("SESSION"), eq(sessionId), eq("{}")))
             .thenReturn(Mono.empty());
@@ -117,7 +119,9 @@ class DefaultSecuritySessionServiceTest {
             auditService, events);
 
         StepVerifier.create(eventService.revoke(actorId, userId, sessionId)).verifyComplete();
-        verify(events).append(eq("identity.session.revoked"), eq(1), eq("session"), eq(sessionId), any(String.class));
+        verify(events).append(argThat(request -> request.eventType().equals("authentication.session.revoked")
+            && request.producerSubsystem().equals("authentication") && request.subjectType().equals("session")
+            && request.subjectId().equals(sessionId)));
     }
 
     @Test

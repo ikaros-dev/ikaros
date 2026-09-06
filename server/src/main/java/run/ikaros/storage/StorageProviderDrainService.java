@@ -6,15 +6,16 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.task.BackgroundTask;
 import run.ikaros.task.BackgroundTaskService;
-import run.ikaros.event.DurableEventService;
+import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.EventAppendRequest;
 
 @Service
 public class StorageProviderDrainService {
     private final StorageProviderRegistry providers;
     private final BackgroundTaskService tasks;
-    private final DurableEventService events;
+    private final DurableEventPublisher events;
 
-    public StorageProviderDrainService(StorageProviderRegistry providers, BackgroundTaskService tasks, DurableEventService events) {
+    public StorageProviderDrainService(StorageProviderRegistry providers, BackgroundTaskService tasks, DurableEventPublisher events) {
         this.providers = providers; this.tasks = tasks; this.events = events;
     }
 
@@ -29,7 +30,7 @@ public class StorageProviderDrainService {
         return providers.drain(providerId)
             .then(tasks.submit("storage.provider-drain", Map.of("provider_id", providerId.toString(),
                 "requested_by", actorId.toString()), "storage.provider-drain:" + providerId + ":" + idempotencyKey))
-            .flatMap(task -> events.append("storage.provider.drain-requested", 1, "storage_provider", providerId,
-                "{\"provider_id\":\"" + providerId + "\",\"task_id\":\"" + task.id() + "\"}").thenReturn(task));
+            .flatMap(task -> events.append(new EventAppendRequest("storage.provider.drain-requested", 1, "storage", "storage_provider", providerId,
+                "{\"provider_id\":\"" + providerId + "\",\"task_id\":\"" + task.id() + "\"}")).thenReturn(task));
     }
 }
