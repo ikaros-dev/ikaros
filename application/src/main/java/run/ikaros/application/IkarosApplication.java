@@ -1,4 +1,4 @@
-package run.ikaros;
+package run.ikaros.application;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 /**
  * Ikaros 应用启动入口，承载全部模块化单体能力。
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "run.ikaros")
 @EnableScheduling
 public class IkarosApplication {
 
