@@ -9,6 +9,7 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
+import run.ikaros.foundation.PrincipalContext;
 
 /** 将认证层传入的主体信息收敛到 Reactor Context，并生成请求/关联 ID。 */
 @Component

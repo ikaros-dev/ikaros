@@ -9,8 +9,8 @@ import reactor.core.publisher.Mono;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
-import run.ikaros.security.PrincipalContexts;
-import run.ikaros.security.PrincipalContext;
+import run.ikaros.foundation.PrincipalContext;
+import run.ikaros.foundation.PrincipalContexts;
 
 /** Outbox 写入与 Inbox 幂等消费边界。 */
 @Service

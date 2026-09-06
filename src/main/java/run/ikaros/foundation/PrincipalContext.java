@@ -1,4 +1,4 @@
-package run.ikaros.security;
+package run.ikaros.foundation;
 
 import java.util.UUID;
 

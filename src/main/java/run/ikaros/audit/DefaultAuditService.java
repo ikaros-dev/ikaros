@@ -4,7 +4,8 @@ import java.time.Instant;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import run.ikaros.security.PrincipalContexts;
+import run.ikaros.foundation.PrincipalContext;
+import run.ikaros.foundation.PrincipalContexts;
 
 /**
  * 默认审计服务实现，审计详情只允许保存经调用方脱敏后的结构化信息。
@@ -29,7 +30,7 @@ public class DefaultAuditService implements AuditService {
     }
 
     private Mono<Void> save(UUID actorId, String action, String targetType, UUID targetId, String details,
-                             run.ikaros.security.PrincipalContext context) {
+                             PrincipalContext context) {
         AuditEventEntity event = new AuditEventEntity(
                 null,
                 actorId == null ? "SYSTEM" : "USER",
