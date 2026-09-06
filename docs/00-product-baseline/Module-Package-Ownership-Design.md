@@ -247,6 +247,8 @@ Authorization 拥有：
 
 Authentication 和 Authorization 均可依赖 `foundation-api` 的 `PrincipalContext`，但不得依赖 `PrincipalContexts` 的实现细节。
 
+Authentication 在注册、登录和刷新 Token 时通过 `authorization-api` 的 `PermissionSnapshotQuery` 获取权限快照；它不得直接访问 Authorization 实现模块、Role / Permission / Binding Entity 或 Repository。已签发 Access JWT 的权限快照在 Token 有效期内保持不变，权限变更不隐式提升 `security_version`。完整决策见 `adr/ADR-004-authentication-authorization-permission-snapshot.md`。
+
 其他领域可以依赖 Security API，但不得直接读写 Security persistence。
 
 ### 4.4 `platform.task`

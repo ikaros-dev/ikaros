@@ -988,6 +988,8 @@ Credential -> Principal
 Principal + Action + Resource Context -> Allow / Deny
 ```
 
+Authentication 在签发 Access JWT 时通过 `authorization-api` 获取权限快照；Authentication 只能依赖 Authorization 的公开 Capability，不得依赖 Authorization 实现或 Persistence。权限快照在 JWT 有效期内保持不变，角色/权限变更不自动提升 `security_version`；需要立即失效时使用用户级 Token 失效语义。具体契约见 `adr/ADR-004-authentication-authorization-permission-snapshot.md`。
+
 ### 21.2 Application 层必须再次拥有授权边界
 
 Controller 的 Security Rule 只能作为第一道门。真正的业务 Command 仍必须执行授权判断，因为同一个 Application API 可能来自 HTTP、Automation、Plugin、Background Task、Internal Command 或 Realtime Channel。
