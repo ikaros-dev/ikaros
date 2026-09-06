@@ -19,6 +19,7 @@
     <description>自托管的个人数字内容平台</description>
 
     <modules>
+        <module>platform</module>
         <module>server</module>
     </modules>
 

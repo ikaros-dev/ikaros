@@ -16,6 +16,16 @@
 
     <dependencies>
         <dependency>
+            <groupId>run.ikaros</groupId>
+            <artifactId>foundation-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>run.ikaros</groupId>
+            <artifactId>foundation</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
