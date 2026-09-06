@@ -1,4 +1,4 @@
-package run.ikaros.audit;
+package run.ikaros.operations.api;
 
 import java.util.UUID;
 import reactor.core.publisher.Mono;

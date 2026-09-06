@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import reactor.core.publisher.Mono;
-import run.ikaros.audit.AuditService;
+import run.ikaros.operations.api.AuditService;
 
 class DefaultIngestionSourceServiceTest {
     @Mock private IngestionSourceRepository repository;

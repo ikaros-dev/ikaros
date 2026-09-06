@@ -1,4 +1,4 @@
-package run.ikaros.operations;
+package run.ikaros.operations.health;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;

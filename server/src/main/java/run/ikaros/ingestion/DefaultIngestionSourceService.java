@@ -10,7 +10,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Mono;
-import run.ikaros.audit.AuditService;
+import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;

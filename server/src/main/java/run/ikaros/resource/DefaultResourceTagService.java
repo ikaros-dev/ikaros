@@ -8,7 +8,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
-import run.ikaros.audit.AuditService;
+import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;

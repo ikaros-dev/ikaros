@@ -1,4 +1,4 @@
-package run.ikaros.operations;
+package run.ikaros.operations.health;
 
 import java.util.Map;
 import org.springframework.http.HttpStatus;

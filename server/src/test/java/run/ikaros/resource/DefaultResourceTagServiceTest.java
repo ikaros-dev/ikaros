@@ -14,7 +14,7 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import run.ikaros.audit.AuditService;
+import run.ikaros.operations.api.AuditService;
 
 /**
  * 验证用户自定义标签的幂等、隔离和审计行为。

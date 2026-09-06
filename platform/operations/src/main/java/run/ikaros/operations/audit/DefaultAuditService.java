@@ -1,4 +1,4 @@
-package run.ikaros.audit;
+package run.ikaros.operations.audit;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.foundation.PrincipalContext;
 import run.ikaros.foundation.PrincipalContexts;
+import run.ikaros.operations.api.AuditService;
 
 /**
  * 默认审计服务实现，审计详情只允许保存经调用方脱敏后的结构化信息。

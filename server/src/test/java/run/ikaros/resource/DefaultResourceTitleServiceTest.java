@@ -15,7 +15,7 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import run.ikaros.audit.AuditService;
+import run.ikaros.operations.api.AuditService;
 
 /**
  * 验证 Resource 标题的语言唯一性、主标题切换和删除规则。

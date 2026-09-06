@@ -1,4 +1,4 @@
-package run.ikaros.audit;
+package run.ikaros.operations.audit;
 
 import java.time.Instant;
 import java.util.UUID;

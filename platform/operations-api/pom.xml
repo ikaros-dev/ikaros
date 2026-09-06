@@ -6,21 +6,18 @@
 
     <parent>
         <groupId>run.ikaros</groupId>
-        <artifactId>ikaros</artifactId>
+        <artifactId>platform</artifactId>
         <version>2.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>platform</artifactId>
-    <packaging>pom</packaging>
-    <name>Ikaros Platform</name>
+    <artifactId>operations-api</artifactId>
+    <name>Ikaros Platform Operations API</name>
 
-    <modules>
-        <module>foundation-api</module>
-        <module>foundation</module>
-        <module>integration-api</module>
-        <module>integration</module>
-        <module>operations-api</module>
-        <module>operations</module>
-    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+        </dependency>
+    </dependencies>
 </project>

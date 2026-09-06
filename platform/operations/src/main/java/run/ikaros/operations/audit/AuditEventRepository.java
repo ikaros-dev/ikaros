@@ -1,4 +1,4 @@
-package run.ikaros.audit;
+package run.ikaros.operations.audit;
 
 import java.util.UUID;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;

@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
-import run.ikaros.audit.AuditService;
+import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.NotFoundException;
 
 /**

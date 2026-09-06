@@ -18,7 +18,7 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import run.ikaros.audit.AuditService;
+import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;

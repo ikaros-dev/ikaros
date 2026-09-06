@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import run.ikaros.audit.AuditService;
+import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.identity.PlatformUserEntity;
 import run.ikaros.identity.PlatformUserRepository;

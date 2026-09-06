@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import run.ikaros.audit.AuditService;
+import run.ikaros.operations.api.AuditService;
 
 /** 验证角色与平台权限注册表的关键业务规则。 */
 class DefaultRoleServiceTest {
