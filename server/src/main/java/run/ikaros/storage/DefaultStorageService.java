@@ -1,5 +1,7 @@
 package run.ikaros.storage;
 
+import run.ikaros.storage.api.*;
+
 import java.time.Instant;
 import java.time.Duration;
 import java.util.List;
@@ -21,12 +23,13 @@ import run.ikaros.integration.api.EventAppendRequest;
 import run.ikaros.resource.api.ResourceOwnershipQuery;
 import run.ikaros.task.BackgroundTask;
 import run.ikaros.task.BackgroundTaskService;
+import run.ikaros.operations.api.TaskReference;
 
 /**
  * 默认存储服务实现，严格保持 Attachment、Blob 与物理 Placement 三层分离。
  */
 @Service
-public class DefaultStorageService implements StorageService {
+public class DefaultStorageService implements StorageService, AttachmentContentReader {
     private static final int MAX_PAGE_SIZE = 100;
     private static final int MAX_UNPAGED_RESULTS = 100;
     private final ResourceOwnershipQuery resourceOwnership;
@@ -338,13 +341,14 @@ public class DefaultStorageService implements StorageService {
     }
 
     @Override
-    public Mono<BackgroundTask> requestGarbageCollection(UUID actorId, int limit, Duration minimumAge) {
+    public Mono<TaskReference> requestGarbageCollection(UUID actorId, int limit, Duration minimumAge) {
         if (taskService == null) {
             return Mono.error(new IllegalStateException("Background Task Runtime 未配置"));
         }
         return taskService.submit("storage.blob-gc", Map.of("limit", limit,
             "minimum_age_seconds", minimumAge.getSeconds(), "requested_by", actorId.toString()),
-            "storage.blob-gc:" + actorId + ":" + limit + ":" + minimumAge.getSeconds());
+            "storage.blob-gc:" + actorId + ":" + limit + ":" + minimumAge.getSeconds())
+            .map(task -> new TaskReference(task.id(), task.taskType()));
     }
 
     private Mono<BlobEntity> findOrCreateBlob(AttachBlobRequest request) {
@@ -404,12 +408,19 @@ public class DefaultStorageService implements StorageService {
     }
 
     private Mono<AttachmentView> toView(AttachmentEntity attachment, BlobEntity blob) {
-        return placementRepository.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
-            .map(placement -> new PlacementView(placement.id(), placement.provider(), placement.storageTier(),
-                placement.objectKey(), placement.placementState()))
-            .collectList()
-            .map(placements -> new AttachmentView(attachment.id(), attachment.fileName(), attachment.attachmentKind(),
-                blob.id(), blob.sha256(), blob.sizeBytes(), blob.mediaType(), blob.availability(), placements));
+        return Mono.just(new AttachmentView(attachment.id(), attachment.resourceId(), attachment.fileName(),
+            attachment.attachmentKind(), blob.sha256(), blob.sizeBytes(), blob.mediaType(),
+            toAvailability(blob.availability())));
+    }
+
+    private AttachmentAvailabilityStatus toAvailability(BlobAvailability availability) {
+        return switch (availability) {
+            case AVAILABLE -> AttachmentAvailabilityStatus.READY;
+            case PROCESSING -> AttachmentAvailabilityStatus.PROCESSING;
+            case REMOTE, RESTORING -> AttachmentAvailabilityStatus.RESTORE_REQUIRED;
+            case MISSING -> AttachmentAvailabilityStatus.MISSING;
+            case CORRUPTED -> AttachmentAvailabilityStatus.CORRUPTED;
+        };
     }
 
     private Mono<Void> owned(UUID ownerId, UUID resourceId) {

@@ -1,5 +1,7 @@
 package run.ikaros.storage;
 
+import run.ikaros.storage.api.*;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -78,12 +80,9 @@ class DefaultStorageServiceTest {
 
         StepVerifier.create(service.attach(ownerId, resourceId, request))
             .assertNext(view -> {
-                assertThat(view.blobId()).isEqualTo(blobId);
+                assertThat(view.resourceId()).isEqualTo(resourceId);
                 assertThat(view.sha256()).isEqualTo("a".repeat(64));
-                assertThat(view.placements()).singleElement().satisfies(value -> {
-                    assertThat(value.provider()).isEqualTo("nas");
-                    assertThat(value.objectKey()).isEqualTo("media/episode.mp4");
-                });
+                assertThat(view.availability()).isEqualTo(AttachmentAvailabilityStatus.READY);
             })
             .verifyComplete();
 
@@ -185,10 +184,10 @@ class DefaultStorageServiceTest {
         StepVerifier.create(service.listPage(ownerId, null, 0, 20))
             .assertNext(page -> {
                 assertThat(page).isEqualTo(new PageResponse<>(
-                    List.of(new AttachmentView(first.id(), first.fileName(), first.attachmentKind(), first.blobId(),
-                            firstBlob.sha256(), firstBlob.sizeBytes(), firstBlob.mediaType(), firstBlob.availability(), List.of()),
-                        new AttachmentView(second.id(), second.fileName(), second.attachmentKind(), second.blobId(),
-                            secondBlob.sha256(), secondBlob.sizeBytes(), secondBlob.mediaType(), secondBlob.availability(), List.of())),
+                    List.of(new AttachmentView(first.id(), first.resourceId(), first.fileName(), first.attachmentKind(),
+                            firstBlob.sha256(), firstBlob.sizeBytes(), firstBlob.mediaType(), AttachmentAvailabilityStatus.READY),
+                        new AttachmentView(second.id(), second.resourceId(), second.fileName(), second.attachmentKind(),
+                            secondBlob.sha256(), secondBlob.sizeBytes(), secondBlob.mediaType(), AttachmentAvailabilityStatus.READY)),
                     2, 0, 20));
             })
             .verifyComplete();

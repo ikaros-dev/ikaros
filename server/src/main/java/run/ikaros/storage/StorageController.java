@@ -1,5 +1,7 @@
 package run.ikaros.storage;
 
+import run.ikaros.storage.api.*;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import reactor.core.publisher.Mono;
+import run.ikaros.storage.api.*;
 
 /**
  * 提供 Resource Attachment 与 Blob 存储边界的 HTTP 接口。

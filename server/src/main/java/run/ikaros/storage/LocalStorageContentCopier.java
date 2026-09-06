@@ -1,5 +1,7 @@
 package run.ikaros.storage;
 
+import run.ikaros.storage.api.*;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;

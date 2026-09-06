@@ -21,6 +21,7 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import run.ikaros.storage.api.*;
 
 /** Attachment 身份级读取接口。 */
 @Validated
@@ -28,12 +29,15 @@ import org.springframework.http.ResponseEntity;
 @RequestMapping({"/api/attachments"})
 public class AttachmentController {
     private final StorageService storageService;
+    private final AttachmentContentReader contentReader;
     private final DeliveryGrantService deliveryGrantService;
     private final AttachmentPreviewService previewService;
 
-    public AttachmentController(StorageService storageService, DeliveryGrantService deliveryGrantService,
+    public AttachmentController(StorageService storageService, AttachmentContentReader contentReader,
+                                DeliveryGrantService deliveryGrantService,
                                 AttachmentPreviewService previewService) {
         this.storageService = storageService;
+        this.contentReader = contentReader;
         this.deliveryGrantService = deliveryGrantService;
         this.previewService = previewService;
     }
@@ -103,7 +107,7 @@ public class AttachmentController {
         Mono<UUID> authorizedActor = effectiveGrant == null || effectiveGrant.isBlank()
             ? (actorId == null ? Mono.error(new run.ikaros.common.NotFoundException("需要 Actor 或 Delivery Grant")) : Mono.just(actorId))
             : deliveryGrantService.authorize(actorId, attachmentId, effectiveGrant, range);
-        return authorizedActor.flatMap(a -> storageService.readContent(a, attachmentId, range)).map(content -> {
+        return authorizedActor.flatMap(a -> contentReader.readContent(a, attachmentId, range)).map(content -> {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(content.mediaType()));
             headers.setContentLength(content.length());

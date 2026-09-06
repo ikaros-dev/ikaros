@@ -1,5 +1,7 @@
 package run.ikaros.storage;
 
+import run.ikaros.storage.api.*;
+
 import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.DeleteMapping;

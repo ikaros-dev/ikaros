@@ -10,6 +10,7 @@ import run.ikaros.common.NotFoundException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
 import run.ikaros.resource.api.ResourceOwnershipQuery;
+import run.ikaros.storage.api.*;
 
 @Service
 public class BlobVerificationService {

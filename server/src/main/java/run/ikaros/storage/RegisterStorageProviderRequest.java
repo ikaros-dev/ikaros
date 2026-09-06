@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.Map;
+import run.ikaros.storage.api.StorageTier;
 
 public record RegisterStorageProviderRequest(
     @NotBlank @Size(max = 256) String providerKey,

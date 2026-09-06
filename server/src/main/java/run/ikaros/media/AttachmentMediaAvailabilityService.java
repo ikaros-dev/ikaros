@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.storage.*;
+import run.ikaros.storage.api.PlacementState;
 
 @Service
 public class AttachmentMediaAvailabilityService {

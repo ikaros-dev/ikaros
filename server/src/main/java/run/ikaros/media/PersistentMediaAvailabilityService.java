@@ -5,11 +5,11 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.resource.api.ResourceService;
 import run.ikaros.storage.AttachmentRepository;
-import run.ikaros.storage.BlobAvailability;
+import run.ikaros.storage.api.BlobAvailability;
 import run.ikaros.storage.BlobEntity;
 import run.ikaros.storage.BlobRepository;
 import run.ikaros.storage.BlobPlacementRepository;
-import run.ikaros.storage.PlacementState;
+import run.ikaros.storage.api.PlacementState;
 import run.ikaros.storage.StorageProviderRegistry;
 import run.ikaros.storage.StorageProviderStatus;
 

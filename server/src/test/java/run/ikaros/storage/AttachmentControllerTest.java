@@ -1,5 +1,7 @@
 package run.ikaros.storage;
 
+import run.ikaros.storage.api.*;
+
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -22,6 +24,7 @@ class AttachmentControllerTest {
     void setUp() {
         storageService = mock(StorageService.class);
         client = WebTestClient.bindToController(new AttachmentController(storageService,
+            mock(AttachmentContentReader.class),
             mock(DeliveryGrantService.class), mock(AttachmentPreviewService.class))).build();
     }
 

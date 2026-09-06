@@ -1,5 +1,7 @@
 package run.ikaros.storage;
 
+import run.ikaros.storage.api.*;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -20,7 +22,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
-import run.ikaros.task.BackgroundTask;
+import run.ikaros.operations.api.TaskReference;
+import run.ikaros.storage.api.*;
 
 /**
  * 提供 Blob 物理清理前的候选扫描与人工决策审计接口。
@@ -89,7 +92,7 @@ public class BlobGarbageCollectionController {
     }
 
     @PostMapping("/request")
-    public Mono<ResponseEntity<BackgroundTask>> request(
+    public Mono<ResponseEntity<TaskReference>> request(
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @RequestParam(defaultValue = "100") int limit,
         @RequestParam(defaultValue = "86400") long minimumAgeSeconds

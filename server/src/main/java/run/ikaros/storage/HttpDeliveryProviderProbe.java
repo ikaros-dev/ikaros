@@ -1,5 +1,7 @@
 package run.ikaros.storage;
 
+import run.ikaros.storage.api.*;
+
 import java.net.URI;
 import java.time.Duration;
 import java.util.Map;

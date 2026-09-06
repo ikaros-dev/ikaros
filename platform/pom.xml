@@ -28,5 +28,6 @@
         <module>authentication-api</module>
         <module>authentication</module>
         <module>authorization</module>
+        <module>storage-api</module>
     </modules>
 </project>

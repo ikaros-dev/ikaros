@@ -119,9 +119,15 @@ run.ikaros.metadata                          -> resource
 run.ikaros.relation                           -> resource
 run.ikaros.progress                            -> resource
 run.ikaros.activity                            -> resource
+run.ikaros.storage.api                       -> storage-api
+run.ikaros.storage                           -> storage (implementation during extraction)
 run.ikaros.foundation.api                     -> foundation-api
 run.ikaros.foundation                         -> foundation
 ```
+
+`storage-api` 只暴露 Storage 的稳定业务契约：Attachment/Blob 的登记与查询、上传提交、归档/删除、Placement 管理、Delivery 能力、`AttachmentReferenceQuery` 和 `AttachmentAvailabilityQuery`。普通 `AttachmentView` 只返回 Resource 归属、文件元数据和业务可用状态，不返回 `blob_id`、Provider、`object_key` 或 Placement 明细；大对象流读取保留在实现侧的 HTTP 能力中。后台任务提交返回 `operations-api` 的 `TaskReference`，不暴露 Background Task 实体、Payload、Lease 或 Attempt。
+
+`AttachmentReferenceQuery` 是带 `actorId` 的对象级授权能力，负责校验附件可读性及其与 Resource 的活动归属；`AttachmentAvailabilityQuery` 只返回稳定的五态业务结果。Blob、Placement、Provider、Restore Repository 和内部实体均属于 Storage 实现边界。
 
 Migration 也遵循相同的 Owner 边界：Foundation 的公共 UUID 数据库能力由 `foundation` 持有；Resource、Storage、Operations 分别持有自己的业务表与约束迁移；`server` 只聚合这些实现模块的运行时 classpath 并执行迁移，不持有业务 DDL。当前 Storage 尚未完成实现模块抽取，其迁移仍处于过渡位置，待 `storage` 模块建立后随代码一并迁移。
 
