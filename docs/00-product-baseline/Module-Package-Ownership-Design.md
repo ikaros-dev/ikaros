@@ -100,6 +100,8 @@ authorization-api     -> authorization
 
 `-api` 模块只暴露稳定契约；不带后缀的业务模块拥有完整实现。跨模块不得依赖其他模块的 Entity、Repository、Persistence Package、私有 SQL、内部 Service 或内部 Spring Bean。
 
+`authentication-api` 对外提供 `AuthenticatedPrincipal` 与 `SecurityVerificationLevel`；`authorization` 实现可以依赖这些公开认证契约，但不得依赖 Authentication 实现模块。Authentication 实现通过 `authorization-api` 获取权限快照和角色成员查询能力。
+
 ---
 
 ## 3. 每个业务模块的内部结构

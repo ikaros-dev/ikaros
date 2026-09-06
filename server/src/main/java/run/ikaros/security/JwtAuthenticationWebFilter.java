@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.identity.JwtTokenService;
 import run.ikaros.identity.PlatformUserRepository;
 import run.ikaros.identity.UserStatus;
+import run.ikaros.authentication.api.AuthenticatedPrincipal;
 
 /** 校验 Bearer access token，并把 JWT 主体暴露给后续过滤器和旧业务控制器。 */
 @Component
@@ -42,12 +43,12 @@ public class JwtAuthenticationWebFilter implements WebFilter {
                 .filter(user -> user.status() == UserStatus.ACTIVE
                     && user.securityVersion() == claims.securityVersion())
                 .map(user -> {
-                    JwtPrincipal principal = new JwtPrincipal(claims.userId(), claims.tokenId(),
+                    AuthenticatedPrincipal principal = new AuthenticatedPrincipal(claims.userId(), claims.tokenId(),
                         claims.securityVersion(), claims.permissions());
                     ServerWebExchange enriched = exchange.mutate().request(exchange.getRequest().mutate()
                         .header("X-Ikaros-Actor-Id", claims.userId().toString())
                         .header("X-Ikaros-Token-Id", claims.tokenId().toString()).build()).build();
-                    enriched.getAttributes().put(JwtPrincipal.EXCHANGE_ATTRIBUTE, principal);
+                    enriched.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE, principal);
                     return enriched;
                 })
                 .flatMap(enriched -> chain.filter(enriched).thenReturn(true))

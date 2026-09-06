@@ -12,7 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
-import run.ikaros.identity.SecurityVerificationLevel;
+import run.ikaros.authentication.api.SecurityVerificationLevel;
 
 /** 验证无状态 Step-up Grant 的 HTTP 合约。 */
 class StepUpVerificationControllerTest {

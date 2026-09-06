@@ -17,7 +17,7 @@ import run.ikaros.common.ConflictException;
 import run.ikaros.identity.JwtTokenService;
 import run.ikaros.identity.PlatformUserEntity;
 import run.ikaros.identity.PlatformUserRepository;
-import run.ikaros.identity.SecurityVerificationLevel;
+import run.ikaros.authentication.api.SecurityVerificationLevel;
 import run.ikaros.identity.UserStatus;
 
 /** 验证 OTP 只能为当前用户生成短期 Step-up Grant。 */

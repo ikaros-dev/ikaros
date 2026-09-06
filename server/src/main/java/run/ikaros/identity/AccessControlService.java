@@ -3,6 +3,7 @@ package run.ikaros.identity;
 import java.util.UUID;
 import java.time.Instant;
 import reactor.core.publisher.Mono;
+import run.ikaros.authentication.api.SecurityVerificationLevel;
 
 /**
  * 对单个受保护命令同时执行用户状态、RBAC 与安全验证等级校验。

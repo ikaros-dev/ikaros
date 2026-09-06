@@ -14,7 +14,8 @@ import reactor.core.publisher.Mono;
 import run.ikaros.identity.AccessControlService;
 import run.ikaros.identity.PlatformPermission;
 import run.ikaros.identity.SecurityPolicy;
-import run.ikaros.identity.SecurityVerificationLevel;
+import run.ikaros.authentication.api.AuthenticatedPrincipal;
+import run.ikaros.authentication.api.SecurityVerificationLevel;
 
 /** Resource HTTP 入口的统一 RBAC + Session 校验。 */
 @Component
@@ -37,7 +38,7 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             || path.equals("/api/auth/logout") || path.equals("/api/logout")) {
             return chain.filter(exchange);
         }
-        JwtPrincipal jwtPrincipal = exchange.getAttribute(JwtPrincipal.EXCHANGE_ATTRIBUTE);
+        AuthenticatedPrincipal jwtPrincipal = exchange.getAttribute(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE);
         if (jwtPrincipal == null) return reject(exchange, HttpStatus.UNAUTHORIZED);
         PlatformPermission permission = permission(exchange.getRequest().getMethod().name(), path);
         if (!jwtPrincipal.permissions().contains(permission.key())) return reject(exchange, HttpStatus.FORBIDDEN);

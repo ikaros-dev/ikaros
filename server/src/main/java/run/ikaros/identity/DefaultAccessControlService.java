@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ForbiddenException;
+import run.ikaros.authentication.api.SecurityVerificationLevel;
 
 /**
  * 默认访问控制服务，禁止高安全验证等级绕过 RBAC 或过期验证保证的限制。

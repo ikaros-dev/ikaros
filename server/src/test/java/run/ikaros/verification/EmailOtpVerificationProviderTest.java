@@ -17,7 +17,7 @@ import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.identity.PlatformUserEntity;
 import run.ikaros.identity.PlatformUserRepository;
-import run.ikaros.identity.SecurityVerificationLevel;
+import run.ikaros.authentication.api.SecurityVerificationLevel;
 import run.ikaros.identity.UserStatus;
 
 /** 验证 Email OTP 的挑战、一次性消费、锁定和取消规则。 */

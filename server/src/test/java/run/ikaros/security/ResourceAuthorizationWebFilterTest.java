@@ -10,6 +10,7 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.WebFilterChain;
 import run.ikaros.identity.AccessControlService;
+import run.ikaros.authentication.api.AuthenticatedPrincipal;
 import reactor.core.publisher.Mono;
 
 class ResourceAuthorizationWebFilterTest {
@@ -142,8 +143,8 @@ class ResourceAuthorizationWebFilterTest {
             .build());
         WebFilterChain chain = mock(WebFilterChain.class);
         when(chain.filter(exchange)).thenReturn(Mono.empty());
-        exchange.getAttributes().put(JwtPrincipal.EXCHANGE_ATTRIBUTE,
-            new JwtPrincipal(actor, session, 0L, java.util.List.of("system.role.manage")));
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, session, 0L, java.util.List.of("system.role.manage")));
 
         new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
         verify(chain).filter(exchange);

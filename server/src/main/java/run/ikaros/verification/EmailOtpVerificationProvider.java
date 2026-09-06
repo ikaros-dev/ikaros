@@ -10,7 +10,7 @@ import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.identity.PlatformUserRepository;
 import run.ikaros.identity.UserStatus;
-import run.ikaros.identity.SecurityVerificationLevel;
+import run.ikaros.authentication.api.SecurityVerificationLevel;
 
 /**
  * Email OTP Provider，负责短时挑战、一次性验证、失败锁定和发起频率限制。
