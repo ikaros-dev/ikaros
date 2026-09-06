@@ -57,7 +57,7 @@ operations-api        -> operations
 
 认证与授权的职责划分如下：
 
-- Authentication：用户身份、登录、注册、JWT、Principal、Session、OTP 和 Step-up Verification；
+- Authentication：用户身份、登录、注册、JWT、Principal、Token 签发与校验、OTP 和 Step-up Verification；
 - Authorization：Role、Permission、Access Control、Security Policy 和 Resource Authorization。
 
 ## 目标拓扑

@@ -105,7 +105,7 @@
 - Attachment / Blob / Storage；
 - Event Outbox / Consumer Inbox；
 - Background Task / Attempt；
-- Identity / Permission / Role / Session；
+- Identity / Permission / Role / Verification Challenge；
 - 字段、Constraint、Index、Transaction Boundary 与首批 `r2dbc-migrate` 顺序。
 
 它回答：
@@ -136,7 +136,7 @@
 - Resource / Storage invariant；
 - Outbox / Inbox replay；
 - Background Task crash recovery；
-- Identity / Authorization / Session；
+- Identity / Authorization / Stateless JWT；
 - OpenAPI Contract；
 - Security leakage；
 - Concurrency；

@@ -856,6 +856,8 @@ security_version == identity.user_account.security_version
 user status allows authentication
 ```
 
+每枚 Access JWT、Refresh JWT 和 Step-up Verification Grant 都必须携带唯一 `jti`。`jti` 只用于 Token / Grant 追踪、审计关联和问题排查，不作为登录 Session 主键；服务端不持久化 `jti`，也不维护基于 `jti` 的撤销黑名单。
+
 当前设备 Logout 由客户端删除本地 Token 与 Credential Cache 完成，不产生数据库 Session 变更。
 
 需要让目标用户全部旧 Token 提前失效时，执行 `identity.invalidate-user-tokens`，在事务中提升：

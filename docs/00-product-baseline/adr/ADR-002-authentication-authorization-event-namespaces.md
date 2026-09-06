@@ -6,7 +6,7 @@
 
 ## 背景
 
-平台安全原有实现将认证、会话、角色和权限事件统一放在 `identity.*` 命名空间。模块边界确定后，Authentication 与 Authorization 已成为两个不同的 Owner，继续使用统一的事件命名空间会让 Durable Event 的 Producer 语义与模块所有权不一致。
+平台安全原有实现将认证、Token 失效、角色和权限事件统一放在 `identity.*` 命名空间。模块边界确定后，Authentication 与 Authorization 已成为两个不同的 Owner，继续使用统一的事件命名空间会让 Durable Event 的 Producer 语义与模块所有权不一致。
 
 ## 决策
 
@@ -18,8 +18,6 @@
 | `identity.user.disabled` | `authentication.user.disabled` | Authentication |
 | `identity.user.enabled` | `authentication.user.enabled` | Authentication |
 | `identity.user.tokens-invalidated` | `authentication.user.tokens-invalidated` | Authentication |
-| `identity.user.sessions-revoked` | `authentication.user.sessions-revoked` | Authentication |
-| `identity.session.revoked` | `authentication.session.revoked` | Authentication |
 | `identity.role.created` | `authorization.role.created` | Authorization |
 | `identity.role.permissions-replaced` | `authorization.role.permissions-replaced` | Authorization |
 | `identity.user.role-assigned` | `authorization.user.role-assigned` | Authorization |
@@ -38,6 +36,7 @@
 
 - Event Envelope 的 `producer_subsystem` 枚举包含 `authentication` 与 `authorization`，不再包含 `identity`；
 - 认证事件与授权事件可以由不同实现模块独立发布和消费；
+- Authentication 不发布登录 Session 创建、查询或撤销事件；普通 Logout 由客户端删除本地 Token，用户级提前失效通过 `security_version` 变化表达；
 - Command ID、Permission、数据库 Schema 和 Java 包名不因本 ADR 自动改名，除非对应 Owner 拆分子任务另行决定；
 - 已存在的 `identity.*` 事件数据不做兼容迁移；当前阶段只约束新版本实现与契约。
 

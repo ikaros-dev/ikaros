@@ -86,7 +86,7 @@ P0 以上述内容作为**逻辑模块拓扑**，统一由根 `pom.xml` 聚合�
 
 认证与授权的职责边界：
 
-- `authentication`：用户身份、登录、注册、JWT、Principal、Session、OTP 和 Step-up Verification；
+- `authentication`：用户身份、登录、注册、JWT、Principal、Token 签发与校验、OTP 和 Step-up Verification；
 - `authorization`：Role、Permission、Access Control、Security Policy 和 Resource Authorization。
 
 目标模块采用以下命名：
@@ -234,7 +234,7 @@ Persistence 是模块私有实现，其他模块不得直接依赖。
 Authentication 拥有：
 
 - JWT Principal；
-- 用户身份、认证和会话；
+- 用户身份、认证、Token 签发与验证、Step-up Verification；
 - HTTP Authentication Adapter；
 - OTP / Step-up Verification；
 

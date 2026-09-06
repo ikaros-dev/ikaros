@@ -533,7 +533,7 @@ HTTP 请求负责提交任务，不负责长期占用连接执行整个 Pipeline
 
 ## 10. Reactor Context 与 Request Context
 
-统一 Execution Context 至少包含 request_id、trace_id、principal_id、必要的 session / client 信息、correlation_id、causation_id，以及业务需要时的 application timezone context。
+统一 Execution Context 至少包含 request_id、trace_id、principal_id、必要的 token / client 信息、correlation_id、causation_id，以及业务需要时的 application timezone context。
 
 HTTP 层将 Security / Request 信息转换为显式 Application Execution Context。禁止 Domain 深层代码依赖 ThreadLocal 获取当前用户。
 
