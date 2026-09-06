@@ -325,7 +325,7 @@ Personal Drive 的产品、系统、服务端、App / CMS 交互，以及根导�
 3. 将领域不变量映射为 PostgreSQL Constraint / Transaction Boundary；
 4. 将 Command / Query / Event 映射为 API 与内部接口；
 5. 为跨域事件建立契约版本与 Outbox / Consumer 幂等策略；
-6. 为每个子系统生成首批 Flyway Schema 设计；
+6. 为每个子系统生成首批 `r2dbc-migrate` Schema / Migration 设计；
 7. 建立 V2 implementation roadmap 与依赖图；
 8. 只有当某个实现问题超出现有设计边界时，再新增专项设计。
 
