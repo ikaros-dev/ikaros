@@ -34,11 +34,11 @@
 
 - Java 21 / Spring Boot 4.x / WebFlux / Reactor / R2DBC 的默认技术路径；
 - Server / Worker 运行时拓扑；
-- Gradle API / Impl 编译期隔离；
+- 根 `pom.xml` 单模块 Maven 构建与 Java Package / ArchUnit 模块边界；
 - Spring Composition Root 与 Bean 可见性；
 - Reactive Event Loop / Blocking Adapter 规则；
 - Reactive Transaction 与 PostgreSQL Schema Ownership；
-- Flyway + JDBC Migration 与 R2DBC Runtime 分离；
+- `r2dbc-migrate` 与业务 R2DBC Runtime 的职责分离，并保持单一 R2DBC 数据库访问栈；
 - Outbox / Inbox、Background Task / Lease 的工程落地；
 - Cache / Search / Analytics / AI Projection 边界；
 - Blob Streaming / Range、大文件内存约束；
@@ -106,7 +106,7 @@
 - Event Outbox / Consumer Inbox；
 - Background Task / Attempt；
 - Identity / Permission / Role / Session；
-- 字段、Constraint、Index、Transaction Boundary 与首批 Flyway 顺序。
+- 字段、Constraint、Index、Transaction Boundary 与首批 `r2dbc-migrate` 顺序。
 
 它回答：
 
@@ -178,7 +178,7 @@ OpenAPI Contract
       ↓
 Acceptance / Invariant Test Matrix
       ↓
-Flyway Migration
+r2dbc-migrate Migration
       ↓
 Module Skeleton
       ↓
@@ -211,10 +211,10 @@ Automated Contract / Integration / E2E Tests
 
 ### P0 Implementation
 
-- Platform Foundation module skeleton；
-- Resource / Storage / Identity / Integration / Operations module skeleton；
-- Gradle `api` / `impl` 编译隔离和 ArchUnit 边界测试；
-- 首批 Flyway V2 migrations；
+- 单 Maven 工程中的 Platform Foundation module skeleton；
+- 单 Maven 工程中的 Resource / Storage / Identity / Integration / Operations module skeleton；
+- Java Package Ownership + ArchUnit 边界测试，不依赖构建子模块提供编译隔离；
+- 首批 `r2dbc-migrate` V2 migrations；
 - Permission Registry / Built-in Role deterministic seed；
 - Resource / Storage Application Command / Query handlers；
 - Reactive transaction executor；
