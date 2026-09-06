@@ -18,7 +18,7 @@ class ControllerRouteConventionTest {
 
     @Test
     void controllersMustNotExposeV2Prefix() throws IOException {
-        Path sourceRoot = Path.of("src/main/java");
+        Path sourceRoot = Path.of("server", "src", "main", "java");
         try (Stream<Path> files = Files.walk(sourceRoot)) {
             files.filter(path -> path.toString().endsWith("Controller.java"))
                 .forEach(path -> {
@@ -35,7 +35,7 @@ class ControllerRouteConventionTest {
 
     @Test
     void everyControllerRouteMustUseApiPrefix() throws IOException {
-        Path sourceRoot = Path.of("src/main/java");
+        Path sourceRoot = Path.of("server", "src", "main", "java");
         try (Stream<Path> files = Files.walk(sourceRoot)) {
             files.filter(path -> path.toString().endsWith("Controller.java"))
                 .forEach(path -> {
