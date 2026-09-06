@@ -11,7 +11,7 @@
 | 数据库基线 | `../Database-Overview-Design.md` |
 | 模块边界基线 | `../Module-Package-Ownership-Design.md` |
 
-> 本文档把 V2 已经确定的数据库原则向下收敛为首批可以直接映射到 Flyway Migration、Repository 与 Integration Test 的 P0 Schema Contract。
+> 本文档把 V2 已经确定的数据库原则向下收敛为首批可以直接映射到 `r2dbc-migrate` Migration、Repository 与 Integration Test 的 P0 Schema Contract。
 >
 > 本文档开始锁定 P0 的物理 Schema、Table、Column、Constraint 与关键 Index 名称。实现若需要偏离本文档，必须先修改本文档或通过明确 ADR 记录偏离原因，不能由 Repository 实现静默产生另一套数据库事实。
 >
@@ -938,22 +938,22 @@ Lease/Heartbeat 更新必须是短事务。
 
 # Part G — Migration Plan
 
-## 28. 首批 Flyway 顺序
+## 28. 首批 `r2dbc-migrate` 顺序
 
-建议将首批 Migration 分为以下可独立审查步骤：
+建议将首批 Migration 分为以下可独立审查步骤，并使用仓库统一的 `V<monotonic-version>__<description>.sql` 命名契约：
 
 ```text
-V2_0001__create_schemas.sql
-V2_0002__identity_foundation.sql
-V2_0003__integration_outbox_inbox.sql
-V2_0004__operations_background_task.sql
-V2_0005__resource_core.sql
-V2_0006__storage_core.sql
-V2_0007__seed_permission_registry.sql
-V2_0008__seed_builtin_roles.sql
+V<...001>__CREATE_SCHEMAS.sql
+V<...002>__IDENTITY_FOUNDATION.sql
+V<...003>__INTEGRATION_OUTBOX_INBOX.sql
+V<...004>__OPERATIONS_BACKGROUND_TASK.sql
+V<...005>__RESOURCE_CORE.sql
+V<...006>__STORAGE_CORE.sql
+V<...007>__SEED_PERMISSION_REGISTRY.sql
+V<...008>__SEED_BUILTIN_ROLES.sql
 ```
 
-版本号命名可根据项目最终 Flyway Version Policy 调整，但顺序依赖不得倒置。
+具体单调版本号由提交时按仓库 Migration Version Policy 分配，但顺序依赖不得倒置。
 
 `identity_foundation` 不创建登录 Session 表；Identity 持久化基线只保留账号、权限、角色、绑定、凭据/验证所需数据以及用户级 `security_version`。
 
@@ -1021,9 +1021,9 @@ P0 至少将以下不变量下降到 Constraint：
 
 # Part I — P0 Schema Exit Criteria
 
-## 31. Definition of Ready for Flyway
+## 31. Definition of Ready for `r2dbc-migrate`
 
-该 Schema Contract 进入真实 Flyway 实现前必须满足：
+该 Schema Contract 进入真实 `r2dbc-migrate` 实现前必须满足：
 
 - [ ] 所有表有明确 Owner Module。
 - [ ] 每个跨域 UUID 已声明是否建立 FK。
@@ -1038,7 +1038,7 @@ P0 至少将以下不变量下降到 Constraint：
 
 只有以下全部成立才视为首批 P0 Schema 完成：
 
-- [ ] Flyway 可以从空 PostgreSQL 创建全部 P0 Schema。
+- [ ] `r2dbc-migrate` 可以从空 PostgreSQL 创建全部 P0 Schema。
 - [ ] Migration 可在 CI 重复从零验证。
 - [ ] Constraint Integration Test 覆盖本文档第 30 节全部 DB-enforced invariant。
 - [ ] Repository Boundary Test 能阻止模块直接访问非 Owner Schema。

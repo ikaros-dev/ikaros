@@ -2,8 +2,8 @@
 
 | 项目 | 内容 |
 |---|---|
-| 基线 ID | `v2-p0-foundation-0.2` |
-| 基线日期 | 2026-09-02 |
+| 基线 ID | `v2-p0-foundation-0.3` |
+| 基线日期 | 2026-09-06 |
 | 状态 | **已接受，可进入 Phase 0 工程基础实现** |
 | 目标 | 允许 V2 从设计阶段进入 Phase 0 工程基础实现 |
 | 非目标 | 不表示 Phase 1+ 的所有业务域已经冻结 |
@@ -18,7 +18,15 @@ Phase 1+ 领域实现 = 按各模块的 Definition of Ready 独立门禁
 发布就绪状态 = 尚未达到
 ```
 
-下一阶段的默认产出应转向模块骨架、Flyway、Application API、Outbox/Inbox、Background Task Runtime 与自动化测试，而不是继续横向增加 P0 设计文档。
+Phase 0 工程实施统一采用：
+
+```text
+Build = 根 pom.xml 单模块 Maven
+Migration = r2dbc-migrate + PostgreSQL R2DBC
+Module Boundary = Java Package Ownership + Spring Composition Boundary + Architecture Test
+```
+
+下一阶段的默认产出应转向模块骨架、`r2dbc-migrate`、Application API、Outbox/Inbox、Background Task Runtime 与自动化测试，而不是继续横向增加 P0 设计文档。
 
 ## 2. 规范性基线集合
 
@@ -48,6 +56,9 @@ Media Delivery / Restore 的独立 P0 Addendum 继续作为专项规范性扩展
 
 如果没有先修改设计文档或 ADR，Phase 0 实现不得自行改变：
 
+- 构建系统使用根 `pom.xml` 的单模块 Maven；P0 不切换 Gradle，也不以 Maven 多模块替代当前工程基线；
+- 逻辑模块边界通过 Java Package Ownership、显式 Spring Composition Boundary 与 Architecture Test 强制，不依赖构建子模块提供隔离；
+- 数据库 Schema Migration 使用 `r2dbc-migrate` + PostgreSQL R2DBC，不引入 Flyway/JDBC 第二数据库访问栈；
 - UUID 公开身份标识策略；
 - PostgreSQL Owner Schema 边界；
 - Resource / Attachment / Blob / Placement 的身份分离；
@@ -82,9 +93,9 @@ Media Delivery / Restore 的独立 P0 Addendum 继续作为专项规范性扩展
 建议按以下顺序推进：
 
 ```text
-模块骨架
+单 Maven 工程中的逻辑模块骨架
  -> 架构边界测试
- -> Flyway P0 基础 Schema
+ -> r2dbc-migrate P0 基础 Schema
  -> UUIDv7 / Clock / Problem / Principal
  -> Transaction + Outbox / Inbox
  -> Background Task Runtime

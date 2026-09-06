@@ -9,7 +9,7 @@
 
 > 本文档将 V2 的模块化单体原则落实为代码所有权、依赖方向与可见性边界。
 >
-> 目标不是提前锁死最终目录名，而是确保每个领域在 Java / Gradle / Persistence 层都有唯一 Owner，并阻止跨模块通过 Entity、Repository、SQL 或私有实现产生隐式耦合。
+> 目标不是提前锁死最终目录名，而是确保每个领域在 Java Package / Spring / Persistence 层都有唯一 Owner，并阻止跨模块通过 Entity、Repository、SQL 或私有实现产生隐式耦合。
 
 ---
 
@@ -30,7 +30,7 @@ V2 采用 Modular Monolith。模块化单体必须同时满足：
 3. 模块之间允许依赖什么；
 4. 哪些依赖明确禁止；
 5. API、Application、Domain、Persistence 如何分层；
-6. Gradle Module 与 Java Package 如何表达边界。
+6. 单 Maven 工程中的 Java Package 与 Spring 组装如何表达和强制模块边界。
 
 ---
 
@@ -72,7 +72,7 @@ ikaros-v2
 └── password-manager
 ```
 
-具体是否每个逻辑模块都对应独立 Gradle subproject，可以在实施时根据编译隔离收益决定；但无论是否独立 subproject，**逻辑边界与依赖规则都必须保持一致**。
+P0 以上述内容作为**逻辑模块拓扑**，统一位于根 `pom.xml` 的单 Maven 工程中，不要求、也不应自行拆成 Gradle 或 Maven subproject。无论物理目录如何组织，**逻辑边界与依赖规则都必须通过 Java Package Ownership、Spring 组装边界和 Architecture Test 保持一致**。
 
 ---
 
@@ -468,10 +468,10 @@ Plugin 不属于可信任的任意内部模块。
 
 ## 12. Build-time Boundary Enforcement
 
-建议至少采用两种机制之一：
+P0 使用单 Maven 工程，因此不能依赖构建子模块天然阻止非法依赖。边界检查至少采用：
 
-1. **Gradle subproject dependency isolation**；
-2. **ArchUnit / architecture test**。
+1. **Java Package Ownership 与公开 `api` package 约定**；
+2. **ArchUnit / architecture test，并接入 Maven `test` / `verify` 生命周期**。
 
 应自动检测：
 
@@ -479,9 +479,11 @@ Plugin 不属于可信任的任意内部模块。
 - `*.infrastructure.internal.*` 被跨模块引用；
 - Repository 跨 Owner 注入；
 - Domain 层依赖 Spring Web / DB Driver；
-- Plugin API 依赖 Server internal package。
+- Plugin API 依赖 Server internal package；
+- `*.api.*` 反向依赖 implementation package；
+- 业务模块反向依赖 Composition Root。
 
-推荐 CI 将 Boundary Violation 作为失败条件。
+推荐 CI 将 Boundary Violation 作为失败条件。单 Maven 编译成功不能替代 Architecture Boundary 验收。
 
 ---
 
@@ -521,7 +523,7 @@ run.ikaros.v2.resource.persistence
 
 若最终包名调整，不影响本设计原则。
 
-对外 contract 尽量放入独立 package，并使 implementation package 不作为其他模块编译依赖。
+对外 contract 尽量放入独立 package，并使 implementation package 不作为其他模块的合法依赖目标。
 
 ---
 
