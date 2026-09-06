@@ -36,6 +36,11 @@
         <module>drive</module>
         <module>sync</module>
         <module>backup</module>
+        <module>password-manager</module>
+        <module>plugin</module>
+        <module>reading</module>
+        <module>search</module>
+        <module>sharing</module>
         <module>document</module>
         <module>game</module>
         <module>music</module>

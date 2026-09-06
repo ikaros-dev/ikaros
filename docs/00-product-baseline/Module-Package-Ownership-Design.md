@@ -57,6 +57,11 @@ ikaros-v2
 ├── sharing
 ├── search
 ├── backup
+├── password-manager
+├── plugin
+├── reading
+├── search
+├── sharing
 │
 ├── media
 ├── reading
@@ -130,6 +135,11 @@ run.ikaros.foundation.api                     -> foundation-api
 run.ikaros.foundation                         -> foundation
 run.ikaros.sync.api                           -> sync-api
 run.ikaros.sync                               -> sync
+run.ikaros.password                           -> password-manager
+run.ikaros.plugin                             -> plugin
+run.ikaros.reading                            -> reading
+run.ikaros.search                              -> search
+run.ikaros.sharing                             -> sharing
 ```
 
 `storage-api` 只暴露 Storage 的稳定业务契约：Attachment/Blob 的登记与查询、上传提交、归档/删除、Placement 管理、Delivery 能力、`AttachmentReferenceQuery` 和 `AttachmentAvailabilityQuery`。普通 `AttachmentView` 只返回 Resource 归属、文件元数据和业务可用状态，不返回 `blob_id`、Provider、`object_key` 或 Placement 明细；大对象流读取保留在实现侧的 HTTP 能力中。后台任务提交返回 `operations-api` 的 `TaskReference`，不暴露 Background Task 实体、Payload、Lease 或 Attempt。
@@ -140,7 +150,7 @@ Storage 的 Season Restore 不得直接依赖 Media Entity 或 Repository；Stor
 
 Drive 抽取阶段严格限定于 `drive` 自身的实现。Device、DeviceTrustState、DeviceRepository 和设备 HTTP 能力归属 `sync`；`sync-api` 仅暴露最小的 `DeviceTrustQuery`，Drive 与 Offline 只能通过该能力判断设备是否可用，不得引用 Sync 的 Entity、Repository 或信任状态实现。设备 HTTP 路由统一为 `/api/sync/devices`，Drive 不反向依赖 Offline。
 
-Migration 也遵循相同的 Owner 边界：Foundation 的公共 UUID 数据库能力由 `foundation` 持有；Resource、Media、Storage、Operations、Drive、Planning 分别持有自己的业务表与约束迁移。Drive 迁移位于 `platform/drive/src/main/resources/db/migration`，Planning 迁移位于 `platform/planning/src/main/resources/db/migration`，Sync/Backup 的当前迁移暂由对应实现模块承载；`drive_device` 由 Sync 创建，Drive 通过后续自有迁移补充 `drive_sync_binding` 的设备外键。`server` 只聚合这些实现模块的运行时 classpath 并执行迁移，不持有业务 DDL。
+Migration 也遵循相同的 Owner 边界：Foundation 的公共 UUID 数据库能力由 `foundation` 持有；各业务模块分别持有自己的业务表与约束迁移。Drive 迁移位于 `platform/drive/src/main/resources/db/migration`，Planning 位于 `platform/planning/src/main/resources/db/migration`，Sync/Backup、Password Manager、Plugin、Reading、Search、Sharing 的迁移由对应实现模块承载；`drive_device` 由 Sync 创建，Drive 通过后续自有迁移补充 `drive_sync_binding` 的设备外键。`server` 只聚合这些实现模块的运行时 classpath 并执行迁移，不持有业务 DDL。Plugin 与 Search 原先共用的初始迁移已按 Owner 拆分。
 
 ---
 
@@ -531,6 +541,11 @@ Producer = storage
 /api/attachments/**    → storage
 /api/drive/**          → drive
 /api/sync/**           → sync
+/api/offline/**        → sync
+/api/reading/**        → reading
+/api/shares/**         → sharing
+/api/password/**       → password-manager
+/api/plugins/**        → plugin
 /api/media/**          → media
 /api/admin/security/** → security / operations 的明确 owner
 ```
