@@ -135,7 +135,7 @@ run.ikaros.foundation                         -> foundation
 
 Storage 的 Season Restore 不得直接依赖 Media Entity 或 Repository；Storage 通过 `media-api` 的 `MediaRestoreTargetQuery` 获取已授权的 Episode Resource ID。后台任务的提交、生命周期、派发和 Handler 注册契约由 `operations-api` 提供；Task Entity、Claim/Lease/Attempt 和任务 Migration 由 `platform-operations` 的 `run.ikaros.operations.task` 所有，业务模块不得依赖其实现类型。
 
-Migration 也遵循相同的 Owner 边界：Foundation 的公共 UUID 数据库能力由 `foundation` 持有；Resource、Storage、Operations 分别持有自己的业务表与约束迁移。Storage 迁移位于 `platform/storage/src/main/resources/db/migration`，Operations 任务迁移位于 `platform/operations/src/main/resources/db/migration`；`server` 只聚合这些实现模块的运行时 classpath 并执行迁移，不持有业务 DDL。
+Migration 也遵循相同的 Owner 边界：Foundation 的公共 UUID 数据库能力由 `foundation` 持有；Resource、Media、Storage、Operations 分别持有自己的业务表与约束迁移。Media 迁移位于 `platform/media/src/main/resources/db/migration`，Storage 迁移位于 `platform/storage/src/main/resources/db/migration`，Operations 任务迁移位于 `platform/operations/src/main/resources/db/migration`；`server` 只聚合这些实现模块的运行时 classpath 并执行迁移，不持有业务 DDL。
 
 ---
 
