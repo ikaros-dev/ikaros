@@ -2496,8 +2496,8 @@ V2 必须允许非核心能力故障时继续提供核心服务。
 | Analytics 异常 | 核心业务不受影响，统计延迟更新 |
 | 单个 Storage Replica 异常 | 尝试其他可用副本并标记异常 |
 | 冷存储内容未恢复 | 返回 Restoring 状态，而不是假装资源不存在 |
-| Drive 客户端暂时离线 | Server 端文件事实继续可用；客户端恢复连接后基于稳定 Cursor / Mapping 收敛，不静默覆盖冲突 |
-| 单个 Plugin 崩溃 | 隔离插件故障，避免拖垮整个 Server |
+| Drive 客户端暂时离线 | application 端文件事实继续可用；客户端恢复连接后基于稳定 Cursor / Mapping 收敛，不静默覆盖冲突 |
+| 单个 Plugin 崩溃 | 隔离插件故障，避免拖垮整个 application |
 
 ---
 
@@ -2508,7 +2508,7 @@ V2 必须允许非核心能力故障时继续提供核心服务。
 推荐概念结构：
 
 ```text
-server
+application
 └── subsystem
     ├── resource
     ├── drive

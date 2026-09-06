@@ -39,16 +39,21 @@ V2 采用 Modular Monolith。模块化单体必须同时满足：
 推荐的逻辑模块如下：
 
 ```text
-ikaros-v2
-├── platform
-│   ├── foundation
-│   ├── integration
-│   ├── security
-│   ├── task
-│   ├── plugin
-│   └── operations
-│
+ikaros
+├── application
+├── common-api
+├── common
+├── integration-api
+├── integration
+├── authentication-api
+├── authentication
+├── authorization-api
+├── authorization
+├── operations-api
+├── operations
+├── resource-api
 ├── resource
+├── storage-api
 ├── storage
 ├── ingestion
 ├── drive
@@ -57,34 +62,26 @@ ikaros-v2
 ├── sharing
 ├── search
 ├── backup
-├── password-manager
-├── plugin
-├── reading
-├── search
-├── sharing
-│
+├── media-api
 ├── media
 ├── reading
 ├── music
 ├── photo
 ├── document
 ├── game
-│
-├── productivity
+├── planning
 ├── finance
-├── analytics
-├── ai
 ├── private-notes
 └── password-manager
 ```
 
-P0 以上述内容作为**逻辑模块拓扑**，统一由根 `pom.xml` 聚合为 Maven Multi-Module。每个业务或平台能力默认拆成 `<business-name>-api` 与不带后缀的业务实现模块。`server` 是唯一 Composition Root，`test-support` 只提供测试基础设施。详细构建决策见 `adr/ADR-001-maven-multi-module.md`。
+P0 以上述内容作为**逻辑模块拓扑**，统一由根 `pom.xml` 聚合为 Maven Multi-Module。每个业务或平台能力默认拆成 `<business-name>-api` 与不带后缀的业务实现模块。`application` 是唯一 Composition Root，`test-support` 只提供测试基础设施。所有模块共享根 POM 的项目版本，不声明独立模块版本。详细构建决策见 `adr/ADR-001-maven-multi-module.md`。
 
 当前包归属决议：
 
 - `collection`、`metadata`、`relation`、`progress`、`activity` 归属 `resource`，当前不独立拆分；
-- `identity`、`security`、`verification` 归属 `platform-security`，按职责拆为 `authentication` 与 `authorization`；
-- `audit` 归属 `platform-operations`；
+- `identity`、`security`、`verification` 归属认证与授权能力，按职责拆为 `authentication` 与 `authorization`；
+- `audit` 归属 `operations`；
 - `offline` 归属 `sync`；
 - `planning` 归属 `productivity`；
 - `notes` 归属 `private-notes`；
@@ -131,8 +128,8 @@ run.ikaros.media.api                         -> media-api
 run.ikaros.media                             -> media
 run.ikaros.operations.api                    -> operations-api
 run.ikaros.operations.task                   -> platform-operations
-run.ikaros.foundation.api                     -> foundation-api
-run.ikaros.foundation                         -> foundation
+run.ikaros.common.api                         -> common-api
+run.ikaros.common                             -> common
 run.ikaros.sync.api                           -> sync-api
 run.ikaros.sync                               -> sync
 run.ikaros.password                           -> password-manager
@@ -150,7 +147,7 @@ Storage 的 Season Restore 不得直接依赖 Media Entity 或 Repository；Stor
 
 Drive 抽取阶段严格限定于 `drive` 自身的实现。Device、DeviceTrustState、DeviceRepository 和设备 HTTP 能力归属 `sync`；`sync-api` 仅暴露最小的 `DeviceTrustQuery`，Drive 与 Offline 只能通过该能力判断设备是否可用，不得引用 Sync 的 Entity、Repository 或信任状态实现。设备 HTTP 路由统一为 `/api/sync/devices`，Drive 不反向依赖 Offline。
 
-Migration 也遵循相同的 Owner 边界：Foundation 的公共 UUID 数据库能力由 `foundation` 持有；各业务模块分别持有自己的业务表与约束迁移。Drive 迁移位于 `platform/drive/src/main/resources/db/migration`，Planning 位于 `platform/planning/src/main/resources/db/migration`，Sync/Backup、Password Manager、Plugin、Reading、Search、Sharing 的迁移由对应实现模块承载；`drive_device` 由 Sync 创建，Drive 通过后续自有迁移补充 `drive_sync_binding` 的设备外键。`server` 只聚合这些实现模块的运行时 classpath 并执行迁移，不持有业务 DDL。Plugin 与 Search 原先共用的初始迁移已按 Owner 拆分。
+Migration 也遵循相同的 Owner 边界：Common 的公共 UUID 数据库能力由 `common` 持有；各业务模块分别持有自己的业务表与约束迁移。Drive 迁移位于 `drive/src/main/resources/db/migration`，Planning 位于 `planning/src/main/resources/db/migration`，Sync/Backup、Password Manager、Plugin、Reading、Search、Sharing 的迁移由对应实现模块承载；`drive_device` 由 Sync 创建，Drive 通过后续自有迁移补充 `drive_sync_binding` 的设备外键。`application` 只聚合这些实现模块的运行时 classpath 并执行迁移，不持有业务 DDL。Plugin 与 Search 原先共用的初始迁移已按 Owner 拆分。
 
 ---
 
@@ -242,7 +239,7 @@ Persistence 是模块私有实现，其他模块不得直接依赖。
 
 ## 4. Platform Foundation 模块
 
-### 4.1 `platform.foundation`
+### 4.1 `common`
 
 可以提供：
 
@@ -257,11 +254,11 @@ Persistence 是模块私有实现，其他模块不得直接依赖。
 - common serialization primitive；
 - basic transaction abstraction。
 
-`PrincipalContext` 属于 `foundation-api` 的公开契约。Reactor Context 的访问工具 `PrincipalContexts` 属于 `foundation` 实现模块，供需要读取请求级上下文的基础设施实现使用；它不是业务领域契约。
+`PrincipalContext` 属于 `common-api` 的公开契约。Reactor Context 的访问工具 `PrincipalContexts` 属于 `common` 实现模块，供需要读取请求级上下文的基础设施实现使用；它不是业务领域契约。
 
-`UuidV7Generator` 属于 `foundation-api` 的公开能力，`DefaultUuidV7Generator` 由 `foundation` 提供实现。需要创建平台内部实体标识的模块只能依赖该契约，不得复制 UUIDv7 算法或直接依赖其他模块的生成实现。
+`UuidV7Generator` 属于 `common-api` 的公开能力，`DefaultUuidV7Generator` 由 `common` 提供实现。需要创建平台内部实体标识的模块只能依赖该契约，不得复制 UUIDv7 算法或直接依赖其他模块的生成实现。
 
-跨模块复用的稳定错误原语和分页值类型属于 `foundation-api`；HTTP 异常映射器仍属于 `server`，不得反向进入 Foundation API。
+跨模块复用的稳定错误原语和分页值类型属于 `common-api`；HTTP 异常映射器仍属于 `application`，不得反向进入 Common API。
 
 禁止加入任何业务实体。
 
@@ -303,7 +300,7 @@ Authorization 拥有：
 - Access Control；
 - Resource Authorization；
 
-Authentication 和 Authorization 均可依赖 `foundation-api` 的 `PrincipalContext`，但不得依赖 `PrincipalContexts` 的实现细节。
+Authentication 和 Authorization 均可依赖 `common-api` 的 `PrincipalContext`，但不得依赖 `PrincipalContexts` 的实现细节。
 
 Authentication 在注册、登录和刷新 Token 时通过 `authorization-api` 的 `PermissionSnapshotQuery` 获取权限快照；用户视图中的角色编码通过 `RoleMembershipQuery` 获取。它不得直接访问 Authorization 实现模块、Role / Permission / Binding Entity 或 Repository。已签发 Access JWT 的权限快照在 Token 有效期内保持不变，权限变更不隐式提升 `security_version`。完整决策见 `adr/ADR-004-authentication-authorization-permission-snapshot.md`。
 
@@ -550,7 +547,7 @@ Producer = storage
 /api/admin/security/** → security / operations 的明确 owner
 ```
 
-Controller 可以位于统一 server adapter，但请求必须进入 Owner 的 Application API，禁止 Controller 横跨多个 Repository 完成业务事务。
+Controller 可以位于统一 application adapter，但请求必须进入 Owner 的 Application API，禁止 Controller 横跨多个 Repository 完成业务事务。
 
 ---
 

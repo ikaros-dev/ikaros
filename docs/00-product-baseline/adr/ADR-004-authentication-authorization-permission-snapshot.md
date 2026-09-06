@@ -50,9 +50,9 @@ Authentication 需要在登录、注册和刷新 Token 时把用户权限写入 
 ```text
 authentication  -> authorization-api
 authorization   -> authentication-api
-authorization   -> foundation-api
-server          -> authentication
-server          -> authorization
+authorization   -> common-api
+application     -> authentication
+application     -> authorization
 ```
 
 禁止：

@@ -191,66 +191,40 @@ Maven 工程按逻辑模块和公开契约表达边界：
 ```text
 ikaros
 ├── pom.xml
-├── server
-├── test-support
-├── platform
-│   ├── foundation-api
-│   ├── foundation
-│   ├── integration-api
-│   ├── integration
-│   ├── authentication-api
-│   ├── authentication
-│   ├── authorization-api
-│   ├── authorization
-│   ├── task-api
-│   ├── task
-│   ├── operations-api
-│   ├── operations
-│   ├── plugin-api
-│   └── plugin
-└── modules
-    ├── resource-api
-    ├── resource
-    ├── storage-api
-    ├── storage
-    ├── ingestion-api
-    ├── ingestion
-    ├── drive-api
-    ├── drive
-    ├── sync-api
-    ├── sync
-    ├── sharing-api
-    ├── sharing
-    ├── search-api
-    ├── search
-    ├── backup-api
-    ├── backup
-    ├── media-api
-    ├── media
-    ├── reading-api
-    ├── reading
-    ├── music-api
-    ├── music
-    ├── photo-api
-    ├── photo
-    ├── document-api
-    ├── document
-    ├── game-api
-    ├── game
-    ├── productivity-api
-    ├── productivity
-    ├── finance-api
-    ├── finance
-    ├── private-notes-api
-    ├── private-notes
-    ├── password-manager-api
-    └── password-manager
-        └── identity
-            ├── api
-            ├── application
-            ├── domain
-            ├── adapter
-            └── persistence
+├── application
+├── common-api
+├── common
+├── integration-api
+├── integration
+├── authentication-api
+├── authentication
+├── authorization-api
+├── authorization
+├── operations-api
+├── operations
+├── plugin
+├── resource-api
+├── resource
+├── storage-api
+├── storage
+├── ingestion
+├── drive
+├── sync-api
+├── sync
+├── sharing
+├── search
+├── backup
+├── media-api
+├── media
+├── reading
+├── music
+├── photo
+├── document
+├── game
+├── planning
+├── finance
+├── private-notes
+└── password-manager
 ```
 
 目录名是推荐布局，不是要求一次性重排现有源码的迁移任务；真正强制的是 Owner、依赖方向与自动化边界检查。
@@ -268,14 +242,14 @@ ikaros
 允许：
 
 ```text
-server
+application
   -> module implementation packages
   -> platform runtime
 
 moduleA.application
   -> moduleA.api
   -> moduleB.api
-  -> platform foundation/api
+  -> common-api
 ```
 
 禁止：
@@ -284,8 +258,8 @@ moduleA.application
 moduleA implementation -> moduleB implementation
 moduleA -> moduleB.persistence
 moduleA.persistence -> moduleB.persistence
-business module -> server
-platform.foundation -> business module
+business module -> application
+common -> business module
 api -> implementation package
 ```
 
@@ -365,7 +339,7 @@ Adapter 不得把技术细节泄露给 Domain。
 
 ### 6.1 Server 是唯一 Composition Root
 
-Maven Multi-Module 中，`server` 仍作为唯一 Composition Root；只有应用启动层应负责启动完整 Spring ApplicationContext。
+Maven Multi-Module 中，`application` 仍作为唯一 Composition Root；只有应用启动层应负责启动完整 Spring ApplicationContext。
 
 业务模块通过显式 Module Configuration 注册，例如：
 
@@ -601,7 +575,7 @@ V2 统一基于 R2DBC Reactive Transaction。建议由 Platform 提供统一 `Re
 resource.*   owned by Resource
 storage.*    owned by Storage
 security.*   owned by Security
-platform.*   owned by Platform Foundation
+common.*   owned by Common
 ```
 
 具体 Schema 名以 Database Design 为准。
@@ -671,7 +645,7 @@ Migration 和业务 Persistence 可以共享同一套 PostgreSQL 连接参数与
 V<monotonic-version>__<description>.sql
 ```
 
-`server` 只负责聚合各实现模块的运行时 classpath，并在启动阶段统一交给 `r2dbc-migrate` 执行；它不拥有任何业务 Migration。现有工程中存在 `V202601101915__DDL_ATTACHMENT.sql` 这类版本化脚本。V2 可以继续采用相同的 `V...__...sql` 命名习惯，但这是 **Ikaros 的 Migration Script Contract**，不代表依赖 Flyway。
+`application` 只负责聚合各实现模块的运行时 classpath，并在启动阶段统一交给 `r2dbc-migrate` 执行；它不拥有任何业务 Migration。现有工程中存在 `V202601101915__DDL_ATTACHMENT.sql` 这类版本化脚本。V2 可以继续采用相同的 `V...__...sql` 命名习惯，但这是 **Ikaros 的 Migration Script Contract**，不代表依赖 Flyway。
 
 P0 采用各 Owner 模块独立持有、全局统一排序的 Migration 方案，避免不同模块各自产生相同版本号。文件名或描述必须能够识别 Owner Domain，例如：
 
@@ -996,7 +970,7 @@ Controller 的 Security Rule 只能作为第一道门。真正的业务 Command 
 
 ### 21.3 Security Context
 
-Spring Security Reactive Context 用于认证传播，但业务 Handler 应获得明确的 `PrincipalContext` / `ExecutionContext`。`PrincipalContext` 是 `platform.foundation-api` 的公开值契约；Reactor Context 的读取工具由 `platform.foundation` 实现模块提供。Authentication 负责把已认证的主体转换为 `PrincipalContext`，业务 Repository 禁止自行读取 SecurityContext 来决定 SQL 行为。
+Spring Security Reactive Context 用于认证传播，但业务 Handler 应获得明确的 `PrincipalContext` / `ExecutionContext`。`PrincipalContext` 是 `common-api` 的公开值契约；Reactor Context 的读取工具由 `common` 实现模块提供。Authentication 负责把已认证的主体转换为 `PrincipalContext`，业务 Repository 禁止自行读取 SecurityContext 来决定 SQL 行为。
 
 ### 21.4 Object-level Authorization
 
@@ -1204,7 +1178,7 @@ CI 必须执行 Architecture Boundary Test，至少验证：
 - Controller 不直接依赖 Repository；
 - Plugin 不依赖 Core Internal Package；
 - API package 不依赖 implementation package；
-- `server` Composition Root 不被业务模块反向依赖。
+- `application` Composition Root 不被业务模块反向依赖。
 
 Maven Multi-Module 使用 Maven 依赖方向、ArchUnit 与 Maven test/verify 生命周期共同实现这些边界检查；单个模块构建能通过不代表整体依赖合法。
 
@@ -1314,7 +1288,7 @@ Worker 不能因为执行 FFmpeg 就拥有 Media Domain Schema。
 Phase 0 的首批代码按 Maven Multi-Module 的依赖顺序落地：
 
 ```text
-1. platform.foundation
+1. common
    - UUIDv7
    - Clock
    - Timezone
@@ -1350,7 +1324,7 @@ Phase 0 的首批代码按 Maven Multi-Module 的依赖顺序落地：
    - application/domain/persistence
    - filesystem adapter
 
-7. server
+7. application
    - Spring Boot entry
    - module assembly
    - HTTP Problem mapping

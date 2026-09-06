@@ -42,7 +42,7 @@ background_task
 platform_user
 ```
 
-所有结构变更必须通过 Storage Owner 模块的 `storage/src/main/resources/db/migration/V...__....sql` 演进，并由 `server` 聚合运行时 classpath 后交给 `r2dbc-migrate` 执行。已经进入共享环境的 migration 不原地修改；需要修正时追加新 migration。
+所有结构变更必须通过 Storage Owner 模块的 `storage/src/main/resources/db/migration/V...__....sql` 演进，并由 `application` 聚合运行时 classpath 后交给 `r2dbc-migrate` 执行。已经进入共享环境的 migration 不原地修改；需要修正时追加新 migration。
 
 ---
 
@@ -436,7 +436,7 @@ V202609060600__DDL_MEDIA_DELIVERY_BINDING_REMOVE_UNUSED_COLUMNS.sql
 工程规则：
 
 1. migration 由 Storage Owner 模块持有，路径为 `storage/src/main/resources/db/migration/`；
-2. 由 `server` 聚合各 Owner 模块后，在应用启动阶段统一交给 `r2dbc-migrate` 执行；
+2. 由 `application` 聚合各 Owner 模块后，在应用启动阶段统一交给 `r2dbc-migrate` 执行；
 3. 不引入 Flyway/JDBC 第二数据库访问栈；
 4. 已发布 migration 不原地编辑；
 5. Entity / Repository / API 与 migration 冲突时，必须先明确当前代码与实际数据库状态，再通过追加 migration + 文档更新收敛；

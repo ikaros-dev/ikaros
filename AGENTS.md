@@ -70,7 +70,7 @@
 - 模块内部默认使用 `api / application / domain / adapter / persistence / config` 分层：Controller/Adapter 进入 Application Contract，Application 编排授权、事务与端口，Domain 保持业务不变量与状态转换，Persistence/Provider 作为实现细节。
 - `domain` 必须尽量保持 Plain Java：不得依赖 WebFlux、R2DBC、Redis、HTTP、Storage SDK，不启动线程、不产生网络 IO、不直接读取 Spring SecurityContext。
 - 跨模块只能依赖公开 API/Capability、Command/Query 或 Durable Event；禁止依赖其他模块的 Entity、Service 实现、Repository、Persistence Package、私有 SQL 或内部 Spring Bean。
-- 禁止跨模块 Repository 注入、跨 Schema 随意 JOIN、通过 `ApplicationContext.getBean()` 或 Bean Name 猜测内部组件、让业务模块反向依赖 `server`。
+- 禁止跨模块 Repository 注入、跨 Schema 随意 JOIN、通过 `ApplicationContext.getBean()` 或 Bean Name 猜测内部组件、让业务模块反向依赖 `application`。
 - 跨模块双向依赖必须通过 Event、更小的 Capability Contract、Integration 协议或重新划分所有权解决；禁止把依赖不清的类型/实体/工具全部塞进 `common`。
 - Controller 不得直接写 Repository，也不得横跨多个 Repository 拼接业务事务；请求必须进入唯一 Owner 的 Application API。
 - Worker 不是数据库超级用户。Worker 必须通过 Background Task Claim、Task Handler Contract、目标领域 Application API、明确拥有的数据表或 Event/Outbox 工作，不得任意执行跨领域 SQL。
@@ -84,7 +84,7 @@
 - 领域状态变更与对应 Outbox INSERT 必须在同一事务原子提交；事务内默认禁止调用不可回滚的外部 API。跨领域流程使用 Command、Durable Event、Saga/Process Manager 或 Background Task，不建立系统级超级事务。
 - 并发写默认使用乐观并发与 revision/version；唯一性和关键不变量必须尽量下降为数据库 Constraint，并用真实 PostgreSQL 集成测试验证。
 - Blob 内容身份不可变：不得更新已存在 Blob 的 `content_hash`/`size_bytes` 来改变其内容；Attachment 替换内容应创建新的不可变绑定。Blob GC 必须同时检查有效业务引用、Retention Hold、Placement 状态和审计条件。
-- 所有生产 DDL 必须进入对应 Owner 实现模块的版本化 `<owner-module>/src/main/resources/db/migration/V<monotonic-version>__<description>.sql`，由 `server` 聚合运行时 classpath 并交给 `r2dbc-migrate` 执行。各模块共享全局单调版本序列；已进入共享/正式环境的 Migration 不得原地修改，修复只能追加新 Migration。
+- 所有生产 DDL 必须进入对应 Owner 实现模块的版本化 `<owner-module>/src/main/resources/db/migration/V<monotonic-version>__<description>.sql`，由 `application` 聚合运行时 classpath 并交给 `r2dbc-migrate` 执行。各模块共享全局单调版本序列；已进入共享/正式环境的 Migration 不得原地修改，修复只能追加新 Migration。
 - Migration 与业务 Persistence 职责分离。不得由 Repository、`DatabaseClient` 或启动逻辑偷偷修改 Schema、模拟 Migration History 或执行不可控的大规模数据重写。
 - Schema 变更遵循 Expand → Migrate → Contract；大规模 Backfill 不得塞进启动阻塞 DDL；Seed Permission/Built-in Role 必须 deterministic；不得提供假装安全的 destructive down migration。
 - Migration 完成前普通业务不得 Ready，Outbox Dispatcher 不得消费，Worker 不得 Claim，Scheduler 不得提交依赖新 Schema 的任务；Migration 失败时必须启动失败或保持 Readiness Down，不得带旧 Schema 提供部分业务能力。

@@ -22,12 +22,12 @@ Ikaros V2 采用 Modular Monolith，但当前仓库使用根 `pom.xml` 的单模
    - `<business-name>`：该业务能力的 Domain、Application、Adapter、Persistence 和配置实现。
 4. `-api` 模块不得依赖同一业务实现模块，也不得暴露 Entity、Repository、SQL DTO 或技术实现类型。
 5. 实现模块只能依赖自己的 `-api`、其他模块的 `-api` 以及允许的平台公开 API。
-6. `server` 是唯一 Spring Composition Root；它可以依赖各实现模块，但任何业务模块不得反向依赖 `server`。
+6. `application` 是唯一 Spring Composition Root；它可以依赖各实现模块，但任何业务模块不得反向依赖 `application`。
 7. `test-support` 是测试基础设施模块，不作为业务 Owner，不建立业务模块对它的生产依赖。
 8. 所有模块立即执行严格边界。跨模块直接依赖 Entity、Repository、Persistence、私有 SQL、内部 Service 或内部 Spring Bean 均视为架构错误。
-9. 每个业务 Owner 的生产 Migration 由对应实现模块持有，路径为 `<owner-module>/src/main/resources/db/migration/V<monotonic-version>__<description>.sql`。`server` 只聚合各实现模块的运行时 classpath 并统一执行 `r2dbc-migrate`，不拥有业务 Migration。
+9. 每个业务 Owner 的生产 Migration 由对应实现模块持有，路径为 `<owner-module>/src/main/resources/db/migration/V<monotonic-version>__<description>.sql`。`application` 只聚合各实现模块的运行时 classpath 并统一执行 `r2dbc-migrate`，不拥有业务 Migration。
 10. 所有实现模块共享全局单调 Migration 版本序列；模块发现顺序不得决定 Schema 结构，文件名和描述必须可识别 Owner。
-11. `PrincipalContext` 是 `foundation-api` 的公开值契约；`PrincipalContexts` 是 `foundation` 的 Reactor Context 运行时访问工具。Authentication 负责写入上下文，Integration 与 Operations 只能依赖 Foundation，不依赖 Authentication 实现。
+11. `PrincipalContext` 是 `common-api` 的公开值契约；`PrincipalContexts` 是 `common` 的 Reactor Context 运行时访问工具。Authentication 负责写入上下文，Integration 与 Operations 只能依赖 Common，不依赖 Authentication 实现。
 12. Integration 对外只通过 `integration-api` 暴露 `DurableEventPublisher.append(EventAppendRequest)`，返回 `EventReference`。Outbox Entity、Repository、Inbox 和 Dispatcher 均属于 Integration 实现模块，不得进入业务模块依赖。
 13. `event_outbox` 由 Integration Owner 追加 Migration 增加 `producer_subsystem`、`subject_type` 与 `subject_id` 正式字段；现有 `aggregate_type / aggregate_id` 数据先通过 Expand / Migrate 回填，待所有实现和契约切换完成后再单独评估 Contract，不在本步骤删除旧字段。
 
@@ -65,23 +65,18 @@ operations-api        -> operations
 ```text
 ikaros
 ├── pom.xml
-├── server
-├── test-support
-├── platform
-│   ├── foundation-api
-│   ├── foundation
-│   ├── integration-api
-│   ├── integration
-│   ├── authentication-api
-│   ├── authentication
-│   ├── authorization-api
-│   ├── authorization
-│   ├── task-api
-│   ├── task
-│   ├── operations-api
-│   ├── operations
-│   ├── plugin-api
-│   └── plugin
+├── application
+├── common-api
+├── common
+├── integration-api
+├── integration
+├── authentication-api
+├── authentication
+├── authorization-api
+├── authorization
+├── operations-api
+├── operations
+├── plugin
 └── modules
     ├── resource-api
     ├── resource
@@ -128,8 +123,8 @@ ikaros
 ```text
 media       -> media-api
 media       -> storage-api
-server      -> media
-server      -> resource
+application -> media
+application -> resource
 ```
 
 禁止：
@@ -137,7 +132,7 @@ server      -> resource
 ```text
 media       -> storage
 media       -> storage.persistence
-server      -> resource.persistence
+application -> resource.persistence
 planning    -> identity.repository
 plugin      -> core.internal
 ```
@@ -149,7 +144,7 @@ Migration 依赖方向如下：
 ```text
 owner implementation module
   -> owns its migration resources
-server
+application
   -> aggregates implementation classpath
   -> executes all pending migrations
 ```
