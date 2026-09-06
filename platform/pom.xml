@@ -32,6 +32,9 @@
         <module>media-api</module>
         <module>media</module>
         <module>storage</module>
+        <module>drive</module>
+        <module>sync</module>
+        <module>backup</module>
         <module>document</module>
         <module>game</module>
         <module>music</module>

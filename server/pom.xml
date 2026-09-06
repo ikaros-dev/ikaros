@@ -82,6 +82,21 @@
         </dependency>
         <dependency>
             <groupId>run.ikaros</groupId>
+            <artifactId>drive</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>run.ikaros</groupId>
+            <artifactId>sync</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>run.ikaros</groupId>
+            <artifactId>backup</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>run.ikaros</groupId>
             <artifactId>media-api</artifactId>
             <version>${project.version}</version>
         </dependency>

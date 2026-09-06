@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.common.UuidV7Generator;
+import run.ikaros.foundation.api.UuidV7Generator;
 
 @Primary
 @Service
@@ -30,8 +30,8 @@ public class PersistentDriveService implements DriveService {
     private final DriveTombstoneRepository tombstoneRepository;
     private final CameraBackupRepository cameraBackupRepository;
     private final TransactionalOperator transactionalOperator;
-    private final UuidV7Generator ids = new UuidV7Generator();
-    public PersistentDriveService(DriveSpaceRepository spaces, DriveNodeRepository nodes, DriveFileRevisionRepository revisions, DriveChangeRepository changes, DriveQuotaRepository quotaRepository, DriveQuotaReservationRepository reservationRepository, SyncBindingRepository bindingRepository, SyncConflictRepository conflictRepository, DeviceRepository deviceRepository, SyncMappingRepository mappingRepository, DriveTombstoneRepository tombstoneRepository, CameraBackupRepository cameraBackupRepository, TransactionalOperator transactionalOperator) { this.spaces = spaces; this.nodes = nodes; this.revisions = revisions; this.changes = changes; this.quotaRepository = quotaRepository; this.reservationRepository = reservationRepository; this.bindingRepository = bindingRepository; this.conflictRepository = conflictRepository; this.deviceRepository = deviceRepository; this.mappingRepository = mappingRepository; this.tombstoneRepository = tombstoneRepository; this.cameraBackupRepository = cameraBackupRepository; this.transactionalOperator = transactionalOperator; }
+    private final UuidV7Generator ids;
+    public PersistentDriveService(DriveSpaceRepository spaces, DriveNodeRepository nodes, DriveFileRevisionRepository revisions, DriveChangeRepository changes, DriveQuotaRepository quotaRepository, DriveQuotaReservationRepository reservationRepository, SyncBindingRepository bindingRepository, SyncConflictRepository conflictRepository, DeviceRepository deviceRepository, SyncMappingRepository mappingRepository, DriveTombstoneRepository tombstoneRepository, CameraBackupRepository cameraBackupRepository, TransactionalOperator transactionalOperator, UuidV7Generator ids) { this.spaces = spaces; this.nodes = nodes; this.revisions = revisions; this.changes = changes; this.quotaRepository = quotaRepository; this.reservationRepository = reservationRepository; this.bindingRepository = bindingRepository; this.conflictRepository = conflictRepository; this.deviceRepository = deviceRepository; this.mappingRepository = mappingRepository; this.tombstoneRepository = tombstoneRepository; this.cameraBackupRepository = cameraBackupRepository; this.transactionalOperator = transactionalOperator; this.ids = ids; }
     @Override public Mono<DriveSpaceView> createSpace(UUID actor, CreateDriveSpaceRequest req) {
         Instant now = Instant.now(); UUID sid = ids.next(); UUID root = ids.next();
         DriveSpaceEntity draft = new DriveSpaceEntity(sid,actor,req.displayName().trim(),null,0,"ACTIVE",now,now,null);

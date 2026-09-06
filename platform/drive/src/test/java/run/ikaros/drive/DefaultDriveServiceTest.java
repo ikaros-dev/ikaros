@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import run.ikaros.common.ConflictException;
 
 class DefaultDriveServiceTest {
-    private final DefaultDriveService service = new DefaultDriveService();
+    private final DefaultDriveService service = new DefaultDriveService(UUID::randomUUID);
     private final UUID user = UUID.randomUUID();
 
     @Test void renameKeepsIdentityAndRejectsStaleVersion() {

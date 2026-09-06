@@ -11,7 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.common.UuidV7Generator;
+import run.ikaros.foundation.api.UuidV7Generator;
 
 @Service
 public class DefaultDriveService implements DriveService {
@@ -34,7 +34,7 @@ public class DefaultDriveService implements DriveService {
         UUID remoteRevision, String fingerprint, String error, Instant updated) {}
     private record Change(UUID id, UUID space, long sequence, UUID node, DriveMutationKind kind, long nodeVersion,
         UUID revision, Instant occurred) {}
-    private final UuidV7Generator ids = new UuidV7Generator();
+    private final UuidV7Generator ids;
     private final ConcurrentMap<UUID, Space> spaces = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Node> nodes = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Device> devices = new ConcurrentHashMap<>();
@@ -47,6 +47,10 @@ public class DefaultDriveService implements DriveService {
     private final ConcurrentMap<UUID, DriveTombstoneView> tombstoneLog = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, List<DriveRevisionView>> revisionLog = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, DriveRevisionView> revisionsByOperation = new ConcurrentHashMap<>();
+
+    public DefaultDriveService(UuidV7Generator ids) {
+        this.ids = ids;
+    }
 
     @Override public Mono<DriveSpaceView> createSpace(UUID actorId, CreateDriveSpaceRequest request) {
         return Mono.fromSupplier(() -> {
