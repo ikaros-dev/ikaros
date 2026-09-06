@@ -650,16 +650,16 @@ Migration 和业务 Persistence 可以共享同一套 PostgreSQL 连接参数与
 
 ### 13.2 Migration Script Contract
 
-当前 Maven Multi-Module 的默认脚本目录仍由负责迁移的模块管理；P0 基础 Migration 默认位于：
+在 Maven Multi-Module 中，Migration 由对应 Owner 实现模块持有；每个实现模块在自己的资源目录维护脚本。P0 基础 Migration 的模块内路径为：
 
 ```text
-src/main/resources/db/migration/
+<owner-module>/src/main/resources/db/migration/
 V<monotonic-version>__<description>.sql
 ```
 
-现有工程中存在 `V202601101915__DDL_ATTACHMENT.sql` 这类版本化脚本。V2 可以继续采用相同的 `V...__...sql` 命名习惯，但这是 **Ikaros 的 Migration Script Contract**，不代表依赖 Flyway。
+`server` 只负责聚合各实现模块的运行时 classpath，并在启动阶段统一交给 `r2dbc-migrate` 执行；它不拥有任何业务 Migration。现有工程中存在 `V202601101915__DDL_ATTACHMENT.sql` 这类版本化脚本。V2 可以继续采用相同的 `V...__...sql` 命名习惯，但这是 **Ikaros 的 Migration Script Contract**，不代表依赖 Flyway。
 
-P0 默认采用统一 Migration 目录和全局单调版本序列，避免不同逻辑 Owner 各自产生相同版本号。文件名或描述必须能够识别 Owner Domain，例如：
+P0 采用各 Owner 模块独立持有、全局统一排序的 Migration 方案，避免不同模块各自产生相同版本号。文件名或描述必须能够识别 Owner Domain，例如：
 
 ```text
 V202609020001__PLATFORM_OUTBOX_BASELINE.sql

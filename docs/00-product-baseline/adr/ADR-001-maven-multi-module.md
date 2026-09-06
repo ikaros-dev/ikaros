@@ -25,6 +25,8 @@ Ikaros V2 采用 Modular Monolith，但当前仓库使用根 `pom.xml` 的单模
 6. `server` 是唯一 Spring Composition Root；它可以依赖各实现模块，但任何业务模块不得反向依赖 `server`。
 7. `test-support` 是测试基础设施模块，不作为业务 Owner，不建立业务模块对它的生产依赖。
 8. 所有模块立即执行严格边界。跨模块直接依赖 Entity、Repository、Persistence、私有 SQL、内部 Service 或内部 Spring Bean 均视为架构错误。
+9. 每个业务 Owner 的生产 Migration 由对应实现模块持有，路径为 `<owner-module>/src/main/resources/db/migration/V<monotonic-version>__<description>.sql`。`server` 只聚合各实现模块的运行时 classpath 并统一执行 `r2dbc-migrate`，不拥有业务 Migration。
+10. 所有实现模块共享全局单调 Migration 版本序列；模块发现顺序不得决定 Schema 结构，文件名和描述必须可识别 Owner。
 
 ## 模块命名与归属
 
@@ -138,6 +140,16 @@ plugin      -> core.internal
 ```
 
 跨模块双向依赖必须通过更小的 Capability Contract、Command、Durable Event 或重新划分所有权解决，不得通过 `common` 隐藏循环依赖。
+
+Migration 依赖方向如下：
+
+```text
+owner implementation module
+  -> owns its migration resources
+server
+  -> aggregates implementation classpath
+  -> executes all pending migrations
+```
 
 ## 后果
 
