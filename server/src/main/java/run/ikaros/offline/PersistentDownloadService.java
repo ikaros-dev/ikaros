@@ -7,14 +7,13 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.drive.DeviceRepository;
-import run.ikaros.drive.DeviceTrustState;
+import run.ikaros.sync.api.DeviceTrustQuery;
 @Service
 public class PersistentDownloadService implements DownloadService {
     private final DownloadIntentRepository repository;
-    private final DeviceRepository devices;
-    public PersistentDownloadService(DownloadIntentRepository repository, DeviceRepository devices) { this.repository=repository; this.devices=devices; }
-    @Override public Mono<DownloadView> create(UUID user, CreateDownloadRequest req) { return devices.findById(req.deviceId()).filter(d->d.userId().equals(user)&&d.trustState()!=DeviceTrustState.REVOKED).switchIfEmpty(Mono.error(new ConflictException("Device 不存在或已撤销"))).flatMap(d->{Instant now=Instant.now();return repository.save(new DownloadIntentEntity(null,user,req.deviceId(),req.resourceId(),req.attachmentId(),req.kind()==null?OfflineCopyKind.DOWNLOAD:req.kind(),DownloadState.QUEUED,null,1,now,now,null));}).onErrorMap(DuplicateKeyException.class,e->new ConflictException("Download 已存在")).map(this::view); }
+    private final DeviceTrustQuery devices;
+    public PersistentDownloadService(DownloadIntentRepository repository, DeviceTrustQuery devices) { this.repository=repository; this.devices=devices; }
+    @Override public Mono<DownloadView> create(UUID user, CreateDownloadRequest req) { return devices.isUsable(user, req.deviceId()).filter(Boolean.TRUE::equals).switchIfEmpty(Mono.error(new ConflictException("Device 不存在或已撤销"))).flatMap(ignored->{Instant now=Instant.now();return repository.save(new DownloadIntentEntity(null,user,req.deviceId(),req.resourceId(),req.attachmentId(),req.kind()==null?OfflineCopyKind.DOWNLOAD:req.kind(),DownloadState.QUEUED,null,1,now,now,null));}).onErrorMap(DuplicateKeyException.class,e->new ConflictException("Download 已存在")).map(this::view); }
     @Override public Flux<DownloadView> list(UUID user, UUID device) { return repository.findAllByUserIdAndDeviceIdOrderByCreatedAtDesc(user,device).take(100).map(this::view); }
     @Override public Mono<DownloadView> updateState(UUID user, UUID id, UpdateDownloadStateRequest req) { return owned(user,id).flatMap(old->{if(!allowed(old.state(),req.state()))return Mono.error(new ConflictException("Download 状态迁移不合法"));return repository.save(new DownloadIntentEntity(old.id(),old.userId(),old.deviceId(),old.resourceId(),old.attachmentId(),old.kind(),req.state(),req.failureReason(),old.manifestVersion(),old.createdAt(),Instant.now(),old.version()));}).map(this::view); }
     @Override public Mono<DownloadView> remove(UUID user, UUID id) { return owned(user,id).flatMap(old->repository.save(new DownloadIntentEntity(old.id(),old.userId(),old.deviceId(),old.resourceId(),old.attachmentId(),old.kind(),DownloadState.REMOVED,old.failureReason(),old.manifestVersion(),old.createdAt(),Instant.now(),old.version()))).map(this::view); }

@@ -1,4 +1,4 @@
-package run.ikaros.drive;
+package run.ikaros.sync;
 import java.util.UUID;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;

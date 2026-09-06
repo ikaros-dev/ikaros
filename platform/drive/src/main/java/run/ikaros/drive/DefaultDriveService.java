@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.foundation.api.UuidV7Generator;
+import run.ikaros.sync.api.DeviceTrustQuery;
 
 @Service
 public class DefaultDriveService implements DriveService {
@@ -19,8 +20,6 @@ public class DefaultDriveService implements DriveService {
     private record Space(UUID id, UUID owner, String name, UUID root, long generation, Instant created, Instant updated, long version) {}
     private record Node(UUID id, UUID space, UUID parent, DriveNodeType type, String name, String normalized,
         DriveLifecycle lifecycle, UUID revision, long version, Instant created, Instant updated) {}
-    private record Device(UUID id, UUID user, String installation, String displayName, String platform,
-        String appVersion, DeviceTrustState trust, Instant registered, Instant lastSeen, Instant revoked) {}
     private record Reservation(UUID id, UUID space, UUID upload, long bytes, QuotaReservationState state,
         Instant expires) {}
     private record Binding(UUID id, UUID user, UUID device, UUID space, UUID root, String scope, String displayPath,
@@ -35,9 +34,9 @@ public class DefaultDriveService implements DriveService {
     private record Change(UUID id, UUID space, long sequence, UUID node, DriveMutationKind kind, long nodeVersion,
         UUID revision, Instant occurred) {}
     private final UuidV7Generator ids;
+    private final DeviceTrustQuery deviceTrustQuery;
     private final ConcurrentMap<UUID, Space> spaces = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Node> nodes = new ConcurrentHashMap<>();
-    private final ConcurrentMap<UUID, Device> devices = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Reservation> reservations = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Binding> bindings = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, Conflict> conflicts = new ConcurrentHashMap<>();
@@ -48,8 +47,9 @@ public class DefaultDriveService implements DriveService {
     private final ConcurrentMap<UUID, List<DriveRevisionView>> revisionLog = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, DriveRevisionView> revisionsByOperation = new ConcurrentHashMap<>();
 
-    public DefaultDriveService(UuidV7Generator ids) {
+    public DefaultDriveService(UuidV7Generator ids, DeviceTrustQuery deviceTrustQuery) {
         this.ids = ids;
+        this.deviceTrustQuery = deviceTrustQuery;
     }
 
     @Override public Mono<DriveSpaceView> createSpace(UUID actorId, CreateDriveSpaceRequest request) {
@@ -175,10 +175,9 @@ public class DefaultDriveService implements DriveService {
         return settleReservation(actorId, spaceId, reservationId, QuotaReservationState.RELEASED);
     }
     @Override public Mono<SyncBindingView> createBinding(UUID actorId, CreateSyncBindingRequest request) {
-        return ownedSpace(actorId, request.driveSpaceId()).flatMap(space -> {
-            Device device = devices.get(request.deviceId());
-            if (device == null || !device.user().equals(actorId) || device.trust() == DeviceTrustState.REVOKED)
-                return Mono.error(new ConflictException("Device 不存在或已撤销"));
+        return deviceTrustQuery.isUsable(actorId, request.deviceId()).flatMap(usable -> {
+            if (!usable) return Mono.error(new ConflictException("Device 不存在或已撤销"));
+            return ownedSpace(actorId, request.driveSpaceId()).flatMap(space -> {
             Node root = nodes.get(request.remoteRootNodeId());
             if (root == null || !root.space().equals(space.id()) || root.type() != DriveNodeType.FOLDER
                 || root.lifecycle() != DriveLifecycle.ACTIVE)
@@ -197,7 +196,8 @@ public class DefaultDriveService implements DriveService {
                 request.conflictPolicy() == null ? ConflictPolicy.PRESERVE_BOTH : request.conflictPolicy(), true,
                 SyncBindingState.ACTIVE, 0, now, now);
             bindings.put(binding.id(), binding);
-            return Mono.just(bindingView(binding));
+                return Mono.just(bindingView(binding));
+            });
         });
     }
     @Override public Flux<SyncBindingView> bindings(UUID actorId) { return Flux.fromIterable(bindings.values())
@@ -237,27 +237,6 @@ public class DefaultDriveService implements DriveService {
                 conflicts.put(conflictId, updated);
                 return conflictView(updated);
             }));
-    }
-    @Override public Mono<DeviceView> registerDevice(UUID actorId, RegisterDeviceRequest request) {
-        return Mono.fromSupplier(() -> {
-            boolean duplicate = devices.values().stream().anyMatch(d -> d.user().equals(actorId)
-                && d.installation().equals(request.installationId()) && d.revoked() == null);
-            if (duplicate) throw new ConflictException("Device installation 已注册");
-            Instant now = Instant.now();
-            Device device = new Device(ids.next(), actorId, request.installationId().trim(), request.displayName().trim(),
-                request.platform().trim(), request.appVersion(), DeviceTrustState.ACTIVE, now, now, null);
-            devices.put(device.id(), device);
-            return deviceView(device);
-        });
-    }
-    @Override public Flux<DeviceView> devices(UUID actorId) { return Flux.fromIterable(devices.values())
-        .filter(d -> d.user().equals(actorId) && d.revoked() == null).take(100).map(this::deviceView); }
-    @Override public Mono<DeviceView> revokeDevice(UUID actorId, UUID deviceId) {
-        return Mono.justOrEmpty(devices.get(deviceId)).filter(d -> d.user().equals(actorId))
-            .switchIfEmpty(Mono.error(new NotFoundException("Device 不存在")))
-            .map(d -> { Device revoked = new Device(d.id(), d.user(), d.installation(), d.displayName(), d.platform(),
-                d.appVersion(), DeviceTrustState.REVOKED, d.registered(), d.lastSeen(), Instant.now());
-                devices.put(deviceId, revoked); return deviceView(revoked); });
     }
     @Override public Mono<SyncMappingView> upsertMapping(UUID actorId, UUID bindingId, UpsertSyncMappingRequest request) {
         return ownedBinding(actorId, bindingId).flatMap(binding -> {
@@ -365,8 +344,6 @@ public class DefaultDriveService implements DriveService {
     private DriveSpaceView view(Space s) { return new DriveSpaceView(s.id(),s.owner(),s.name(),s.root(),s.generation(),s.created(),s.updated(),s.version()); }
     private DriveNodeView view(Node n) { return new DriveNodeView(n.id(),n.space(),n.parent(),n.type(),n.name(),n.normalized(),n.lifecycle(),n.revision(),n.version(),n.created(),n.updated()); }
     private DriveChangeView changeView(Change c) { return new DriveChangeView(c.id(), c.space(), c.sequence(), c.node(), c.kind(), c.nodeVersion(), c.revision(), c.occurred()); }
-    private DeviceView deviceView(Device d) { return new DeviceView(d.id(), d.user(), d.installation(), d.displayName(), d.platform(),
-        d.appVersion(), d.trust(), d.registered(), d.lastSeen(), d.revoked()); }
     private Mono<DriveQuotaReservationView> settleReservation(UUID actor, UUID spaceId, UUID id,
                                                                QuotaReservationState target) {
         return ownedSpace(actor, spaceId).then(Mono.defer(() -> {

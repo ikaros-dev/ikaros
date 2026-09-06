@@ -52,6 +52,7 @@ ikaros-v2
 ├── storage
 ├── ingestion
 ├── drive
+├── sync-api
 ├── sync
 ├── sharing
 ├── search
@@ -127,6 +128,8 @@ run.ikaros.operations.api                    -> operations-api
 run.ikaros.operations.task                   -> platform-operations
 run.ikaros.foundation.api                     -> foundation-api
 run.ikaros.foundation                         -> foundation
+run.ikaros.sync.api                           -> sync-api
+run.ikaros.sync                               -> sync
 ```
 
 `storage-api` 只暴露 Storage 的稳定业务契约：Attachment/Blob 的登记与查询、上传提交、归档/删除、Placement 管理、Delivery 能力、`AttachmentReferenceQuery` 和 `AttachmentAvailabilityQuery`。普通 `AttachmentView` 只返回 Resource 归属、文件元数据和业务可用状态，不返回 `blob_id`、Provider、`object_key` 或 Placement 明细；大对象流读取保留在实现侧的 HTTP 能力中。后台任务提交返回 `operations-api` 的 `TaskReference`，不暴露 Background Task 实体、Payload、Lease 或 Attempt。
@@ -135,9 +138,9 @@ run.ikaros.foundation                         -> foundation
 
 Storage 的 Season Restore 不得直接依赖 Media Entity 或 Repository；Storage 通过 `media-api` 的 `MediaRestoreTargetQuery` 获取已授权的 Episode Resource ID。后台任务的提交、生命周期、派发和 Handler 注册契约由 `operations-api` 提供；Task Entity、Claim/Lease/Attempt 和任务 Migration 由 `platform-operations` 的 `run.ikaros.operations.task` 所有，业务模块不得依赖其实现类型。
 
-Drive 抽取阶段严格限定于 `drive` 自身的实现。当前 `offline` 实现仍直接引用 `run.ikaros.drive` 的 Device 类型，记为未解决依赖；该依赖将在 `offline -> sync` 抽取时收敛，Drive 不反向依赖 Offline。
+Drive 抽取阶段严格限定于 `drive` 自身的实现。Device、DeviceTrustState、DeviceRepository 和设备 HTTP 能力归属 `sync`；`sync-api` 仅暴露最小的 `DeviceTrustQuery`，Drive 与 Offline 只能通过该能力判断设备是否可用，不得引用 Sync 的 Entity、Repository 或信任状态实现。设备 HTTP 路由统一为 `/api/sync/devices`，Drive 不反向依赖 Offline。
 
-Migration 也遵循相同的 Owner 边界：Foundation 的公共 UUID 数据库能力由 `foundation` 持有；Resource、Media、Storage、Operations、Drive、Planning 分别持有自己的业务表与约束迁移。Drive 迁移位于 `platform/drive/src/main/resources/db/migration`，Planning 迁移位于 `platform/planning/src/main/resources/db/migration`，Sync/Backup 的当前迁移暂由对应实现模块承载；`server` 只聚合这些实现模块的运行时 classpath 并执行迁移，不持有业务 DDL。
+Migration 也遵循相同的 Owner 边界：Foundation 的公共 UUID 数据库能力由 `foundation` 持有；Resource、Media、Storage、Operations、Drive、Planning 分别持有自己的业务表与约束迁移。Drive 迁移位于 `platform/drive/src/main/resources/db/migration`，Planning 迁移位于 `platform/planning/src/main/resources/db/migration`，Sync/Backup 的当前迁移暂由对应实现模块承载；`drive_device` 由 Sync 创建，Drive 通过后续自有迁移补充 `drive_sync_binding` 的设备外键。`server` 只聚合这些实现模块的运行时 classpath 并执行迁移，不持有业务 DDL。
 
 ---
 
@@ -344,8 +347,8 @@ Operations 不因为拥有管理 UI 就拥有其他领域的业务数据。
 | `resource` | Resource、Collection、Tag、External Identity、Metadata Provenance、Resource Lifecycle、通用 User State | Blob、Drive Path、媒体专业结构 |
 | `storage` | Attachment、Blob、Placement、Replica、Derived Attachment、Integrity | Resource Metadata、Drive Tree |
 | `ingestion` | Source、Scan、Candidate、Match、Import Plan/Run | Resource 最终业务状态 |
-| `drive` | Drive Space、Node、File Revision、Trash、Drive Conflict、Drive Quota | Blob Placement、Device Runtime |
-| `sync` | Device、Cursor、Change Feed Runtime、Pending Mutation Envelope | 各领域业务 Conflict Resolution |
+| `drive` | Drive Space、Node、File Revision、Trash、Drive Conflict、Drive Quota、Sync Binding | Blob Placement、Device Runtime |
+| `sync` | Device、Cursor、Change Feed Runtime、Pending Mutation Envelope、Offline Cache/Download | 各领域业务 Conflict Resolution |
 | `sharing` | Share、Invite、Room、Membership、Presence/Room state | Resource ACL 真相本身 |
 | `search` | Search Projection、Index Generation、Checkpoint | 业务真相 |
 | `backup` | Restore Point、Manifest、Verification、Restore Run | Export Format 业务定义 |
@@ -527,6 +530,7 @@ Producer = storage
 /api/resources/**      → resource
 /api/attachments/**    → storage
 /api/drive/**          → drive
+/api/sync/**           → sync
 /api/media/**          → media
 /api/admin/security/** → security / operations 的明确 owner
 ```

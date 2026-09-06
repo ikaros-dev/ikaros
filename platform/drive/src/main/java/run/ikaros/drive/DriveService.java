@@ -24,9 +24,6 @@ public interface DriveService {
     Mono<SyncConflictView> createConflict(UUID actorId, CreateSyncConflictRequest request);
     Flux<SyncConflictView> conflicts(UUID actorId, UUID bindingId);
     Mono<SyncConflictView> resolveConflict(UUID actorId, UUID conflictId, SyncConflictState state);
-    Mono<DeviceView> registerDevice(UUID actorId, RegisterDeviceRequest request);
-    Flux<DeviceView> devices(UUID actorId);
-    Mono<DeviceView> revokeDevice(UUID actorId, UUID deviceId);
     Mono<SyncMappingView> upsertMapping(UUID actorId, UUID bindingId, UpsertSyncMappingRequest request);
     Flux<SyncMappingView> mappings(UUID actorId, UUID bindingId);
     Flux<DriveTombstoneView> tombstones(UUID actorId, UUID spaceId, long afterSequence);

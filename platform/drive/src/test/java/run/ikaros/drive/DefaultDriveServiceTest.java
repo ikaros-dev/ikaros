@@ -5,9 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import run.ikaros.common.ConflictException;
+import reactor.core.publisher.Mono;
 
 class DefaultDriveServiceTest {
-    private final DefaultDriveService service = new DefaultDriveService(UUID::randomUUID);
+    private final DefaultDriveService service = new DefaultDriveService(UUID::randomUUID, (userId, deviceId) -> Mono.just(true));
     private final UUID user = UUID.randomUUID();
 
     @Test void renameKeepsIdentityAndRejectsStaleVersion() {

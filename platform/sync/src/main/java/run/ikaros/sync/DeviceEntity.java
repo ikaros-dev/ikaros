@@ -1,4 +1,4 @@
-package run.ikaros.drive;
+package run.ikaros.sync;
 import java.time.Instant;
 import java.util.UUID;
 import org.springframework.data.annotation.Id;

@@ -1,3 +1,12 @@
+CREATE TABLE drive_device (
+    id UUID PRIMARY KEY DEFAULT uuid_v7(), user_id UUID NOT NULL, installation_id VARCHAR(256) NOT NULL,
+    display_name VARCHAR(256) NOT NULL, platform VARCHAR(64) NOT NULL, app_version VARCHAR(64),
+    trust_state VARCHAR(24) NOT NULL DEFAULT 'ACTIVE', registered_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    last_seen_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, revoked_at TIMESTAMPTZ, version BIGINT NOT NULL DEFAULT 0,
+    CHECK (trust_state IN ('ACTIVE','LIMITED','REVOKED')), UNIQUE (user_id, installation_id)
+);
+CREATE INDEX idx_drive_device_user ON drive_device (user_id, trust_state, last_seen_at DESC);
+
 CREATE TABLE offline_download_intent (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), user_id UUID NOT NULL, device_id UUID NOT NULL,
     resource_id UUID NOT NULL, attachment_id UUID, kind VARCHAR(24) NOT NULL DEFAULT 'DOWNLOAD',

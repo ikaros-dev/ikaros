@@ -62,16 +62,6 @@ CREATE TABLE drive_sync_conflict (
 );
 CREATE INDEX idx_drive_sync_conflict_binding ON drive_sync_conflict (binding_id, state, detected_at DESC);
 
-CREATE TABLE drive_device (
-    id UUID PRIMARY KEY DEFAULT uuid_v7(), user_id UUID NOT NULL, installation_id VARCHAR(256) NOT NULL,
-    display_name VARCHAR(256) NOT NULL, platform VARCHAR(64) NOT NULL, app_version VARCHAR(64),
-    trust_state VARCHAR(24) NOT NULL DEFAULT 'ACTIVE', registered_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
-    last_seen_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp, revoked_at TIMESTAMPTZ, version BIGINT NOT NULL DEFAULT 0,
-    CHECK (trust_state IN ('ACTIVE','LIMITED','REVOKED')), UNIQUE (user_id, installation_id)
-);
-CREATE INDEX idx_drive_device_user ON drive_device (user_id, trust_state, last_seen_at DESC);
-ALTER TABLE drive_sync_binding ADD CONSTRAINT fk_drive_sync_binding_device FOREIGN KEY (device_id) REFERENCES drive_device(id);
-
 CREATE TABLE drive_sync_item_mapping (
     id UUID PRIMARY KEY DEFAULT uuid_v7(), binding_id UUID NOT NULL, local_item_id VARCHAR(1024) NOT NULL,
     remote_node_id UUID NOT NULL, last_synced_revision_id UUID, last_synced_fingerprint VARCHAR(256),

@@ -1,2 +1,2 @@
-package run.ikaros.drive;
+package run.ikaros.sync;
 public enum DeviceTrustState { ACTIVE, LIMITED, REVOKED }

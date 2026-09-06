@@ -13,6 +13,7 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.foundation.api.UuidV7Generator;
+import run.ikaros.sync.api.DeviceTrustQuery;
 
 @Primary
 @Service
@@ -25,13 +26,13 @@ public class PersistentDriveService implements DriveService {
     private final DriveQuotaReservationRepository reservationRepository;
     private final SyncBindingRepository bindingRepository;
     private final SyncConflictRepository conflictRepository;
-    private final DeviceRepository deviceRepository;
+    private final DeviceTrustQuery deviceTrustQuery;
     private final SyncMappingRepository mappingRepository;
     private final DriveTombstoneRepository tombstoneRepository;
     private final CameraBackupRepository cameraBackupRepository;
     private final TransactionalOperator transactionalOperator;
     private final UuidV7Generator ids;
-    public PersistentDriveService(DriveSpaceRepository spaces, DriveNodeRepository nodes, DriveFileRevisionRepository revisions, DriveChangeRepository changes, DriveQuotaRepository quotaRepository, DriveQuotaReservationRepository reservationRepository, SyncBindingRepository bindingRepository, SyncConflictRepository conflictRepository, DeviceRepository deviceRepository, SyncMappingRepository mappingRepository, DriveTombstoneRepository tombstoneRepository, CameraBackupRepository cameraBackupRepository, TransactionalOperator transactionalOperator, UuidV7Generator ids) { this.spaces = spaces; this.nodes = nodes; this.revisions = revisions; this.changes = changes; this.quotaRepository = quotaRepository; this.reservationRepository = reservationRepository; this.bindingRepository = bindingRepository; this.conflictRepository = conflictRepository; this.deviceRepository = deviceRepository; this.mappingRepository = mappingRepository; this.tombstoneRepository = tombstoneRepository; this.cameraBackupRepository = cameraBackupRepository; this.transactionalOperator = transactionalOperator; this.ids = ids; }
+    public PersistentDriveService(DriveSpaceRepository spaces, DriveNodeRepository nodes, DriveFileRevisionRepository revisions, DriveChangeRepository changes, DriveQuotaRepository quotaRepository, DriveQuotaReservationRepository reservationRepository, SyncBindingRepository bindingRepository, SyncConflictRepository conflictRepository, DeviceTrustQuery deviceTrustQuery, SyncMappingRepository mappingRepository, DriveTombstoneRepository tombstoneRepository, CameraBackupRepository cameraBackupRepository, TransactionalOperator transactionalOperator, UuidV7Generator ids) { this.spaces = spaces; this.nodes = nodes; this.revisions = revisions; this.changes = changes; this.quotaRepository = quotaRepository; this.reservationRepository = reservationRepository; this.bindingRepository = bindingRepository; this.conflictRepository = conflictRepository; this.deviceTrustQuery = deviceTrustQuery; this.mappingRepository = mappingRepository; this.tombstoneRepository = tombstoneRepository; this.cameraBackupRepository = cameraBackupRepository; this.transactionalOperator = transactionalOperator; this.ids = ids; }
     @Override public Mono<DriveSpaceView> createSpace(UUID actor, CreateDriveSpaceRequest req) {
         Instant now = Instant.now(); UUID sid = ids.next(); UUID root = ids.next();
         DriveSpaceEntity draft = new DriveSpaceEntity(sid,actor,req.displayName().trim(),null,0,"ACTIVE",now,now,null);
@@ -162,10 +163,10 @@ public class PersistentDriveService implements DriveService {
     private DriveQuotaReservationView reservationView(DriveQuotaReservationEntity r){return new DriveQuotaReservationView(r.id(),r.driveSpaceId(),r.uploadSessionId(),r.reservedBytes(),r.state(),r.expiresAt());}
     @Override
     public Mono<SyncBindingView> createBinding(UUID actor, CreateSyncBindingRequest req) {
-        return deviceRepository.findById(req.deviceId())
-            .filter(device -> device.userId().equals(actor) && device.trustState() != DeviceTrustState.REVOKED)
-            .switchIfEmpty(Mono.error(new ConflictException("Device 不存在或已撤销")))
-            .then(ownedSpace(actor, req.driveSpaceId()))
+        return deviceTrustQuery.isUsable(actor, req.deviceId())
+            .flatMap(usable -> {
+                if (!usable) return Mono.error(new ConflictException("Device 不存在或已撤销"));
+                return ownedSpace(actor, req.driveSpaceId())
             .flatMap(space ->
             nodes.findByIdAndDriveSpaceId(req.remoteRootNodeId(), req.driveSpaceId())
                 .filter(n -> n.nodeType() == DriveNodeType.FOLDER && n.lifecycle() == DriveLifecycle.ACTIVE)
@@ -189,6 +190,7 @@ public class PersistentDriveService implements DriveService {
                         true, SyncBindingState.ACTIVE, 0, now, now, null);
                     return bindingRepository.save(binding).map(this::bindingView);
                 }));
+            });
     }
     @Override public Flux<SyncBindingView> bindings(UUID actor) { return bindingRepository.findAllByUserIdOrderByCreatedAtAsc(actor).take(100).map(this::bindingView); }
     @Override
@@ -210,10 +212,6 @@ public class PersistentDriveService implements DriveService {
     @Override public Flux<SyncConflictView> conflicts(UUID actor, UUID bindingId) { return bindingRepository.findById(bindingId).filter(b->b.userId().equals(actor)).switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在"))).flatMapMany(b->conflictRepository.findAllByBindingIdOrderByDetectedAtDesc(bindingId).take(100).map(this::conflictView)); }
     @Override public Mono<SyncConflictView> resolveConflict(UUID actor, UUID id, SyncConflictState state) { if(state!=SyncConflictState.RESOLVED&&state!=SyncConflictState.DISMISSED)return Mono.error(new ConflictException("Conflict 只能进入 RESOLVED 或 DISMISSED")); return conflictRepository.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Conflict 不存在"))).flatMap(c->bindingRepository.findById(c.bindingId()).filter(b->b.userId().equals(actor)).switchIfEmpty(Mono.error(new NotFoundException("Conflict 不存在"))).then(conflictRepository.save(new SyncConflictEntity(c.id(),c.bindingId(),c.nodeId(),c.baseRevisionId(),c.remoteRevisionId(),c.localFingerprint(),state,c.detectedAt(),Instant.now(),actor,c.version())))).map(this::conflictView); }
     private SyncConflictView conflictView(SyncConflictEntity c){return new SyncConflictView(c.id(),c.bindingId(),c.nodeId(),c.baseRevisionId(),c.remoteRevisionId(),c.localFingerprint(),c.state(),c.detectedAt(),c.resolvedAt(),c.resolvedBy());}
-    @Override public Mono<DeviceView> registerDevice(UUID actor, RegisterDeviceRequest req) { return deviceRepository.findByUserIdAndInstallationId(actor,req.installationId()).flatMap(existing->deviceRepository.save(new DeviceEntity(existing.id(),actor,existing.installationId(),req.displayName().trim(),req.platform(),req.appVersion(),existing.trustState(),existing.registeredAt(),Instant.now(),existing.revokedAt(),existing.version()))).switchIfEmpty(Mono.defer(()->{Instant now=Instant.now();return deviceRepository.save(new DeviceEntity(null,actor,req.installationId(),req.displayName().trim(),req.platform(),req.appVersion(),DeviceTrustState.ACTIVE,now,now,null,null));})).map(this::deviceView); }
-    @Override public Flux<DeviceView> devices(UUID actor) { return deviceRepository.findAllByUserIdOrderByRegisteredAtAsc(actor).take(100).map(this::deviceView); }
-    @Override public Mono<DeviceView> revokeDevice(UUID actor, UUID id) { return deviceRepository.findById(id).filter(d->d.userId().equals(actor)).switchIfEmpty(Mono.error(new NotFoundException("Device 不存在"))).flatMap(d->deviceRepository.save(new DeviceEntity(d.id(),d.userId(),d.installationId(),d.displayName(),d.platform(),d.appVersion(),DeviceTrustState.REVOKED,d.registeredAt(),d.lastSeenAt(),Instant.now(),d.version()))).map(this::deviceView); }
-    private DeviceView deviceView(DeviceEntity d){return new DeviceView(d.id(),d.userId(),d.installationId(),d.displayName(),d.platform(),d.appVersion(),d.trustState(),d.registeredAt(),d.lastSeenAt(),d.revokedAt());}
     @Override public Mono<SyncMappingView> upsertMapping(UUID actor, UUID bindingId, UpsertSyncMappingRequest req) { return bindingRepository.findById(bindingId).filter(b->b.userId().equals(actor)&&b.enabled()).switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在或已暂停"))).flatMap(binding->nodes.findByIdAndDriveSpaceId(req.remoteNodeId(),binding.driveSpaceId()).switchIfEmpty(Mono.error(new NotFoundException("Remote Node 不存在"))).then(mappingRepository.findByBindingIdAndLocalItemId(bindingId,req.localItemId()))).flatMap(existing->{Instant now=Instant.now();return mappingRepository.save(new SyncMappingEntity(existing.id(),bindingId,req.localItemId(),req.remoteNodeId(),req.lastSyncedRevisionId(),req.lastSyncedFingerprint(),req.lastSeenRemoteVersion(),req.state()==null?SyncMappingState.ACTIVE:req.state(),now,existing.version()));}).switchIfEmpty(Mono.defer(()->{Instant now=Instant.now();return mappingRepository.save(new SyncMappingEntity(null,bindingId,req.localItemId(),req.remoteNodeId(),req.lastSyncedRevisionId(),req.lastSyncedFingerprint(),req.lastSeenRemoteVersion(),req.state()==null?SyncMappingState.ACTIVE:req.state(),now,null));})).map(this::mappingView); }
     @Override public Flux<SyncMappingView> mappings(UUID actor, UUID bindingId) { return bindingRepository.findById(bindingId).filter(b->b.userId().equals(actor)).switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在"))).flatMapMany(b->mappingRepository.findAllByBindingIdOrderByUpdatedAtAsc(bindingId).take(100).map(this::mappingView)); }
     private SyncMappingView mappingView(SyncMappingEntity m){return new SyncMappingView(m.id(),m.bindingId(),m.localItemId(),m.remoteNodeId(),m.lastSyncedRevisionId(),m.lastSyncedFingerprint(),m.lastSeenRemoteVersion(),m.state(),m.updatedAt());}

@@ -92,6 +92,11 @@
         </dependency>
         <dependency>
             <groupId>run.ikaros</groupId>
+            <artifactId>sync-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>run.ikaros</groupId>
             <artifactId>backup</artifactId>
             <version>${project.version}</version>
         </dependency>
