@@ -4,8 +4,8 @@
 |---|---|
 | 文档名称 | Ikaros V2 技术架构设计 |
 | 适用版本 | Ikaros V2 |
-| 文档版本 | v0.1 |
-| 编写日期 | 2026-09-02 |
+| 文档版本 | v0.2 |
+| 编写日期 | 2026-09-06 |
 | 状态 | Engineering Baseline Draft |
 | 上位设计 | `System-Overview-Design.md`、`Database-Overview-Design.md`、`API-Convention-Design.md` |
 | 边界设计 | `Module-Package-Ownership-Design.md` |
@@ -13,7 +13,7 @@
 
 > 本文档定义 Ikaros V2 从“系统与领域设计”下降到 Java / Spring / Reactor / PostgreSQL 工程实现时必须遵守的技术架构。
 >
-> `System-Overview-Design.md` 回答系统由什么组成，`Module-Package-Ownership-Design.md` 回答谁拥有状态和代码，本文档进一步回答：**这些边界在进程、Gradle、Spring、线程、事务、数据库、事件、任务、缓存、网络、存储、可观测性和部署层面如何真正落地。**
+> `System-Overview-Design.md` 回答系统由什么组成，`Module-Package-Ownership-Design.md` 回答谁拥有状态和代码，本文档进一步回答：**这些边界在进程、Maven、Spring、线程、事务、数据库、事件、任务、缓存、网络、存储、可观测性和部署层面如何真正落地。**
 >
 > 本文档不重新定义业务领域模型。若本文与上位系统级设计发生冲突，以系统级设计为准；若实现需要改变本文中的 Foundation Rule，应先提交 ADR / 设计修改，再修改代码。
 
@@ -26,7 +26,7 @@ Ikaros V2 的工程实现不能只做到“代码能运行”，还必须让系�
 本文档重点解决以下问题：
 
 1. V2 的后端技术栈和进程模型是什么。
-2. 模块化单体如何在 Gradle 和 Spring Runtime 中形成真实边界。
+2. 模块化单体如何在单 Maven 工程的 Java Package 和 Spring Runtime 中形成真实、可验证的边界。
 3. HTTP / Realtime 请求如何进入 Application Command / Query。
 4. Domain、Application、Persistence、Infrastructure 的职责如何在代码中落地。
 5. WebFlux / Reactor 下哪些代码可以运行在 Event Loop，哪些必须隔离。
@@ -67,12 +67,12 @@ Ikaros V2 的默认工程架构冻结为：
 | Metrics | Micrometer / Actuator |
 | Trace Context | W3C Trace Context；支持 OpenTelemetry 接入 |
 | Test | JUnit 5 + Reactor Test + Testcontainers PostgreSQL + Architecture Test |
-| Build | Gradle Multi-Project |
+| Build | Maven Single Module（根 `pom.xml`） |
 | Deployment | Docker / Docker Compose first |
 
 说明：
 
-1. Patch Version 由 Gradle Platform / Version Catalog 管理，不应在所有设计文档重复绑定。
+1. Patch Version 由 Maven `dependencyManagement`、Spring Boot BOM 与集中 properties 管理，不应在所有设计文档重复绑定。
 2. V2 可以复用当前工程已经验证过的 Java 21、Spring Boot 4.x、WebFlux、R2DBC 技术经验，但 V1 的包结构、数据库表和历史实现不是 V2 兼容约束。
 3. Redis、独立 Search Engine、独立 Worker 都不是最小部署的强制依赖。
 4. 任何可选基础设施失效时，不得破坏 PostgreSQL 中业务真相的一致性。
@@ -159,49 +159,69 @@ Worker 不暴露普通业务 HTTP API，主要负责 Claim Background Task、长
 
 ---
 
-## 4. Gradle 工程拓扑
+## 4. Maven 单模块工程拓扑
 
 ### 4.1 原则
 
-V2 必须使用 Gradle Multi-Project 表达关键编译期边界。
+V2 P0 统一使用仓库根 `pom.xml` 的 **Maven Single Module** 构建，不切换 Gradle，也不以 Maven Multi-Module 作为当前工程基线。
 
-不要求每个最小包都拆成 Subproject，但以下边界应优先形成真实编译隔离：Platform Foundation、Integration / Event、Security、Background Task、P0 Core Domain API、P0 Core Domain Implementation、Server Composition Root、Plugin API / Runtime。
+模块化单体的边界不依赖构建子模块提供编译隔离，而通过以下机制共同强制：
+
+- Java Package Ownership；
+- `api / application / domain / adapter / persistence / config` 的逻辑分层；
+- 显式 Spring Module Configuration 与 Composition Root；
+- ArchUnit / Architecture Test；
+- Code Review 与 CI Gate。
+
+未来若单模块规模增长到确有必要引入物理构建模块，必须通过 ADR / 设计修改重新定义迁移收益与边界；不得在普通功能实现中顺手改变构建系统。
 
 ### 4.2 P0 推荐结构
 
+单 Maven 工程内推荐按逻辑 package 表达模块边界：
+
 ```text
 ikaros
-├── server
-├── platform
-│   ├── foundation
-│   ├── integration
-│   ├── security
-│   ├── task
-│   ├── operations
-│   ├── plugin-api
-│   └── plugin-runtime
-├── modules
-│   ├── resource
-│   │   ├── api
-│   │   └── impl
-│   ├── storage
-│   │   ├── api
-│   │   └── impl
-│   └── identity
-│       ├── api
-│       └── impl
-└── test-support
+├── pom.xml
+└── src/main/java/run/ikaros
+    ├── server
+    ├── platform
+    │   ├── foundation
+    │   ├── integration
+    │   ├── security
+    │   ├── task
+    │   ├── operations
+    │   ├── pluginapi
+    │   └── pluginruntime
+    └── modules
+        ├── resource
+        │   ├── api
+        │   ├── application
+        │   ├── domain
+        │   ├── adapter
+        │   └── persistence
+        ├── storage
+        │   ├── api
+        │   ├── application
+        │   ├── domain
+        │   ├── adapter
+        │   └── persistence
+        └── identity
+            ├── api
+            ├── application
+            ├── domain
+            ├── adapter
+            └── persistence
 ```
 
-后续领域可以按相同模式扩展。
+目录名是推荐布局，不是要求一次性重排现有源码的迁移任务；真正强制的是 Owner、依赖方向与自动化边界检查。
 
 ### 4.3 API / Implementation 分离
 
-`<module>:api` 只允许包含稳定跨模块契约，例如 Command / Query Contract、Capability Interface、Public Result DTO、Public Error、Permission Key、Event Contract Reference，以及真正属于公开契约的 ID / Value Object。
+`<module>.api` package 只允许包含稳定跨模块契约，例如 Command / Query Contract、Capability Interface、Public Result DTO、Public Error、Permission Key、Event Contract Reference，以及真正属于公开契约的 ID / Value Object。
 
-`<module>:api` 不应依赖 Spring WebFlux、R2DBC Driver、PostgreSQL Client、Redis Client、Storage SDK、ORM / Repository 或模块内部 Entity。
+`<module>.api` 不应依赖 Spring WebFlux、R2DBC Driver、PostgreSQL Client、Redis Client、Storage SDK、ORM / Repository 或模块内部 Entity。
 
-`<module>:impl` 负责 Application Handler、Domain Model、Persistence Adapter、Infrastructure Adapter、Web Adapter（若 endpoint 由领域拥有）以及 Module Spring Configuration。
+`<module>.application / domain / adapter / persistence / config` 属于模块实现，负责 Application Handler、Domain Model、Persistence Adapter、Infrastructure Adapter、Web Adapter（若 endpoint 由领域拥有）以及 Module Spring Configuration。
 
 ### 4.4 依赖方向
 
@@ -209,10 +229,10 @@ ikaros
 
 ```text
 server
-  -> module.impl
+  -> module implementation packages
   -> platform runtime
 
-moduleA.impl
+moduleA.application
   -> moduleA.api
   -> moduleB.api
   -> platform foundation/api
@@ -221,17 +241,17 @@ moduleA.impl
 禁止：
 
 ```text
-moduleA.impl -> moduleB.impl
-moduleA.impl -> moduleB.persistence
+moduleA implementation -> moduleB implementation
+moduleA -> moduleB.persistence
 moduleA.persistence -> moduleB.persistence
-moduleA -> server
+business module -> server
 platform.foundation -> business module
-api -> impl
+api -> implementation package
 ```
 
 ### 4.5 循环依赖
 
-任何 Gradle Project Circular Dependency 都是架构错误。
+任何跨逻辑模块的循环依赖都是架构错误，即使单 Maven 工程在编译期能够通过。
 
 出现业务双向依赖时，优先使用 Event、更小的 Capability Contract、Integration Module 中的稳定协调协议或重新划分所有权。禁止通过把两边代码搬进 `common` 解决循环依赖。
 
@@ -305,7 +325,7 @@ Adapter 不得把技术细节泄露给 Domain。
 
 ### 6.1 Server 是唯一 Composition Root
 
-只有 `server` 应负责启动完整 Spring ApplicationContext。
+单 Maven 工程中，`server` 仍作为逻辑 Composition Root；只有应用启动层应负责启动完整 Spring ApplicationContext。
 
 业务模块通过显式 Module Configuration 注册，例如：
 
@@ -578,13 +598,13 @@ Persistence Record / Entity 默认不直接等同于 Domain Aggregate。尤其�
 
 R2DBC 规范本身不包含数据库 Schema Migration 能力；Ikaros 使用独立的 **`r2dbc-migrate`** 组件在 R2DBC 之上完成版本化 SQL 迁移。
 
-V1 当前已经使用：
+当前工程使用：
 
 ```text
 name.nkonev.r2dbc-migrate:r2dbc-migrate-spring-boot-starter
 ```
 
-当前 V1 Gradle Platform 管理的版本为 `4.0.1`。V2 继续以该组件作为默认 Migration 基线，但具体 Patch Version 仍由 Gradle Platform / Version Catalog 集中管理，并在升级时验证 Spring Boot 4.x、R2DBC SPI 与 PostgreSQL Driver 的兼容性，本文档不长期冻结具体版本。
+当前根 `pom.xml` 通过 `r2dbc-migrate.version` 管理版本 `4.0.1`。V2 继续以该组件作为默认 Migration 基线，但具体 Patch Version 仍由 Maven `dependencyManagement` / properties / Spring Boot BOM 集中管理，并在升级时验证 Spring Boot 4.x、R2DBC SPI 与 PostgreSQL Driver 的兼容性，本文档不长期冻结具体版本。
 
 因此 V2 不再为了数据库迁移额外引入 Flyway + PostgreSQL JDBC Driver，也不建立“业务 R2DBC、迁移 JDBC”两套数据库访问栈。
 
@@ -604,16 +624,16 @@ Migration 和业务 Persistence 可以共享同一套 PostgreSQL 连接参数与
 
 ### 13.2 Migration Script Contract
 
-V1 已验证的脚本组织方式继续作为 V2 的默认起点：
+当前单 Maven 工程的默认脚本目录：
 
 ```text
-server/src/main/resources/db/migration/
+src/main/resources/db/migration/
 V<monotonic-version>__<description>.sql
 ```
 
-例如 V1 当前存在 `V202601101915__DDL_ATTACHMENT.sql` 这类版本化脚本。V2 可以继续采用相同的 `V...__...sql` 命名习惯，但这是 **Ikaros 的 Migration Script Contract**，不代表依赖 Flyway。
+现有工程中存在 `V202601101915__DDL_ATTACHMENT.sql` 这类版本化脚本。V2 可以继续采用相同的 `V...__...sql` 命名习惯，但这是 **Ikaros 的 Migration Script Contract**，不代表依赖 Flyway。
 
-P0 默认采用统一 Migration 目录和全局单调版本序列，避免不同 Gradle Module 各自产生相同版本号。文件名或描述必须能够识别 Owner Domain，例如：
+P0 默认采用统一 Migration 目录和全局单调版本序列，避免不同逻辑 Owner 各自产生相同版本号。文件名或描述必须能够识别 Owner Domain，例如：
 
 ```text
 V202609020001__PLATFORM_OUTBOX_BASELINE.sql
@@ -1128,14 +1148,14 @@ Reactive Pipeline 使用 Reactor `StepVerifier`。禁止测试通过到处 `.blo
 CI 必须执行 Architecture Boundary Test，至少验证：
 
 - `*.domain..` 不依赖 Spring Web / R2DBC；
-- module A 不依赖 module B impl；
+- module A 不依赖 module B implementation package；
 - 非 Owner Module 不依赖其他模块 persistence package；
 - Controller 不直接依赖 Repository；
 - Plugin 不依赖 Core Internal Package；
-- API Project 不依赖 Impl Project；
-- `server` 是 Composition Root，不被业务模块反向依赖。
+- API package 不依赖 implementation package；
+- `server` Composition Root 不被业务模块反向依赖。
 
-可以使用 ArchUnit + Gradle Dependency Verification 实现。
+单 Maven 工程默认使用 ArchUnit + Maven test/verify 生命周期实现这些边界检查；构建能通过不代表逻辑模块依赖合法。
 
 ### 28.6 Contract Test
 
@@ -1163,11 +1183,11 @@ compile
 
 ### 29.2 Dependency Management
 
-第三方版本通过 Gradle Version Catalog 或 Java Platform / BOM 集中管理。禁止多个模块独立定义同一个核心依赖的不同版本。
+第三方版本通过 Maven `dependencyManagement`、Spring Boot BOM 与集中 properties 管理。禁止在不同逻辑模块中各自定义同一个核心依赖的不同版本。
 
 ### 29.3 Reproducible Build
 
-Release Build 必须锁定 JDK Major、Gradle Wrapper、Node / pnpm（若构建 Console），生成 build metadata，输出版本与 git commit，并让容器镜像可追踪到 commit。
+Release Build 必须锁定 JDK Major、Maven Wrapper / Maven 版本、Node / pnpm（若构建 Console），生成 build metadata，输出版本与 git commit，并让容器镜像可追踪到 commit。
 
 ---
 
@@ -1240,42 +1260,42 @@ Worker 不能因为执行 FFmpeg 就拥有 Media Domain Schema。
 
 ## 33. P0 代码骨架建议
 
-Phase 0 的首批代码可以按以下顺序落地：
+Phase 0 的首批代码可以在单 Maven 工程内按以下逻辑 package 顺序落地：
 
 ```text
-1. platform:foundation
+1. platform.foundation
    - UUIDv7
    - Clock
    - Timezone
    - ExecutionContext
    - Error primitive
 
-2. platform:integration
+2. platform.integration
    - EventEnvelope
    - OutboxRepository
    - InboxRepository
    - Dispatcher
    - ConsumerRegistry
 
-3. platform:security
+3. platform.security
    - Principal
    - PermissionRegistry
    - AuthorizationService
 
-4. platform:task
+4. platform.task
    - Task model
    - Attempt model
    - Claim / Lease
    - TaskHandlerRegistry
    - WorkerLoop
 
-5. modules:resource
+5. resource
    - api
-   - impl/application/domain/persistence
+   - application/domain/persistence
 
-6. modules:storage
+6. storage
    - api
-   - impl/application/domain/persistence
+   - application/domain/persistence
    - filesystem adapter
 
 7. server
@@ -1382,10 +1402,10 @@ P0 实现合并前至少具备以下自动化检查：
 | Gate | 必须验证 |
 |---|---|
 | `ARCH-001` | Domain 不依赖 Web / DB / Redis / Storage SDK |
-| `ARCH-002` | Module Impl 不依赖其他 Module Impl |
+| `ARCH-002` | Module Implementation 不依赖其他 Module Implementation |
 | `ARCH-003` | Controller 不直接依赖 Repository |
 | `ARCH-004` | 非 Owner 不访问其他模块 Persistence Package |
-| `ARCH-005` | API Project 不依赖 Impl Project |
+| `ARCH-005` | API Package 不依赖 Implementation Package |
 | `ARCH-006` | Server 是 Composition Root |
 | `REACT-001` | 关键 Runtime Package 无 `.block*()` |
 | `DB-001` | `r2dbc-migrate` 可在空 PostgreSQL 完整升级 |
@@ -1405,6 +1425,7 @@ P0 实现合并前至少具备以下自动化检查：
 
 以下变化必须新增或修改 ADR，不能直接在实现中发生：
 
+- 从 Maven Single Module 切换到 Gradle、Maven Multi-Module 或其他构建拓扑；
 - 从 Modular Monolith 拆成 Microservice；
 - 引入第二个业务关系数据库；
 - 放弃 R2DBC 改用 JPA/JDBC 主栈；
@@ -1425,7 +1446,7 @@ P0 实现合并前至少具备以下自动化检查：
 
 一个 P0 模块不能只因为“Controller 能返回 200”就视为完成。
 
-技术架构层 DoD 至少要求：Gradle Ownership 清晰；Package Boundary 通过 Architecture Test；Domain 不依赖 Infrastructure；Command / Query 契约已实现；Permission 在 Application Boundary 生效；PostgreSQL Schema / Constraint 已通过 Testcontainers；Reactive Transaction 正确；Durable Event 进入 Outbox；Consumer 支持 Inbox 幂等；长任务进入 Background Task；HTTP 与 OpenAPI 一致；Error 使用统一 Problem Contract；Metrics / Trace / Correlation 可观测；无不受控 Blocking Call；无跨 Owner Repository / SQL；Cache / Search 关闭后核心业务仍正确；Crash / Retry / Duplicate Delivery 有自动化测试。
+技术架构层 DoD 至少要求：Maven 单模块工程基线明确且 Package Ownership 清晰；Package Boundary 通过 Architecture Test；Domain 不依赖 Infrastructure；Command / Query 契约已实现；Permission 在 Application Boundary 生效；PostgreSQL Schema / Constraint 已通过 Testcontainers；Reactive Transaction 正确；Durable Event 进入 Outbox；Consumer 支持 Inbox 幂等；长任务进入 Background Task；HTTP 与 OpenAPI 一致；Error 使用统一 Problem Contract；Metrics / Trace / Correlation 可观测；无不受控 Blocking Call；无跨 Owner Repository / SQL；Cache / Search 关闭后核心业务仍正确；Crash / Retry / Duplicate Delivery 有自动化测试。
 
 ---
 
