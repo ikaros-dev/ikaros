@@ -12,7 +12,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableR2dbcRepositories(basePackages = {
     "run.ikaros.activity",
     "run.ikaros.authentication",
-    "run.ikaros.authentication.verification",
     "run.ikaros.authorization",
     "run.ikaros.backup",
     "run.ikaros.collection",
@@ -27,8 +26,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
     "run.ikaros.music",
     "run.ikaros.notes",
     "run.ikaros.offline",
-    "run.ikaros.operations.audit",
-    "run.ikaros.operations.task",
+    "run.ikaros.operations",
     "run.ikaros.password",
     "run.ikaros.photo",
     "run.ikaros.planning",
