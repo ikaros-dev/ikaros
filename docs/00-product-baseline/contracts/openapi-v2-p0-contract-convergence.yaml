@@ -76,7 +76,7 @@ paths:
       operationId: listBackgroundTaskAttempts
       x-ikaros-contract-id: operations.list-task-attempts
       responses:
-        '200': { description: 任务尝试历史, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/BackgroundTaskAttempt' } } } }
+        '200': { description: 任务尝试历史, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/BackgroundTaskAttempt' } } } } }
   /admin/blobs/{blob_id}/placements:
     parameters:
       - { name: blob_id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -84,7 +84,7 @@ paths:
       operationId: listBlobPlacements
       x-ikaros-contract-id: storage.list-blob-placements
       responses:
-        '200': { description: Blob 存储位置列表, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/BlobPlacement' } } } }
+        '200': { description: Blob 存储位置列表, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/BlobPlacement' } } } } }
   /admin/storage-providers/{provider_id}:
     parameters:
       - { name: provider_id, in: path, required: true, schema: { type: string, format: uuid } }
