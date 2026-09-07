@@ -20,6 +20,7 @@ paths:
     get:
       tags: [Resources]
       operationId: listResources
+      x-ikaros-contract-id: resource.list-resources
       summary: List visible resources
       parameters:
         - $ref: '#/components/parameters/Cursor'
@@ -43,6 +44,7 @@ paths:
     post:
       tags: [Resources]
       operationId: createResource
+      x-ikaros-contract-id: resource.create-resource
       summary: Create a resource
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
@@ -72,6 +74,7 @@ paths:
     get:
       tags: [Resources]
       operationId: getResource
+      x-ikaros-contract-id: resource.get-resource
       summary: Get a resource
       responses:
         '200':
@@ -89,6 +92,7 @@ paths:
     patch:
       tags: [Resources]
       operationId: updateResource
+      x-ikaros-contract-id: resource.update-resource
       summary: Update directly editable resource fields
       parameters:
         - $ref: '#/components/parameters/IfMatch'
@@ -120,6 +124,7 @@ paths:
     post:
       tags: [Resources]
       operationId: archiveResource
+      x-ikaros-contract-id: resource.archive-resource
       summary: Archive a resource
       parameters:
         - $ref: '#/components/parameters/IfMatch'
@@ -145,6 +150,7 @@ paths:
     post:
       tags: [Resources]
       operationId: restoreResource
+      x-ikaros-contract-id: resource.restore-resource
       summary: Restore an archived or trashed resource
       parameters:
         - $ref: '#/components/parameters/IfMatch'
@@ -170,6 +176,7 @@ paths:
     get:
       tags: [Attachments]
       operationId: getAttachment
+      x-ikaros-contract-id: storage.get-attachment
       summary: Get attachment metadata
       responses:
         '200':
@@ -187,6 +194,7 @@ paths:
     get:
       tags: [Attachments]
       operationId: getAttachmentContent
+      x-ikaros-contract-id: storage.get-attachment-content
       summary: Stream attachment content
       parameters:
         - name: Range
@@ -223,6 +231,7 @@ paths:
     get:
       tags: [Background Tasks]
       operationId: getBackgroundTask
+      x-ikaros-contract-id: operations.get-background-task
       summary: Get background task state
       responses:
         '200':
@@ -240,6 +249,7 @@ paths:
     post:
       tags: [Background Tasks]
       operationId: cancelBackgroundTask
+      x-ikaros-contract-id: operations.cancel-background-task
       summary: Request cancellation of a background task
       responses:
         '200':
@@ -256,6 +266,7 @@ paths:
     get:
       tags: [Admin Storage]
       operationId: listStorageProviders
+      x-ikaros-contract-id: storage.list-providers
       summary: List configured storage providers
       responses:
         '200':
@@ -271,6 +282,7 @@ paths:
     post:
       tags: [Admin Storage]
       operationId: createStorageProvider
+      x-ikaros-contract-id: storage.create-provider
       summary: Create a storage provider
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
@@ -295,6 +307,7 @@ paths:
     get:
       tags: [Admin Identity]
       operationId: listUsers
+      x-ikaros-contract-id: identity.list-users
       summary: List users
       parameters:
         - $ref: '#/components/parameters/Cursor'
@@ -311,6 +324,7 @@ paths:
     post:
       tags: [Admin Identity]
       operationId: createUser
+      x-ikaros-contract-id: identity.create-user
       summary: Create a user
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
@@ -335,6 +349,7 @@ paths:
     get:
       tags: [Admin Identity]
       operationId: listRoles
+      x-ikaros-contract-id: identity.list-roles
       summary: List roles
       responses:
         '200':
@@ -351,6 +366,7 @@ paths:
     get:
       tags: [Admin Identity]
       operationId: listPermissions
+      x-ikaros-contract-id: identity.list-permissions
       summary: List registered backend permissions
       responses:
         '200':

@@ -245,6 +245,12 @@
             <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>2.4</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
