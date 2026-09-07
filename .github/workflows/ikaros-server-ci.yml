@@ -95,8 +95,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: console/.nvmrc
-          cache: pnpm
-          cache-dependency-path: console/pnpm-lock.yaml
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
