@@ -100,6 +100,7 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: 9
+          package_json_file: console/package.json
 
       - name: Install console dependencies
         run: pnpm install --frozen-lockfile
