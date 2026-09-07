@@ -1,6 +1,6 @@
 # Ikaros 构建与本地开发
 
-本文档对应当前仓库结构：后端是 Maven 单模块 Spring Boot 应用，前端位于 `console/`，数据库使用 PostgreSQL，表结构由应用启动时的 `r2dbc-migrate` 自动升级。
+本文档对应当前仓库结构：后端是根 `pom.xml` 聚合的 Maven Multi-Module Spring Boot 应用，前端位于 `console/`，数据库使用 PostgreSQL，表结构由应用启动时的 `r2dbc-migrate` 自动升级。
 
 ## 环境要求
 
@@ -85,6 +85,7 @@ pnpm lint         # ESLint、Prettier、Stylelint
 ```shell
 mvn compile
 mvn test
+mvn verify
 mvn -Dtest=AttachmentPreviewServiceTest test
 mvn clean package -DskipTests
 ```
@@ -136,13 +137,23 @@ GET /api/background-tasks/{taskId}
 
 检查附件是否存在活动 Blob Placement，并确认对应 Storage Provider、Delivery Provider 和 Binding 都处于可用状态。被禁用的 Binding/Provider 或健康状态为 `UNHEALTHY` 的 Provider 不会参与选择。
 
-## 提交前检查
+## 提交检查门禁
 
 ```shell
+mvn compile
 mvn test
+mvn -pl application -am test
+mvn verify
+
 cd console
+pnpm install --frozen-lockfile
 pnpm typecheck
+pnpm exec eslint --max-warnings 0 --rule "prettier/prettier: off" "{src,mock,build}/**/*.{vue,js,ts,tsx}"
+pnpm exec stylelint "**/*.{html,vue,css,scss}" --cache-location node_modules/.cache/stylelint/
+pnpm build
 ```
+
+GitHub Actions 按 `Compile (Maven)` → `Unit and integration tests` → `Architecture, contract and package gate` 顺序执行后端门禁，Console 质量门禁单独显示；任一 job 失败都会阻止该检查流程通过。工作流同时覆盖代码、契约和文档变更，并支持手动 `workflow_dispatch` 重跑。
 
 ## Git 工作流
 

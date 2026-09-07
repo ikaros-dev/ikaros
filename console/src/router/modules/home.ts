@@ -1,5 +1,4 @@
 const Layout = () => import("@/layout/index.vue");
-const ModulePage = () => import("@/views/modules/ModulePage.vue");
 const DashboardPage = () => import("@/views/dashboard/index.vue");
 const ResourcesPage = () => import("@/views/resources/index.vue");
 const CollectionsPage = () => import("@/views/collections/index.vue");
@@ -34,30 +33,6 @@ const OpsBackgroundPage = () => import("@/views/operations/Background.vue");
 const PlatformParametersPage = () => import("@/views/platform/Parameters.vue");
 const PlatformDictionariesPage = () => import("@/views/platform/Dictionaries.vue");
 const PlatformMenusPage = () => import("@/views/platform/Menus.vue");
-
-type ModuleOptions = {
-  path: string;
-  name: string;
-  title: string;
-  description: string;
-  endpoint: string;
-  icon: string;
-  columns: string[];
-  createEndpoint?: string;
-  createFields?: Array<{ name: string; label: string; required?: boolean; defaultValue?: string }>;
-  deleteEndpoint?: string;
-  actions?: Array<{ name: string; label: string; path: string; method?: string; confirm?: string }>;
-};
-
-function moduleRoute(options: ModuleOptions) {
-  const { path, name, title, description, endpoint, icon, columns, ...operations } = options;
-  return {
-    path,
-    name,
-    component: ModulePage,
-    meta: { title, description, endpoint, columns, icon, ...operations }
-  };
-}
 
 const subsystemRanks: Record<string, number> = {
   "/platform-config": 10,
