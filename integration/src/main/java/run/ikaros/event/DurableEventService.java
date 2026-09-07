@@ -69,7 +69,8 @@ public class DurableEventService implements DurableEventPublisher {
 
     private Mono<OutboxEventEntity> appendNow(String eventType, int schemaVersion, String producerSubsystem,
                                               String subjectType, UUID subjectId, String payloadJson, PrincipalContext context) {
-        return outbox.save(new OutboxEventEntity(null, eventType, schemaVersion, producerSubsystem, subjectType, subjectId,
+        return outbox.save(new OutboxEventEntity(null, eventType, schemaVersion, subjectType, subjectId,
+            producerSubsystem, subjectType, subjectId,
             payloadJson, Instant.now(), 0, null, null,
             context == null ? null : context.requestId(),
             context == null ? null : context.correlationId(),

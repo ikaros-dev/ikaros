@@ -11,7 +11,7 @@ spring:
 
 r2dbc:
   migrate:
-    resources-paths: classpath*:/db/migration
+    resources-paths: classpath*:/db/migration/*.sql
 
 springdoc:
   api-docs:

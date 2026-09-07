@@ -12,6 +12,8 @@ public record OutboxEventEntity(
     @Id UUID id,
     @Column("event_type") String eventType,
     @Column("schema_version") int schemaVersion,
+    @Column("aggregate_type") String aggregateType,
+    @Column("aggregate_id") UUID aggregateId,
     @Column("producer_subsystem") String producerSubsystem,
     @Column("subject_type") String subjectType,
     @Column("subject_id") UUID subjectId,
@@ -28,7 +30,8 @@ public record OutboxEventEntity(
     public OutboxEventEntity(UUID id, String eventType, int schemaVersion, String aggregateType, UUID aggregateId,
                              String payloadJson, Instant occurredAt, int attemptCount, Instant lastAttemptAt,
                              Instant dispatchedAt) {
-        this(id, eventType, schemaVersion, eventType.substring(0, eventType.indexOf('.')), aggregateType, aggregateId,
+        this(id, eventType, schemaVersion, aggregateType, aggregateId,
+            eventType.substring(0, eventType.indexOf('.')), aggregateType, aggregateId,
             payloadJson, occurredAt, attemptCount,
             lastAttemptAt, dispatchedAt, null, null, null, null);
     }
