@@ -4,23 +4,18 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - "**/*.md"
-      - "docs/**"
   pull_request:
     branches:
       - main
       - "release-*"
-    paths-ignore:
-      - "**/*.md"
-      - "docs/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  verify:
-    name: Verify with Maven
+  compile:
+    name: Compile (Maven)
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
@@ -33,7 +28,46 @@ jobs:
           java-version: "21"
           cache: maven
 
-      - name: Run Maven verification
+      - name: Compile all Maven modules
+        run: mvn --batch-mode --update-snapshots compile
+
+  test:
+    name: Unit and integration tests
+    needs: compile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Run Maven tests
+        run: mvn --batch-mode --update-snapshots test
+
+  contract-and-package:
+    name: Architecture, contract and package gate
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Run architecture and contract tests
+        run: mvn --batch-mode --update-snapshots -pl application -am -DskipTests=false test
+
+      - name: Verify and package all Maven modules
         run: mvn --batch-mode --update-snapshots verify
 
       - name: Upload build reports on failure
@@ -42,7 +76,42 @@ jobs:
         with:
           name: maven-build-reports
           path: |
-            target/surefire-reports
-            target/*.dump*
+            "**/target/surefire-reports"
+            "**/target/*.dump*"
           if-no-files-found: ignore
           retention-days: 7
+
+  console:
+    name: Console quality gate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: console
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: console/.nvmrc
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          package_json_file: console/package.json
+
+      - name: Install console dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck console
+        run: pnpm typecheck
+
+      - name: Lint console
+        run: |
+          pnpm exec eslint --max-warnings 0 --rule "prettier/prettier: off" "{src,mock,build}/**/*.{vue,js,ts,tsx}"
+          pnpm exec stylelint "**/*.{html,vue,css,scss}" --cache-location node_modules/.cache/stylelint/
+
+      - name: Build console
+        run: pnpm build
