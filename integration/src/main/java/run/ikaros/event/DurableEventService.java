@@ -64,7 +64,8 @@ public class DurableEventService implements DurableEventPublisher {
         }
         return PrincipalContexts.current()
             .flatMap(context -> appendNow(eventType, schemaVersion, producerSubsystem, subjectType, subjectId, payloadJson, context))
-            .switchIfEmpty(appendNow(eventType, schemaVersion, producerSubsystem, subjectType, subjectId, payloadJson, null));
+            .switchIfEmpty(appendNow(eventType, schemaVersion, producerSubsystem, subjectType, subjectId, payloadJson, null))
+            .as(transaction::transactional);
     }
 
     private Mono<OutboxEventEntity> appendNow(String eventType, int schemaVersion, String producerSubsystem,
