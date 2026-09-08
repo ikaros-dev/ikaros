@@ -225,6 +225,33 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+  /background-tasks:
+    post:
+      tags: [Background Tasks]
+      operationId: submitBackgroundTask
+      x-ikaros-contract-id: operations.submit-background-task
+      summary: Submit a durable background task
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitBackgroundTaskRequest'
+      responses:
+        '202':
+          description: Background task accepted after durable persistence
+          headers:
+            Location:
+              schema: { type: string, format: uri }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BackgroundTask' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /background-tasks/{task_id}:
     parameters:
       - $ref: '#/components/parameters/TaskId'
@@ -571,6 +598,15 @@ components:
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
         completed_at: { type: [string, 'null'], format: date-time }
+    SubmitBackgroundTaskRequest:
+      type: object
+      required: [type]
+      additionalProperties: false
+      properties:
+        type: { type: string, minLength: 1 }
+        payload:
+          type: object
+          additionalProperties: true
     StorageProvider:
       type: object
       required: [id, provider_key, provider_type, display_name, tier, enabled, drain_status, version]
