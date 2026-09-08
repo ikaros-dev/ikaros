@@ -96,3 +96,4 @@
 - 原因：取消是 cooperative cancellation，不能强行终止正在执行的 Handler，也不能把取消伪装成失败；状态和 Attempt 历史保持可解释。
 - 失败语义：不存在任务返回 NotFound；终态任务返回 Conflict；RUNNING 任务在确认前保持 RUNNING，其他任务不受影响。
 - 验证：`BackgroundTaskDispatcherTest` 覆盖 PENDING 立即取消、RUNNING 仅请求取消、终态保护，以及已有 Worker cooperative cancellation；Operations 任务回归测试覆盖成功与失败分支。真实 PostgreSQL 并发/权限回放仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
+- 外部权限记录：向 GitHub #921 发布完成评论的请求被安全策略拦截；本地实现与 commit 已保留，待权限恢复后补发评论并关闭。根据执行规则继续处理后续子 issue。
