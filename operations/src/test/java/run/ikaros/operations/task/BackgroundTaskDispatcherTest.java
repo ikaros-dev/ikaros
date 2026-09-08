@@ -84,6 +84,9 @@ class BackgroundTaskDispatcherTest {
         BackgroundTask reclaimed = tasks.claim("healthy-runner", Duration.ofMinutes(1)).block();
         assertEquals(TaskStatus.RUNNING, reclaimed.status());
         assertEquals(2, reclaimed.attempt());
+        org.junit.jupiter.api.Assertions.assertEquals("LEASE_LOST",
+            tasks.attempts(reclaimed.id()).collectList().block().get(0).status());
+        assertEquals(2, tasks.attempts(reclaimed.id()).collectList().block().size());
     }
 
     @org.junit.jupiter.api.Test
@@ -97,15 +100,20 @@ class BackgroundTaskDispatcherTest {
     }
 
     @org.junit.jupiter.api.Test
-    void cancellingPendingTaskTransitionsToCancelledAndTerminalTaskIsProtected() {
+    void cancellingPendingTaskTransitionsToCancelledAndSucceededTaskIsProtected() {
         InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
         BackgroundTask pending = tasks.submit("cancellable", Map.of(), "cancel-pending").block();
         BackgroundTask cancelled = tasks.cancel(pending.id()).block();
 
         assertEquals(TaskStatus.CANCELLED, cancelled.status());
         org.junit.jupiter.api.Assertions.assertNotNull(cancelled.cancelRequestedAt());
+        assertEquals(TaskStatus.CANCELLED, tasks.cancel(pending.id()).block().status());
+
+        BackgroundTask successfulTask = tasks.submit("completed", Map.of(), "cancel-completed").block();
+        BackgroundTask running = tasks.claim("runner", Duration.ofMinutes(1)).block();
+        tasks.complete(running.id(), running.leaseToken(), Map.of("ok", true)).block();
         org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class,
-            () -> tasks.cancel(pending.id()).block());
+            () -> tasks.cancel(successfulTask.id()).block());
     }
 
     @org.junit.jupiter.api.Test
