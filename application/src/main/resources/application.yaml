@@ -11,7 +11,10 @@ spring:
 
 r2dbc:
   migrate:
+    enable: true
     resources-paths: classpath*:/db/migration/*.sql
+    wait-for-database: true
+    prefer-db-specific-lock: true
 
 springdoc:
   api-docs:
