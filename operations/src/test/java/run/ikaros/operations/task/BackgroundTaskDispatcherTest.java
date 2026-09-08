@@ -73,6 +73,17 @@ class BackgroundTaskDispatcherTest {
     }
 
     @org.junit.jupiter.api.Test
+    void progressIsPersistedAndVisibleThroughTaskQuery() {
+        InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
+        BackgroundTask submitted = tasks.submit("progress", Map.of(), "progress-1").block();
+        BackgroundTask running = tasks.claim("runner", Duration.ofMinutes(1)).block();
+        BackgroundTask updated = tasks.updateProgress(running.id(), running.leaseToken(), Map.of("percent", 42, "stage", "scan")).block();
+
+        assertEquals(42, updated.progress().get("percent"));
+        assertEquals("scan", tasks.get(submitted.id()).block().progress().get("stage"));
+    }
+
+    @org.junit.jupiter.api.Test
     void expiredTaskIsNotClaimedAndBecomesTimedOut() throws InterruptedException {
         InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
         BackgroundTask submitted = tasks.submit("short", Map.of("timeout_seconds", 1), "short-timeout").block();
