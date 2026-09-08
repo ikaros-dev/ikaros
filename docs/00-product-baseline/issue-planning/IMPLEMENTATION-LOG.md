@@ -63,3 +63,11 @@
 - 原因：失败事件必须可观察、可再次触发，但查询/重试不应绕过 Integration Owner、直接暴露 Outbox Repository 或重复产生业务 Event。重试仍使用同一 event ID、Inbox 唯一约束和 consumer 幂等语义。
 - 失败语义：不存在或已完成事件返回 `NotFoundException`；没有可用 consumer 时明确失败；consumer 失败保留 pending 状态，下一次自动调度或人工 retry 可继续执行。
 - 验证：`OutboxDispatcherTest` 覆盖 pending 查询和稳定 event ID retry；`DurableEventServiceTest` 覆盖不存在目标；与既有失败保留、重复跳过和 dispatcher 测试共同验证 10 项事件测试。真实 PostgreSQL 回放仍需要 Docker Desktop + Testcontainers，当前环境未安装 Docker，未伪造运行证据。
+
+## A03 可靠事件投递（父 issue）
+
+- 日期：2026-09-09
+- 验收结论：A03-01 至 A03-04 已按顺序独立完成并在 GitHub 关闭；父功能覆盖 Outbox 原子写入、重启重扫、Inbox 原子去重、失败事件查询与人工重试。
+- 推荐决策：继续由 Integration Owner 暴露 durable event capability，由已登记的上层 Operations API 适配查询/重试；当前不增加未登记的 HTTP 路由或 UI。事件 payload 保留 request/correlation/causation/actor 追踪字段。
+- 验证证据：A03-04 事件回归测试 10 项全部通过；`mvn -pl application -am -DskipTests compile` BUILD SUCCESS；各子 issue 的独立测试与 commit 已记录在本日志及 GitHub 完成评论中。
+- 剩余限制：当前开发环境未安装 Docker，真实 PostgreSQL 事务回滚、Outbox 重启回放、Inbox 唯一约束和跨 API 联调未执行；未将环境缺失伪造为通过。
