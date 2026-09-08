@@ -87,3 +87,4 @@
 - 原因：进度必须在重启、刷新和查询路径中可观察，且不能绕过 Task Owner 或让 progress 替代任务状态；控制台字段已对齐实际 `task_type`、`PENDING`、`SUCCEEDED` 和 `TIMED_OUT` 契约。
 - 失败语义：无效/过期 Lease 不能更新进度；任务不存在返回 NotFound；刷新失败展示错误状态；失败、超时不显示为成功。
 - 验证：`BackgroundTaskDispatcherTest` 新增 progress 持久化后通过 `get` 查询的断言；Operations 任务回归 14 tests passed；console `pnpm typecheck`、`pnpm lint`、`pnpm build` 均通过。lint 的自动格式化噪声已从无关文件恢复，仅保留本次 Background 页面变更。真实 PostgreSQL Lease 并发回放仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
+- 外部权限记录：向 GitHub #920 发布完成评论和关闭 issue 的请求连续被安全策略拦截；本地实现与 commit 已保留，待权限恢复后补发评论并关闭。根据执行规则继续处理后续子 issue。
