@@ -7,6 +7,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.integration.api.DurableEventConsumer;
+import run.ikaros.integration.api.DurableEvent;
+import run.ikaros.common.NotFoundException;
+import java.util.UUID;
+import reactor.core.publisher.Flux;
 
 /** Re-scans the durable Outbox after startup so pending events survive process restarts. */
 @Component
@@ -30,8 +34,21 @@ public final class OutboxDispatcher {
     }
 
     Mono<Void> dispatchNow() {
-        return reactor.core.publisher.Flux.fromIterable(consumers)
+        return Flux.fromIterable(consumers)
             .concatMap(events::dispatchOnce)
             .then();
+    }
+
+    public Flux<DurableEvent> pendingEvents() {
+        return events.pendingEvents();
+    }
+
+    public Mono<Long> retry(UUID eventId) {
+        if (consumers.isEmpty()) {
+            return Mono.error(new NotFoundException("没有注册事件 Consumer"));
+        }
+        return Flux.fromIterable(consumers)
+            .concatMap(consumer -> events.dispatchOnce(eventId, consumer))
+            .reduce(0L, Long::sum);
     }
 }

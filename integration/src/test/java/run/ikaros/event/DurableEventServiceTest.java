@@ -56,6 +56,20 @@ class DurableEventServiceTest {
     }
 
     @Test
+    void rejectsRetryForMissingOrCompletedEvent() {
+        OutboxEventRepository outbox = mock(OutboxEventRepository.class);
+        when(outbox.findById(any(UUID.class))).thenReturn(Mono.empty());
+        DurableEventService service = new DurableEventService(outbox,
+            mock(InboxEntryRepository.class), mock(TransactionalOperator.class));
+        DurableEventConsumer consumer = mock(DurableEventConsumer.class);
+        when(consumer.consumerId()).thenReturn("consumer");
+
+        StepVerifier.create(service.dispatchOnce(UUID.randomUUID(), consumer))
+            .expectError(run.ikaros.common.NotFoundException.class)
+            .verify();
+    }
+
+    @Test
     void rejectsSecretLikePayloadsBeforePersistence() {
         DurableEventService service = new DurableEventService(mock(OutboxEventRepository.class),
             mock(InboxEntryRepository.class), mock(TransactionalOperator.class));

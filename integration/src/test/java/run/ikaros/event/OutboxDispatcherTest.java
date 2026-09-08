@@ -22,4 +22,20 @@ class OutboxDispatcherTest {
 
         verify(events).dispatchOnce(consumer);
     }
+
+    @Test
+    void exposesPendingEventsAndRetriesByStableEventId() {
+        DurableEventService events = mock(DurableEventService.class);
+        DurableEventConsumer consumer = mock(DurableEventConsumer.class);
+        java.util.UUID eventId = java.util.UUID.randomUUID();
+        when(events.pendingEvents()).thenReturn(reactor.core.publisher.Flux.empty());
+        when(events.dispatchOnce(eventId, consumer)).thenReturn(Mono.just(1L));
+
+        OutboxDispatcher dispatcher = new OutboxDispatcher(events, List.of(consumer));
+        StepVerifier.create(dispatcher.pendingEvents()).verifyComplete();
+        StepVerifier.create(dispatcher.retry(eventId)).expectNext(1L).verifyComplete();
+
+        verify(events).pendingEvents();
+        verify(events).dispatchOnce(eventId, consumer);
+    }
 }

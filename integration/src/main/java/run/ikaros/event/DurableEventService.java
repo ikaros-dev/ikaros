@@ -14,6 +14,7 @@ import run.ikaros.common.PrincipalContexts;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.DurableEventConsumer;
 import run.ikaros.integration.api.DurableEvent;
+import run.ikaros.common.NotFoundException;
 import run.ikaros.integration.api.EventAppendRequest;
 import run.ikaros.integration.api.EventReference;
 
@@ -83,24 +84,45 @@ public class DurableEventService implements DurableEventPublisher {
 
     public Mono<Long> dispatchOnce(String consumerId, Function<OutboxEventEntity, Mono<Void>> handler) {
         return outbox.findTop100ByDispatchedAtIsNullOrderByOccurredAtAsc()
-            .concatMap(event -> outbox.recordAttempt(event.id(), Instant.now())
-                .then(transaction.transactional(inbox.insertIfAbsent(consumerId, event.id(), Instant.now())
-                    .flatMap(inserted -> inserted == 0
-                        ? mark(event)
-                        : handler.apply(event).then(Mono.defer(() -> mark(event)))))
-                ).thenReturn(1L)
-            )
+            .concatMap(event -> dispatchEvent(event, consumerId, handler))
             .reduce(0L, Long::sum);
+    }
+
+    public reactor.core.publisher.Flux<DurableEvent> pendingEvents() {
+        return outbox.findTop100ByDispatchedAtIsNullOrderByOccurredAtAsc().map(this::toDurableEvent);
+    }
+
+    public Mono<Long> dispatchOnce(UUID eventId, DurableEventConsumer consumer) {
+        if (consumer == null || consumer.consumerId() == null || consumer.consumerId().isBlank()) {
+            return Mono.error(new IllegalArgumentException("事件 Consumer ID 不合法"));
+        }
+        return outbox.findById(eventId)
+            .filter(event -> event.dispatchedAt() == null)
+            .switchIfEmpty(Mono.error(new NotFoundException("事件不存在或已完成")))
+            .flatMap(event -> dispatchEvent(event, consumer.consumerId(), candidate -> consumer.consume(toDurableEvent(candidate))));
+    }
+
+    private Mono<Long> dispatchEvent(OutboxEventEntity event, String consumerId,
+                                     Function<OutboxEventEntity, Mono<Void>> handler) {
+        return outbox.recordAttempt(event.id(), Instant.now())
+            .then(transaction.transactional(inbox.insertIfAbsent(consumerId, event.id(), Instant.now())
+                .flatMap(inserted -> inserted == 0
+                    ? mark(event)
+                    : handler.apply(event).then(Mono.defer(() -> mark(event))))))
+            .thenReturn(1L);
     }
 
     public Mono<Long> dispatchOnce(DurableEventConsumer consumer) {
         if (consumer == null || consumer.consumerId() == null || consumer.consumerId().isBlank()) {
             return Mono.error(new IllegalArgumentException("事件 Consumer ID 不合法"));
         }
-        return dispatchOnce(consumer.consumerId(), event -> consumer.consume(new DurableEvent(event.id(),
-            event.eventType(), event.schemaVersion(), event.producerSubsystem(), event.subjectType(),
-            event.subjectId(), event.payloadJson(), event.occurredAt(), event.requestId(), event.correlationId(),
-            event.causationId(), event.actorId())));
+        return dispatchOnce(consumer.consumerId(), event -> consumer.consume(toDurableEvent(event)));
+    }
+
+    private DurableEvent toDurableEvent(OutboxEventEntity event) {
+        return new DurableEvent(event.id(), event.eventType(), event.schemaVersion(), event.producerSubsystem(),
+            event.subjectType(), event.subjectId(), event.payloadJson(), event.occurredAt(), event.requestId(),
+            event.correlationId(), event.causationId(), event.actorId());
     }
 
     private Mono<Void> mark(OutboxEventEntity event) {
