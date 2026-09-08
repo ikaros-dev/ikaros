@@ -83,13 +83,11 @@ public class DurableEventService implements DurableEventPublisher {
 
     public Mono<Long> dispatchOnce(String consumerId, Function<OutboxEventEntity, Mono<Void>> handler) {
         return outbox.findTop100ByDispatchedAtIsNullOrderByOccurredAtAsc()
-            .concatMap(event -> inbox.existsByConsumerIdAndEventId(consumerId, event.id())
-                .flatMap(processed -> processed
-                    ? Mono.defer(() -> mark(event))
-                    : outbox.recordAttempt(event.id(), Instant.now())
-                        .then(transaction.transactional(Mono.defer(() -> inbox.save(new InboxEntryEntity(null, consumerId, event.id(), Instant.now())))
-                            .then(handler.apply(event))
-                            .then(Mono.defer(() -> mark(event)))))
+            .concatMap(event -> outbox.recordAttempt(event.id(), Instant.now())
+                .then(transaction.transactional(inbox.insertIfAbsent(consumerId, event.id(), Instant.now())
+                    .flatMap(inserted -> inserted == 0
+                        ? mark(event)
+                        : handler.apply(event).then(Mono.defer(() -> mark(event)))))
                 ).thenReturn(1L)
             )
             .reduce(0L, Long::sum);

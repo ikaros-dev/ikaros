@@ -23,9 +23,8 @@ class OutboxRetrySemanticsTest {
         OutboxEventEntity event = new OutboxEventEntity(id, "resource.resource.created", 1, "resource",
             id, "{}", Instant.now(), 0, null, null);
         when(outbox.findTop100ByDispatchedAtIsNullOrderByOccurredAtAsc()).thenReturn(Flux.just(event));
-        when(inbox.existsByConsumerIdAndEventId("consumer", id)).thenReturn(Mono.just(false));
+        when(inbox.insertIfAbsent(any(), any(), any())).thenReturn(Mono.just(1));
         when(outbox.recordAttempt(any(), any())).thenReturn(Mono.just(1));
-        when(inbox.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
         TransactionalOperator transaction = mock(TransactionalOperator.class);
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
         DurableEventService service = new DurableEventService(outbox, inbox, transaction);
@@ -44,9 +43,11 @@ class OutboxRetrySemanticsTest {
         OutboxEventEntity event = new OutboxEventEntity(id, "resource.resource.created", 1, "resource",
             id, "{}", Instant.now(), 1, Instant.now(), null);
         when(outbox.findTop100ByDispatchedAtIsNullOrderByOccurredAtAsc()).thenReturn(Flux.just(event));
-        when(inbox.existsByConsumerIdAndEventId("consumer", id)).thenReturn(Mono.just(true));
+        when(inbox.insertIfAbsent(any(), any(), any())).thenReturn(Mono.just(0));
+        when(outbox.recordAttempt(any(), any())).thenReturn(Mono.just(1));
         when(outbox.markDispatched(any(), any())).thenReturn(Mono.just(1));
         TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
         DurableEventService service = new DurableEventService(outbox, inbox, transaction);
         AtomicBoolean called = new AtomicBoolean();
 

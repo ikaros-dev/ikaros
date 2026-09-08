@@ -42,8 +42,7 @@ class DurableEventServiceTest {
         when(outbox.findTop100ByDispatchedAtIsNullOrderByOccurredAtAsc()).thenReturn(reactor.core.publisher.Flux.just(event));
         when(outbox.recordAttempt(any(), any())).thenReturn(Mono.just(1));
         when(outbox.markDispatched(any(), any())).thenReturn(Mono.just(1));
-        when(inbox.existsByConsumerIdAndEventId("consumer", event.id())).thenReturn(Mono.just(false));
-        when(inbox.save(any(InboxEntryEntity.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(inbox.insertIfAbsent(any(), any(), any())).thenReturn(Mono.just(1));
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
         DurableEventConsumer consumer = mock(DurableEventConsumer.class);
         when(consumer.consumerId()).thenReturn("consumer");
