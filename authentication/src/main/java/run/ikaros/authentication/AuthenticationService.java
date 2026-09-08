@@ -9,6 +9,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import run.ikaros.authorization.api.InitialRoleAssigner;
 import run.ikaros.authorization.api.PermissionSnapshot;
@@ -26,29 +27,38 @@ public class AuthenticationService {
     private final JwtTokenService tokens;
     private final InitialRoleAssigner initialRoleAssigner;
     private final PermissionSnapshotQuery permissionSnapshotQuery;
+    private final TransactionalOperator transaction;
     private final SecureRandom random = new SecureRandom();
 
     public AuthenticationService(PlatformUserRepository users, PasswordCredentialRepository credentials,
                                   UserService userService, JwtTokenService tokens,
                                   InitialRoleAssigner initialRoleAssigner,
-                                  PermissionSnapshotQuery permissionSnapshotQuery) {
+                                  PermissionSnapshotQuery permissionSnapshotQuery,
+                                  TransactionalOperator transaction) {
         this.users = users;
         this.credentials = credentials;
         this.userService = userService;
         this.tokens = tokens;
         this.initialRoleAssigner = initialRoleAssigner;
         this.permissionSnapshotQuery = permissionSnapshotQuery;
+        this.transaction = transaction;
     }
 
     public Mono<AuthenticationView> register(RegisterRequest request) {
+        if (request == null || request.username() == null || request.username().isBlank()
+            || request.password() == null || request.password().length() < 8
+            || request.displayName() == null || request.displayName().isBlank()) {
+            return Mono.error(new IllegalArgumentException("注册信息不合法"));
+        }
         String username = request.username().trim();
         String email = request.email() == null || request.email().isBlank() ? null : request.email().trim().toLowerCase();
         Instant now = Instant.now();
-        return users.save(new PlatformUserEntity(null, username, request.displayName().trim(), email,
+        Mono<PlatformUserEntity> persisted = users.save(new PlatformUserEntity(null, username, request.displayName().trim(), email,
                 UserStatus.ACTIVE, now, now, null, 0L, null))
             .onErrorMap(DuplicateKeyException.class, e -> new ConflictException("用户名或邮箱已存在"))
             .flatMap(user -> credentials.save(new PasswordCredentialEntity(null, user.id(), hash(request.password()), now, now, null))
-                .then(assignAdminIfFirstUser(user)).thenReturn(user))
+                .then(assignAdminIfFirstUser(user)).thenReturn(user));
+        return persisted.as(transaction::transactional)
             .flatMap(this::issue);
     }
 

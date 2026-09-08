@@ -129,3 +129,11 @@
 - 推荐决策：保持 Task 与 Attempt 分离；任务提交先持久化后返回 202；Worker 使用 Lease/`SKIP LOCKED` 领取，过期后保留 `LEASE_LOST` Attempt 并重试；人工 retry 创建 child Task；取消采用 cooperative cancellation。
 - 验证证据：Operations 任务回归测试 17 项全部通过；console `pnpm typecheck`、`pnpm lint`、`pnpm build` 已通过；公开提交与 retry action 已登记 OpenAPI、HTTP Registry 和 Catalog。
 - 剩余限制：Docker 未安装，真实 PostgreSQL 约束、事务、并发 claim、权限和跨 API 联调未执行；GitHub issue 评论/关闭受外部安全权限策略拦截，已在各子 issue 实施记录中登记，待权限恢复后补发。
+
+## A05-01 初始化管理员
+
+- 日期：2026-09-09
+- 推荐决策：沿用首次注册作为初始化路径；首个用户在同一 reactive transaction 中写入平台用户、PBKDF2-SHA256 密码凭据并幂等分配 `admin` 初始角色，不创建 SecuritySession、Token Digest 或持久化令牌。
+- 原因：当前 V2 无独立登录 Session 模型；首个用户是唯一明确的管理员初始化边界，后续登录/刷新由 A05-02/A05-03 负责。
+- 失败语义：非法初始化输入在持久化前拒绝；用户名/邮箱冲突返回 Conflict；凭据或角色绑定失败由事务回滚，不返回伪成功；重复角色绑定保持幂等。
+- 验证：`AuthenticationServiceTest` 覆盖首用户 admin 角色、PBKDF2 哈希、事务入口和非法输入；真实 PostgreSQL 回滚、唯一约束和初始化重放仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
