@@ -52,6 +52,30 @@ class BackgroundTaskDispatcherTest {
     }
 
     @org.junit.jupiter.api.Test
+    void manualRetryKeepsFailedTaskHistoryAndAllowsChildToSucceed() {
+        InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
+        BackgroundTaskDispatcher dispatcher = new BackgroundTaskDispatcher(tasks);
+        java.util.concurrent.atomic.AtomicInteger executions = new java.util.concurrent.atomic.AtomicInteger();
+        dispatcher.register("recoverable", task -> {
+            if (executions.getAndIncrement() == 0) {
+                return reactor.core.publisher.Mono.error(new IllegalArgumentException("permanent failure"));
+            }
+            return reactor.core.publisher.Mono.just(Map.of("recovered", true));
+        });
+        BackgroundTask original = tasks.submit("recoverable", Map.of(), "manual-retry").block();
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+            () -> dispatcher.dispatchOnce("runner", Duration.ofMinutes(1)).block());
+        assertEquals(TaskStatus.FAILED, tasks.get(original.id()).block().status());
+
+        BackgroundTask child = tasks.retry(original.id()).block();
+        BackgroundTask completed = dispatcher.dispatchOnce("runner", Duration.ofMinutes(1)).block();
+        assertEquals(child.id(), completed.id());
+        assertEquals(TaskStatus.SUCCEEDED, completed.status());
+        assertEquals(TaskStatus.FAILED, tasks.get(original.id()).block().status());
+        assertEquals(2, executions.get());
+    }
+
+    @org.junit.jupiter.api.Test
     void expiredLeaseIsReclaimedOnNextClaim() throws InterruptedException {
         InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
         tasks.submit("recoverable", Map.of(), "lease-recovery").block();

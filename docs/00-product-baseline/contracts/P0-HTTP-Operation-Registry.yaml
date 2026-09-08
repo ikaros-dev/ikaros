@@ -16,6 +16,7 @@ operations:
   - { method: GET, path: '/attachments/{attachment_id}/content', operation_id: getAttachmentContent, contract_id: storage.get-attachment-content, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: '/background-tasks/{task_id}', operation_id: getBackgroundTask, contract_id: operations.get-background-task, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: '/background-tasks/{task_id}/actions/cancel', operation_id: cancelBackgroundTask, contract_id: operations.cancel-background-task, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/background-tasks/{task_id}/actions/retry', operation_id: retryBackgroundTask, contract_id: operations.retry-background-task, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /admin/storage-providers, operation_id: listStorageProviders, contract_id: storage.list-providers, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /admin/storage-providers, operation_id: createStorageProvider, contract_id: storage.create-provider, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /admin/users, operation_id: listUsers, contract_id: identity.list-users, source: contracts/openapi-v2-p0.yaml }

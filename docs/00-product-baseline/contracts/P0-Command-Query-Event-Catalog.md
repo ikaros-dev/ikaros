@@ -279,6 +279,7 @@ Attachment Content Query 必须支持 HTTP Range，并在返回内容前重新�
 |---|---|---|
 | `operations.get-background-task` | actor/subject permission or `platform.task.read` | `GET /background-tasks/{task_id}` |
 | `operations.submit-background-task` | `platform.task.submit` | `POST /background-tasks` |
+| `operations.retry-background-task` | `platform.task.retry` | `POST /background-tasks/{task_id}/actions/retry` |
 | `operations.list-background-tasks` | `platform.task.read` for global list | `GET /background-tasks` |
 | `operations.list-task-attempts` | same as task | `GET /background-tasks/{task_id}/attempts` |
 
@@ -512,6 +513,7 @@ P0 Operation ID 必须映射到 Catalog：
 | `GET /api/attachments/{attachment_id}/content` | `getAttachmentContent` | `storage.get-attachment-content` |
 | `GET /api/background-tasks/{task_id}` | `getBackgroundTask` | `operations.get-background-task` |
 | `POST /api/background-tasks` | `submitBackgroundTask` | `operations.submit-background-task` |
+| `POST /api/background-tasks/{task_id}/actions/retry` | `retryBackgroundTask` | `operations.retry-background-task` |
 | `POST /api/background-tasks/{task_id}/actions/cancel` | `cancelBackgroundTask` | `operations.cancel-background-task` |
 | `GET /api/admin/storage-providers` | `listStorageProviders` | `storage.list-providers` |
 | `POST /api/admin/storage-providers` | `createStorageProvider` | `storage.create-provider` |

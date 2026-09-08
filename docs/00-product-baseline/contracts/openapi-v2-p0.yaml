@@ -289,6 +289,24 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
+  /background-tasks/{task_id}/actions/retry:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    post:
+      tags: [Background Tasks]
+      operationId: retryBackgroundTask
+      x-ikaros-contract-id: operations.retry-background-task
+      summary: Retry a failed background task
+      responses:
+        '200':
+          description: New pending task created from the failed task
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BackgroundTask' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /admin/storage-providers:
     get:
       tags: [Admin Storage]
