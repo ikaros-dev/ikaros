@@ -73,6 +73,18 @@ class BackgroundTaskDispatcherTest {
     }
 
     @org.junit.jupiter.api.Test
+    void cancellingPendingTaskTransitionsToCancelledAndTerminalTaskIsProtected() {
+        InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
+        BackgroundTask pending = tasks.submit("cancellable", Map.of(), "cancel-pending").block();
+        BackgroundTask cancelled = tasks.cancel(pending.id()).block();
+
+        assertEquals(TaskStatus.CANCELLED, cancelled.status());
+        org.junit.jupiter.api.Assertions.assertNotNull(cancelled.cancelRequestedAt());
+        org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class,
+            () -> tasks.cancel(pending.id()).block());
+    }
+
+    @org.junit.jupiter.api.Test
     void progressIsPersistedAndVisibleThroughTaskQuery() {
         InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
         BackgroundTask submitted = tasks.submit("progress", Map.of(), "progress-1").block();
