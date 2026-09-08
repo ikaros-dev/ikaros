@@ -12,6 +12,8 @@ import tools.jackson.databind.ObjectMapper;
 import run.ikaros.common.PrincipalContext;
 import run.ikaros.common.PrincipalContexts;
 import run.ikaros.integration.api.DurableEventPublisher;
+import run.ikaros.integration.api.DurableEventConsumer;
+import run.ikaros.integration.api.DurableEvent;
 import run.ikaros.integration.api.EventAppendRequest;
 import run.ikaros.integration.api.EventReference;
 
@@ -91,6 +93,16 @@ public class DurableEventService implements DurableEventPublisher {
                 ).thenReturn(1L)
             )
             .reduce(0L, Long::sum);
+    }
+
+    public Mono<Long> dispatchOnce(DurableEventConsumer consumer) {
+        if (consumer == null || consumer.consumerId() == null || consumer.consumerId().isBlank()) {
+            return Mono.error(new IllegalArgumentException("事件 Consumer ID 不合法"));
+        }
+        return dispatchOnce(consumer.consumerId(), event -> consumer.consume(new DurableEvent(event.id(),
+            event.eventType(), event.schemaVersion(), event.producerSubsystem(), event.subjectType(),
+            event.subjectId(), event.payloadJson(), event.occurredAt(), event.requestId(), event.correlationId(),
+            event.causationId(), event.actorId())));
     }
 
     private Mono<Void> mark(OutboxEventEntity event) {

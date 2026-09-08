@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.integration.api.EventAppendRequest;
+import run.ikaros.integration.api.DurableEventConsumer;
 
 class DurableEventServiceTest {
     @Test
@@ -29,6 +30,30 @@ class DurableEventServiceTest {
 
         verify(transaction).transactional(any(Mono.class));
         verify(outbox).save(any(OutboxEventEntity.class));
+    }
+
+    @Test
+    void dispatchesThroughStableConsumerContract() {
+        OutboxEventRepository outbox = mock(OutboxEventRepository.class);
+        InboxEntryRepository inbox = mock(InboxEntryRepository.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        OutboxEventEntity event = new OutboxEventEntity(UUID.randomUUID(), "resource.resource.created", 1,
+            "resource", UUID.randomUUID(), "{}", java.time.Instant.now(), 0, null, null);
+        when(outbox.findTop100ByDispatchedAtIsNullOrderByOccurredAtAsc()).thenReturn(reactor.core.publisher.Flux.just(event));
+        when(outbox.recordAttempt(any(), any())).thenReturn(Mono.just(1));
+        when(outbox.markDispatched(any(), any())).thenReturn(Mono.just(1));
+        when(inbox.existsByConsumerIdAndEventId("consumer", event.id())).thenReturn(Mono.just(false));
+        when(inbox.save(any(InboxEntryEntity.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        DurableEventConsumer consumer = mock(DurableEventConsumer.class);
+        when(consumer.consumerId()).thenReturn("consumer");
+        when(consumer.consume(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(new DurableEventService(outbox, inbox, transaction)
+                .dispatchOnce(consumer))
+            .expectNext(1L)
+            .verifyComplete();
+        verify(consumer).consume(any());
     }
 
     @Test
