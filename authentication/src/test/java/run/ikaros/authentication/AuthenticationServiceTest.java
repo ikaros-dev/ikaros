@@ -66,4 +66,49 @@ class AuthenticationServiceTest {
             .expectError(IllegalArgumentException.class)
             .verify();
     }
+
+    @Test
+    void loginIssuesStatelessTokenPairAndLogoutDoesNotRevokeServerSession() {
+        PlatformUserRepository users = mock(PlatformUserRepository.class);
+        PasswordCredentialRepository credentials = mock(PasswordCredentialRepository.class);
+        UserService userService = mock(UserService.class);
+        JwtTokenService tokens = mock(JwtTokenService.class);
+        PermissionSnapshotQuery permissions = mock(PermissionSnapshotQuery.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity user = new PlatformUserEntity(userId, "admin", "Administrator", null,
+            UserStatus.ACTIVE, now, now, null, 0L);
+        String password = "correct horse battery staple";
+        when(users.findByUsername("admin")).thenReturn(Mono.just(user));
+        org.mockito.ArgumentCaptor<PasswordCredentialEntity> captured = org.mockito.ArgumentCaptor.forClass(PasswordCredentialEntity.class);
+        when(credentials.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(credentials.findByUserId(userId)).thenAnswer(invocation -> Mono.just(captured.getValue()));
+        when(users.count()).thenReturn(Mono.just(2L));
+        when(userService.get(userId)).thenReturn(Mono.just(new UserView(userId, "admin", "Administrator", null,
+            UserStatus.ACTIVE, List.of("admin"), now, null)));
+        when(permissions.permissionsFor(userId)).thenReturn(Mono.just(new PermissionSnapshot(userId, List.of())));
+        when(tokens.issue(userId, 0L, List.of())).thenReturn(new JwtTokenService.TokenPair("access", "refresh", now.plusSeconds(300)));
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        AuthenticationService service = new AuthenticationService(users, credentials, userService, tokens,
+            mock(InitialRoleAssigner.class), permissions, transaction);
+
+        when(users.save(any())).thenReturn(Mono.just(user));
+        when(userService.get(userId)).thenReturn(Mono.just(new UserView(userId, "admin", "Administrator", null,
+            UserStatus.ACTIVE, List.of("admin"), now, null)));
+        when(tokens.issue(userId, 0L, List.of())).thenReturn(new JwtTokenService.TokenPair("access", "refresh", now.plusSeconds(300)));
+        StepVerifier.create(service.register(new RegisterRequest("admin", password, "Administrator", null)))
+            .expectNextCount(1).verifyComplete();
+        verify(credentials).save(captured.capture());
+
+        StepVerifier.create(service.login(new LoginRequest("admin", password)))
+            .assertNext(view -> assertThat(view).extracting(AuthenticationView::userId,
+                AuthenticationView::accessToken, AuthenticationView::refreshToken)
+                .containsExactly(userId, "access", "refresh"))
+            .verifyComplete();
+        assertThat(AuthenticationView.class.getRecordComponents()).extracting(component -> component.getName())
+            .doesNotContain("sessionId");
+
+        StepVerifier.create(service.logout()).verifyComplete();
+    }
 }

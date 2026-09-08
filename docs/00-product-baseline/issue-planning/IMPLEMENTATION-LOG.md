@@ -138,3 +138,13 @@
 - 失败语义：非法初始化输入在持久化前拒绝；用户名/邮箱冲突返回 Conflict；凭据或角色绑定失败由事务回滚，不返回伪成功；重复角色绑定保持幂等。
 - 验证：`AuthenticationServiceTest` 覆盖首用户 admin 角色、PBKDF2 哈希、事务入口和非法输入；真实 PostgreSQL 回滚、唯一约束和初始化重放仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
 - 外部权限记录：向 GitHub #926 发布完成评论的请求被安全策略拦截；本地实现与 commit 已保留，待权限恢复后补发评论并关闭。根据执行规则继续处理后续子 issue。
+
+## A05-02 用户登录与客户端退出
+
+- 日期：2026-09-09
+- 推荐决策：登录仅校验用户名、PBKDF2-SHA256 密码和用户 ACTIVE 状态后签发无状态 access/refresh JWT；不创建或返回 `session_id`，客户端登出只清理本地 token、用户状态和路由。
+- 原因：P0 认证基线采用无状态 JWT，普通登出不能伪造后端会话撤销能力；服务端 `/auth/logout` 继续作为兼容端点，但不持久化会话状态。
+- 失败语义：未知用户、错误密码和停用用户统一返回稳定的认证失败错误，不泄露账号存在性；无效输入不触发 token 签发。
+- 验证：`AuthenticationServiceTest` 覆盖登录 token pair、无 `sessionId` 和空操作登出；认证回归测试共 13 项通过；console `pnpm typecheck` 与 `pnpm build` 通过。
+- 外部权限记录：向 GitHub #927 发布完成评论的请求尚未获安全策略授权；本地实现与后续 commit 已保留，待权限恢复后补发评论并关闭。根据执行规则继续处理后续子 issue。
+- 本地权限记录：提交时 Git 无法创建 `.git/index.lock`，已记录并申请受控权限重试；不影响代码验证，继续按 issue 顺序推进。
