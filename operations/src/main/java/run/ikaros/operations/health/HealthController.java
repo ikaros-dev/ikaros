@@ -14,9 +14,11 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/health")
 public class HealthController {
     private final DatabaseClient database;
+    private final ApplicationReadiness readiness;
 
-    public HealthController(DatabaseClient database) {
+    public HealthController(DatabaseClient database, ApplicationReadiness readiness) {
         this.database = database;
+        this.readiness = readiness;
     }
 
     @GetMapping("/live")
@@ -26,6 +28,10 @@ public class HealthController {
 
     @GetMapping("/ready")
     public Mono<ResponseEntity<Map<String, String>>> ready() {
+        if (!readiness.isReady()) {
+            return Mono.just(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(Map.of("status", "DOWN")));
+        }
         return database.sql("select 1").fetch().one()
             .map(ignored -> ResponseEntity.ok(Map.of("status", "UP")))
             .onErrorResume(error -> Mono.just(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)

@@ -15,7 +15,7 @@ import reactor.test.StepVerifier;
 class HealthControllerTest {
     @Test
     void livenessDoesNotRequireDatabase() {
-        HealthController controller = new HealthController(null);
+        HealthController controller = new HealthController(null, new ApplicationReadiness());
 
         StepVerifier.create(controller.live())
             .expectNextMatches(response -> response.getStatusCode().equals(HttpStatus.OK)
@@ -25,6 +25,8 @@ class HealthControllerTest {
 
     @Test
     void readinessReportsDatabaseFailure() {
+        ApplicationReadiness readiness = new ApplicationReadiness();
+        readiness.markReady();
         DatabaseClient database = mock(DatabaseClient.class);
         DatabaseClient.GenericExecuteSpec query = mock(DatabaseClient.GenericExecuteSpec.class);
         FetchSpec<Map<String, Object>> result = mock(FetchSpec.class);
@@ -32,7 +34,15 @@ class HealthControllerTest {
         when(query.fetch()).thenReturn(result);
         when(result.one()).thenReturn(Mono.error(new IllegalStateException("database unavailable")));
 
-        StepVerifier.create(new HealthController(database).ready())
+        StepVerifier.create(new HealthController(database, readiness).ready())
+            .expectNextMatches(response -> response.getStatusCode().equals(HttpStatus.SERVICE_UNAVAILABLE)
+                && response.getBody().equals(Map.of("status", "DOWN")))
+            .verifyComplete();
+    }
+
+    @Test
+    void readinessStaysDownUntilApplicationStartupCompletes() {
+        StepVerifier.create(new HealthController(null, new ApplicationReadiness()).ready())
             .expectNextMatches(response -> response.getStatusCode().equals(HttpStatus.SERVICE_UNAVAILABLE)
                 && response.getBody().equals(Map.of("status", "DOWN")))
             .verifyComplete();
