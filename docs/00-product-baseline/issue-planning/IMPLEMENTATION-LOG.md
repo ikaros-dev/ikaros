@@ -113,3 +113,11 @@
 - 原因：Lease 是执行权而非任务身份，旧 Attempt 必须保留以支持诊断和恢复；数据库 claim 的 `FOR UPDATE SKIP LOCKED` 负责并发领取边界。
 - 失败语义：Lease 失效不将任务伪装为成功；旧 Attempt 历史不可覆盖；取消请求在 Lease 回收时进入 CANCELLED 路径。
 - 验证：`BackgroundTaskDispatcherTest` 强化中断恢复断言，验证重新领取后 attempt=2、旧 Attempt 为 `LEASE_LOST` 且历史包含两次 Attempt；既有 dispatcher/lease 测试继续覆盖成功与失败。真实 PostgreSQL 并发 claim 回放仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
+
+## A04-06 查看执行历史
+
+- 日期：2026-09-09
+- 推荐决策：通过已有 `GET /api/background-tasks/{task_id}/attempts` 查询由 Operations Owner 持有的 Attempt 历史，按 attempt number 稳定升序返回；不把历史压缩回 Task 当前状态，也不覆盖旧失败记录。
+- 原因：执行历史需要区分每次 claim、Lease 失效、失败和完成，支持恢复诊断；Task 当前状态只表达逻辑任务，不足以替代 Attempt 事实。
+- 失败语义：不存在任务返回 NotFound；空历史返回空结果；失败/Lease Lost 状态按事实返回，不显示为成功；查询只读，不改变任务状态。
+- 验证：`BackgroundTaskControllerTest` 覆盖 Attempts 查询入口和 `LEASE_LOST` 历史事实；`BackgroundTaskDispatcherTest` 覆盖两次 Attempt 的恢复历史；Operations 任务回归测试覆盖成功与失败分支。真实 PostgreSQL 分页/权限回放仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。

@@ -12,6 +12,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 import run.ikaros.operations.api.BackgroundTask;
 import run.ikaros.operations.api.SubmitBackgroundTaskRequest;
@@ -46,5 +47,20 @@ class BackgroundTaskControllerTest {
             .expectError(IllegalArgumentException.class)
             .verify();
         verify(service, org.mockito.Mockito.never()).submit(any(), any(), any());
+    }
+
+    @Test
+    void exposesAttemptHistoryForAnExistingTask() {
+        BackgroundTaskOperations service = mock(BackgroundTaskOperations.class);
+        UUID taskId = UUID.randomUUID();
+        BackgroundTaskAttemptEntity attempt = new BackgroundTaskAttemptEntity(UUID.randomUUID(), taskId, 1,
+            "LEASE_LOST", "runner", Instant.now(), Instant.now(), Instant.now(), Instant.now(),
+            "LEASE_LOST", Instant.now());
+        when(service.attempts(taskId)).thenReturn(Flux.just(attempt));
+
+        StepVerifier.create(new BackgroundTaskController(service).attempts(taskId))
+            .assertNext(value -> org.junit.jupiter.api.Assertions.assertEquals("LEASE_LOST", value.status()))
+            .verifyComplete();
+        verify(service).attempts(taskId);
     }
 }
