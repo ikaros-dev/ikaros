@@ -167,4 +167,14 @@ public class CollectionController {
         return collectionService.reorderResources(actorId, collectionId, request.resourceIds())
             .thenReturn(ResponseEntity.noContent().build());
     }
+
+    @Operation(summary = "删除资源集合", description = "删除 Collection 及其成员关系，但保留所有 Resource。")
+    @DeleteMapping("/{collectionId}")
+    public Mono<ResponseEntity<Void>> delete(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID collectionId
+    ) {
+        return collectionService.delete(actorId, collectionId)
+            .thenReturn(ResponseEntity.noContent().build());
+    }
 }

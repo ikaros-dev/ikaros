@@ -172,6 +172,14 @@ public class DefaultCollectionService implements CollectionService {
             }));
     }
 
+    @Override
+    public Mono<Void> delete(UUID ownerId, UUID collectionId) {
+        return transactionalOperator.transactional(ownedCollection(ownerId, collectionId)
+            .then(collectionResourceRepository.deleteAllByCollectionId(collectionId))
+            .then(collectionRepository.deleteById(collectionId))
+            .then(auditService.record(ownerId, "collection.delete", "COLLECTION", collectionId, "{}")));
+    }
+
     private Mono<Void> parent(UUID ownerId, UUID parentId) {
         if (parentId == null) {
             return Mono.empty();

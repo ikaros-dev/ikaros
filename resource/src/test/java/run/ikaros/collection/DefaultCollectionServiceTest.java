@@ -145,4 +145,27 @@ class DefaultCollectionServiceTest {
         StepVerifier.create(service.move(owner, currentId, parentId)).expectError(ConflictException.class).verify();
         verify(collections, org.mockito.Mockito.never()).save(any());
     }
+
+    @Test
+    void deletesCollectionMembershipsButNeverDeletesResources() {
+        UUID owner = UUID.randomUUID(), collectionId = UUID.randomUUID();
+        Instant now = Instant.now();
+        CollectionRepository collections = mock(CollectionRepository.class);
+        CollectionResourceRepository members = mock(CollectionResourceRepository.class);
+        ResourceRepository resources = mock(ResourceRepository.class);
+        AuditService audit = mock(AuditService.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(collections.findByIdAndOwnerId(collectionId, owner)).thenReturn(Mono.just(
+            new CollectionEntity(collectionId, owner, "收藏", null, now, now, 0L)));
+        when(members.deleteAllByCollectionId(collectionId)).thenReturn(Mono.empty());
+        when(collections.deleteById(collectionId)).thenReturn(Mono.empty());
+        when(audit.record(owner, "collection.delete", "COLLECTION", collectionId, "{}")).thenReturn(Mono.empty());
+        DefaultCollectionService service = new DefaultCollectionService(collections, members, resources, audit, transaction);
+
+        StepVerifier.create(service.delete(owner, collectionId)).verifyComplete();
+        verify(members).deleteAllByCollectionId(collectionId);
+        verify(collections).deleteById(collectionId);
+        org.mockito.Mockito.verifyNoInteractions(resources);
+    }
 }

@@ -48,4 +48,6 @@ public interface CollectionService {
     Mono<Void> removeResource(UUID ownerId, UUID collectionId, UUID resourceId);
 
     Mono<Void> reorderResources(UUID ownerId, UUID collectionId, List<UUID> resourceIds);
+
+    Mono<Void> delete(UUID ownerId, UUID collectionId);
 }

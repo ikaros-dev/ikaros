@@ -462,3 +462,10 @@
 - 推荐决策：移动操作沿父级链递归检查，拒绝自引用和任意深度祖先循环；校验发生在保存前，失败不写入 Collection，也不影响成员 Resource。
 - 失败语义：自引用或将 Collection 移入自身后代返回 Conflict；不存在/无权父级返回 NotFound；不采用静默截断或自动改父级。
 - 验证：`DefaultCollectionServiceTest` 4/4 通过，新增覆盖自引用和三节点深层循环，确认没有 Collection 保存发生；真实 PostgreSQL 并发层级联调仍需 Docker/Testcontainers。
+
+## A11-06 删除 Collection 时保留资源
+
+- 日期：2026-09-09
+- 推荐决策：新增 owner-scoped `DELETE /api/collections/{collectionId}`；先删除 CollectionResource 关系，再删除 Collection，明确不调用 Resource 删除能力。
+- 失败语义：不存在或无权 Collection 拒绝；成员关系清理与 Collection 删除在同一 reactive transaction 内完成，Resource、Attachment/Blob 保持不变。
+- 验证：`DefaultCollectionServiceTest` 5/5 通过，新增验证成员关系被清理、Collection 被删除且 ResourceRepository 无交互；真实 PostgreSQL FK/事务联调仍需 Docker/Testcontainers。
