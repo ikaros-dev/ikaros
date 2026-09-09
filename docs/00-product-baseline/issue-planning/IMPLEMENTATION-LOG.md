@@ -1,5 +1,13 @@
 # Ikaros V2 实施记录
 
+## A01-01 明确现有工程与设计文档差异
+
+- 日期：2026-09-10
+- 决策：保留 Maven Multi-Module、Java 21、Spring Boot 4.x、WebFlux、R2DBC、PostgreSQL 与 `r2dbc-migrate` 基线；不切换 Gradle，不引入 JPA/JDBC/Flyway 第二持久化栈。
+- 差异记录：新增 `A01-01-ARCHITECTURE-DIFF.md`，记录既有模块分层、显式组装和自动化门禁尚未完全收敛的差异及后续处理边界。
+- 验证：根 `pom.xml` 聚合包含 `application` Server；上述架构决策与 Technical Architecture 文档一致；application package 已在后续音乐功能验证中 BUILD SUCCESS。
+- 主要提交：待本轮提交。
+
 ## A18 副本与 Blob 清理（父 issue）
 
 - 日期：2026-09-09
