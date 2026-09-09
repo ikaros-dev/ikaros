@@ -3,7 +3,7 @@ import java.util.List;
 import java.util.UUID;
 import reactor.core.publisher.Mono;
 public interface ImportRunService {
-    Mono<ImportRunView> start(UUID ownerId, UUID planId, StartImportRequest request);
+    Mono<ImportRunView> start(UUID ownerId, UUID planId, StartImportRequest request, String idempotencyKey);
     Mono<List<ImportRunView>> list(UUID ownerId);
     Mono<ImportRunView> get(UUID ownerId, UUID runId);
     Mono<ImportRunView> cancel(UUID ownerId, UUID runId);

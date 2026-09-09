@@ -14,6 +14,7 @@ const plan = ref<Row | null>(null);
 const planItems = ref<Row[]>([]);
 const planBusy = ref(false);
 const itemSaving = ref<Set<string>>(new Set());
+const runIdempotencyKey = ref("");
 const loading = ref(false);
 const error = ref("");
 const selectedRun = ref<Row | null>(null);
@@ -71,7 +72,8 @@ async function approvePlan() {
 async function startImport() {
   if (!plan.value?.id || planBusy.value) return;
   planBusy.value = true; error.value = "";
-  try { await http.post(`/ingestion/plans/${plan.value.id}/runs`, { data: { expectedPlanVersion: plan.value.version ?? 0 } }); tab.value = "scans"; await load(); }
+  if (!runIdempotencyKey.value) runIdempotencyKey.value = crypto.randomUUID();
+  try { await http.post(`/ingestion/plans/${plan.value.id}/runs`, { data: { expectedPlanVersion: plan.value.version ?? 0 }, headers: { "Idempotency-Key": runIdempotencyKey.value } }); tab.value = "scans"; await load(); }
   catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "导入执行提交失败"; }
   finally { planBusy.value = false; }
 }

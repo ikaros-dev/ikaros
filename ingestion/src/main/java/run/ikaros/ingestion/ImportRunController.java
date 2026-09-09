@@ -10,7 +10,7 @@ public class ImportRunController {
     private final ImportRunService service;
     public ImportRunController(ImportRunService service){this.service=service;}
     @PostMapping("/plans/{planId}/runs") public Mono<ImportRunView> start(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,
-        @PathVariable UUID planId,@Valid @RequestBody StartImportRequest request){return service.start(actor,planId,request);}
+        @RequestHeader("Idempotency-Key") String idempotencyKey, @PathVariable UUID planId,@Valid @RequestBody StartImportRequest request){return service.start(actor,planId,request,idempotencyKey);}
     @GetMapping("/runs") public Mono<List<ImportRunView>> list(@RequestHeader("X-Ikaros-Actor-Id") UUID actor){return service.list(actor);}
     @GetMapping("/runs/{runId}") public Mono<ImportRunView> get(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID runId){return service.get(actor,runId);}
     @DeleteMapping("/runs/{runId}") public Mono<ImportRunView> cancel(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID runId){return service.cancel(actor,runId);}

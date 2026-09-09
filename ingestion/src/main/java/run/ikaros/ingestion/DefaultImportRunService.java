@@ -25,22 +25,30 @@ public class DefaultImportRunService implements ImportRunService {
         AuditService audit, DurableEventPublisher events, ImportPlanItemRepository planItems, ImportRunItemRepository runItems) {
         this.plans=plans; this.runs=runs; this.tasks=tasks; this.audit=audit; this.events=events; this.planItems=planItems; this.runItems=runItems;
     }
-    public Mono<ImportRunView> start(UUID ownerId, UUID planId, StartImportRequest request) {
-        return plans.findByIdAndOwnerId(planId, ownerId).switchIfEmpty(Mono.error(new NotFoundException("Import Plan 不存在或无权访问")))
+    public Mono<ImportRunView> start(UUID ownerId, UUID planId, StartImportRequest request, String idempotencyKey) {
+        if (idempotencyKey == null || idempotencyKey.isBlank() || idempotencyKey.length() > 256)
+            return Mono.error(new IllegalArgumentException("Idempotency-Key 不合法"));
+        Mono<ImportRunView> create = Mono.defer(() -> plans.findByIdAndOwnerId(planId, ownerId).switchIfEmpty(Mono.error(new NotFoundException("Import Plan 不存在或无权访问")))
             .flatMap(plan -> { if (!"APPROVED".equals(plan.status())) return Mono.<ImportPlanEntity>error(new ConflictException("Import Plan 尚未审批"));
                 if (plan.version()!=null && request.expectedPlanVersion()!=plan.version())
                 return Mono.<ImportPlanEntity>error(new ConflictException("Import Plan 版本已过期")); return Mono.just(plan); })
             .flatMap(plan -> tasks.submit("ingestion.import", Map.of("plan_id", planId.toString(), "actor_id", ownerId.toString()),
                 "ingestion.import:"+planId+":"+request.expectedPlanVersion()))
             .flatMap(task -> { Instant now=Instant.now(); return runs.save(new ImportRunEntity(null, planId, ownerId, ownerId,
-                ImportRunStatus.PENDING.name(), null, 0, 0, 0, task.id(), now, null, now, null)); })
+                ImportRunStatus.PENDING.name(), null, 0, 0, 0, task.id(), now, null, now, idempotencyKey, null)); })
             .flatMap(run -> planItems == null ? Mono.just(run) : planItems.findAllByPlanIdOrderByCreatedAtAsc(planId)
                 .flatMap(item -> runItems.save(new ImportRunItemEntity(null, run.id(), item.id(), ImportItemStatus.PENDING.name(), 0, null,
                     run.id()+":"+item.id(), Instant.now(), null))).then(Mono.just(run)))
             .flatMap(run -> (events == null ? Mono.empty() : events.append(new EventAppendRequest("ingestion.import.started", 1,
                 "ingestion", "ingestion_import_run", run.id(), "{\"run_id\":\"" + run.id() + "\",\"plan_id\":\""
                     + run.planId() + "\"}")).then()).then(audit.record(ownerId,"ingestion.import.start",
-                        "INGESTION_IMPORT_RUN",run.id(),"{}")).thenReturn(view(run)));
+                        "INGESTION_IMPORT_RUN",run.id(),"{}")).thenReturn(view(run))));
+        return runs.findByOwnerIdAndIdempotencyKey(ownerId, idempotencyKey)
+            .flatMap(existing -> existing.planId().equals(planId) ? Mono.just(view(existing))
+                : Mono.error(new ConflictException("idempotency.key_reused")))
+            .switchIfEmpty(create)
+            .onErrorResume(org.springframework.dao.DuplicateKeyException.class, error -> runs.findByOwnerIdAndIdempotencyKey(ownerId, idempotencyKey)
+                .switchIfEmpty(Mono.error(error)).map(this::view));
     }
     public Mono<List<ImportRunItemView>> items(UUID ownerId, UUID runId) { return owned(ownerId,runId)
         .thenMany(runItems.findAllByRunIdOrderByUpdatedAtAsc(runId).take(MAX_UNPAGED_RESULTS))
@@ -61,6 +69,6 @@ public class DefaultImportRunService implements ImportRunService {
             .flatMap(run->runs.save(copy(run,ImportRunStatus.RUNNING.name(),checkpoint,completed,failed,skipped,run.finishedAt())).map(this::view));
     }
     private Mono<ImportRunEntity> owned(UUID owner,UUID id){return runs.findByIdAndOwnerId(id,owner).switchIfEmpty(Mono.error(new NotFoundException("导入运行不存在或无权访问")));}
-    private ImportRunEntity copy(ImportRunEntity r,String s,String c,long a,long f,long k,Instant end){return new ImportRunEntity(r.id(),r.planId(),r.ownerId(),r.actorId(),s,c,a,f,k,r.backgroundTaskId(),r.startedAt(),end,r.createdAt(),r.version());}
+    private ImportRunEntity copy(ImportRunEntity r,String s,String c,long a,long f,long k,Instant end){return new ImportRunEntity(r.id(),r.planId(),r.ownerId(),r.actorId(),s,c,a,f,k,r.backgroundTaskId(),r.startedAt(),end,r.createdAt(),r.idempotencyKey(),r.version());}
     private ImportRunView view(ImportRunEntity r){return new ImportRunView(r.id(),r.planId(),r.actorId(),ImportRunStatus.valueOf(r.status()),r.checkpoint(),r.completedCount(),r.failedCount(),r.skippedCount(),r.backgroundTaskId(),r.startedAt(),r.finishedAt(),r.createdAt());}
 }
