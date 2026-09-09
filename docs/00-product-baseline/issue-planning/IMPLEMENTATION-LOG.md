@@ -1,5 +1,13 @@
 # Ikaros V2 实施记录
 
+## A17-03 展示恢复进度
+
+- 日期：2026-09-09
+- 推荐决策：复用现有 `GET /api/restore-requests/{requestId}` 查询作为恢复进度入口，公开返回稳定状态、总项数、已就绪项数、失败项数、总字节数和预算决策；不暴露 Provider 内部信息。
+- 原因：Restore Request 已由 Background Task Handler 持久化更新，查询端直接读取 Owner 状态即可观察从 PENDING/ACTIVE 到 PARTIAL/SUCCEEDED/FAILED 的进度，保持 Attachment、Blob、Placement 身份分离。
+- 失败语义：失败状态按 `total_items - ready_items` 计算失败项数；请求不存在或非所属用户访问仍由 Application API 拒绝。错误摘要保留在 Owner 查询模型中，不通过公开契约泄露内部异常文本。
+- 验证：`mvn -pl storage -am -Dtest=StorageRestoreRequestServiceTest,StorageRestoreContractControllerTest -Dsurefire.failIfNoSpecifiedTests=false test`；覆盖已提交任务幂等返回、ACTIVE 进度和 PARTIAL 失败计数，3 个测试全部通过。
+
 ## A17-02 提交恢复申请
 
 - 日期：2026-09-09
