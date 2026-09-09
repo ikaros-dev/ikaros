@@ -1220,6 +1220,22 @@ paths:
         '200': { description: Track associations, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicTrackAssociation' } } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /music/metadata-candidates/{candidate_id}:
+    patch:
+      tags: [Music]
+      operationId: updateMusicMetadataCandidate
+      x-ikaros-contract-id: music.update-metadata-candidate
+      summary: Correct a recognized music metadata candidate
+      parameters:
+        - { name: candidate_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: false, schema: { type: integer, format: int64, minimum: 0 } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UpdateMusicMetadataCandidateRequest' } } } }
+      responses:
+        '200': { description: Corrected metadata candidate, content: { application/json: { schema: { $ref: '#/components/schemas/MusicMetadataCandidate' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /music/duplicates:
     get:
       tags: [Music]
@@ -1790,7 +1806,7 @@ paths:
         updated_at: { type: string, format: date-time }
     MusicMetadataCandidate:
       type: object
-      required: [id, track_id, attachment_id, source, created_at, updated_at]
+      required: [id, track_id, attachment_id, source, created_at, updated_at, version]
       properties:
         id: { type: string, format: uuid }
         track_id: { type: string, format: uuid }
@@ -1804,9 +1820,23 @@ paths:
         track_number: { type: [integer, 'null'], minimum: 1 }
         disc_number: { type: [integer, 'null'], minimum: 1 }
         release_year: { type: [string, 'null'] }
-        source: { type: string, enum: [ID3, VORBIS, FILENAME] }
+        source: { type: string, enum: [ID3, VORBIS, FILENAME, MANUAL] }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+        version: { type: [integer, 'null'], format: int64, minimum: 0 }
+    UpdateMusicMetadataCandidateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        title: { type: [string, 'null'], maxLength: 512 }
+        artist: { type: [string, 'null'], maxLength: 512 }
+        album: { type: [string, 'null'], maxLength: 512 }
+        album_artist: { type: [string, 'null'], maxLength: 512 }
+        isrc: { type: [string, 'null'], maxLength: 64 }
+        genre: { type: [string, 'null'], maxLength: 256 }
+        track_number: { type: [integer, 'null'], minimum: 1 }
+        disc_number: { type: [integer, 'null'], minimum: 1 }
+        release_year: { type: [string, 'null'], maxLength: 16 }
     CreateMusicTrackAssociationRequest:
       type: object
       required: [candidate_id]

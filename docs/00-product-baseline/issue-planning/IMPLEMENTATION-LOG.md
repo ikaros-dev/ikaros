@@ -1039,3 +1039,9 @@
 - Console：音乐导入表单新增“检查重复”，展示已有歌曲、Track 和附件；无重复、加载、失败以及导入冲突均使用真实 API 结果反馈。
 - 契约追溯：新增 `music.find-duplicates`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentMusicDuplicateServiceTest`、`PersistentMusicImportServiceTest` 共 3/3；Music compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`60ef8501`。
+## B07-05 修正识别错误
+- 日期：2026-09-10
+- 实现：新增 owner-scoped Metadata Candidate 人工修正 API；使用可选 `If-Match` 版本校验拒绝并发覆盖，保存时将来源明确标记为 `MANUAL`，保留候选身份与创建时间，不静默改写 Track、Artist 或 Album。
+- Console：音乐库候选弹窗新增“修正”表单，支持编辑标题、艺术家、专辑、ISRC、流派、曲目/碟号和发行年份；保存期间展示 loading，成功重新读取候选，冲突和错误均反馈到页面。
+- 契约追溯：新增 `music.update-metadata-candidate`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：待本轮测试与应用运行验证后补充主要提交。
