@@ -1,5 +1,13 @@
 # Ikaros V2 实施记录
 
+## A17-06 恢复完成后重新访问内容
+
+- 日期：2026-09-09
+- 推荐决策：恢复执行成功后由 Storage Restore Handler 同步激活原 Blob Placement，并将 Blob 标记为 AVAILABLE；永久恢复使用 ACTIVE，临时恢复使用 READY_TEMPORARILY，后续访问继续经过 Attachment Owner 授权和 Delivery Grant/Content Reader 路径。
+- 原因：恢复操作状态完成并不等于内容访问状态完成；Placement、Blob 和 Restore Operation 必须分别更新，才能让既有 `readContent` 使用恢复后的副本，同时保持对象身份不变。
+- 失败语义：Provider 返回不可读时不激活副本，保留 FAILED Operation/Request Item 错误；访问端无授权或无可读副本仍拒绝，不回退到物理路径直读。
+- 验证：`mvn -pl storage -am -Dtest=StorageRestoreTaskHandlerTest,AttachmentControllerTest,AttachmentPreviewServiceTest -Dsurefire.failIfNoSpecifiedTests=false test`；验证成功恢复会把 Placement 置为 ACTIVE、Blob 置为 AVAILABLE，并通过现有授权/访问测试，4 个测试全部通过。
+
 ## A17-05 达到预算时阻止申请
 
 - 日期：2026-09-09
