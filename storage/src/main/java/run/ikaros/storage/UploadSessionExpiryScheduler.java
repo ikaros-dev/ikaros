@@ -37,17 +37,23 @@ public class UploadSessionExpiryScheduler {
     Mono<Void> expireNow() {
         Instant now = Instant.now();
         return sessions.findAllByStateInAndExpiresAtBefore(
-                List.of(UploadSessionState.OPEN, UploadSessionState.RECEIVING, UploadSessionState.FINALIZING), now)
-            .concatMap(session -> sessions.save(new UploadSessionEntity(session.id(), session.ownerId(),
-                session.resourceId(), session.provider(), session.objectKey(), session.expectedSize(),
-                session.declaredSha256(), UploadSessionState.EXPIRED, session.expiresAt(), session.createdAt(),
-                now, session.version(), session.idempotencyKey()))
+                List.of(UploadSessionState.OPEN, UploadSessionState.RECEIVING, UploadSessionState.FINALIZING,
+                    UploadSessionState.EXPIRED), now)
+            .concatMap(session -> expireState(session, now)
                 .flatMap(expired -> cleanup(expired)
-                    .onErrorResume(ignored -> Mono.empty())
-                    .then(events.append(new EventAppendRequest("storage.upload-session.expired", 1, "storage",
-                        "upload_session", expired.id(), "{\"session_id\":\"" + expired.id() + "\"}")))
-                    .then()))
+                    .then(Mono.defer(() -> events.append(new EventAppendRequest("storage.upload-session.expired", 1,
+                        "storage", "upload_session", expired.id(), "{\"session_id\":\"" + expired.id() + "\"}"))))
+                    .then()
+                    .onErrorResume(ignored -> Mono.empty())))
             .then();
+    }
+
+    private Mono<UploadSessionEntity> expireState(UploadSessionEntity session, Instant now) {
+        if (session.state() == UploadSessionState.EXPIRED) return Mono.just(session);
+        return sessions.save(new UploadSessionEntity(session.id(), session.ownerId(), session.resourceId(),
+            session.provider(), session.objectKey(), session.expectedSize(), session.declaredSha256(),
+            UploadSessionState.EXPIRED, session.expiresAt(), session.createdAt(), now, session.version(),
+            session.idempotencyKey()));
     }
 
     private Mono<Void> cleanup(UploadSessionEntity session) {

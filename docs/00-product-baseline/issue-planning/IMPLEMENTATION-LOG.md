@@ -605,6 +605,7 @@
 - 实现进展：新增 `StorageObjectProvider.deleteObject` 统一物理删除 seam；终止会话先提交 ABORTED，再清理临时对象，清理失败保留可重试状态。`DefaultStorageServiceTest` 13/13、`StorageObjectProviderRegistryTest` 1/1 通过。会话创建、过期扫描和 HTTP 入口仍待接入。
 - 实现进展：上传意图创建已持久化 `storage_upload_session` 并返回 `session_id`；新增当前用户终止会话 HTTP 入口，终止后清理临时 Provider 对象。`mvn -pl storage -am -DskipTests compile` 通过；过期扫描仍待接入。
 - 实现进展：新增过期会话定时扫描，OPEN/RECEIVING/FINALIZING 超时会话标记 EXPIRED，随后清理临时对象并发布 `storage.upload-session.expired@1`；单会话清理失败可重试且不影响其他会话。编译通过，待补扫描器测试与最终 A14-06 验收。
+- 验证：`UploadSessionExpirySchedulerTest` 2/2 通过，覆盖过期标记、临时对象清理、事件发布及 Provider 不可用时保留重试机会。
 
 ## A12 资源关系管理（父 issue）
 
