@@ -937,3 +937,8 @@
 - Console：阅读器提供上一页/下一页，显示当前页和保存中状态；加载/保存失败均进入可见错误状态。
 - 契约追溯：登记 `reading.start-session`、`reading.update-progress`、`reading.get-progress`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：Console `pnpm typecheck` 通过；主要提交：`96be9163`。
+## B04-04 从上次位置续读
+- 日期：2026-09-10
+- 实现：打开章节时先查询 Work/Edition 的 Reading Progress，按保存的 `COMIC_PAGE` locator 恢复页索引；首次阅读或 locator 已失效时从第一页开始。
+- Console：恢复路径与按页阅读入口合并，打开章节后直接显示恢复页；无历史进度不阻断首次阅读。
+- 验证：Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`b858bbd3`。
