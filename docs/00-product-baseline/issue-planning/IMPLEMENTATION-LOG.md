@@ -674,3 +674,9 @@
 - 实现修复：现有绑定服务已持久化绑定、校验两端 Provider、处理重复约束并发布创建事件；补充正常创建和目标不存在的验收测试。
 - 失败语义：Storage Provider 或 Delivery Provider 不存在返回 NotFound；重复绑定返回 Conflict；保存前失败不产生绑定或事件；Attachment、Blob、Placement 身份保持分离。
 - 验证：`PersistentMediaDeliveryBindingServiceTest` 2/2，Maven targeted test BUILD SUCCESS。
+## A16-03 按优先级选择可用路径
+- 日期：2026-09-09
+- 推荐决策：复用现有预览/租约选择链，按 Binding priority 升序选择，并跳过禁用、失败或不存在的 Delivery Provider；不新增旁路选择逻辑。
+- 实现修复：现有 `AttachmentPreviewService` 已实现优先级选择和可用性过滤；扩展测试为两条不同优先级路径，确认低 priority 的可用绑定被选中。
+- 失败语义：没有可用绑定返回 `StorageUnavailableException`；不产生 grant/lease 伪成功；不修改 Attachment、Blob、Placement。
+- 验证：`AttachmentPreviewServiceTest` 2/2，Maven targeted test BUILD SUCCESS。
