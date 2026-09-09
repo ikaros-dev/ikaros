@@ -539,6 +539,17 @@ Candidate 至少包含：
 - locale；
 - optional evidence。
 
+### 18.1 候选处理契约
+
+待处理候选由资源所有者通过公开 HTTP Command 处理：
+
+- `POST /api/ingestion/resources/metadata-candidates/{candidateId}/resolution`；
+- 请求体为 `{ "resolution": "APPLY" | "REJECT" }`；
+- `APPLY` 必须重新进入 Resource 的自动元数据 Command，不能由 Ingestion 直接写 Resource 表；
+- Resource 字段已被用户人工锁定时，应用失败并保留候选为 `PENDING`；
+- `REJECT` 将候选置为 `REJECTED`；成功应用置为 `APPLIED`；
+- 已处理候选重复提交相同决策返回原结果，提交相反决策返回冲突；并发更新使用候选版本校验，失败方不得伪造成功。
+
 ---
 
 ## 19. Metadata Refresh
