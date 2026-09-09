@@ -52,6 +52,13 @@
 - Console：`存储 → Provider` 页面真实加载 Provider，支持创建、启用/停用、探测、状态查看和凭据更新，并提供加载/失败反馈；凭据响应不展示明文。
 - 验证：`PersistentStorageProviderRegistryTest` 2/2；Console 页面 `/storage-center/providers` 返回 200；未认证创建请求返回 401；主要提交：本轮测试补强与追溯记录。
 
+## A05-02 用户登录与退出（复核）
+
+- 日期：2026-09-10
+- 实现审计：登录、refresh 和注册均调用公开 Authentication API；补齐 Console 用户 store 的退出动作，调用 `/auth/logout` 后无论网络结果如何清除本地 token、权限和路由状态。
+- Console：登录页、登录失败反馈、自动 refresh 和退出后的回登录页均走真实 API/本地状态清理，不把 JWT 或密码显示在页面。
+- 验证：`AuthenticationServiceTest` 4/4；Console typecheck 通过；退出接口仍由无状态 JWT 设计提供 204，未认证业务请求继续受保护；主要提交：待本轮提交。
+
 ## A18 副本与 Blob 清理（父 issue）
 
 - 日期：2026-09-09
