@@ -331,6 +331,7 @@
 - 推荐决策：继续使用持久化 Lease + Attempt 模型；Worker 中断后由下一次 claim 发现过期 Lease，将旧 Attempt 终结为 `LEASE_LOST`，再把同一逻辑 Task 重新置为 PENDING 并创建新的 Attempt，不创建重复逻辑 Task。
 - 原因：Lease 是执行权而非任务身份，旧 Attempt 必须保留以支持诊断和恢复；数据库 claim 的 `FOR UPDATE SKIP LOCKED` 负责并发领取边界。
 - 失败语义：Lease 失效不将任务伪装为成功；旧 Attempt 历史不可覆盖；取消请求在 Lease 回收时进入 CANCELLED 路径。
+- Console 对接审计：`Background.vue` 的任务详情并行读取任务和 `/background-tasks/{task_id}/attempts`，展示每次 Attempt 的编号、Runner、Lease 到期、开始/结束时间和错误；Lease 丢失不会被页面折叠成成功。
 - 验证：`BackgroundTaskDispatcherTest` 强化中断恢复断言，验证重新领取后 attempt=2、旧 Attempt 为 `LEASE_LOST` 且历史包含两次 Attempt；既有 dispatcher/lease 测试继续覆盖成功与失败。真实 PostgreSQL 并发 claim 回放仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
 
 ## A04-06 查看执行历史
