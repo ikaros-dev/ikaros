@@ -258,3 +258,10 @@
 - 推荐决策：Step-up 成功后只签发短期、用途绑定的 Verification Grant；不修改 Session、权限或密钥。Grant 携带主体、`security_version`、purpose、SVL、签发/过期时间，由后续高风险 Command 与 Permission/Security Policy 一并校验。
 - 失败语义：挑战用途/目标不匹配或用户非 ACTIVE 时拒绝；用户状态检查必须先于 OTP 消费，拒绝路径不得执行验证 Provider 或签发 Grant。
 - 验证：`DefaultStepUpVerificationServiceTest` 覆盖 Grant claim、主体/用途/SVL/有效期、目标绑定和停用用户拒绝；4 项通过。
+
+## A07-03 验证过期后拒绝执行
+
+- 日期：2026-09-09
+- 推荐决策：挑战过期时立即转为 EXPIRED 并拒绝；已 VERIFIED/LOCKED 等终态不可再次验证。Verification Grant 由 JWT `exp` 约束，后续 Security Policy 还必须检查 verification expiry，不以 Access JWT 有效替代 Step-up 有效。
+- 失败语义：过期挑战返回 Conflict，拒绝 OTP 匹配与 Grant 签发；已消费挑战不可重放；过期验证保证不执行限定操作。
+- 验证：`EmailOtpVerificationProviderTest` 新增过期挑战状态转换与已消费挑战重放拒绝；`DefaultAccessControlServiceTest` 已覆盖过期 SVL 拒绝；本轮认证/授权相关回归共 14 项通过。

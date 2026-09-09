@@ -138,6 +138,38 @@ class EmailOtpVerificationProviderTest {
     }
 
     @Test
+    void rejectsExpiredChallengeAndMarksItExpired() {
+        UUID userId = UUID.randomUUID();
+        UUID challengeId = UUID.randomUUID();
+        Instant expiredAt = Instant.now().minusSeconds(1);
+        VerificationChallengeEntity challenge = new VerificationChallengeEntity(challengeId, userId,
+            VerificationMethod.EMAIL_OTP, VerificationPurpose.EXPORT_SECURE_VAULT, null, "digest",
+            expiredAt.minusSeconds(300), expiredAt, 0, 5, null, VerificationChallengeStatus.ISSUED, 0L);
+        when(challengeRepository.findById(challengeId)).thenReturn(Mono.just(challenge));
+        when(challengeRepository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        StepVerifier.create(provider.verify(userId, challengeId, new VerifyOtpRequest("123456")))
+            .expectError(ConflictException.class).verify();
+        verify(challengeRepository).save(org.mockito.ArgumentMatchers.argThat(saved ->
+            saved.status() == VerificationChallengeStatus.EXPIRED));
+    }
+
+    @Test
+    void rejectsAlreadyConsumedChallengeWithoutReplayingOtp() {
+        UUID userId = UUID.randomUUID();
+        UUID challengeId = UUID.randomUUID();
+        Instant now = Instant.now();
+        VerificationChallengeEntity challenge = new VerificationChallengeEntity(challengeId, userId,
+            VerificationMethod.EMAIL_OTP, VerificationPurpose.EXPORT_SECURE_VAULT, null, "digest", now,
+            now.plusSeconds(300), 0, 5, now, VerificationChallengeStatus.VERIFIED, 0L);
+        when(challengeRepository.findById(challengeId)).thenReturn(Mono.just(challenge));
+
+        StepVerifier.create(provider.verify(userId, challengeId, new VerifyOtpRequest("123456")))
+            .expectError(ConflictException.class).verify();
+        org.mockito.Mockito.verifyNoInteractions(otpHasher);
+    }
+
+    @Test
     void locksChallengeAtMaximumFailedAttempts() {
         UUID userId = UUID.randomUUID();
         UUID challengeId = UUID.randomUUID();
