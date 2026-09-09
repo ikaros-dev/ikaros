@@ -492,6 +492,12 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
     }
 
     @Override
+    public Mono<List<AttachmentView>> findByContentIdentity(UUID ownerId, String sha256, long sizeBytes) {
+        if (sha256 == null || sha256.isBlank() || sizeBytes < 0) return Mono.just(List.of());
+        return attachmentRepository.findByContentIdentity(ownerId, sha256, sizeBytes).flatMap(this::view).take(MAX_UNPAGED_RESULTS).collectList();
+    }
+
+    @Override
     public Flux<org.springframework.core.io.buffer.DataBuffer> read(UUID ownerId, UUID attachmentId) {
         return readContent(ownerId, attachmentId, null).flatMapMany(StorageContent::body);
     }

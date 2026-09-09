@@ -72,6 +72,9 @@ public interface StorageService {
      */
     Mono<AttachmentView> get(UUID ownerId, UUID attachmentId);
 
+    /** 查询当前拥有者中具有相同内容身份的活动附件。 */
+    Mono<List<AttachmentView>> findByContentIdentity(UUID ownerId, String sha256, long sizeBytes);
+
     Mono<Void> remove(UUID ownerId, UUID resourceId, UUID attachmentId);
 
     Mono<Void> archive(UUID ownerId, UUID resourceId, UUID attachmentId);
