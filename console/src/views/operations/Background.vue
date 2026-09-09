@@ -80,6 +80,35 @@ async function submitTask() {
     submitting.value = false;
   }
 }
+async function openDetail(row: Task) {
+  if (!row.id) return;
+  detail.value = row;
+  try {
+    detail.value = await http.get(`/background-tasks/${row.id}`);
+  } catch (e: any) {
+    error.value = e?.response?.data?.detail || e?.message || "任务详情加载失败";
+  }
+}
+function progressPercent(row: Task) {
+  const progress = row?.progress || {};
+  const value = Number(progress.percent ?? progress.percentage);
+  if (Number.isFinite(value)) return Math.max(0, Math.min(100, value));
+  const completed = Number(progress.completed ?? progress.completedCount);
+  const total = Number(progress.total ?? progress.totalCount);
+  if (Number.isFinite(completed) && Number.isFinite(total) && total > 0) {
+    return Math.round((completed / total) * 100);
+  }
+  return null;
+}
+function progressSummary(row: Task) {
+  const progress = row?.progress || {};
+  const percent = progressPercent(row);
+  if (percent !== null) return `${percent}%`;
+  const completed = progress.completed ?? progress.completedCount;
+  const total = progress.total ?? progress.totalCount;
+  if (completed != null && total != null) return `${completed} / ${total}`;
+  return Object.keys(progress).length ? JSON.stringify(progress) : "—";
+}
 load();
 </script>
 <template>
@@ -167,16 +196,21 @@ load();
           label="状态"
           width="120"
         /><el-table-column label="进度" width="220"
-          ><template #default="{ row }">{{
-            row.progress || "—"
-          }}</template></el-table-column
+          ><template #default="{ row }">
+            <el-progress
+              v-if="progressPercent(row) !== null"
+              :percentage="progressPercent(row)"
+              :status="row.status === 'FAILED' ? 'exception' : undefined"
+            />
+            <span v-else>{{ progressSummary(row) }}</span>
+          </template></el-table-column
         ><el-table-column
           prop="created_at"
           label="创建时间"
           min-width="180"
         /><el-table-column label="操作" width="90"
           ><template #default="{ row }"
-            ><el-button link @click="detail = row">详情</el-button></template
+            ><el-button link @click="openDetail(row)">详情</el-button></template
           ></el-table-column
         ></el-table
       ></el-card
@@ -191,9 +225,15 @@ load();
         ><el-descriptions-item label="状态">{{
           detail.status || "—"
         }}</el-descriptions-item
-        ><el-descriptions-item label="进度">{{
-          detail.progress || "—"
-        }}</el-descriptions-item></el-descriptions
+        ><el-descriptions-item label="进度">
+          <el-progress
+            v-if="progressPercent(detail) !== null"
+            :percentage="progressPercent(detail)"
+            :status="detail.status === 'FAILED' ? 'exception' : undefined"
+          />
+          <span v-else>{{ progressSummary(detail) }}</span>
+        </el-descriptions-item></el-descriptions
+      ><el-button class="mt-4" @click="openDetail(detail)">刷新详情</el-button
       ><el-steps direction="vertical" class="mt-5"
         ><el-step title="排队" /><el-step title="执行" /><el-step
           title="完成 / 失败" /></el-steps
