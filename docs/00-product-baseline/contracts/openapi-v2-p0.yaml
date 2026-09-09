@@ -11,11 +11,33 @@ security:
   - bearerAuth: []
 tags:
   - name: Resources
+  - name: Search
   - name: Attachments
   - name: Background Tasks
   - name: Admin Storage
   - name: Admin Identity
 paths:
+  /search:
+    get:
+      tags: [Search]
+      operationId: searchResources
+      x-ikaros-contract-id: search.keyword-search
+      summary: Search visible resources by keyword
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 200 }
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Search result page
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SearchPage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
   /resources:
     get:
       tags: [Resources]
@@ -661,6 +683,20 @@ components:
         items:
           type: array
           items: { $ref: '#/components/schemas/Resource' }
+        next_cursor: { type: [string, 'null'] }
+    SearchPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [resource_id, source_version, fields]
+            properties:
+              resource_id: { type: string, format: uuid }
+              source_version: { type: integer, format: int64, minimum: 0 }
+              fields: { type: object, additionalProperties: true }
         next_cursor: { type: [string, 'null'] }
     Attachment:
       type: object

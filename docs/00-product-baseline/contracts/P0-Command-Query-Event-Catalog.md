@@ -155,6 +155,14 @@ Command 必须：
 
 # Part B — Resource Queries
 
+## Search Queries
+
+| Query ID | Permission | Pagination | HTTP |
+|---|---|---|---|
+| `search.keyword-search` | authenticated + per-resource visibility | cursor | `GET /search` |
+
+Keyword search is a rebuildable projection query. The search index only supplies candidates; final visibility is checked by the owning Resource capability before a result is returned.
+
 ## 3. Resource Query Catalog
 
 | Query ID | Permission | Pagination | HTTP |

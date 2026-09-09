@@ -813,3 +813,10 @@
 - 实现修复：现有 `DefaultAttachmentAvailabilityQuery` 已区分 PROCESSING、RESTORE_REQUIRED、MISSING、CORRUPTED、READY，并过滤禁用/失败 Provider；无需新增旁路状态模型。
 - 失败语义：无权或不存在 Attachment 沿用统一拒绝；Provider 暂时不可用不会把状态显示为 READY；不修改任何引用。
 - 验证：`DefaultAttachmentReferenceQueryTest` 2/2、`DefaultStorageServiceTest` 相关可用性分支已通过，Maven targeted test BUILD SUCCESS。
+## A19-01 关键词搜索与分页
+- 日期：2026-09-09
+- 推荐决策：补齐公开只读入口 `GET /api/search?q=&cursor=&limit=`；PostgreSQL Search Projection 仅负责关键词候选和稳定 `(projected_at, document_id)` 游标，Resource Ownership Capability 负责逐条最终授权。
+- 实现修复：新增 Search Query Contract、持久化候选查询、授权过滤、空关键词短路和稳定游标分页；未授权或损坏投影在结果中被隐藏，不回写业务真相。
+- 失败语义：缺少 actor、空关键词或非法游标返回空页；候选授权失败/投影读取失败不泄露目标对象；limit 上限为 100。
+- 契约追溯：新增 `search.keyword-search`，同步 P0 Command/Query Catalog、HTTP Operation Registry 和 OpenAPI `searchResources`。
+- 验证：`PersistentSearchQueryServiceTest` 2/2，覆盖授权过滤、分页游标和空关键词不读库；`mvn -pl search -am '-Dtest=PersistentSearchQueryServiceTest' '-Dsurefire.failIfNoSpecifiedTests=false' test` BUILD SUCCESS。
