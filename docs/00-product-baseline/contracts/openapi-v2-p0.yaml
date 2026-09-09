@@ -123,6 +123,26 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
         '412': { $ref: '#/components/responses/PreconditionFailed' }
+  /media/playback/resources/{resource_id}/progress:
+    get:
+      tags: [Media]
+      operationId: getPlaybackProgress
+      x-ikaros-contract-id: media.get-playback-progress
+      summary: Get saved playback progress
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - in: header
+          name: X-Ikaros-Actor-Id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Saved playback progress
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResourceProgress' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /media/subjects:
     get:
       tags: [Media]
@@ -1123,6 +1143,18 @@ components:
         position_seconds: { type: integer, format: int64, minimum: 0 }
         total_seconds: { type: [integer, 'null'], format: int64, minimum: 0 }
         completed: { type: boolean }
+    ResourceProgress:
+      type: object
+      required: [id, resource_id, type, position, completed]
+      properties:
+        id: { type: string, format: uuid }
+        resource_id: { type: string, format: uuid }
+        type: { type: string, enum: [VIDEO_SECONDS, AUDIO_SECONDS, READING_PAGES, READING_PERCENT] }
+        position: { type: integer, format: int64, minimum: 0 }
+        total: { type: [integer, 'null'], format: int64, minimum: 0 }
+        completed: { type: boolean }
+        updated_at: { type: [string, 'null'], format: date-time }
+        version: { type: [integer, 'null'], format: int64, minimum: 0 }
     PlaybackSession:
       type: object
       required: [id, resource_id, release_id, state, started_at, last_position_seconds]
