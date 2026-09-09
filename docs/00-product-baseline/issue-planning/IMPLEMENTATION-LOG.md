@@ -477,3 +477,10 @@
 - 主要 commits：`5f31417a`、`faf246ba`、`470cf89c`、`f7be0e61`、`4456df9f`、`399e73c8`。
 - 统一决策：Collection 与 Resource 关系保持逻辑解耦；owner scope、事务、唯一约束、完整顺序校验和层级循环保护由 Application/Schema 共同保证；删除 Collection 不级联删除 Resource 或 Blob。
 - 验证证据：Collection 服务回归覆盖创建编辑、成员关系、排序、循环和删除边界；真实 PostgreSQL FK/事务/排序联调仍需 Docker/Testcontainers。
+
+## A12-01 创建指定类型的关系
+
+- 日期：2026-09-09
+- 推荐决策：复用 ResourceRelation API 创建有向关系；关系类型使用受限枚举，来源与目标必须同属当前 owner，Resource UUID 保持为双方稳定身份。
+- 失败语义：自关联在持久化前拒绝；任一资源不存在/无权返回 NotFound；数据库重复关系映射为 Conflict，失败不产生审计或关系记录。
+- 验证：`DefaultResourceRelationServiceTest` 3/3、`ResourceRelationControllerTest` 1/1 通过，覆盖指定类型创建、双端 owner 校验路径、自关联拒绝和公开 API。真实 PostgreSQL 约束联调仍需 Docker/Testcontainers。
