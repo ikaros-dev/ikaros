@@ -1103,3 +1103,9 @@
 - Console：`/music` 列表歌曲区支持上移/下移并保存到 API，重新加载结果，展示加载、空结果、成功和冲突/错误状态。
 - 契约追溯：新增 `music.reorder-playlist` 的 HTTP Operation Registry 与 OpenAPI 定义。
 - 验证：`PersistentMusicPlaylistServiceTest` 7/7；Console `pnpm typecheck` 通过；application package BUILD SUCCESS；运行时迁移版本 `202609100900`，顺序调整 API 未认证返回 401，运行时 OpenAPI 已出现顺序路径，Console `http://127.0.0.1:8849/music` 返回 200；主要提交：`e26a9d21`、`136a0dae`。
+## B09-04 从列表指定位置开始播放
+- 日期：2026-09-10
+- 实现：Console 读取播放列表 Entry，从选定位置开始创建仅包含后续歌曲的 Queue，再复用 Audio Source、播放会话和 HTML5 Audio 播放链路；播放会话记录 Queue 身份。
+- Console：列表歌曲区新增“从此处播放”，覆盖队列创建、播放加载、成功提示和失败提示。
+- 契约追溯：复用已登记的 `music.list-playlist-entries`、`music.create-queue`、`music.start-playback` 和 Audio Source/preview API，无新增未登记路由。
+- 验证：Console `pnpm typecheck` 与 `pnpm build` 通过；application package BUILD SUCCESS；运行时 Console `http://127.0.0.1:8849/music` 返回 200，播放 API 继续受认证保护；主要提交：`bc7a08f2`。
