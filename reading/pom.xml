@@ -6,6 +6,7 @@
     <dependencies>
         <dependency><groupId>run.ikaros</groupId><artifactId>common-api</artifactId><version>${project.version}</version></dependency>
         <dependency><groupId>run.ikaros</groupId><artifactId>resource-api</artifactId><version>${project.version}</version></dependency>
+        <dependency><groupId>run.ikaros</groupId><artifactId>storage-api</artifactId><version>${project.version}</version></dependency>
         <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-webflux</artifactId></dependency>
         <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-validation</artifactId></dependency>
         <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-r2dbc</artifactId></dependency>
