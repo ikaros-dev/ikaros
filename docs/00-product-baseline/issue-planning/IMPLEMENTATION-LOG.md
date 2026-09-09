@@ -833,3 +833,16 @@
 - 实现修复：补充 `/api/search` 直接调用的未认证与权限撤销验收证据；搜索服务对每个候选实时调用 `requireOwned`，不依赖旧 ACL 投影做最终授权。
 - 失败语义：无凭据返回 401，缺少/已撤销 resource.read 返回 403；单条资源无权或投影损坏时跳过该结果，不暴露资源数据、认证材料或索引内部状态。
 - 验证：`ResourceAuthorizationWebFilterTest` 17/17、`PersistentSearchQueryServiceTest` 2/2；相关 Maven targeted tests BUILD SUCCESS。
+## A23 通知中心
+- 日期：2026-09-10
+- 子任务汇总：通知持久化、筛选分页、标记已读、关联目标跳转和任务通知偏好已分别实现并提交；Console 通知中心与账户偏好页均使用服务端 API。
+- 组合交付：通知由 durable background-task terminal event 生成并按 recipient 去重；支持状态/来源/优先级筛选、已读操作、任务/Resource 关联跳转和成功/失败通知偏好。
+- 失败语义：未认证/越权请求由统一安全层拒绝；通知偏好关闭时不生成对应任务通知；没有 durable actor 的系统事件不伪造接收人。
+- 验证：`NotificationServiceTest` 5/5；Console `pnpm typecheck`、`pnpm build` 通过；运行时迁移至 `202609070700`，通知 API 已出现在 `/openapi.json`。
+## A24 运行诊断
+- 日期：2026-09-10
+- 子任务汇总：服务就绪、数据库/存储健康、Request ID 审计筛选、任务/事件投递积压和可操作异常提示均已接入对应 Console 健康/审计入口。
+- 组合交付：新增只读 `GET /api/health/operations`，由 Operations 读取任务计数、由 Integration capability 读取 Outbox 投递状态；Health 页面显示真实探针结果，并将异常跳转到后台任务、通知投递或存储 Provider 页面。
+- 失败语义：探针请求失败显示 DOWN；积压显示 DEGRADED；未知状态不显示为健康；诊断响应不包含凭据或物理路径。
+- 验证：后端 `mvn -s .mvn-local-settings.xml -pl application -am -DskipTests package` BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` 通过；运行时 `/openapi.json` 确认 `/api/health/operations`，未认证访问返回 401。
+- 主要提交：`bfb85fa2`（任务/投递诊断）、`df0ffbb2`（可操作异常提示）、`6b227ebc`（HTTP 契约登记）。
