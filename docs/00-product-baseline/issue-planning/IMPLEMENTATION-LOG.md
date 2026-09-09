@@ -1033,3 +1033,9 @@
 - Console：音乐库识别候选弹窗新增“关联”操作，展示关联中、已关联、成功和失败状态，并通过真实 API 重新读取关联结果。
 - 契约追溯：新增 `music.create-track-association`、`music.list-track-associations`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentMusicTrackAssociationServiceTest` 1/1；Music compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；运行时迁移 `202609100800`、`202609100801` 已应用，关联 API 未认证返回 401；主要提交：`efa29eef`、`e83ca548`。
+## B07-04 处理重复歌曲
+- 日期：2026-09-10
+- 实现：新增基于 Blob SHA-256 与大小的 owner-scoped 重复查询；重复附件只返回已有 Track 结果，不创建/覆盖歌曲。重复导入仍由 Resource identity 与幂等唯一约束拒绝，重复请求不会产生第二条 Track。
+- Console：音乐导入表单新增“检查重复”，展示已有歌曲、Track 和附件；无重复、加载、失败以及导入冲突均使用真实 API 结果反馈。
+- 契约追溯：新增 `music.find-duplicates`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`PersistentMusicDuplicateServiceTest`、`PersistentMusicImportServiceTest` 共 3/3；Music compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`60ef8501`。

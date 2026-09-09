@@ -48,6 +48,7 @@ operations:
   - { method: GET, path: /music/tracks/{track_id}/metadata/candidates, operation_id: listMusicMetadataCandidates, contract_id: music.list-metadata-candidates, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /music/tracks/{track_id}/associations, operation_id: createMusicTrackAssociation, contract_id: music.create-track-association, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /music/tracks/{track_id}/associations, operation_id: listMusicTrackAssociations, contract_id: music.list-track-associations, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: /music/duplicates, operation_id: findMusicDuplicates, contract_id: music.find-duplicates, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /background-tasks, operation_id: submitBackgroundTask, contract_id: operations.submit-background-task, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /resources, operation_id: createResource, contract_id: resource.create-resource, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /resources, operation_id: listResources, contract_id: resource.list-resources, source: contracts/openapi-v2-p0.yaml }

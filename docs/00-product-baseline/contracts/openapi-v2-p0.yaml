@@ -1220,6 +1220,19 @@ paths:
         '200': { description: Track associations, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicTrackAssociation' } } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /music/duplicates:
+    get:
+      tags: [Music]
+      operationId: findMusicDuplicates
+      x-ikaros-contract-id: music.find-duplicates
+      summary: Find imported music with the same content identity
+      parameters:
+        - { name: attachment_id, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Duplicate tracks, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicDuplicate' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /reading/preferences:
     put:
       tags: [Reading]
@@ -1816,6 +1829,15 @@ paths:
         edition_name: { type: string }
         track_number: { type: [integer, 'null'], minimum: 1 }
         created_at: { type: string, format: date-time }
+    MusicDuplicate:
+      type: object
+      required: [attachment_id, track_id, title, sha256, size_bytes]
+      properties:
+        attachment_id: { type: string, format: uuid }
+        track_id: { type: string, format: uuid }
+        title: { type: string }
+        sha256: { type: string, pattern: '^[A-Fa-f0-9]{64}$' }
+        size_bytes: { type: integer, format: int64, minimum: 0 }
     ComicImport:
       type: object
       required: [id, source_attachment_id, work_id, edition_id, status, created_at, updated_at]
