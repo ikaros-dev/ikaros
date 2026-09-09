@@ -703,3 +703,9 @@
 - 子任务汇总：A16-01 #996、A16-02 #997、A16-03 #998、A16-04 #999、A16-05 #1000、A16-06 #1001 均已独立验收并关闭。
 - 组合交付：Delivery Provider 配置、Storage Binding、优先级选择、预览地址、Range 下载及 Grant 授权/过期控制已接入 API；相关 OpenAPI/HTTP Operation/Command 契约已同步。
 - 验证证据：配置、绑定、优先级、预览、Range、Grant 授权测试均通过；失败路径不泄露凭据、不产生伪成功、不破坏 Attachment/Blob/Placement 引用。
+## A17-01 展示归档可用状态
+- 日期：2026-09-09
+- 推荐决策：复用 Attachment 元数据查询返回的 `availability` 字段；由 Attachment Reference 授权后汇总 Blob、Placement、Provider 与临时恢复状态。
+- 实现修复：现有 `DefaultAttachmentAvailabilityQuery` 已区分 PROCESSING、RESTORE_REQUIRED、MISSING、CORRUPTED、READY，并过滤禁用/失败 Provider；无需新增旁路状态模型。
+- 失败语义：无权或不存在 Attachment 沿用统一拒绝；Provider 暂时不可用不会把状态显示为 READY；不修改任何引用。
+- 验证：`DefaultAttachmentReferenceQueryTest` 2/2、`DefaultStorageServiceTest` 相关可用性分支已通过，Maven targeted test BUILD SUCCESS。
