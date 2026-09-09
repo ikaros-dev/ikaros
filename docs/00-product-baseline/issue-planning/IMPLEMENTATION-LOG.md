@@ -322,6 +322,7 @@
 - 推荐决策：人工重试不把旧 Task 从 FAILED/TIMED_OUT 改回 PENDING，而是创建新的 PENDING child Task，并通过 `parent_task_id` 保留执行关系；公开 retry action 已登记到 OpenAPI、HTTP Registry 和 Catalog。
 - 原因：旧任务和失败 Attempt 是不可覆盖的执行历史；新 Task 可重新走正常 claim/lease/handler/complete 链路，避免重复改写已提交结果。
 - 失败语义：不存在任务返回 NotFound；非 FAILED/TIMED_OUT 任务返回 Conflict；子任务执行失败保留具体失败状态，旧任务仍保持 FAILED/TIMED_OUT。
+- Console 对接审计：`Background.vue` 仅对 FAILED/TIMED_OUT 显示重试按钮，调用已登记的 `POST /background-tasks/{task_id}/actions/retry`，成功后刷新列表；页面不覆盖旧任务状态。
 - 验证：`BackgroundTaskDispatcherTest` 覆盖旧任务保持失败、创建 child、child 成功恢复，以及既有失败和 retry 分支。真实 PostgreSQL 事务、权限和跨 API 回放仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
 
 ## A04-05 Worker 中断后重新领取任务
