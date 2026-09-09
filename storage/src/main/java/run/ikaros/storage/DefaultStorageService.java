@@ -28,7 +28,7 @@ import run.ikaros.operations.api.TaskReference;
  * 默认存储服务实现，严格保持 Attachment、Blob 与物理 Placement 三层分离。
  */
 @Service
-public class DefaultStorageService implements StorageService, AttachmentContentReader {
+public class DefaultStorageService implements StorageService, AttachmentContentReader, run.ikaros.storage.api.AttachmentContentService {
     private static final int MAX_PAGE_SIZE = 100;
     private static final int MAX_UNPAGED_RESULTS = 100;
     private final ResourceOwnershipQuery resourceOwnership;
@@ -488,6 +488,11 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
         String payload = "{\"attachment_id\":\"" + attachment.id() + "\",\"resource_id\":\""
             + attachment.resourceId() + "\",\"blob_id\":\"" + attachment.blobId() + "\"}";
         return eventService.append(new EventAppendRequest(eventType, 1, "storage", "attachment", attachment.id(), payload)).then();
+    }
+
+    @Override
+    public Flux<org.springframework.core.io.buffer.DataBuffer> read(UUID ownerId, UUID attachmentId) {
+        return readContent(ownerId, attachmentId, null).flatMapMany(StorageContent::body);
     }
 
     private UploadSessionView toSessionView(UploadSessionEntity session) {

@@ -10,7 +10,8 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/reading/comic-imports")
 public class ComicImportController {
     private final ComicImportService service;
-    public ComicImportController(ComicImportService service) { this.service = service; }
+    private final ComicImportParseService parser;
+    public ComicImportController(ComicImportService service, ComicImportParseService parser) { this.service = service; this.parser = parser; }
 
     @PostMapping
     public Mono<ComicImportView> create(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,
@@ -21,4 +22,8 @@ public class ComicImportController {
     @GetMapping public Flux<ComicImportView> list(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId) { return service.list(ownerId); }
     @GetMapping("/{importId}") public Mono<ComicImportView> get(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,
         @PathVariable UUID importId) { return service.get(ownerId, importId); }
+    @PostMapping("/{importId}/actions/parse") public Mono<ComicImportView> parse(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,
+        @PathVariable UUID importId) { return parser.parse(ownerId, importId); }
+    @GetMapping("/{importId}/entries") public Flux<ComicImportEntryEntity> entries(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,
+        @PathVariable UUID importId) { return parser.entries(ownerId, importId); }
 }
