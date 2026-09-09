@@ -587,6 +587,14 @@
 - 失败语义：同 SHA 大小不一致显式冲突，不创建新 Blob 或 Attachment；所有 Attachment/Blob/Placement 关系保持独立，失败不破坏既有引用。
 - 验证：`DefaultStorageServiceTest` 11/11 通过，覆盖既有 Blob 复用、大小冲突及无新写入；真实 PostgreSQL 唯一约束/Testcontainers 并发联调仍需 Docker。
 
+## A14-05 恢复中断上传
+
+- 日期：2026-09-09
+- 推荐决策：使用稳定 `Idempotency-Key` 作为上传提交重试边界；客户端可重新执行提交，已完成的 Attachment/Blob/Placement 状态被复用，不重复产生业务副作用。
+- 实现确认：提交路径在授权与远端对象校验后进入既有幂等 Attachment 分支；同一资源和 key 已有提交时返回原 Attachment 与 Blob，不再次保存。
+- 失败语义：恢复重试中的摘要、大小、Provider 或对象校验失败继续明确失败；既有成功状态不回退、不重复创建、不删除有效引用。
+- 验证：`DefaultStorageServiceTest` 12/12 通过，覆盖同一 Idempotency-Key 重试不重复创建 Attachment/Blob 及越权、约束和 Blob 复用回归；真实 Multipart Provider 断点续传联调仍需 Docker/外部 Provider。
+
 ## A12 资源关系管理（父 issue）
 
 - 日期：2026-09-09

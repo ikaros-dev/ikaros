@@ -112,6 +112,45 @@ class DefaultStorageServiceTest {
     }
 
     @Test
+    void retriesCommitWithSameIdempotencyKeyWithoutCreatingAnotherAttachment() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        UUID attachmentId = UUID.randomUUID();
+        UUID blobId = UUID.randomUUID();
+        Instant now = Instant.now();
+        StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
+        StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        DefaultStorageService uploadService = new DefaultStorageService(resourceOwnership, attachmentRepository,
+            blobRepository, placementRepository, derivedAttachmentRepository, auditService, transaction,
+            providers, null, null);
+        uploadService.setObjectProviderRegistry(objects);
+        StorageProvider provider = new StorageProvider(UUID.randomUUID(), "local", "local", StorageTier.WARM,
+            StorageProviderStatus.ENABLED, null, java.util.Map.of(), now, now);
+        AttachmentEntity existing = new AttachmentEntity(attachmentId, resourceId, blobId, "a.bin",
+            AttachmentKind.ORIGINAL, now, null, 0L, "retry-key");
+        BlobEntity blob = new BlobEntity(blobId, "a".repeat(64), 10L, "application/octet-stream",
+            BlobAvailability.AVAILABLE, now, 0L);
+        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.empty());
+        when(providers.requireWritableByKey("local")).thenReturn(Mono.just(provider));
+        when(objects.verify(provider, "a.bin")).thenReturn(Mono.just(new StorageObjectMetadata(
+            "a.bin", 10L, "application/octet-stream", "etag")));
+        when(attachmentRepository.findByResourceIdAndIdempotencyKeyAndArchivedAtIsNullAndDeletedAtIsNull(
+            resourceId, "retry-key")).thenReturn(Mono.just(existing));
+        when(blobRepository.findById(blobId)).thenReturn(Mono.just(blob));
+
+        CommitUploadRequest request = new CommitUploadRequest("a".repeat(64), "a".repeat(64), false, 10L,
+            "application/octet-stream", "a.bin", AttachmentKind.ORIGINAL, "local", StorageTier.WARM,
+            "a.bin", "retry-key");
+        StepVerifier.create(uploadService.commitUpload(ownerId, resourceId, request))
+            .assertNext(view -> assertThat(view.id()).isEqualTo(attachmentId))
+            .verifyComplete();
+        verify(attachmentRepository, org.mockito.Mockito.never()).save(any(AttachmentEntity.class));
+        verify(blobRepository, org.mockito.Mockito.never()).save(any(BlobEntity.class));
+    }
+
+    @Test
     void recordsDerivedAttachmentSourceWithoutChangingOriginalKind() {
         UUID ownerId = UUID.randomUUID(); UUID resourceId = UUID.randomUUID();
         UUID sourceId = UUID.randomUUID(); UUID derivedId = UUID.randomUUID(); UUID blobId = UUID.randomUUID();
