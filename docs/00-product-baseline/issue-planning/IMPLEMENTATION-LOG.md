@@ -544,7 +544,8 @@
 - 推荐决策：新增 `GET /api/audit-events` 查询路径，支持 `actor_id`、RFC 3339 `from/to` 和稳定 page/size 分页；SQL 使用 `occurred_at desc, id desc`，避免同时间事件分页重复/遗漏。
 - 权限边界：统一授权过滤器将查询映射到 `system.audit.read`，并实时复核当前 RBAC；审计查询不允许无认证或无权限直接进入 Controller。
 - 失败语义：非法时间范围、页码或页大小在 Application 层拒绝；空结果返回空页，不伪造成功事件或泄露目标数据。
-- 验证：`AuditQueryServiceTest` 覆盖操作者/时间过滤、offset 分页、稳定查询参数和非法范围；`ResourceAuthorizationWebFilterTest` 覆盖审计读取权限与实时角色校验；相关回归共 19 项通过。
+- Console 对接审计：`console/src/views/communications/Audit.vue` 将操作者 ID、RFC 3339 起止时间和请求 ID作为查询参数发送到 `/audit-events`，支持刷新、分页结果、空结果和错误提示；页面通过后端返回结果过滤，不在前端伪造审计数据。
+- 验证：`AuditQueryServiceTest` 覆盖操作者/时间过滤、offset 分页、稳定查询参数和非法范围；`ResourceAuthorizationWebFilterTest` 覆盖审计读取权限与实时角色校验；相关回归共 19 项通过；Console 审计页运行返回 HTTP 200。
 
 ## A08-04 查看操作结果与关联对象
 
