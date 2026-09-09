@@ -39,31 +39,32 @@ public class DefaultFavoriteService implements FavoriteService {
     @Override
     public Mono<FavoriteView> add(UUID ownerId, UUID resourceId) {
         return owned(ownerId, resourceId)
-            .then(favoriteRepository.findByOwnerIdAndResourceId(ownerId, resourceId)
+            .then(Mono.defer(() -> favoriteRepository.findByOwnerIdAndResourceId(ownerId, resourceId)
                 .map(existing -> new FavoriteView(resourceId, true))
                 .switchIfEmpty(Mono.defer(() -> favoriteRepository.save(new FavoriteEntity(null, ownerId, resourceId,
                     Instant.now(), null))
                     .flatMap(saved -> auditService.record(ownerId, "resource.favorite.add", "RESOURCE", resourceId, "{}")
                         .thenReturn(new FavoriteView(saved.resourceId(), true))))))
+            )
             .as(transactionalOperator::transactional);
     }
 
     @Override
     public Mono<Void> remove(UUID ownerId, UUID resourceId) {
         return owned(ownerId, resourceId)
-            .then(favoriteRepository.findByOwnerIdAndResourceId(ownerId, resourceId)
+            .then(Mono.defer(() -> favoriteRepository.findByOwnerIdAndResourceId(ownerId, resourceId)
                 .flatMap(existing -> favoriteRepository.deleteByOwnerIdAndResourceId(ownerId, resourceId)
                     .then(auditService.record(ownerId, "resource.favorite.remove", "RESOURCE", resourceId, "{}")))
-                .then())
+                .then()))
             .as(transactionalOperator::transactional);
     }
 
     @Override
     public Mono<FavoriteView> get(UUID ownerId, UUID resourceId) {
         return owned(ownerId, resourceId)
-            .then(favoriteRepository.findByOwnerIdAndResourceId(ownerId, resourceId)
+            .then(Mono.defer(() -> favoriteRepository.findByOwnerIdAndResourceId(ownerId, resourceId)
                 .map(existing -> new FavoriteView(resourceId, true))
-                .defaultIfEmpty(new FavoriteView(resourceId, false)));
+                .defaultIfEmpty(new FavoriteView(resourceId, false))));
     }
 
     private Mono<ResourceEntity> owned(UUID ownerId, UUID resourceId) {

@@ -508,6 +508,14 @@
 - 失败语义：无效请求、任一资源无权/不存在、自关联和重复关系均显式失败，不保存、不审计、不发布错误成功事件。
 - 验证：`DefaultResourceRelationServiceTest` 6/6、`ResourceRelationControllerTest` 1/1 通过，覆盖指定类型、无效请求、自关联、重复冲突、双方 owner、空结果和移除边界；真实 PostgreSQL 约束联调仍需 Docker/Testcontainers。
 
+## A13-01 收藏与取消收藏
+
+- 日期：2026-09-09
+- 推荐决策：Favorite 以 `(owner_id, resource_id)` 隔离用户；添加幂等，取消幂等，查询返回当前用户状态。收藏关系不改变 Resource 本体。
+- 实现修复：添加、取消和查询均改为在 Resource owner 校验后惰性访问 Favorite 仓储，避免未知/无权 Resource 产生 eager 查询或副作用。
+- 失败语义：未知/无权 Resource 统一 NotFound；重复收藏不重复保存/审计，重复取消不产生删除/审计；成功路径写 Audit。
+- 验证：`DefaultFavoriteServiceTest` 4/4、`FavoriteControllerTest` 2/2 通过，覆盖添加、重复添加、查询未收藏、未知资源和公开入口；真实 PostgreSQL 唯一约束联调仍需 Docker/Testcontainers。
+
 ## A12 资源关系管理（父 issue）
 
 - 日期：2026-09-09
