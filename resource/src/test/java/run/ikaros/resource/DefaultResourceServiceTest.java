@@ -84,6 +84,14 @@ class DefaultResourceServiceTest {
     }
 
     @Test
+    void rejectsInvalidCreateInputBeforeRepositoryWrite() {
+        StepVerifier.create(service.create(UUID.randomUUID(), new CreateResourceRequest(ResourceType.BOOK, "", "zh-CN")))
+            .expectError(IllegalArgumentException.class)
+            .verify();
+        org.mockito.Mockito.verifyNoInteractions(resourceRepository, titleRepository);
+    }
+
+    @Test
     void movesResourceToTrashWithoutDeletingIt() {
         UUID ownerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();

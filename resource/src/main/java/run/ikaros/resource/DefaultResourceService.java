@@ -104,6 +104,11 @@ public class DefaultResourceService implements ResourceService {
 
     private Mono<ResourceView> createInternal(UUID ownerId, CreateResourceRequest request,
                                                CreationIdempotency idempotency) {
+        if (request == null || request.type() == null || request.title() == null || request.title().isBlank()
+            || request.title().length() > 512 || request.locale() == null || request.locale().isBlank()
+            || request.locale().length() > 32) {
+            return Mono.error(new IllegalArgumentException("Resource 创建信息不合法"));
+        }
         Instant now = Instant.now();
         ResourceEntity resource = new ResourceEntity(
             null, ownerId, request.type(), request.title(), null, ResourceClassification.PRIVATE,

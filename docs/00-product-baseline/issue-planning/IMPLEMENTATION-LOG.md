@@ -196,3 +196,10 @@
 - 推荐决策：通过 `RoleController` 暴露用户-角色绑定与撤销动作；绑定前确认角色存在，重复绑定保持幂等，撤销只删除指定 user/role 绑定，不影响其他用户或角色；两类动作均写审计。
 - 失败语义：角色不存在返回 NotFound；重复分配不创建重复绑定；撤销目标不存在保持幂等完成；权限入口由统一 `system.role.manage` 授权过滤器保护。
 - 验证：`DefaultRoleServiceTest` 覆盖分配、撤销、重复/指定目标边界；授权回归 21 项通过。真实 PostgreSQL 唯一约束和并发绑定回放仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
+
+## A09-01 创建资源（A06-03 前置 issue）
+
+- 日期：2026-09-09
+- 推荐决策：复用 Resource Owner 的创建路径，以 `owner_id` 固定资源归属，同时在同一事务创建首个主标题；创建结果支持 `Idempotency-Key` replay/conflict，避免重试产生重复资源。
+- 失败语义：非法类型/标题/locale 在 Application 层拒绝；幂等 key 同请求返回原资源，不同请求返回 Conflict；资源、标题、事件、审计或幂等记录任一失败不返回伪成功。
+- 验证：`DefaultResourceServiceTest` 覆盖创建及首标题、非法输入、幂等重放/冲突和审计事件；资源回归 13 项通过。真实 PostgreSQL 约束、事务回滚和并发幂等仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
