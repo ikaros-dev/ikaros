@@ -442,7 +442,8 @@
 - 推荐决策：Resource Owner 是唯一资源隔离边界；所有单资源读取/变更通过 `findByIdAndOwnerId`，列表与计数 SQL 同时限定 `owner_id`，未授权对象统一表现为 NotFound，不向调用方泄露存在性。
 - 原因：资源模块已实现 Resource-centric 私有模型，A06-03 只补充授权验收，不引入跨模块 Repository 或额外 `tenant_id`。
 - 失败语义：不同用户读取、修改或通过外部身份查找私有资源均不得获得目标数据；失败不触发标题、Blob 或审计写入。
-- 验证：`DefaultResourceServiceTest` 覆盖跨 owner 读取拒绝、创建 owner 固定和资源幂等；资源回归通过。真实 PostgreSQL SQL 隔离和 API 联调仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
+- Console 对接审计：`console/src/views/resources/index.vue` 的资源库页面调用 `GET /resources`，创建资源调用 `POST /resources` 并发送 `Idempotency-Key`；`Detail.vue` 的详情、标题、元数据、标签、关系、收藏和用户状态操作均使用资源 ID API，统一 HTTP 拦截器注入当前 `X-Ikaros-Actor-Id`。列表、详情、创建失败和空状态均有可见反馈，页面不是静态占位。
+- 验证：`DefaultResourceServiceTest` 覆盖跨 owner 读取拒绝、创建 owner 固定和资源幂等；资源回归通过；Console `pnpm typecheck`、`pnpm build` 通过；运行中的 `/resource-center/library` 返回 HTTP 200。真实 PostgreSQL SQL 隔离和 API 联调仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
 
 ## A06-04 校验资源变更权限
 
