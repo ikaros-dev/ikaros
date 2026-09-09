@@ -880,3 +880,13 @@
 - 实现：播放器读取浏览器从实际媒体文件解析出的内嵌 AudioTrack 列表，在 Console 中显示轨道名称并切换 `enabled` 状态；未暴露音轨时明确提示，不伪造可选项。
 - 边界：不把音轨元数据或物理路径复制到播放会话；切换只作用于当前已授权播放元素。
 - 验证：Console `pnpm typecheck` 通过。主要提交：`18e634f8`。
+## B02-06 归档内容恢复后继续播放
+- 日期：2026-09-10
+- 实现：Release/Attachment 不可用时禁止开始播放并提供异步恢复请求；恢复完成后通过真实可用性 API 刷新，只有状态回到 `READY` 才重新开放播放入口。
+- 失败语义：恢复请求使用幂等键；恢复中的状态不伪装成可播放，恢复失败由恢复队列显示并可按既有恢复流程重试；原有播放进度不被清除。
+- 验证：Console `pnpm typecheck` 通过；恢复请求 API 已登记 OpenAPI/HTTP Registry。主要提交：`ee3029f2`。
+## B02 视频播放
+- 日期：2026-09-10
+- 子任务汇总：B02-01 至 B02-06 已按清单顺序完成本地实现，并全部接入视频条目 Console 播放入口。
+- 组合交付：选择 Release 开始播放、保存进度、断点续播、字幕切换、内嵌音轨切换和归档恢复后的继续播放形成一条真实 API 联调路径；Session、Resource Progress、Subtitle、Attachment Restore 各自保持边界。
+- 验证：`PersistentMediaPlaybackServiceTest` 4/4；Console `pnpm typecheck` 通过；相关播放/进度/恢复接口已同步 OpenAPI 与 HTTP Operation Registry。
