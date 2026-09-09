@@ -254,6 +254,46 @@ paths:
                       last_attempt_at: { type: [string, 'null'], format: date-time }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/integration/events:
+    get:
+      tags: [Integration]
+      operationId: listPendingIntegrationEvents
+      x-ikaros-contract-id: integration.list-pending-events
+      summary: List pending durable integration events
+      responses:
+        '200':
+          description: Pending durable events
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/DurableEvent' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/integration/events/{event_id}/actions/retry:
+    post:
+      tags: [Integration]
+      operationId: retryIntegrationEvent
+      x-ikaros-contract-id: integration.retry-event
+      summary: Retry one pending durable integration event
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 128 }
+      responses:
+        '200':
+          description: Retry result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DurableEventRetryResult' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /media/subjects/{subject_id}/seasons/{season_id}/actions/reorder-episodes:
     post:
       tags: [Media]
@@ -2421,6 +2461,28 @@ components:
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
         completed_at: { type: [string, 'null'], format: date-time }
+    DurableEvent:
+      type: object
+      required: [id, event_type, schema_version, producer_subsystem, subject_type, payload_json, occurred_at]
+      properties:
+        id: { type: string, format: uuid }
+        event_type: { type: string }
+        schema_version: { type: integer, minimum: 1 }
+        producer_subsystem: { type: string }
+        subject_type: { type: string }
+        subject_id: { type: [string, 'null'], format: uuid }
+        payload_json: { type: string }
+        occurred_at: { type: string, format: date-time }
+        request_id: { type: [string, 'null'] }
+        correlation_id: { type: [string, 'null'] }
+        causation_id: { type: [string, 'null'] }
+        actor_id: { type: [string, 'null'], format: uuid }
+    DurableEventRetryResult:
+      type: object
+      required: [event_id, dispatched_count]
+      properties:
+        event_id: { type: string, format: uuid }
+        dispatched_count: { type: integer, format: int64, minimum: 0 }
     SubmitBackgroundTaskRequest:
       type: object
       required: [type]

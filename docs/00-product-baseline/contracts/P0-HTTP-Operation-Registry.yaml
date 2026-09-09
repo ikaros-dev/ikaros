@@ -7,6 +7,8 @@ sources:
 operations:
   - { method: GET, path: /search, operation_id: searchResources, contract_id: search.keyword-search, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /health/operations, operation_id: getOperationsDiagnostics, contract_id: operations.get-diagnostics, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: /admin/integration/events, operation_id: listPendingIntegrationEvents, contract_id: integration.list-pending-events, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/admin/integration/events/{event_id}/actions/retry', operation_id: retryIntegrationEvent, contract_id: integration.retry-event, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /media/subjects, operation_id: createMediaSubject, contract_id: media.create-subject, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /media/subjects, operation_id: listMediaSubjects, contract_id: media.list-subjects, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: '/media/subjects/{subject_id}/seasons/{season_id}/actions/reorder-episodes', operation_id: reorderMediaEpisodes, contract_id: media.reorder-episodes, source: contracts/openapi-v2-p0.yaml }
