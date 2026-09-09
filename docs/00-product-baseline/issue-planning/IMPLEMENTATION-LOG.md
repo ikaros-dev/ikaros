@@ -368,3 +368,11 @@
 - 安全边界：入口为独立 purge Action，要求 `If-Match` 和显式 `X-Ikaros-Confirmation: PURGE`；状态事件与 Audit 在同一 reactive transaction 内提交；Attachment/Blob 引用释放和物理 GC 留给其 Owner 按引用、备份及保留规则处理。
 - 失败语义：ACTIVE/ARCHIVED、缺少 `deleted_at` 或版本过期均拒绝且不写入、不审计；owner-scoped 查询隔离其他用户和对象。
 - 验证：`DefaultResourceServiceTest` 覆盖 TRASHED 成功转为 PURGED、身份/Blob 边界、ACTIVE 禁止分支；resource 回归 18 项通过。未启动真实 PostgreSQL/Testcontainers（本机 Docker 不可用），未伪造 SQL 联调证据。
+
+## A09 资源生命周期（父 issue）
+
+- 日期：2026-09-09
+- 本地验收结论：A09-01 至 A09-07 已按顺序完成，覆盖创建、浏览/详情、版本冲突、归档、回收站、恢复和符合保留条件的永久删除。
+- 主要 commits：`645954b1`、`8a5bd90e`、`a9dd07dc`、`b998f8c1`、`0b6b9b0f`、`35a5afa5`、`f459a19a`。
+- 统一决策：Resource 生命周期由显式 Application Action 管理；owner scope、乐观并发、事务内事件与审计保持一致；逻辑生命周期绝不隐式删除共享 Attachment/Blob。
+- 验证证据：Resource 服务单测已覆盖各子行为的成功、状态拒绝、权限边界、幂等和版本冲突分支；真实 PostgreSQL/Testcontainers 仍需 Docker 环境补跑。
