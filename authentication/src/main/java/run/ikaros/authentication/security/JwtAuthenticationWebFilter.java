@@ -14,6 +14,7 @@ import run.ikaros.authentication.JwtTokenService;
 import run.ikaros.authentication.PlatformUserRepository;
 import run.ikaros.authentication.UserStatus;
 import run.ikaros.authentication.api.AuthenticatedPrincipal;
+import run.ikaros.authentication.api.SecurityVerificationLevel;
 
 /** 校验 Bearer access token，并把 JWT 主体暴露给后续过滤器和旧业务控制器。 */
 @Component
@@ -43,8 +44,12 @@ public class JwtAuthenticationWebFilter implements WebFilter {
                 .filter(user -> user.status() == UserStatus.ACTIVE
                     && user.securityVersion() == claims.securityVersion())
                 .map(user -> {
+                    JwtTokenService.VerificationGrantClaims grant = verificationGrant(exchange, claims);
                     AuthenticatedPrincipal principal = new AuthenticatedPrincipal(claims.userId(), claims.tokenId(),
-                        claims.securityVersion(), claims.permissions());
+                        claims.securityVersion(), claims.permissions(),
+                        grant == null ? SecurityVerificationLevel.SVL_0 : SecurityVerificationLevel.fromValue(grant.achievedSvl()),
+                        grant == null ? null : grant.expiresAt(), grant == null ? null : grant.purpose().name(),
+                        grant == null ? null : grant.targetReference());
                     ServerWebExchange enriched = exchange.mutate().request(exchange.getRequest().mutate()
                         .header("X-Ikaros-Actor-Id", claims.userId().toString())
                         .header("X-Ikaros-Token-Id", claims.tokenId().toString()).build()).build();
@@ -57,6 +62,17 @@ public class JwtAuthenticationWebFilter implements WebFilter {
         } catch (RuntimeException invalidToken) {
             return reject(exchange, HttpStatus.UNAUTHORIZED);
         }
+    }
+
+    private JwtTokenService.VerificationGrantClaims verificationGrant(ServerWebExchange exchange,
+                                                                       JwtTokenService.Claims accessClaims) {
+        String value = exchange.getRequest().getHeaders().getFirst("X-Ikaros-Verification-Grant");
+        if (value == null || value.isBlank()) return null;
+        JwtTokenService.VerificationGrantClaims grant = tokens.verifyVerificationGrant(value.trim());
+        if (!grant.userId().equals(accessClaims.userId()) || grant.securityVersion() != accessClaims.securityVersion()) {
+            throw new IllegalArgumentException("验证凭据与当前主体不匹配");
+        }
+        return grant;
     }
 
     private boolean isPublic(String path) {

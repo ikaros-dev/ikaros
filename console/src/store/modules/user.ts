@@ -16,6 +16,7 @@ import {
 } from "@/api/user";
 import { useMultiTagsStoreHook } from "./multiTags";
 import { type DataInfo, setToken, removeToken, userKey } from "@/utils/auth";
+import { clearVerificationGrant } from "@/utils/verificationGrant";
 
 export const useUserStore = defineStore("pure-user", {
   state: (): userType => ({
@@ -86,6 +87,7 @@ export const useUserStore = defineStore("pure-user", {
         this.roles = [];
         this.permissions = [];
         removeToken();
+        clearVerificationGrant();
         useMultiTagsStoreHook().handleTags("equal", [...routerArrays]);
         resetRouter();
         router.push("/login");

@@ -154,6 +154,25 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
+    void requiresFreshVerificationForHighRiskRoleMutation() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(
+            "/api/admin/roles/" + UUID.randomUUID() + "/permissions/SYSTEM_ROLE_READ").build());
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 0L, java.util.List.of("system.role.manage")));
+        WebFilterChain chain = mock(WebFilterChain.class);
+        when(chain.filter(exchange)).thenReturn(Mono.empty());
+        AccessControlService accessControl = mock(AccessControlService.class);
+        when(accessControl.require(eq(actor), eq(run.ikaros.authentication.api.SecurityVerificationLevel.SVL_0),
+            eq(null), any())).thenReturn(Mono.error(new run.ikaros.common.ForbiddenException("step-up required")));
+
+        new ResourceAuthorizationWebFilter(accessControl).filter(exchange, chain).block();
+
+        assertEquals(403, exchange.getResponse().getStatusCode().value());
+        org.mockito.Mockito.verify(chain, org.mockito.Mockito.never()).filter(exchange);
+    }
+
+    @Test
     void doesNotTreatArbitraryContentPathAsGrantOnlyDelivery() {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
             "/api/resources/" + UUID.randomUUID() + "/content")

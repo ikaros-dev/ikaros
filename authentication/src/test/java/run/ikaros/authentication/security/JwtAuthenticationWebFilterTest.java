@@ -17,6 +17,7 @@ import run.ikaros.authentication.JwtTokenService;
 import run.ikaros.authentication.PlatformUserEntity;
 import run.ikaros.authentication.PlatformUserRepository;
 import run.ikaros.authentication.UserStatus;
+import run.ikaros.authentication.api.AuthenticatedPrincipal;
 
 class JwtAuthenticationWebFilterTest {
     @Test
@@ -81,6 +82,35 @@ class JwtAuthenticationWebFilterTest {
         when(users.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
             UserStatus.ACTIVE, java.time.Instant.now(), java.time.Instant.now(), null, 2L, 0L)));
         assertUnauthorized(tokens, users, chain, "Bearer " + stale);
+    }
+
+    @Test
+    void verifiesPurposeBoundGrantAndExposesFreshVerificationContext() {
+        JwtTokenService tokens = new JwtTokenService("ikaros", "a-development-secret-with-at-least-32-characters",
+            Duration.ofMinutes(15), Duration.ofDays(30));
+        UUID userId = UUID.randomUUID();
+        String access = tokens.issue(userId, 0L, List.of("system.role.manage")).accessToken();
+        String grant = tokens.issueVerificationGrant(userId, 0L,
+            run.ikaros.authentication.verification.VerificationPurpose.CHANGE_SECURITY_SETTING, null, 2,
+            java.time.Instant.now(), java.time.Instant.now().plus(Duration.ofMinutes(5)));
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post("/api/admin/roles")
+            .header("Authorization", "Bearer " + access)
+            .header("X-Ikaros-Verification-Grant", grant).build());
+        WebFilterChain chain = mock(WebFilterChain.class);
+        when(chain.filter(any())).thenReturn(Mono.empty());
+        PlatformUserRepository users = mock(PlatformUserRepository.class);
+        when(users.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, java.time.Instant.now(), java.time.Instant.now(), null, 0L, 0L)));
+
+        new JwtAuthenticationWebFilter(tokens, users).filter(exchange, chain).block();
+
+        org.mockito.ArgumentCaptor<org.springframework.web.server.ServerWebExchange> captor =
+            org.mockito.ArgumentCaptor.forClass(org.springframework.web.server.ServerWebExchange.class);
+        org.mockito.Mockito.verify(chain).filter(captor.capture());
+        AuthenticatedPrincipal principal = captor.getValue().getAttribute(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE);
+        assertThat(principal.verificationLevel().value()).isEqualTo(2);
+        assertThat(principal.verificationPurpose()).isEqualTo("CHANGE_SECURITY_SETTING");
+        assertThat(principal.verificationExpiresAt()).isAfter(java.time.Instant.now());
     }
 
     private void assertUnauthorized(JwtTokenService tokens, PlatformUserRepository users, WebFilterChain chain,

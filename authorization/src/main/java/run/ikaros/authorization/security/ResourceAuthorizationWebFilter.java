@@ -43,14 +43,12 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
         if (path.equals("/api/me/actions/invalidate-tokens")) return chain.filter(exchange);
         PlatformPermission permission = permission(exchange.getRequest().getMethod().name(), path);
         if (!jwtPrincipal.permissions().contains(permission.key())) return reject(exchange, HttpStatus.FORBIDDEN);
-        if (isResourcePermission(permission) || permission == PlatformPermission.SYSTEM_AUDIT_READ) {
-            Mono<Void> currentAuthorization = accessControl.require(jwtPrincipal.actorId(),
-                SecurityVerificationLevel.SVL_0, null,
-                new SecurityPolicy("resource.http", permission, SecurityVerificationLevel.SVL_0, false));
-            if (currentAuthorization != null) {
-                return currentAuthorization.then(chain.filter(exchange))
-                    .onErrorResume(error -> reject(exchange, HttpStatus.FORBIDDEN));
-            }
+        SecurityPolicy securityPolicy = policy(permission);
+        Mono<Void> currentAuthorization = accessControl.require(jwtPrincipal.actorId(),
+            jwtPrincipal.verificationLevel(), jwtPrincipal.verificationExpiresAt(), securityPolicy);
+        if (currentAuthorization != null) {
+            return currentAuthorization.then(Mono.defer(() -> chain.filter(exchange)))
+                .onErrorResume(error -> reject(exchange, HttpStatus.FORBIDDEN));
         }
         return chain.filter(exchange);
     }
