@@ -1,5 +1,6 @@
 package run.ikaros.storage;
 
+import java.util.Collection;
 import java.util.UUID;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
@@ -13,6 +14,6 @@ public interface UploadSessionRepository extends ReactiveCrudRepository<UploadSe
     Mono<UploadSessionEntity> findByOwnerIdAndResourceIdAndIdempotencyKey(UUID ownerId, UUID resourceId,
                                                                            String idempotencyKey);
 
-    Flux<UploadSessionEntity> findAllByStateInAndExpiresAtBefore(Iterable<UploadSessionState> states,
+    Flux<UploadSessionEntity> findAllByStateInAndExpiresAtBefore(Collection<UploadSessionState> states,
                                                                   java.time.Instant expiresAt);
 }
