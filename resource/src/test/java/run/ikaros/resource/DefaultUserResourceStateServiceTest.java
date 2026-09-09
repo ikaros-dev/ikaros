@@ -77,4 +77,29 @@ class DefaultUserResourceStateServiceTest {
                 new UserResourceStateRequest(false, new BigDecimal("10.01"), null, null, null)))
             .expectErrorMessage("评分必须介于 0 和 10 之间").verify();
     }
+
+    @Test
+    void savesProgressAndReturnsPersistedState() {
+        UUID userId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceRepository resources = mock(ResourceRepository.class);
+        UserResourceStateRepository states = mock(UserResourceStateRepository.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(resources.findByIdAndOwnerId(resourceId, userId)).thenReturn(Mono.just(new ResourceEntity(
+            resourceId, userId, ResourceType.BOOK, ResourceLifecycle.ACTIVE, now, now, null, 0L)));
+        when(states.findByUserIdAndResourceId(userId, resourceId)).thenReturn(Mono.empty());
+        UserResourceStateEntity saved = new UserResourceStateEntity(userId, resourceId, false, null,
+            "reading", new BigDecimal("42"), "pages", now, 1L, now);
+        when(states.save(any(UserResourceStateEntity.class))).thenReturn(Mono.just(saved));
+
+        StepVerifier.create(new DefaultUserResourceStateService(resources, states, transaction).set(userId, resourceId,
+                new UserResourceStateRequest(false, null, "reading", new BigDecimal("42"), "pages")))
+            .assertNext(view -> {
+                org.junit.jupiter.api.Assertions.assertEquals(new BigDecimal("42"), view.progressValue());
+                org.junit.jupiter.api.Assertions.assertEquals("pages", view.progressUnit());
+                org.junit.jupiter.api.Assertions.assertEquals("reading", view.statusCode());
+            }).verifyComplete();
+    }
 }

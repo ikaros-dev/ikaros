@@ -532,6 +532,14 @@
 - 失败语义：评分越界或目标 Resource 不存在/无权访问时失败，不读取或写入用户状态，不发布成功事件；成功更新沿用事务、版本和 `resource.user-state.changed` 事件。
 - 验证：`DefaultUserResourceStateServiceTest` 3/3 通过，覆盖评分更新事件、未知 Resource 授权边界和越界输入；真实 PostgreSQL/Testcontainers 联调仍需 Docker。
 
+## A13-04 保存消费进度
+
+- 日期：2026-09-09
+- 推荐决策：复用 `PUT /api/resources/{resourceId}/user-state` 保存状态码、进度值和单位；进度按 User + Resource 隔离，更新时记录最近访问时间，不修改 Resource 公共元数据。
+- 实现修复：状态读取改为在 Resource owner 校验通过后惰性访问，确保未知/无权 Resource 不触发状态读写；沿用事务、版本和统一用户状态变更事件。
+- 失败语义：进度值必须为非负数，非法输入或目标 Resource 不存在/无权访问时失败且不产生部分写入；成功后通过返回视图和再次查询观察持久化结果。
+- 验证：`DefaultUserResourceStateServiceTest` 4/4 通过，覆盖进度保存并返回持久化状态、评分越界、未知 Resource 和变更事件；真实 PostgreSQL/Testcontainers 联调仍需 Docker。
+
 ## A12 资源关系管理（父 issue）
 
 - 日期：2026-09-09
