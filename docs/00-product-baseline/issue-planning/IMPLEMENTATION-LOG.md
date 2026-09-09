@@ -540,6 +540,14 @@
 - 失败语义：进度值必须为非负数，非法输入或目标 Resource 不存在/无权访问时失败且不产生部分写入；成功后通过返回视图和再次查询观察持久化结果。
 - 验证：`DefaultUserResourceStateServiceTest` 4/4 通过，覆盖进度保存并返回持久化状态、评分越界、未知 Resource 和变更事件；真实 PostgreSQL/Testcontainers 联调仍需 Docker。
 
+## A13-05 查看近期活动
+
+- 日期：2026-09-09
+- 推荐决策：复用 `GET /api/activity?limit=` 查询当前用户 Activity，默认 50、上限 200，按发生时间倒序返回；Activity 展示记录与不可删除的 Audit 保持分离。
+- 实现修复：记录、近期列表和删除均改为惰性 Publisher；记录先完成 Resource owner 校验，删除成功后才写审计，避免越权或失败链产生仓储/审计副作用。
+- 失败语义：未知/无权 Resource 不保存 Activity；limit 超出 1–200 失败；空结果返回空列表；Activity 删除只影响当前用户自己的 Activity。
+- 验证：`DefaultResourceActivityServiceTest` 6/6、`ResourceActivityControllerTest` 2/2 通过，覆盖正常记录、限量、空结果、未知 Resource 和非法 limit；真实 PostgreSQL/Testcontainers 分页联调仍需 Docker。
+
 ## A12 资源关系管理（父 issue）
 
 - 日期：2026-09-09

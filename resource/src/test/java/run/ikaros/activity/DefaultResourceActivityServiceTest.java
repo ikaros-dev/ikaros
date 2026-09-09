@@ -5,6 +5,7 @@ import run.ikaros.resource.api.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -66,6 +67,33 @@ class DefaultResourceActivityServiceTest {
             .assertNext(activities -> assertThat(activities).singleElement().satisfies(
                 value -> assertThat(value.id()).isEqualTo(first.id())))
             .verifyComplete();
+    }
+
+    @Test
+    void returnsEmptyRecentActivitiesForUser() {
+        UUID ownerId = UUID.randomUUID();
+        when(activityRepository.findAllByOwnerIdOrderByOccurredAtDesc(ownerId)).thenReturn(Flux.empty());
+
+        StepVerifier.create(service.recent(ownerId, 50))
+            .assertNext(activities -> assertThat(activities).isEmpty())
+            .verifyComplete();
+    }
+
+    @Test
+    void rejectsUnknownResourceBeforeSavingActivity() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.empty());
+
+        StepVerifier.create(service.record(ownerId, resourceId, new RecordActivityRequest(ActivityType.VIEW, null)))
+            .expectErrorMessage("资源不存在或无权访问").verify();
+        verify(activityRepository, never()).save(any(ResourceActivityEntity.class));
+    }
+
+    @Test
+    void rejectsInvalidRecentLimit() {
+        StepVerifier.create(service.recent(UUID.randomUUID(), 0))
+            .expectErrorMessage("Activity 查询数量必须介于 1 和 200 之间").verify();
     }
 
     @Test
