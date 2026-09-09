@@ -235,3 +235,11 @@
 - 主要 commits：`1b793395`、`7fb67818`、`af4a7cb8`、`49927c25`、`ef1a5f59`；A09-01 前置 commits：`645954b1`、`43441b91`。
 - 统一决策：权限注册枚举和统一授权过滤器负责入口门禁，领域服务负责 owner/状态不变量；资源访问在 JWT 快速检查后实时复核当前 RBAC，避免权限撤销等待 token 过期。
 - 验证证据：授权回归通过，资源服务 owner 隔离回归通过；真实 PostgreSQL 唯一约束、并发绑定、事务回滚和完整 API 联调仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
+
+## A07-01 发起二次验证
+
+- 日期：2026-09-09
+- 推荐决策：复用 Email OTP Provider 与公开 `POST /api/security/verification-challenges` 入口；发起前只接受 ACTIVE 且配置可验证邮箱的用户，挑战绑定 purpose/target_reference 并设置短时有效期。
+- 安全边界：数据库只保存 OTP 慢哈希摘要；响应、审计和普通日志不返回 OTP、摘要或目标邮箱；发起频率按用户窗口限制，直接 API 与错误身份均走同一 Application Provider。
+- 失败语义：未知用户、非 ACTIVE 用户或无邮箱用户返回 NotFound；频率超限返回 Conflict；失败前不创建挑战。
+- 验证：`EmailOtpVerificationProviderTest` 覆盖合法发起、未知/无邮箱身份拒绝、频率限制和摘要持久化；`VerificationControllerTest` 覆盖公开入口、202 响应及 OTP 字段不泄露；本轮共 9 项通过。真实 PostgreSQL 事务和邮件渠道联调留待 A07-05/集成环境验证。

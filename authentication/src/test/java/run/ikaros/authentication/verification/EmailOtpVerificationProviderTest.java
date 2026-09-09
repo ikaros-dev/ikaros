@@ -15,6 +15,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.ConflictException;
+import run.ikaros.common.NotFoundException;
 import run.ikaros.authentication.PlatformUserEntity;
 import run.ikaros.authentication.PlatformUserRepository;
 import run.ikaros.authentication.api.SecurityVerificationLevel;
@@ -45,6 +46,50 @@ class EmailOtpVerificationProviderTest {
     @Test
     void identifiesItselfAsEmailOtpProvider() {
         assertThat(provider.method()).isEqualTo(VerificationMethod.EMAIL_OTP);
+    }
+
+    @Test
+    void rejectsUnknownInactiveOrUnverifiedIdentityBeforeIssuingChallenge() {
+        UUID userId = UUID.randomUUID();
+        when(userRepository.findById(userId)).thenReturn(Mono.empty());
+        when(challengeRepository.countByUserIdAndIssuedAtAfter(eq(userId), any())).thenReturn(Mono.just(0L));
+
+        StepVerifier.create(provider.issue(userId, new IssueVerificationRequest(VerificationPurpose.LOGIN_STEP_UP,
+                "session-1")))
+            .expectError(NotFoundException.class)
+            .verify();
+        verify(challengeRepository, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
+    void rejectsIssuingWhenUserHasNoUsableEmail() {
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        when(userRepository.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice",
+            null, UserStatus.ACTIVE, now, now, null, 0L)));
+        when(challengeRepository.countByUserIdAndIssuedAtAfter(eq(userId), any())).thenReturn(Mono.just(0L));
+
+        StepVerifier.create(provider.issue(userId, new IssueVerificationRequest(VerificationPurpose.LOGIN_STEP_UP,
+                "session-1")))
+            .expectError(NotFoundException.class)
+            .verify();
+        verify(challengeRepository, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
+    void rejectsIssuingWhenRateLimitIsReached() {
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity user = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
+            UserStatus.ACTIVE, now, now, null, 0L);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(user));
+        when(challengeRepository.countByUserIdAndIssuedAtAfter(eq(userId), any())).thenReturn(Mono.just(3L));
+
+        StepVerifier.create(provider.issue(userId, new IssueVerificationRequest(VerificationPurpose.LOGIN_STEP_UP,
+                "session-1")))
+            .expectError(ConflictException.class)
+            .verify();
+        verify(challengeRepository, org.mockito.Mockito.never()).save(any());
     }
 
     @Test

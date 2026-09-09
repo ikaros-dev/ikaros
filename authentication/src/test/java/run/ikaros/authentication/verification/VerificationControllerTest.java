@@ -39,7 +39,10 @@ class VerificationControllerTest {
 
         client.post().uri("/api/security/verification-challenges").header("X-Ikaros-Actor-Id", userId.toString())
             .bodyValue(Map.of("purpose", "LOGIN_STEP_UP", "targetReference", "session-1"))
-            .exchange().expectStatus().isAccepted();
+            .exchange().expectStatus().isAccepted().expectBody()
+            .jsonPath("$.id").isEqualTo(challengeId.toString())
+            .jsonPath("$.otp").doesNotExist()
+            .jsonPath("$.otp_digest").doesNotExist();
         client.post().uri("/api/security/verification-challenges/{challengeId}/verify", challengeId)
             .header("X-Ikaros-Actor-Id", userId.toString()).bodyValue(Map.of("code", "123456"))
             .exchange().expectStatus().isOk();
