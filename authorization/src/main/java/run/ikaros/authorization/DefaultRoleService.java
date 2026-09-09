@@ -39,7 +39,6 @@ public class DefaultRoleService implements RoleService {
         this(roleRepository, permissionRepository, auditService, null, null);
     }
 
-    @Autowired
     public DefaultRoleService(PlatformRoleRepository roleRepository, RolePermissionRepository permissionRepository,
                               AuditService auditService, DurableEventPublisher eventService) {
         this(roleRepository, permissionRepository, auditService, eventService, null);
