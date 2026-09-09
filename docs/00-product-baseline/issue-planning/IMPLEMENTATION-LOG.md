@@ -148,3 +148,4 @@
 - 验证：`AuthenticationServiceTest` 覆盖登录 token pair、无 `sessionId` 和空操作登出；认证回归测试共 13 项通过；console `pnpm typecheck` 与 `pnpm build` 通过。
 - 外部权限记录：向 GitHub #927 发布完成评论的请求尚未获安全策略授权；本地实现与后续 commit 已保留，待权限恢复后补发评论并关闭。根据执行规则继续处理后续子 issue。
 - 本地权限记录：提交时 Git 无法创建 `.git/index.lock`，已记录并申请受控权限重试；不影响代码验证，继续按 issue 顺序推进。
+- 外部权限记录：向 GitHub #927 发布完成评论并关闭 issue 的请求因安全权限审批超时未执行；不能视为已评论或已关闭，待权限恢复后补发。根据执行规则继续处理 A05-03。
