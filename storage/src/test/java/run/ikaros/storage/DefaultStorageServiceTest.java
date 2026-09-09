@@ -221,6 +221,24 @@ class DefaultStorageServiceTest {
     }
 
     @Test
+    void refusesToAbortCompletedUploadSession() {
+        UploadSessionRepository sessions = mock(UploadSessionRepository.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        DefaultStorageService uploadService = new DefaultStorageService(resourceOwnership, attachmentRepository,
+            blobRepository, placementRepository, derivedAttachmentRepository, auditService, transaction,
+            null, null, null, sessions);
+        Instant now = Instant.now();
+        UploadSessionEntity completed = new UploadSessionEntity(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+            "local", "tmp/a.bin", 10L, "a".repeat(64), UploadSessionState.COMPLETED, now, now, now, 1L, "key");
+        when(sessions.findByIdAndOwnerId(completed.id(), completed.ownerId())).thenReturn(Mono.just(completed));
+
+        StepVerifier.create(uploadService.abortUploadSession(completed.ownerId(), completed.id()))
+            .expectErrorMessage("已完成的上传会话不能终止").verify();
+        verify(sessions, org.mockito.Mockito.never()).save(any(UploadSessionEntity.class));
+    }
+
+    @Test
     void recordsDerivedAttachmentSourceWithoutChangingOriginalKind() {
         UUID ownerId = UUID.randomUUID(); UUID resourceId = UUID.randomUUID();
         UUID sourceId = UUID.randomUUID(); UUID derivedId = UUID.randomUUID(); UUID blobId = UUID.randomUUID();

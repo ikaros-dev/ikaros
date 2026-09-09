@@ -606,7 +606,7 @@
 - 实现进展：上传意图创建已持久化 `storage_upload_session` 并返回 `session_id`；新增当前用户终止会话 HTTP 入口，终止后清理临时 Provider 对象。`mvn -pl storage -am -DskipTests compile` 通过；过期扫描仍待接入。
 - 实现进展：新增过期会话定时扫描，OPEN/RECEIVING/FINALIZING 超时会话标记 EXPIRED，随后清理临时对象并发布 `storage.upload-session.expired@1`；单会话清理失败可重试且不影响其他会话。编译通过，待补扫描器测试与最终 A14-06 验收。
 - 验证：`UploadSessionExpirySchedulerTest` 2/2 通过，覆盖过期标记、临时对象清理、事件发布及 Provider 不可用时保留重试机会。
-- 最终验收：会话创建已返回 `session_id`，终止入口按 Owner 隔离并清理临时对象，过期扫描可重试清理；`DefaultStorageServiceTest` 14/14、`UploadSessionExpirySchedulerTest` 2/2 通过。主要 commits：`a6f60eb0`、`e6909303`、`2f628294`、`a5408adc`、`6748d3e0`、`e87f1de0`。
+- 最终验收：会话创建已返回 `session_id`，终止入口按 Owner 隔离并清理临时对象，过期扫描可重试清理；`DefaultStorageServiceTest` 15/15、`UploadSessionExpirySchedulerTest` 2/2 通过。主要 commits：`a6f60eb0`、`e6909303`、`2f628294`、`a5408adc`、`6748d3e0`、`e87f1de0`、`1af16c2c`。
 - 契约追溯：已登记上传意图/终止会话 HTTP operation、请求/响应 Schema 及 `storage.upload-session.expired@1` 事件。
 
 ## A12 资源关系管理（父 issue）
