@@ -680,3 +680,9 @@
 - 实现修复：现有 `AttachmentPreviewService` 已实现优先级选择和可用性过滤；扩展测试为两条不同优先级路径，确认低 priority 的可用绑定被选中。
 - 失败语义：没有可用绑定返回 `StorageUnavailableException`；不产生 grant/lease 伪成功；不修改 Attachment、Blob、Placement。
 - 验证：`AttachmentPreviewServiceTest` 2/2，Maven targeted test BUILD SUCCESS。
+## A16-04 生成预览地址
+- 日期：2026-09-09
+- 推荐决策：复用 `GET /api/attachments/{attachmentId}/preview-url`，由资源 owner 校验、Blob/Placement 查询、Binding 优先级选择和 Delivery Grant 合同共同生成短期地址。
+- 实现修复：现有预览路径已接入授权、可用 Placement、Provider 健康和绑定选择；扩展测试覆盖多优先级候选，确认返回的是选中路径的预览地址。
+- 失败语义：附件不存在或无权访问、无可用绑定分别沿用既有错误；失败不创建 grant/lease 伪成功，不暴露原始凭据。
+- 验证：`AttachmentPreviewServiceTest` 2/2，Maven targeted test BUILD SUCCESS。
