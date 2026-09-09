@@ -7,5 +7,6 @@ import jakarta.validation.Valid; import java.util.UUID; import org.springframewo
     @GetMapping public Flux<MusicPlaylistView> list(@RequestHeader("X-Ikaros-Actor-Id") UUID owner){return service.list(owner);}
     @GetMapping("/{playlistId}/entries") public Flux<MusicPlaylistEntryView> entries(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,@PathVariable UUID playlistId){return service.entries(owner,playlistId);}
     @PostMapping("/{playlistId}/entries") public Mono<MusicPlaylistEntryView> add(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,@PathVariable UUID playlistId,@Valid @RequestBody AddMusicPlaylistEntryRequest r){return service.add(owner,playlistId,r);}
+    @PatchMapping("/{playlistId}/entries/order") public Mono<ResponseEntity<MusicPlaylistView>> reorder(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,@PathVariable UUID playlistId,@RequestHeader("If-Match") String ifMatch,@Valid @RequestBody ReorderMusicPlaylistRequest r){return service.reorder(owner,playlistId,r,IfMatchVersion.parse(ifMatch)).map(view->ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view));}
     @DeleteMapping("/entries/{entryId}") public Mono<Void> remove(@RequestHeader("X-Ikaros-Actor-Id") UUID owner,@PathVariable UUID entryId){return service.remove(owner,entryId);}
 }

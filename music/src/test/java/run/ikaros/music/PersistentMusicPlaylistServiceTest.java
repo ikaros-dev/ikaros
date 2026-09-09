@@ -56,4 +56,22 @@ class PersistentMusicPlaylistServiceTest {
         StepVerifier.create(new PersistentMusicPlaylistService(playlists, Mockito.mock(MusicPlaylistEntryRepository.class), tracks).add(owner, id, new AddMusicPlaylistEntryRequest(trackId)))
             .expectError(run.ikaros.common.NotFoundException.class).verify();
     }
+
+    @Test void reordersOwnedPlaylistEntriesAndBumpsVersion() {
+        UUID owner = UUID.randomUUID(); UUID playlistId = UUID.randomUUID(); UUID first = UUID.randomUUID(); UUID second = UUID.randomUUID(); Instant now = Instant.now();
+        MusicPlaylistRepository playlists = Mockito.mock(MusicPlaylistRepository.class); MusicPlaylistEntryRepository entries = Mockito.mock(MusicPlaylistEntryRepository.class);
+        when(playlists.findById(playlistId)).thenReturn(Mono.just(new MusicPlaylistEntity(playlistId, owner, "List", null, now, now, 2L)));
+        when(entries.findAllByPlaylistIdOrderByPositionAsc(playlistId)).thenReturn(Flux.just(new MusicPlaylistEntryEntity(first, playlistId, UUID.randomUUID(), 0, now), new MusicPlaylistEntryEntity(second, playlistId, UUID.randomUUID(), 1, now)));
+        when(entries.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(playlists.save(any())).thenReturn(Mono.just(new MusicPlaylistEntity(playlistId, owner, "List", null, now, now, 3L)));
+        StepVerifier.create(new PersistentMusicPlaylistService(playlists, entries, Mockito.mock(MusicTrackRepository.class)).reorder(owner, playlistId, new ReorderMusicPlaylistRequest(java.util.List.of(second, first)), 2L))
+            .expectNextMatches(view -> view.version() == 3L).verifyComplete();
+    }
+
+    @Test void rejectsPlaylistReorderWithStaleVersion() {
+        UUID owner = UUID.randomUUID(); UUID playlistId = UUID.randomUUID(); Instant now = Instant.now(); MusicPlaylistRepository playlists = Mockito.mock(MusicPlaylistRepository.class);
+        when(playlists.findById(playlistId)).thenReturn(Mono.just(new MusicPlaylistEntity(playlistId, owner, "List", null, now, now, 2L)));
+        StepVerifier.create(new PersistentMusicPlaylistService(playlists, Mockito.mock(MusicPlaylistEntryRepository.class), Mockito.mock(MusicTrackRepository.class)).reorder(owner, playlistId, new ReorderMusicPlaylistRequest(java.util.List.of(UUID.randomUUID())), 1L))
+            .expectError(run.ikaros.common.ConflictException.class).verify();
+    }
 }
