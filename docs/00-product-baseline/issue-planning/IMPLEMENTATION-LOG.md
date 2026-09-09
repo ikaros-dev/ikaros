@@ -262,6 +262,14 @@
 - 失败语义：消费者失败时保留未完成 Outbox 事实和投递状态，下一次调度/重启继续扫描；dispatcher 记录脱敏错误并继续保留可重试状态，不把失败事件标记为已投递。
 - 验证：`OutboxDispatcherTest` 验证重启后的重扫入口遍历稳定 consumer；`DurableEventServiceTest` 验证事件通过公开 consumer view 投递。真实 PostgreSQL 重启回放需要 Docker Desktop + Testcontainers，当前环境未安装 Docker，未伪造运行证据。
 
+## A03-03 重复投递不重复执行副作用
+
+- 日期：2026-09-10
+- 验收结论：重复投递使用 Inbox 的 `(consumer_id, event_id)` 唯一写入结果判定；并发请求只有成功 claim 的一方执行 handler，重复方跳过副作用并继续完成投递标记。失败 handler 不提交 Inbox/完成标记，后续投递仍可重试。
+- 追踪语义：Outbox 记录 `request_id`、`correlation_id`、`causation_id` 和 `actor_id`；消费者收到 `DurableEvent` view，不绕过公开 Integration API 暴露持久化实体。
+- Console 对接：`console/src/views/integration/index.vue` 的“集成事件”页读取已登记的 `GET /health/operations`，展示待投递、已尝试未完成、最近尝试，并提供加载、错误和空结果状态；不在前端伪造事件执行结果。
+- 验证：`OutboxRetrySemanticsTest` 新增两次并发 dispatch 仅执行一次 handler 的可重复测试；相关 DurableEvent、Dispatcher、Retry 测试共 11 项通过；Console `pnpm typecheck` 和 `pnpm build` 通过。真实 PostgreSQL 唯一约束并发回放仍需要 Docker Desktop + Testcontainers，当前环境未安装 Docker，未伪造运行证据。
+
 ## A03-04 查询并重试投递失败事件
 
 - 日期：2026-09-09
@@ -273,9 +281,9 @@
 ## A03 可靠事件投递（父 issue）
 
 - 日期：2026-09-09
-- 验收结论：A03-01 至 A03-04 已按顺序独立完成并在 GitHub 关闭；父功能覆盖 Outbox 原子写入、重启重扫、Inbox 原子去重、失败事件查询与人工重试。
-- 推荐决策：继续由 Integration Owner 暴露 durable event capability，由已登记的上层 Operations API 适配查询/重试；当前不增加未登记的 HTTP 路由或 UI。事件 payload 保留 request/correlation/causation/actor 追踪字段。
-- 验证证据：A03-04 事件回归测试 10 项全部通过；`mvn -pl application -am -DskipTests compile` BUILD SUCCESS；各子 issue 的独立测试与 commit 已记录在本日志及 GitHub 完成评论中。
+- 验收结论：A03-01 至 A03-04 的实现与本地验证记录已补齐；GitHub 评论/关闭状态需在认证恢复后逐项同步，不能由本地日志代替。父功能覆盖 Outbox 原子写入、重启重扫、Inbox 原子去重、失败事件查询与人工重试。
+- 推荐决策：继续由 Integration Owner 暴露 durable event capability，由已登记的上层 Operations API 适配查询/重试；A03-03 的诊断展示已接入已有 Operations API，不增加未登记的 HTTP 路由。事件 payload 保留 request/correlation/causation/actor 追踪字段。
+- 验证证据：A03-03 事件回归测试 11 项全部通过；Console `pnpm typecheck`、`pnpm build` 通过；各子 issue 的独立测试与 commit 已记录在本日志，GitHub 同步因当前 API 401 暂缓。
 - 剩余限制：当前开发环境未安装 Docker，真实 PostgreSQL 事务回滚、Outbox 重启回放、Inbox 唯一约束和跨 API 联调未执行；未将环境缺失伪造为通过。
 
 ## A04-01 提交任务并查询状态
