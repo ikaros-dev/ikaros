@@ -209,7 +209,17 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
                     Instant.now(), session.version(), session.idempotencyKey()));
             })
             .map(this::toSessionView)
-            .as(transactionalOperator::transactional);
+            .as(transactionalOperator::transactional)
+            .flatMap(view -> cleanupUploadObject(view).thenReturn(view));
+    }
+
+    private Mono<Void> cleanupUploadObject(UploadSessionView session) {
+        if (providerRegistry == null || objectProviderRegistry == null) {
+            return Mono.error(new ConflictException("上传会话物理清理能力未配置"));
+        }
+        return providerRegistry.getByKey(session.provider())
+            .switchIfEmpty(Mono.error(new ConflictException("上传会话 Provider 不存在")))
+            .flatMap(provider -> objectProviderRegistry.deleteObject(provider, session.objectKey()));
     }
 
     @Override

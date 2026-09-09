@@ -24,4 +24,7 @@ public interface StorageObjectProvider {
 
     Mono<StorageObjectMetadata> verify(StorageProvider provider, String objectKey);
 
+    /** 删除仅属于临时上传会话的对象；业务 Attachment 不通过此能力删除。 */
+    Mono<Void> deleteObject(StorageProvider provider, String objectKey);
+
 }

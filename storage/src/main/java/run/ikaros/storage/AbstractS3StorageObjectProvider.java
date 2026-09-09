@@ -14,6 +14,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -94,6 +95,15 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
                     object.checksumSHA256());
             });
         })).subscribeOn(Schedulers.boundedElastic());
+    }
+
+    @Override
+    public Mono<Void> deleteObject(StorageProvider provider, String objectKey) {
+        return credentialResolver.resolve(provider.secretReference()).flatMap(credentials -> Mono.fromRunnable(() -> {
+            S3Settings settings = S3Settings.from(provider);
+            withClient(settings, credentials, client -> client.deleteObject(DeleteObjectRequest.builder()
+                .bucket(settings.bucket()).key(objectKey).build()));
+        })).subscribeOn(Schedulers.boundedElastic()).then();
     }
 
     private <T> T withClient(S3Settings settings, software.amazon.awssdk.auth.credentials.AwsCredentialsProvider credentials,

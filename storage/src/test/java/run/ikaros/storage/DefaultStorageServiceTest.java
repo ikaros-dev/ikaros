@@ -157,22 +157,30 @@ class DefaultStorageServiceTest {
         UUID sessionId = UUID.randomUUID();
         Instant now = Instant.now();
         UploadSessionRepository sessions = mock(UploadSessionRepository.class);
+        StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
+        StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
         TransactionalOperator transaction = mock(TransactionalOperator.class);
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
         DefaultStorageService uploadService = new DefaultStorageService(resourceOwnership, attachmentRepository,
             blobRepository, placementRepository, derivedAttachmentRepository, auditService, transaction,
-            null, null, null, sessions);
+            providers, null, null, sessions);
+        uploadService.setObjectProviderRegistry(objects);
         UploadSessionEntity open = new UploadSessionEntity(sessionId, ownerId, resourceId, "local", "tmp/a.bin",
             10L, "a".repeat(64), UploadSessionState.OPEN, now.plusSeconds(600), now, now, 0L, "key");
         UploadSessionEntity aborted = new UploadSessionEntity(sessionId, ownerId, resourceId, "local", "tmp/a.bin",
             10L, "a".repeat(64), UploadSessionState.ABORTED, open.expiresAt(), now, now.plusSeconds(1), 1L, "key");
         when(sessions.findByIdAndOwnerId(sessionId, ownerId)).thenReturn(Mono.just(open));
         when(sessions.save(any(UploadSessionEntity.class))).thenReturn(Mono.just(aborted));
+        StorageProvider provider = new StorageProvider(UUID.randomUUID(), "local", "local", StorageTier.WARM,
+            StorageProviderStatus.ENABLED, null, java.util.Map.of(), now, now);
+        when(providers.getByKey("local")).thenReturn(Mono.just(provider));
+        when(objects.deleteObject(provider, "tmp/a.bin")).thenReturn(Mono.empty());
 
         StepVerifier.create(uploadService.abortUploadSession(ownerId, sessionId))
             .assertNext(view -> assertThat(view.state()).isEqualTo(UploadSessionState.ABORTED))
             .verifyComplete();
         verify(sessions).save(argThat(value -> value.state() == UploadSessionState.ABORTED));
+        verify(objects).deleteObject(provider, "tmp/a.bin");
     }
 
     @Test

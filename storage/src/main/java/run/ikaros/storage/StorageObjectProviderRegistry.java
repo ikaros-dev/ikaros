@@ -32,6 +32,10 @@ public class StorageObjectProviderRegistry {
         return find(provider).verify(provider, objectKey);
     }
 
+    public Mono<Void> deleteObject(StorageProvider provider, String objectKey) {
+        return find(provider).deleteObject(provider, objectKey);
+    }
+
     private StorageObjectProvider find(StorageProvider provider) {
         return providers.stream().filter(candidate -> candidate.supports(provider)).findFirst()
             .orElseThrow(() -> new ConflictException("未配置 Storage Provider 物理 adapter: " + provider.providerType()));
