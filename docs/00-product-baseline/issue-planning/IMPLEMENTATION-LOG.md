@@ -1,5 +1,13 @@
 # Ikaros V2 实施记录
 
+## A17-05 达到预算时阻止申请
+
+- 日期：2026-09-09
+- 推荐决策：恢复申请统一经过 Restore Budget Owner 的预算评估；超限按策略拒绝、要求显式确认或进入预算恢复后的队列，拒绝不创建 Restore Request。
+- 原因：预算是恢复副作用的前置门禁，必须在任务提交前完成；现有实现同时覆盖单次、并发和每日请求字节预算，保留可追踪的 `budget_decision`。
+- 失败语义：非法规模和超预算返回稳定冲突错误；目标不存在时先返回 NotFound，不执行预算检查、不保存请求、不提交任务；确认令牌仅在 REQUIRE_CONFIRMATION 策略下生效。
+- 验证：`mvn -pl storage -am -Dtest=StorageRestoreBudgetServiceTest,StorageRestoreRequestServiceTest -Dsurefire.failIfNoSpecifiedTests=false test`；预算拒绝/确认/排队和目标不存在分支共 7 个测试全部通过。
+
 ## A17-04 恢复失败后重试
 
 - 日期：2026-09-09

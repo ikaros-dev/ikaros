@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import run.ikaros.common.NotFoundException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.media.api.MediaRestoreTargetQuery;
 import run.ikaros.operations.api.BackgroundTaskService;
@@ -70,5 +71,21 @@ class StorageRestoreRequestServiceTest {
             .verifyComplete();
 
         verifyNoInteractions(attachments, resources, blobs, placements, tasks, budget, mediaTargets, events);
+    }
+
+    @Test
+    void missingAttachmentIsRejectedBeforeBudgetCheckOrRequestSave() {
+        UUID actorId = UUID.randomUUID();
+        UUID attachmentId = UUID.randomUUID();
+        when(requests.findByActorIdAndScopeAndScopeIdAndIdempotencyKey(actorId, StorageRestoreScope.ATTACHMENT,
+            attachmentId, "restore-key")).thenReturn(Mono.empty());
+        when(attachments.findById(attachmentId)).thenReturn(Mono.empty());
+
+        StepVerifier.create(service.requestAttachment(actorId, new RequestAttachmentRestore(attachmentId, "STANDARD"),
+            "restore-key"))
+            .expectErrorSatisfies(error -> org.junit.jupiter.api.Assertions.assertInstanceOf(NotFoundException.class, error))
+            .verify();
+
+        verifyNoInteractions(resources, blobs, placements, tasks, budget, mediaTargets, events);
     }
 }
