@@ -23,6 +23,11 @@ const duplicateRows = ref<Row[]>([]);
 const correctionDialog = ref(false);
 const correctionSaving = ref(false);
 const correctionCandidate = ref<Row>({});
+const playbackLoading = ref("");
+const playbackError = ref("");
+const playbackUrl = ref("");
+const playbackTrack = ref<Row | null>(null);
+const playbackSession = ref<Row | null>(null);
 const musicForm = ref({ attachmentId: "", title: "", durationMillis: null as number | null, codec: "", container: "" });
 
 const kind = computed(() => String(route.path.split("/").pop()));
@@ -96,6 +101,23 @@ async function saveCorrection() {
   finally { correctionSaving.value = false; }
 }
 
+async function playMusic(row: Row) {
+  if (!row.trackId) { playbackError.value = "该导入记录没有 Track，无法播放"; return; }
+  playbackLoading.value = String(row.trackId); playbackError.value = ""; playbackUrl.value = "";
+  try {
+    const sources = await http.get<unknown, unknown>(`/music/tracks/${row.trackId}/audio-sources`) as Row[];
+    const source = sources.find(item => String(item.availability).toUpperCase() === "AVAILABLE");
+    if (!source?.id || !source.attachmentId) throw new Error("没有可用的 Audio Source");
+    playbackSession.value = await http.post<unknown, unknown>(`/music/playback/tracks/${row.trackId}/sessions`, { data: { sourceId: source.id, positionMillis: 0 } }) as Row;
+    const preview = await http.get<unknown, unknown>(`/attachments/${source.attachmentId}/preview-url`) as Row;
+    if (!preview.url) throw new Error("服务端没有返回可播放地址");
+    playbackTrack.value = row; playbackUrl.value = preview.url;
+  } catch (e: any) { playbackSession.value = null; playbackError.value = e?.response?.data?.detail || e?.message || "播放歌曲失败"; }
+  finally { playbackLoading.value = ""; }
+}
+
+function clearPlayback() { playbackUrl.value = ""; playbackTrack.value = null; playbackSession.value = null; }
+
 onMounted(load);
 </script>
 
@@ -105,7 +127,7 @@ onMounted(load);
     <el-alert v-if="error" :title="error" type="warning" show-icon :closable="false" class="mb-4"/><el-alert v-if="message" :title="message" type="success" show-icon :closable="false" class="mb-4"/>
     <template v-if="isMusic">
       <el-card shadow="never" class="mb-4"><template #header><span>导入音乐附件</span></template><el-form label-position="top" class="max-w-3xl"><el-form-item label="音频 Attachment ID" required><el-input v-model="musicForm.attachmentId" placeholder="先在附件与存储上传音频，再粘贴 Attachment ID" clearable/></el-form-item><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><el-form-item label="歌曲标题"><el-input v-model="musicForm.title" placeholder="留空使用附件文件名"/></el-form-item><el-form-item label="时长（毫秒）"><el-input-number v-model="musicForm.durationMillis" :min="0" controls-position="right" class="w-full"/></el-form-item><el-form-item label="编码"><el-input v-model="musicForm.codec" placeholder="如 MP3、FLAC"/></el-form-item><el-form-item label="容器"><el-input v-model="musicForm.container" placeholder="如 MPEG、OGG"/></el-form-item></div><div class="flex gap-2"><el-button :loading="duplicateLoading" @click="checkDuplicates">检查重复</el-button><el-button type="primary" :loading="submitting" @click="importMusic">导入音乐</el-button></div></el-form><el-alert v-if="duplicateRows.length" title="发现相同内容的已入库歌曲，导入前请确认是否复用。" type="warning" show-icon :closable="false" class="mt-4"/><el-table v-if="duplicateRows.length" :data="duplicateRows" stripe class="mt-3"><el-table-column prop="title" label="已存在歌曲"/><el-table-column prop="trackId" label="Track ID" min-width="280"/><el-table-column prop="attachmentId" label="附件 ID" min-width="280"/></el-table><el-empty v-else-if="!duplicateLoading && musicForm.attachmentId" description="未发现相同内容的音乐" :image-size="50" class="py-3"/></el-card>
-      <el-card shadow="never"><template #header><div class="flex justify-between"><span>音乐导入记录</span><el-input v-model="query" clearable placeholder="搜索标题或 Track ID" class="w-64"/></div></template><el-skeleton v-if="loading" :rows="5" animated/><el-empty v-else-if="!filtered.length" description="暂无音乐导入记录"/><el-table v-else :data="filtered" stripe><el-table-column prop="title" label="歌曲" min-width="220"/><el-table-column prop="attachmentId" label="源附件" min-width="280"/><el-table-column prop="trackId" label="Track ID" min-width="280"/><el-table-column prop="durationMillis" label="时长（毫秒）" width="140"/><el-table-column prop="status" label="状态" width="120"/><el-table-column prop="errorMessage" label="错误" min-width="220"/><el-table-column prop="createdAt" label="导入时间" min-width="180"/><el-table-column label="操作" width="130" fixed="right"><template #default="scope"><el-button link type="primary" @click="recognizeMusic(scope.row)">识别信息</el-button></template></el-table-column></el-table></el-card>
+      <el-alert v-if="playbackError" :title="playbackError" type="warning" show-icon :closable="false" class="mb-4"/><el-card v-if="playbackUrl" shadow="never" class="mb-4"><template #header><div class="flex justify-between items-center"><span>正在播放：{{ playbackTrack?.title || playbackTrack?.trackId }}</span><el-button link @click="clearPlayback">关闭</el-button></div></template><audio :src="playbackUrl" controls autoplay class="w-full" @error="playbackError = '音频加载失败，请检查附件可用状态'"/><div class="text-xs text-[var(--el-text-color-secondary)] mt-2">播放会话：{{ playbackSession?.id || "—" }} · 来源：{{ playbackSession?.sourceId || "—" }}</div></el-card><el-card shadow="never"><template #header><div class="flex justify-between"><span>音乐导入记录</span><el-input v-model="query" clearable placeholder="搜索标题或 Track ID" class="w-64"/></div></template><el-skeleton v-if="loading" :rows="5" animated/><el-empty v-else-if="!filtered.length" description="暂无音乐导入记录"/><el-table v-else :data="filtered" stripe @row-click="playMusic"><el-table-column prop="title" label="歌曲" min-width="220"/><el-table-column prop="attachmentId" label="源附件" min-width="280"/><el-table-column prop="trackId" label="Track ID" min-width="280"/><el-table-column prop="durationMillis" label="时长（毫秒）" width="140"/><el-table-column prop="status" label="状态" width="120"/><el-table-column prop="errorMessage" label="错误" min-width="220"/><el-table-column prop="createdAt" label="导入时间" min-width="180"/><el-table-column label="操作" width="130" fixed="right"><template #default="scope"><el-button link type="primary" @click.stop="recognizeMusic(scope.row)">识别信息</el-button></template></el-table-column></el-table></el-card>
       <el-dialog v-model="candidateDialog" title="歌曲信息候选" width="860px"><el-skeleton v-if="candidateLoading" :rows="5" animated/><el-empty v-else-if="!candidates.length" description="未识别到嵌入标签"/><el-table v-else :data="candidates" stripe><el-table-column prop="source" label="来源" width="100"/><el-table-column prop="title" label="标题" min-width="160"/><el-table-column prop="artist" label="艺术家" min-width="140"/><el-table-column prop="album" label="专辑" min-width="140"/><el-table-column prop="trackNumber" label="曲目号" width="90"/><el-table-column prop="releaseYear" label="年份" width="90"/><el-table-column label="操作" width="180"><template #default="scope"><el-button link type="primary" @click="editCandidate(scope.row)">修正</el-button><el-button v-if="associated(scope.row.id)" link type="success" disabled>已关联</el-button><el-button v-else link type="primary" :loading="associationLoading === scope.row.id" @click="associateCandidate(scope.row)">关联</el-button></template></el-table-column></el-table></el-dialog>
       <el-dialog v-model="correctionDialog" title="修正歌曲信息" width="560px"><el-form label-position="top"><div class="grid grid-cols-1 md:grid-cols-2 gap-3"><el-form-item label="标题"><el-input v-model="correctionCandidate.title"/></el-form-item><el-form-item label="艺术家"><el-input v-model="correctionCandidate.artist"/></el-form-item><el-form-item label="专辑"><el-input v-model="correctionCandidate.album"/></el-form-item><el-form-item label="专辑艺术家"><el-input v-model="correctionCandidate.albumArtist"/></el-form-item><el-form-item label="曲目号"><el-input-number v-model="correctionCandidate.trackNumber" :min="1" class="w-full"/></el-form-item><el-form-item label="碟号"><el-input-number v-model="correctionCandidate.discNumber" :min="1" class="w-full"/></el-form-item><el-form-item label="流派"><el-input v-model="correctionCandidate.genre"/></el-form-item><el-form-item label="发行年份"><el-input v-model="correctionCandidate.releaseYear"/></el-form-item></div></el-form><template #footer><el-button @click="correctionDialog=false">取消</el-button><el-button type="primary" :loading="correctionSaving" @click="saveCorrection">保存修正</el-button></template></el-dialog>
     </template>
