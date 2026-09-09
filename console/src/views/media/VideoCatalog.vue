@@ -7,10 +7,10 @@ type Subject = { id: string; resourceId?: string; kind?: string; createdAt?: str
 type Resource = { id: string; primaryTitle?: string; title?: string };
 type Season = { id: string; seasonNumber?: number; name?: string };
 type Episode = { id: string; resourceId?: string; episodeNumber?: number };
-type Release = { id: string; attachmentId?: string; releaseGroup?: string; versionLabel?: string; state?: string };
+type Release = { id: string; attachmentId?: string; releaseGroup?: string; versionLabel?: string; state?: string; availability?: string; availabilityChecked?: boolean };
 type Subtitle = { id: string; attachmentId?: string; language?: string; title?: string; format?: string; forced?: boolean; hearingImpaired?: boolean };
-type Attachment = { id: string; kind?: string; fileName?: string; availability?: string };
-const router = useRouter();
+type Attachment = { id: string; kind?: string; fileName?: string; availability?: string; availabilityChecked?: boolean };
+const router = useRouter(); const availabilityLoading = ref(false);
 const rows = ref<Subject[]>([]); const loading = ref(false); const saving = ref(false); const orderLoading = ref(false); const metadataLoading = ref(false); const subtitleSaving = ref(false); const error = ref("");
 const dialog = ref(false); const orderDialog = ref(false); const metadataDialog = ref(false); const selectedSubject = ref<Subject | null>(null); const selectedRelease = ref<Release | null>(null);
 const seasons = ref<Season[]>([]); const episodes = ref<Episode[]>([]); const releases = ref<Release[]>([]); const subtitles = ref<Subtitle[]>([]); const covers = ref<Attachment[]>([]); const selectedSeasonId = ref("");
@@ -27,6 +27,9 @@ async function openMetadata(subject: Subject) { selectedSubject.value = subject;
 async function selectRelease(release: Release) { selectedRelease.value = release; if (!release.id) return; try { const result = await http.get<unknown, unknown>(`/media/releases/${release.id}/subtitles`); subtitles.value = Array.isArray(result) ? result as Subtitle[] : []; } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "字幕列表加载失败"; } }
 async function addSubtitle() { if (!selectedRelease.value?.id || !subtitleForm.value.attachmentId.trim() || !subtitleForm.value.language.trim() || !subtitleForm.value.title.trim()) { error.value = "Release、字幕 Attachment、语言和标题不能为空"; return; } subtitleSaving.value = true; try { await http.post(`/media/releases/${selectedRelease.value.id}/subtitles`, { data: { ...subtitleForm.value, attachmentId: subtitleForm.value.attachmentId.trim(), language: subtitleForm.value.language.trim(), title: subtitleForm.value.title.trim() } }); subtitleForm.value = { attachmentId: "", language: "zh-CN", title: "", format: "SRT", provider: "", offsetMillis: 0, forced: false, hearingImpaired: false }; await selectRelease(selectedRelease.value); } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "字幕关联失败"; } finally { subtitleSaving.value = false; } }
 watch(metadataLoading, value => { if (value) metadataDialog.value = true; });
+async function checkAvailability(attachmentId: string) { try { const result: any = await http.get(`/attachments/${attachmentId}/availability`); return String(result?.availability || "UNKNOWN").toUpperCase(); } catch { return "UNKNOWN"; } }
+function releaseLabel(release: Release) { return `${release.versionLabel || release.id} · ${release.attachmentId || "无附件"} · ${release.availability || "UNKNOWN"}`; }
+watch([covers, releases], async ([coverRows, releaseRows]) => { if (availabilityLoading.value) return; const coverItems = coverRows as Attachment[]; const releaseItems = releaseRows as Release[]; if (coverItems.every(item => item.availabilityChecked) && releaseItems.every(item => item.availabilityChecked)) return; availabilityLoading.value = true; try { if (coverItems.length) covers.value = await Promise.all(coverItems.map(async item => ({ ...item, availability: await checkAvailability(item.id), availabilityChecked: true }))); if (releaseItems.length) releases.value = await Promise.all(releaseItems.map(async item => ({ ...item, availability: item.attachmentId ? await checkAvailability(item.attachmentId) : "UNKNOWN", availabilityChecked: true }))); } finally { availabilityLoading.value = false; } }, { deep: false });
 onMounted(load);
 </script>
 
