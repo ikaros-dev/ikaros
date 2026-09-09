@@ -1097,3 +1097,9 @@
 - Console：`/music` 列表歌曲区支持选择列表、加载 Entry、添加 Track 和移除 Entry，展示加载、空结果、成功和错误状态。
 - 契约追溯：补齐 `music.list-playlist-entries`、`music.add-playlist-entry`、`music.remove-playlist-entry` 的 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentMusicPlaylistServiceTest` 5/5；Console `pnpm typecheck` 与 `pnpm build` 通过；application package BUILD SUCCESS；运行时迁移版本 `202609100900`，列表 Entry 查询/添加/删除 API 未认证均返回 401，运行时 OpenAPI 已出现对应路径，Console `/music` 返回 200；主要提交：`232b064a`、`7d4973cd`。
+## B09-03 调整歌曲顺序
+- 日期：2026-09-10
+- 实现：新增带 `If-Match` 的 Playlist Entry 顺序调整 API，校验列表归属、版本和完整 Entry 集合，成功后递增列表版本并持久化位置。
+- Console：`/music` 列表歌曲区支持上移/下移并保存到 API，重新加载结果，展示加载、空结果、成功和冲突/错误状态。
+- 契约追溯：新增 `music.reorder-playlist` 的 HTTP Operation Registry 与 OpenAPI 定义。
+- 验证：`PersistentMusicPlaylistServiceTest` 7/7；Console `pnpm typecheck` 通过；application package 与运行时验证待本轮完成；主要提交：`e26a9d21`。

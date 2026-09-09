@@ -1270,6 +1270,23 @@ paths:
         '204': { description: Removed playlist entry }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /music/playlists/{playlist_id}/entries/order:
+    patch:
+      tags: [Music]
+      operationId: reorderMusicPlaylist
+      x-ikaros-contract-id: music.reorder-playlist
+      summary: Reorder songs in a music playlist
+      parameters:
+        - { name: playlist_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ReorderMusicPlaylistRequest' } } } }
+      responses:
+        '200': { description: Reordered playlist, content: { application/json: { schema: { $ref: '#/components/schemas/MusicPlaylist' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
   /music/playback/tracks/{track_id}/sessions:
     post:
       tags: [Music]
@@ -2072,6 +2089,12 @@ paths:
         track_id: { type: string, format: uuid }
         position: { type: integer }
         added_at: { type: string, format: date-time }
+    ReorderMusicPlaylistRequest:
+      type: object
+      required: [entry_ids]
+      additionalProperties: false
+      properties:
+        entry_ids: { type: array, minItems: 1, maxItems: 100, items: { type: string, format: uuid } }
     CreateMusicQueueRequest:
       type: object
       required: [track_ids]
