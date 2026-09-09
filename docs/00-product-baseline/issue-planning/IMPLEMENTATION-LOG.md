@@ -694,6 +694,7 @@
 - 推荐决策：保留既有事务化 Collection 创建路径，新增 owner-scoped、`If-Match` 保护的 PUT 编辑路径；编辑只修改名称/描述，保留 Collection UUID、父级和资源成员关系。
 - 失败语义：API 校验空/超长名称和描述；不存在或无权 Collection 拒绝；版本不匹配返回 Conflict，不写入、不审计，不改变成员 Resource。
 - 验证：`DefaultCollectionServiceTest` 2/2 通过，覆盖创建事件/审计、成员关系路径和编辑版本校验；新增 `CollectionView.version` 供 ETag 返回。真实 PostgreSQL 联调仍需 Docker/Testcontainers。
+- Console 对接审计：集合页加载 `GET /collections`；“新建集合”调用 `POST /collections`，“编辑所选集合”调用带当前版本 `If-Match` 的 `PUT /collections/{id}`，成功后刷新，版本冲突显示可理解的错误。
 
 ## A11-02 添加与移除资源
 
@@ -701,6 +702,7 @@
 - 推荐决策：复用 CollectionResource 关系 API；添加前同时校验 Collection 与 Resource 属于当前用户，数据库唯一约束保证幂等边界；移除只删除组织关系，不删除 Resource 或其 Attachment/Blob。
 - 失败语义：任一目标不存在/无权返回 NotFound；重复添加返回 Conflict；添加/移除与事件、审计在同一 reactive transaction 内完成。
 - 验证：`DefaultCollectionServiceTest` 2/2 通过，覆盖创建后添加、移除及成员事件；真实 PostgreSQL 关系约束联调仍需 Docker/Testcontainers。
+- Console 对接审计：选择集合后加载 `GET /collections/{id}/resources`；“加入集合”调用 `POST /collections/{id}/resources/{resourceId}`，“移除”调用对应 `DELETE`，两者成功后重新读取成员列表。
 
 ## A11-03 调整资源顺序
 
@@ -708,6 +710,7 @@
 - 推荐决策：新增 `PUT /api/collections/{collectionId}/resources/order`，请求必须完整覆盖当前 Collection 成员且不可重复；服务按请求顺序从 0 重新编号，在同一 reactive transaction 内保存并审计。
 - 失败语义：Collection 不存在/无权返回 NotFound；空、重复、未知成员或不完整顺序拒绝且不写入；仅修改成员关系位置，不改变 Resource。
 - 验证：`DefaultCollectionServiceTest` 3/3 通过，覆盖成员重排和不完整顺序拒绝；真实 PostgreSQL 顺序约束联调仍需 Docker/Testcontainers。
+- Console 对接审计：成员编辑区以逗号分隔的 Resource UUID 生成完整顺序请求，调用 `PUT /collections/{id}/resources/order`；后端拒绝不完整/重复顺序时页面显示错误并保留当前列表。
 
 ## A11-04 移动 Collection 层级
 
@@ -715,6 +718,7 @@
 - 推荐决策：复用既有 `POST /api/collections/{collectionId}/move`；移动前校验新父级属于当前用户，随后沿祖先链拒绝自引用和任意深度循环，状态更新在 reactive transaction 内完成。
 - 失败语义：目标 Collection/父级不存在或无权时拒绝；自引用/循环返回 Conflict；失败不保存，不影响 Collection 成员 Resource。
 - 验证：Collection 服务回归 3/3 通过，包含层级移动路径所在服务编译与回归验证；真实 PostgreSQL 层级约束联调仍需 Docker/Testcontainers。
+- Console 对接审计：集合选择器调用 `POST /collections/{id}/move` 并以 `parentId` 查询参数传递父集合；成功刷新层级，失败显示移动错误。
 
 ## A11-05 阻止循环层级
 
@@ -722,6 +726,7 @@
 - 推荐决策：移动操作沿父级链递归检查，拒绝自引用和任意深度祖先循环；校验发生在保存前，失败不写入 Collection，也不影响成员 Resource。
 - 失败语义：自引用或将 Collection 移入自身后代返回 Conflict；不存在/无权父级返回 NotFound；不采用静默截断或自动改父级。
 - 验证：`DefaultCollectionServiceTest` 4/4 通过，新增覆盖自引用和三节点深层循环，确认没有 Collection 保存发生；真实 PostgreSQL 并发层级联调仍需 Docker/Testcontainers。
+- Console 对接审计：移动失败的 409 被转换为“会形成循环”的明确提示，未在前端自动改父级或吞掉后端拒绝。
 
 ## A11-06 删除 Collection 时保留资源
 
@@ -729,6 +734,7 @@
 - 推荐决策：新增 owner-scoped `DELETE /api/collections/{collectionId}`；先删除 CollectionResource 关系，再删除 Collection，明确不调用 Resource 删除能力。
 - 失败语义：不存在或无权 Collection 拒绝；成员关系清理与 Collection 删除在同一 reactive transaction 内完成，Resource、Attachment/Blob 保持不变。
 - 验证：`DefaultCollectionServiceTest` 5/5 通过，新增验证成员关系被清理、Collection 被删除且 ResourceRepository 无交互；真实 PostgreSQL FK/事务联调仍需 Docker/Testcontainers。
+- Console 对接审计：删除按钮要求显式确认并调用 `DELETE /collections/{id}`，确认文案明确说明只删除成员关系、保留 Resource；成功后清空选择和成员列表并刷新。
 
 ## A11 Collection 管理（父 issue）
 
@@ -737,6 +743,7 @@
 - 主要 commits：`5f31417a`、`faf246ba`、`470cf89c`、`f7be0e61`、`4456df9f`、`399e73c8`。
 - 统一决策：Collection 与 Resource 关系保持逻辑解耦；owner scope、事务、唯一约束、完整顺序校验和层级循环保护由 Application/Schema 共同保证；删除 Collection 不级联删除 Resource 或 Blob。
 - 验证证据：Collection 服务回归覆盖创建编辑、成员关系、排序、循环和删除边界；真实 PostgreSQL FK/事务/排序联调仍需 Docker/Testcontainers。
+- Console 对接总审计：`console/src/views/collections/index.vue` 已覆盖 A11 全部六项真实读写入口，未使用假数据或仅修改本地状态；运行页面 `/resource-center/collections` 返回 HTTP 200，Console typecheck/build 已通过。
 
 ## A12-01 创建指定类型的关系
 
