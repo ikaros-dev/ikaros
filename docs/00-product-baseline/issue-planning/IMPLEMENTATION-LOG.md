@@ -38,6 +38,13 @@
 - Console：`系统运维 → 系统健康` 读取 readiness 原始状态并显示异常，未将数据库可连接推导为应用已完成迁移。
 - 验证：`HealthControllerTest` 3/3；operations reactor BUILD SUCCESS；Console `/operations-center/health` 返回 200；真实 migration 失败启动回放仍受 Docker 缺失限制。
 
+## A05-01 初始化管理员
+
+- 日期：2026-09-10
+- 实现：复用 Authentication 的原子注册流程；首个用户在同一事务中创建凭据并获得 `admin` 初始角色，密码仅保存 PBKDF2 哈希，不返回或保存明文。
+- Console：`/setup` 向导真实检查 `/health/ready`，绑定管理员用户名/显示名/邮箱/密码，调用 `/auth/register`，展示校验、加载和失败状态，成功后跳转登录；不展示密码摘要。
+- 验证：`AuthenticationServiceTest` 4/4；Console `pnpm typecheck` 与 `pnpm build` 通过；Console `/setup` 返回 200；主要提交：`8f49bc35`。
+
 ## A18 副本与 Blob 清理（父 issue）
 
 - 日期：2026-09-09
