@@ -494,7 +494,8 @@
 - 日期：2026-09-09
 - 推荐决策：Step-up 成功后只签发短期、用途绑定的 Verification Grant；不修改 Session、权限或密钥。Grant 携带主体、`security_version`、purpose、SVL、签发/过期时间，由后续高风险 Command 与 Permission/Security Policy 一并校验。
 - 失败语义：挑战用途/目标不匹配或用户非 ACTIVE 时拒绝；用户状态检查必须先于 OTP 消费，拒绝路径不得执行验证 Provider 或签发 Grant。
-- 验证：`DefaultStepUpVerificationServiceTest` 覆盖 Grant claim、主体/用途/SVL/有效期、目标绑定和停用用户拒绝；4 项通过。
+- Console 对接审计：`console/src/views/security/Authentication.vue` 验证成功后把短期 Grant 放入内存请求上下文；后续 Console 请求由 HTTP 拦截器自动携带 `X-Ikaros-Verification-Grant`，退出登录或取消挑战时清除。后端认证过滤器校验 Grant 的主体和 `security_version`，授权过滤器将等级/有效期传给 `AccessControlService`，高风险请求无 fresh grant 时返回 403。
+- 验证：`DefaultStepUpVerificationServiceTest` 覆盖 Grant claim、主体/用途/SVL/有效期、目标绑定和停用用户拒绝；`JwtAuthenticationWebFilterTest` 覆盖 Grant 上下文注入；`ResourceAuthorizationWebFilterTest` 覆盖高风险操作无验证拒绝且不触发下游；相关回归共 29 项通过；Console `pnpm typecheck`、`pnpm build` 通过，运行中的服务 readiness 为 200。
 
 ## A07-03 验证过期后拒绝执行
 
