@@ -40,6 +40,11 @@ public class InMemorySearchProjectionService implements SearchProjectionService 
     }
 
     @Override
+    public Mono<Void> delete(UUID sourceId) {
+        return Mono.fromRunnable(() -> documents.remove(sourceId)).then();
+    }
+
+    @Override
     public Mono<ProjectionFailure> recordFailure(UUID sourceId, long sourceVersion,
                                                   long rebuildGeneration, String reason) {
         return Mono.just(new ProjectionFailure(sourceId, sourceVersion, rebuildGeneration,

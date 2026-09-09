@@ -10,6 +10,7 @@ public interface SearchProjectionService {
                                  String projectorVersion, long rebuildGeneration);
     Mono<Long> startRebuild();
     Mono<SearchDocument> get(UUID sourceId);
+    Mono<Void> delete(UUID sourceId);
     Mono<ProjectionFailure> recordFailure(UUID sourceId, long sourceVersion,
                                            long rebuildGeneration, String reason);
 }

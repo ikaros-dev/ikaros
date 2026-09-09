@@ -65,6 +65,11 @@ public class PersistentSearchProjectionService implements SearchProjectionServic
     }
 
     @Override
+    public Mono<Void> delete(UUID sourceId) {
+        return repository.deleteById(sourceId);
+    }
+
+    @Override
     public Mono<ProjectionFailure> recordFailure(UUID sourceId, long sourceVersion,
                                                   long rebuildGeneration, String reason) {
         String failureReason = reason == null ? "unknown" : reason;
