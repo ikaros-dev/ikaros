@@ -692,3 +692,9 @@
 - 实现修复：现有控制器返回 206、Content-Range、Content-Length 和 Accept-Ranges；reader 对非法、多段、超限 Range 拒绝并保持 Provider/Blob 边界。
 - 失败语义：无权/不存在附件和非法 Range 沿用既有错误；不创建或修改业务引用，不暴露 Provider 凭据。
 - 验证：`AttachmentControllerTest`、`AttachmentPreviewServiceTest`、`DeliveryGrantContractServiceTest` 共 4/4，Maven BUILD SUCCESS。
+## A16-06 拒绝越权和过期访问
+- 日期：2026-09-09
+- 推荐决策：复用 Delivery Grant 授权链；token 仅保存 hash，授权同时校验 attachment、owner、撤销时间、过期时间和请求 Range，授权通过后才读取物理内容。
+- 实现修复：现有 Grant/Attachment Controller 已实现拒绝越权、过期、未知 token 和非法 Range；补充服务级自动化测试覆盖合法 owner、其他 owner、过期和未知 token。
+- 失败语义：所有拒绝分支统一为 NotFound，避免泄露 token 是否存在或目标对象信息；失败不创建读取结果、不改变 Attachment、Blob、Placement。
+- 验证：`PersistentDeliveryGrantServiceTest` 4/4，Maven targeted test BUILD SUCCESS。
