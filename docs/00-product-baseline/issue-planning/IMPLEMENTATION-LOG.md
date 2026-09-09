@@ -280,3 +280,10 @@
 - 主要 commits：`7a78a788`、`49f168cf`、`8e4036f1`、`9acb627d`、`67a076d0`。
 - 统一决策：不建立 Session 或保存 OTP/Grant 明文；HTTP 邮件渠道显式配置启用；Grant 必须同时满足主体、用途、SVL、有效期和后续权限策略；状态校验先于 OTP 消费。
 - 验证证据：认证验证相关回归通过（本轮最大组合 14 项，邮件渠道 11 项）；真实第三方邮件与 PostgreSQL/Testcontainers 联调仍需部署环境，未伪造运行证据。
+
+## A08-01 记录资源管理操作
+
+- 日期：2026-09-09
+- 推荐决策：资源管理 Application 服务统一通过 `AuditService` 记录 create/update/trash/archive/restore 及标题、标签、收藏、关系等操作；审计事件独立存储于 `audit_event`，不复用 Resource Activity。
+- 失败语义：审计写入失败沿调用链传播，不返回伪成功；事件保留 actor、action、target、occurred_at、request/correlation context，details 仅允许脱敏 JSON。
+- 验证：新增 `DefaultAuditServiceTest` 覆盖用户资源更新、系统归档、目标关联和独立审计落库契约；现有资源服务测试覆盖各资源管理入口的 `AuditService` 调用；本轮审计模块 2 项通过。
