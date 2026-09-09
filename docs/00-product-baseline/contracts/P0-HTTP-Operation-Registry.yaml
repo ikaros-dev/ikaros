@@ -14,6 +14,8 @@ operations:
   - { method: GET, path: '/media/resources/{resource_id}/releases', operation_id: listMediaReleases, contract_id: media.list-releases, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: '/media/releases/{release_id}/subtitles', operation_id: addMediaSubtitle, contract_id: media.add-subtitle, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: '/media/releases/{release_id}/subtitles', operation_id: listMediaSubtitles, contract_id: media.list-subtitles, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/media/resources/{resource_id}/playback-source', operation_id: resolvePlaybackSource, contract_id: media.resolve-playback-source, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/media/playback/resources/{resource_id}/sessions', operation_id: startPlaybackSession, contract_id: media.start-playback-session, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /background-tasks, operation_id: submitBackgroundTask, contract_id: operations.submit-background-task, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /resources, operation_id: createResource, contract_id: resource.create-resource, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /resources, operation_id: listResources, contract_id: resource.list-resources, source: contracts/openapi-v2-p0.yaml }

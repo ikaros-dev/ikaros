@@ -42,6 +42,56 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+  /media/resources/{resource_id}/playback-source:
+    get:
+      tags: [Media]
+      operationId: resolvePlaybackSource
+      x-ikaros-contract-id: media.resolve-playback-source
+      summary: Resolve an authorized playable source
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - in: header
+          name: X-Ikaros-Actor-Id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: release_id
+          required: false
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Playable source
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlaybackSource' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /media/playback/resources/{resource_id}/sessions:
+    post:
+      tags: [Media]
+      operationId: startPlaybackSession
+      x-ikaros-contract-id: media.start-playback-session
+      summary: Start a playback session
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - in: header
+          name: X-Ikaros-Actor-Id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StartPlaybackRequest' }
+      responses:
+        '200':
+          description: Active playback session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlaybackSession' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /media/subjects:
     get:
       tags: [Media]
@@ -1020,6 +1070,33 @@ components:
         restore_latency_min_seconds: { type: [integer, 'null'], minimum: 0 }
         restore_latency_max_seconds: { type: [integer, 'null'], minimum: 0 }
         temporary_copy_expires_at: { type: [string, 'null'], format: date-time }
+    PlaybackSource:
+      type: object
+      required: [release_id, attachment_id, mode, reason, content_url]
+      properties:
+        release_id: { type: string, format: uuid }
+        attachment_id: { type: string, format: uuid }
+        mode: { type: string, enum: [DIRECT_PLAY, RESTORE_THEN_PLAY] }
+        reason: { type: string }
+        content_url: { type: string }
+    StartPlaybackRequest:
+      type: object
+      required: [release_id, start_position_seconds]
+      properties:
+        release_id: { type: string, format: uuid }
+        start_position_seconds: { type: integer, format: int64, minimum: 0 }
+    PlaybackSession:
+      type: object
+      required: [id, resource_id, release_id, state, started_at, last_position_seconds]
+      properties:
+        id: { type: string, format: uuid }
+        resource_id: { type: string, format: uuid }
+        release_id: { type: string, format: uuid }
+        state: { type: string, enum: [ACTIVE, ENDED] }
+        started_at: { type: string, format: date-time }
+        ended_at: { type: [string, 'null'], format: date-time }
+        last_position_seconds: { type: integer, format: int64, minimum: 0 }
+        version: { type: [integer, 'null'], format: int64, minimum: 0 }
     MediaSubtitle:
       type: object
       required: [id, release_id, attachment_id, language, format, offset_millis, forced, hearing_impaired]
