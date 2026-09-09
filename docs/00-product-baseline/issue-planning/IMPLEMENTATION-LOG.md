@@ -662,3 +662,9 @@
 - 组合交付：Provider 注册/凭据加密、S3 连接读写 probe、启停状态事件、凭据替换后验证、健康与可选容量查询均已接入 storage API；公开路径已同步 OpenAPI 与 HTTP Operation Registry。
 - 主要限制：容量字段依赖 Provider-owned metadata，未配置时明确返回 `null`；未提供 probe adapter 的 Provider 返回 `UNSUPPORTED`。所有内容对象边界仍由 Attachment/Blob/Placement 原有服务负责。
 - 验证证据：A15 子任务 targeted Maven 测试均通过；关键汇总测试覆盖 provider 注册、probe、启停事件、凭据加密替换与状态查询。
+## A16-01 配置 Delivery Provider
+- 日期：2026-09-09
+- 推荐决策：复用现有 `POST /api/admin/delivery-providers` 配置入口；要求 `Idempotency-Key`，credential_ref 只允许 `secret://` URI，创建后触发 probe。
+- 实现修复：现有持久化服务已完成配置编码、重复 key/幂等处理、创建事件和自动 probe；补充非法 credential_ref 与目标不存在的自动化验收证据。
+- 失败语义：非法凭据引用在持久化前拒绝；目标不存在返回 NotFound；不向 Attachment、Blob、Placement 写入任何状态。
+- 验证：`PersistentDeliveryProviderServiceValidationTest` 2/2，Maven targeted test BUILD SUCCESS。
