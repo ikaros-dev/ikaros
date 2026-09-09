@@ -120,6 +120,15 @@ async function cancelTask(row: Task) {
     error.value = e?.response?.data?.detail || e?.message || "任务取消失败";
   }
 }
+async function retryTask(row: Task) {
+  if (!row.id || !["FAILED", "TIMED_OUT"].includes(String(row.status).toUpperCase())) return;
+  try {
+    await http.post(`/background-tasks/${row.id}/actions/retry`);
+    await load();
+  } catch (e: any) {
+    error.value = e?.response?.data?.detail || e?.message || "任务重试失败";
+  }
+}
 load();
 </script>
 <template>
@@ -228,6 +237,12 @@ load();
               type="danger"
               @click="cancelTask(row)"
               >取消</el-button
+            ><el-button
+              v-if="['FAILED', 'TIMED_OUT'].includes(String(row.status).toUpperCase())"
+              link
+              type="warning"
+              @click="retryTask(row)"
+              >重试</el-button
             ></template
           ></el-table-column
         ></el-table
