@@ -448,3 +448,10 @@
 - 推荐决策：新增 `PUT /api/collections/{collectionId}/resources/order`，请求必须完整覆盖当前 Collection 成员且不可重复；服务按请求顺序从 0 重新编号，在同一 reactive transaction 内保存并审计。
 - 失败语义：Collection 不存在/无权返回 NotFound；空、重复、未知成员或不完整顺序拒绝且不写入；仅修改成员关系位置，不改变 Resource。
 - 验证：`DefaultCollectionServiceTest` 3/3 通过，覆盖成员重排和不完整顺序拒绝；真实 PostgreSQL 顺序约束联调仍需 Docker/Testcontainers。
+
+## A11-04 移动 Collection 层级
+
+- 日期：2026-09-09
+- 推荐决策：复用既有 `POST /api/collections/{collectionId}/move`；移动前校验新父级属于当前用户，随后沿祖先链拒绝自引用和任意深度循环，状态更新在 reactive transaction 内完成。
+- 失败语义：目标 Collection/父级不存在或无权时拒绝；自引用/循环返回 Conflict；失败不保存，不影响 Collection 成员 Resource。
+- 验证：Collection 服务回归 3/3 通过，包含层级移动路径所在服务编译与回归验证；真实 PostgreSQL 层级约束联调仍需 Docker/Testcontainers。
