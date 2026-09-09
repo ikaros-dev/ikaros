@@ -22,6 +22,7 @@ paths:
   /attachments/{attachment_id}/availability:
     get:
       operationId: getAttachmentMediaAvailability
+      x-ikaros-contract-id: media.get-attachment-availability
       summary: Get media availability for an attachment
       tags: [Media]
       parameters:
@@ -1328,6 +1329,19 @@ paths:
         '200': { description: Queue entries, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicQueueEntry' } } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Music]
+      operationId: addMusicQueueEntry
+      x-ikaros-contract-id: music.add-queue-entry
+      summary: Add a track to a playback queue
+      parameters:
+        - { name: queue_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/AddMusicQueueEntryRequest' } } } }
+      responses:
+        '200': { description: Added queue entry, content: { application/json: { schema: { $ref: '#/components/schemas/MusicQueueEntry' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /music/queues/{queue_id}/entries/order:
     patch:
       tags: [Music]
@@ -1362,19 +1376,6 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
         '428': { $ref: '#/components/responses/PreconditionRequired' }
-    post:
-      tags: [Music]
-      operationId: addMusicQueueEntry
-      x-ikaros-contract-id: music.add-queue-entry
-      summary: Add a track to a playback queue
-      parameters:
-        - { name: queue_id, in: path, required: true, schema: { type: string, format: uuid } }
-        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
-      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/AddMusicQueueEntryRequest' } } } }
-      responses:
-        '200': { description: Added queue entry, content: { application/json: { schema: { $ref: '#/components/schemas/MusicQueueEntry' } } } }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '404': { $ref: '#/components/responses/NotFound' }
   /music/queues/entries/{entry_id}:
     delete:
       tags: [Music]
@@ -1695,7 +1696,7 @@ paths:
         '204': { description: Bookmark removed }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
-  components:
+components:
   securitySchemes:
     bearerAuth:
       type: http
