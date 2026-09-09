@@ -98,6 +98,19 @@ class DefaultResourceRelationServiceTest {
         verify(relationRepository, never()).findAllBySourceResourceIdOrderByRelationTypeAscPositionAsc(unknown);
     }
 
+    @Test
+    void rejectsUnknownRelationWithoutDeletingOrAuditing() {
+        UUID ownerId = UUID.randomUUID(), sourceId = UUID.randomUUID(), relationId = UUID.randomUUID();
+        Instant now = Instant.now();
+        when(resourceRepository.findByIdAndOwnerId(sourceId, ownerId)).thenReturn(Mono.just(resource(sourceId, ownerId, now)));
+        when(relationRepository.findById(relationId)).thenReturn(Mono.empty());
+
+        StepVerifier.create(service.remove(ownerId, sourceId, relationId))
+            .expectErrorMessage("资源关系不存在").verify();
+        verify(relationRepository, never()).delete(any());
+        verify(auditService, never()).record(any(), any(), any(), any(), any());
+    }
+
     private ResourceEntity resource(UUID id, UUID ownerId, Instant now) {
         return new ResourceEntity(id, ownerId, ResourceType.DOCUMENT, ResourceLifecycle.ACTIVE, now, now, null, 0L);
     }

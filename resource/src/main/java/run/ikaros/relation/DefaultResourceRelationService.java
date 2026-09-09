@@ -61,11 +61,11 @@ public class DefaultResourceRelationService implements ResourceRelationService {
     @Override
     public Mono<Void> remove(UUID ownerId, UUID sourceResourceId, UUID relationId) {
         return owned(ownerId, sourceResourceId)
-            .then(relationRepository.findById(relationId))
+            .then(Mono.defer(() -> relationRepository.findById(relationId)))
             .filter(relation -> relation.sourceResourceId().equals(sourceResourceId))
             .switchIfEmpty(Mono.error(new NotFoundException("资源关系不存在")))
             .flatMap(relationRepository::delete)
-            .then(auditService.record(ownerId, "resource.relation.delete", "RESOURCE", sourceResourceId, "{}"));
+            .then(Mono.defer(() -> auditService.record(ownerId, "resource.relation.delete", "RESOURCE", sourceResourceId, "{}")));
     }
 
     private Mono<Void> owned(UUID ownerId, UUID resourceId) {

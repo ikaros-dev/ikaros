@@ -492,3 +492,11 @@
 - 失败语义：先 owner-scoped 校验来源 Resource，再惰性查询关系；未知/无权来源返回 NotFound，空关系返回空流，不暴露跨 owner 关系。
 - 实现修复：将关系查询包装为 `Flux.defer`，避免 owner 校验前 eager 访问关系仓储。
 - 验证：`DefaultResourceRelationServiceTest` 4/4、`ResourceRelationControllerTest` 1/1 通过，覆盖正常、空结果、未知来源和公开查询入口；真实 PostgreSQL 分页/排序联调仍需 Docker/Testcontainers。
+
+## A12-03 移除关系
+
+- 日期：2026-09-09
+- 推荐决策：复用 `DELETE /api/resources/{resourceId}/relations/{relationId}`；先校验来源 Resource owner，再惰性读取并确认关系属于该来源，成功后删除关系并审计，不删除任一 Resource。
+- 失败语义：来源不存在/无权返回 NotFound；关系不存在或不属于来源返回 NotFound；失败不删除、不审计。
+- 实现修复：关系读取与删除审计均改为惰性 Publisher，避免授权/关系存在性校验前产生仓储或审计副作用。
+- 验证：`DefaultResourceRelationServiceTest` 5/5、`ResourceRelationControllerTest` 1/1 通过，覆盖正常、空结果、未知来源、未知关系和公开入口；真实 PostgreSQL 联调仍需 Docker/Testcontainers。
