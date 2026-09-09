@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -217,6 +218,27 @@ class DefaultStorageServiceTest {
     void rejectsNullGarbageCollectionAgeBeforeRepositoryQuery() {
         StepVerifier.create(service.findGarbageCollectionCandidates(10, null))
             .expectError(IllegalArgumentException.class).verify();
+        verifyNoInteractions(blobRepository);
+    }
+
+    @Test
+    void rejectsUnknownResourceBeforeCreatingUploadIntent() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
+        StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        DefaultStorageService uploadService = new DefaultStorageService(resourceOwnership, attachmentRepository,
+            blobRepository, placementRepository, derivedAttachmentRepository, auditService, transaction,
+            providers, null, null);
+        uploadService.setObjectProviderRegistry(objects);
+        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.error(
+            new run.ikaros.common.NotFoundException("资源不存在或无权访问")));
+
+        StepVerifier.create(uploadService.beginUpload(ownerId, resourceId,
+                new BeginUploadRequest("book.pdf", 10, "application/pdf", "local", null, "a".repeat(64))))
+            .expectErrorMessage("资源不存在或无权访问").verify();
+        verify(providers, never()).requireWritableByKey("local");
         verifyNoInteractions(blobRepository);
     }
 

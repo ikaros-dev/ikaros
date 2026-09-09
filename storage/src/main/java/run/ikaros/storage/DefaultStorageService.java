@@ -178,7 +178,7 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
         String objectKey = request.objectKey() == null || request.objectKey().isBlank()
             ? "attachments/" + UUID.randomUUID() + "/" + safeFileName(request.fileName()) : request.objectKey();
         return owned(ownerId, resourceId)
-            .then(providerRegistry.requireWritableByKey(request.provider()))
+            .then(Mono.defer(() -> providerRegistry.requireWritableByKey(request.provider())))
             .flatMap(provider -> blobRepository.findBySha256(request.sha256().toLowerCase())
                 .flatMap(blob -> {
                     if (blob.sizeBytes() != request.sizeBytes()) {

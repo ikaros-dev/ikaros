@@ -555,6 +555,14 @@
 - 主要 commits：`a2903998`、`ed6fdc03`、`0d9771e0`、`6e950762`、`96b3188e`。
 - 验证证据：收藏、标签、用户状态和 Activity 服务/控制器测试均通过；真实 PostgreSQL/Testcontainers 联调仍需 Docker。
 
+## A14-01 创建上传会话
+
+- 日期：2026-09-09
+- 推荐决策：复用 `POST /api/resources/{resourceId}/upload-intents` 生成短时效 Provider 上传意图；先校验 Resource owner，再校验可写 Provider，实际二进制传输由 Provider 负责。
+- 实现修复：Provider 可写能力查询改为在 Resource 授权成功后惰性执行，错误身份不会触发 Provider、Blob 或物理上传 adapter 查询；已存在相同内容且有可用 Placement 时返回去重 SKIP 意图。
+- 失败语义：未配置上传能力、未知/无权 Resource、不可写/不存在 Provider 和同 SHA 大小冲突均失败；不泄露认证材料，不创建 Attachment/Blob/Placement。
+- 验证：`DefaultStorageServiceTest` 8/8 通过，覆盖附件边界回归及未知 Resource 不创建上传意图；真实 Provider 预签名和 PostgreSQL/Testcontainers 联调仍需 Docker/外部 Provider。
+
 ## A12 资源关系管理（父 issue）
 
 - 日期：2026-09-09
