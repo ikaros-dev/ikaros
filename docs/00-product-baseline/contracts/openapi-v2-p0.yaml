@@ -1270,6 +1270,19 @@ paths:
         '200': { description: Ebook import, content: { application/json: { schema: { $ref: '#/components/schemas/EbookImport' } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /reading/ebook-imports/{import_id}/info:
+    get:
+      tags: [Reading]
+      operationId: getEbookBookInfo
+      x-ikaros-contract-id: reading.get-ebook-book-info
+      summary: Get basic ebook information
+      parameters:
+        - { name: import_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Basic ebook information, content: { application/json: { schema: { $ref: '#/components/schemas/EbookBookInfo' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /reading/ebook-imports/{import_id}/actions/parse-toc:
     post:
       tags: [Reading]
@@ -1722,6 +1735,21 @@ paths:
         href: { type: string }
         title: { type: string }
         sort_order: { type: integer, minimum: 0 }
+    EbookBookInfo:
+      type: object
+      required: [import_id, work_id, edition_id, title, chapter_count, import_status]
+      properties:
+        import_id: { type: string, format: uuid }
+        work_id: { type: string, format: uuid }
+        edition_id: { type: string, format: uuid }
+        title: { type: [string, 'null'] }
+        language: { type: [string, 'null'] }
+        publisher: { type: [string, 'null'] }
+        source: { type: [string, 'null'] }
+        chapter_count: { type: integer, format: int64, minimum: 0 }
+        import_status: { type: string, enum: [ACCEPTED, PARSING, SUCCEEDED, FAILED] }
+        error_code: { type: [string, 'null'] }
+        error_message: { type: [string, 'null'] }
     ReorderComicPagesRequest:
       type: object
       required: [chapter_key, entry_ids]
