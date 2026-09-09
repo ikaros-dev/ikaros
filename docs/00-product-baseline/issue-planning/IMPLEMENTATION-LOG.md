@@ -325,3 +325,10 @@
 - 主要 commits：`2fc5c986`、`40cfa377`、`86b6448c`、`3511cd42`、`0f50041d`。
 - 统一决策：审计与 Resource Activity 分离；查询要求 `system.audit.read` 并实时复核 RBAC；事件按稳定时间/id 排序；写入边界集中脱敏且不保存认证材料明文。
 - 验证证据：审计与授权相关回归通过；operations 查询/写入测试和授权过滤器测试均通过。真实 PostgreSQL 分页 SQL、约束和完整 API 联调仍需 Docker/Testcontainers，未伪造运行证据。
+
+## A09-02 浏览列表和详情
+
+- 日期：2026-09-09
+- 推荐决策：复用 Resource Owner 的列表/详情 API；列表 SQL 固定限定 `owner_id` 与 ACTIVE 生命周期，详情使用 `findByIdAndOwnerId`，分页按稳定 `updated_at` 顺序返回 ResourceView、标题和外部身份。
+- 失败语义：跨 owner 或不存在资源统一 NotFound；空结果返回空页；非法分页参数在 Application 层拒绝，不进入 Repository。
+- 验证：`DefaultResourceServiceTest` 覆盖 owner-scoped 分页列表、空列表、跨 owner 详情拒绝和非法分页；resource 服务回归 10 项通过。

@@ -105,6 +105,40 @@ class DefaultResourceServiceTest {
     }
 
     @Test
+    void listsOnlyOwnerScopedActiveResourcesWithPaging() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity resource = new ResourceEntity(resourceId, ownerId, ResourceType.BOOK,
+            ResourceLifecycle.ACTIVE, now, now, null, 0L);
+        ResourceTitleEntity title = new ResourceTitleEntity(UUID.randomUUID(), resourceId, "zh-CN", "测试书籍",
+            true, now, now, 0L);
+        when(resourceRepository.search(ownerId, "", "书", 20, 20)).thenReturn(Flux.just(resource));
+        when(resourceRepository.countSearch(ownerId, "", "书")).thenReturn(Mono.just(1L));
+        when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.just(title));
+        when(identityRepository.findAllByResourceIdOrderByProviderAsc(resourceId)).thenReturn(Flux.empty());
+
+        StepVerifier.create(service.list(ownerId, null, " 书 ", 1, 20))
+            .assertNext(page -> {
+                assertThat(page.items()).hasSize(1);
+                assertThat(page.items().getFirst().id()).isEqualTo(resourceId);
+                assertThat(page.page()).isEqualTo(1);
+                assertThat(page.total()).isEqualTo(1L);
+            }).verifyComplete();
+    }
+
+    @Test
+    void returnsEmptyPageWhenOwnerHasNoActiveResources() {
+        UUID ownerId = UUID.randomUUID();
+        when(resourceRepository.search(ownerId, "", "", 0, 20)).thenReturn(Flux.empty());
+        when(resourceRepository.countSearch(ownerId, "", "")).thenReturn(Mono.just(0L));
+
+        StepVerifier.create(service.list(ownerId, null, null, 0, 20))
+            .assertNext(page -> assertThat(page.items()).isEmpty())
+            .verifyComplete();
+    }
+
+    @Test
     void movesResourceToTrashWithoutDeletingIt() {
         UUID ownerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();
