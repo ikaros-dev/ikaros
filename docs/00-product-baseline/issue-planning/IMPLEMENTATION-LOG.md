@@ -477,7 +477,8 @@
 - 推荐决策：复用 Email OTP Provider 与公开 `POST /api/security/verification-challenges` 入口；发起前只接受 ACTIVE 且配置可验证邮箱的用户，挑战绑定 purpose/target_reference 并设置短时有效期。
 - 安全边界：数据库只保存 OTP 慢哈希摘要；响应、审计和普通日志不返回 OTP、摘要或目标邮箱；发起频率按用户窗口限制，直接 API 与错误身份均走同一 Application Provider。
 - 失败语义：未知用户、非 ACTIVE 用户或无邮箱用户返回 NotFound；频率超限返回 Conflict；失败前不创建挑战。
-- 验证：`EmailOtpVerificationProviderTest` 覆盖合法发起、未知/无邮箱身份拒绝、频率限制和摘要持久化；`VerificationControllerTest` 覆盖公开入口、202 响应及 OTP 字段不泄露；本轮共 9 项通过。真实 PostgreSQL 事务和邮件渠道联调留待 A07-05/集成环境验证。
+- Console 对接审计：`console/src/views/security/Authentication.vue` 的“发起验证”按用途调用 `/security/step-up` 或 `/security/verification-challenges`，随后调用对应 verify/cancel API；页面只展示 Challenge ID、状态和过期时间，不展示 OTP，并对发起、验证、过期/锁定和取消结果提供可见反馈。
+- 验证：`EmailOtpVerificationProviderTest` 覆盖合法发起、未知/无邮箱身份拒绝、频率限制和摘要持久化；`VerificationControllerTest` 覆盖公开入口、202 响应及 OTP 字段不泄露；本轮共 9 项通过；Console `pnpm typecheck`、`pnpm build` 通过。真实 PostgreSQL 事务和邮件渠道联调留待 A07-05/集成环境验证。
 
 ## A07-05 接入真实验证码发送渠道
 
