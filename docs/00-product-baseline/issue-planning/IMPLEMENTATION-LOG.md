@@ -407,7 +407,7 @@
 - 本地验收结论：A05-01 至 A05-05 已完成；覆盖首次管理员初始化、无状态登录/客户端退出、Access/Refresh JWT、请求侧 security_version 校验和用户级 Token 全量失效。
 - 主要 commits：`1c156217`、`ab1e239b`、`4f557967`、`a60c4998`、`5ca5d087`。
 - 统一决策：不建立 Login/Security Session 或 Token Digest；普通登出由客户端清理本地凭证，紧急全量失效通过递增用户 `security_version`，并产生最小化 durable event 与审计。
-- 验证证据：认证/授权相关回归通过；console `pnpm typecheck` 与 `pnpm build` 通过。真实 PostgreSQL/Testcontainers 并发、事务回滚和完整权限联调仍受当前环境 Docker 未安装限制，未伪造运行证据。
+- 验证证据：认证/授权相关回归通过；console `pnpm typecheck` 与 `pnpm build` 通过。Console 对接审计已覆盖初始化、登录退出、刷新、受保护请求校验和管理员 Token 失效操作。真实 PostgreSQL/Testcontainers 并发、事务回滚和完整权限联调仍受当前环境 Docker 未安装限制，未伪造运行证据。
 
 ## A06-01 创建角色并配置权限
 
