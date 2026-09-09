@@ -29,7 +29,7 @@ public final class OutboxDispatcher {
         initialDelayString = "${ikaros.event.dispatcher-initial-delay-ms:3000}")
     public void dispatchPendingEvents() {
         dispatchNow()
-            .doOnError(error -> log.warn("Durable event dispatcher failed: {}", error.getMessage()))
+            .doOnError(error -> log.warn("Durable event dispatcher failed", error))
             .subscribe(ignored -> { }, ignored -> { });
     }
 

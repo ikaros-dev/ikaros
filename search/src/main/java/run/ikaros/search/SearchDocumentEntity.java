@@ -1,5 +1,6 @@
 package run.ikaros.search;
 
+import io.r2dbc.postgresql.codec.Json;
 import java.time.Instant;
 import java.util.UUID;
 import org.springframework.data.annotation.Id;
@@ -11,6 +12,12 @@ public record SearchDocumentEntity(@Id UUID documentId, @Column("source_id") UUI
                                    @Column("source_version") long sourceVersion,
                                    @Column("projector_version") String projectorVersion,
                                    @Column("rebuild_generation") long rebuildGeneration,
-                                   @Column("fields_json") String fieldsJson,
+                                   @Column("fields_json") Json fieldsJson,
                                    @Column("projected_at") Instant projectedAt) {
+    public SearchDocumentEntity(UUID documentId, UUID sourceId, long sourceVersion,
+                                 String projectorVersion, long rebuildGeneration, String fieldsJson,
+                                 Instant projectedAt) {
+        this(documentId, sourceId, sourceVersion, projectorVersion, rebuildGeneration,
+            Json.of(fieldsJson == null ? "{}" : fieldsJson), projectedAt);
+    }
 }
