@@ -951,3 +951,9 @@
 - 日期：2026-09-10
 - 子任务汇总：B04-01 至 B04-05 已按顺序完成本地实现，均接入 Reading Console 阅读器。
 - 组合交付：章节目录选择、按页内容读取、阅读方向/布局设置、逻辑阅读位置保存、上次位置恢复和章节切换形成真实 API 联调路径。
+## B05-01 导入受支持的电子书
+- 日期：2026-09-10
+- 实现：新增 EPUB 导入记录、幂等创建 API 和 `reading_ebook_import` 迁移；导入时校验当前用户可读 Attachment，仅接受 `.epub`，创建 EBOOK Work/Edition 并保留明确的 ACCEPTED 状态。
+- Console：新增“电子书导入”后台菜单页，支持提交 Attachment ID、书名/语言、导入记录刷新和失败状态展示，全部调用真实 Reading API。
+- 契约追溯：新增 `reading.create-ebook-import`、`reading.list-ebook-imports`、`reading.get-ebook-import`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`PersistentEbookImportServiceTest` 2/2；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`fa41fcf3`、`8b73ce26`。
