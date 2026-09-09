@@ -68,6 +68,21 @@ public class InMemoryPluginRuntime implements PluginRuntime {
     }
 
     @Override
+    public Mono<PluginDescriptor> upgrade(String pluginId, PluginManifest manifest, Set<String> grantedPermissions) {
+        return get(pluginId).flatMap(current -> {
+            if (!pluginId.equals(manifest.pluginId())) return Mono.error(new ConflictException("升级不得改变 Plugin ID"));
+            if (!compatible(manifest)) return Mono.error(new ConflictException("插件与当前 Server 版本不兼容"));
+            Set<String> grants = grantedPermissions == null ? Set.of() : Set.copyOf(grantedPermissions);
+            if (!manifest.permissions().containsAll(grants)) return Mono.error(new ConflictException("不能授予插件未声明的权限"));
+            PluginDescriptor updated = new PluginDescriptor(manifest, current.lifecycle(), grants);
+            if (plugins.replace(pluginId, current, updated) && current.lifecycle() == PluginLifecycle.ENABLED) {
+                unregister(pluginId); register(manifest);
+            }
+            return Mono.just(updated);
+        });
+    }
+
+    @Override
     public Mono<PluginDescriptor> disable(String pluginId) {
         return update(pluginId, PluginLifecycle.ENABLED, PluginLifecycle.DISABLED);
     }

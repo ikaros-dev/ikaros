@@ -52,4 +52,11 @@ public class PluginController {
                                           @PathVariable String pluginId) {
         return runtime.disable(pluginId);
     }
+
+    @PostMapping("/{pluginId}/upgrade")
+    public Mono<PluginDescriptor> upgrade(@RequestHeader("X-Ikaros-Actor-Id") String actorId,
+                                          @PathVariable String pluginId,
+                                          @Valid @RequestBody UpgradePluginRequest request) {
+        return runtime.upgrade(pluginId, request.manifest(), request.grantedPermissions());
+    }
 }

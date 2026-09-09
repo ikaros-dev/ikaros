@@ -53,4 +53,29 @@ class InMemoryPluginRuntimeTest {
 
         assertEquals(0, registry.find("parser").size());
     }
+
+    @Test
+    void upgradeKeepsLifecycleAndReplacesManifest() {
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0");
+        runtime.install(manifest, Set.of("resource.read")).block();
+        PluginManifest upgraded = new PluginManifest("example.plugin", "Example 2", "2.0.0",
+            "Example", "1", "2.0.0", null, "example.EntryV2", List.of("parser"),
+            List.of("resource.read"), List.of("parser"));
+
+        PluginDescriptor result = runtime.upgrade(manifest.pluginId(), upgraded, Set.of("resource.read")).block();
+
+        assertEquals(PluginLifecycle.INSTALLED, result.lifecycle());
+        assertEquals("2.0.0", result.manifest().version());
+    }
+
+    @Test
+    void incompatibleUpgradeLeavesExistingPluginUntouched() {
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0");
+        runtime.install(manifest, Set.of("resource.read")).block();
+        PluginManifest incompatible = new PluginManifest("example.plugin", "Example 2", "2.0.0",
+            "Example", "1", "3.0.0", null, "example.EntryV2", List.of(), List.of(), List.of());
+
+        assertThrows(RuntimeException.class, () -> runtime.upgrade(manifest.pluginId(), incompatible, Set.of()).block());
+        assertEquals("1.0.0", runtime.get(manifest.pluginId()).block().manifest().version());
+    }
 }
