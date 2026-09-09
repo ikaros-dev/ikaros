@@ -46,4 +46,6 @@ public interface CollectionService {
     Mono<CollectionView> move(UUID ownerId, UUID collectionId, UUID parentId);
 
     Mono<Void> removeResource(UUID ownerId, UUID collectionId, UUID resourceId);
+
+    Mono<Void> reorderResources(UUID ownerId, UUID collectionId, List<UUID> resourceIds);
 }

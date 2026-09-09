@@ -441,3 +441,10 @@
 - 推荐决策：复用 CollectionResource 关系 API；添加前同时校验 Collection 与 Resource 属于当前用户，数据库唯一约束保证幂等边界；移除只删除组织关系，不删除 Resource 或其 Attachment/Blob。
 - 失败语义：任一目标不存在/无权返回 NotFound；重复添加返回 Conflict；添加/移除与事件、审计在同一 reactive transaction 内完成。
 - 验证：`DefaultCollectionServiceTest` 2/2 通过，覆盖创建后添加、移除及成员事件；真实 PostgreSQL 关系约束联调仍需 Docker/Testcontainers。
+
+## A11-03 调整资源顺序
+
+- 日期：2026-09-09
+- 推荐决策：新增 `PUT /api/collections/{collectionId}/resources/order`，请求必须完整覆盖当前 Collection 成员且不可重复；服务按请求顺序从 0 重新编号，在同一 reactive transaction 内保存并审计。
+- 失败语义：Collection 不存在/无权返回 NotFound；空、重复、未知成员或不完整顺序拒绝且不写入；仅修改成员关系位置，不改变 Resource。
+- 验证：`DefaultCollectionServiceTest` 3/3 通过，覆盖成员重排和不完整顺序拒绝；真实 PostgreSQL 顺序约束联调仍需 Docker/Testcontainers。

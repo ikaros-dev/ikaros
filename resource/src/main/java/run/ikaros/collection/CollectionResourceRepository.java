@@ -20,5 +20,7 @@ public interface CollectionResourceRepository extends ReactiveCrudRepository<Col
      */
     Flux<CollectionResourceEntity> findAllByCollectionIdOrderByPositionAsc(UUID collectionId);
 
+    Flux<CollectionResourceEntity> findAllByCollectionId(UUID collectionId);
+
     Mono<Void> deleteByCollectionIdAndResourceId(UUID collectionId, UUID resourceId);
 }

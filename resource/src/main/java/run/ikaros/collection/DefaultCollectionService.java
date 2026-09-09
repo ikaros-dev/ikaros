@@ -146,6 +146,32 @@ public class DefaultCollectionService implements CollectionService {
                 "{\"resourceId\":\"" + resourceId + "\"}")));
     }
 
+    @Override
+    public Mono<Void> reorderResources(UUID ownerId, UUID collectionId, List<UUID> resourceIds) {
+        if (resourceIds == null || resourceIds.isEmpty() || resourceIds.size() > MAX_UNPAGED_RESULTS
+            || resourceIds.stream().anyMatch(java.util.Objects::isNull)
+            || resourceIds.stream().distinct().count() != resourceIds.size()) {
+            return Mono.error(new IllegalArgumentException("资源顺序请求不合法"));
+        }
+        return transactionalOperator.transactional(ownedCollection(ownerId, collectionId)
+            .then(collectionResourceRepository.findAllByCollectionId(collectionId).collectList())
+            .flatMap(existing -> {
+                java.util.Map<UUID, CollectionResourceEntity> byResource = existing.stream()
+                    .collect(java.util.stream.Collectors.toMap(CollectionResourceEntity::resourceId, value -> value));
+                if (byResource.size() != resourceIds.size() || !byResource.keySet().containsAll(resourceIds)) {
+                    return Mono.error(new ConflictException("资源顺序必须完整覆盖该集合成员"));
+                }
+                List<CollectionResourceEntity> reordered = new java.util.ArrayList<>();
+                for (int position = 0; position < resourceIds.size(); position++) {
+                    CollectionResourceEntity value = byResource.get(resourceIds.get(position));
+                    reordered.add(new CollectionResourceEntity(value.id(), value.collectionId(), value.resourceId(),
+                        position, value.createdAt(), value.version()));
+                }
+                return collectionResourceRepository.saveAll(reordered)
+                    .then(auditService.record(ownerId, "collection.resource.reorder", "COLLECTION", collectionId, "{}"));
+            }));
+    }
+
     private Mono<Void> parent(UUID ownerId, UUID parentId) {
         if (parentId == null) {
             return Mono.empty();

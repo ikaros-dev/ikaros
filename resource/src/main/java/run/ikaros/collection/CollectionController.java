@@ -156,4 +156,15 @@ public class CollectionController {
         return collectionService.removeResource(actorId, collectionId, resourceId)
             .thenReturn(ResponseEntity.noContent().build());
     }
+
+    @Operation(summary = "调整集合资源顺序", description = "按请求中的资源 ID 顺序重排 Collection 成员。")
+    @PutMapping("/{collectionId}/resources/order")
+    public Mono<ResponseEntity<Void>> reorderResources(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID collectionId,
+        @Valid @RequestBody ReorderCollectionResourcesRequest request
+    ) {
+        return collectionService.reorderResources(actorId, collectionId, request.resourceIds())
+            .thenReturn(ResponseEntity.noContent().build());
+    }
 }
