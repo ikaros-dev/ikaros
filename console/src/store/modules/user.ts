@@ -12,6 +12,7 @@ import {
   type RefreshTokenResult,
   getLogin,
   refreshTokenApi,
+  logoutApi,
 } from "@/api/user";
 import { useMultiTagsStoreHook } from "./multiTags";
 import { type DataInfo, setToken, removeToken, userKey } from "@/utils/auth";
@@ -78,13 +79,17 @@ export const useUserStore = defineStore("pure-user", {
     },
     /** 登出并清除本地 token */
     async logOut() {
-      this.username = "";
-      this.roles = [];
-      this.permissions = [];
-      removeToken();
-      useMultiTagsStoreHook().handleTags("equal", [...routerArrays]);
-      resetRouter();
-      router.push("/login");
+      try {
+        await logoutApi();
+      } finally {
+        this.username = "";
+        this.roles = [];
+        this.permissions = [];
+        removeToken();
+        useMultiTagsStoreHook().handleTags("equal", [...routerArrays]);
+        resetRouter();
+        router.push("/login");
+      }
     },
     /** 刷新`token` */
     async handRefreshToken(data) {
