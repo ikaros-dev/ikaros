@@ -870,3 +870,8 @@
 - 实现：开始播放前读取当前用户对 Resource 的 `VIDEO_SECONDS` 进度；未完成记录作为 Session 起始位置，并在播放器 `loadedmetadata` 后定位；已完成记录从 0 秒重新开始。
 - 失败语义：首次播放或进度不存在按 0 秒处理；进度读取失败不伪造已完成状态，仍通过正常播放授权链校验 Resource/Release/Attachment。
 - 验证：Console `pnpm typecheck` 通过；进度查询 API 已登记 OpenAPI/HTTP Registry。主要提交：`56569128`。
+## B02-04 切换字幕
+- 日期：2026-09-10
+- 实现：播放器加载当前 Release 的字幕列表，为字幕 Attachment 获取授权地址并生成原生字幕轨道；Console 下拉框可启用或关闭指定语言/标题字幕。
+- 失败语义：字幕列表或单个字幕授权失败时保留字幕记录但不生成无效轨道，不影响视频主播放；字幕仍受 Release 所属 Resource 和 Attachment 访问校验。
+- 验证：Console `pnpm typecheck` 通过；字幕 API 和 Attachment 预览授权链已在 B01-04/B02-01 验证。主要提交：`0a3f7659`。
