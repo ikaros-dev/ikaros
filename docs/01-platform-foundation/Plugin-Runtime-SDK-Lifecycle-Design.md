@@ -311,6 +311,16 @@ Uninstall 与 Disable 分离。
 
 插件创建的核心业务对象一旦进入目标 Domain，就属于目标 Domain，不应因为插件卸载自动删除。
 
+### 9.5 卸载 HTTP Command
+
+卸载通过公开接口执行：
+
+- `POST /api/plugins/{pluginId}/uninstall`；
+- 请求体必须明确 `retention`：`KEEP_DATA` 或 `DELETE_DATA`；
+- `KEEP_DATA` 保留插件 Manifest、权限和插件数据记录，并将生命周期置为 `UNINSTALLED`；
+- `DELETE_DATA` 才允许删除插件拥有的数据记录；核心 Resource / Attachment 不随插件卸载删除；
+- `ENABLED` 插件必须先禁用，卸载失败不得改变其状态。
+
 ---
 
 ## 10. Upgrade
