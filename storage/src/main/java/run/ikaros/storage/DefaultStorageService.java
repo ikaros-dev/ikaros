@@ -41,6 +41,7 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
     private final StorageProviderRegistry providerRegistry;
     private final BackgroundTaskService taskService;
     private final DurableEventPublisher eventService;
+    private final UploadSessionRepository uploadSessionRepository;
     private List<StorageContentReader> contentReaders = List.of();
     private StorageObjectProviderRegistry objectProviderRegistry;
 
@@ -62,7 +63,7 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
                                  AuditService auditService,
                                  TransactionalOperator transactionalOperator) {
         this(resourceOwnership, attachmentRepository, blobRepository, placementRepository,
-            derivedAttachmentRepository, auditService, transactionalOperator, null, null, null);
+            derivedAttachmentRepository, auditService, transactionalOperator, null, null, null, null);
     }
 
     public DefaultStorageService(ResourceOwnershipQuery resourceOwnership,
@@ -74,7 +75,7 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
                                  TransactionalOperator transactionalOperator,
                                  StorageProviderRegistry providerRegistry) {
         this(resourceOwnership, attachmentRepository, blobRepository, placementRepository,
-            derivedAttachmentRepository, auditService, transactionalOperator, providerRegistry, null, null);
+            derivedAttachmentRepository, auditService, transactionalOperator, providerRegistry, null, null, null);
     }
 
     public DefaultStorageService(ResourceOwnershipQuery resourceOwnership,
@@ -87,7 +88,21 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
                                  StorageProviderRegistry providerRegistry,
                                  BackgroundTaskService taskService) {
         this(resourceOwnership, attachmentRepository, blobRepository, placementRepository, derivedAttachmentRepository,
-            auditService, transactionalOperator, providerRegistry, taskService, null);
+            auditService, transactionalOperator, providerRegistry, taskService, null, null);
+    }
+
+    public DefaultStorageService(ResourceOwnershipQuery resourceOwnership,
+                                 AttachmentRepository attachmentRepository,
+                                 BlobRepository blobRepository,
+                                 BlobPlacementRepository placementRepository,
+                                 DerivedAttachmentRepository derivedAttachmentRepository,
+                                 AuditService auditService,
+                                 TransactionalOperator transactionalOperator,
+                                 StorageProviderRegistry providerRegistry,
+                                 BackgroundTaskService taskService,
+                                 DurableEventPublisher eventService) {
+        this(resourceOwnership, attachmentRepository, blobRepository, placementRepository, derivedAttachmentRepository,
+            auditService, transactionalOperator, providerRegistry, taskService, eventService, null);
     }
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -100,7 +115,8 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
                                  TransactionalOperator transactionalOperator,
                                  StorageProviderRegistry providerRegistry,
                                  BackgroundTaskService taskService,
-                                 DurableEventPublisher eventService) {
+                                 DurableEventPublisher eventService,
+                                 UploadSessionRepository uploadSessionRepository) {
         this.resourceOwnership = resourceOwnership;
         this.attachmentRepository = attachmentRepository;
         this.blobRepository = blobRepository;
@@ -111,6 +127,7 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
         this.providerRegistry = providerRegistry;
         this.taskService = taskService;
         this.eventService = eventService;
+        this.uploadSessionRepository = uploadSessionRepository;
     }
 
     @Autowired(required = false)
@@ -169,6 +186,30 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
             .then(Mono.defer(() -> providerRegistry.requireWritableByKey(request.provider())))
             .flatMap(provider -> verifyUploadedObject(provider, request)
                 .then(attachInternal(ownerId, resourceId, request.asAttachment(), request.idempotencyKey())));
+    }
+
+    @Override
+    public Mono<UploadSessionView> abortUploadSession(UUID ownerId, UUID sessionId) {
+        if (uploadSessionRepository == null) {
+            return Mono.error(new ConflictException("上传会话能力未配置"));
+        }
+        return Mono.defer(() -> uploadSessionRepository.findByIdAndOwnerId(sessionId, ownerId))
+            .switchIfEmpty(Mono.error(new NotFoundException("上传会话不存在或无权访问")))
+            .flatMap(session -> {
+                if (session.state() == UploadSessionState.COMPLETED) {
+                    return Mono.error(new ConflictException("已完成的上传会话不能终止"));
+                }
+                if (session.state() == UploadSessionState.ABORTED
+                    || session.state() == UploadSessionState.EXPIRED) {
+                    return Mono.just(session);
+                }
+                return uploadSessionRepository.save(new UploadSessionEntity(session.id(), session.ownerId(),
+                    session.resourceId(), session.provider(), session.objectKey(), session.expectedSize(),
+                    session.declaredSha256(), UploadSessionState.ABORTED, session.expiresAt(), session.createdAt(),
+                    Instant.now(), session.version(), session.idempotencyKey()));
+            })
+            .map(this::toSessionView)
+            .as(transactionalOperator::transactional);
     }
 
     @Override
@@ -414,6 +455,12 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
         String payload = "{\"attachment_id\":\"" + attachment.id() + "\",\"resource_id\":\""
             + attachment.resourceId() + "\",\"blob_id\":\"" + attachment.blobId() + "\"}";
         return eventService.append(new EventAppendRequest(eventType, 1, "storage", "attachment", attachment.id(), payload)).then();
+    }
+
+    private UploadSessionView toSessionView(UploadSessionEntity session) {
+        return new UploadSessionView(session.id(), session.ownerId(), session.resourceId(), session.provider(),
+            session.objectKey(), session.expectedSize(), session.declaredSha256(), session.state(),
+            session.expiresAt(), session.createdAt(), session.updatedAt(), session.version());
     }
 
     private Mono<AttachmentView> toView(AttachmentEntity attachment, BlobEntity blob) {

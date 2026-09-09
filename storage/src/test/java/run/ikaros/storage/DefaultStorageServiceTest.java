@@ -151,6 +151,31 @@ class DefaultStorageServiceTest {
     }
 
     @Test
+    void abortsOwnedOpenUploadSessionIdempotently() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        UUID sessionId = UUID.randomUUID();
+        Instant now = Instant.now();
+        UploadSessionRepository sessions = mock(UploadSessionRepository.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        DefaultStorageService uploadService = new DefaultStorageService(resourceOwnership, attachmentRepository,
+            blobRepository, placementRepository, derivedAttachmentRepository, auditService, transaction,
+            null, null, null, sessions);
+        UploadSessionEntity open = new UploadSessionEntity(sessionId, ownerId, resourceId, "local", "tmp/a.bin",
+            10L, "a".repeat(64), UploadSessionState.OPEN, now.plusSeconds(600), now, now, 0L, "key");
+        UploadSessionEntity aborted = new UploadSessionEntity(sessionId, ownerId, resourceId, "local", "tmp/a.bin",
+            10L, "a".repeat(64), UploadSessionState.ABORTED, open.expiresAt(), now, now.plusSeconds(1), 1L, "key");
+        when(sessions.findByIdAndOwnerId(sessionId, ownerId)).thenReturn(Mono.just(open));
+        when(sessions.save(any(UploadSessionEntity.class))).thenReturn(Mono.just(aborted));
+
+        StepVerifier.create(uploadService.abortUploadSession(ownerId, sessionId))
+            .assertNext(view -> assertThat(view.state()).isEqualTo(UploadSessionState.ABORTED))
+            .verifyComplete();
+        verify(sessions).save(argThat(value -> value.state() == UploadSessionState.ABORTED));
+    }
+
+    @Test
     void recordsDerivedAttachmentSourceWithoutChangingOriginalKind() {
         UUID ownerId = UUID.randomUUID(); UUID resourceId = UUID.randomUUID();
         UUID sourceId = UUID.randomUUID(); UUID derivedId = UUID.randomUUID(); UUID blobId = UUID.randomUUID();

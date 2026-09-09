@@ -601,6 +601,7 @@
 - 推荐决策：按 Storage 设计引入持久化 `storage_upload_session`，记录 Owner、Resource、Provider、临时对象键、声明大小/摘要、状态、TTL、幂等键和版本；会话状态限定为 OPEN/RECEIVING/FINALIZING/COMPLETED/ABORTED/EXPIRED。
 - 实现进展：已新增公开 `UploadSessionState`/`UploadSessionView`、Storage-owned Entity/Repository，以及带状态/TTL/幂等唯一约束的版本化 Migration；不保存 Provider 凭据或临时认证材料。
 - 验证：`mvn -pl storage -am -DskipTests compile` 通过；服务入口、Provider 清理和过期调度将在后续步骤接入。
+- 实现进展：已接入 `abortUploadSession` 的 Owner 隔离、终止状态转换和重复终止幂等行为；`DefaultStorageServiceTest` 13/13 通过。物理临时对象删除与过期会话调度仍待接入。
 
 ## A12 资源关系管理（父 issue）
 

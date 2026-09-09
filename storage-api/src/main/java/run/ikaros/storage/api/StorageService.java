@@ -26,6 +26,13 @@ public interface StorageService {
 
     Mono<StorageUploadIntentView> beginUpload(UUID ownerId, UUID resourceId, BeginUploadRequest request);
 
+    default Mono<StorageUploadIntentView> beginUpload(UUID ownerId, UUID resourceId, BeginUploadRequest request,
+                                                       String idempotencyKey) {
+        return beginUpload(ownerId, resourceId, request);
+    }
+
+    Mono<UploadSessionView> abortUploadSession(UUID ownerId, UUID sessionId);
+
     /**
      * 登记一个可追溯到原始附件的派生附件。
      *
