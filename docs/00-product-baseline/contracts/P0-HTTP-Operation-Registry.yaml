@@ -27,6 +27,7 @@ operations:
   - { method: POST, path: '/resources/{resource_id}/actions/restore', operation_id: restoreResource, contract_id: resource.restore-resource, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: '/attachments/{attachment_id}', operation_id: getAttachment, contract_id: storage.get-attachment, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: '/attachments/{attachment_id}/availability', operation_id: getAttachmentMediaAvailability, contract_id: media.get-attachment-availability, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/attachments/{attachment_id}/restore-requests', operation_id: requestAttachmentRestore, contract_id: storage.request-attachment-restore, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: '/attachments/{attachment_id}/content', operation_id: getAttachmentContent, contract_id: storage.get-attachment-content, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: '/resources/{resource_id}/attachments/upload-intents', operation_id: beginAttachmentUpload, contract_id: storage.begin-upload, source: contracts/openapi-v2-p0-contract-convergence.yaml }
   - { method: DELETE, path: '/resources/{resource_id}/attachments/upload-intents/{session_id}', operation_id: abortAttachmentUpload, contract_id: storage.abort-upload, source: contracts/openapi-v2-p0-contract-convergence.yaml }

@@ -41,6 +41,37 @@ paths:
               schema: { $ref: '#/components/schemas/MediaAvailabilityResponse' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /attachments/{attachment_id}/restore-requests:
+    post:
+      tags: [Attachments]
+      operationId: requestAttachmentRestore
+      x-ikaros-contract-id: storage.request-attachment-restore
+      summary: Request asynchronous restoration of an archived attachment
+      parameters:
+        - $ref: '#/components/parameters/AttachmentId'
+        - in: header
+          name: X-Ikaros-Actor-Id
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                provider_restore_class: { type: [string, 'null'] }
+                budget_confirmation_token: { type: [string, 'null'], writeOnly: true }
+      responses:
+        '202':
+          description: Restore request accepted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RestoreRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
 
   /media/resources/{resource_id}/playback-source:
     get:
@@ -1155,6 +1186,20 @@ components:
         completed: { type: boolean }
         updated_at: { type: [string, 'null'], format: date-time }
         version: { type: [integer, 'null'], format: int64, minimum: 0 }
+    RestoreRequest:
+      type: object
+      required: [id, scope_type, scope_id, status, item_count, total_bytes, ready_items, failed_items, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        scope_type: { type: string, enum: [ATTACHMENT, SEASON] }
+        scope_id: { type: string, format: uuid }
+        status: { type: string, enum: [PENDING, ACTIVE, SUCCEEDED, PARTIAL, FAILED, CANCELLED] }
+        item_count: { type: integer, minimum: 0 }
+        total_bytes: { type: integer, format: int64, minimum: 0 }
+        ready_items: { type: integer, minimum: 0 }
+        failed_items: { type: integer, minimum: 0 }
+        budget_decision: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
     PlaybackSession:
       type: object
       required: [id, resource_id, release_id, state, started_at, last_position_seconds]
