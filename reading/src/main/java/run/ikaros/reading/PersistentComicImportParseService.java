@@ -67,6 +67,23 @@ public class PersistentComicImportParseService implements ComicImportParseServic
             .flatMapMany(value -> entries.findAllByImportIdOrderByChapterKeyAscPageOrderAsc(importId));
     }
 
+    @Override public Mono<ComicImportView> reorder(UUID ownerId, UUID importId, ReorderComicPagesRequest request) {
+        return imports.findByIdAndOwnerId(importId, ownerId)
+            .switchIfEmpty(Mono.error(new NotFoundException("漫画导入不存在或无权访问")))
+            .flatMap(value -> entries.findAllByImportIdOrderByChapterKeyAscPageOrderAsc(importId)
+                .filter(entry -> request.chapterKey().equals(entry.chapterKey())).collectList()
+                .flatMap(current -> {
+                    java.util.Set<UUID> expected = current.stream().map(ComicImportEntryEntity::id).collect(java.util.stream.Collectors.toSet());
+                    java.util.Set<UUID> requested = new java.util.HashSet<>(request.entryIds());
+                    if (expected.isEmpty() || expected.size() != requested.size() || !expected.equals(requested))
+                        return Mono.error(new ConflictException("页序调整必须提交该章节全部且不重复的条目"));
+                    return entries.shiftPageOrders(importId, request.chapterKey(), current.size() + 1)
+                        .thenMany(Flux.fromIterable(request.entryIds()).index()
+                            .concatMap(item -> entries.updatePageOrder(importId, item.getT2(), item.getT1().intValue())))
+                        .then(imports.save(copy(value, value.status(), value.errorCode(), value.errorMessage())));
+                })).map(this::view);
+    }
+
     private Mono<List<ComicImportEntryEntity>> scanPackage(UUID ownerId, ComicImportEntity record, String extension) {
         return Mono.fromCallable(() -> Files.createTempFile("ikaros-comic-", extension))
             .subscribeOn(Schedulers.boundedElastic())

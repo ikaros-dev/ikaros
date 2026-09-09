@@ -26,4 +26,6 @@ public class ComicImportController {
         @PathVariable UUID importId) { return parser.parse(ownerId, importId); }
     @GetMapping("/{importId}/entries") public Flux<ComicImportEntryEntity> entries(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,
         @PathVariable UUID importId) { return parser.entries(ownerId, importId); }
+    @PostMapping("/{importId}/actions/reorder-pages") public Mono<ComicImportView> reorder(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,
+        @PathVariable UUID importId, @Valid @RequestBody ReorderComicPagesRequest request) { return parser.reorder(ownerId, importId, request); }
 }
