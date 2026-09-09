@@ -686,3 +686,9 @@
 - 实现修复：现有预览路径已接入授权、可用 Placement、Provider 健康和绑定选择；扩展测试覆盖多优先级候选，确认返回的是选中路径的预览地址。
 - 失败语义：附件不存在或无权访问、无可用绑定分别沿用既有错误；失败不创建 grant/lease 伪成功，不暴露原始凭据。
 - 验证：`AttachmentPreviewServiceTest` 2/2，Maven targeted test BUILD SUCCESS。
+## A16-05 支持 Range 下载
+- 日期：2026-09-09
+- 推荐决策：复用附件内容读取 API 的单段 `bytes` Range 语义；授权先于物理读取，Local/S3 adapter 采用流式读取，不聚合整个对象。
+- 实现修复：现有控制器返回 206、Content-Range、Content-Length 和 Accept-Ranges；reader 对非法、多段、超限 Range 拒绝并保持 Provider/Blob 边界。
+- 失败语义：无权/不存在附件和非法 Range 沿用既有错误；不创建或修改业务引用，不暴露 Provider 凭据。
+- 验证：`AttachmentControllerTest`、`AttachmentPreviewServiceTest`、`DeliveryGrantContractServiceTest` 共 4/4，Maven BUILD SUCCESS。
