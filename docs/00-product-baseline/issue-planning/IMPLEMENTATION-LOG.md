@@ -391,3 +391,10 @@
 - 实现：移除旧的 `(resource_id, locale)` 限制，新增 `(resource_id, locale, title_kind, title)` 唯一约束；保存和返回路径均按标题类型区分，避免同语言主标题被误返回。
 - 失败语义：空/超长输入交由 API 校验；不存在或无权 Resource 拒绝；别名主标题组合返回 Conflict，数据库重复值保持显式冲突且不产生伪成功。
 - 验证：`DefaultResourceTitleServiceTest` 4/4、`ResourceTitleControllerTest` 2/2 通过，新增覆盖同语言多别名并存且不替换主标题；真实 PostgreSQL 约束联调仍需 Docker/Testcontainers。
+
+## A10-03 绑定外部平台身份
+
+- 日期：2026-09-09
+- 推荐决策：复用 Resource 外部身份 Application/API；绑定使用 `provider + external_type + external_id` 作为全局唯一身份，外部 ID 仅作映射，不取代 Resource UUID。
+- 失败语义：owner-scoped Resource 不存在或无权时拒绝；数据库唯一约束冲突转换为稳定 Conflict；绑定/解绑定分别写 Durable Event 与 Audit，失败不产生伪成功。
+- 验证：`DefaultResourceServiceTest` 18/18 通过，覆盖绑定冲突和外部身份生命周期事件；ResourceController 已接入 POST/DELETE 公开路径。真实 PostgreSQL 唯一约束联调仍需 Docker/Testcontainers。
