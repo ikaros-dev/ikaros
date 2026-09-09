@@ -638,3 +638,9 @@
 - 实现修复：新增 `StorageProviderProbeResult`/状态契约、Provider probe service 和 HTTP 路径；S3 adapter 使用随机哨兵对象执行 PUT → HEAD → DELETE，删除置于 finally，失败返回脱敏错误码；未支持的 adapter 返回 `UNSUPPORTED`。
 - 失败语义：Provider 不存在沿用 NotFound；无 adapter/凭据/网络失败不产生伪成功；哨兵对象创建后即使 HEAD 失败也尝试清理。
 - 验证：`StorageProviderProbeServiceTest` 3/3、`StorageObjectProviderRegistryTest` 1/1，`mvn -pl storage -am '-Dtest=StorageProviderProbeServiceTest,StorageObjectProviderRegistryTest' '-Dsurefire.failIfNoSpecifiedTests=false' test` BUILD SUCCESS。
+## A15-03 启用与停用 Provider
+- 日期：2026-09-09
+- 推荐决策：复用已有 `POST /api/storage/providers/{providerId}/enable` 和 `DELETE /api/storage/providers/{providerId}` 路径，不新增同义状态接口。
+- 实现修复：现有 Registry 已将状态变更持久化并分别发布 `storage.provider.enabled` / `storage.provider.disabled`；补充重新查询状态和事件转移验收测试。
+- 失败语义：停用 Provider 后 `requireWritable` 拒绝写入；不存在的 Provider 沿用 NotFound；重新启用只改变目标 Provider，不触碰 Attachment、Blob、Placement。
+- 验证：`InMemoryStorageProviderRegistryTest` 3/3（含停用拒写、停用后重新启用并重新查询、配置更新事件），Maven targeted test BUILD SUCCESS。

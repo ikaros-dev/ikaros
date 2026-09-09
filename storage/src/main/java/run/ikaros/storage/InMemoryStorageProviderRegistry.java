@@ -112,11 +112,14 @@ public class InMemoryStorageProviderRegistry implements StorageProviderRegistry 
     }
 
     private Mono<StorageProvider> change(UUID id, StorageProviderStatus status) {
-        return get(id).map(current -> {
+        return get(id).flatMap(current -> {
             StorageProvider updated = new StorageProvider(current.id(), current.providerKey(), current.providerType(),
                 current.tier(), status, current.secretReference(), current.metadata(), current.createdAt(), Instant.now());
             providers.replace(id, current, updated);
-            return updated;
+            if (events == null || status == StorageProviderStatus.DRAINING) return Mono.just(updated);
+            String event = status == StorageProviderStatus.ENABLED ? "storage.provider.enabled" : "storage.provider.disabled";
+            return events.append(new EventAppendRequest(event, 1, "storage", "storage_provider", updated.id(),
+                "{\"provider_id\":\"" + updated.id() + "\"}")).thenReturn(updated);
         });
     }
 
