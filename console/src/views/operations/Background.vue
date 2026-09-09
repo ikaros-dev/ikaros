@@ -8,6 +8,7 @@ const error = ref("");
 const status = ref("");
 const type = ref("");
 const detail = ref<any>(false);
+const attempts = ref<Task[]>([]);
 const submitDialog = ref(false);
 const submitting = ref(false);
 const submitType = ref("");
@@ -84,7 +85,12 @@ async function openDetail(row: Task) {
   if (!row.id) return;
   detail.value = row;
   try {
-    detail.value = await http.get(`/background-tasks/${row.id}`);
+    const [task, history]: any[] = await Promise.all([
+      http.get(`/background-tasks/${row.id}`),
+      http.get(`/background-tasks/${row.id}/attempts`)
+    ]);
+    detail.value = task;
+    attempts.value = Array.isArray(history) ? history : history?.items || [];
   } catch (e: any) {
     error.value = e?.response?.data?.detail || e?.message || "任务详情加载失败";
   }
@@ -280,6 +286,18 @@ load();
       ><el-steps direction="vertical" class="mt-5"
         ><el-step title="排队" /><el-step title="执行" /><el-step
           title="完成 / 失败" /></el-steps
+      ><el-divider />
+      <div class="font-medium mb-3">执行尝试历史</div>
+      <el-empty v-if="!attempts.length" description="暂无执行尝试" />
+      <el-table v-else :data="attempts" size="small" stripe>
+        <el-table-column prop="attemptNo" label="#" width="55" />
+        <el-table-column prop="status" label="状态" width="110" />
+        <el-table-column prop="claimedBy" label="Runner" min-width="150" />
+        <el-table-column prop="leaseExpiresAt" label="Lease 到期" min-width="180" />
+        <el-table-column prop="startedAt" label="开始" min-width="180" />
+        <el-table-column prop="finishedAt" label="结束" min-width="180" />
+        <el-table-column prop="errorMessage" label="错误" min-width="180" />
+      </el-table
     ></el-drawer>
     <el-dialog v-model="submitDialog" title="提交后台任务" width="560px">
       <el-form label-position="top">
