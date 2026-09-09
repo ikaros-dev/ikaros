@@ -109,6 +109,17 @@ function progressSummary(row: Task) {
   if (completed != null && total != null) return `${completed} / ${total}`;
   return Object.keys(progress).length ? JSON.stringify(progress) : "—";
 }
+async function cancelTask(row: Task) {
+  if (!row.id || !["PENDING", "RUNNING"].includes(String(row.status).toUpperCase())) return;
+  if (!window.confirm("确认取消这个后台任务吗？已完成的部分不会回滚。")) return;
+  try {
+    await http.post(`/background-tasks/${row.id}/actions/cancel`);
+    await load();
+    if (detail.value?.id === row.id) await openDetail(row);
+  } catch (e: any) {
+    error.value = e?.response?.data?.detail || e?.message || "任务取消失败";
+  }
+}
 load();
 </script>
 <template>
@@ -208,9 +219,16 @@ load();
           prop="created_at"
           label="创建时间"
           min-width="180"
-        /><el-table-column label="操作" width="90"
+        /><el-table-column label="操作" width="150"
           ><template #default="{ row }"
-            ><el-button link @click="openDetail(row)">详情</el-button></template
+            ><el-button link @click="openDetail(row)">详情</el-button>
+            <el-button
+              v-if="['PENDING', 'RUNNING'].includes(String(row.status).toUpperCase())"
+              link
+              type="danger"
+              @click="cancelTask(row)"
+              >取消</el-button
+            ></template
           ></el-table-column
         ></el-table
       ></el-card
