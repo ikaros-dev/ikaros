@@ -637,6 +637,7 @@
 - 推荐决策：复用既有 ResourceTitle Application/API；同一 Resource 的 locale 唯一，标题保存支持主标题切换，删除最后标题被拒绝，owner scope 由 Resource 查询保证。
 - 失败语义：请求校验拒绝空/超长 locale 或 title；不存在或无权 Resource 拒绝；数据库结果通过重新查询保持一致，保存和审计在同一 reactive transaction 内完成。
 - 验证：`DefaultResourceTitleServiceTest` 3 项、`ResourceTitleControllerTest` 2 项通过，覆盖新增多语言标题、主标题降级、最后标题禁止和控制器入口。行为已满足，未做无关重写。
+- Console 对接审计：资源详情页“多语言标题”页签通过资源详情 API 展示现有标题，并由“添加标题”对话框调用 `PUT /resources/{id}/titles`；成功后重新加载，失败显示错误。
 
 ## A10-02 维护别名
 
@@ -645,6 +646,7 @@
 - 实现：移除旧的 `(resource_id, locale)` 限制，新增 `(resource_id, locale, title_kind, title)` 唯一约束；保存和返回路径均按标题类型区分，避免同语言主标题被误返回。
 - 失败语义：空/超长输入交由 API 校验；不存在或无权 Resource 拒绝；别名主标题组合返回 Conflict，数据库重复值保持显式冲突且不产生伪成功。
 - 验证：`DefaultResourceTitleServiceTest` 4/4、`ResourceTitleControllerTest` 2/2 通过，新增覆盖同语言多别名并存且不替换主标题；真实 PostgreSQL 约束联调仍需 Docker/Testcontainers。
+- Console 对接审计：同一详情页使用独立“添加别名”入口，将 `kind=ALIAS` 发送到同一标题 API，列表按 `kind` 展示，不把别名伪装成主标题。
 
 ## A10-03 绑定外部平台身份
 
@@ -652,6 +654,7 @@
 - 推荐决策：复用 Resource 外部身份 Application/API；绑定使用 `provider + external_type + external_id` 作为全局唯一身份，外部 ID 仅作映射，不取代 Resource UUID。
 - 失败语义：owner-scoped Resource 不存在或无权时拒绝；数据库唯一约束冲突转换为稳定 Conflict；绑定/解绑定分别写 Durable Event 与 Audit，失败不产生伪成功。
 - 验证：`DefaultResourceServiceTest` 18/18 通过，覆盖绑定冲突和外部身份生命周期事件；ResourceController 已接入 POST/DELETE 公开路径。真实 PostgreSQL 唯一约束联调仍需 Docker/Testcontainers。
+- Console 对接审计：资源详情页“外部身份”页签展示 `provider/type/value`，绑定对话框调用 `POST /resources/{id}/external-identities`，成功后刷新列表，错误可见。
 
 ## A10-04 处理重复身份绑定
 
@@ -659,6 +662,7 @@
 - 推荐决策：重复外部身份由数据库唯一约束作为并发最终裁决；Application 将 DuplicateKey 映射为稳定 Conflict，不采用静默覆盖或先查后写的竞态方案。
 - 失败语义：重复请求只允许第一次写入成功；冲突请求在身份保存阶段失败，不发布绑定事件、不写绑定审计，也不影响已有映射。
 - 验证：`DefaultResourceServiceTest` 19/19 通过，新增先成功后重复提交的回归测试，并验证保存次数为 2、成功审计仅 1 次；真实 PostgreSQL 并发约束联调仍需 Docker/Testcontainers。
+- Console 对接审计：绑定入口沿用真实 API 的 Conflict 响应并显示错误，不做本地先查后写或静默覆盖；重复身份仍由后端唯一约束裁决。
 
 ## A10-05 展示字段来源
 
@@ -666,6 +670,7 @@
 - 推荐决策：复用 metadata 查询 API；每个字段返回当前值、`source`、`sourceReference`、`manuallyLocked` 与 `applied`，让调用方可区分用户确认值、自动来源和被人工锁定而未应用的自动结果。
 - 失败语义：查询严格按 owner-scoped Resource；不存在或无权目标拒绝，空字段列表返回空结果；自动来源遇到人工锁定时保留现值并返回 `applied=false`。
 - 验证：`DefaultResourceMetadataServiceTest` 2/2 通过，覆盖字段来源展示及人工锁定不覆盖；ResourceMetadataController 已接入 GET 公开路径。真实 PostgreSQL 联调仍需 Docker/Testcontainers。
+- Console 对接审计：详情页加载 `GET /resources/{id}/metadata`，展示字段值、来源、来源引用、手动锁定状态及 `applied` 状态；已修复前端误读 `userOverride` 导致锁定状态始终显示为否的问题。
 
 ## A10-06 保存用户手动覆盖值
 
@@ -673,6 +678,7 @@
 - 推荐决策：手动覆盖写入 `MetadataSource.USER` 并设置 `manuallyLocked=true`；写入、审计和已有值读取在同一 reactive transaction 内完成。自动来源遇到锁定字段只返回现值并标记 `applied=false`，解除锁定必须走显式 restore Action。
 - 失败语义：owner-scoped Resource 不存在或无权时拒绝；API 校验空/超长字段值；写入失败不产生成功结果，用户值不会被自动同步静默覆盖。
 - 验证：`DefaultResourceMetadataServiceTest` 3/3 通过，覆盖手动值 USER/locked 持久化、自动更新保护、显式恢复和字段来源读取；真实 PostgreSQL 事务联调仍需 Docker/Testcontainers。
+- Console 对接审计： “新增/覆盖字段”调用 `PUT /resources/{id}/metadata/{fieldKey}` 保存用户值；外部候选通过 `POST /ingestion/resources/metadata-candidates/{id}/resolution` 显式应用/拒绝，刷新后保留后端来源与锁定结果。
 
 ## A10 资源描述信息（父 issue）
 
