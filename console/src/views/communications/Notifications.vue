@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import { http } from "@/utils/http";
 
 type Notification = Record<string, any>;
 const tab = ref("center");
+const router = useRouter();
 const scope = ref("mine");
 const readState = ref("all");
 const source = ref("all");
@@ -46,6 +48,14 @@ async function markRead(row: Notification) {
     error.value = e?.response?.data?.detail || e?.message || "标记已读失败";
   } finally {
     actionLoading.value = null;
+  }
+}
+
+function openRelated(row: Notification) {
+  if (row.taskId) {
+    router.push({ path: "/operations-center/jobs", query: { taskId: row.taskId } });
+  } else if (row.resourceId) {
+    router.push(`/resource-center/library/${row.resourceId}`);
   }
 }
 
@@ -101,9 +111,10 @@ load();
           <el-table-column prop="createdAt" label="创建时间" min-width="180" />
           <el-table-column prop="status" label="已读状态" width="110" />
           <el-table-column prop="channel" label="投递渠道" width="130" />
-          <el-table-column label="操作" width="120">
+          <el-table-column label="操作" width="180">
             <template #default="{ row }">
               <el-button link :loading="actionLoading === row.id" :disabled="row.status === 'READ'" @click="markRead(row)">标记已读</el-button>
+              <el-button v-if="row.taskId || row.resourceId" link @click="openRelated(row)">查看关联</el-button>
             </template>
           </el-table-column>
         </el-table>
