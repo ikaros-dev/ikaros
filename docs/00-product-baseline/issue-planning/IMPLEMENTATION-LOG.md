@@ -149,3 +149,11 @@
 - 外部权限记录：向 GitHub #927 发布完成评论的请求尚未获安全策略授权；本地实现与后续 commit 已保留，待权限恢复后补发评论并关闭。根据执行规则继续处理后续子 issue。
 - 本地权限记录：提交时 Git 无法创建 `.git/index.lock`，已记录并申请受控权限重试；不影响代码验证，继续按 issue 顺序推进。
 - 外部权限记录：向 GitHub #927 发布完成评论并关闭 issue 的请求因安全权限审批超时未执行；不能视为已评论或已关闭，待权限恢复后补发。根据执行规则继续处理 A05-03。
+
+## A05-03 Access / Refresh JWT 签发与刷新
+
+- 日期：2026-09-09
+- 推荐决策：复用集中式 `JwtTokenService` 签发带 `sub`、`jti`、`security_version`、`iat`、`exp`、issuer 和 token kind 的 Access/Refresh JWT；刷新只接受签名有效的 Refresh JWT，并重新读取 ACTIVE 用户与当前 `security_version`。
+- 原因：保持无状态认证，不引入 Login Session、Refresh Token Digest 或 Controller 私自拼装 token；用户级失效由后续 A05-05 提升 `security_version`。
+- 失败语义：过期、错误类型、错误签名和版本不匹配均拒绝继续认证/刷新；JWT 原文不写入数据库、事件、审计或普通日志。
+- 验证：`JwtTokenServiceTest` 覆盖 Access/Refresh 类型隔离、唯一 jti、过期和篡改拒绝；`AuthenticationServiceTest` 覆盖刷新时 `security_version` 不匹配及无效 token 拒绝；认证回归共 15 项通过。

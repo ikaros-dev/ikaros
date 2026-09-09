@@ -16,6 +16,7 @@ import reactor.test.StepVerifier;
 import run.ikaros.authorization.api.InitialRoleAssigner;
 import run.ikaros.authorization.api.PermissionSnapshot;
 import run.ikaros.authorization.api.PermissionSnapshotQuery;
+import run.ikaros.common.NotFoundException;
 
 class AuthenticationServiceTest {
     @Test
@@ -110,5 +111,30 @@ class AuthenticationServiceTest {
             .doesNotContain("sessionId");
 
         StepVerifier.create(service.logout()).verifyComplete();
+    }
+
+    @Test
+    void refreshRejectsSecurityVersionMismatchAndInvalidRefreshToken() {
+        PlatformUserRepository users = mock(PlatformUserRepository.class);
+        JwtTokenService tokens = mock(JwtTokenService.class);
+        AuthenticationService service = new AuthenticationService(users, mock(PasswordCredentialRepository.class),
+            mock(UserService.class), tokens, mock(InitialRoleAssigner.class), mock(PermissionSnapshotQuery.class),
+            mock(TransactionalOperator.class));
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity user = new PlatformUserEntity(userId, "admin", "Administrator", null,
+            UserStatus.ACTIVE, now, now, null, 2L);
+        when(tokens.verifyRefresh("refresh")).thenReturn(new JwtTokenService.Claims(userId, UUID.randomUUID(),
+            1L, List.of(), now.plusSeconds(300)));
+        when(users.findById(userId)).thenReturn(Mono.just(user));
+
+        StepVerifier.create(service.refresh("refresh"))
+            .expectError(NotFoundException.class)
+            .verify();
+
+        when(tokens.verifyRefresh("invalid")).thenThrow(new IllegalArgumentException("invalid"));
+        StepVerifier.create(service.refresh("invalid"))
+            .expectError(NotFoundException.class)
+            .verify();
     }
 }
