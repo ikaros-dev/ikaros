@@ -37,6 +37,9 @@ const queueVersion = ref("0");
 const queueOrderText = ref("");
 const queueRepeatMode = ref("OFF");
 const queueShuffleEnabled = ref(false);
+const lyricsTrackId = ref("");
+const lyricsRows = ref<Row[]>([]);
+const lyricsLoading = ref(false);
 const musicForm = ref({ attachmentId: "", title: "", durationMillis: null as number | null, codec: "", container: "" });
 
 const kind = computed(() => String(route.path.split("/").pop()));
@@ -178,6 +181,17 @@ async function saveQueuePolicy() {
   finally { queueSaving.value = false; }
 }
 
+async function loadLyrics(trackId = lyricsTrackId.value) {
+  if (!trackId.trim()) { error.value = "请输入 Track ID"; return; }
+  lyricsLoading.value = true; error.value = ""; message.value = "";
+  try {
+    const result = await http.get<unknown, unknown>(`/music/tracks/${trackId.trim()}/lyrics`);
+    lyricsRows.value = Array.isArray(result) ? result as Row[] : [];
+    message.value = lyricsRows.value.length ? `已加载 ${lyricsRows.value.length} 个歌词版本` : "该歌曲暂无可用歌词";
+  } catch (e: any) { lyricsRows.value = []; error.value = e?.response?.data?.detail || e?.message || "加载歌词失败"; }
+  finally { lyricsLoading.value = false; }
+}
+
 onMounted(load);
 </script>
 
@@ -191,6 +205,7 @@ onMounted(load);
       <el-dialog v-model="candidateDialog" title="歌曲信息候选" width="860px"><el-skeleton v-if="candidateLoading" :rows="5" animated/><el-empty v-else-if="!candidates.length" description="未识别到嵌入标签"/><el-table v-else :data="candidates" stripe><el-table-column prop="source" label="来源" width="100"/><el-table-column prop="title" label="标题" min-width="160"/><el-table-column prop="artist" label="艺术家" min-width="140"/><el-table-column prop="album" label="专辑" min-width="140"/><el-table-column prop="trackNumber" label="曲目号" width="90"/><el-table-column prop="releaseYear" label="年份" width="90"/><el-table-column label="操作" width="180"><template #default="scope"><el-button link type="primary" @click="editCandidate(scope.row)">修正</el-button><el-button v-if="associated(scope.row.id)" link type="success" disabled>已关联</el-button><el-button v-else link type="primary" :loading="associationLoading === scope.row.id" @click="associateCandidate(scope.row)">关联</el-button></template></el-table-column></el-table></el-dialog>
       <el-dialog v-model="correctionDialog" title="修正歌曲信息" width="560px"><el-form label-position="top"><div class="grid grid-cols-1 md:grid-cols-2 gap-3"><el-form-item label="标题"><el-input v-model="correctionCandidate.title"/></el-form-item><el-form-item label="艺术家"><el-input v-model="correctionCandidate.artist"/></el-form-item><el-form-item label="专辑"><el-input v-model="correctionCandidate.album"/></el-form-item><el-form-item label="专辑艺术家"><el-input v-model="correctionCandidate.albumArtist"/></el-form-item><el-form-item label="曲目号"><el-input-number v-model="correctionCandidate.trackNumber" :min="1" class="w-full"/></el-form-item><el-form-item label="碟号"><el-input-number v-model="correctionCandidate.discNumber" :min="1" class="w-full"/></el-form-item><el-form-item label="流派"><el-input v-model="correctionCandidate.genre"/></el-form-item><el-form-item label="发行年份"><el-input v-model="correctionCandidate.releaseYear"/></el-form-item></div></el-form><template #footer><el-button @click="correctionDialog=false">取消</el-button><el-button type="primary" :loading="correctionSaving" @click="saveCorrection">保存修正</el-button></template></el-dialog>
       <el-card shadow="never" class="mb-4"><template #header><span>播放模式</span></template><div class="flex flex-wrap items-center gap-3"><el-select v-model="queueRepeatMode" class="w-36"><el-option label="不循环" value="OFF"/><el-option label="队列循环" value="QUEUE"/><el-option label="单曲循环" value="ONE"/></el-select><el-switch v-model="queueShuffleEnabled" active-text="随机播放"/><el-button type="primary" :loading="queueSaving" :disabled="!queueId" @click="saveQueuePolicy">保存模式</el-button><span class="text-xs text-[var(--el-text-color-secondary)]">使用上方 Queue 版本进行并发校验</span></div></el-card>
+      <el-card shadow="never" class="mb-4"><template #header><span>可用歌词</span></template><div class="flex flex-wrap gap-2 mb-3"><el-input v-model="lyricsTrackId" placeholder="Track ID" class="w-96" clearable/><el-button type="primary" :loading="lyricsLoading" @click="loadLyrics()">加载歌词</el-button></div><el-skeleton v-if="lyricsLoading" :rows="4" animated/><el-empty v-else-if="!lyricsRows.length" description="暂无可用歌词"/><el-table v-else :data="lyricsRows" stripe><el-table-column prop="language" label="语言" width="110"/><el-table-column prop="type" label="类型" width="140"/><el-table-column prop="source" label="来源" width="140"/><el-table-column prop="provenance" label="溯源" min-width="160"/><el-table-column label="内容" min-width="320"><template #default="scope"><pre class="whitespace-pre-wrap text-sm">{{ scope.row.content || scope.row.timingData || "—" }}</pre></template></el-table-column></el-table></el-card>
     </template>
     <template v-else><el-tabs v-model="tab"><el-tab-pane label="目录" name="catalog"/><el-tab-pane label="元数据" name="metadata"/><el-tab-pane label="播放 / 时间线" name="activity"/></el-tabs><el-card shadow="never"><template #header><div class="flex justify-between"><span>{{ title }}目录</span><el-input v-model="query" clearable placeholder="搜索标题或资源 ID" class="w-64"/></div></template><el-skeleton v-if="loading" :rows="5" animated/><el-empty v-else-if="!filtered.length" description="暂无可展示条目；其他媒体目录接口尚未接入"/><el-table v-else :data="filtered" stripe><el-table-column prop="id" label="ID" min-width="240"/><el-table-column prop="name" label="名称" min-width="200"/><el-table-column prop="status" label="状态" width="140"/><el-table-column prop="createdAt" label="创建时间" min-width="180"/></el-table><el-alert title="附件物理存储请在“附件与存储”模块管理。" type="info" show-icon :closable="false" class="mt-4"/></el-card></template>
   </main>
