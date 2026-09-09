@@ -1011,6 +1011,54 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /admin/roles/users/{user_id}/roles/{role_id}:
+    post:
+      tags: [Admin Identity]
+      operationId: assignUserRole
+      x-ikaros-contract-id: identity.assign-user-role
+      summary: Assign a role to a user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: role_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Role assigned or already assigned }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /admin/roles/users/{user_id}/roles/{role_id}/actions/revoke:
+    post:
+      tags: [Admin Identity]
+      operationId: revokeUserRole
+      x-ikaros-contract-id: identity.revoke-user-role
+      summary: Revoke a role from a user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: role_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Role revoked or already absent }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /admin/permissions:
     get:
       tags: [Admin Identity]
