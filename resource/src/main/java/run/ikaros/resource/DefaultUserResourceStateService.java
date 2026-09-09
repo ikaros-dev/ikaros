@@ -3,6 +3,7 @@ package run.ikaros.resource;
 import run.ikaros.resource.api.*;
 
 import java.time.Instant;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -39,8 +40,8 @@ public class DefaultUserResourceStateService implements UserResourceStateService
 
     @Override
     public Mono<UserResourceStateView> get(UUID userId, UUID resourceId) {
-        return owned(userId, resourceId).then(states.findByUserIdAndResourceId(userId, resourceId)
-            .switchIfEmpty(Mono.error(new NotFoundException("用户资源状态不存在"))))
+        return owned(userId, resourceId).then(Mono.defer(() -> states.findByUserIdAndResourceId(userId, resourceId)))
+            .switchIfEmpty(Mono.error(new NotFoundException("用户资源状态不存在")))
             .map(this::view);
     }
 
@@ -57,14 +58,15 @@ public class DefaultUserResourceStateService implements UserResourceStateService
 
     private Mono<UserResourceStateView> setInternal(UUID userId, UUID resourceId,
                                                      UserResourceStateRequest request, Long expectedVersion) {
-        if (request.rating() != null && (request.rating().signum() < 0 || request.rating().doubleValue() > 10)) {
+        if (request.rating() != null && (request.rating().compareTo(BigDecimal.ZERO) < 0
+            || request.rating().compareTo(BigDecimal.TEN) > 0)) {
             return Mono.error(new IllegalArgumentException("评分必须介于 0 和 10 之间"));
         }
         if (request.progressValue() != null && request.progressValue().signum() < 0) {
             return Mono.error(new IllegalArgumentException("进度不能为负数"));
         }
         return owned(userId, resourceId)
-            .then(states.findByUserIdAndResourceId(userId, resourceId))
+            .then(Mono.defer(() -> states.findByUserIdAndResourceId(userId, resourceId)))
             .defaultIfEmpty(new UserResourceStateEntity(userId, resourceId, false, null, null, null, null,
                 null, null, null))
             .flatMap(current -> {

@@ -524,6 +524,14 @@
 - 失败语义：重复标签保持现有关系；未知 Resource/标签统一 NotFound；删除成功写审计和事件。
 - 验证：`DefaultResourceTagServiceTest` 4/4 通过，覆盖添加、列表、删除、未知 Resource 和审计路径；真实 PostgreSQL 唯一约束联调仍需 Docker/Testcontainers。
 
+## A13-03 保存个人评分
+
+- 日期：2026-09-09
+- 推荐决策：复用 `PUT /api/resources/{resourceId}/user-state` 保存用户评分，评分量纲固定为 0–10，并通过 User + Resource 主键隔离，不修改 Resource 公共元数据。
+- 实现修复：状态读取改为在 Resource owner 校验通过后惰性访问；评分边界使用精确 `BigDecimal` 比较，避免浮点转换造成边界误判。
+- 失败语义：评分越界或目标 Resource 不存在/无权访问时失败，不读取或写入用户状态，不发布成功事件；成功更新沿用事务、版本和 `resource.user-state.changed` 事件。
+- 验证：`DefaultUserResourceStateServiceTest` 3/3 通过，覆盖评分更新事件、未知 Resource 授权边界和越界输入；真实 PostgreSQL/Testcontainers 联调仍需 Docker。
+
 ## A12 资源关系管理（父 issue）
 
 - 日期：2026-09-09

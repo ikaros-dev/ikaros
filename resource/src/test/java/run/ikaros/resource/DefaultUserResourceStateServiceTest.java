@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -47,5 +48,33 @@ class DefaultUserResourceStateServiceTest {
         verify(events).append(argThat(request -> request.eventType().equals("resource.user-state.changed")
             && request.producerSubsystem().equals("resource") && request.subjectType().equals("resource")
             && request.subjectId().equals(resourceId)));
+    }
+
+    @Test
+    void rejectsUnknownResourceBeforeReadingState() {
+        UUID userId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        ResourceRepository resources = mock(ResourceRepository.class);
+        UserResourceStateRepository states = mock(UserResourceStateRepository.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(resources.findByIdAndOwnerId(resourceId, userId)).thenReturn(Mono.empty());
+
+        DefaultUserResourceStateService service = new DefaultUserResourceStateService(resources, states, transaction);
+
+        StepVerifier.create(service.set(userId, resourceId,
+                new UserResourceStateRequest(false, new BigDecimal("9"), null, null, null)))
+            .expectErrorMessage("资源不存在或无权访问").verify();
+        verify(states, never()).findByUserIdAndResourceId(userId, resourceId);
+    }
+
+    @Test
+    void rejectsRatingOutsideContract() {
+        DefaultUserResourceStateService service = new DefaultUserResourceStateService(
+            mock(ResourceRepository.class), mock(UserResourceStateRepository.class), mock(TransactionalOperator.class));
+
+        StepVerifier.create(service.set(UUID.randomUUID(), UUID.randomUUID(),
+                new UserResourceStateRequest(false, new BigDecimal("10.01"), null, null, null)))
+            .expectErrorMessage("评分必须介于 0 和 10 之间").verify();
     }
 }
