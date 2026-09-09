@@ -1203,6 +1203,34 @@ paths:
       responses:
         '200': { description: Active playback sessions, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicPlaybackSession' } } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
+  /music/playlists:
+    post:
+      tags: [Music]
+      operationId: createMusicPlaylist
+      x-ikaros-contract-id: music.create-playlist
+      summary: Create a music playlist
+      parameters:
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CreateMusicPlaylistRequest' } } } }
+      responses:
+        '200': { description: Created playlist, content: { application/json: { schema: { $ref: '#/components/schemas/MusicPlaylist' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /music/playlists/{playlist_id}:
+    patch:
+      tags: [Music]
+      operationId: updateMusicPlaylist
+      x-ikaros-contract-id: music.update-playlist
+      summary: Edit a music playlist
+      parameters:
+        - { name: playlist_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: false, schema: { type: string } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UpdateMusicPlaylistRequest' } } } }
+      responses:
+        '200': { description: Updated playlist, content: { application/json: { schema: { $ref: '#/components/schemas/MusicPlaylist' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /music/playback/tracks/{track_id}/sessions:
     post:
       tags: [Music]
@@ -1968,6 +1996,28 @@ paths:
         provenance: { type: string, nullable: true }
         confidence: { type: number, format: double, minimum: 0, maximum: 1, nullable: true }
         created_at: { type: string, format: date-time }
+        version: { type: integer, format: int64 }
+    CreateMusicPlaylistRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 512 }
+        description: { type: string, nullable: true, maxLength: 4096 }
+    UpdateMusicPlaylistRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 512 }
+        description: { type: string, nullable: true, maxLength: 4096 }
+    MusicPlaylist:
+      type: object
+      required: [id, name, created_at, updated_at, version]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
         version: { type: integer, format: int64 }
     CreateMusicQueueRequest:
       type: object
