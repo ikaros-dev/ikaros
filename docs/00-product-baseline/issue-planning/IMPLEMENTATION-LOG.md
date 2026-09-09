@@ -865,3 +865,8 @@
 - 持久化：媒体服务更新 Playback Session，并通过 `ResourceProgressService` 写入 `VIDEO_SECONDS` 进度；超过已知总时长的输入在持久化前拒绝。
 - 验证：`PersistentMediaPlaybackServiceTest` 4/4，覆盖创建会话、不可播放 Release、进度持久化和超时长拒绝；Console `pnpm typecheck` 通过；PATCH API 已登记 OpenAPI/HTTP Registry。
 - 主要提交：`1c7aa0bd`。
+## B02-03 从上次位置续播
+- 日期：2026-09-10
+- 实现：开始播放前读取当前用户对 Resource 的 `VIDEO_SECONDS` 进度；未完成记录作为 Session 起始位置，并在播放器 `loadedmetadata` 后定位；已完成记录从 0 秒重新开始。
+- 失败语义：首次播放或进度不存在按 0 秒处理；进度读取失败不伪造已完成状态，仍通过正常播放授权链校验 Resource/Release/Attachment。
+- 验证：Console `pnpm typecheck` 通过；进度查询 API 已登记 OpenAPI/HTTP Registry。主要提交：`56569128`。
