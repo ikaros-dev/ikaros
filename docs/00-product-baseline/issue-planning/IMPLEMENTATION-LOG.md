@@ -1004,3 +1004,13 @@
 - 实现：电子书章节打开时建立 Reading Session，使用 `EPUB_LOCATION` 逻辑定位；保存按钮通过 `If-Match` 更新 Session，并在同一进度链路持久化 Work/Edition 的 Reading Progress。
 - Console：章节阅读对话框新增“保存阅读位置”，显示保存中、成功和失败状态；保存失败不伪造成功结果。
 - 验证：`PersistentReadingProgressServiceTest` 1/1；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`e78dd8f1`。
+## B06-05 跨会话恢复阅读状态
+- 日期：2026-09-10
+- 实现：复用 owner-scoped Reading Progress 查询，以 `chapter_id + EPUB_LOCATION` 恢复上次阅读章节；当前目录缺少已保存章节或无历史进度时保留明确错误，不伪造恢复结果。
+- Console：电子书导入记录新增“恢复阅读”，读取 Progress 后匹配当前 EPUB 目录并打开真实章节，同时展示恢复中和失败状态。
+- 验证：`PersistentReadingProgressServiceTest` 2/2；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`3919c205`。
+## B06 电子书阅读
+- 日期：2026-09-10
+- 子任务汇总：B06-01 至 B06-05 已按顺序完成，并全部接入电子书 Console 页面。
+- 组合交付：目录进入章节、EBOOK 阅读设置、书签增删、逻辑阅读位置保存和跨会话恢复形成真实 API 联调路径；权限、空态、错误态和持久化复查均有覆盖。
+- 验证：B06 相关 Reading 测试均通过；Console `pnpm typecheck`、`pnpm build` 通过；application package BUILD SUCCESS；运行时 migration `202609100500` 已应用；主要提交：`e5a4d622`、`c19f1aff`、`0a784be9`、`e78dd8f1`、`3919c205`。
