@@ -10,6 +10,8 @@ const query = ref("");
 const enabled = ref(false);
 const plugins = ref<Record<string, any>[]>([]);
 const eventDelivery = ref<Record<string, any> | null>(null);
+const pendingEvents = ref<Record<string, any>[]>([]);
+const retryingEventId = ref("");
 const loading = ref(false);
 const error = ref("");
 const installDialog = ref(false);
@@ -30,10 +32,21 @@ async function loadEvents() {
   if (page.value !== "events") return;
   loading.value = true; error.value = "";
   try {
-    const result = await http.get<any, any>("/health/operations");
-    eventDelivery.value = result?.eventDelivery || null;
+    const [diagnostics, events] = await Promise.all([
+      http.get<any, any>("/health/operations"),
+      http.get<any, any>("/admin/integration/events")
+    ]);
+    eventDelivery.value = diagnostics?.eventDelivery || null;
+    pendingEvents.value = Array.isArray(events) ? events : [];
   } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "事件投递状态加载失败"; }
   finally { loading.value = false; }
+}
+async function retryEvent(row: Record<string, any>) {
+  if (!row.id || !window.confirm(`确认重试事件 ${row.id} 吗？`)) return;
+  retryingEventId.value = row.id; error.value = "";
+  try { await http.post(`/admin/integration/events/${encodeURIComponent(row.id)}/actions/retry`); await loadEvents(); }
+  catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "事件重试失败"; }
+  finally { retryingEventId.value = ""; }
 }
 async function installPlugin() {
   if (!form.value.pluginId.trim() || !form.value.name.trim() || !form.value.version.trim() || !form.value.publisher.trim() || !form.value.entrypoint.trim()) { error.value = "请填写 Plugin ID、名称、版本、发布者和入口点"; return; }
@@ -83,7 +96,7 @@ watch(page, loadPage); onMounted(loadPage);
     </template>
     <template v-else-if="page === 'events'">
       <el-skeleton v-if="loading" :rows="5" animated />
-      <el-card v-else-if="eventDelivery" shadow="never"><template #header><div class="flex justify-between items-center"><span>Durable Event 投递</span><el-tag :type="eventDelivery.pendingCount ? 'warning' : 'success'">{{ eventDelivery.pendingCount ? '有待处理事件' : '已清空' }}</el-tag></div></template><div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div><div class="text-sm text-[var(--el-text-color-secondary)]">待投递</div><div class="text-2xl font-semibold mt-2">{{ eventDelivery.pendingCount ?? 0 }}</div></div><div><div class="text-sm text-[var(--el-text-color-secondary)]">已尝试未完成</div><div class="text-2xl font-semibold mt-2">{{ eventDelivery.attemptedPendingCount ?? 0 }}</div></div><div><div class="text-sm text-[var(--el-text-color-secondary)]">最近尝试</div><div class="text-lg font-semibold mt-3">{{ eventDelivery.lastAttemptAt || '—' }}</div></div></div><el-alert title="状态来自后端 Outbox 投递诊断；重复投递由 Inbox 去重，不在前端推断或伪造事件结果。" type="info" show-icon :closable="false" class="mt-5" /></el-card>
+      <template v-else-if="eventDelivery"><el-card shadow="never" class="mb-5"><template #header><div class="flex justify-between items-center"><span>Durable Event 投递</span><el-tag :type="eventDelivery.pendingCount ? 'warning' : 'success'">{{ eventDelivery.pendingCount ? '有待处理事件' : '已清空' }}</el-tag></div></template><div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div><div class="text-sm text-[var(--el-text-color-secondary)]">待投递</div><div class="text-2xl font-semibold mt-2">{{ eventDelivery.pendingCount ?? 0 }}</div></div><div><div class="text-sm text-[var(--el-text-color-secondary)]">已尝试未完成</div><div class="text-2xl font-semibold mt-2">{{ eventDelivery.attemptedPendingCount ?? 0 }}</div></div><div><div class="text-sm text-[var(--el-text-color-secondary)]">最近尝试</div><div class="text-lg font-semibold mt-3">{{ eventDelivery.lastAttemptAt || '—' }}</div></div></div><el-alert title="状态来自后端 Outbox 投递诊断；重复投递由 Inbox 去重，不在前端推断或伪造事件结果。" type="info" show-icon :closable="false" class="mt-5" /></el-card><el-card shadow="never"><template #header>待投递事件</template><el-empty v-if="!pendingEvents.length" description="暂无待投递事件" /><el-table v-else :data="pendingEvents" stripe><el-table-column prop="id" label="Event ID" min-width="250" /><el-table-column prop="eventType" label="事件类型" min-width="220" /><el-table-column prop="producerSubsystem" label="生产者" width="150" /><el-table-column prop="occurredAt" label="发生时间" min-width="190" /><el-table-column label="操作" width="90"><template #default="{ row }"><el-button link type="primary" :loading="retryingEventId === row.id" @click="retryEvent(row)">重试</el-button></template></el-table-column></el-table></el-card></template>
       <el-empty v-else description="后端未返回事件投递诊断" />
     </template>
     <el-card v-else shadow="never"><el-empty description="该集成页面尚未接入对应后端目录接口" /><el-alert title="不会在前端伪造外部连接器状态或执行结果。" type="info" show-icon :closable="false" /></el-card>
