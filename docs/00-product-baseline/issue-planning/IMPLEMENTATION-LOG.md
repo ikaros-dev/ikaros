@@ -972,3 +972,8 @@
 - Console：电子书导入页新增“书籍信息”入口，使用真实 API 展示加载、空字段、章节数和失败状态；查询失败显示可见错误，不伪造成功信息。
 - 契约追溯：新增 `reading.get-ebook-book-info`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentEbookBookInfoServiceTest`、`PersistentEbookTocParseServiceTest`、`PersistentEbookImportServiceTest` 共 4/4；Reading compile BUILD SUCCESS；Console `pnpm typecheck` 通过；主要提交：`6acb7de4`。
+## B05-04 处理不支持或损坏的文件
+- 日期：2026-09-10
+- 实现：导入阶段拒绝非 EPUB；目录解析遇到损坏容器、缺失 rootfile 或无可阅读 spine 时清理本次章节关联，保存 `FAILED`、稳定错误码和安全错误摘要，不产生伪成功目录。
+- Console：电子书导入页展示失败状态/错误摘要，失败记录保留“重试解析目录”入口；解析成功、失败和空目录均通过真实 API 结果呈现。
+- 验证：`PersistentEbookTocParseServiceTest`、`PersistentEbookImportServiceTest` 共 4/4；Console `pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；主要提交：`6acb7de4` 及本次回归测试提交。
