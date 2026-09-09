@@ -31,6 +31,13 @@
 - 未完成项：当前环境没有 Docker CLI，无法执行真实旧版本 PostgreSQL → 当前版本的 Testcontainers 回放；不将配置审查当作升级回放通过。
 - 下一步：获得 Docker Desktop/PostgreSQL 环境后，补执行旧版本、pending migration、重启幂等和失败回滚/未就绪场景，再提交该 issue 的完成评论。
 
+## A02-04 升级失败时阻止服务进入就绪状态（复核）
+
+- 日期：2026-09-10
+- 实现审计：`ApplicationReadiness` 只有在完整 Spring 启动成功后才开放；readiness 在启动未完成或 `select 1` 失败时返回 DOWN/503，liveness 不依赖数据库。
+- Console：`系统运维 → 系统健康` 读取 readiness 原始状态并显示异常，未将数据库可连接推导为应用已完成迁移。
+- 验证：`HealthControllerTest` 3/3；operations reactor BUILD SUCCESS；Console `/operations-center/health` 返回 200；真实 migration 失败启动回放仍受 Docker 缺失限制。
+
 ## A18 副本与 Blob 清理（父 issue）
 
 - 日期：2026-09-09
