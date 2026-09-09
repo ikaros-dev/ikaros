@@ -163,6 +163,30 @@ class DefaultResourceServiceTest {
     }
 
     @Test
+    void rejectsRepeatedUpdateAfterFirstVersionIsCommitted() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity current = new ResourceEntity(resourceId, ownerId, ResourceType.BOOK,
+            "测试书籍", null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE, now, now, null, 0L);
+        ResourceEntity updated = new ResourceEntity(resourceId, ownerId, ResourceType.BOOK,
+            "测试书籍", "第一版", ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE, now, now, null, 1L);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(current), Mono.just(updated));
+        when(resourceRepository.save(any(ResourceEntity.class))).thenReturn(Mono.just(updated));
+        when(auditService.record(ownerId, "resource.update", "RESOURCE", resourceId, "{}")).thenReturn(Mono.empty());
+        when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.empty());
+        when(identityRepository.findAllByResourceIdOrderByProviderAsc(resourceId)).thenReturn(Flux.empty());
+
+        StepVerifier.create(service.update(ownerId, resourceId, new UpdateResourceRequest(0L, null, "第一版")))
+            .expectNextCount(1).verifyComplete();
+        StepVerifier.create(service.update(ownerId, resourceId, new UpdateResourceRequest(0L, null, "覆盖")))
+            .expectErrorSatisfies(error -> assertThat(error).isInstanceOf(ConflictException.class)
+                .hasMessage("Resource 版本已过期"))
+            .verify();
+        verify(resourceRepository).save(any(ResourceEntity.class));
+    }
+
+    @Test
     void reportsConflictWhenExternalIdentityIsAlreadyBound() {
         UUID ownerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();

@@ -332,3 +332,10 @@
 - 推荐决策：复用 Resource Owner 的列表/详情 API；列表 SQL 固定限定 `owner_id` 与 ACTIVE 生命周期，详情使用 `findByIdAndOwnerId`，分页按稳定 `updated_at` 顺序返回 ResourceView、标题和外部身份。
 - 失败语义：跨 owner 或不存在资源统一 NotFound；空结果返回空页；非法分页参数在 Application 层拒绝，不进入 Repository。
 - 验证：`DefaultResourceServiceTest` 覆盖 owner-scoped 分页列表、空列表、跨 owner 详情拒绝和非法分页；resource 服务回归 10 项通过。
+
+## A09-03 编辑时检测版本冲突
+
+- 日期：2026-09-09
+- 推荐决策：更新必须携带 expected_version/If-Match；Application 层先按 owner 读取并比较版本，持久化继续使用 Resource `@Version` 乐观并发，不允许旧版本静默覆盖新值。
+- 失败语义：版本过期返回稳定 Conflict；冲突路径不写 Resource、标题、事件或审计，不改变 Resource 身份或共享 Blob。
+- 验证：`DefaultResourceServiceTest` 以两次重复更新复现首个版本提交后旧版本拒绝，确认只发生一次保存；resource 回归 11 项通过。
