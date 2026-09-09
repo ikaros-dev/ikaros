@@ -131,7 +131,8 @@ export default {
       { path: "activity/overview", name: "WorkbenchActivity", component: () => import("@/views/workbench/Activity.vue"), meta: { title: "我的活动与收藏", showLink: false } }
     ]),
     subsystem("/content-center", "ContentCenter", "内容与媒体", "ep:video-camera", [
-      { path: "media", name: "Media", component: () => import("@/views/media/index.vue"), meta: { title: "媒体库", icon: "ep:video-camera" } },
+      { path: "media", name: "Media", component: () => import("@/views/media/index.vue"), meta: { title: "媒体消费", icon: "ep:video-camera" } },
+      { path: "media/catalog", name: "MediaCatalog", component: () => import("@/views/media/VideoCatalog.vue"), meta: { title: "视频条目", icon: "ep:collection" } },
       { path: "reading", name: "Reading", component: () => import("@/views/reading/index.vue"), meta: { title: "阅读库", icon: "ep:reading" } },
       { path: "music", name: "Music", component: () => import("@/views/media/Catalog.vue"), meta: { title: "音乐库", icon: "ep:headset" } },
       { path: "photos", name: "Photos", component: () => import("@/views/media/Catalog.vue"), meta: { title: "照片管理", icon: "ep:picture" } },

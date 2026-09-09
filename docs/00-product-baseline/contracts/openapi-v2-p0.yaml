@@ -15,9 +15,61 @@ tags:
   - name: Attachments
   - name: Background Tasks
   - name: Operations Diagnostics
+  - name: Media
   - name: Admin Storage
   - name: Admin Identity
 paths:
+  /media/subjects:
+    get:
+      tags: [Media]
+      operationId: listMediaSubjects
+      x-ikaros-contract-id: media.list-subjects
+      summary: List owned video subjects
+      parameters:
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Video subjects
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/MediaSubject' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Media]
+      operationId: createMediaSubject
+      x-ikaros-contract-id: media.create-subject
+      summary: Create a video subject and its Resource
+      parameters:
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, kind]
+              properties:
+                title: { type: string, minLength: 1, maxLength: 512 }
+                kind: { type: string, enum: [SERIES, MOVIE, VIDEO] }
+                locale: { type: string, minLength: 1, maxLength: 32, default: en-US }
+      responses:
+        '200':
+          description: Created video subject
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MediaSubject' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
   /health/operations:
     get:
       tags: [Operations Diagnostics]
@@ -749,6 +801,14 @@ components:
         version: { type: integer, format: int64, minimum: 0 }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+    MediaSubject:
+      type: object
+      required: [id, resource_id, kind, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        resource_id: { type: string, format: uuid }
+        kind: { type: string, enum: [SERIES, MOVIE, VIDEO] }
+        created_at: { type: string, format: date-time }
     BackgroundTask:
       type: object
       required: [id, task_type, status, created_at, updated_at]
