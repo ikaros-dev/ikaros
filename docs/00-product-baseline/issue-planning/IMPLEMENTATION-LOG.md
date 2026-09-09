@@ -157,3 +157,11 @@
 - 原因：保持无状态认证，不引入 Login Session、Refresh Token Digest 或 Controller 私自拼装 token；用户级失效由后续 A05-05 提升 `security_version`。
 - 失败语义：过期、错误类型、错误签名和版本不匹配均拒绝继续认证/刷新；JWT 原文不写入数据库、事件、审计或普通日志。
 - 验证：`JwtTokenServiceTest` 覆盖 Access/Refresh 类型隔离、唯一 jti、过期和篡改拒绝；`AuthenticationServiceTest` 覆盖刷新时 `security_version` 不匹配及无效 token 拒绝；认证回归共 15 项通过。
+
+## A05-04 无状态 JWT 校验与 security_version
+
+- 日期：2026-09-09
+- 推荐决策：由最高优先级 WebFilter 统一解析 Bearer Access JWT，校验签名、时间和 token kind 后读取主体用户，仅 ACTIVE 且 `security_version` 一致时构造 `AuthenticatedPrincipal`；不查询 Session。
+- 原因：请求认证必须以当前用户状态和安全版本为权威，避免 Session、`sid` 或 Token Digest 重新成为隐式登录态。
+- 失败语义：缺失/格式错误 Bearer、错误签名、过期、Refresh 类型、禁用用户、未知用户和版本过期均返回 401，且不把 token 原文写入日志或错误响应。
+- 验证：`JwtAuthenticationWebFilterTest` 覆盖合法 Access 身份注入、非法 token、错误类型、过期、禁用用户和 stale `security_version`；相关认证回归共 10 项通过。

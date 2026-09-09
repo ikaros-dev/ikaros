@@ -53,4 +53,41 @@ class JwtAuthenticationWebFilterTest {
 
         assertThat(exchange.getResponse().getStatusCode().value()).isEqualTo(401);
     }
+
+    @Test
+    void rejectsWrongTypeExpiredDisabledAndStaleVersionTokens() {
+        JwtTokenService tokens = new JwtTokenService("ikaros", "a-development-secret-with-at-least-32-characters",
+            Duration.ofMinutes(15), Duration.ofDays(30));
+        UUID userId = UUID.randomUUID();
+        WebFilterChain chain = mock(WebFilterChain.class);
+        when(chain.filter(any())).thenReturn(Mono.empty());
+        PlatformUserRepository users = mock(PlatformUserRepository.class);
+        when(users.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, java.time.Instant.now(), java.time.Instant.now(), null, 1L, 0L)));
+
+        String refresh = tokens.issue(userId, 1L, List.of()).refreshToken();
+        assertUnauthorized(tokens, users, chain, "Bearer " + refresh);
+
+        String expired = new JwtTokenService("ikaros", "a-development-secret-with-at-least-32-characters",
+            Duration.ofMinutes(-1), Duration.ofDays(30)).issue(userId, 1L, List.of()).accessToken();
+        assertUnauthorized(tokens, users, chain, "Bearer " + expired);
+
+        String disabled = tokens.issue(userId, 1L, List.of()).accessToken();
+        when(users.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.DISABLED, java.time.Instant.now(), java.time.Instant.now(), null, 1L, 0L)));
+        assertUnauthorized(tokens, users, chain, "Bearer " + disabled);
+
+        String stale = tokens.issue(userId, 1L, List.of()).accessToken();
+        when(users.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, java.time.Instant.now(), java.time.Instant.now(), null, 2L, 0L)));
+        assertUnauthorized(tokens, users, chain, "Bearer " + stale);
+    }
+
+    private void assertUnauthorized(JwtTokenService tokens, PlatformUserRepository users, WebFilterChain chain,
+                                    String authorization) {
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/resources")
+            .header("Authorization", authorization).build());
+        new JwtAuthenticationWebFilter(tokens, users).filter(exchange, chain).block();
+        assertThat(exchange.getResponse().getStatusCode().value()).isEqualTo(401);
+    }
 }
