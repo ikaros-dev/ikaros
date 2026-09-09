@@ -624,3 +624,11 @@
 - 主要 commits：`a4d6792d`、`7d710ea4`、`0e9a45a2`、`9478c140`、`eb1f8ae9`、`a6f60eb0`、`e6909303`、`2f628294`、`a5408adc`、`6748d3e0`、`e87f1de0`、`1af16c2c`、`c5bf1970`。
 - 统一边界：Attachment、Blob、Placement、Upload Session 身份分离；授权先于 Provider/对象访问；失败不产生伪成功；临时对象清理可重试。
 - 验证证据：storage 服务与上传会话测试通过；真实 PostgreSQL/Testcontainers、Multipart/外部 Provider 联调仍需 Docker/外部环境。
+
+## A15-01 添加 Provider
+
+- 日期：2026-09-09
+- 推荐决策：通过 `POST /api/storage/providers` 注册 Provider；Provider key/type/tier 和 Secret Reference 进入持久化注册表，直接凭据仅加密保存，绝不返回或记录明文。
+- 实现修复：持久化注册路径拒绝将 password/secret 等明文凭据写入 Provider metadata；内存 registry 同样执行 metadata 安全边界，重复 Provider key 显式冲突。
+- 失败语义：参数不完整、缺少 `secret://` 引用/凭据、非法 metadata 或重复 key 均在持久化前失败；成功注册默认 ENABLED 并发布 Provider created 事件。
+- 验证：`InMemoryStorageProviderRegistryTest` 2/2、`PersistentStorageProviderRegistryTest` 1/1 通过；真实 PostgreSQL 唯一约束联调仍需 Docker。
