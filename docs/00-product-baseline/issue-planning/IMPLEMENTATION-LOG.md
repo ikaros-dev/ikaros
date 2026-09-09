@@ -925,3 +925,9 @@
 - Console：阅读库新增“按页阅读”入口，输入章节 ID 后通过真实 API 加载页面并渲染图片，同时展示加载失败和空结果状态。
 - 契约追溯：新增 `reading.list-comic-chapter-pages`、`reading.get-comic-page-content`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：Reading 模块 compile BUILD SUCCESS；Console `pnpm typecheck` BUILD SUCCESS；主要提交：`30bc58d0`。
+## B04-02 切换阅读方向和布局
+- 日期：2026-09-10
+- 实现：阅读器支持从左到右/从右到左和单页/双页布局切换；设置按作品级 `WORK + COMIC` 写入 Reading Preference，重新打开章节时从 API 恢复。
+- Console：切换控件和保存按钮已接入阅读库页面，渲染布局与方向即时生效，保存失败会显示错误。
+- 契约追溯：补登记 `reading.update-preference`、`reading.get-preference`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：待提交。

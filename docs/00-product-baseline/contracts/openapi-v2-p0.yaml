@@ -1142,7 +1142,41 @@ paths:
         '200': { description: Comic page bytes, content: { application/octet-stream: { schema: { type: string, format: binary } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
-components:
+  /reading/preferences:
+    put:
+      tags: [Reading]
+      operationId: updateReadingPreference
+      x-ikaros-contract-id: reading.update-preference
+      summary: Save a reading preference override
+      parameters:
+        - { name: scope, in: query, required: true, schema: { type: string, enum: [GLOBAL, KIND, WORK] } }
+        - { name: kind, in: query, required: false, schema: { type: string } }
+        - { name: work_id, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReadingPreferenceRequest' }
+      responses:
+        '200': { description: Saved preference, content: { application/json: { schema: { $ref: '#/components/schemas/ReadingPreference' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    get:
+      tags: [Reading]
+      operationId: getReadingPreference
+      x-ikaros-contract-id: reading.get-preference
+      summary: Get a reading preference override
+      parameters:
+        - { name: scope, in: query, required: true, schema: { type: string, enum: [GLOBAL, KIND, WORK] } }
+        - { name: kind, in: query, required: false, schema: { type: string } }
+        - { name: work_id, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Reading preference, content: { application/json: { schema: { $ref: '#/components/schemas/ReadingPreference' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  components:
   securitySchemes:
     bearerAuth:
       type: http
@@ -1479,6 +1513,22 @@ components:
         width: { type: [integer, 'null'] }
         height: { type: [integer, 'null'] }
         spread_hint: { type: [string, 'null'] }
+    ReadingPreferenceRequest:
+      type: object
+      required: [settings]
+      additionalProperties: false
+      properties:
+        settings: { type: string }
+    ReadingPreference:
+      type: object
+      required: [id, scope, settings, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        scope: { type: string, enum: [GLOBAL, KIND, WORK] }
+        reading_kind: { type: [string, 'null'] }
+        work_id: { type: [string, 'null'], format: uuid }
+        settings: { type: string }
+        updated_at: { type: string, format: date-time }
     ReorderComicPagesRequest:
       type: object
       required: [chapter_key, entry_ids]
