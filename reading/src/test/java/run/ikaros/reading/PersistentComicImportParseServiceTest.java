@@ -95,6 +95,20 @@ class PersistentComicImportParseServiceTest {
             .verifyComplete();
     }
 
+    @Test
+    void onlyFailedImportCanBeRetried() {
+        UUID owner = UUID.randomUUID(); UUID importId = UUID.randomUUID(); Instant now = Instant.now();
+        ComicImportEntity succeeded = new ComicImportEntity(importId, owner, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+            ComicImportStatus.SUCCEEDED.name(), null, null, "key", now, now, 0L);
+        ComicImportRepository imports = org.mockito.Mockito.mock(ComicImportRepository.class);
+        when(imports.findByIdAndOwnerId(importId, owner)).thenReturn(Mono.just(succeeded));
+        PersistentComicImportParseService service = new PersistentComicImportParseService(
+            org.mockito.Mockito.mock(StorageService.class), org.mockito.Mockito.mock(AttachmentContentService.class), imports,
+            org.mockito.Mockito.mock(ComicImportEntryRepository.class));
+        StepVerifier.create(service.retry(owner, importId))
+            .expectErrorMessage("只有失败的漫画解析才能重试").verify();
+    }
+
     private byte[] zipBytes() throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         try (ZipOutputStream zip = new ZipOutputStream(output)) {

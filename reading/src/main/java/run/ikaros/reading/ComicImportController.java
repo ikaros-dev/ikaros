@@ -24,6 +24,8 @@ public class ComicImportController {
         @PathVariable UUID importId) { return service.get(ownerId, importId); }
     @PostMapping("/{importId}/actions/parse") public Mono<ComicImportView> parse(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,
         @PathVariable UUID importId) { return parser.parse(ownerId, importId); }
+    @PostMapping("/{importId}/actions/retry-parse") public Mono<ComicImportView> retry(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,
+        @PathVariable UUID importId) { return parser.retry(ownerId, importId); }
     @GetMapping("/{importId}/entries") public Flux<ComicImportEntryEntity> entries(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,
         @PathVariable UUID importId) { return parser.entries(ownerId, importId); }
     @PostMapping("/{importId}/actions/reorder-pages") public Mono<ComicImportView> reorder(@RequestHeader("X-Ikaros-Actor-Id") UUID ownerId,

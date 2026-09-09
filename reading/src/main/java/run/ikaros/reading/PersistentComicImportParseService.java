@@ -67,6 +67,14 @@ public class PersistentComicImportParseService implements ComicImportParseServic
             .flatMapMany(value -> entries.findAllByImportIdOrderByChapterKeyAscPageOrderAsc(importId));
     }
 
+    @Override public Mono<ComicImportView> retry(UUID ownerId, UUID importId) {
+        return imports.findByIdAndOwnerId(importId, ownerId)
+            .switchIfEmpty(Mono.error(new NotFoundException("漫画导入不存在或无权访问")))
+            .flatMap(value -> ComicImportStatus.FAILED.name().equals(value.status())
+                ? parse(ownerId, importId)
+                : Mono.error(new ConflictException("只有失败的漫画解析才能重试")));
+    }
+
     @Override public Mono<ComicImportView> reorder(UUID ownerId, UUID importId, ReorderComicPagesRequest request) {
         return imports.findByIdAndOwnerId(importId, ownerId)
             .switchIfEmpty(Mono.error(new NotFoundException("漫画导入不存在或无权访问")))
