@@ -966,3 +966,9 @@
 - Console：电子书导入页新增“解析目录/重试解析目录”和“查看目录”，通过真实 API 展示章节顺序、内容路径、加载/空结果/错误状态。
 - 契约追溯：新增 `reading.parse-ebook-toc`、`reading.list-ebook-chapters`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentEbookTocParseServiceTest`、`PersistentEbookImportServiceTest` 共 3/3；Reading compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`e02de228`、`ccc0db0f`。
+## B05-03 展示基础书籍信息
+- 日期：2026-09-10
+- 实现：新增按导入记录读取基础书籍信息的 API，基于 Resource、Reading Edition 和已持久化 Chapter 返回书名、语言、出版社、来源、章节数及导入状态；查询沿用 owner 边界，不暴露其他用户或不存在对象。
+- Console：电子书导入页新增“书籍信息”入口，使用真实 API 展示加载、空字段、章节数和失败状态；查询失败显示可见错误，不伪造成功信息。
+- 契约追溯：新增 `reading.get-ebook-book-info`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`PersistentEbookBookInfoServiceTest`、`PersistentEbookTocParseServiceTest`、`PersistentEbookImportServiceTest` 共 4/4；Reading compile BUILD SUCCESS；Console `pnpm typecheck` 通过；主要提交：`6acb7de4`。
