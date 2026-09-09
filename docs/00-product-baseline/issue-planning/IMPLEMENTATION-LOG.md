@@ -367,7 +367,8 @@
 - 推荐决策：登录仅校验用户名、PBKDF2-SHA256 密码和用户 ACTIVE 状态后签发无状态 access/refresh JWT；不创建或返回 `session_id`，客户端登出只清理本地 token、用户状态和路由。
 - 原因：P0 认证基线采用无状态 JWT，普通登出不能伪造后端会话撤销能力；服务端 `/auth/logout` 继续作为兼容端点，但不持久化会话状态。
 - 失败语义：未知用户、错误密码和停用用户统一返回稳定的认证失败错误，不泄露账号存在性；无效输入不触发 token 签发。
-- 验证：`AuthenticationServiceTest` 覆盖登录 token pair、无 `sessionId` 和空操作登出；认证回归测试共 13 项通过；console `pnpm typecheck` 与 `pnpm build` 通过。
+- Console 对接审计：登录页通过 Pinia `loginByUsername` 调用 `POST /auth/login`，成功保存后端返回的 access/refresh token 并初始化路由；用户登出先调用 `POST /auth/logout`，无论请求成功或失败都清理本地 token、权限、标签和路由。
+- 验证：`AuthenticationServiceTest` 覆盖登录 token pair、无 `sessionId` 和空操作登出；认证回归测试共 13 项通过；Console `pnpm typecheck` 与 `pnpm build` 通过。
 - 外部权限记录：向 GitHub #927 发布完成评论的请求尚未获安全策略授权；本地实现与后续 commit 已保留，待权限恢复后补发评论并关闭。根据执行规则继续处理后续子 issue。
 - 本地权限记录：提交时 Git 无法创建 `.git/index.lock`，已记录并申请受控权限重试；不影响代码验证，继续按 issue 顺序推进。
 - 外部权限记录：向 GitHub #927 发布完成评论并关闭 issue 的请求因安全权限审批超时未执行；不能视为已评论或已关闭，待权限恢复后补发。根据执行规则继续处理 A05-03。
