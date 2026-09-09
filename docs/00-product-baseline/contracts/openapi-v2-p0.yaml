@@ -92,6 +92,37 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
+  /media/playback/sessions/{session_id}:
+    patch:
+      tags: [Media]
+      operationId: updatePlaybackProgress
+      x-ikaros-contract-id: media.update-playback-progress
+      summary: Save playback progress
+      parameters:
+        - in: path
+          name: session_id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: header
+          name: X-Ikaros-Actor-Id
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdatePlaybackProgressRequest' }
+      responses:
+        '200':
+          description: Updated playback session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlaybackSession' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
   /media/subjects:
     get:
       tags: [Media]
@@ -1085,6 +1116,13 @@ components:
       properties:
         release_id: { type: string, format: uuid }
         start_position_seconds: { type: integer, format: int64, minimum: 0 }
+    UpdatePlaybackProgressRequest:
+      type: object
+      required: [position_seconds, completed]
+      properties:
+        position_seconds: { type: integer, format: int64, minimum: 0 }
+        total_seconds: { type: [integer, 'null'], format: int64, minimum: 0 }
+        completed: { type: boolean }
     PlaybackSession:
       type: object
       required: [id, resource_id, release_id, state, started_at, last_position_seconds]
