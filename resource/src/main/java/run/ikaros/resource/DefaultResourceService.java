@@ -246,7 +246,8 @@ public class DefaultResourceService implements ResourceService {
                 return resourceRepository.save(trashed)
                     .then(emit("resource.resource.trashed", trashed))
                     .then(auditService.record(ownerId, "resource.trash", "RESOURCE", resourceId, "{}"));
-            });
+            })
+            .as(transactionalOperator::transactional);
     }
 
     @Override

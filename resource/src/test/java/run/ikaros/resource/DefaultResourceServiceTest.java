@@ -209,6 +209,20 @@ class DefaultResourceServiceTest {
     }
 
     @Test
+    void repeatsTrashIdempotentlyWithoutWritingAgain() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity trashed = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
+            "视频", null, ResourceClassification.PRIVATE, ResourceLifecycle.TRASHED, now, now, now, 2L);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(trashed));
+
+        StepVerifier.create(service.trash(ownerId, resourceId, 2L)).verifyComplete();
+        verify(resourceRepository, org.mockito.Mockito.never()).save(any());
+        org.mockito.Mockito.verifyNoInteractions(auditService);
+    }
+
+    @Test
     void rejectsArchivingTrashedResourceWithoutWriting() {
         UUID ownerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();

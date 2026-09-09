@@ -346,3 +346,10 @@
 - 推荐决策：仅 ACTIVE Resource 可归档；归档保持 Resource UUID、owner、标题和任何 Attachment/Blob 身份不变，只更新生命周期与版本并发布事件/审计。
 - 失败语义：跨 owner/不存在由 owner-scoped 查询统一 NotFound；TRASHED 等非 ACTIVE 状态返回 Conflict；拒绝路径不写 Resource、不触碰 Blob。
 - 验证：`DefaultResourceServiceTest` 覆盖 ACTIVE 归档成功、Resource 身份保留、TRASHED 状态拒绝和无写入；resource 回归 13 项通过。
+
+## A09-05 移入回收站
+
+- 日期：2026-09-09
+- 推荐决策：移入回收站是 Resource 的逻辑生命周期变更；状态、事件和审计在同一 reactive transaction 内提交，绝不直接删除 Attachment/Blob。
+- 失败语义：跨 owner/不存在统一 NotFound；旧版本按 If-Match 拒绝；重复处理已 TRASHED 资源保持幂等且不重复写入、审计或业务副作用。
+- 验证：`DefaultResourceServiceTest` 覆盖正常移入、身份/Blob 保留、重复幂等和版本边界；resource 回归 14 项通过。
