@@ -548,6 +548,13 @@
 - 失败语义：未知/无权 Resource 不保存 Activity；limit 超出 1–200 失败；空结果返回空列表；Activity 删除只影响当前用户自己的 Activity。
 - 验证：`DefaultResourceActivityServiceTest` 6/6、`ResourceActivityControllerTest` 2/2 通过，覆盖正常记录、限量、空结果、未知 Resource 和非法 limit；真实 PostgreSQL/Testcontainers 分页联调仍需 Docker。
 
+## A13 用户资源状态（父 issue）
+
+- 日期：2026-09-09
+- 本地验收结论：A13-01 至 A13-05 已按顺序完成，覆盖收藏、个人标签、评分、消费进度和近期活动；各路径均遵守用户隔离、Resource owner 授权、事务和事件/审计分离。
+- 主要 commits：`a2903998`、`ed6fdc03`、`0d9771e0`、`6e950762`、`96b3188e`。
+- 验证证据：收藏、标签、用户状态和 Activity 服务/控制器测试均通过；真实 PostgreSQL/Testcontainers 联调仍需 Docker。
+
 ## A12 资源关系管理（父 issue）
 
 - 日期：2026-09-09
