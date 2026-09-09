@@ -84,4 +84,25 @@ class PersistentMusicQueueServiceTest {
         .reorder(owner, queueId, java.util.List.of(second, first), 4L))
         .expectNextMatches(view -> view.id().equals(queueId)).verifyComplete();
   }
+
+  @Test
+  void updatesRepeatAndShufflePolicyWithVersion() {
+    UUID owner = UUID.randomUUID();
+    UUID queueId = UUID.randomUUID();
+    MusicQueueRepository queues = org.mockito.Mockito.mock(MusicQueueRepository.class);
+    MusicQueueEntryRepository entries = org.mockito.Mockito.mock(MusicQueueEntryRepository.class);
+    MusicTrackRepository tracks = org.mockito.Mockito.mock(MusicTrackRepository.class);
+    org.springframework.transaction.reactive.TransactionalOperator tx = org.mockito.Mockito.mock(
+        org.springframework.transaction.reactive.TransactionalOperator.class);
+    when(tx.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    MusicQueueEntity queue = new MusicQueueEntity(queueId, owner, false, null, MusicRepeatMode.OFF,
+        null, Instant.now(), Instant.now(), 2L);
+    when(queues.findById(queueId)).thenReturn(Mono.just(queue));
+    when(queues.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+    StepVerifier.create(new PersistentMusicQueueService(queues, entries, tracks, tx)
+        .policy(owner, queueId, new UpdateMusicQueuePolicyRequest(MusicRepeatMode.QUEUE, true, 2L)))
+        .expectNextMatches(view -> view.repeatMode() == MusicRepeatMode.QUEUE
+            && view.shuffleEnabled()).verifyComplete();
+  }
 }
