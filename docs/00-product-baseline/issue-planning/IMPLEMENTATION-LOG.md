@@ -1,5 +1,13 @@
 # Ikaros V2 实施记录
 
+## A18-02 发现损坏或缺失副本
+
+- 日期：2026-09-09
+- 推荐决策：由 Attachment Availability Query 根据 Blob 状态和 Placement/Provider 可读性发现异常；损坏 Blob 返回 CORRUPTED，无可读副本返回 MISSING，正在恢复或非活动副本返回 RESTORE_REQUIRED。
+- 原因：发现结果必须保持 Attachment、Blob、Placement 的身份边界，并可直接被恢复与清理流程消费；查询前使用 `requireReadable` 执行对象级授权。
+- 失败语义：目标不存在或无权访问不返回内部状态；没有活动且可读 Provider 的副本不伪报 READY，异常状态保持可查询且不自动删除活动引用。
+- 验证：`mvn -pl storage -am -Dtest=DefaultAttachmentAvailabilityQueryTest,BlobVerificationServiceTest -Dsurefire.failIfNoSpecifiedTests=false test`；覆盖 CORRUPTED、MISSING、完整性通过和损坏隔离，共 4 个测试全部通过。
+
 ## A18-01 校验副本完整性
 
 - 日期：2026-09-09
