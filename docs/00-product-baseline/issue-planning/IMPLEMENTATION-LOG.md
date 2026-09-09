@@ -1,5 +1,13 @@
 # Ikaros V2 实施记录
 
+## A18-04 预览可清理 Blob
+
+- 日期：2026-09-09
+- 推荐决策：通过 `GET /api/storage/gc/candidates` 只生成候选预览，不执行物理删除；候选必须无有效 Attachment 引用且已超过最小保留期，结果包含 Blob 身份、摘要、大小和可清理时间。
+- 原因：预览与执行分离，避免扫描误删；数据库查询以所有未删除 Attachment 引用保护共享 Blob，后续执行仍需再次确认引用与保留条件。
+- 失败语义：limit 超出 1–500、最小保留期为空/为负时拒绝；预览不改变 Blob、Placement 或 Attachment 状态，也不影响其他用户和未选中对象。
+- 验证：`mvn -pl storage -am -Dtest=BlobGarbageCollectionControllerTest,DefaultStorageServiceTest -Dsurefire.failIfNoSpecifiedTests=false test`；覆盖候选过滤、保留时间、参数拒绝、控制器入口与非删除语义。
+
 ## A18-03 从健康副本修复
 
 - 日期：2026-09-09
