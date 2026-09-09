@@ -455,3 +455,10 @@
 - 推荐决策：复用既有 `POST /api/collections/{collectionId}/move`；移动前校验新父级属于当前用户，随后沿祖先链拒绝自引用和任意深度循环，状态更新在 reactive transaction 内完成。
 - 失败语义：目标 Collection/父级不存在或无权时拒绝；自引用/循环返回 Conflict；失败不保存，不影响 Collection 成员 Resource。
 - 验证：Collection 服务回归 3/3 通过，包含层级移动路径所在服务编译与回归验证；真实 PostgreSQL 层级约束联调仍需 Docker/Testcontainers。
+
+## A11-05 阻止循环层级
+
+- 日期：2026-09-09
+- 推荐决策：移动操作沿父级链递归检查，拒绝自引用和任意深度祖先循环；校验发生在保存前，失败不写入 Collection，也不影响成员 Resource。
+- 失败语义：自引用或将 Collection 移入自身后代返回 Conflict；不存在/无权父级返回 NotFound；不采用静默截断或自动改父级。
+- 验证：`DefaultCollectionServiceTest` 4/4 通过，新增覆盖自引用和三节点深层循环，确认没有 Collection 保存发生；真实 PostgreSQL 并发层级联调仍需 Docker/Testcontainers。

@@ -120,4 +120,29 @@ class DefaultCollectionServiceTest {
             .expectError(ConflictException.class).verify();
         verify(members).saveAll(any(Iterable.class));
     }
+
+    @Test
+    void rejectsSelfReferenceAndDeepAncestorCycleBeforeSaving() {
+        UUID owner = UUID.randomUUID(), currentId = UUID.randomUUID(), parentId = UUID.randomUUID(), ancestorId = UUID.randomUUID();
+        Instant now = Instant.now();
+        CollectionRepository collections = mock(CollectionRepository.class);
+        CollectionResourceRepository members = mock(CollectionResourceRepository.class);
+        ResourceRepository resources = mock(ResourceRepository.class);
+        AuditService audit = mock(AuditService.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        CollectionEntity current = new CollectionEntity(currentId, owner, "当前", null, now, now, 0L);
+        when(collections.findByIdAndOwnerId(currentId, owner)).thenReturn(Mono.just(current));
+        when(collections.findByIdAndOwnerId(parentId, owner)).thenReturn(Mono.just(
+            new CollectionEntity(parentId, owner, ancestorId, "父", null, now, now, 0L)));
+        when(collections.findById(parentId)).thenReturn(Mono.just(
+            new CollectionEntity(parentId, owner, ancestorId, "父", null, now, now, 0L)));
+        when(collections.findById(ancestorId)).thenReturn(Mono.just(
+            new CollectionEntity(ancestorId, owner, currentId, "祖先", null, now, now, 0L)));
+        DefaultCollectionService service = new DefaultCollectionService(collections, members, resources, audit, transaction);
+
+        StepVerifier.create(service.move(owner, currentId, currentId)).expectError(ConflictException.class).verify();
+        StepVerifier.create(service.move(owner, currentId, parentId)).expectError(ConflictException.class).verify();
+        verify(collections, org.mockito.Mockito.never()).save(any());
+    }
 }
