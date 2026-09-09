@@ -956,6 +956,61 @@ paths:
                   $ref: '#/components/schemas/Role'
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Admin Identity]
+      operationId: createRole
+      x-ikaros-contract-id: identity.create-role
+      summary: Create a platform role
+      parameters:
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRoleRequest' }
+      responses:
+        '201':
+          description: Role created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Role' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /admin/roles/{role_id}/permissions:
+    put:
+      tags: [Admin Identity]
+      operationId: replaceRolePermissions
+      x-ikaros-contract-id: identity.replace-role-permissions
+      summary: Replace a role's platform permissions
+      parameters:
+        - name: role_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReplaceRolePermissionsRequest' }
+      responses:
+        '200':
+          description: Updated role
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Role' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /admin/permissions:
     get:
       tags: [Admin Identity]
@@ -970,7 +1025,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Permission'
+                  type: string
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /reading/comic-imports:
@@ -2574,23 +2629,36 @@ components:
           description: Accepted only over authenticated TLS; never persisted or logged in plaintext.
     Role:
       type: object
-      required: [id, role_key, display_name, system_role, version]
+      required: [id, code, name, built_in, permissions]
       properties:
         id: { type: string, format: uuid }
-        role_key: { type: string }
-        display_name: { type: string }
-        system_role: { type: boolean }
-        version: { type: integer, format: int64 }
+        code: { type: string }
+        name: { type: string }
+        description: { type: [string, 'null'] }
+        built_in: { type: boolean }
+        permissions:
+          type: array
+          uniqueItems: true
+          items: { type: string }
+    CreateRoleRequest:
+      type: object
+      required: [code, name]
+      additionalProperties: false
+      properties:
+        code: { type: string, pattern: '^[A-Z][A-Z0-9_]*$', maxLength: 96 }
+        name: { type: string, minLength: 1, maxLength: 128 }
+        description: { type: [string, 'null'], maxLength: 2000 }
+    ReplaceRolePermissionsRequest:
+      type: object
+      required: [permissions]
+      additionalProperties: false
+      properties:
+        permissions:
+          type: array
+          uniqueItems: true
+          items: { type: string }
     Permission:
       type: object
-      required: [permission_key, owner_subsystem, description, risk_level, minimum_svl, fresh_verification_required, deprecated]
+      required: [permission_key]
       properties:
         permission_key: { type: string }
-        owner_subsystem: { type: string }
-        description: { type: string }
-        risk_level:
-          type: string
-          enum: [LOW, MEDIUM, HIGH, CRITICAL]
-        minimum_svl: { type: integer, minimum: 0 }
-        fresh_verification_required: { type: boolean }
-        deprecated: { type: boolean }

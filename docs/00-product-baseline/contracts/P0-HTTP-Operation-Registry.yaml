@@ -92,6 +92,8 @@ operations:
   - { method: GET, path: /admin/users, operation_id: listUsers, contract_id: identity.list-users, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /admin/users, operation_id: createUser, contract_id: identity.create-user, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /admin/roles, operation_id: listRoles, contract_id: identity.list-roles, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: /admin/roles, operation_id: createRole, contract_id: identity.create-role, source: contracts/openapi-v2-p0.yaml }
+  - { method: PUT, path: '/admin/roles/{role_id}/permissions', operation_id: replaceRolePermissions, contract_id: identity.replace-role-permissions, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /admin/permissions, operation_id: listPermissions, contract_id: identity.list-permissions, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: '/resources:by-external-identity', operation_id: findResourceByExternalIdentity, contract_id: resource.find-by-external-identity, source: contracts/openapi-v2-p0-contract-convergence.yaml }
   - { method: POST, path: '/resources/{resource_id}/actions/trash', operation_id: trashResource, contract_id: resource.trash-resource, source: contracts/openapi-v2-p0-contract-convergence.yaml }
