@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -67,6 +68,20 @@ public class CollectionController {
         return collectionService.create(actorId, request)
             .map(collection -> ResponseEntity.created(URI.create("/api/collections/" + collection.id()))
                 .body(collection));
+    }
+
+    @Operation(summary = "编辑资源集合", description = "修改当前用户拥有的 Collection 名称和描述，使用版本号防止旧值覆盖新值。")
+    @PutMapping("/{collectionId}")
+    public Mono<ResponseEntity<CollectionView>> update(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID collectionId,
+        @RequestHeader("If-Match") String ifMatch,
+        @Valid @RequestBody UpdateCollectionRequest request
+    ) {
+        long expectedVersion = run.ikaros.common.IfMatchVersion.parse(ifMatch);
+        return collectionService.update(actorId, collectionId,
+                new UpdateCollectionRequest(request.name(), request.description(), expectedVersion))
+            .map(value -> ResponseEntity.ok().eTag(run.ikaros.common.IfMatchVersion.etag(value.version())).body(value));
     }
 
     /**

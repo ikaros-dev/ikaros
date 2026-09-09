@@ -2,6 +2,8 @@ package run.ikaros.collection;
 
 import run.ikaros.resource.api.*;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -65,5 +67,28 @@ class DefaultCollectionServiceTest {
         verify(events).append(argThat(request -> request.eventType().equals("resource.collection.member-removed")
             && request.producerSubsystem().equals("resource") && request.subjectType().equals("collection")
             && request.subjectId().equals(collectionId)));
+    }
+
+    @Test
+    void updatesCollectionWithOwnerAndVersionChecks() {
+        UUID ownerId = UUID.randomUUID();
+        UUID collectionId = UUID.randomUUID();
+        Instant now = Instant.now();
+        CollectionRepository collections = mock(CollectionRepository.class);
+        CollectionResourceRepository members = mock(CollectionResourceRepository.class);
+        ResourceRepository resources = mock(ResourceRepository.class);
+        AuditService audit = mock(AuditService.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        CollectionEntity current = new CollectionEntity(collectionId, ownerId, null, "旧名", null, now, now, 1L);
+        CollectionEntity updated = new CollectionEntity(collectionId, ownerId, null, "新名", "描述", now, now, 2L);
+        when(collections.findByIdAndOwnerId(collectionId, ownerId)).thenReturn(Mono.just(current));
+        when(collections.save(any(CollectionEntity.class))).thenReturn(Mono.just(updated));
+        when(audit.record(ownerId, "collection.update", "COLLECTION", collectionId, "{}")).thenReturn(Mono.empty());
+        DefaultCollectionService service = new DefaultCollectionService(collections, members, resources, audit, transaction);
+
+        StepVerifier.create(service.update(ownerId, collectionId, new UpdateCollectionRequest("新名", "描述", 1L)))
+            .assertNext(view -> assertThat(view.name()).isEqualTo("新名")).verifyComplete();
+        verify(collections).save(argThat(value -> value.name().equals("新名") && value.version().equals(1L)));
     }
 }

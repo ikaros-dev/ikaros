@@ -76,6 +76,21 @@ public class DefaultCollectionService implements CollectionService {
     }
 
     @Override
+    public Mono<CollectionView> update(UUID ownerId, UUID collectionId, UpdateCollectionRequest request) {
+        return transactionalOperator.transactional(ownedCollection(ownerId, collectionId)
+            .flatMap(collection -> {
+                if (collection.version() == null || collection.version() != request.expectedVersion()) {
+                    return Mono.error(new ConflictException("Collection 版本已过期"));
+                }
+                CollectionEntity updated = new CollectionEntity(collection.id(), collection.ownerId(), collection.parentId(),
+                    request.name(), request.description(), collection.createdAt(), Instant.now(), collection.version());
+                return collectionRepository.save(updated)
+                    .flatMap(saved -> auditService.record(ownerId, "collection.update", "COLLECTION", collectionId, "{}")
+                        .thenReturn(toView(saved)));
+            }));
+    }
+
+    @Override
     public Mono<List<CollectionView>> list(UUID ownerId) {
         return collectionRepository.findAllByOwnerIdOrderByUpdatedAtDesc(ownerId)
             .take(MAX_UNPAGED_RESULTS).map(this::toView)
@@ -158,7 +173,7 @@ public class DefaultCollectionService implements CollectionService {
 
     private CollectionView toView(CollectionEntity collection) {
         return new CollectionView(collection.id(), collection.parentId(), collection.name(), collection.description(), collection.createdAt(),
-            collection.updatedAt());
+            collection.updatedAt(), collection.version());
     }
 
     private Mono<Void> emitCreated(CollectionEntity collection) {

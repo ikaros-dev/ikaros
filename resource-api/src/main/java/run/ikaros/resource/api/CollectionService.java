@@ -19,6 +19,8 @@ public interface CollectionService {
      */
     Mono<CollectionView> create(UUID ownerId, CreateCollectionRequest request);
 
+    Mono<CollectionView> update(UUID ownerId, UUID collectionId, UpdateCollectionRequest request);
+
     /**
      * 查询当前用户的 Collection。
      *

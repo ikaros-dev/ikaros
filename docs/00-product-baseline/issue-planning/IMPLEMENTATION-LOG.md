@@ -427,3 +427,10 @@
 - 主要 commits：`a9b38af5`、`6c383f32`、`0c2ef3d0`、`47c0d322`、`fa092e8f`、`a1f77796`。
 - 统一决策：标题与别名保持明确类型和数据库唯一性；外部身份由唯一约束最终裁决；metadata 来源与用户锁定状态显式返回，自动同步不得静默覆盖人工值；所有写路径遵守 owner scope、审计和 reactive transaction。
 - 验证证据：标题、Resource 外部身份和 metadata 服务/控制器回归均通过；真实 PostgreSQL 唯一约束、迁移和事务联调仍需 Docker/Testcontainers。
+
+## A11-01 创建和编辑 Collection
+
+- 日期：2026-09-09
+- 推荐决策：保留既有事务化 Collection 创建路径，新增 owner-scoped、`If-Match` 保护的 PUT 编辑路径；编辑只修改名称/描述，保留 Collection UUID、父级和资源成员关系。
+- 失败语义：API 校验空/超长名称和描述；不存在或无权 Collection 拒绝；版本不匹配返回 Conflict，不写入、不审计，不改变成员 Resource。
+- 验证：`DefaultCollectionServiceTest` 2/2 通过，覆盖创建事件/审计、成员关系路径和编辑版本校验；新增 `CollectionView.version` 供 ETag 返回。真实 PostgreSQL 联调仍需 Docker/Testcontainers。
