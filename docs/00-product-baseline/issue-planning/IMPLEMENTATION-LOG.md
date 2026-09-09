@@ -895,4 +895,4 @@
 - 实现：阅读库 Console 提供漫画包导入入口；服务端校验当前用户可读附件的 CBZ、CBR、ZIP 扩展名，创建 Comic Work、Edition 和持久化导入记录，并支持按幂等键重复提交。
 - 失败语义：附件不存在、无权访问或格式不支持时拒绝创建；创建前不会写入导入记录；导入状态明确为 `ACCEPTED`，章节和页序解析由 B03-02 处理。
 - 契约追溯：新增 `reading.create-comic-import`、`reading.list-comic-imports`、`reading.get-comic-import`，同步 HTTP Operation Registry 与 OpenAPI。
-- 验证：`mvn -s .mvn-local-settings.xml -pl reading -am -DskipTests compile` BUILD SUCCESS；Console `pnpm typecheck` BUILD SUCCESS；主要提交：`ce25edb5`。
+- 验证：`PersistentComicImportServiceTest` 2/2；`mvn -s .mvn-local-settings.xml -pl reading -am '-Dtest=PersistentComicImportServiceTest' '-Dsurefire.failIfNoSpecifiedTests=false' test` BUILD SUCCESS；Console `pnpm typecheck` BUILD SUCCESS；运行时 migration 已应用至 `202609100100`，`/openapi.json` 已确认漫画导入路径；主要提交：`ce25edb5`、`6d2cf31b`。
