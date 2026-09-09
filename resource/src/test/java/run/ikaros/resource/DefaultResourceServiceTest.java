@@ -340,6 +340,34 @@ class DefaultResourceServiceTest {
     }
 
     @Test
+    void rejectsRepeatedExternalIdentityBindingAfterFirstRequestSucceeds() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        UUID identityId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity resource = new ResourceEntity(resourceId, ownerId, ResourceType.MUSIC,
+            ResourceLifecycle.ACTIVE, now, now, null, 0L);
+        ExternalIdentityEntity identity = new ExternalIdentityEntity(identityId, resourceId,
+            "musicbrainz", "recording", "abc", now, now, 0L);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource));
+        when(identityRepository.save(any(ExternalIdentityEntity.class)))
+            .thenReturn(Mono.just(identity), Mono.error(new DuplicateKeyException("duplicate")));
+        when(auditService.record(ownerId, "resource.external-identity.create", "RESOURCE", resourceId, "{}"))
+            .thenReturn(Mono.empty());
+        CreateExternalIdentityRequest request = new CreateExternalIdentityRequest("musicbrainz", "recording", "abc");
+
+        StepVerifier.create(service.addExternalIdentity(ownerId, resourceId, request))
+            .expectNextCount(1).verifyComplete();
+        StepVerifier.create(service.addExternalIdentity(ownerId, resourceId, request))
+            .expectErrorSatisfies(error -> assertThat(error).isInstanceOf(ConflictException.class)
+                .hasMessage("该外部身份已绑定到其他资源"))
+            .verify();
+
+        verify(identityRepository, org.mockito.Mockito.times(2)).save(any(ExternalIdentityEntity.class));
+        verify(auditService).record(ownerId, "resource.external-identity.create", "RESOURCE", resourceId, "{}");
+    }
+
+    @Test
     void rejectsInvalidListPagingBeforeRepositoryQuery() {
         StepVerifier.create(service.list(UUID.randomUUID(), null, null, -1, 20))
             .expectError(IllegalArgumentException.class).verify();

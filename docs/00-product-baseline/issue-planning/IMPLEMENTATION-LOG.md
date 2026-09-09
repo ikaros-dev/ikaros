@@ -398,3 +398,10 @@
 - 推荐决策：复用 Resource 外部身份 Application/API；绑定使用 `provider + external_type + external_id` 作为全局唯一身份，外部 ID 仅作映射，不取代 Resource UUID。
 - 失败语义：owner-scoped Resource 不存在或无权时拒绝；数据库唯一约束冲突转换为稳定 Conflict；绑定/解绑定分别写 Durable Event 与 Audit，失败不产生伪成功。
 - 验证：`DefaultResourceServiceTest` 18/18 通过，覆盖绑定冲突和外部身份生命周期事件；ResourceController 已接入 POST/DELETE 公开路径。真实 PostgreSQL 唯一约束联调仍需 Docker/Testcontainers。
+
+## A10-04 处理重复身份绑定
+
+- 日期：2026-09-09
+- 推荐决策：重复外部身份由数据库唯一约束作为并发最终裁决；Application 将 DuplicateKey 映射为稳定 Conflict，不采用静默覆盖或先查后写的竞态方案。
+- 失败语义：重复请求只允许第一次写入成功；冲突请求在身份保存阶段失败，不发布绑定事件、不写绑定审计，也不影响已有映射。
+- 验证：`DefaultResourceServiceTest` 19/19 通过，新增先成功后重复提交的回归测试，并验证保存次数为 2、成功审计仅 1 次；真实 PostgreSQL 并发约束联调仍需 Docker/Testcontainers。
