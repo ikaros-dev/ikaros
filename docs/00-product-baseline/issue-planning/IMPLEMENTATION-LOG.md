@@ -8,6 +8,15 @@
 - 验证：根 `pom.xml` 聚合包含 `application` Server；上述架构决策与 Technical Architecture 文档一致；application package 已在后续音乐功能验证中 BUILD SUCCESS。
 - 主要提交：待本轮提交。
 
+## A01-02 确定模块依赖边界
+
+- 日期：2026-09-10
+- 决策：保持 Maven Multi-Module；`*-api` 只承载公开契约，业务实现默认只依赖 API，`application` 是唯一 Composition Root。当前 4 条历史实现直连已登记为迁移白名单，不作为目标架构合规证明。
+- 实现：新增 `A01-02-MODULE-BOUNDARY.md` 和 `ModuleDependencyBoundaryTest`；测试读取根 POM 及各模块实际依赖，禁止 API 反向依赖实现、业务模块依赖 `application`，并阻止新增白名单外的实现直连。
+- Console：本 issue 是工程边界治理，不产生用户操作页面；相关业务页面继续由各功能 issue 负责接入真实 API。
+- 验证：`ModuleDependencyBoundaryTest` 2/2 通过，覆盖当前真实 POM 通过样例和模拟新增实现直连失败样例；Maven application reactor BUILD SUCCESS。
+- 主要提交：`031454d1`、`9d134ae8`。
+
 ## A02-01 首次启动检查必需配置
 
 - 日期：2026-09-10
