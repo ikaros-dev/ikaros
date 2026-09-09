@@ -224,6 +224,12 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
 
     @Override
     public Mono<StorageUploadIntentView> beginUpload(UUID ownerId, UUID resourceId, BeginUploadRequest request) {
+        return beginUpload(ownerId, resourceId, request, null);
+    }
+
+    @Override
+    public Mono<StorageUploadIntentView> beginUpload(UUID ownerId, UUID resourceId, BeginUploadRequest request,
+                                                     String idempotencyKey) {
         if (request != null && request.sizeBytes() < 0) {
             return Mono.error(new IllegalArgumentException("上传大小不能为负数"));
         }
@@ -252,7 +258,24 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
                 .switchIfEmpty(Mono.defer(() -> objectProviderRegistry.createUploadIntent(provider,
                     new StorageUploadRequest(objectKey, request.sizeBytes(), request.mediaType(), request.sha256()))
                     .map(intent -> new StorageUploadIntentView(provider.providerKey(), provider.tier(), intent.method(),
-                        intent.url(), intent.objectKey(), intent.expiresAt(), request.sha256(), false)))));
+                        intent.url(), intent.objectKey(), intent.expiresAt(), request.sha256(), false)))))
+            .flatMap(view -> persistUploadSession(ownerId, resourceId, request, idempotencyKey, view));
+    }
+
+    private Mono<StorageUploadIntentView> persistUploadSession(UUID ownerId, UUID resourceId,
+                                                                BeginUploadRequest request, String idempotencyKey,
+                                                                StorageUploadIntentView view) {
+        if (uploadSessionRepository == null) {
+            return Mono.just(view);
+        }
+        Instant now = Instant.now();
+        UploadSessionEntity session = new UploadSessionEntity(null, ownerId, resourceId, view.provider(),
+            view.objectKey(), request.sizeBytes(), request.sha256(),
+            view.deduplicated() ? UploadSessionState.COMPLETED : UploadSessionState.OPEN,
+            view.expiresAt(), now, now, 0L, idempotencyKey);
+        return uploadSessionRepository.save(session)
+            .map(saved -> new StorageUploadIntentView(view.provider(), view.tier(), view.method(), view.url(),
+                view.objectKey(), view.expiresAt(), view.sha256(), view.deduplicated(), saved.id()));
     }
 
     private Mono<Void> verifyUploadedObject(StorageProvider provider, CommitUploadRequest request) {

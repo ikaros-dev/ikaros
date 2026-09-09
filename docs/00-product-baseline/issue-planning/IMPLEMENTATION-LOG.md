@@ -603,6 +603,7 @@
 - 验证：`mvn -pl storage -am -DskipTests compile` 通过；服务入口、Provider 清理和过期调度将在后续步骤接入。
 - 实现进展：已接入 `abortUploadSession` 的 Owner 隔离、终止状态转换和重复终止幂等行为；`DefaultStorageServiceTest` 13/13 通过。物理临时对象删除与过期会话调度仍待接入。
 - 实现进展：新增 `StorageObjectProvider.deleteObject` 统一物理删除 seam；终止会话先提交 ABORTED，再清理临时对象，清理失败保留可重试状态。`DefaultStorageServiceTest` 13/13、`StorageObjectProviderRegistryTest` 1/1 通过。会话创建、过期扫描和 HTTP 入口仍待接入。
+- 实现进展：上传意图创建已持久化 `storage_upload_session` 并返回 `session_id`；新增当前用户终止会话 HTTP 入口，终止后清理临时 Provider 对象。`mvn -pl storage -am -DskipTests compile` 通过；过期扫描仍待接入。
 
 ## A12 资源关系管理（父 issue）
 

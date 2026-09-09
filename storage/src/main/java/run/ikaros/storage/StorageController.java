@@ -146,9 +146,25 @@ public class StorageController {
     public Mono<StorageUploadIntentView> beginUpload(
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @PathVariable UUID resourceId,
+        @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
         @Valid @RequestBody BeginUploadRequest request
     ) {
-        return storageService.beginUpload(actorId, resourceId, request);
+        return storageService.beginUpload(actorId, resourceId, request, idempotencyKey);
+    }
+
+    @Operation(summary = "终止附件上传会话", description = "终止当前用户拥有的临时上传会话并清理其临时 Provider 对象。"
+        + "不会删除已提交的 Attachment、Blob 或 Durable Placement。")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "上传会话已终止"),
+        @ApiResponse(responseCode = "404", description = "上传会话不存在或无权访问", content = @Content),
+        @ApiResponse(responseCode = "409", description = "会话状态不允许终止或清理能力不可用", content = @Content)
+    })
+    @DeleteMapping("/upload-intents/{sessionId}")
+    public Mono<UploadSessionView> abortUpload(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID sessionId
+    ) {
+        return storageService.abortUploadSession(actorId, sessionId);
     }
 
     @Operation(summary = "删除资源附件", description = "软删除 Attachment，Blob 由后续 GC 根据引用计数决定是否清理。")
