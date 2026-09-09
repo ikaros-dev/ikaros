@@ -227,3 +227,11 @@
 - 原因：JWT 权限快照用于快速拒绝，但不能作为最终 ACL；实时 capability 复核满足撤销即时生效，同时不引入 Session 或 Token Digest。
 - 失败语义：当前 RBAC capability 拒绝时不调用下游 Controller；错误统一映射为 403，不泄露目标资源或 token 信息。
 - 验证：`ResourceAuthorizationWebFilterTest` 覆盖角色撤销后实时 capability 拒绝，授权过滤器回归 14 项通过；资源 owner 隔离回归已通过。
+
+## A06 角色与授权（父 issue）
+
+- 日期：2026-09-09
+- 本地验收结论：A06-01 至 A06-05 已完成，覆盖角色创建/权限配置、用户角色分配/撤销、私有资源 owner 隔离、资源变更权限和撤销后的实时访问阻断。
+- 主要 commits：`1b793395`、`7fb67818`、`af4a7cb8`、`49927c25`、`ef1a5f59`；A09-01 前置 commits：`645954b1`、`43441b91`。
+- 统一决策：权限注册枚举和统一授权过滤器负责入口门禁，领域服务负责 owner/状态不变量；资源访问在 JWT 快速检查后实时复核当前 RBAC，避免权限撤销等待 token 过期。
+- 验证证据：授权回归通过，资源服务 owner 隔离回归通过；真实 PostgreSQL 唯一约束、并发绑定、事务回滚和完整 API 联调仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
