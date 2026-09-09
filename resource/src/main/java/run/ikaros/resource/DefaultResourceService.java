@@ -310,7 +310,8 @@ public class DefaultResourceService implements ResourceService {
                     .flatMap(saved -> emit("resource.resource.restored", saved)
                         .then(auditService.record(ownerId, "resource.restore", "RESOURCE", resourceId, "{}"))
                         .then(toView(saved)));
-            });
+            })
+            .as(transactionalOperator::transactional);
     }
 
     private void checkVersion(Long actualVersion, Long expectedVersion) {
