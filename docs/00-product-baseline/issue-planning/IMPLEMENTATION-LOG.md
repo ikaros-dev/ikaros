@@ -668,3 +668,9 @@
 - 实现修复：现有持久化服务已完成配置编码、重复 key/幂等处理、创建事件和自动 probe；补充非法 credential_ref 与目标不存在的自动化验收证据。
 - 失败语义：非法凭据引用在持久化前拒绝；目标不存在返回 NotFound；不向 Attachment、Blob、Placement 写入任何状态。
 - 验证：`PersistentDeliveryProviderServiceValidationTest` 2/2，Maven targeted test BUILD SUCCESS。
+## A16-02 绑定存储来源
+- 日期：2026-09-09
+- 推荐决策：复用 `POST /api/storage/providers/{providerId}/delivery-bindings`，由 Storage Provider 作为 owner 校验来源、由 Delivery Provider key 解析目标。
+- 实现修复：现有绑定服务已持久化绑定、校验两端 Provider、处理重复约束并发布创建事件；补充正常创建和目标不存在的验收测试。
+- 失败语义：Storage Provider 或 Delivery Provider 不存在返回 NotFound；重复绑定返回 Conflict；保存前失败不产生绑定或事件；Attachment、Blob、Placement 身份保持分离。
+- 验证：`PersistentMediaDeliveryBindingServiceTest` 2/2，Maven targeted test BUILD SUCCESS。
