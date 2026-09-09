@@ -1032,4 +1032,4 @@
 - 实现：新增 Track Association、Track Artist 关联及迁移；确认 Metadata Candidate 后创建独立 Artist/Album Resource，并持久化 Edition、Disc、Track Membership 与艺术家关系，重复确认同一候选可安全复用关联结果。
 - Console：音乐库识别候选弹窗新增“关联”操作，展示关联中、已关联、成功和失败状态，并通过真实 API 重新读取关联结果。
 - 契约追溯：新增 `music.create-track-association`、`music.list-track-associations`，同步 HTTP Operation Registry 与 OpenAPI。
-- 验证：`PersistentMusicTrackAssociationServiceTest` 1/1；Music compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交待完成。
+- 验证：`PersistentMusicTrackAssociationServiceTest` 1/1；Music compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；运行时迁移 `202609100800`、`202609100801` 已应用，关联 API 未认证返回 401；主要提交：`efa29eef`、`e83ca548`。
