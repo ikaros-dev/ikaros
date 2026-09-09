@@ -459,7 +459,8 @@
 - 推荐决策：资源路径继续先检查 JWT 权限快照，再通过 `AccessControlService` 实时读取当前 user-role/role-permission 绑定；权限撤销后，即使旧 JWT 尚未过期，后续资源请求也返回 403。
 - 原因：JWT 权限快照用于快速拒绝，但不能作为最终 ACL；实时 capability 复核满足撤销即时生效，同时不引入 Session 或 Token Digest。
 - 失败语义：当前 RBAC capability 拒绝时不调用下游 Controller；错误统一映射为 403，不泄露目标资源或 token 信息。
-- 验证：`ResourceAuthorizationWebFilterTest` 覆盖角色撤销后实时 capability 拒绝，授权过滤器回归 14 项通过；资源 owner 隔离回归已通过。
+- Console 对接审计：`console/src/views/security/Permissions.vue` 保存角色权限调用 `PUT /admin/roles/{role_id}/permissions`，`Users.vue` 提供撤销用户角色和让全部旧 Token 失效操作；两页都在成功后刷新状态、失败显示错误。资源详情页继续通过统一 API 入口，权限撤销后的下一次请求由服务端实时复核并返回 403，而非仅依赖前端 JWT 快照。
+- 验证：`ResourceAuthorizationWebFilterTest` 覆盖角色撤销后实时 capability 拒绝，当前授权过滤器回归 17 项通过；资源 owner 隔离回归已通过；Console `pnpm typecheck`、`pnpm build` 通过。
 
 ## A06 角色与授权（父 issue）
 
