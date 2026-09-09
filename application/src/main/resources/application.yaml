@@ -29,6 +29,12 @@ ikaros:
     credential-encryption-keys: ${IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEYS:}
     credential-encryption-key-version: ${IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEY_VERSION:v1}
   security:
+    verification:
+      email:
+        delivery: ${IKAROS_SECURITY_EMAIL_DELIVERY:NOOP}
+        endpoint: ${IKAROS_SECURITY_EMAIL_ENDPOINT:}
+        from: ${IKAROS_SECURITY_EMAIL_FROM:}
+        api-key: ${IKAROS_SECURITY_EMAIL_API_KEY:}
     jwt:
       issuer: ${IKAROS_JWT_ISSUER:ikaros}
       secret: ${IKAROS_JWT_SECRET:}

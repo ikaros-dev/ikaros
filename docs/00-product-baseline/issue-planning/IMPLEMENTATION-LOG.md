@@ -243,3 +243,11 @@
 - 安全边界：数据库只保存 OTP 慢哈希摘要；响应、审计和普通日志不返回 OTP、摘要或目标邮箱；发起频率按用户窗口限制，直接 API 与错误身份均走同一 Application Provider。
 - 失败语义：未知用户、非 ACTIVE 用户或无邮箱用户返回 NotFound；频率超限返回 Conflict；失败前不创建挑战。
 - 验证：`EmailOtpVerificationProviderTest` 覆盖合法发起、未知/无邮箱身份拒绝、频率限制和摘要持久化；`VerificationControllerTest` 覆盖公开入口、202 响应及 OTP 字段不泄露；本轮共 9 项通过。真实 PostgreSQL 事务和邮件渠道联调留待 A07-05/集成环境验证。
+
+## A07-05 接入真实验证码发送渠道
+
+- 日期：2026-09-09
+- 推荐决策：新增可配置 HTTP 邮件网关 Adapter；仅当 `IKAROS_SECURITY_EMAIL_DELIVERY=HTTP` 且 endpoint/from 完整配置时启用，默认保留无外发的 Noop 实现，避免未配置环境误发或启动失败。
+- 安全边界：网关 API Key 只从环境 Secret 注入 Authorization Header；OTP 仅存在当前投递调用体，错误只返回固定非敏感信息，不记录网关响应正文或验证码。
+- 失败语义：用户邮箱不可用或网关返回错误均失败，不产生伪成功；发送仍由 Email OTP Provider 的用途绑定、过期和频率限制控制。
+- 验证：`HttpEmailOtpDeliveryTest` 覆盖 HTTP 成功、Authorization Secret 传递、网关错误脱敏；连同 A07-01 回归共 11 项通过。真实第三方邮件网关联调需要部署环境提供 endpoint/from/API Key，当前未发送外部邮件。
