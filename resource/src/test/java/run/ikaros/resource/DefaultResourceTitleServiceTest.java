@@ -84,6 +84,31 @@ class DefaultResourceTitleServiceTest {
     }
 
     @Test
+    void addsMultipleAliasesInTheSameLocaleWithoutReplacingTheTitle() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity resource = new ResourceEntity(resourceId, ownerId, ResourceType.BOOK, ResourceLifecycle.ACTIVE,
+            now, now, null, 0L);
+        ResourceTitleEntity title = new ResourceTitleEntity(UUID.randomUUID(), resourceId, "zh-CN", "正式标题", true,
+            now, now, 0L, ResourceTitleKind.TITLE);
+        ResourceTitleEntity alias = new ResourceTitleEntity(UUID.randomUUID(), resourceId, "zh-CN", "别名", false,
+            now, now, 0L, ResourceTitleKind.ALIAS);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource));
+        when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.just(title));
+        when(titleRepository.saveAll(any(Iterable.class))).thenReturn(Flux.just(title, alias));
+        when(auditService.record(ownerId, "resource.title.set", "RESOURCE", resourceId, "{}"))
+            .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.set(ownerId, resourceId,
+                new SetResourceTitleRequest("zh-CN", "别名", false, ResourceTitleKind.ALIAS)))
+            .assertNext(view -> assertThat(view.kind()).isEqualTo(ResourceTitleKind.ALIAS))
+            .verifyComplete();
+
+        verify(titleRepository).saveAll(any(Iterable.class));
+    }
+
+    @Test
     void promotesAnotherTitleWhenDeletingPrimary() {
         UUID ownerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();

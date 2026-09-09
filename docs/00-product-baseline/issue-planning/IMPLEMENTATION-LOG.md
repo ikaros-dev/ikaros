@@ -383,3 +383,11 @@
 - 推荐决策：复用既有 ResourceTitle Application/API；同一 Resource 的 locale 唯一，标题保存支持主标题切换，删除最后标题被拒绝，owner scope 由 Resource 查询保证。
 - 失败语义：请求校验拒绝空/超长 locale 或 title；不存在或无权 Resource 拒绝；数据库结果通过重新查询保持一致，保存和审计在同一 reactive transaction 内完成。
 - 验证：`DefaultResourceTitleServiceTest` 3 项、`ResourceTitleControllerTest` 2 项通过，覆盖新增多语言标题、主标题降级、最后标题禁止和控制器入口。行为已满足，未做无关重写。
+
+## A10-02 维护别名
+
+- 日期：2026-09-09
+- 推荐决策：别名复用 `ResourceTitle` 聚合但使用 `title_kind=ALIAS`；同一 locale 允许多个别名，完全相同的 Resource/locale/kind/value 由数据库唯一约束去重；别名不能成为主标题。
+- 实现：移除旧的 `(resource_id, locale)` 限制，新增 `(resource_id, locale, title_kind, title)` 唯一约束；保存和返回路径均按标题类型区分，避免同语言主标题被误返回。
+- 失败语义：空/超长输入交由 API 校验；不存在或无权 Resource 拒绝；别名主标题组合返回 Conflict，数据库重复值保持显式冲突且不产生伪成功。
+- 验证：`DefaultResourceTitleServiceTest` 4/4、`ResourceTitleControllerTest` 2/2 通过，新增覆盖同语言多别名并存且不替换主标题；真实 PostgreSQL 约束联调仍需 Docker/Testcontainers。
