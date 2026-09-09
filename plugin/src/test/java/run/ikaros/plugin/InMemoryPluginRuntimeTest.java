@@ -40,4 +40,17 @@ class InMemoryPluginRuntimeTest {
             "Example", "1", "2.0.0", null, "example.Entry", List.of(), List.of(), List.of());
         assertEquals(PluginLifecycle.INSTALLED, runtime.install(minimumTen, Set.of()).block().lifecycle());
     }
+
+    @Test
+    void disablingPluginRevokesRegisteredExtensions() {
+        InMemoryPluginExtensionRegistry registry = new InMemoryPluginExtensionRegistry();
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0", registry);
+        runtime.install(manifest, Set.of("resource.read")).block();
+        runtime.enable(manifest.pluginId()).block();
+        assertEquals(1, registry.find("parser").size());
+
+        runtime.disable(manifest.pluginId()).block();
+
+        assertEquals(0, registry.find("parser").size());
+    }
 }
