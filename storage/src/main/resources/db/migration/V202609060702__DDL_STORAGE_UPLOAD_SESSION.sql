@@ -1,4 +1,4 @@
-create table storage_upload_session
+create table if not exists storage_upload_session
 (
     id              uuid primary key default uuid_v7(),
     owner_id        uuid not null,
@@ -19,9 +19,9 @@ create table storage_upload_session
         ('OPEN', 'RECEIVING', 'FINALIZING', 'COMPLETED', 'ABORTED', 'EXPIRED'))
 );
 
-create unique index storage_upload_session_idempotency_uq
+create unique index if not exists storage_upload_session_idempotency_uq
     on storage_upload_session (owner_id, resource_id, idempotency_key)
     where idempotency_key is not null;
 
-create index storage_upload_session_expiry_idx
+create index if not exists storage_upload_session_expiry_idx
     on storage_upload_session (state, expires_at);

@@ -253,7 +253,50 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource><directory>${project.basedir}/src/main/resources</directory></resource>
+        </resources>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>aggregate-owner-migrations</id>
+                        <phase>prepare-package</phase>
+                        <goals><goal>copy-resources</goal></goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/db/migration</outputDirectory>
+                            <resources>
+                                <resource><directory>${project.basedir}/../common/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../authentication/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../authorization/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../backup/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../document/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../drive/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../finance/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../game/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../ingestion/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../integration/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../media/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../music/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../operations/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../password-manager/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../photo/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../planning/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../plugin/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../private-notes/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../reading/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../resource/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../search/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../sharing/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../storage/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../sync/src/main/resources/db/migration</directory></resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

@@ -10,13 +10,19 @@ alter table blob_placement
     add column if not exists source_placement_id uuid;
 
 alter table blob_placement
+    drop constraint if exists blob_placement_durability_role_ck;
+alter table blob_placement
     add constraint blob_placement_durability_role_ck
         check (durability_role in ('PRIMARY', 'REPLICA', 'ARCHIVE_BASE', 'PROMOTED_COPY'));
 
 alter table blob_placement
+    drop constraint if exists blob_placement_archive_base_protection_ck;
+alter table blob_placement
     add constraint blob_placement_archive_base_protection_ck
         check (durability_role <> 'ARCHIVE_BASE' or (evictable = false and gc_protected = true));
 
+alter table blob_placement
+    drop constraint if exists blob_placement_source_fk;
 alter table blob_placement
     add constraint blob_placement_source_fk
         foreign key (source_placement_id) references blob_placement(id);
