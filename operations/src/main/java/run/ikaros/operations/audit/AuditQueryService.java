@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.PageResponse;
+import run.ikaros.common.NotFoundException;
 
 /** 按操作者和时间范围查询独立审计事实。 */
 @Service
@@ -24,5 +25,10 @@ public class AuditQueryService {
         return Mono.zip(repository.search(actorId, fromTime, toTime, size, offset).collectList(),
                 repository.countSearch(actorId, fromTime, toTime))
             .map(result -> new PageResponse<>(result.getT1(), result.getT2(), page, size));
+    }
+
+    public Mono<AuditEventEntity> get(UUID eventId) {
+        return repository.findById(eventId)
+            .switchIfEmpty(Mono.error(new NotFoundException("审计事件不存在")));
     }
 }

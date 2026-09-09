@@ -47,4 +47,19 @@ class AuditQueryServiceTest {
         StepVerifier.create(service.search(null, null, null, 0, 101))
             .expectError(IllegalArgumentException.class).verify();
     }
+
+    @Test
+    void returnsRelatedAuditEventOrNotFound() {
+        AuditEventRepository repository = mock(AuditEventRepository.class);
+        AuditQueryService service = new AuditQueryService(repository);
+        UUID eventId = UUID.randomUUID();
+        AuditEventEntity event = new AuditEventEntity(eventId, "USER", UUID.randomUUID(), "resource.update",
+            "RESOURCE", UUID.randomUUID(), "{}", Instant.now(), 0L);
+        when(repository.findById(eventId)).thenReturn(Mono.just(event));
+        StepVerifier.create(service.get(eventId)).expectNext(event).verifyComplete();
+
+        UUID missingId = UUID.randomUUID();
+        when(repository.findById(missingId)).thenReturn(Mono.empty());
+        StepVerifier.create(service.get(missingId)).expectError(run.ikaros.common.NotFoundException.class).verify();
+    }
 }

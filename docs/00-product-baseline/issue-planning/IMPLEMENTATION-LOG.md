@@ -302,3 +302,10 @@
 - 权限边界：统一授权过滤器将查询映射到 `system.audit.read`，并实时复核当前 RBAC；审计查询不允许无认证或无权限直接进入 Controller。
 - 失败语义：非法时间范围、页码或页大小在 Application 层拒绝；空结果返回空页，不伪造成功事件或泄露目标数据。
 - 验证：`AuditQueryServiceTest` 覆盖操作者/时间过滤、offset 分页、稳定查询参数和非法范围；`ResourceAuthorizationWebFilterTest` 覆盖审计读取权限与实时角色校验；相关回归共 19 项通过。
+
+## A08-04 查看操作结果与关联对象
+
+- 日期：2026-09-09
+- 推荐决策：在审计查询路径增加 `GET /api/audit-events/{event_id}`，返回审计事件的 actor、action、target、结果详情及 request/correlation 关联信息；查询仍受 `system.audit.read` 统一权限门禁保护。
+- 失败语义：不存在的审计事件返回稳定 NotFound；审计记录与 Resource Activity 保持独立，分页查询和单条查询均不伪造成功状态。
+- 验证：`AuditQueryServiceTest` 覆盖单条事件读取与目标不存在；`ResourceAuthorizationWebFilterTest` 覆盖审计查询权限和实时 RBAC；相关回归共 18 项通过。敏感字段进一步脱敏由 A08-05 处理。

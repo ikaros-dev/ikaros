@@ -3,6 +3,7 @@ package run.ikaros.operations.audit;
 import java.time.Instant;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,5 +31,11 @@ public class AuditController {
         @RequestParam(defaultValue = "20") int size
     ) {
         return service.search(actorId, from, to, page, size);
+    }
+
+    @GetMapping("/{eventId}")
+    public Mono<AuditEventEntity> get(@PathVariable UUID eventId,
+                                      @RequestHeader("X-Ikaros-Actor-Id") UUID requesterId) {
+        return service.get(eventId);
     }
 }
