@@ -215,6 +215,7 @@ load();
           prop="status"
           label="状态"
           width="120"
+        /><el-table-column prop="attempt" label="尝试次数" width="100"
         /><el-table-column label="进度" width="220"
           ><template #default="{ row }">
             <el-progress
@@ -257,6 +258,15 @@ load();
         }}</el-descriptions-item
         ><el-descriptions-item label="状态">{{
           detail.status || "—"
+        }}</el-descriptions-item
+        ><el-descriptions-item label="尝试次数">{{
+          detail.attempt ?? "—"
+        }}</el-descriptions-item
+        ><el-descriptions-item label="Lease Owner">{{
+          detail.lease_owner || detail.leaseOwner || "—"
+        }}</el-descriptions-item
+        ><el-descriptions-item label="Lease 到期">{{
+          detail.lease_expires_at || detail.leaseExpiresAt || "—"
         }}</el-descriptions-item
         ><el-descriptions-item label="进度">
           <el-progress
