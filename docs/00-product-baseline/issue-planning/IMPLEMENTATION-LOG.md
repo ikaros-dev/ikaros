@@ -1102,4 +1102,4 @@
 - 实现：新增带 `If-Match` 的 Playlist Entry 顺序调整 API，校验列表归属、版本和完整 Entry 集合，成功后递增列表版本并持久化位置。
 - Console：`/music` 列表歌曲区支持上移/下移并保存到 API，重新加载结果，展示加载、空结果、成功和冲突/错误状态。
 - 契约追溯：新增 `music.reorder-playlist` 的 HTTP Operation Registry 与 OpenAPI 定义。
-- 验证：`PersistentMusicPlaylistServiceTest` 7/7；Console `pnpm typecheck` 通过；application package 与运行时验证待本轮完成；主要提交：`e26a9d21`。
+- 验证：`PersistentMusicPlaylistServiceTest` 7/7；Console `pnpm typecheck` 通过；application package BUILD SUCCESS；运行时迁移版本 `202609100900`，顺序调整 API 未认证返回 401，运行时 OpenAPI 已出现顺序路径，Console `http://127.0.0.1:8849/music` 返回 200；主要提交：`e26a9d21`、`136a0dae`。
