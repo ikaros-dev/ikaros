@@ -8,6 +8,14 @@
 - 验证：根 `pom.xml` 聚合包含 `application` Server；上述架构决策与 Technical Architecture 文档一致；application package 已在后续音乐功能验证中 BUILD SUCCESS。
 - 主要提交：待本轮提交。
 
+## A02-01 首次启动检查必需配置
+
+- 日期：2026-09-10
+- 实现审计：复用现有 `StartupConfigurationValidator`；启动时强制检查 PostgreSQL R2DBC URL、数据库凭据、JWT issuer/secret/TTL，拒绝空值、错误驱动、占位或过短 secret 以及非法 duration。
+- Console：`系统运维 → 系统健康` 页面读取 live/ready/operations 和 Storage Provider 探针，异常显示为 DOWN/DEGRADED，不伪造健康状态。
+- 验证：`StartupConfigurationValidatorTest` 3/3；application reactor BUILD SUCCESS；Console 健康页路由 `/operations-center/health` 返回 200；诊断输出不包含配置值。
+- 主要提交：复用既有实现，本轮提交验收追溯记录。
+
 ## A18 副本与 Blob 清理（父 issue）
 
 - 日期：2026-09-09
