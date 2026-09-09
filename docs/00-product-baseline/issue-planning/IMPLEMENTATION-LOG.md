@@ -1066,4 +1066,4 @@
 - 实现：新增带 `If-Match` 的队列重排命令；要求提交的 Entry ID 集合与当前队列完全一致，按请求顺序更新 `active_position`，并在同一响应式事务中更新队列版本；缺项、重复项、越权队列和过期版本均拒绝。
 - Console：`/music` 队列区支持填写 Entry 顺序和 Queue 版本并保存，保存后重新读取顺序，展示加载、成功和错误结果。
 - 契约追溯：新增 `music.reorder-queue`，同步 HTTP Operation Registry 与 OpenAPI。
-- 验证：`PersistentMusicQueueServiceTest` 3/3；Music compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`8b3c5f0e`。
+- 验证：`PersistentMusicQueueServiceTest` 3/3；Music compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；运行时数据库版本 `202609100801`，队列重排 API 未认证返回 401，Console `/music` 返回 200；主要提交：`8b3c5f0e`、`df0dacbb`。
