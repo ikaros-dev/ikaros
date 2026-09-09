@@ -656,3 +656,9 @@
 - 实现修复：新增状态查询服务与 API 视图，支持 Provider 状态、健康摘要、可选容量/已用容量和检查时间；目标不存在沿用 NotFound。
 - 失败语义：probe 失败或过期不会显示为健康成功；未配置容量不产生推测值；不触碰 Attachment、Blob、Placement。
 - 验证：`StorageProviderStatusServiceTest` 2/2，覆盖正常和容量空结果/目标不存在；与既有 probe/registry 测试合计 Maven BUILD SUCCESS。
+## A15 存储提供者管理
+- 日期：2026-09-09
+- 子任务汇总：A15-01 #984、A15-02 #991、A15-03 #992、A15-04 #993、A15-05 #994 均已独立验收并关闭。
+- 组合交付：Provider 注册/凭据加密、S3 连接读写 probe、启停状态事件、凭据替换后验证、健康与可选容量查询均已接入 storage API；公开路径已同步 OpenAPI 与 HTTP Operation Registry。
+- 主要限制：容量字段依赖 Provider-owned metadata，未配置时明确返回 `null`；未提供 probe adapter 的 Provider 返回 `UNSUPPORTED`。所有内容对象边界仍由 Attachment/Blob/Placement 原有服务负责。
+- 验证证据：A15 子任务 targeted Maven 测试均通过；关键汇总测试覆盖 provider 注册、probe、启停事件、凭据加密替换与状态查询。
