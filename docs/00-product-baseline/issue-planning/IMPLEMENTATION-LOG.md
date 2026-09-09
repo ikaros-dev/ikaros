@@ -1044,4 +1044,8 @@
 - 实现：新增 owner-scoped Metadata Candidate 人工修正 API；使用可选 `If-Match` 版本校验拒绝并发覆盖，保存时将来源明确标记为 `MANUAL`，保留候选身份与创建时间，不静默改写 Track、Artist 或 Album。
 - Console：音乐库候选弹窗新增“修正”表单，支持编辑标题、艺术家、专辑、ISRC、流派、曲目/碟号和发行年份；保存期间展示 loading，成功重新读取候选，冲突和错误均反馈到页面。
 - 契约追溯：新增 `music.update-metadata-candidate`，同步 HTTP Operation Registry 与 OpenAPI。
-- 验证：待本轮测试与应用运行验证后补充主要提交。
+- 验证：`PersistentMusicDuplicateServiceTest`、`PersistentMusicImportServiceTest`、`PersistentMusicMetadataCorrectionServiceTest`、`PersistentMusicMetadataRecognitionServiceTest` 共 7/7；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；运行时迁移版本 `202609100801`，人工修正 API 未认证返回 401，Console `/music` 返回 200；主要提交：`8b216f07`、`2027415b`。
+## B07 音乐入库
+- 日期：2026-09-10
+- 汇总：B07-01 至 B07-05 均已完成后端能力、契约追溯、自动化验证和 Console `/music` 真实 API 对接；导入、识别候选、人工修正、艺术家/专辑关联、重复检测均有明确 loading、空态、成功、冲突或错误反馈。
+- 主要提交：`d5ba529b`、`7aadd7dd`、`efa29eef`、`60ef8501`、`8b216f07`。
