@@ -423,7 +423,9 @@
 - 日期：2026-09-09
 - 推荐决策：通过 `RoleController` 暴露用户-角色绑定与撤销动作；绑定前确认角色存在，重复绑定保持幂等，撤销只删除指定 user/role 绑定，不影响其他用户或角色；两类动作均写审计。
 - 失败语义：角色不存在返回 NotFound；重复分配不创建重复绑定；撤销目标不存在保持幂等完成；权限入口由统一 `system.role.manage` 授权过滤器保护。
-- 验证：`DefaultRoleServiceTest` 覆盖分配、撤销、重复/指定目标边界；授权回归 21 项通过。真实 PostgreSQL 唯一约束和并发绑定回放仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
+- Console 对接审计：`console/src/views/security/Users.vue` 真实读取用户与角色列表，并在用户详情通过角色选择器调用 `POST /admin/roles/users/{user_id}/roles/{role_id}` 分配角色、调用 `POST /admin/roles/users/{user_id}/roles/{role_id}/actions/revoke` 撤销角色；成功后刷新用户角色，失败显示可见错误。HTTP 拦截器从当前 JWT 解析并发送 `X-Ikaros-Actor-Id`，页面不是静态占位。
+- 契约修复：补登记用户角色分配/撤销两个操作，并将 OpenAPI 路径、UUID 参数、Actor 请求头和 204/401/403/404 响应对齐 Controller。
+- 验证：`DefaultRoleServiceTest` 覆盖分配、撤销、重复/指定目标边界；授权回归 21 项通过；API Registry/OpenAPI/路由约定测试 9 项通过；Console `pnpm typecheck`、`pnpm build` 通过。真实 PostgreSQL 唯一约束和并发绑定回放仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
 
 ## A09-01 创建资源（A06-03 前置 issue）
 
