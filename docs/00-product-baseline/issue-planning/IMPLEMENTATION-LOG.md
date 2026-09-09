@@ -287,3 +287,10 @@
 - 推荐决策：资源管理 Application 服务统一通过 `AuditService` 记录 create/update/trash/archive/restore 及标题、标签、收藏、关系等操作；审计事件独立存储于 `audit_event`，不复用 Resource Activity。
 - 失败语义：审计写入失败沿调用链传播，不返回伪成功；事件保留 actor、action、target、occurred_at、request/correlation context，details 仅允许脱敏 JSON。
 - 验证：新增 `DefaultAuditServiceTest` 覆盖用户资源更新、系统归档、目标关联和独立审计落库契约；现有资源服务测试覆盖各资源管理入口的 `AuditService` 调用；本轮审计模块 2 项通过。
+
+## A08-02 记录权限与凭据操作
+
+- 日期：2026-09-09
+- 推荐决策：权限与凭据变更继续统一调用 `AuditService`：角色权限授予/替换、用户角色分配/撤销、Token 全量失效、验证挑战发起/成功/失败/取消均写入独立 `audit_event`；不保存 JWT、OTP、Grant 或 Secret 明文。
+- 失败语义：审计写入失败沿业务调用链传播；权限/凭据拒绝不产生成功审计或伪成功状态，审计详情保持最小化脱敏 JSON。
+- 验证：`DefaultRoleServiceTest` 6 项、`DefaultUserServiceTest` 7 项、`EmailOtpVerificationProviderTest` 11 项通过，覆盖权限与凭据操作的正常及失败路径；相关回归共 24 项通过。
