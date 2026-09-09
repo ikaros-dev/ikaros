@@ -999,6 +999,53 @@ paths:
               schema: { $ref: '#/components/schemas/ComicImport' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /reading/comic-imports/{import_id}/actions/parse:
+    post:
+      tags: [Reading]
+      operationId: parseComicImport
+      x-ikaros-contract-id: reading.parse-comic-import
+      summary: Parse chapters and page order from a comic package
+      parameters:
+        - name: import_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Comic package parse result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ComicImport' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /reading/comic-imports/{import_id}/entries:
+    get:
+      tags: [Reading]
+      operationId: listComicImportEntries
+      x-ikaros-contract-id: reading.list-comic-import-entries
+      summary: List discovered comic pages
+      parameters:
+        - name: import_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Discovered chapter and page entries
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/ComicImportEntry' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
 components:
   securitySchemes:
     bearerAuth:
@@ -1314,6 +1361,16 @@ components:
         error_message: { type: [string, 'null'] }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+    ComicImportEntry:
+      type: object
+      required: [id, import_id, chapter_key, entry_name, page_order, page_role]
+      properties:
+        id: { type: string, format: uuid }
+        import_id: { type: string, format: uuid }
+        chapter_key: { type: string }
+        entry_name: { type: string }
+        page_order: { type: integer, minimum: 0 }
+        page_role: { type: string, enum: [NORMAL, COVER] }
     BackgroundTask:
       type: object
       required: [id, task_type, status, created_at, updated_at]

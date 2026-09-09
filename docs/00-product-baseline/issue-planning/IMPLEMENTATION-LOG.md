@@ -896,3 +896,9 @@
 - 失败语义：附件不存在、无权访问或格式不支持时拒绝创建；创建前不会写入导入记录；导入状态明确为 `ACCEPTED`，章节和页序解析由 B03-02 处理。
 - 契约追溯：新增 `reading.create-comic-import`、`reading.list-comic-imports`、`reading.get-comic-import`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentComicImportServiceTest` 2/2；`mvn -s .mvn-local-settings.xml -pl reading -am '-Dtest=PersistentComicImportServiceTest' '-Dsurefire.failIfNoSpecifiedTests=false' test` BUILD SUCCESS；Console `pnpm typecheck` BUILD SUCCESS；运行时 migration 已应用至 `202609100100`，`/openapi.json` 已确认漫画导入路径；主要提交：`ce25edb5`、`6d2cf31b`。
+## B03-02 识别章节和页序
+- 日期：2026-09-10
+- 实现：新增受授权 Attachment 的流式读取能力；解析 CBZ/ZIP 中的图片条目，按顶层目录识别章节，并按自然数字顺序生成页序条目；解析结果持久化到 `reading_comic_import_entry`，Reading Console 可触发解析并显示章节/页数汇总。
+- 失败语义：CBR 在未配置 RAR 解析器时返回明确失败原因；源附件不可读、容器损坏或无图片条目不会伪造成功结果，并清理本次候选条目。
+- 契约追溯：新增 `reading.parse-comic-import`、`reading.list-comic-import-entries`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`PersistentComicImportParseServiceTest`、`PersistentComicImportServiceTest` 共 3/3；Console `pnpm typecheck` 通过；主要提交：`71d09866`。
