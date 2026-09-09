@@ -7,6 +7,7 @@ const tab = ref("policy");
 const challenge = ref<Challenge | null>(null);
 const purpose = ref("LOGIN_STEP_UP");
 const code = ref("");
+const verificationGrant = ref("");
 const loading = ref(false);
 const verifying = ref(false);
 const error = ref("");
@@ -15,7 +16,9 @@ const result = ref("");
 async function issue() {
   loading.value = true; error.value = ""; result.value = "";
   try {
-    challenge.value = await http.post<Challenge, { purpose: string }>("/security/verification-challenges", { data: { purpose: purpose.value } });
+    challenge.value = purpose.value === "LOGIN_STEP_UP"
+      ? await http.post<Challenge, undefined>("/security/step-up")
+      : await http.post<Challenge, { purpose: string }>("/security/verification-challenges", { data: { purpose: purpose.value } });
   } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "验证码挑战发起失败"; }
   finally { loading.value = false; }
 }
@@ -23,14 +26,17 @@ async function verify() {
   if (!challenge.value || !/^\d{6}$/.test(code.value)) { error.value = "请输入 6 位验证码"; return; }
   verifying.value = true; error.value = "";
   try {
-    await http.post(`/security/verification-challenges/${challenge.value.id}/verify`, { data: { code: code.value } });
-    challenge.value = { ...challenge.value, status: "VERIFIED" }; code.value = ""; result.value = "验证成功，已消费本次挑战。";
+    const verified: any = purpose.value === "LOGIN_STEP_UP"
+      ? await http.post(`/security/step-up/${challenge.value.id}/verify`, { data: { code: code.value } })
+      : await http.post(`/security/verification-challenges/${challenge.value.id}/verify`, { data: { code: code.value } });
+    verificationGrant.value = verified?.verificationGrant || "";
+    challenge.value = { ...challenge.value, status: "VERIFIED" }; code.value = ""; result.value = verificationGrant.value ? "验证成功，已获得短期用途绑定授权。" : "验证成功，已消费本次挑战。";
   } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "验证码验证失败"; }
   finally { verifying.value = false; }
 }
 async function cancel() {
   if (!challenge.value) return;
-  try { await http.request("delete", `/security/verification-challenges/${challenge.value.id}`); challenge.value = null; code.value = ""; result.value = "挑战已取消。"; }
+  try { await http.request("delete", `/security/verification-challenges/${challenge.value.id}`); challenge.value = null; verificationGrant.value = ""; code.value = ""; result.value = "挑战已取消。"; }
   catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "挑战取消失败"; }
 }
 </script>
@@ -49,4 +55,3 @@ async function cancel() {
     </el-card>
   </main>
 </template>
-
