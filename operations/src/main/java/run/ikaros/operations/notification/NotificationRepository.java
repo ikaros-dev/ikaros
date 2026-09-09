@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono;
 
 public interface NotificationRepository extends ReactiveCrudRepository<NotificationEntity, UUID> {
     Mono<NotificationEntity> findByEventId(UUID eventId);
+    Mono<NotificationEntity> findByIdAndRecipientId(UUID id, UUID recipientId);
     Flux<NotificationEntity> findAllByRecipientIdOrderByCreatedAtDescIdDesc(UUID recipientId);
 
     @Query("""

@@ -1,6 +1,7 @@
 package run.ikaros.operations.notification;
 
 import java.util.UUID;
+import java.time.Instant;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -42,6 +43,22 @@ public class DefaultNotificationService implements NotificationService {
         return notifications.findByEventId(notification.eventId()).switchIfEmpty(
             Mono.defer(() -> notifications.save(notification))
                 .onErrorResume(DuplicateKeyException.class, ignored -> notifications.findByEventId(notification.eventId())));
+    }
+
+    @Override
+    public Mono<NotificationView> markRead(UUID recipientId, UUID notificationId) {
+        if (recipientId == null || notificationId == null) {
+            return Mono.error(new IllegalArgumentException("通知标识不能为空"));
+        }
+        return notifications.findByIdAndRecipientId(notificationId, recipientId)
+            .switchIfEmpty(Mono.error(new run.ikaros.common.NotFoundException("通知不存在")))
+            .flatMap(value -> "READ".equals(value.status())
+                ? Mono.just(value)
+                : notifications.save(new NotificationEntity(value.id(), value.eventId(), value.recipientId(),
+                    value.source(), value.eventType(), value.title(), value.body(), value.priority(), "READ",
+                    value.taskId(), value.resourceId(), value.createdAt(), value.readAt() == null ? Instant.now() : value.readAt(),
+                    value.archivedAt(), value.version())))
+            .map(NotificationView::from);
     }
 
     private String normalize(String value) {
