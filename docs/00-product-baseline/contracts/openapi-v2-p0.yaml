@@ -1324,6 +1324,48 @@ paths:
         '200': { description: EPUB chapter content, content: { application/json: { schema: { $ref: '#/components/schemas/EbookChapterContent' } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /reading/works/{work_id}/bookmarks:
+    get:
+      tags: [Reading]
+      operationId: listReadingBookmarks
+      x-ikaros-contract-id: reading.list-bookmarks
+      summary: List private reading bookmarks for a work
+      parameters:
+        - { name: work_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Reading bookmarks, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/ReadingBookmark' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reading/works/{work_id}/editions/{edition_id}/chapters/{chapter_id}/bookmarks:
+    post:
+      tags: [Reading]
+      operationId: createReadingBookmark
+      x-ikaros-contract-id: reading.create-bookmark
+      summary: Add a private reading bookmark
+      parameters:
+        - { name: work_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: edition_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: chapter_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ReadingBookmarkRequest' } } } }
+      responses:
+        '200': { description: Created bookmark, content: { application/json: { schema: { $ref: '#/components/schemas/ReadingBookmark' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reading/bookmarks/{bookmark_id}:
+    delete:
+      tags: [Reading]
+      operationId: deleteReadingBookmark
+      x-ikaros-contract-id: reading.delete-bookmark
+      summary: Remove a private reading bookmark
+      parameters:
+        - { name: bookmark_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Bookmark removed }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
   components:
   securitySchemes:
     bearerAuth:
@@ -1772,6 +1814,27 @@ paths:
         title: { type: string }
         href: { type: string }
         content: { type: string }
+    ReadingBookmarkRequest:
+      type: object
+      required: [locator_kind, locator_value]
+      properties:
+        locator_kind: { type: string, minLength: 1, maxLength: 32 }
+        locator_value: { type: string, minLength: 1, maxLength: 1024 }
+        content_version: { type: [string, 'null'] }
+        label: { type: [string, 'null'] }
+    ReadingBookmark:
+      type: object
+      required: [id, work_id, edition_id, chapter_id, locator_kind, locator_value, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        work_id: { type: string, format: uuid }
+        edition_id: { type: string, format: uuid }
+        chapter_id: { type: string, format: uuid }
+        locator_kind: { type: string }
+        locator_value: { type: string }
+        content_version: { type: [string, 'null'] }
+        label: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
     ReorderComicPagesRequest:
       type: object
       required: [chapter_key, entry_ids]
