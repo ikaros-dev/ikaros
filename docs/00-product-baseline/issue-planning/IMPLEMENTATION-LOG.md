@@ -379,7 +379,8 @@
 - 推荐决策：复用集中式 `JwtTokenService` 签发带 `sub`、`jti`、`security_version`、`iat`、`exp`、issuer 和 token kind 的 Access/Refresh JWT；刷新只接受签名有效的 Refresh JWT，并重新读取 ACTIVE 用户与当前 `security_version`。
 - 原因：保持无状态认证，不引入 Login Session、Refresh Token Digest 或 Controller 私自拼装 token；用户级失效由后续 A05-05 提升 `security_version`。
 - 失败语义：过期、错误类型、错误签名和版本不匹配均拒绝继续认证/刷新；JWT 原文不写入数据库、事件、审计或普通日志。
-- 验证：`JwtTokenServiceTest` 覆盖 Access/Refresh 类型隔离、唯一 jti、过期和篡改拒绝；`AuthenticationServiceTest` 覆盖刷新时 `security_version` 不匹配及无效 token 拒绝；认证回归共 15 项通过。
+- Console 对接审计：`console/src/utils/http/index.ts` 在受保护请求收到 401 时调用 `useUserStoreHook().handRefreshToken` → `POST /auth/refresh-token`，更新 access/refresh token 后重放原请求；刷新失败则清理认证状态并回到登录页，白名单避免刷新接口递归。
+- 验证：`JwtTokenServiceTest` 覆盖 Access/Refresh 类型隔离、唯一 jti、过期和篡改拒绝；`AuthenticationServiceTest` 覆盖刷新时 `security_version` 不匹配及无效 token 拒绝；认证回归共 15 项通过；Console `pnpm typecheck`、`pnpm build` 通过。
 
 ## A05-04 无状态 JWT 校验与 security_version
 
