@@ -22,13 +22,16 @@ public class StorageProviderController {
     private final StorageProviderRegistry registry;
     private final StorageProviderCredentialRotationService credentialRotation;
     private final StorageProviderCredentialService credentialService;
+    private final StorageProviderProbeService probeService;
 
     public StorageProviderController(StorageProviderRegistry registry,
                                      StorageProviderCredentialRotationService credentialRotation,
-                                     StorageProviderCredentialService credentialService) {
+                                     StorageProviderCredentialService credentialService,
+                                     StorageProviderProbeService probeService) {
         this.registry = registry;
         this.credentialRotation = credentialRotation;
         this.credentialService = credentialService;
+        this.probeService = probeService;
     }
 
     @PostMapping
@@ -52,6 +55,11 @@ public class StorageProviderController {
     @PostMapping("/{providerId}/enable")
     public Mono<StorageProvider> enable(@PathVariable UUID providerId) {
         return registry.enable(providerId);
+    }
+
+    @PostMapping("/{providerId}/probe")
+    public Mono<StorageProviderProbeResult> probe(@PathVariable UUID providerId) {
+        return probeService.probe(providerId);
     }
 
     @PostMapping("/{providerId}/actions/rotate-credentials")

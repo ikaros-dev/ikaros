@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
+import run.ikaros.storage.api.StorageProviderProbeResult;
 
 /** 将持久化 Provider 配置路由到唯一匹配的物理对象 adapter。 */
 @Component
@@ -34,6 +35,10 @@ public class StorageObjectProviderRegistry {
 
     public Mono<Void> deleteObject(StorageProvider provider, String objectKey) {
         return find(provider).deleteObject(provider, objectKey);
+    }
+
+    public Mono<StorageProviderProbeResult> probe(StorageProvider provider) {
+        return find(provider).probe(provider);
     }
 
     private StorageObjectProvider find(StorageProvider provider) {

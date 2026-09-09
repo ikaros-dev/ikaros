@@ -632,3 +632,9 @@
 - 实现修复：持久化注册路径拒绝将 password/secret 等明文凭据写入 Provider metadata；内存 registry 同样执行 metadata 安全边界，重复 Provider key 显式冲突。
 - 失败语义：参数不完整、缺少 `secret://` 引用/凭据、非法 metadata 或重复 key 均在持久化前失败；成功注册默认 ENABLED 并发布 Provider created 事件。
 - 验证：`InMemoryStorageProviderRegistryTest` 2/2、`PersistentStorageProviderRegistryTest` 1/1 通过；真实 PostgreSQL 唯一约束联调仍需 Docker。
+## A15-02 检测连接和读写能力
+- 日期：2026-09-09
+- 推荐决策：增加 Provider 独立探测入口 `POST /api/admin/storage-providers/{provider_id}/probe`；探测不读取或修改 Attachment、Blob、Placement，也不持久化健康结果。
+- 实现修复：新增 `StorageProviderProbeResult`/状态契约、Provider probe service 和 HTTP 路径；S3 adapter 使用随机哨兵对象执行 PUT → HEAD → DELETE，删除置于 finally，失败返回脱敏错误码；未支持的 adapter 返回 `UNSUPPORTED`。
+- 失败语义：Provider 不存在沿用 NotFound；无 adapter/凭据/网络失败不产生伪成功；哨兵对象创建后即使 HEAD 失败也尝试清理。
+- 验证：`StorageProviderProbeServiceTest` 3/3、`StorageObjectProviderRegistryTest` 1/1，`mvn -pl storage -am '-Dtest=StorageProviderProbeServiceTest,StorageObjectProviderRegistryTest' '-Dsurefire.failIfNoSpecifiedTests=false' test` BUILD SUCCESS。

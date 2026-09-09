@@ -348,6 +348,26 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '409': { $ref: '#/components/responses/Conflict' }
+  /admin/storage-providers/{provider_id}/probe:
+    post:
+      tags: [Admin Storage]
+      operationId: probeStorageProvider
+      x-ikaros-contract-id: storage.probe-provider
+      summary: Probe storage provider connection and read/write capability
+      parameters:
+        - name: provider_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Probe result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StorageProviderProbeResult' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /admin/users:
     get:
       tags: [Admin Identity]
@@ -644,6 +664,17 @@ components:
           type: object
           additionalProperties: true
         version: { type: integer, format: int64 }
+    StorageProviderProbeResult:
+      type: object
+      required: [provider_id, status, connection, read, write, checked_at]
+      properties:
+        provider_id: { type: string, format: uuid }
+        status: { type: string, enum: [HEALTHY, DEGRADED, FAILED, UNSUPPORTED] }
+        connection: { type: boolean }
+        read: { type: boolean }
+        write: { type: boolean }
+        checked_at: { type: string, format: date-time }
+        error_code: { type: [string, 'null'] }
     CreateStorageProviderRequest:
       type: object
       required: [provider_key, provider_type, display_name, tier, capabilities]

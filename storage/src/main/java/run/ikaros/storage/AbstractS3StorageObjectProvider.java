@@ -15,9 +15,12 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
+import run.ikaros.storage.api.StorageProviderProbeResult;
+import run.ikaros.storage.api.StorageProviderProbeStatus;
 
 /** S3 API implementation shared by cloud vendors exposing S3-compatible APIs. */
 abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider {
@@ -104,6 +107,38 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
             withClient(settings, credentials, client -> client.deleteObject(DeleteObjectRequest.builder()
                 .bucket(settings.bucket()).key(objectKey).build()));
         })).subscribeOn(Schedulers.boundedElastic()).then();
+    }
+
+    @Override
+    public Mono<StorageProviderProbeResult> probe(StorageProvider provider) {
+        return credentialResolver.resolve(provider.secretReference()).flatMap(credentials -> Mono.fromCallable(() -> {
+            S3Settings settings = S3Settings.from(provider);
+            String key = ".ikaros-probe/" + provider.id() + "/" + java.util.UUID.randomUUID();
+            try (S3Client client = S3Client.builder().region(Region.of(settings.region()))
+                .endpointOverride(settings.endpoint()).credentialsProvider(credentials).build()) {
+                boolean created = false;
+                try {
+                    client.putObject(PutObjectRequest.builder().bucket(settings.bucket()).key(key)
+                        .contentType("application/octet-stream").build(),
+                        software.amazon.awssdk.core.sync.RequestBody.empty());
+                    created = true;
+                    var object = client.headObject(HeadObjectRequest.builder().bucket(settings.bucket()).key(key).build());
+                    return new StorageProviderProbeResult(provider.id(), StorageProviderProbeStatus.HEALTHY,
+                        true, object != null, true, Instant.now(), null);
+                } finally {
+                    if (created) client.deleteObject(DeleteObjectRequest.builder().bucket(settings.bucket()).key(key).build());
+                }
+            }
+        })).subscribeOn(Schedulers.boundedElastic())
+            .onErrorResume(error -> Mono.just(new StorageProviderProbeResult(provider.id(),
+                StorageProviderProbeStatus.FAILED, false, false, false, Instant.now(), classifyProbeError(error))));
+    }
+
+    private String classifyProbeError(Throwable error) {
+        String name = error.getClass().getSimpleName().toLowerCase();
+        if (name.contains("credential") || name.contains("accessdenied") || name.contains("auth")) return "AUTH_FAILED";
+        if (name.contains("timeout") || name.contains("sdkclient")) return "NETWORK_UNAVAILABLE";
+        return "PROVIDER_UNAVAILABLE";
     }
 
     private <T> T withClient(S3Settings settings, software.amazon.awssdk.auth.credentials.AwsCredentialsProvider credentials,

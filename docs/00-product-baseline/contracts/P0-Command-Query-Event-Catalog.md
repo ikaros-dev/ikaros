@@ -198,6 +198,7 @@ Cursor 对客户端 opaque。
 | `storage.trash-attachment` | owner-domain permission | NATURAL | no | `storage.attachment.trashed` |
 | `storage.verify-blob` | `storage.provider.manage` or system | REQUIRED | yes | `storage.blob.verified`, `storage.blob.integrity-failed` |
 | `storage.create-provider` | `storage.provider.manage` | REQUIRED | no | `storage.provider.created` |
+| `storage.probe-provider` | `storage.provider.manage` | REQUIRED | no | — |
 | `storage.update-provider` | `storage.provider.manage` | OPTIONAL | no | `storage.provider.updated` |
 | `storage.enable-provider` | `storage.provider.manage` | NATURAL | no | `storage.provider.enabled` |
 | `storage.disable-provider` | `storage.provider.manage` | NATURAL | maybe drain precondition | `storage.provider.disabled` |
