@@ -14,9 +14,38 @@ tags:
   - name: Search
   - name: Attachments
   - name: Background Tasks
+  - name: Operations Diagnostics
   - name: Admin Storage
   - name: Admin Identity
 paths:
+  /health/operations:
+    get:
+      tags: [Operations Diagnostics]
+      operationId: getOperationsDiagnostics
+      x-ikaros-contract-id: operations.get-diagnostics
+      summary: View background task and durable event delivery diagnostics
+      responses:
+        '200':
+          description: Operations diagnostics
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [pending_tasks, running_tasks, failed_tasks, timed_out_tasks, event_delivery]
+                properties:
+                  pending_tasks: { type: integer, format: int64, minimum: 0 }
+                  running_tasks: { type: integer, format: int64, minimum: 0 }
+                  failed_tasks: { type: integer, format: int64, minimum: 0 }
+                  timed_out_tasks: { type: integer, format: int64, minimum: 0 }
+                  event_delivery:
+                    type: object
+                    required: [pending_count, attempted_pending_count]
+                    properties:
+                      pending_count: { type: integer, format: int64, minimum: 0 }
+                      attempted_pending_count: { type: integer, format: int64, minimum: 0 }
+                      last_attempt_at: { type: [string, 'null'], format: date-time }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
   /search:
     get:
       tags: [Search]
