@@ -846,3 +846,10 @@
 - 失败语义：探针请求失败显示 DOWN；积压显示 DEGRADED；未知状态不显示为健康；诊断响应不包含凭据或物理路径。
 - 验证：后端 `mvn -s .mvn-local-settings.xml -pl application -am -DskipTests package` BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` 通过；运行时 `/openapi.json` 确认 `/api/health/operations`，未认证访问返回 401。
 - 主要提交：`bfb85fa2`（任务/投递诊断）、`df0ffbb2`（可操作异常提示）、`6b227ebc`（HTTP 契约登记）。
+## B01 视频与剧集管理
+- 日期：2026-09-10
+- 子任务汇总：B01-01 至 B01-05 已按依赖顺序完成；每个功能均有后端 API、Console 管理入口和针对性验证。
+- 组合交付：视频条目创建、剧集顺序维护、播放附件关联、字幕/封面关联以及附件可用状态均已接入 `视频条目` 页面；页面通过真实 API 加载和提交，不使用静态演示数据。
+- 失败语义：视频 Resource 创建失败不落媒体主体；剧集顺序校验主体/Season 所属关系并在事务中避免唯一键冲突；附件关联必须通过可读/活动引用校验；可用性查询失败显示 `UNKNOWN`，不伪造为可用。
+- 契约追溯：媒体 subjects、episodes reorder、releases、subtitles 和 attachment availability 已同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：媒体目录、Release、字幕服务测试累计 8/8；Console `pnpm typecheck` 通过。B01-05 主要提交：`d9c6b903`（Console 展示附件可用状态与契约登记）。
