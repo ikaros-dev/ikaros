@@ -7,6 +7,8 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 
 public interface BackgroundTaskRepository extends ReactiveCrudRepository<BackgroundTaskEntity, UUID> {
+    @org.springframework.data.r2dbc.repository.Query("select count(*) from background_task where status = :status")
+    Mono<Long> countByStatus(String status);
     Flux<BackgroundTaskEntity> findAllByOrderByCreatedAtDesc();
     Flux<BackgroundTaskEntity> findAllByStatusOrderByCreatedAtDesc(String status);
     Mono<BackgroundTaskEntity> findByTaskTypeAndIdempotencyKey(String taskType, String idempotencyKey);
