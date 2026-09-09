@@ -71,7 +71,7 @@ class PureHttp {
           return config;
         }
         /** 请求白名单，放置一些不需要`token`的接口（通过设置请求白名单，防止`token`过期后再请求造成的死循环问题） */
-        const whiteList = ["/auth/register", "/auth/login", "/refresh-token", "/login"];
+        const whiteList = ["/auth/register", "/auth/login", "/auth/refresh-token", "/login"];
         return whiteList.some(url => config.url.endsWith(url))
           ? config
           : new Promise(resolve => {
@@ -88,6 +88,9 @@ class PureHttp {
                       .then(res => {
                         const token = res.data.accessToken;
                         config.headers["Authorization"] = formatToken(token);
+                        if (data.actorId) {
+                          config.headers["X-Ikaros-Actor-Id"] = data.actorId;
+                        }
                         PureHttp.requests.forEach(cb => cb(token));
                         PureHttp.requests = [];
                       })
@@ -96,11 +99,14 @@ class PureHttp {
                       });
                   }
                   resolve(PureHttp.retryOriginalRequest(config));
-                } else {
-                  config.headers["Authorization"] = formatToken(
-                    data.accessToken
-                  );
-                  resolve(config);
+              } else {
+                config.headers["Authorization"] = formatToken(
+                  data.accessToken
+                );
+                if (data.actorId) {
+                  config.headers["X-Ikaros-Actor-Id"] = data.actorId;
+                }
+                resolve(config);
                 }
               } else {
                 resolve(config);
