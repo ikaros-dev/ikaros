@@ -42,6 +42,8 @@ public interface CollectionService {
      */
     Mono<Void> addResource(UUID ownerId, UUID collectionId, UUID resourceId, int position);
 
+    Mono<List<CollectionResourceView>> listResources(UUID ownerId, UUID collectionId);
+
     /** 移动集合并拒绝自引用及任意深度祖先循环。 */
     Mono<CollectionView> move(UUID ownerId, UUID collectionId, UUID parentId);
 

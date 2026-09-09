@@ -147,6 +147,14 @@ public class DefaultCollectionService implements CollectionService {
     }
 
     @Override
+    public Mono<List<CollectionResourceView>> listResources(UUID ownerId, UUID collectionId) {
+        return ownedCollection(ownerId, collectionId)
+            .then(collectionResourceRepository.findAllByCollectionIdOrderByPositionAsc(collectionId)
+                .map(member -> new CollectionResourceView(member.resourceId(), member.position()))
+                .collectList());
+    }
+
+    @Override
     public Mono<Void> reorderResources(UUID ownerId, UUID collectionId, List<UUID> resourceIds) {
         if (resourceIds == null || resourceIds.isEmpty() || resourceIds.size() > MAX_UNPAGED_RESULTS
             || resourceIds.stream().anyMatch(java.util.Objects::isNull)
