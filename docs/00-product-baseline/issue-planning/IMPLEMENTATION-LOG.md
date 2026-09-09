@@ -251,3 +251,10 @@
 - 安全边界：网关 API Key 只从环境 Secret 注入 Authorization Header；OTP 仅存在当前投递调用体，错误只返回固定非敏感信息，不记录网关响应正文或验证码。
 - 失败语义：用户邮箱不可用或网关返回错误均失败，不产生伪成功；发送仍由 Email OTP Provider 的用途绑定、过期和频率限制控制。
 - 验证：`HttpEmailOtpDeliveryTest` 覆盖 HTTP 成功、Authorization Secret 传递、网关错误脱敏；连同 A07-01 回归共 11 项通过。真实第三方邮件网关联调需要部署环境提供 endpoint/from/API Key，当前未发送外部邮件。
+
+## A07-02 验证成功后执行限定操作
+
+- 日期：2026-09-09
+- 推荐决策：Step-up 成功后只签发短期、用途绑定的 Verification Grant；不修改 Session、权限或密钥。Grant 携带主体、`security_version`、purpose、SVL、签发/过期时间，由后续高风险 Command 与 Permission/Security Policy 一并校验。
+- 失败语义：挑战用途/目标不匹配或用户非 ACTIVE 时拒绝；用户状态检查必须先于 OTP 消费，拒绝路径不得执行验证 Provider 或签发 Grant。
+- 验证：`DefaultStepUpVerificationServiceTest` 覆盖 Grant claim、主体/用途/SVL/有效期、目标绑定和停用用户拒绝；4 项通过。
