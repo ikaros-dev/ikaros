@@ -388,7 +388,8 @@
 - 推荐决策：由最高优先级 WebFilter 统一解析 Bearer Access JWT，校验签名、时间和 token kind 后读取主体用户，仅 ACTIVE 且 `security_version` 一致时构造 `AuthenticatedPrincipal`；不查询 Session。
 - 原因：请求认证必须以当前用户状态和安全版本为权威，避免 Session、`sid` 或 Token Digest 重新成为隐式登录态。
 - 失败语义：缺失/格式错误 Bearer、错误签名、过期、Refresh 类型、禁用用户、未知用户和版本过期均返回 401，且不把 token 原文写入日志或错误响应。
-- 验证：`JwtAuthenticationWebFilterTest` 覆盖合法 Access 身份注入、非法 token、错误类型、过期、禁用用户和 stale `security_version`；相关认证回归共 10 项通过。
+- Console 对接审计：登录后的 Console 通过受保护的 `/me`、后台任务和管理页面验证 Access JWT；`console/src/views/security/Users.vue` 在用户详情展示服务端 `security_version`，不在前端解析或伪造 JWT 校验结果。
+- 验证：`JwtAuthenticationWebFilterTest` 覆盖合法 Access 身份注入、非法 token、错误类型、过期、禁用用户和 stale `security_version`；相关认证回归共 10 项通过；Console `pnpm typecheck`、`pnpm build` 通过。
 
 ## A05-05 用户级旧 Token 全量失效
 
