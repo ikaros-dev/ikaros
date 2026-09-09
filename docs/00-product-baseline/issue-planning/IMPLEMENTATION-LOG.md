@@ -595,6 +595,13 @@
 - 失败语义：恢复重试中的摘要、大小、Provider 或对象校验失败继续明确失败；既有成功状态不回退、不重复创建、不删除有效引用。
 - 验证：`DefaultStorageServiceTest` 12/12 通过，覆盖同一 Idempotency-Key 重试不重复创建 Attachment/Blob 及越权、约束和 Blob 复用回归；真实 Multipart Provider 断点续传联调仍需 Docker/外部 Provider。
 
+## A14-06 终止并清理失效上传会话（契约与 Schema）
+
+- 日期：2026-09-09
+- 推荐决策：按 Storage 设计引入持久化 `storage_upload_session`，记录 Owner、Resource、Provider、临时对象键、声明大小/摘要、状态、TTL、幂等键和版本；会话状态限定为 OPEN/RECEIVING/FINALIZING/COMPLETED/ABORTED/EXPIRED。
+- 实现进展：已新增公开 `UploadSessionState`/`UploadSessionView`、Storage-owned Entity/Repository，以及带状态/TTL/幂等唯一约束的版本化 Migration；不保存 Provider 凭据或临时认证材料。
+- 验证：`mvn -pl storage -am -DskipTests compile` 通过；服务入口、Provider 清理和过期调度将在后续步骤接入。
+
 ## A12 资源关系管理（父 issue）
 
 - 日期：2026-09-09
