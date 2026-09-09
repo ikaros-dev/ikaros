@@ -95,6 +95,23 @@ class DefaultStorageServiceTest {
     }
 
     @Test
+    void rejectsSameHashWithDifferentSizeBeforeCreatingAttachment() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        BlobEntity existing = new BlobEntity(UUID.randomUUID(), "a".repeat(64), 2048L, "video/mp4",
+            BlobAvailability.AVAILABLE, now, 0L);
+        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.empty());
+        when(blobRepository.findBySha256("a".repeat(64))).thenReturn(Mono.just(existing));
+
+        StepVerifier.create(service.attach(ownerId, resourceId, new AttachBlobRequest("A".repeat(64), 1024L,
+                "video/mp4", "episode.mp4", AttachmentKind.ORIGINAL, "nas", StorageTier.WARM, "episode.mp4")))
+            .expectErrorMessage("相同 SHA-256 的 Blob 大小不一致").verify();
+        verify(blobRepository, org.mockito.Mockito.never()).save(any(BlobEntity.class));
+        verify(attachmentRepository, org.mockito.Mockito.never()).save(any(AttachmentEntity.class));
+    }
+
+    @Test
     void recordsDerivedAttachmentSourceWithoutChangingOriginalKind() {
         UUID ownerId = UUID.randomUUID(); UUID resourceId = UUID.randomUUID();
         UUID sourceId = UUID.randomUUID(); UUID derivedId = UUID.randomUUID(); UUID blobId = UUID.randomUUID();

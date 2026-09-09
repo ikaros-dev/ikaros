@@ -579,6 +579,14 @@
 - 失败语义：未知/无权 Resource、Provider 不可写、SHA-256/大小/tier 不匹配或远端对象不可确认均失败，不产生伪成功 Attachment 或错误成功事件。
 - 验证：`DefaultStorageServiceTest` 10/10 通过，覆盖越权提交不访问 Provider/对象 adapter 及附件存储回归；真实 Provider 对象校验和 PostgreSQL/Testcontainers 联调仍需 Docker/外部 Provider。
 
+## A14-04 相同内容复用 Blob
+
+- 日期：2026-09-09
+- 推荐决策：以规范化 SHA-256 作为 Blob 内容身份；相同摘要复用既有 Blob，Attachment 仍按上传资源独立创建，Placement 负责物理对象绑定。
+- 实现确认：`findOrCreateBlob` 先按 SHA-256 查找，复用时强制校验大小与哈希算法；已有可用 Placement 的上传意图返回去重结果，不重复创建物理对象。
+- 失败语义：同 SHA 大小不一致显式冲突，不创建新 Blob 或 Attachment；所有 Attachment/Blob/Placement 关系保持独立，失败不破坏既有引用。
+- 验证：`DefaultStorageServiceTest` 11/11 通过，覆盖既有 Blob 复用、大小冲突及无新写入；真实 PostgreSQL 唯一约束/Testcontainers 并发联调仍需 Docker。
+
 ## A12 资源关系管理（父 issue）
 
 - 日期：2026-09-09
