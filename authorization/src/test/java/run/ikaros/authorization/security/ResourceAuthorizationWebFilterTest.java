@@ -203,6 +203,33 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
+    void rejectsUnauthenticatedDirectSearchApiCall() {
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/search?q=book")
+            .build());
+        new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange,
+            mock(WebFilterChain.class)).block();
+
+        assertEquals(401, exchange.getResponse().getStatusCode().value());
+    }
+
+    @Test
+    void rejectsSearchAfterCurrentResourcePermissionRevocation() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/search?q=book")
+            .build());
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 0L, java.util.List.of("resource.read")));
+        WebFilterChain chain = mock(WebFilterChain.class);
+        when(chain.filter(exchange)).thenReturn(Mono.empty());
+        AccessControlService accessControl = (userId, svl, expiresAt, policy) ->
+            Mono.error(new run.ikaros.common.ForbiddenException("revoked"));
+
+        new ResourceAuthorizationWebFilter(accessControl).filter(exchange, chain).block();
+
+        assertEquals(403, exchange.getResponse().getStatusCode().value());
+    }
+
+    @Test
     void protectsAuditQueryWithAuditReadPermissionAndCurrentRoleCheck() {
         UUID actor = UUID.randomUUID();
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/audit-events")

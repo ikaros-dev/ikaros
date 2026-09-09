@@ -827,3 +827,9 @@
 - 失败语义：不存在的类型/标签返回空页；授权失败、投影失败不泄露结果；不修改资源真相或投影内容。
 - 契约追溯：Search OpenAPI 参数与 `search.keyword-search` 查询契约同步。
 - 验证：服务查询测试覆盖筛选参数绑定、授权过滤与空关键词短路；Maven targeted test BUILD SUCCESS。
+## A19-03 按当前权限过滤
+- 日期：2026-09-09
+- 推荐决策：保留 Search Projection 候选查询与 Resource Ownership Capability 的双层边界；HTTP 层继续由统一 ResourceAuthorizationWebFilter 校验 JWT、resource.read 和当前角色状态。
+- 实现修复：补充 `/api/search` 直接调用的未认证与权限撤销验收证据；搜索服务对每个候选实时调用 `requireOwned`，不依赖旧 ACL 投影做最终授权。
+- 失败语义：无凭据返回 401，缺少/已撤销 resource.read 返回 403；单条资源无权或投影损坏时跳过该结果，不暴露资源数据、认证材料或索引内部状态。
+- 验证：`ResourceAuthorizationWebFilterTest` 17/17、`PersistentSearchQueryServiceTest` 2/2；相关 Maven targeted tests BUILD SUCCESS。
