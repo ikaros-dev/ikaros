@@ -72,6 +72,29 @@ class PersistentComicImportParseServiceTest {
             .expectErrorMessage("页序调整必须提交该章节全部且不重复的条目").verify();
     }
 
+    @Test
+    void recordsExplicitFailureReasonForUnsupportedCbrParser() {
+        UUID owner = UUID.randomUUID(); UUID importId = UUID.randomUUID(); UUID attachmentId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ComicImportEntity record = new ComicImportEntity(importId, owner, attachmentId, UUID.randomUUID(), UUID.randomUUID(),
+            ComicImportStatus.ACCEPTED.name(), null, null, "key", now, now, 0L);
+        StorageService storage = org.mockito.Mockito.mock(StorageService.class);
+        ComicImportRepository imports = org.mockito.Mockito.mock(ComicImportRepository.class);
+        ComicImportEntryRepository entries = org.mockito.Mockito.mock(ComicImportEntryRepository.class);
+        when(imports.findByIdAndOwnerId(importId, owner)).thenReturn(Mono.just(record));
+        when(imports.save(any(ComicImportEntity.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(entries.deleteAllByImportId(importId)).thenReturn(Mono.empty());
+        when(storage.get(owner, attachmentId)).thenReturn(Mono.just(new AttachmentView(attachmentId, UUID.randomUUID(),
+            "archive.cbr", AttachmentKind.ORIGINAL, "c".repeat(64), 10L, "application/x-rar", AttachmentAvailabilityStatus.READY)));
+        PersistentComicImportParseService service = new PersistentComicImportParseService(storage,
+            org.mockito.Mockito.mock(AttachmentContentService.class), imports, entries);
+
+        StepVerifier.create(service.parse(owner, importId))
+            .expectNextMatches(view -> view.status() == ComicImportStatus.FAILED
+                && "CBR 解析器尚未配置，请使用 CBZ 或 ZIP".equals(view.errorMessage()))
+            .verifyComplete();
+    }
+
     private byte[] zipBytes() throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         try (ZipOutputStream zip = new ZipOutputStream(output)) {
