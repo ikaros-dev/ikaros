@@ -376,3 +376,10 @@
 - 主要 commits：`645954b1`、`8a5bd90e`、`a9dd07dc`、`b998f8c1`、`0b6b9b0f`、`35a5afa5`、`f459a19a`。
 - 统一决策：Resource 生命周期由显式 Application Action 管理；owner scope、乐观并发、事务内事件与审计保持一致；逻辑生命周期绝不隐式删除共享 Attachment/Blob。
 - 验证证据：Resource 服务单测已覆盖各子行为的成功、状态拒绝、权限边界、幂等和版本冲突分支；真实 PostgreSQL/Testcontainers 仍需 Docker 环境补跑。
+
+## A10-01 添加多语言标题
+
+- 日期：2026-09-09
+- 推荐决策：复用既有 ResourceTitle Application/API；同一 Resource 的 locale 唯一，标题保存支持主标题切换，删除最后标题被拒绝，owner scope 由 Resource 查询保证。
+- 失败语义：请求校验拒绝空/超长 locale 或 title；不存在或无权 Resource 拒绝；数据库结果通过重新查询保持一致，保存和审计在同一 reactive transaction 内完成。
+- 验证：`DefaultResourceTitleServiceTest` 3 项、`ResourceTitleControllerTest` 2 项通过，覆盖新增多语言标题、主标题降级、最后标题禁止和控制器入口。行为已满足，未做无关重写。
