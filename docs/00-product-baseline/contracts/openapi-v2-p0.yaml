@@ -1176,6 +1176,58 @@ paths:
         '200': { description: Reading preference, content: { application/json: { schema: { $ref: '#/components/schemas/ReadingPreference' } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /reading/works/{work_id}/sessions:
+    post:
+      tags: [Reading]
+      operationId: startReadingSession
+      x-ikaros-contract-id: reading.start-session
+      summary: Start a comic reading session
+      parameters:
+        - { name: work_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StartReadingSessionRequest' }
+      responses:
+        '200': { description: Started session, content: { application/json: { schema: { $ref: '#/components/schemas/ReadingSession' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reading/sessions/{session_id}:
+    patch:
+      tags: [Reading]
+      operationId: updateReadingProgress
+      x-ikaros-contract-id: reading.update-progress
+      summary: Save the current logical reading position
+      parameters:
+        - { name: session_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateReadingProgressRequest' }
+      responses:
+        '200': { description: Updated session, content: { application/json: { schema: { $ref: '#/components/schemas/ReadingSession' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+  /reading/works/{work_id}/progress:
+    get:
+      tags: [Reading]
+      operationId: getReadingProgress
+      x-ikaros-contract-id: reading.get-progress
+      summary: Get saved reading position
+      parameters:
+        - { name: work_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: edition_id, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Saved reading position, content: { application/json: { schema: { $ref: '#/components/schemas/ReadingProgress' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
   components:
   securitySchemes:
     bearerAuth:
@@ -1529,6 +1581,48 @@ paths:
         work_id: { type: [string, 'null'], format: uuid }
         settings: { type: string }
         updated_at: { type: string, format: date-time }
+    StartReadingSessionRequest:
+      type: object
+      required: [edition_id, chapter_id]
+      properties:
+        edition_id: { type: string, format: uuid }
+        chapter_id: { type: string, format: uuid }
+        locator_kind: { type: [string, 'null'] }
+        locator_value: { type: [string, 'null'] }
+        offline: { type: boolean }
+    UpdateReadingProgressRequest:
+      type: object
+      required: [locator_kind, locator_value]
+      properties:
+        locator_kind: { type: string }
+        locator_value: { type: string }
+        completed: { type: boolean }
+        intent: { type: [string, 'null'] }
+        content_version: { type: [string, 'null'] }
+    ReadingSession:
+      type: object
+      required: [id, work_id, edition_id, current_locator_kind, current_locator_value, version]
+      properties:
+        id: { type: string, format: uuid }
+        work_id: { type: string, format: uuid }
+        edition_id: { type: string, format: uuid }
+        current_chapter_id: { type: [string, 'null'], format: uuid }
+        current_locator_kind: { type: [string, 'null'] }
+        current_locator_value: { type: [string, 'null'] }
+        version: { type: integer, format: int64 }
+    ReadingProgress:
+      type: object
+      required: [id, work_id, edition_id, locator_kind, locator_value, completed, updated_at, version]
+      properties:
+        id: { type: string, format: uuid }
+        work_id: { type: string, format: uuid }
+        edition_id: { type: string, format: uuid }
+        chapter_id: { type: [string, 'null'], format: uuid }
+        locator_kind: { type: string }
+        locator_value: { type: string }
+        completed: { type: boolean }
+        updated_at: { type: string, format: date-time }
+        version: { type: integer, format: int64 }
     ReorderComicPagesRequest:
       type: object
       required: [chapter_key, entry_ids]
