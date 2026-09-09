@@ -786,6 +786,7 @@
 - 实现修复：添加、取消和查询均改为在 Resource owner 校验后惰性访问 Favorite 仓储，避免未知/无权 Resource 产生 eager 查询或副作用。
 - 失败语义：未知/无权 Resource 统一 NotFound；重复收藏不重复保存/审计，重复取消不产生删除/审计；成功路径写 Audit。
 - 验证：`DefaultFavoriteServiceTest` 4/4、`FavoriteControllerTest` 2/2 通过，覆盖添加、重复添加、查询未收藏、未知资源和公开入口；真实 PostgreSQL 唯一约束联调仍需 Docker/Testcontainers。
+- Console 对接审计：资源详情页“收藏/取消收藏”分别调用 `POST /resources/{id}/favorite` 和 `DELETE /resources/{id}/favorite`，成功后重新加载当前用户状态，未修改 Resource 公共数据。
 
 ## A13-02 管理个人标签
 
@@ -794,6 +795,7 @@
 - 实现修复：添加、列表、删除均改为先 owner 校验再惰性访问标签仓储；未知/无权 Resource 不访问标签数据，不产生写入或审计副作用。
 - 失败语义：重复标签保持现有关系；未知 Resource/标签统一 NotFound；删除成功写审计和事件。
 - 验证：`DefaultResourceTagServiceTest` 4/4 通过，覆盖添加、列表、删除、未知 Resource 和审计路径；真实 PostgreSQL 唯一约束联调仍需 Docker/Testcontainers。
+- Console 对接审计：资源详情页的个人标签入口调用 `POST /resources/{id}/tags` 和 `DELETE /resources/{id}/tags/{tagId}`，成功后刷新标签；标签目录页也提供同一真实 API 的加载、添加和移除入口。
 
 ## A13-03 保存个人评分
 
@@ -802,6 +804,7 @@
 - 实现修复：状态读取改为在 Resource owner 校验通过后惰性访问；评分边界使用精确 `BigDecimal` 比较，避免浮点转换造成边界误判。
 - 失败语义：评分越界或目标 Resource 不存在/无权访问时失败，不读取或写入用户状态，不发布成功事件；成功更新沿用事务、版本和 `resource.user-state.changed` 事件。
 - 验证：`DefaultUserResourceStateServiceTest` 3/3 通过，覆盖评分更新事件、未知 Resource 授权边界和越界输入；真实 PostgreSQL/Testcontainers 联调仍需 Docker。
+- Console 对接审计：资源详情页评分控件通过 `PUT /resources/{id}/user-state` 保存，使用 0–10 输入范围并在 409 时提示刷新重试。
 
 ## A13-04 保存消费进度
 
@@ -810,6 +813,7 @@
 - 实现修复：状态读取改为在 Resource owner 校验通过后惰性访问，确保未知/无权 Resource 不触发状态读写；沿用事务、版本和统一用户状态变更事件。
 - 失败语义：进度值必须为非负数，非法输入或目标 Resource 不存在/无权访问时失败且不产生部分写入；成功后通过返回视图和再次查询观察持久化结果。
 - 验证：`DefaultUserResourceStateServiceTest` 4/4 通过，覆盖进度保存并返回持久化状态、评分越界、未知 Resource 和变更事件；真实 PostgreSQL/Testcontainers 联调仍需 Docker。
+- Console 对接审计：同一用户状态表单提交 `statusCode/progressValue/progressUnit` 到真实 API，非负进度由控件和后端共同约束，保存结果直接替换页面状态。
 
 ## A13-05 查看近期活动
 
@@ -818,6 +822,7 @@
 - 实现修复：记录、近期列表和删除均改为惰性 Publisher；记录先完成 Resource owner 校验，删除成功后才写审计，避免越权或失败链产生仓储/审计副作用。
 - 失败语义：未知/无权 Resource 不保存 Activity；limit 超出 1–200 失败；空结果返回空列表；Activity 删除只影响当前用户自己的 Activity。
 - 验证：`DefaultResourceActivityServiceTest` 6/6、`ResourceActivityControllerTest` 2/2 通过，覆盖正常记录、限量、空结果、未知 Resource 和非法 limit；真实 PostgreSQL/Testcontainers 分页联调仍需 Docker。
+- Console 对接审计：资源详情页加载 `GET /activity?limit=200` 并按当前 Resource ID 展示近期活动；活动为空时显示空状态，活动与不可删除 Audit 分开。
 
 ## A13 用户资源状态（父 issue）
 
@@ -825,6 +830,7 @@
 - 本地验收结论：A13-01 至 A13-05 已按顺序完成，覆盖收藏、个人标签、评分、消费进度和近期活动；各路径均遵守用户隔离、Resource owner 授权、事务和事件/审计分离。
 - 主要 commits：`a2903998`、`ed6fdc03`、`0d9771e0`、`6e950762`、`96b3188e`。
 - 验证证据：收藏、标签、用户状态和 Activity 服务/控制器测试均通过；真实 PostgreSQL/Testcontainers 联调仍需 Docker。
+- Console 对接总审计：资源详情页和集合页均已接入 A13 对应读写 API；已运行页面 `/resource-center/library/{resourceId}` 与 `/resource-center/collections` 返回 HTTP 200，Console typecheck/build 已通过。
 
 ## A14-01 创建上传会话
 
