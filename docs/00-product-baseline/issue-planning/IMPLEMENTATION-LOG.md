@@ -375,6 +375,7 @@
 - 失败语义：非法类型/标题/locale 在 Application 层拒绝；幂等 key 同请求返回原资源，不同请求返回 Conflict；资源、标题、事件、审计或幂等记录任一失败不返回伪成功。
 - 验证：`DefaultResourceServiceTest` 覆盖创建及首标题、非法输入、幂等重放/冲突和审计事件；资源回归 13 项通过。真实 PostgreSQL 约束、事务回滚和并发幂等仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
 - 追加验证：补充跨 owner 读取拒绝测试，资源服务回归 `DefaultResourceServiceTest` 8 项通过。
+- Console 复核（2026-09-10）：`/resource-center/library` 已挂载真实资源页；加载调用 `GET /resources`，创建弹窗调用 `POST /resources` 并发送 `Idempotency-Key`，成功后刷新列表并进入详情，加载/创建失败均有可见错误状态。Console `pnpm typecheck`、`pnpm build` 通过；运行中的 Console 路由返回 HTTP 200。未将静态页面或仅有后端接口作为完成证据。
 
 ## A06-03 隔离用户私有资源
 
