@@ -7,19 +7,26 @@ type Subject = { id: string; resourceId?: string; kind?: string; createdAt?: str
 type Resource = { id: string; primaryTitle?: string; title?: string };
 type Season = { id: string; seasonNumber?: number; name?: string };
 type Episode = { id: string; resourceId?: string; episodeNumber?: number; absoluteNumber?: number };
+type Release = { id: string; attachmentId?: string; releaseGroup?: string; versionLabel?: string; state?: string };
 const router = useRouter();
 const rows = ref<Subject[]>([]);
 const loading = ref(false);
 const saving = ref(false);
 const orderLoading = ref(false);
+const releaseLoading = ref(false);
+const releaseSaving = ref(false);
 const error = ref("");
 const dialog = ref(false);
 const orderDialog = ref(false);
+const releaseDialog = ref(false);
 const selectedSubject = ref<Subject | null>(null);
+const selectedReleaseSubject = ref<Subject | null>(null);
 const seasons = ref<Season[]>([]);
 const episodes = ref<Episode[]>([]);
+const releases = ref<Release[]>([]);
 const selectedSeasonId = ref("");
 const form = ref({ title: "", kind: "SERIES", locale: "zh-CN" });
+const releaseForm = ref({ attachmentId: "", releaseGroup: "", versionLabel: "" });
 
 async function load() {
   loading.value = true;
@@ -35,9 +42,7 @@ async function load() {
     rows.value = rows.value.map(row => ({ ...row, title: titles.get(row.resourceId || "") || "未命名视频" }));
   } catch (e: any) {
     error.value = e?.response?.data?.detail || e?.message || "视频条目加载失败";
-  } finally {
-    loading.value = false;
-  }
+  } finally { loading.value = false; }
 }
 
 async function create() {
@@ -62,7 +67,6 @@ async function openOrder(subject: Subject) {
   selectedSeasonId.value = "";
   orderDialog.value = true;
   orderLoading.value = true;
-  error.value = "";
   try {
     const result = await http.get<unknown, unknown>(`/media/subjects/${subject.id}/seasons`);
     seasons.value = Array.isArray(result) ? result as Season[] : [];
@@ -102,6 +106,31 @@ async function saveOrder() {
   } finally { orderLoading.value = false; }
 }
 
+async function openReleases(subject: Subject) {
+  selectedReleaseSubject.value = subject;
+  releases.value = [];
+  releaseDialog.value = true;
+  releaseLoading.value = true;
+  try {
+    const result = await http.get<unknown, unknown>(`/media/resources/${subject.resourceId}/releases`);
+    releases.value = Array.isArray(result) ? result as Release[] : [];
+  } catch (e: any) {
+    error.value = e?.response?.data?.detail || e?.message || "播放附件关联加载失败";
+  } finally { releaseLoading.value = false; }
+}
+
+async function addRelease() {
+  if (!selectedReleaseSubject.value?.resourceId || !releaseForm.value.attachmentId.trim()) { error.value = "Attachment ID 不能为空"; return; }
+  releaseSaving.value = true;
+  try {
+    await http.post(`/media/resources/${selectedReleaseSubject.value.resourceId}/releases`, { data: { ...releaseForm.value, attachmentId: releaseForm.value.attachmentId.trim() } });
+    releaseForm.value = { attachmentId: "", releaseGroup: "", versionLabel: "" };
+    await openReleases(selectedReleaseSubject.value);
+  } catch (e: any) {
+    error.value = e?.response?.data?.detail || e?.message || "播放附件关联失败";
+  } finally { releaseSaving.value = false; }
+}
+
 onMounted(load);
 </script>
 
@@ -109,8 +138,9 @@ onMounted(load);
   <main class="p-4 md:p-6">
     <div class="flex justify-between items-start mb-6"><div><h1 class="text-2xl font-semibold">视频条目</h1><p class="mt-1 text-[var(--el-text-color-secondary)]">创建并管理视频、剧集和电影条目；Resource 与播放附件生命周期保持分离。</p></div><div class="flex gap-2"><el-button type="primary" @click="dialog = true">创建视频条目</el-button><el-button :loading="loading" @click="load">刷新</el-button></div></div>
     <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" class="mb-4" />
-    <el-card shadow="never"><el-skeleton v-if="loading" :rows="8" animated /><el-empty v-else-if="!rows.length" description="暂无视频条目；请先创建一个视频或剧集" /><el-table v-else :data="rows" stripe><el-table-column prop="title" label="标题" min-width="260" /><el-table-column prop="kind" label="类型" width="140" /><el-table-column prop="resourceId" label="Resource ID" min-width="250" /><el-table-column prop="createdAt" label="创建时间" min-width="190" /><el-table-column label="操作" width="220"><template #default="{ row }"><el-button link type="primary" @click="openOrder(row)">维护剧集顺序</el-button><el-button link :disabled="!row.resourceId" @click="router.push(`/resource-center/library/${row.resourceId}`)">打开 Resource</el-button></template></el-table-column></el-table></el-card>
+    <el-card shadow="never"><el-skeleton v-if="loading" :rows="8" animated /><el-empty v-else-if="!rows.length" description="暂无视频条目；请先创建一个视频或剧集" /><el-table v-else :data="rows" stripe><el-table-column prop="title" label="标题" min-width="260" /><el-table-column prop="kind" label="类型" width="140" /><el-table-column prop="resourceId" label="Resource ID" min-width="250" /><el-table-column prop="createdAt" label="创建时间" min-width="190" /><el-table-column label="操作" width="300"><template #default="{ row }"><el-button link type="primary" @click="openOrder(row)">维护剧集顺序</el-button><el-button link @click="openReleases(row)">播放附件</el-button><el-button link :disabled="!row.resourceId" @click="router.push(`/resource-center/library/${row.resourceId}`)">打开 Resource</el-button></template></el-table-column></el-table></el-card>
     <el-dialog v-model="dialog" title="创建视频条目" width="520px"><el-form label-position="top"><el-form-item label="标题" required><el-input v-model="form.title" placeholder="例如：示例剧集" /></el-form-item><el-form-item label="类型" required><el-select v-model="form.kind" class="w-full"><el-option label="剧集" value="SERIES" /><el-option label="电影" value="MOVIE" /><el-option label="单个视频" value="VIDEO" /></el-select></el-form-item><el-form-item label="语言"><el-input v-model="form.locale" placeholder="zh-CN" /></el-form-item></el-form><template #footer><el-button @click="dialog = false">取消</el-button><el-button type="primary" :loading="saving" @click="create">创建</el-button></template></el-dialog>
-    <el-drawer v-model="orderDialog" title="维护剧集顺序" size="620px"><el-skeleton v-if="orderLoading && !episodes.length" :rows="6" animated /><template v-else><div class="flex items-center gap-3 mb-4"><span class="text-sm">Season</span><el-select v-model="selectedSeasonId" class="flex-1" placeholder="选择 Season" @change="loadEpisodes"><el-option v-for="season in seasons" :key="season.id" :label="`第 ${season.seasonNumber ?? 0} 季 · ${season.name || season.id}`" :value="season.id" /></el-select></div><el-empty v-if="!seasons.length" description="暂无 Season；先创建 Season 后才能维护剧集顺序" /><el-empty v-else-if="!episodes.length" description="该 Season 暂无剧集" /><el-table v-else :data="episodes" row-key="id"><el-table-column label="顺序" width="90"><template #default="{ row, $index }">{{ $index + 1 }}</template></el-table-column><el-table-column prop="episodeNumber" label="当前编号" width="120" /><el-table-column prop="id" label="Episode ID" min-width="230" /><el-table-column label="调整" width="120"><template #default="{ $index }"><el-button link :disabled="$index === 0" @click="moveEpisode($index, -1)">上移</el-button><el-button link :disabled="$index === episodes.length - 1" @click="moveEpisode($index, 1)">下移</el-button></template></el-table-column></el-table><div class="flex justify-end mt-4"><el-button type="primary" :loading="orderLoading" :disabled="!episodes.length" @click="saveOrder">保存顺序</el-button></div></template></el-drawer>
+    <el-dialog v-model="releaseDialog" title="关联播放附件" width="680px"><el-skeleton v-if="releaseLoading" :rows="5" animated /><template v-else><el-empty v-if="!releases.length" description="暂无播放 Release" /><el-table v-else :data="releases" stripe><el-table-column prop="attachmentId" label="Attachment ID" min-width="250" /><el-table-column prop="releaseGroup" label="分组" /><el-table-column prop="versionLabel" label="版本" /><el-table-column prop="state" label="状态" /></el-table><el-divider /><el-form label-position="top"><el-form-item label="Attachment ID" required><el-input v-model="releaseForm.attachmentId" placeholder="从附件中心复制 Attachment ID" /></el-form-item><div class="grid grid-cols-1 gap-3 sm:grid-cols-2"><el-form-item label="发布组"><el-input v-model="releaseForm.releaseGroup" /></el-form-item><el-form-item label="版本"><el-input v-model="releaseForm.versionLabel" /></el-form-item></div></el-form></template><template #footer><el-button @click="releaseDialog = false">关闭</el-button><el-button type="primary" :loading="releaseSaving" @click="addRelease">关联附件</el-button></template></el-dialog>
+    <el-drawer v-model="orderDialog" title="维护剧集顺序" size="620px"><el-skeleton v-if="orderLoading && !episodes.length" :rows="6" animated /><template v-else><div class="flex items-center gap-3 mb-4"><span class="text-sm">Season</span><el-select v-model="selectedSeasonId" class="flex-1" placeholder="选择 Season" @change="loadEpisodes"><el-option v-for="season in seasons" :key="season.id" :label="`第 ${season.seasonNumber ?? 0} 季 · ${season.name || season.id}`" :value="season.id" /></el-select></div><el-empty v-if="!seasons.length" description="暂无 Season；先创建 Season 后才能维护剧集顺序" /><el-empty v-else-if="!episodes.length" description="该 Season 暂无剧集" /><el-table v-else :data="episodes" row-key="id"><el-table-column label="顺序" width="90"><template #default="{ $index }">{{ $index + 1 }}</template></el-table-column><el-table-column prop="episodeNumber" label="当前编号" width="120" /><el-table-column prop="id" label="Episode ID" min-width="230" /><el-table-column label="调整" width="120"><template #default="{ $index }"><el-button link :disabled="$index === 0" @click="moveEpisode($index, -1)">上移</el-button><el-button link :disabled="$index === episodes.length - 1" @click="moveEpisode($index, 1)">下移</el-button></template></el-table-column></el-table><div class="flex justify-end mt-4"><el-button type="primary" :loading="orderLoading" :disabled="!episodes.length" @click="saveOrder">保存顺序</el-button></div></template></el-drawer>
   </main>
 </template>
