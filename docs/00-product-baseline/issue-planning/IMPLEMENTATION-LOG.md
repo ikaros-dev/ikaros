@@ -808,6 +808,7 @@
 - 子任务汇总：A16-01 #996、A16-02 #997、A16-03 #998、A16-04 #999、A16-05 #1000、A16-06 #1001 均已独立验收并关闭。
 - 组合交付：Delivery Provider 配置、Storage Binding、优先级选择、预览地址、Range 下载及 Grant 授权/过期控制已接入 API；相关 OpenAPI/HTTP Operation/Command 契约已同步。
 - 验证证据：配置、绑定、优先级、预览、Range、Grant 授权测试均通过；失败路径不泄露凭据、不产生伪成功、不破坏 Attachment/Blob/Placement 引用。
+- Console 回溯：`Delivery 运维` 页面已接入真实 Delivery Provider 列表、健康/启用状态和带幂等键的连接检测任务；没有后端契约的 Purge 不提供伪造执行入口。
 ## A17-01 展示归档可用状态
 - 日期：2026-09-09
 - 推荐决策：复用 Attachment 元数据查询返回的 `availability` 字段；由 Attachment Reference 授权后汇总 Blob、Placement、Provider 与临时恢复状态。
