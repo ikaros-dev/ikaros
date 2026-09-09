@@ -1179,6 +1179,19 @@ paths:
         '200': { description: Audio sources, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicAudioSource' } } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /music/tracks/{track_id}/lyrics:
+    get:
+      tags: [Music]
+      operationId: listMusicLyrics
+      x-ikaros-contract-id: music.list-lyrics
+      summary: List available lyrics for a music track
+      parameters:
+        - { name: track_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Lyrics versions, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicLyrics' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /music/playback/tracks/{track_id}/sessions:
     post:
       tags: [Music]
@@ -1930,6 +1943,21 @@ paths:
         duration_millis: { type: [integer, 'null'], format: int64, minimum: 0 }
         availability: { type: string }
         preference_weight: { type: integer }
+    MusicLyrics:
+      type: object
+      required: [id, track_id, type]
+      properties:
+        id: { type: string, format: uuid }
+        track_id: { type: string, format: uuid }
+        language: { type: string, nullable: true }
+        type: { type: string, enum: [PLAIN, TIMED_LINE, TIMED_WORD, TRANSLATION, ROMANIZATION] }
+        content: { type: string, nullable: true }
+        timing_data: { type: string, nullable: true }
+        source: { type: string, nullable: true }
+        provenance: { type: string, nullable: true }
+        confidence: { type: number, format: double, minimum: 0, maximum: 1, nullable: true }
+        created_at: { type: string, format: date-time }
+        version: { type: integer, format: int64 }
     CreateMusicQueueRequest:
       type: object
       required: [track_ids]

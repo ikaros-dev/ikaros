@@ -1073,3 +1073,9 @@
 - Console：`/music` 队列区新增播放模式控件和保存操作，使用 Queue 版本提交并反馈保存结果或冲突错误。
 - 契约追溯：新增 `music.update-queue-policy`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentMusicQueueServiceTest` 4/4；Music compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；运行时数据库版本 `202609100801`，播放策略 API 未认证返回 401，Console `/music` 返回 200；主要提交：`41443de6`、`0bf67708`。
+## B08-05 展示可用歌词
+- 日期：2026-09-10
+- 实现：新增独立 `music_lyrics` Artifact 与 Track 归属校验，提供最多 100 条歌词版本查询，返回语言、类型、内容、时间轴、来源、溯源和置信度；目标不存在或越权时拒绝，不把歌词混入 Track 或音频文件身份。
+- Console：`/music` 新增“可用歌词”区域，输入 Track ID 后调用真实 API，展示加载、歌词版本、空结果和错误状态。
+- 契约追溯：新增 `music.list-lyrics`，同步 HTTP Operation Registry 与 OpenAPI；新增歌词迁移 `V202609100900`。
+- 验证：`PersistentMusicLyricsServiceTest` 3/3；Console `pnpm typecheck`、`pnpm build` 待本轮完成；application package 与运行时迁移待本轮完成；主要提交：待本轮提交。
