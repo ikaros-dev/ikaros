@@ -982,3 +982,9 @@
 - 子任务汇总：B05-01 至 B05-04 已按顺序完成；电子书导入、目录解析、基础信息展示和不支持/损坏文件处理均已形成真实 API 与 Console 管理页面闭环。
 - 组合交付：`电子书导入` 页面支持提交 EPUB、查看书籍信息、解析/重试目录、查看稳定章节顺序，并在失败时展示错误摘要；Resource/Edition/Chapter 和导入状态分别保持各自边界。
 - 验证：B05 相关 Reading 测试 6/6；Console `pnpm typecheck`、`pnpm build` 通过；application package BUILD SUCCESS；运行时 migration `202609100400` 已应用，主要提交：`fa41fcf3`、`8b73ce26`、`e02de228`、`ccc0db0f`、`6acb7de4`、`e29313d1`。
+## B06-01 按目录进入章节
+- 日期：2026-09-10
+- 实现：新增 owner-scoped EPUB 章节内容查询，按已持久化章节 href 从源 EPUB 读取 XHTML 正文并提取可阅读文本；导入、章节和附件不属于当前用户或内容不存在时返回 NotFound，不产生伪内容。
+- Console：电子书目录增加“打开章节”，通过真实内容 API 打开正文阅读对话框，覆盖加载、空正文和请求失败状态。
+- 契约追溯：新增 `reading.get-ebook-chapter-content`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`PersistentEbookTocParseServiceTest` 3/3；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；运行时 OpenAPI 包含新路由且未认证请求返回 401；主要提交：`e5a4d622`。
