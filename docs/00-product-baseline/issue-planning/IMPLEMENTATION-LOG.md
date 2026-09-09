@@ -942,3 +942,12 @@
 - 实现：打开章节时先查询 Work/Edition 的 Reading Progress，按保存的 `COMIC_PAGE` locator 恢复页索引；首次阅读或 locator 已失效时从第一页开始。
 - Console：恢复路径与按页阅读入口合并，打开章节后直接显示恢复页；无历史进度不阻断首次阅读。
 - 验证：Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`b858bbd3`。
+## B04-05 切换章节
+- 日期：2026-09-10
+- 实现：Console 按 Edition 调用 Reading 章节目录接口，提供章节选择器；切换后复用按页读取、Work/Edition 进度恢复和 Session 保存链路。
+- 失败语义：章节目录加载失败、章节不存在或无权访问时保留当前页面并显示错误，不伪造切换成功。
+- 验证：Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`ec07abb6`。
+## B04 漫画阅读
+- 日期：2026-09-10
+- 子任务汇总：B04-01 至 B04-05 已按顺序完成本地实现，均接入 Reading Console 阅读器。
+- 组合交付：章节目录选择、按页内容读取、阅读方向/布局设置、逻辑阅读位置保存、上次位置恢复和章节切换形成真实 API 联调路径。
