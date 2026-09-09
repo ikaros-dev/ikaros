@@ -2,6 +2,9 @@ package run.ikaros.media;
 
 import java.time.Instant;
 import java.util.UUID;
+import java.util.HashSet;
+import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -63,6 +66,34 @@ public class PersistentMediaCatalogService implements MediaCatalogService {
                 return episodes.findAllByOwnerIdAndSeasonIdOrderByEpisodeNumberAsc(ownerId, seasonId).take(100).map(this::episodeView);
             });
         });
+    }
+
+    @Override
+    @Transactional
+    public Mono<Void> reorderEpisodes(UUID ownerId, UUID subjectId, UUID seasonId, ReorderMediaEpisodesRequest request) {
+        if (request == null || request.episodeIds() == null || request.episodeIds().isEmpty()) {
+            return Mono.error(new IllegalArgumentException("剧集顺序不能为空"));
+        }
+        List<UUID> orderedIds = request.episodeIds();
+        if (orderedIds.size() != new HashSet<>(orderedIds).size()) {
+            return Mono.error(new IllegalArgumentException("剧集顺序不能包含重复条目"));
+        }
+        return ownedSubject(ownerId, subjectId).then(ownedSeason(ownerId, seasonId)).flatMapMany(ignored ->
+            episodes.findAllByOwnerIdAndSeasonIdOrderByEpisodeNumberAsc(ownerId, seasonId).collectList()
+        ).flatMap(existing -> {
+            if (existing.size() != orderedIds.size()
+                || existing.stream().anyMatch(episode -> !episode.subjectId().equals(subjectId)
+                    || !orderedIds.contains(episode.id()))) {
+                return Flux.error(new ConflictException("剧集顺序必须包含该 Season 的全部剧集"));
+            }
+            return episodes.maxEpisodeNumber(ownerId, seasonId).flatMapMany(max -> {
+                int offset = Math.addExact(max, existing.size() + 1);
+                return episodes.shiftEpisodeNumbers(ownerId, seasonId, offset)
+                    .thenMany(Flux.range(0, orderedIds.size())
+                        .concatMap(index -> episodes.updateEpisodeNumber(ownerId, orderedIds.get(index), index)))
+                    .then();
+            });
+        }).then();
     }
 
     private Mono<MediaSubjectEntity> ownedSubject(UUID ownerId, UUID id) { return subjects.findById(id).filter(s -> s.ownerId().equals(ownerId)).switchIfEmpty(Mono.error(new NotFoundException("Media Subject 不存在"))); }
