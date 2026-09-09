@@ -219,3 +219,11 @@
 - 推荐决策：资源变更统一经过 `ResourceAuthorizationWebFilter`，按 HTTP 方法和路径要求 `resource.write`/`resource.delete` 等注册权限；业务服务继续执行 owner 与领域不变量校验，HTTP 门禁不替代领域授权。
 - 失败语义：无认证主体返回 401；有 Access JWT 但缺少资源变更权限返回 403；拒绝路径不进入 Controller/Repository，不泄露资源数据。
 - 验证：`ResourceAuthorizationWebFilterTest` 新增资源写操作“仅读权限拒绝/写权限通过”覆盖，授权回归 16 项通过；资源服务跨 owner 隔离测试已通过。
+
+## A06-05 权限撤销后阻止后续访问
+
+- 日期：2026-09-09
+- 推荐决策：资源路径继续先检查 JWT 权限快照，再通过 `AccessControlService` 实时读取当前 user-role/role-permission 绑定；权限撤销后，即使旧 JWT 尚未过期，后续资源请求也返回 403。
+- 原因：JWT 权限快照用于快速拒绝，但不能作为最终 ACL；实时 capability 复核满足撤销即时生效，同时不引入 Session 或 Token Digest。
+- 失败语义：当前 RBAC capability 拒绝时不调用下游 Controller；错误统一映射为 403，不泄露目标资源或 token 信息。
+- 验证：`ResourceAuthorizationWebFilterTest` 覆盖角色撤销后实时 capability 拒绝，授权过滤器回归 14 项通过；资源 owner 隔离回归已通过。

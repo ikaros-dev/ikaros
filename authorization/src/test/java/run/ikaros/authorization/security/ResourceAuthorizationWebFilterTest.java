@@ -167,18 +167,35 @@ class ResourceAuthorizationWebFilterTest {
         UUID actor = UUID.randomUUID();
         String path = "/api/resources";
         WebFilterChain chain = mock(WebFilterChain.class);
+        AccessControlService accessControl = mock(AccessControlService.class);
 
         MockServerWebExchange denied = MockServerWebExchange.from(MockServerHttpRequest.post(path).build());
         denied.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
             new AuthenticatedPrincipal(actor, UUID.randomUUID(), 0L, java.util.List.of("resource.read")));
-        new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(denied, chain).block();
+        new ResourceAuthorizationWebFilter(accessControl).filter(denied, chain).block();
         assertEquals(403, denied.getResponse().getStatusCode().value());
 
         MockServerWebExchange allowed = MockServerWebExchange.from(MockServerHttpRequest.post(path).build());
         allowed.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
             new AuthenticatedPrincipal(actor, UUID.randomUUID(), 0L, java.util.List.of("resource.write")));
         when(chain.filter(allowed)).thenReturn(Mono.empty());
-        new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(allowed, chain).block();
+        new ResourceAuthorizationWebFilter(accessControl).filter(allowed, chain).block();
         verify(chain).filter(allowed);
+    }
+
+    @Test
+    void rechecksCurrentResourcePermissionAfterRoleRevocation() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/resources").build());
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 0L, java.util.List.of("resource.read")));
+        WebFilterChain chain = mock(WebFilterChain.class);
+        when(chain.filter(exchange)).thenReturn(Mono.empty());
+        AccessControlService accessControl = (userId, svl, expiresAt, policy) ->
+            Mono.error(new run.ikaros.common.ForbiddenException("revoked"));
+
+        new ResourceAuthorizationWebFilter(accessControl).filter(exchange, chain).block();
+
+        assertEquals(403, exchange.getResponse().getStatusCode().value());
     }
 }
