@@ -40,4 +40,16 @@ public class PluginController {
                                       @PathVariable String pluginId) {
         return runtime.get(pluginId);
     }
+
+    @PostMapping("/{pluginId}/enable")
+    public Mono<PluginDescriptor> enable(@RequestHeader("X-Ikaros-Actor-Id") String actorId,
+                                         @PathVariable String pluginId) {
+        return runtime.enable(pluginId);
+    }
+
+    @PostMapping("/{pluginId}/disable")
+    public Mono<PluginDescriptor> disable(@RequestHeader("X-Ikaros-Actor-Id") String actorId,
+                                          @PathVariable String pluginId) {
+        return runtime.disable(pluginId);
+    }
 }
