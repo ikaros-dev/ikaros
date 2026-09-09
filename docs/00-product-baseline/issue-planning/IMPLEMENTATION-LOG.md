@@ -616,3 +616,11 @@
 - 主要 commits：`dfa9687e`、`52e15855`、`0b73425f`、`1b0f113a`。
 - 统一决策：关系类型、方向和双方 Resource owner 均由 Application/Schema 校验；查询和删除遵守先授权后访问、惰性副作用；关系操作不删除 Resource。
 - 验证证据：关系服务与控制器回归覆盖正常、空结果、未知资源/关系、自关联、重复和非法输入；真实 PostgreSQL FK/唯一约束联调仍需 Docker/Testcontainers。
+
+## A14 附件上传（父 issue）
+
+- 日期：2026-09-09
+- 本地验收结论：A14-01 至 A14-06 已按顺序完成，覆盖上传意图创建、约束检查、远端结果校验与提交、Blob 去重、幂等恢复，以及持久化上传会话的终止/过期清理。
+- 主要 commits：`a4d6792d`、`7d710ea4`、`0e9a45a2`、`9478c140`、`eb1f8ae9`、`a6f60eb0`、`e6909303`、`2f628294`、`a5408adc`、`6748d3e0`、`e87f1de0`、`1af16c2c`、`c5bf1970`。
+- 统一边界：Attachment、Blob、Placement、Upload Session 身份分离；授权先于 Provider/对象访问；失败不产生伪成功；临时对象清理可重试。
+- 验证证据：storage 服务与上传会话测试通过；真实 PostgreSQL/Testcontainers、Multipart/外部 Provider 联调仍需 Docker/外部环境。
