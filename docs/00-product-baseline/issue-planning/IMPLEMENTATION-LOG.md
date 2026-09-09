@@ -1014,3 +1014,10 @@
 - 子任务汇总：B06-01 至 B06-05 已按顺序完成，并全部接入电子书 Console 页面。
 - 组合交付：目录进入章节、EBOOK 阅读设置、书签增删、逻辑阅读位置保存和跨会话恢复形成真实 API 联调路径；权限、空态、错误态和持久化复查均有覆盖。
 - 验证：B06 相关 Reading 测试均通过；Console `pnpm typecheck`、`pnpm build` 通过；application package BUILD SUCCESS；运行时 migration `202609100500` 已应用；主要提交：`e5a4d622`、`c19f1aff`、`0a784be9`、`e78dd8f1`、`3919c205`。
+## B07-01 导入音乐附件
+- 日期：2026-09-10
+- 实现：新增带 `Idempotency-Key` 的 Music 导入命令；校验 owner 可读的音频 Attachment，使用 Attachment 的 Resource identity 创建 Track，再绑定 Audio Source；重复 Resource 和非法音频被拒绝，操作在响应式事务中完成，不留伪成功记录。
+- Console：`/music` 改为真实音乐入库页，支持 Attachment ID、标题和技术元数据，调用 `/music/imports`，展示 loading、empty、success、error 和持久化导入记录。
+- 契约追溯：新增 `music.create-import`、`music.list-imports`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`PersistentMusicImportServiceTest` 1/1；Music compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；application package/runtime migration `202609100600`。
+- 主要提交：`d5ba529b`。

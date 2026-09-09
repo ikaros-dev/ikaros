@@ -42,6 +42,8 @@ operations:
   - { method: GET, path: '/reading/works/{work_id}/bookmarks', operation_id: listReadingBookmarks, contract_id: reading.list-bookmarks, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: '/reading/works/{work_id}/editions/{edition_id}/chapters/{chapter_id}/bookmarks', operation_id: createReadingBookmark, contract_id: reading.create-bookmark, source: contracts/openapi-v2-p0.yaml }
   - { method: DELETE, path: '/reading/bookmarks/{bookmark_id}', operation_id: deleteReadingBookmark, contract_id: reading.delete-bookmark, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: /music/imports, operation_id: createMusicImport, contract_id: music.create-import, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: /music/imports, operation_id: listMusicImports, contract_id: music.list-imports, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /background-tasks, operation_id: submitBackgroundTask, contract_id: operations.submit-background-task, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /resources, operation_id: createResource, contract_id: resource.create-resource, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /resources, operation_id: listResources, contract_id: resource.list-resources, source: contracts/openapi-v2-p0.yaml }

@@ -1142,6 +1142,30 @@ paths:
         '200': { description: Comic page bytes, content: { application/octet-stream: { schema: { type: string, format: binary } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /music/imports:
+    post:
+      tags: [Music]
+      operationId: createMusicImport
+      x-ikaros-contract-id: music.create-import
+      summary: Import an audio Attachment as a music Track
+      parameters:
+        - { name: Idempotency-Key, in: header, required: true, schema: { type: string, minLength: 8, maxLength: 256 } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CreateMusicImportRequest' } } } }
+      responses:
+        '200': { description: Imported music, content: { application/json: { schema: { $ref: '#/components/schemas/MusicImport' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    get:
+      tags: [Music]
+      operationId: listMusicImports
+      x-ikaros-contract-id: music.list-imports
+      summary: List imported music for the current owner
+      parameters:
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Imported music, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicImport' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /reading/preferences:
     put:
       tags: [Reading]
@@ -1668,6 +1692,35 @@ paths:
         attachment_id: { type: string, format: uuid }
         title: { type: [string, 'null'] }
         language: { type: [string, 'null'] }
+    CreateMusicImportRequest:
+      type: object
+      required: [attachment_id]
+      additionalProperties: false
+      properties:
+        attachment_id: { type: string, format: uuid }
+        title: { type: [string, 'null'] }
+        duration_millis: { type: [integer, 'null'], format: int64, minimum: 0 }
+        codec: { type: [string, 'null'] }
+        container: { type: [string, 'null'] }
+        sample_rate: { type: [integer, 'null'], minimum: 1 }
+        bit_depth: { type: [integer, 'null'], minimum: 1 }
+        channels: { type: [integer, 'null'], minimum: 1 }
+        bitrate: { type: [integer, 'null'], minimum: 1 }
+        lossless: { type: boolean }
+    MusicImport:
+      type: object
+      required: [id, attachment_id, status, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        attachment_id: { type: string, format: uuid }
+        track_id: { type: [string, 'null'], format: uuid }
+        title: { type: [string, 'null'] }
+        duration_millis: { type: [integer, 'null'], format: int64 }
+        status: { type: string, enum: [SUCCEEDED, FAILED] }
+        error_code: { type: [string, 'null'] }
+        error_message: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
     ComicImport:
       type: object
       required: [id, source_attachment_id, work_id, edition_id, status, created_at, updated_at]
