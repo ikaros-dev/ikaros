@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -81,6 +82,20 @@ class DefaultResourceRelationServiceTest {
         StepVerifier.create(service.list(ownerId, sourceId)).expectNextCount(1).verifyComplete();
         StepVerifier.create(service.remove(ownerId, sourceId, relationId)).verifyComplete();
         verify(relationRepository).delete(relation);
+    }
+
+    @Test
+    void returnsEmptyRelationsAndRejectsUnknownSource() {
+        UUID ownerId = UUID.randomUUID(); UUID sourceId = UUID.randomUUID(); Instant now = Instant.now();
+        when(resourceRepository.findByIdAndOwnerId(sourceId, ownerId)).thenReturn(Mono.just(resource(sourceId, ownerId, now)));
+        when(relationRepository.findAllBySourceResourceIdOrderByRelationTypeAscPositionAsc(sourceId))
+            .thenReturn(Flux.empty());
+        StepVerifier.create(service.list(ownerId, sourceId)).verifyComplete();
+
+        UUID unknown = UUID.randomUUID();
+        when(resourceRepository.findByIdAndOwnerId(unknown, ownerId)).thenReturn(Mono.empty());
+        StepVerifier.create(service.list(ownerId, unknown)).expectErrorMessage("资源不存在或无权访问").verify();
+        verify(relationRepository, never()).findAllBySourceResourceIdOrderByRelationTypeAscPositionAsc(unknown);
     }
 
     private ResourceEntity resource(UUID id, UUID ownerId, Instant now) {

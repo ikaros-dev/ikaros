@@ -484,3 +484,11 @@
 - 推荐决策：复用 ResourceRelation API 创建有向关系；关系类型使用受限枚举，来源与目标必须同属当前 owner，Resource UUID 保持为双方稳定身份。
 - 失败语义：自关联在持久化前拒绝；任一资源不存在/无权返回 NotFound；数据库重复关系映射为 Conflict，失败不产生审计或关系记录。
 - 验证：`DefaultResourceRelationServiceTest` 3/3、`ResourceRelationControllerTest` 1/1 通过，覆盖指定类型创建、双端 owner 校验路径、自关联拒绝和公开 API。真实 PostgreSQL 约束联调仍需 Docker/Testcontainers。
+
+## A12-02 展示关联资源
+
+- 日期：2026-09-09
+- 推荐决策：复用 `GET /api/resources/{resourceId}/relations` 查询来源 Resource 的有向关系，按关系类型和位置稳定排序，返回关系 ID、目标 Resource ID、类型和位置。
+- 失败语义：先 owner-scoped 校验来源 Resource，再惰性查询关系；未知/无权来源返回 NotFound，空关系返回空流，不暴露跨 owner 关系。
+- 实现修复：将关系查询包装为 `Flux.defer`，避免 owner 校验前 eager 访问关系仓储。
+- 验证：`DefaultResourceRelationServiceTest` 4/4、`ResourceRelationControllerTest` 1/1 通过，覆盖正常、空结果、未知来源和公开查询入口；真实 PostgreSQL 分页/排序联调仍需 Docker/Testcontainers。

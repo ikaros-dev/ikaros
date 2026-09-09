@@ -53,8 +53,9 @@ public class DefaultResourceRelationService implements ResourceRelationService {
     @Override
     public Flux<ResourceRelationView> list(UUID ownerId, UUID sourceResourceId) {
         return owned(ownerId, sourceResourceId)
-            .thenMany(relationRepository.findAllBySourceResourceIdOrderByRelationTypeAscPositionAsc(sourceResourceId)
-                .map(this::toView));
+            .thenMany(Flux.defer(() -> relationRepository
+                .findAllBySourceResourceIdOrderByRelationTypeAscPositionAsc(sourceResourceId)
+                .map(this::toView)));
     }
 
     @Override
