@@ -1061,3 +1061,9 @@
 - Console：`/music` 新增播放队列管理区，支持创建队列、加载队列、添加 Track 和移除 Entry，展示加载、空结果、成功和错误状态。
 - 契约追溯：新增 `music.create-queue`、`music.list-queue-entries`、`music.add-queue-entry`、`music.remove-queue-entry`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentMusicQueueServiceTest` 2/2；Music compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；运行时数据库版本 `202609100801`，队列新增/列表 API 未认证均返回 401，Console `/music` 返回 200；主要提交：`4ef7bd1e`、`fb2976c0`。
+## B08-03 调整队列顺序
+- 日期：2026-09-10
+- 实现：新增带 `If-Match` 的队列重排命令；要求提交的 Entry ID 集合与当前队列完全一致，按请求顺序更新 `active_position`，并在同一响应式事务中更新队列版本；缺项、重复项、越权队列和过期版本均拒绝。
+- Console：`/music` 队列区支持填写 Entry 顺序和 Queue 版本并保存，保存后重新读取顺序，展示加载、成功和错误结果。
+- 契约追溯：新增 `music.reorder-queue`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`PersistentMusicQueueServiceTest` 3/3；Music compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`8b3c5f0e`。

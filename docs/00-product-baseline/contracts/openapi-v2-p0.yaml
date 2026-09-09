@@ -1220,6 +1220,23 @@ paths:
         '200': { description: Queue entries, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicQueueEntry' } } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /music/queues/{queue_id}/entries/order:
+    patch:
+      tags: [Music]
+      operationId: reorderMusicQueue
+      x-ikaros-contract-id: music.reorder-queue
+      summary: Reorder entries in a playback queue
+      parameters:
+        - { name: queue_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ReorderMusicQueueRequest' } } } }
+      responses:
+        '200': { description: Reordered queue, content: { application/json: { schema: { $ref: '#/components/schemas/MusicQueue' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
     post:
       tags: [Music]
       operationId: addMusicQueueEntry
@@ -1908,6 +1925,12 @@ paths:
       additionalProperties: false
       properties:
         track_id: { type: string, format: uuid }
+    ReorderMusicQueueRequest:
+      type: object
+      required: [entry_ids]
+      additionalProperties: false
+      properties:
+        entry_ids: { type: array, minItems: 1, maxItems: 100, items: { type: string, format: uuid } }
     MusicQueue:
       type: object
       required: [id, shuffle_enabled, repeat_mode, updated_at, version]
