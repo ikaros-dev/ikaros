@@ -24,6 +24,13 @@
 - 验证：`DatabaseInitializationContractTest` 2/2；`HealthControllerTest` 3/3；application/operations reactor BUILD SUCCESS；当前真实空库/升级故障回放仍受 Docker Desktop 缺失限制，未伪造通过。
 - 主要提交：本轮提交 migration 契约测试修正与复核记录。
 
+## A02-03 已有实例执行版本升级（环境门禁）
+
+- 日期：2026-09-10
+- 当前实现：`r2dbc-migrate` 启动时读取 migration history，只执行 pending migration，并启用等待数据库与 PostgreSQL advisory lock；当前本地运行实例已报告数据库版本 `202609100900`。
+- 未完成项：当前环境没有 Docker CLI，无法执行真实旧版本 PostgreSQL → 当前版本的 Testcontainers 回放；不将配置审查当作升级回放通过。
+- 下一步：获得 Docker Desktop/PostgreSQL 环境后，补执行旧版本、pending migration、重启幂等和失败回滚/未就绪场景，再提交该 issue 的完成评论。
+
 ## A18 副本与 Blob 清理（父 issue）
 
 - 日期：2026-09-09
