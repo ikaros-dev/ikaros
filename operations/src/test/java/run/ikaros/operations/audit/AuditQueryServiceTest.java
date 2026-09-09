@@ -25,16 +25,16 @@ class AuditQueryServiceTest {
         Instant to = Instant.parse("2026-09-10T00:00:00Z");
         AuditEventEntity event = new AuditEventEntity(UUID.randomUUID(), "USER", actorId, "resource.update",
             "RESOURCE", UUID.randomUUID(), "{}", Instant.parse("2026-09-05T00:00:00Z"), 0L);
-        when(repository.search(actorId, from, to, 20, 40)).thenReturn(Flux.just(event));
-        when(repository.countSearch(actorId, from, to)).thenReturn(Mono.just(41L));
+        when(repository.search(actorId, "request-1", from, to, 20, 40)).thenReturn(Flux.just(event));
+        when(repository.countSearch(actorId, "request-1", from, to)).thenReturn(Mono.just(41L));
 
-        StepVerifier.create(service.search(actorId, from, to, 2, 20))
+        StepVerifier.create(service.search(actorId, "request-1", from, to, 2, 20))
             .assertNext(page -> {
                 assertThat(page.items()).containsExactly(event);
                 assertThat(page.total()).isEqualTo(41L);
                 assertThat(page.page()).isEqualTo(2);
             }).verifyComplete();
-        verify(repository).search(actorId, from, to, 20, 40);
+        verify(repository).search(actorId, "request-1", from, to, 20, 40);
     }
 
     @Test
@@ -42,9 +42,9 @@ class AuditQueryServiceTest {
         AuditQueryService service = new AuditQueryService(mock(AuditEventRepository.class));
         Instant now = Instant.now();
 
-        StepVerifier.create(service.search(null, now, now, 0, 20))
+        StepVerifier.create(service.search(null, "", now, now, 0, 20))
             .expectError(IllegalArgumentException.class).verify();
-        StepVerifier.create(service.search(null, null, null, 0, 101))
+        StepVerifier.create(service.search(null, null, null, null, 0, 101))
             .expectError(IllegalArgumentException.class).verify();
     }
 

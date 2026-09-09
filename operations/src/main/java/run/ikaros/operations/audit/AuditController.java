@@ -25,12 +25,13 @@ public class AuditController {
     public Mono<PageResponse<AuditEventEntity>> search(
         @RequestHeader("X-Ikaros-Actor-Id") UUID requesterId,
         @RequestParam(name = "actor_id", required = false) UUID actorId,
+        @RequestParam(name = "request_id", required = false) String requestId,
         @RequestParam(required = false) Instant from,
         @RequestParam(required = false) Instant to,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size
     ) {
-        return service.search(actorId, from, to, page, size);
+        return service.search(actorId, requestId, from, to, page, size);
     }
 
     @GetMapping("/{eventId}")
