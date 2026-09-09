@@ -586,7 +586,8 @@
 - 日期：2026-09-09
 - 推荐决策：更新必须携带 expected_version/If-Match；Application 层先按 owner 读取并比较版本，持久化继续使用 Resource `@Version` 乐观并发，不允许旧版本静默覆盖新值。
 - 失败语义：版本过期返回稳定 Conflict；冲突路径不写 Resource、标题、事件或审计，不改变 Resource 身份或共享 Blob。
-- 验证：`DefaultResourceServiceTest` 以两次重复更新复现首个版本提交后旧版本拒绝，确认只发生一次保存；resource 回归 11 项通过。
+- Console 对接审计：`console/src/views/resources/Detail.vue` 编辑资源时从当前版本发送 `If-Match: "<version>"`，收到 409 时显示“资源已被其他请求修改，请刷新后重新编辑”，不静默覆盖；成功后更新当前详情状态。
+- 验证：`DefaultResourceServiceTest` 以两次重复更新复现首个版本提交后旧版本拒绝，确认只发生一次保存；resource 回归 19 项通过；Console `pnpm typecheck`、`pnpm build` 通过；资源详情路由返回 HTTP 200。
 
 ## A09-04 归档资源
 
