@@ -184,6 +184,43 @@ class DefaultStorageServiceTest {
     }
 
     @Test
+    void persistsSessionAndReturnsItsIdWhenBeginningUpload() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
+        StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
+        UploadSessionRepository sessions = mock(UploadSessionRepository.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        DefaultStorageService uploadService = new DefaultStorageService(resourceOwnership, attachmentRepository,
+            blobRepository, placementRepository, derivedAttachmentRepository, auditService, transaction,
+            providers, null, null, sessions);
+        uploadService.setObjectProviderRegistry(objects);
+        StorageProvider provider = new StorageProvider(UUID.randomUUID(), "local", "local", StorageTier.WARM,
+            StorageProviderStatus.ENABLED, null, java.util.Map.of(), now, now);
+        UUID sessionId = UUID.randomUUID();
+        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.empty());
+        when(providers.requireWritableByKey("local")).thenReturn(Mono.just(provider));
+        when(blobRepository.findBySha256("a".repeat(64))).thenReturn(Mono.empty());
+        when(objects.createUploadIntent(eq(provider), any(StorageUploadRequest.class))).thenReturn(Mono.just(
+            new StorageUploadIntent("PUT", "https://upload.example", "attachments/a.bin", now.plusSeconds(600))));
+        when(sessions.save(any(UploadSessionEntity.class))).thenReturn(Mono.just(new UploadSessionEntity(sessionId,
+            ownerId, resourceId, "local", "attachments/a.bin", 10L, "a".repeat(64), UploadSessionState.OPEN,
+            now.plusSeconds(600), now, now, 0L, "key")));
+
+        StepVerifier.create(uploadService.beginUpload(ownerId, resourceId,
+                new BeginUploadRequest("a.bin", 10L, "application/octet-stream", "local", null, "a".repeat(64)),
+            "key"))
+            .assertNext(view -> {
+                assertThat(view.sessionId()).isEqualTo(sessionId);
+                assertThat(view.deduplicated()).isFalse();
+            }).verifyComplete();
+        verify(sessions).save(argThat(session -> session.state() == UploadSessionState.OPEN
+            && session.idempotencyKey().equals("key")));
+    }
+
+    @Test
     void recordsDerivedAttachmentSourceWithoutChangingOriginalKind() {
         UUID ownerId = UUID.randomUUID(); UUID resourceId = UUID.randomUUID();
         UUID sourceId = UUID.randomUUID(); UUID derivedId = UUID.randomUUID(); UUID blobId = UUID.randomUUID();

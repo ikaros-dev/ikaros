@@ -40,6 +40,34 @@ paths:
       x-ikaros-contract-id: resource.get-user-state
       responses:
         '200': { description: 当前用户状态, content: { application/json: { schema: { $ref: '#/components/schemas/UserResourceState' } } } }
+  /resources/{resource_id}/attachments/upload-intents:
+    parameters:
+      - { $ref: './openapi-v2-p0.yaml#/components/parameters/ResourceId' }
+    post:
+      operationId: beginAttachmentUpload
+      x-ikaros-contract-id: storage.begin-upload
+      parameters:
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 128 } }
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/BeginUploadRequest' } }
+      responses:
+        '200': { description: 上传意图与会话, content: { application/json: { schema: { $ref: '#/components/schemas/UploadIntent' } } } }
+        '400': { $ref: './openapi-v2-p0.yaml#/components/responses/BadRequest' }
+        '404': { $ref: './openapi-v2-p0.yaml#/components/responses/NotFound' }
+        '409': { $ref: './openapi-v2-p0.yaml#/components/responses/Conflict' }
+  /resources/{resource_id}/attachments/upload-intents/{session_id}:
+    parameters:
+      - { $ref: './openapi-v2-p0.yaml#/components/parameters/ResourceId' }
+      - { name: session_id, in: path, required: true, schema: { type: string, format: uuid } }
+    delete:
+      operationId: abortAttachmentUpload
+      x-ikaros-contract-id: storage.abort-upload
+      responses:
+        '200': { description: 已终止并清理的上传会话, content: { application/json: { schema: { $ref: '#/components/schemas/UploadSession' } } } }
+        '404': { $ref: './openapi-v2-p0.yaml#/components/responses/NotFound' }
+        '409': { $ref: './openapi-v2-p0.yaml#/components/responses/Conflict' }
   /tags:
     get:
       operationId: listTags
@@ -136,6 +164,42 @@ components:
         progress_unit: { type: [string, 'null'] }
         version: { type: integer, minimum: 0 }
         updated_at: { type: string, format: date-time }
+    BeginUploadRequest:
+      type: object
+      required: [file_name, size_bytes, media_type, provider, sha256]
+      properties:
+        file_name: { type: string, minLength: 1, maxLength: 512 }
+        size_bytes: { type: integer, minimum: 0 }
+        media_type: { type: string, minLength: 1, maxLength: 256 }
+        provider: { type: string, minLength: 1, maxLength: 128 }
+        object_key: { type: [string, 'null'], maxLength: 1024 }
+        sha256: { type: string, pattern: '^[A-Fa-f0-9]{64}$' }
+    UploadIntent:
+      type: object
+      required: [provider, tier, method, url, object_key, expires_at, sha256, deduplicated, session_id]
+      properties:
+        provider: { type: string }
+        tier: { type: string }
+        method: { type: string }
+        url: { type: string }
+        object_key: { type: string }
+        expires_at: { type: string, format: date-time }
+        sha256: { type: string }
+        deduplicated: { type: boolean }
+        session_id: { type: string, format: uuid }
+    UploadSession:
+      type: object
+      required: [id, owner_id, resource_id, provider, object_key, expected_size, declared_sha256, state, expires_at]
+      properties:
+        id: { type: string, format: uuid }
+        owner_id: { type: string, format: uuid }
+        resource_id: { type: string, format: uuid }
+        provider: { type: string }
+        object_key: { type: string }
+        expected_size: { type: integer, minimum: 0 }
+        declared_sha256: { type: string }
+        state: { type: string, enum: [OPEN, RECEIVING, FINALIZING, COMPLETED, ABORTED, EXPIRED] }
+        expires_at: { type: string, format: date-time }
     BackgroundTaskAttempt:
       type: object
       required: [id, task_id, attempt_no, status, created_at]
