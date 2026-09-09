@@ -1,5 +1,13 @@
 # Ikaros V2 实施记录
 
+## A18-03 从健康副本修复
+
+- 日期：2026-09-09
+- 推荐决策：通过 `POST /api/storage/placements/{placementId}/actions/promote` 创建异步 Promotion Task，从健康活动副本复制并验证新的 `PROMOTED_COPY`；源副本不被覆盖。
+- 原因：修复必须保留坏副本证据并维持 Blob 内容身份不变；新副本使用新的 Placement 身份和 `source_placement_id`，复制失败不会伪造成功状态。
+- 失败语义：Placement/Blob/Provider 不存在、层级方向非法、Provider 不支持复制或源对象不可读均拒绝；同一幂等键复用已提交任务，不重复创建副作用。
+- 验证：`mvn -pl storage -am -Dtest=PersistentStoragePlacementTieringServiceTest,StorageRestoreTaskHandlerTest -Dsurefire.failIfNoSpecifiedTests=false test`；覆盖提交、幂等复用、目标不存在和恢复 Placement 激活，共 4 个测试全部通过。
+
 ## A18-02 发现损坏或缺失副本
 
 - 日期：2026-09-09
