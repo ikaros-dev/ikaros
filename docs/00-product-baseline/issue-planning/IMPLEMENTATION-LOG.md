@@ -273,17 +273,18 @@
 ## A03-04 查询并重试投递失败事件
 
 - 日期：2026-09-09
-- 推荐决策：在 Integration dispatcher 提供 pending event 查询和按 event ID 的人工 retry capability；不新增尚未登记到 HTTP Operation Registry 的公开路由，未来由已登记的 Operations API 适配该 capability。
-- 原因：失败事件必须可观察、可再次触发，但查询/重试不应绕过 Integration Owner、直接暴露 Outbox Repository 或重复产生业务 Event。重试仍使用同一 event ID、Inbox 唯一约束和 consumer 幂等语义。
+- 推荐决策：在 Integration Owner 内提供已登记的 `GET /admin/integration/events` 和 `POST /admin/integration/events/{event_id}/actions/retry`；Controller 只调用 dispatcher capability，不暴露 Outbox Repository 或持久化实体。
+- 原因：失败事件必须可观察、可再次触发；Console 页面需要真实查询和人工重试入口。重试仍使用同一 event ID、Inbox 唯一约束和 consumer 幂等语义，不重复产生业务 Event。
 - 失败语义：不存在或已完成事件返回 `NotFoundException`；没有可用 consumer 时明确失败；consumer 失败保留 pending 状态，下一次自动调度或人工 retry 可继续执行。
-- 验证：`OutboxDispatcherTest` 覆盖 pending 查询和稳定 event ID retry；`DurableEventServiceTest` 覆盖不存在目标；与既有失败保留、重复跳过和 dispatcher 测试共同验证 10 项事件测试。真实 PostgreSQL 回放仍需要 Docker Desktop + Testcontainers，当前环境未安装 Docker，未伪造运行证据。
+- Console 对接：集成事件页读取诊断与 pending event 列表，展示 event ID、类型、生产者、发生时间，并在确认后调用 retry；成功后刷新列表，失败显示后端错误。
+- 验证：`DurableEventDeliveryControllerTest`、`OutboxDispatcherTest`、API Registry/OpenAPI 收敛测试共 15 项通过；Console `pnpm typecheck` 已通过，生产构建待重启运行时后复核。真实 PostgreSQL 回放仍需要 Docker Desktop + Testcontainers，当前环境未安装 Docker，未伪造运行证据。
 
 ## A03 可靠事件投递（父 issue）
 
 - 日期：2026-09-09
 - 验收结论：A03-01 至 A03-04 的实现与本地验证记录已补齐；GitHub 评论/关闭状态需在认证恢复后逐项同步，不能由本地日志代替。父功能覆盖 Outbox 原子写入、重启重扫、Inbox 原子去重、失败事件查询与人工重试。
-- 推荐决策：继续由 Integration Owner 暴露 durable event capability，由已登记的上层 Operations API 适配查询/重试；A03-03 的诊断展示已接入已有 Operations API，不增加未登记的 HTTP 路由。事件 payload 保留 request/correlation/causation/actor 追踪字段。
-- 验证证据：A03-03 事件回归测试 11 项全部通过；Console `pnpm typecheck`、`pnpm build` 通过；各子 issue 的独立测试与 commit 已记录在本日志，GitHub 同步因当前 API 401 暂缓。
+- 推荐决策：Integration Owner 暴露 durable event capability 与已登记的管理 HTTP 适配；A03-03 的诊断展示和 A03-04 的事件列表/重试均已接入 Console。事件 payload 保留 request/correlation/causation/actor 追踪字段。
+- 验证证据：A03-03 事件回归测试 11 项、A03-04 相关控制器/dispatcher/契约测试 15 项通过；Console `pnpm typecheck`、`pnpm build` 通过；各子 issue 的独立测试与 commit 已记录在本日志，GitHub 同步因当前 API 401 暂缓。
 - 剩余限制：当前开发环境未安装 Docker，真实 PostgreSQL 事务回滚、Outbox 重启回放、Inbox 唯一约束和跨 API 联调未执行；未将环境缺失伪造为通过。
 
 ## A04-01 提交任务并查询状态
