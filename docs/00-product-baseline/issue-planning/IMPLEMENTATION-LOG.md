@@ -59,6 +59,13 @@
 - Console：登录页、登录失败反馈、自动 refresh 和退出后的回登录页均走真实 API/本地状态清理，不把 JWT 或密码显示在页面。
 - 验证：`AuthenticationServiceTest` 4/4；Console typecheck 通过；退出接口仍由无状态 JWT 设计提供 204，未认证业务请求继续受保护；主要提交：待本轮提交。
 
+## A06-01 创建角色并配置权限
+
+- 日期：2026-09-10
+- 实现审计：角色服务校验角色输入，只允许 Permission Registry 中声明的权限，授权替换、用户角色分配/撤销均经过服务端边界并写审计事件。
+- Console：`安全 → 角色与权限` 页面真实加载角色和权限，支持创建角色、筛选权限、保存授权并显示加载/错误状态。
+- 验证：`DefaultRoleServiceTest` 6/6；Console `pnpm build` 通过；`/api/admin/roles` 与 `/api/admin/permissions` 未认证均返回 401，Console `/security/permissions` 返回 200；本轮复用既有功能，仅提交验收追溯记录。
+
 ## A18 副本与 Blob 清理（父 issue）
 
 - 日期：2026-09-09
