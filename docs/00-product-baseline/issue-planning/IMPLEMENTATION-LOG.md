@@ -398,6 +398,7 @@
 - 原因：用户级 Token 失效是安全纪元变化，不是 Session 撤销；旧 Access/Refresh JWT 会在 A05-03/A05-04 的版本校验中自然失效，不保存 token、digest、设备或 Session 状态。
 - 权限选择：自助入口要求已认证主体且目标固定为自身；管理员入口沿用 `system.user.manage` 的用户管理权限，拒绝逻辑由统一授权过滤器执行。
 - 失败语义：未知用户返回 NotFound；版本递增失败、事件或审计失败不返回伪成功；事件 payload 仅包含 user_id 与新 security_version。
+- Console 对接审计：`console/src/views/security/Users.vue` 在用户详情展示 `security_version`，管理员确认后调用 `POST /admin/users/{user_id}/actions/invalidate-tokens`，成功后更新页面版本，失败显示错误，不暴露 Token 内容。
 - 验证：`DefaultUserServiceTest` 覆盖版本递增、事务入口、durable event payload 和审计；认证/授权回归共 26 项通过。真实 PostgreSQL 乐观并发、事务回滚和权限联调仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
 
 ## A05 账号与 JWT 认证（父 issue）
