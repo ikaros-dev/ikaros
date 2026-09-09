@@ -1,5 +1,13 @@
 # Ikaros V2 实施记录
 
+## A18-06 执行清理并保留审计记录
+
+- 日期：2026-09-09
+- 推荐决策：`storage.blob-gc` Background Task 逐个执行候选清理；成功 purge 同时写入统一 `AuditService` 的 `blob.gc.purge` 记录和 `storage.blob.purged` durable event，记录任务、执行主体和清理 Placement 数量。
+- 原因：物理删除必须可追溯，且任务执行时仍需复用 A18-05 的引用/保留门禁；审计详情不包含 Secret 或物理凭据。
+- 失败语义：任一保护条件、Provider 不可用或删除失败均不报告伪成功；只有实际完成 Blob/Placement 删除后才写入成功审计和完成事件。
+- 验证：`mvn -pl storage -am -Dtest=BlobGcTaskHandlerTest,BlobGarbageCollectorTest -Dsurefire.failIfNoSpecifiedTests=false test`；覆盖成功清理审计、有效引用、Retention Hold、Archive Base 阻止分支，共 4 个测试全部通过。
+
 ## A18-05 检查引用与保留条件
 
 - 日期：2026-09-09
