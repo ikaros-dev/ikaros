@@ -46,10 +46,11 @@ public class StorageRestoreRequestService {
         }
         Mono<StorageRestoreRequestEntity> existing = requests.findByActorIdAndScopeAndScopeIdAndIdempotencyKey(
             actorId, StorageRestoreScope.ATTACHMENT, request.attachmentId(), idempotencyKey);
-        return existing.switchIfEmpty(Mono.defer(() -> authorizedAttachment(actorId, request.attachmentId())
-            .flatMap(attachment -> createAttachmentRequest(actorId, attachment, request, idempotencyKey))))
-            .flatMap(saved -> submitAttachmentIfNeeded(saved, request))
-            .flatMap(this::emitRequested)
+        return existing.flatMap(saved -> submitAttachmentIfNeeded(saved, request))
+            .switchIfEmpty(Mono.defer(() -> authorizedAttachment(actorId, request.attachmentId())
+                .flatMap(attachment -> createAttachmentRequest(actorId, attachment, request, idempotencyKey))
+                .flatMap(saved -> submitAttachmentIfNeeded(saved, request))
+                .flatMap(this::emitRequested)))
             .map(this::view);
     }
 
@@ -72,7 +73,7 @@ public class StorageRestoreRequestService {
 
     private Mono<StorageRestoreRequestEntity> submitAttachmentIfNeeded(StorageRestoreRequestEntity saved,
         RequestAttachmentRestore request) {
-        if (saved.status() == StorageRestoreRequestStatus.QUEUED) return Mono.just(saved);
+        if (saved.status() == StorageRestoreRequestStatus.QUEUED || saved.backgroundTaskId() != null) return Mono.just(saved);
         return tasks.submit("storage.restore", Map.of("restore_request_id", saved.id().toString(),
             "attachment_id", request.attachmentId().toString(), "provider_restore_class",
             request.providerRestoreClass() == null ? "STANDARD" : request.providerRestoreClass()),
@@ -91,9 +92,10 @@ public class StorageRestoreRequestService {
         String budgetConfirmationToken, String idempotencyKey) {
         if (idempotencyKey == null || idempotencyKey.isBlank()) return Mono.error(new IllegalArgumentException("缺少 Idempotency-Key"));
         return requests.findByActorIdAndScopeAndScopeIdAndIdempotencyKey(actorId, StorageRestoreScope.SEASON, seasonId, idempotencyKey)
-            .switchIfEmpty(Mono.defer(() -> createSeasonRequest(actorId, seasonId, budgetConfirmationToken, idempotencyKey)))
             .flatMap(saved -> submitSeasonIfNeeded(saved, seasonId, providerRestoreClass))
-            .flatMap(this::emitRequested)
+            .switchIfEmpty(Mono.defer(() -> createSeasonRequest(actorId, seasonId, budgetConfirmationToken, idempotencyKey)
+                .flatMap(saved -> submitSeasonIfNeeded(saved, seasonId, providerRestoreClass))
+                .flatMap(this::emitRequested)))
             .map(this::view);
     }
 
@@ -147,7 +149,7 @@ public class StorageRestoreRequestService {
 
     private Mono<StorageRestoreRequestEntity> submitSeasonIfNeeded(StorageRestoreRequestEntity saved, UUID seasonId,
         String providerRestoreClass) {
-        if (saved.status() == StorageRestoreRequestStatus.QUEUED) return Mono.just(saved);
+        if (saved.status() == StorageRestoreRequestStatus.QUEUED || saved.backgroundTaskId() != null) return Mono.just(saved);
         Map<String, Object> payload = new java.util.HashMap<>();
         payload.put("restore_request_id", saved.id().toString());
         payload.put("season_id", seasonId.toString());

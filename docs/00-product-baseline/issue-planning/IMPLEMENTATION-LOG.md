@@ -1,5 +1,13 @@
 # Ikaros V2 实施记录
 
+## A17-02 提交恢复申请
+
+- 日期：2026-09-09
+- 推荐决策：按 `Idempotency-Key` 返回已持久化的 Restore Request；已记录 `background_task_id` 的请求直接返回原状态，不再次提交 Background Task，也不重复发布 requested 事件。
+- 原因：恢复申请可能因客户端重试或中断被重复执行，业务请求与后台任务必须保持一一对应；新请求仍沿用现有预算检查、授权检查和任务提交路径。
+- 失败语义：缺少幂等键仍拒绝；新申请的授权、预算、Blob/副本校验失败仍原样失败；已提交请求重试不覆盖原状态和任务引用。
+- 验证：`mvn -pl storage -am -Dtest=StorageRestoreRequestServiceTest -Dsurefire.failIfNoSpecifiedTests=false test`；重复附件恢复申请回归测试通过，并验证没有重复任务、保存或事件副作用。
+
 ## A02-01 首次启动检查必需配置
 
 - 日期：2026-09-09
