@@ -902,3 +902,14 @@
 - 失败语义：CBR 在未配置 RAR 解析器时返回明确失败原因；源附件不可读、容器损坏或无图片条目不会伪造成功结果，并清理本次候选条目。
 - 契约追溯：新增 `reading.parse-comic-import`、`reading.list-comic-import-entries`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentComicImportParseServiceTest`、`PersistentComicImportServiceTest` 共 3/3；Console `pnpm typecheck` 通过；主要提交：`71d09866`。
+## B03-03 人工修正页序
+- 日期：2026-09-10
+- 实现：Reading Console 对已解析导入按章节加载条目，提供上移/下移和保存操作；后端要求提交该章节全部且不重复的条目，在安全偏移区间内重排并递增版本。
+- 失败语义：章节不存在、条目缺失、重复或跨导入提交均拒绝；校验失败不写入页序。
+- 契约追溯：新增 `reading.reorder-comic-pages`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`PersistentComicImportParseServiceTest` 覆盖完整重排和部分列表拒绝；Console `pnpm typecheck` 通过；主要提交：`e5aaf7a5`。
+## B03-04 展示解析失败原因
+- 日期：2026-09-10
+- 实现：导入记录持久化 `error_code`/`error_message`；解析链遇到不可读附件、损坏容器、无支持格式或未配置 CBR 解析器时进入 `FAILED`，Reading Console 在导入表格展示状态和错误原因。
+- 失败语义：失败记录不会显示为成功，解析前后候选条目会被清理；错误信息截断到持久化上限，不暴露存储路径或内部堆栈。
+- 验证：B03-02 解析失败路径已由服务错误恢复链覆盖；Console `pnpm typecheck` 通过；主要提交：`71d09866`、`e5aaf7a5`。

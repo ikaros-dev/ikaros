@@ -1046,6 +1046,36 @@ paths:
               schema: { type: array, items: { $ref: '#/components/schemas/ComicImportEntry' } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /reading/comic-imports/{import_id}/actions/reorder-pages:
+    post:
+      tags: [Reading]
+      operationId: reorderComicPages
+      x-ikaros-contract-id: reading.reorder-comic-pages
+      summary: Reorder pages in one discovered comic chapter
+      parameters:
+        - name: import_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReorderComicPagesRequest' }
+      responses:
+        '200':
+          description: Updated comic import
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ComicImport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
 components:
   securitySchemes:
     bearerAuth:
@@ -1371,6 +1401,17 @@ components:
         entry_name: { type: string }
         page_order: { type: integer, minimum: 0 }
         page_role: { type: string, enum: [NORMAL, COVER] }
+    ReorderComicPagesRequest:
+      type: object
+      required: [chapter_key, entry_ids]
+      additionalProperties: false
+      properties:
+        chapter_key: { type: string, minLength: 1 }
+        entry_ids:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items: { type: string, format: uuid }
     BackgroundTask:
       type: object
       required: [id, task_type, status, created_at, updated_at]
