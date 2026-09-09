@@ -644,3 +644,9 @@
 - 实现修复：现有 Registry 已将状态变更持久化并分别发布 `storage.provider.enabled` / `storage.provider.disabled`；补充重新查询状态和事件转移验收测试。
 - 失败语义：停用 Provider 后 `requireWritable` 拒绝写入；不存在的 Provider 沿用 NotFound；重新启用只改变目标 Provider，不触碰 Attachment、Blob、Placement。
 - 验证：`InMemoryStorageProviderRegistryTest` 3/3（含停用拒写、停用后重新启用并重新查询、配置更新事件），Maven targeted test BUILD SUCCESS。
+## A15-04 更新凭据并验证
+- 日期：2026-09-09
+- 推荐决策：保留凭据替换入口并在同一调用链完成 Provider probe，返回脱敏能力摘要；不返回原始凭据，不把凭据写入事件或日志。
+- 实现修复：`POST /api/admin/storage-providers/{provider_id}/credentials` 先加密替换凭据，再调用 Provider probe；补齐 OpenAPI、HTTP Operation 和 Command 契约。
+- 失败语义：目标 Provider 不存在返回 NotFound；非法请求由 Bean Validation 拒绝；错误凭据/过期凭据只返回 `FAILED` 与稳定错误码，不泄露认证材料或目标对象数据。
+- 验证：沿用 `StorageProviderCredentialServiceTest` 验证凭据以当前密钥加密保存；Provider probe 的成功、未支持和目标不存在分支由 `StorageProviderProbeServiceTest` 3/3 覆盖，Maven BUILD SUCCESS。

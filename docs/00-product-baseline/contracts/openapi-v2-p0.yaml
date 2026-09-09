@@ -368,6 +368,38 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /admin/storage-providers/{provider_id}/credentials:
+    post:
+      tags: [Admin Storage]
+      operationId: replaceStorageProviderCredentials
+      x-ikaros-contract-id: storage.replace-provider-credentials
+      summary: Replace provider credentials and verify access
+      parameters:
+        - name: provider_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [access_key_id, secret_access_key]
+              properties:
+                access_key_id: { type: string, minLength: 1, maxLength: 256, writeOnly: true }
+                secret_access_key: { type: string, minLength: 1, maxLength: 512, writeOnly: true }
+                session_token: { type: [string, 'null'], maxLength: 2048, writeOnly: true }
+      responses:
+        '200':
+          description: Credential verification result; raw credentials are never returned
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StorageProviderProbeResult' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /admin/users:
     get:
       tags: [Admin Identity]

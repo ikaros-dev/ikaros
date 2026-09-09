@@ -68,10 +68,10 @@ public class StorageProviderController {
     }
 
     @PostMapping("/{providerId}/credentials")
-    public Mono<ResponseEntity<Void>> replaceCredentials(@PathVariable UUID providerId,
+    public Mono<StorageProviderProbeResult> replaceCredentials(@PathVariable UUID providerId,
                                                           @Valid @RequestBody ReplaceStorageProviderCredentialsRequest request) {
         return credentialService.replace(providerId, request)
-            .thenReturn(ResponseEntity.noContent().build());
+            .then(probeService.probe(providerId));
     }
 
     @PostMapping("/actions/rotate-credentials")
