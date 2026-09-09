@@ -932,6 +932,73 @@ paths:
                   $ref: '#/components/schemas/Permission'
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+  /reading/comic-imports:
+    post:
+      tags: [Reading]
+      operationId: createComicImport
+      x-ikaros-contract-id: reading.create-comic-import
+      summary: Register a supported comic package for import
+      parameters:
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateComicImportRequest' }
+      responses:
+        '200':
+          description: Comic package accepted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ComicImport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    get:
+      tags: [Reading]
+      operationId: listComicImports
+      x-ikaros-contract-id: reading.list-comic-imports
+      summary: List comic package imports
+      parameters:
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Comic package imports
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/ComicImport' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /reading/comic-imports/{import_id}:
+    get:
+      tags: [Reading]
+      operationId: getComicImport
+      x-ikaros-contract-id: reading.get-comic-import
+      summary: Get one comic package import
+      parameters:
+        - name: import_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Comic package import
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ComicImport' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
 components:
   securitySchemes:
     bearerAuth:
@@ -1226,6 +1293,27 @@ components:
         offset_millis: { type: integer, format: int64 }
         forced: { type: boolean }
         hearing_impaired: { type: boolean }
+    CreateComicImportRequest:
+      type: object
+      required: [attachment_id]
+      additionalProperties: false
+      properties:
+        attachment_id: { type: string, format: uuid }
+        title: { type: [string, 'null'] }
+        language: { type: [string, 'null'] }
+    ComicImport:
+      type: object
+      required: [id, source_attachment_id, work_id, edition_id, status, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        source_attachment_id: { type: string, format: uuid }
+        work_id: { type: string, format: uuid }
+        edition_id: { type: string, format: uuid }
+        status: { type: string, enum: [ACCEPTED, PARSING, SUCCEEDED, FAILED] }
+        error_code: { type: [string, 'null'] }
+        error_message: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
     BackgroundTask:
       type: object
       required: [id, task_type, status, created_at, updated_at]

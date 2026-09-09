@@ -890,3 +890,9 @@
 - 子任务汇总：B02-01 至 B02-06 已按清单顺序完成本地实现，并全部接入视频条目 Console 播放入口。
 - 组合交付：选择 Release 开始播放、保存进度、断点续播、字幕切换、内嵌音轨切换和归档恢复后的继续播放形成一条真实 API 联调路径；Session、Resource Progress、Subtitle、Attachment Restore 各自保持边界。
 - 验证：`PersistentMediaPlaybackServiceTest` 4/4；Console `pnpm typecheck` 通过；相关播放/进度/恢复接口已同步 OpenAPI 与 HTTP Operation Registry。
+## B03-01 导入受支持的漫画包
+- 日期：2026-09-10
+- 实现：阅读库 Console 提供漫画包导入入口；服务端校验当前用户可读附件的 CBZ、CBR、ZIP 扩展名，创建 Comic Work、Edition 和持久化导入记录，并支持按幂等键重复提交。
+- 失败语义：附件不存在、无权访问或格式不支持时拒绝创建；创建前不会写入导入记录；导入状态明确为 `ACCEPTED`，章节和页序解析由 B03-02 处理。
+- 契约追溯：新增 `reading.create-comic-import`、`reading.list-comic-imports`、`reading.get-comic-import`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`mvn -s .mvn-local-settings.xml -pl reading -am -DskipTests compile` BUILD SUCCESS；Console `pnpm typecheck` BUILD SUCCESS；主要提交：`ce25edb5`。
