@@ -414,7 +414,9 @@
 - 日期：2026-09-09
 - 推荐决策：复用 `RoleController`/`DefaultRoleService` 的公开创建与权限配置路径；角色权限只能接受 `PlatformPermission` 注册枚举，拒绝任意未声明权限，角色创建输入在 Application 层再次校验。
 - 失败语义：非法角色资料在持久化前拒绝；重复角色编码返回 Conflict；不存在角色返回 NotFound；权限变更写入审计并发布 durable authorization event，不包含认证材料。
-- 验证：`DefaultRoleServiceTest` 覆盖合法角色创建、非法输入、已声明权限授予、权限列表和边界；授权过滤器回归覆盖直接 API 的认证/权限拒绝路径；本轮授权回归 20 项通过。
+- Console 对接审计：`console/src/views/security/Permissions.vue` 真实读取 `/admin/roles` 与 `/admin/permissions`，创建角色调用 `POST /admin/roles`，保存已选择的注册权限调用 `PUT /admin/roles/{role_id}/permissions`；权限分组来自后端注册表，页面提供加载、错误、空状态和保存状态。
+- 契约修复：补登记角色创建/替换权限两个操作，并将 Role/Permission 响应模型对齐实际 `code/name/permissions` API 表示。
+- 验证：`DefaultRoleServiceTest` 覆盖合法角色创建、非法输入、已声明权限授予、权限列表和边界；授权过滤器回归覆盖直接 API 的认证/权限拒绝路径；本轮授权回归 20 项通过；API Registry/OpenAPI/路由约定测试 9 项通过；Console `pnpm typecheck`、`pnpm build` 通过。
 
 ## A06-02 分配和撤销用户角色
 
