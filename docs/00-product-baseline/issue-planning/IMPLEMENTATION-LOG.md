@@ -1109,3 +1109,8 @@
 - Console：列表歌曲区新增“从此处播放”，覆盖队列创建、播放加载、成功提示和失败提示。
 - 契约追溯：复用已登记的 `music.list-playlist-entries`、`music.create-queue`、`music.start-playback` 和 Audio Source/preview API，无新增未登记路由。
 - 验证：Console `pnpm typecheck` 与 `pnpm build` 通过；application package BUILD SUCCESS；运行时 Console `http://127.0.0.1:8849/music` 返回 200，播放 API 继续受认证保护；主要提交：`bc7a08f2`。
+## B09 播放列表
+- 日期：2026-09-10
+- 整体验收：B09-01 至 B09-04 已逐项完成；播放列表创建/编辑、歌曲增删、顺序调整和指定位置播放均有 Console `/music` 入口并调用公开 API，列表修改不触碰歌曲原件。
+- 验证证据：四个子任务的自动化测试、Console typecheck/build、application package 和运行时认证/路由检查均已记录；运行时 Console `/music` 返回 200，相关 API 未认证请求按预期返回 401。
+- 主要提交：`55830c41`、`232b064a`、`e26a9d21`、`bc7a08f2`。
