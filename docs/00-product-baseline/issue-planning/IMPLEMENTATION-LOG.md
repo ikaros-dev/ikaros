@@ -294,3 +294,11 @@
 - 推荐决策：权限与凭据变更继续统一调用 `AuditService`：角色权限授予/替换、用户角色分配/撤销、Token 全量失效、验证挑战发起/成功/失败/取消均写入独立 `audit_event`；不保存 JWT、OTP、Grant 或 Secret 明文。
 - 失败语义：审计写入失败沿业务调用链传播；权限/凭据拒绝不产生成功审计或伪成功状态，审计详情保持最小化脱敏 JSON。
 - 验证：`DefaultRoleServiceTest` 6 项、`DefaultUserServiceTest` 7 项、`EmailOtpVerificationProviderTest` 11 项通过，覆盖权限与凭据操作的正常及失败路径；相关回归共 24 项通过。
+
+## A08-03 按操作者和时间查询
+
+- 日期：2026-09-09
+- 推荐决策：新增 `GET /api/audit-events` 查询路径，支持 `actor_id`、RFC 3339 `from/to` 和稳定 page/size 分页；SQL 使用 `occurred_at desc, id desc`，避免同时间事件分页重复/遗漏。
+- 权限边界：统一授权过滤器将查询映射到 `system.audit.read`，并实时复核当前 RBAC；审计查询不允许无认证或无权限直接进入 Controller。
+- 失败语义：非法时间范围、页码或页大小在 Application 层拒绝；空结果返回空页，不伪造成功事件或泄露目标数据。
+- 验证：`AuditQueryServiceTest` 覆盖操作者/时间过滤、offset 分页、稳定查询参数和非法范围；`ResourceAuthorizationWebFilterTest` 覆盖审计读取权限与实时角色校验；相关回归共 19 项通过。

@@ -43,7 +43,7 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
         if (path.equals("/api/me/actions/invalidate-tokens")) return chain.filter(exchange);
         PlatformPermission permission = permission(exchange.getRequest().getMethod().name(), path);
         if (!jwtPrincipal.permissions().contains(permission.key())) return reject(exchange, HttpStatus.FORBIDDEN);
-        if (isResourcePermission(permission)) {
+        if (isResourcePermission(permission) || permission == PlatformPermission.SYSTEM_AUDIT_READ) {
             Mono<Void> currentAuthorization = accessControl.require(jwtPrincipal.actorId(),
                 SecurityVerificationLevel.SVL_0, null,
                 new SecurityPolicy("resource.http", permission, SecurityVerificationLevel.SVL_0, false));
@@ -71,6 +71,7 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             return PlatformPermission.SYSTEM_ROLE_MANAGE;
         }
         if (path.contains("/permissions")) return PlatformPermission.SYSTEM_ROLE_READ;
+        if (path.startsWith("/api/audit-events")) return PlatformPermission.SYSTEM_AUDIT_READ;
         if (path.contains("/roles")) {
             return "GET".equals(method) ? PlatformPermission.SYSTEM_ROLE_READ
                 : PlatformPermission.SYSTEM_ROLE_MANAGE;

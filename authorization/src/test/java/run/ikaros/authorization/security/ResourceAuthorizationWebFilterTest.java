@@ -1,6 +1,9 @@
 package run.ikaros.authorization.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -197,5 +200,25 @@ class ResourceAuthorizationWebFilterTest {
         new ResourceAuthorizationWebFilter(accessControl).filter(exchange, chain).block();
 
         assertEquals(403, exchange.getResponse().getStatusCode().value());
+    }
+
+    @Test
+    void protectsAuditQueryWithAuditReadPermissionAndCurrentRoleCheck() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/audit-events")
+            .build());
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 0L, java.util.List.of("system.audit.read")));
+        WebFilterChain chain = mock(WebFilterChain.class);
+        AccessControlService accessControl = mock(AccessControlService.class);
+        when(accessControl.require(eq(actor), eq(run.ikaros.authentication.api.SecurityVerificationLevel.SVL_0),
+            eq(null), any())).thenReturn(Mono.empty());
+        when(chain.filter(exchange)).thenReturn(Mono.empty());
+
+        new ResourceAuthorizationWebFilter(accessControl).filter(exchange, chain).block();
+
+        verify(chain).filter(exchange);
+        verify(accessControl).require(eq(actor), eq(run.ikaros.authentication.api.SecurityVerificationLevel.SVL_0),
+            eq(null), argThat(policy -> policy.permission() == run.ikaros.authorization.api.PlatformPermission.SYSTEM_AUDIT_READ));
     }
 }
