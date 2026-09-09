@@ -10,7 +10,10 @@ public interface PluginRuntime {
     Mono<PluginDescriptor> upgrade(String pluginId, PluginManifest manifest, Set<String> grantedPermissions);
     Mono<PluginDescriptor> enable(String pluginId);
     Mono<PluginDescriptor> disable(String pluginId);
-    Mono<Void> uninstall(String pluginId);
+    default Mono<Void> uninstall(String pluginId) {
+        return uninstall(pluginId, PluginUninstallPolicy.DELETE_DATA);
+    }
+    Mono<Void> uninstall(String pluginId, PluginUninstallPolicy policy);
     Mono<PluginDescriptor> get(String pluginId);
     Flux<PluginDescriptor> list();
 }

@@ -59,4 +59,11 @@ public class PluginController {
                                           @Valid @RequestBody UpgradePluginRequest request) {
         return runtime.upgrade(pluginId, request.manifest(), request.grantedPermissions());
     }
+
+    @PostMapping("/{pluginId}/uninstall")
+    public Mono<ResponseEntity<Void>> uninstall(@RequestHeader("X-Ikaros-Actor-Id") String actorId,
+                                                @PathVariable String pluginId,
+                                                @Valid @RequestBody UninstallPluginRequest request) {
+        return runtime.uninstall(pluginId, request.retention()).thenReturn(ResponseEntity.noContent().build());
+    }
 }

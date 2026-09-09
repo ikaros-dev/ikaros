@@ -82,11 +82,15 @@ public class PersistentPluginRuntime implements PluginRuntime {
     public Mono<PluginDescriptor> disable(String pluginId) { return change(pluginId, PluginLifecycle.DISABLED); }
 
     @Override
-    public Mono<Void> uninstall(String pluginId) {
+    public Mono<Void> uninstall(String pluginId, PluginUninstallPolicy policy) {
         return repository.findByPluginId(pluginId).switchIfEmpty(Mono.error(new NotFoundException("插件不存在")))
             .flatMap(entity -> PluginLifecycle.ENABLED.name().equals(entity.status())
-                ? Mono.error(new ConflictException("启用中的插件必须先禁用")) : repository.delete(entity)
-                    .doOnSuccess(ignored -> unregister(pluginId)));
+                ? Mono.error(new ConflictException("启用中的插件必须先禁用"))
+                : policy == PluginUninstallPolicy.KEEP_DATA
+                    ? repository.save(new PluginEntity(entity.id(), entity.pluginId(), entity.manifestJson(),
+                        PluginLifecycle.UNINSTALLED.name(), entity.grantedPermissionsJson(), entity.createdAt(), Instant.now()))
+                        .doOnSuccess(ignored -> unregister(pluginId)).then()
+                    : repository.delete(entity).doOnSuccess(ignored -> unregister(pluginId)));
     }
 
     @Override

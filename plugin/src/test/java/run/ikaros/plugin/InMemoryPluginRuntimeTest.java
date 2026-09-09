@@ -78,4 +78,24 @@ class InMemoryPluginRuntimeTest {
         assertThrows(RuntimeException.class, () -> runtime.upgrade(manifest.pluginId(), incompatible, Set.of()).block());
         assertEquals("1.0.0", runtime.get(manifest.pluginId()).block().manifest().version());
     }
+
+    @Test
+    void uninstallCanKeepPluginDataAsUninstalledRecord() {
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0");
+        runtime.install(manifest, Set.of("resource.read")).block();
+
+        runtime.uninstall(manifest.pluginId(), PluginUninstallPolicy.KEEP_DATA).block();
+
+        assertEquals(PluginLifecycle.UNINSTALLED, runtime.get(manifest.pluginId()).block().lifecycle());
+    }
+
+    @Test
+    void enabledPluginCannotBeUninstalledWithEitherPolicy() {
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0");
+        runtime.install(manifest, Set.of("resource.read")).block();
+        runtime.enable(manifest.pluginId()).block();
+
+        assertThrows(RuntimeException.class,
+            () -> runtime.uninstall(manifest.pluginId(), PluginUninstallPolicy.KEEP_DATA).block());
+    }
 }

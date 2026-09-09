@@ -88,15 +88,20 @@ public class InMemoryPluginRuntime implements PluginRuntime {
     }
 
     @Override
-    public Mono<Void> uninstall(String pluginId) {
+    public Mono<Void> uninstall(String pluginId, PluginUninstallPolicy policy) {
         return Mono.defer(() -> {
             PluginDescriptor current = plugins.get(pluginId);
             if (current == null) return Mono.error(new NotFoundException("插件不存在"));
             if (current.lifecycle() == PluginLifecycle.ENABLED) {
                 return Mono.error(new ConflictException("启用中的插件必须先禁用"));
             }
-            plugins.remove(pluginId);
             unregister(pluginId);
+            if (policy == PluginUninstallPolicy.KEEP_DATA) {
+                plugins.replace(pluginId, current, new PluginDescriptor(current.manifest(), PluginLifecycle.UNINSTALLED,
+                    current.grantedPermissions()));
+            } else {
+                plugins.remove(pluginId);
+            }
             return Mono.empty();
         });
     }
