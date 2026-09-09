@@ -469,3 +469,11 @@
 - 推荐决策：新增 owner-scoped `DELETE /api/collections/{collectionId}`；先删除 CollectionResource 关系，再删除 Collection，明确不调用 Resource 删除能力。
 - 失败语义：不存在或无权 Collection 拒绝；成员关系清理与 Collection 删除在同一 reactive transaction 内完成，Resource、Attachment/Blob 保持不变。
 - 验证：`DefaultCollectionServiceTest` 5/5 通过，新增验证成员关系被清理、Collection 被删除且 ResourceRepository 无交互；真实 PostgreSQL FK/事务联调仍需 Docker/Testcontainers。
+
+## A11 Collection 管理（父 issue）
+
+- 日期：2026-09-09
+- 本地验收结论：A11-01 至 A11-06 已按顺序完成，覆盖 Collection 创建/编辑、成员添加/移除、顺序调整、层级移动、循环阻止和删除保留 Resource。
+- 主要 commits：`5f31417a`、`faf246ba`、`470cf89c`、`f7be0e61`、`4456df9f`、`399e73c8`。
+- 统一决策：Collection 与 Resource 关系保持逻辑解耦；owner scope、事务、唯一约束、完整顺序校验和层级循环保护由 Application/Schema 共同保证；删除 Collection 不级联删除 Resource 或 Blob。
+- 验证证据：Collection 服务回归覆盖创建编辑、成员关系、排序、循环和删除边界；真实 PostgreSQL FK/事务/排序联调仍需 Docker/Testcontainers。
