@@ -913,3 +913,9 @@
 - 实现：导入记录持久化 `error_code`/`error_message`；解析链遇到不可读附件、损坏容器、无支持格式或未配置 CBR 解析器时进入 `FAILED`，Reading Console 在导入表格展示状态和错误原因。
 - 失败语义：失败记录不会显示为成功，解析前后候选条目会被清理；错误信息截断到持久化上限，不暴露存储路径或内部堆栈。
 - 验证：B03-02 解析失败路径已由服务错误恢复链覆盖；Console `pnpm typecheck` 通过；主要提交：`71d09866`、`e5aaf7a5`。
+## B03-05 重试失败解析
+- 日期：2026-09-10
+- 实现：新增独立 `retry-parse` API；Reading Console 对 `FAILED` 导入显示“重试解析”，其他状态继续使用正常解析/查看结果操作。后端只允许失败记录重试，重试重新读取源附件并更新候选条目。
+- 失败语义：成功或进行中的导入不能通过重试接口重复执行；重试失败继续保留 `FAILED` 和明确错误原因，不伪造成功。
+- 契约追溯：新增 `reading.retry-comic-import-parse`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`PersistentComicImportParseServiceTest`、`PersistentComicImportServiceTest` 共 6/6；Console `pnpm typecheck` 通过；主要提交：`b71d7a4a`。

@@ -1076,6 +1076,30 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
+  /reading/comic-imports/{import_id}/actions/retry-parse:
+    post:
+      tags: [Reading]
+      operationId: retryComicImportParse
+      x-ikaros-contract-id: reading.retry-comic-import-parse
+      summary: Retry a failed comic package parse
+      parameters:
+        - name: import_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Retried comic package parse result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ComicImport' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
 components:
   securitySchemes:
     bearerAuth:
