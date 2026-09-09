@@ -993,3 +993,9 @@
 - 实现：复用 Reading Preference 的 owner + WORK 作用域，为 EBOOK 保存书籍级字号、行高、内容宽度、主题和滚动/分页设置；修正响应式授权/仓库调用的延迟求值，其他用户的 Work 返回 NotFound。
 - Console：电子书导入页新增“阅读设置”，打开时读取已保存配置，未配置使用明确默认值；保存后立即重新读取确认，校验非法字号/行高/宽度并展示加载、错误和成功状态。
 - 验证：`PersistentReadingPreferenceServiceTest` 2/2；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`c19f1aff`。
+## B06-03 添加和移除书签
+- 日期：2026-09-10
+- 实现：新增 `reading_bookmark` 持久化表及 owner-scoped 新增、按 Work 列表、删除 API；书签固定绑定 Work/Edition/Chapter 与稳定 locator，跨用户、跨 Edition/Chapter 引用拒绝，删除他人书签返回 NotFound。
+- Console：电子书章节阅读对话框支持添加当前章节书签，导入记录支持查看/移除书签；所有操作调用真实 API，并展示加载、空结果、成功和错误状态。
+- 契约追溯：新增 `reading.create-bookmark`、`reading.list-bookmarks`、`reading.delete-bookmark`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`PersistentReadingBookmarkServiceTest` 2/2；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；运行时 migration `202609100500` 已应用，新 API 未认证请求返回 401；主要提交：`0a784be9`。
