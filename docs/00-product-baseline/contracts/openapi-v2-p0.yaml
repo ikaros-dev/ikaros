@@ -1192,6 +1192,17 @@ paths:
         '200': { description: Lyrics versions, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicLyrics' } } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /music/playback/sessions:
+    get:
+      tags: [Music]
+      operationId: listActiveMusicPlaybackSessions
+      x-ikaros-contract-id: music.list-active-playback-sessions
+      summary: List active music playback sessions for resume
+      parameters:
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Active playback sessions, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicPlaybackSession' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /music/playback/tracks/{track_id}/sessions:
     post:
       tags: [Music]

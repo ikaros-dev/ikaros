@@ -1079,3 +1079,9 @@
 - Console：`/music` 新增“可用歌词”区域，输入 Track ID 后调用真实 API，展示加载、歌词版本、空结果和错误状态。
 - 契约追溯：新增 `music.list-lyrics`，同步 HTTP Operation Registry 与 OpenAPI；新增歌词迁移 `V202609100900`。
 - 验证：`PersistentMusicLyricsServiceTest` 3/3；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；运行时迁移版本 `202609100900`，歌词 API 未认证返回 401，运行时 OpenAPI 已出现 `/api/music/tracks/{trackId}/lyrics`，Console `/music` 返回 200；主要提交：`07290fce`、`d18030d5`。
+## B08-06 恢复播放会话
+- 日期：2026-09-10
+- 实现：新增 owner-scoped 活跃播放会话查询，按开始时间稳定返回最多 100 条，保留原 Track、Audio Source、队列和已保存位置，不重复创建会话。
+- Console：`/music` 启动时加载未完成会话，支持刷新并通过真实 Audio Source/预览地址恢复播放；来源不可用时展示具体失败原因。
+- 契约追溯：新增 `music.list-active-playback-sessions`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`PersistentMusicPlaybackServiceTest` 4/4；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；运行时迁移版本 `202609100900`，活跃会话 API 未认证返回 401，运行时 OpenAPI 已出现 `/api/music/playback/sessions`，Console `/music` 返回 200；主要提交：`b8bbe5d6`。

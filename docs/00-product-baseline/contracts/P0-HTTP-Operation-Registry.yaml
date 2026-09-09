@@ -47,6 +47,7 @@ operations:
   - { method: GET, path: /music/tracks/{track_id}/audio-sources, operation_id: listMusicAudioSources, contract_id: music.list-audio-sources, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /music/tracks/{track_id}/lyrics, operation_id: listMusicLyrics, contract_id: music.list-lyrics, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /music/playback/tracks/{track_id}/sessions, operation_id: startMusicPlayback, contract_id: music.start-playback, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: /music/playback/sessions, operation_id: listActiveMusicPlaybackSessions, contract_id: music.list-active-playback-sessions, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /music/queues, operation_id: createMusicQueue, contract_id: music.create-queue, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /music/queues/{queue_id}/entries, operation_id: listMusicQueueEntries, contract_id: music.list-queue-entries, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /music/queues/{queue_id}/entries, operation_id: addMusicQueueEntry, contract_id: music.add-queue-entry, source: contracts/openapi-v2-p0.yaml }
