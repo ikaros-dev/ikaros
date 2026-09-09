@@ -50,4 +50,21 @@ class DefaultAuditServiceTest {
             "SYSTEM".equals(event.actorType()) && event.actorId() == null
                 && "resource.archive".equals(event.action())));
     }
+
+    @Test
+    void redactsSensitiveDetailsBeforePersistence() {
+        AuditEventRepository repository = mock(AuditEventRepository.class);
+        when(repository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        DefaultAuditService service = new DefaultAuditService(repository);
+
+        StepVerifier.create(service.record(UUID.randomUUID(), "security.change", "USER", UUID.randomUUID(),
+            "{\"token\":\"jwt-secret\",\"password\":\"plain-password\",\"result\":\"ok\"}"))
+            .verifyComplete();
+
+        verify(repository).save(org.mockito.ArgumentMatchers.argThat(event ->
+            event.details().contains("[REDACTED]")
+                && !event.details().contains("jwt-secret")
+                && !event.details().contains("plain-password")
+                && event.details().contains("\"result\":\"ok\"")));
+    }
 }
