@@ -578,7 +578,8 @@
 - 日期：2026-09-09
 - 推荐决策：复用 Resource Owner 的列表/详情 API；列表 SQL 固定限定 `owner_id` 与 ACTIVE 生命周期，详情使用 `findByIdAndOwnerId`，分页按稳定 `updated_at` 顺序返回 ResourceView、标题和外部身份。
 - 失败语义：跨 owner 或不存在资源统一 NotFound；空结果返回空页；非法分页参数在 Application 层拒绝，不进入 Repository。
-- 验证：`DefaultResourceServiceTest` 覆盖 owner-scoped 分页列表、空列表、跨 owner 详情拒绝和非法分页；resource 服务回归 10 项通过。
+- Console 对接审计：`console/src/views/resources/index.vue` 真实调用 `GET /resources`，支持关键词/类型筛选、加载/空状态/错误反馈并打开详情；`Detail.vue` 真实调用 `GET /resources/{resource_id}` 及关联详情 API，显示后端 Resource、标题和生命周期数据。
+- 验证：`DefaultResourceServiceTest` 覆盖 owner-scoped 分页列表、空列表、跨 owner 详情拒绝和非法分页；resource 服务回归 19 项通过；Console `pnpm typecheck`、`pnpm build` 通过；运行中的列表/详情路由均返回 HTTP 200。
 
 ## A09-03 编辑时检测版本冲突
 
