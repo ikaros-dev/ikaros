@@ -7,6 +7,7 @@
 - 关键不变量：Blob 内容身份不可变；修复创建新 Placement；损坏副本隔离；GC 执行时重新检查引用、Hold、Lease 和 Archive Base；成功清理写入 AuditService 与 durable events。
 - 验证证据：本轮新增/执行的 storage 测试均 BUILD SUCCESS；完整 PostgreSQL/Testcontainers 联调仍受当前环境 Docker 不可用限制，已保留为环境门禁。
 - 主要 commits：`72c94d91`、`1f778200`、`28f673eb`、`e91e1ca3`、`9ad128d5`、`bd47ff6b`。
+- Console 回溯：`存储层` 页面已接入 Blob 副本诊断、Placement 列表和幂等修复任务入口；修复结果仍以后台任务状态为准，不在页面伪造完成。
 
 ## A18-06 执行清理并保留审计记录
 
