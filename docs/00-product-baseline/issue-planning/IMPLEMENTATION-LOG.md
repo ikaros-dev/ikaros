@@ -434,3 +434,10 @@
 - 推荐决策：保留既有事务化 Collection 创建路径，新增 owner-scoped、`If-Match` 保护的 PUT 编辑路径；编辑只修改名称/描述，保留 Collection UUID、父级和资源成员关系。
 - 失败语义：API 校验空/超长名称和描述；不存在或无权 Collection 拒绝；版本不匹配返回 Conflict，不写入、不审计，不改变成员 Resource。
 - 验证：`DefaultCollectionServiceTest` 2/2 通过，覆盖创建事件/审计、成员关系路径和编辑版本校验；新增 `CollectionView.version` 供 ETag 返回。真实 PostgreSQL 联调仍需 Docker/Testcontainers。
+
+## A11-02 添加与移除资源
+
+- 日期：2026-09-09
+- 推荐决策：复用 CollectionResource 关系 API；添加前同时校验 Collection 与 Resource 属于当前用户，数据库唯一约束保证幂等边界；移除只删除组织关系，不删除 Resource 或其 Attachment/Blob。
+- 失败语义：任一目标不存在/无权返回 NotFound；重复添加返回 Conflict；添加/移除与事件、审计在同一 reactive transaction 内完成。
+- 验证：`DefaultCollectionServiceTest` 2/2 通过，覆盖创建后添加、移除及成员事件；真实 PostgreSQL 关系约束联调仍需 Docker/Testcontainers。
