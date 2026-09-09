@@ -40,4 +40,6 @@ public interface UserService {
      */
     Mono<UserView> changeStatus(UUID actorId, UUID userId, UserStatus status);
 
+    Mono<TokenInvalidationView> invalidateTokens(UUID actorId, UUID userId);
+
 }

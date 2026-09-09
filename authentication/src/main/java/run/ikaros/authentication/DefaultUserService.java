@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.ConflictException;
@@ -25,6 +26,7 @@ public class DefaultUserService implements UserService {
     private final RoleMembershipQuery roleMembershipQuery;
     private final AuditService auditService;
     private final DurableEventPublisher eventService;
+    private final TransactionalOperator transaction;
 
     /**
      * 创建用户服务。
@@ -35,17 +37,24 @@ public class DefaultUserService implements UserService {
      */
     public DefaultUserService(PlatformUserRepository userRepository, RoleMembershipQuery roleMembershipQuery,
                               AuditService auditService) {
-        this(userRepository, roleMembershipQuery, auditService, null);
+        this(userRepository, roleMembershipQuery, auditService, null, null);
     }
 
     @Autowired
     public DefaultUserService(PlatformUserRepository userRepository, RoleMembershipQuery roleMembershipQuery,
                               AuditService auditService,
                               DurableEventPublisher eventService) {
+        this(userRepository, roleMembershipQuery, auditService, eventService, null);
+    }
+
+    public DefaultUserService(PlatformUserRepository userRepository, RoleMembershipQuery roleMembershipQuery,
+                              AuditService auditService, DurableEventPublisher eventService,
+                              TransactionalOperator transaction) {
         this.userRepository = userRepository;
         this.roleMembershipQuery = roleMembershipQuery;
         this.auditService = auditService;
         this.eventService = eventService;
+        this.transaction = transaction;
     }
 
     @Override
@@ -94,6 +103,29 @@ public class DefaultUserService implements UserService {
                     .then(auditService.record(actorId, "identity.user.status.change", "USER", userId, "{}"))
                     .then(toView(saved)));
         });
+    }
+
+    @Override
+    public Mono<TokenInvalidationView> invalidateTokens(UUID actorId, UUID userId) {
+        Mono<TokenInvalidationView> operation = requiredUser(userId).flatMap(user -> {
+            PlatformUserEntity invalidated = new PlatformUserEntity(user.id(), user.username(), user.displayName(),
+                user.email(), user.status(), user.createdAt(), Instant.now(), user.lastLoginAt(),
+                user.securityVersion() + 1, user.version());
+            return userRepository.save(invalidated).flatMap(saved ->
+                emitTokensInvalidated(saved)
+                    .then(auditService.record(actorId, "identity.user.tokens.invalidate", "USER", saved.id(),
+                        "{\"security_version\":" + saved.securityVersion() + "}"))
+                    .thenReturn(new TokenInvalidationView(saved.id(), saved.securityVersion())));
+        });
+        return transaction == null ? operation : operation.as(transaction::transactional);
+    }
+
+    private Mono<Void> emitTokensInvalidated(PlatformUserEntity user) {
+        if (eventService == null) return Mono.empty();
+        return eventService.append(new EventAppendRequest("authentication.user.tokens-invalidated", 1,
+            "authentication", "user", user.id(),
+            "{\"user_id\":\"" + user.id() + "\",\"security_version\":"
+                + user.securityVersion() + "}")).then();
     }
 
     private Mono<Void> emitStatusChanged(PlatformUserEntity user) {

@@ -119,4 +119,12 @@ public class UserController {
         return userService.changeStatus(actorId, userId, status);
     }
 
+    @PostMapping("/{userId}/actions/invalidate-tokens")
+    public Mono<TokenInvalidationView> invalidateTokens(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID userId
+    ) {
+        return userService.invalidateTokens(actorId, userId);
+    }
+
 }
