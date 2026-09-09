@@ -1,5 +1,13 @@
 # Ikaros V2 实施记录
 
+## A18-05 检查引用与保留条件
+
+- 日期：2026-09-09
+- 推荐决策：Blob GC 执行前在事务链内重新检查有效 Attachment 引用、Retention Hold、Delivery Lease 和 Archive Base；任一保护条件存在即拒绝清理。
+- 原因：候选预览与实际执行之间可能发生引用或保护状态变化，必须以执行时 Owner 状态为准，且 Archive Base 不能被普通 GC 静默删除。
+- 失败语义：保护条件命中返回 Conflict，不删除 Provider 对象、Placement 或 Blob；Blob/Provider 不存在也拒绝，不产生伪成功。
+- 验证：`mvn -pl storage -am -Dtest=BlobGarbageCollectorTest,BlobGarbageCollectionControllerTest -Dsurefire.failIfNoSpecifiedTests=false test`；覆盖有效引用、Retention Hold、Archive Base 三个阻止分支及预览入口，共 5 个测试全部通过。
+
 ## A18-04 预览可清理 Blob
 
 - 日期：2026-09-09
