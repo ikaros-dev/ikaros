@@ -1091,3 +1091,9 @@
 - Console：`/music` 新增播放列表创建、编辑、版本显示和新建切换，全部调用真实 Music API，并展示加载、空结果和错误状态。
 - 契约追溯：新增 `music.create-playlist`、`music.update-playlist`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentMusicPlaylistServiceTest` 3/3；Console `pnpm typecheck` 通过；application package BUILD SUCCESS；运行时迁移版本 `202609100900`，播放列表创建/编辑 API 未认证均返回 401，运行时 OpenAPI 已出现创建与编辑路径，Console `/music` 返回 200；主要提交：`55830c41`、`7f483b5e`。
+## B09-02 添加与移除歌曲
+- 日期：2026-09-10
+- 实现：复用并验收 Playlist Entry 的 owner-scoped 添加、顺序追加和删除，非法 Track、越权列表或越权 Entry 均拒绝，不修改歌曲原件。
+- Console：`/music` 列表歌曲区支持选择列表、加载 Entry、添加 Track 和移除 Entry，展示加载、空结果、成功和错误状态。
+- 契约追溯：补齐 `music.list-playlist-entries`、`music.add-playlist-entry`、`music.remove-playlist-entry` 的 HTTP Operation Registry 与 OpenAPI。
+- 验证：Music 与 Console 检查、application package、运行时 API 验证待本轮完成；主要提交：待本轮提交。

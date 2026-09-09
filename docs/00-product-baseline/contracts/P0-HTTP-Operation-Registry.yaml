@@ -50,6 +50,9 @@ operations:
   - { method: GET, path: /music/playback/sessions, operation_id: listActiveMusicPlaybackSessions, contract_id: music.list-active-playback-sessions, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /music/playlists, operation_id: createMusicPlaylist, contract_id: music.create-playlist, source: contracts/openapi-v2-p0.yaml }
   - { method: PATCH, path: /music/playlists/{playlist_id}, operation_id: updateMusicPlaylist, contract_id: music.update-playlist, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: /music/playlists/{playlist_id}/entries, operation_id: listMusicPlaylistEntries, contract_id: music.list-playlist-entries, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: /music/playlists/{playlist_id}/entries, operation_id: addMusicPlaylistEntry, contract_id: music.add-playlist-entry, source: contracts/openapi-v2-p0.yaml }
+  - { method: DELETE, path: /music/playlists/entries/{entry_id}, operation_id: removeMusicPlaylistEntry, contract_id: music.remove-playlist-entry, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /music/queues, operation_id: createMusicQueue, contract_id: music.create-queue, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /music/queues/{queue_id}/entries, operation_id: listMusicQueueEntries, contract_id: music.list-queue-entries, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /music/queues/{queue_id}/entries, operation_id: addMusicQueueEntry, contract_id: music.add-queue-entry, source: contracts/openapi-v2-p0.yaml }

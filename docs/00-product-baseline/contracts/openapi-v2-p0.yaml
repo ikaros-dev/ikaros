@@ -1231,6 +1231,45 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
+  /music/playlists/{playlist_id}/entries:
+    get:
+      tags: [Music]
+      operationId: listMusicPlaylistEntries
+      x-ikaros-contract-id: music.list-playlist-entries
+      summary: List songs in a music playlist
+      parameters:
+        - { name: playlist_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Playlist entries, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicPlaylistEntry' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Music]
+      operationId: addMusicPlaylistEntry
+      x-ikaros-contract-id: music.add-playlist-entry
+      summary: Add a song to a music playlist
+      parameters:
+        - { name: playlist_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/AddMusicPlaylistEntryRequest' } } } }
+      responses:
+        '200': { description: Added playlist entry, content: { application/json: { schema: { $ref: '#/components/schemas/MusicPlaylistEntry' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /music/playlists/entries/{entry_id}:
+    delete:
+      tags: [Music]
+      operationId: removeMusicPlaylistEntry
+      x-ikaros-contract-id: music.remove-playlist-entry
+      summary: Remove a song from a music playlist
+      parameters:
+        - { name: entry_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Removed playlist entry }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /music/playback/tracks/{track_id}/sessions:
     post:
       tags: [Music]
@@ -2019,6 +2058,20 @@ paths:
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
         version: { type: integer, format: int64 }
+    AddMusicPlaylistEntryRequest:
+      type: object
+      required: [track_id]
+      properties:
+        track_id: { type: string, format: uuid }
+    MusicPlaylistEntry:
+      type: object
+      required: [id, playlist_id, track_id, position, added_at]
+      properties:
+        id: { type: string, format: uuid }
+        playlist_id: { type: string, format: uuid }
+        track_id: { type: string, format: uuid }
+        position: { type: integer }
+        added_at: { type: string, format: date-time }
     CreateMusicQueueRequest:
       type: object
       required: [track_ids]
