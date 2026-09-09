@@ -1193,6 +1193,33 @@ paths:
         '200': { description: Metadata candidates, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicMetadataCandidate' } } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /music/tracks/{track_id}/associations:
+    post:
+      tags: [Music]
+      operationId: createMusicTrackAssociation
+      x-ikaros-contract-id: music.create-track-association
+      summary: Associate a recognized music candidate with an artist and album
+      parameters:
+        - { name: track_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CreateMusicTrackAssociationRequest' } } } }
+      responses:
+        '200': { description: Track association, content: { application/json: { schema: { $ref: '#/components/schemas/MusicTrackAssociation' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    get:
+      tags: [Music]
+      operationId: listMusicTrackAssociations
+      x-ikaros-contract-id: music.list-track-associations
+      summary: List artist and album associations for a music track
+      parameters:
+        - { name: track_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Track associations, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicTrackAssociation' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /reading/preferences:
     put:
       tags: [Reading]
@@ -1767,6 +1794,28 @@ paths:
         source: { type: string, enum: [ID3, VORBIS, FILENAME] }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+    CreateMusicTrackAssociationRequest:
+      type: object
+      required: [candidate_id]
+      additionalProperties: false
+      properties:
+        candidate_id: { type: string, format: uuid }
+    MusicTrackAssociation:
+      type: object
+      required: [id, track_id, candidate_id, artist_id, album_id, edition_id, membership_id, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        track_id: { type: string, format: uuid }
+        candidate_id: { type: string, format: uuid }
+        artist_id: { type: string, format: uuid }
+        album_id: { type: string, format: uuid }
+        edition_id: { type: string, format: uuid }
+        membership_id: { type: string, format: uuid }
+        artist: { type: [string, 'null'] }
+        album: { type: [string, 'null'] }
+        edition_name: { type: string }
+        track_number: { type: [integer, 'null'], minimum: 1 }
+        created_at: { type: string, format: date-time }
     ComicImport:
       type: object
       required: [id, source_attachment_id, work_id, edition_id, status, created_at, updated_at]

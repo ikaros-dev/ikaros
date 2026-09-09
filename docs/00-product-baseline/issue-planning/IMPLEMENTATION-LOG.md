@@ -1027,3 +1027,9 @@
 - Console：音乐库导入记录新增“识别信息”，展示识别中的 loading、候选结果、无标签空态和错误状态。
 - 契约追溯：新增 `music.recognize-metadata`、`music.list-metadata-candidates`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`MusicTagParserTest`、`PersistentMusicImportServiceTest`、`PersistentMusicMetadataRecognitionServiceTest` 共 5/5；Music compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`7aadd7dd`、`e1729a4d`。
+## B07-03 关联专辑与艺术家
+- 日期：2026-09-10
+- 实现：新增 Track Association、Track Artist 关联及迁移；确认 Metadata Candidate 后创建独立 Artist/Album Resource，并持久化 Edition、Disc、Track Membership 与艺术家关系，重复确认同一候选可安全复用关联结果。
+- Console：音乐库识别候选弹窗新增“关联”操作，展示关联中、已关联、成功和失败状态，并通过真实 API 重新读取关联结果。
+- 契约追溯：新增 `music.create-track-association`、`music.list-track-associations`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`PersistentMusicTrackAssociationServiceTest` 1/1；Music compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交待完成。
