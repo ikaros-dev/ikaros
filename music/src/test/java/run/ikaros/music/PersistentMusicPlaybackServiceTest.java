@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 class PersistentMusicPlaybackServiceTest {
@@ -62,5 +63,20 @@ class PersistentMusicPlaybackServiceTest {
         org.mockito.Mockito.mock(MusicPlaybackHistoryRepository.class)).start(owner, trackId,
             new StartMusicPlaybackRequest(sourceId, null, 0L)))
         .expectError(run.ikaros.common.NotFoundException.class).verify();
+  }
+
+  @Test
+  void listsOnlyActiveSessionsForResume() {
+    UUID owner = UUID.randomUUID();
+    UUID trackId = UUID.randomUUID();
+    MusicPlaybackSessionRepository sessions = org.mockito.Mockito.mock(MusicPlaybackSessionRepository.class);
+    MusicPlaybackSessionEntity session = new MusicPlaybackSessionEntity(UUID.randomUUID(), owner, trackId,
+        UUID.randomUUID(), null, MusicPlaybackState.ACTIVE, Instant.now(), Instant.now(), null, 1200L, 0L);
+    when(sessions.findAllByOwnerIdAndStateOrderByStartedAtDesc(owner, MusicPlaybackState.ACTIVE)).thenReturn(Flux.just(session));
+    StepVerifier.create(new PersistentMusicPlaybackService(
+        org.mockito.Mockito.mock(MusicTrackRepository.class), org.mockito.Mockito.mock(MusicAudioSourceRepository.class),
+        sessions, org.mockito.Mockito.mock(MusicPlaybackHistoryRepository.class)).active(owner))
+        .expectNextMatches(view -> view.id().equals(session.id()) && view.positionMillis() == 1200L)
+        .verifyComplete();
   }
 }

@@ -28,6 +28,8 @@ const playbackError = ref("");
 const playbackUrl = ref("");
 const playbackTrack = ref<Row | null>(null);
 const playbackSession = ref<Row | null>(null);
+const activeSessions = ref<Row[]>([]);
+const sessionLoading = ref(false);
 const queueId = ref("");
 const queueTrackIds = ref("");
 const queueEntries = ref<Row[]>([]);
@@ -128,6 +130,27 @@ async function playMusic(row: Row) {
   finally { playbackLoading.value = ""; }
 }
 
+async function loadActiveSessions() {
+  sessionLoading.value = true; error.value = "";
+  try { const result = await http.get<unknown, unknown>("/music/playback/sessions"); activeSessions.value = Array.isArray(result) ? result as Row[] : []; }
+  catch (e: any) { activeSessions.value = []; error.value = e?.response?.data?.detail || e?.message || "加载未完成播放会话失败"; }
+  finally { sessionLoading.value = false; }
+}
+
+async function resumeMusicSession(session: Row) {
+  sessionLoading.value = true; playbackError.value = ""; playbackUrl.value = "";
+  try {
+    const sources = await http.get<unknown, unknown>(`/music/tracks/${session.trackId}/audio-sources`) as Row[];
+    const source = sources.find(item => String(item.id) === String(session.sourceId) && String(item.availability).toUpperCase() === "AVAILABLE");
+    if (!source?.attachmentId) throw new Error("播放来源已不可用");
+    const preview = await http.get<unknown, unknown>(`/attachments/${source.attachmentId}/preview-url`) as Row;
+    if (!preview.url) throw new Error("服务端没有返回可播放地址");
+    playbackSession.value = session; playbackTrack.value = rows.value.find(row => String(row.trackId) === String(session.trackId)) || { trackId: session.trackId }; playbackUrl.value = preview.url;
+    message.value = `已恢复播放会话，位置 ${session.positionMillis ?? 0} 毫秒`;
+  } catch (e: any) { playbackError.value = e?.response?.data?.detail || e?.message || "恢复播放会话失败"; }
+  finally { sessionLoading.value = false; }
+}
+
 function clearPlayback() { playbackUrl.value = ""; playbackTrack.value = null; playbackSession.value = null; }
 
 async function createQueue() {
@@ -192,7 +215,7 @@ async function loadLyrics(trackId = lyricsTrackId.value) {
   finally { lyricsLoading.value = false; }
 }
 
-onMounted(load);
+onMounted(() => { load(); if (isMusic.value) loadActiveSessions(); });
 </script>
 
 <template>
@@ -200,6 +223,7 @@ onMounted(load);
     <div class="flex justify-between items-start mb-6"><div><h1 class="text-2xl font-semibold">{{ title }}</h1><p class="mt-1 text-[var(--el-text-color-secondary)]">资源、附件和技术元数据分层管理，敏感内容遵循授权边界。</p></div><el-button :loading="loading" @click="load">刷新</el-button></div>
     <el-alert v-if="error" :title="error" type="warning" show-icon :closable="false" class="mb-4"/><el-alert v-if="message" :title="message" type="success" show-icon :closable="false" class="mb-4"/>
     <template v-if="isMusic">
+      <el-card shadow="never" class="mb-4"><template #header><span>未完成播放会话</span></template><el-skeleton v-if="sessionLoading" :rows="2" animated/><el-empty v-else-if="!activeSessions.length" description="暂无可恢复的播放会话"/><el-table v-else :data="activeSessions" stripe><el-table-column prop="trackId" label="Track ID" min-width="300"/><el-table-column prop="positionMillis" label="位置（毫秒）" width="140"/><el-table-column prop="startedAt" label="开始时间" min-width="180"/><el-table-column label="操作" width="100"><template #default="scope"><el-button link type="primary" :loading="sessionLoading" @click="resumeMusicSession(scope.row)">恢复</el-button></template></el-table-column></el-table><el-button class="mt-3" :loading="sessionLoading" @click="loadActiveSessions">刷新会话</el-button></el-card>
       <el-card shadow="never" class="mb-4"><template #header><span>导入音乐附件</span></template><el-form label-position="top" class="max-w-3xl"><el-form-item label="音频 Attachment ID" required><el-input v-model="musicForm.attachmentId" placeholder="先在附件与存储上传音频，再粘贴 Attachment ID" clearable/></el-form-item><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><el-form-item label="歌曲标题"><el-input v-model="musicForm.title" placeholder="留空使用附件文件名"/></el-form-item><el-form-item label="时长（毫秒）"><el-input-number v-model="musicForm.durationMillis" :min="0" controls-position="right" class="w-full"/></el-form-item><el-form-item label="编码"><el-input v-model="musicForm.codec" placeholder="如 MP3、FLAC"/></el-form-item><el-form-item label="容器"><el-input v-model="musicForm.container" placeholder="如 MPEG、OGG"/></el-form-item></div><div class="flex gap-2"><el-button :loading="duplicateLoading" @click="checkDuplicates">检查重复</el-button><el-button type="primary" :loading="submitting" @click="importMusic">导入音乐</el-button></div></el-form><el-alert v-if="duplicateRows.length" title="发现相同内容的已入库歌曲，导入前请确认是否复用。" type="warning" show-icon :closable="false" class="mt-4"/><el-table v-if="duplicateRows.length" :data="duplicateRows" stripe class="mt-3"><el-table-column prop="title" label="已存在歌曲"/><el-table-column prop="trackId" label="Track ID" min-width="280"/><el-table-column prop="attachmentId" label="附件 ID" min-width="280"/></el-table><el-empty v-else-if="!duplicateLoading && musicForm.attachmentId" description="未发现相同内容的音乐" :image-size="50" class="py-3"/></el-card>
       <el-card shadow="never" class="mb-4"><template #header><span>播放队列</span></template><div class="flex flex-wrap gap-2 mb-3"><el-input v-model="queueId" placeholder="已有 Queue ID" class="w-80" clearable/><el-input v-model="queueTrackIds" placeholder="Track ID；创建时逗号分隔，加入时取第一个" class="w-96" clearable/><el-button :loading="queueLoading" @click="loadQueueEntries()">加载队列</el-button><el-button :loading="queueSaving" type="primary" @click="addQueueEntry">加入歌曲</el-button><el-button :loading="queueSaving" @click="createQueue">创建队列</el-button></div><div class="flex flex-wrap gap-2 mb-3"><el-input v-model="queueVersion" placeholder="Queue 版本" class="w-32"/><el-input v-model="queueOrderText" placeholder="按 Entry ID 逗号分隔填写新顺序" class="w-96"/><el-button :loading="queueSaving" @click="reorderQueue">保存顺序</el-button></div><el-skeleton v-if="queueLoading" :rows="3" animated/><el-empty v-else-if="!queueEntries.length" description="暂无队列项"/><el-table v-else :data="queueEntries" stripe><el-table-column prop="activePosition" label="位置" width="90"/><el-table-column prop="trackId" label="Track ID" min-width="300"/><el-table-column label="操作" width="100"><template #default="scope"><el-button link type="danger" :loading="queueSaving" @click="removeQueueEntry(scope.row)">移除</el-button></template></el-table-column></el-table></el-card><el-alert v-if="playbackError" :title="playbackError" type="warning" show-icon :closable="false" class="mb-4"/><el-card v-if="playbackUrl" shadow="never" class="mb-4"><template #header><div class="flex justify-between items-center"><span>正在播放：{{ playbackTrack?.title || playbackTrack?.trackId }}</span><el-button link @click="clearPlayback">关闭</el-button></div></template><audio :src="playbackUrl" controls autoplay class="w-full" @error="playbackError = '音频加载失败，请检查附件可用状态'"/><div class="text-xs text-[var(--el-text-color-secondary)] mt-2">播放会话：{{ playbackSession?.id || "—" }} · 来源：{{ playbackSession?.sourceId || "—" }}</div></el-card><el-card shadow="never"><template #header><div class="flex justify-between"><span>音乐导入记录</span><el-input v-model="query" clearable placeholder="搜索标题或 Track ID" class="w-64"/></div></template><el-skeleton v-if="loading" :rows="5" animated/><el-empty v-else-if="!filtered.length" description="暂无音乐导入记录"/><el-table v-else :data="filtered" stripe @row-click="playMusic"><el-table-column prop="title" label="歌曲" min-width="220"/><el-table-column prop="attachmentId" label="源附件" min-width="280"/><el-table-column prop="trackId" label="Track ID" min-width="280"/><el-table-column prop="durationMillis" label="时长（毫秒）" width="140"/><el-table-column prop="status" label="状态" width="120"/><el-table-column prop="errorMessage" label="错误" min-width="220"/><el-table-column prop="createdAt" label="导入时间" min-width="180"/><el-table-column label="操作" width="130" fixed="right"><template #default="scope"><el-button link type="primary" @click.stop="recognizeMusic(scope.row)">识别信息</el-button></template></el-table-column></el-table></el-card>
       <el-dialog v-model="candidateDialog" title="歌曲信息候选" width="860px"><el-skeleton v-if="candidateLoading" :rows="5" animated/><el-empty v-else-if="!candidates.length" description="未识别到嵌入标签"/><el-table v-else :data="candidates" stripe><el-table-column prop="source" label="来源" width="100"/><el-table-column prop="title" label="标题" min-width="160"/><el-table-column prop="artist" label="艺术家" min-width="140"/><el-table-column prop="album" label="专辑" min-width="140"/><el-table-column prop="trackNumber" label="曲目号" width="90"/><el-table-column prop="releaseYear" label="年份" width="90"/><el-table-column label="操作" width="180"><template #default="scope"><el-button link type="primary" @click="editCandidate(scope.row)">修正</el-button><el-button v-if="associated(scope.row.id)" link type="success" disabled>已关联</el-button><el-button v-else link type="primary" :loading="associationLoading === scope.row.id" @click="associateCandidate(scope.row)">关联</el-button></template></el-table-column></el-table></el-dialog>
