@@ -976,4 +976,9 @@
 - 日期：2026-09-10
 - 实现：导入阶段拒绝非 EPUB；目录解析遇到损坏容器、缺失 rootfile 或无可阅读 spine 时清理本次章节关联，保存 `FAILED`、稳定错误码和安全错误摘要，不产生伪成功目录。
 - Console：电子书导入页展示失败状态/错误摘要，失败记录保留“重试解析目录”入口；解析成功、失败和空目录均通过真实 API 结果呈现。
-- 验证：`PersistentEbookTocParseServiceTest`、`PersistentEbookImportServiceTest` 共 4/4；Console `pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；主要提交：`6acb7de4` 及本次回归测试提交。
+- 验证：`PersistentEbookTocParseServiceTest`、`PersistentEbookImportServiceTest` 共 4/4；Console `pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；主要提交：`6acb7de4`、`e29313d1`。
+## B05 电子书导入
+- 日期：2026-09-10
+- 子任务汇总：B05-01 至 B05-04 已按顺序完成；电子书导入、目录解析、基础信息展示和不支持/损坏文件处理均已形成真实 API 与 Console 管理页面闭环。
+- 组合交付：`电子书导入` 页面支持提交 EPUB、查看书籍信息、解析/重试目录、查看稳定章节顺序，并在失败时展示错误摘要；Resource/Edition/Chapter 和导入状态分别保持各自边界。
+- 验证：B05 相关 Reading 测试 6/6；Console `pnpm typecheck`、`pnpm build` 通过；application package BUILD SUCCESS；运行时 migration `202609100400` 已应用，主要提交：`fa41fcf3`、`8b73ce26`、`e02de228`、`ccc0db0f`、`6acb7de4`、`e29313d1`。
