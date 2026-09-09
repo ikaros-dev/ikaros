@@ -988,3 +988,8 @@
 - Console：电子书目录增加“打开章节”，通过真实内容 API 打开正文阅读对话框，覆盖加载、空正文和请求失败状态。
 - 契约追溯：新增 `reading.get-ebook-chapter-content`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentEbookTocParseServiceTest` 3/3；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；运行时 OpenAPI 包含新路由且未认证请求返回 401；主要提交：`e5a4d622`。
+## B06-02 调整阅读设置
+- 日期：2026-09-10
+- 实现：复用 Reading Preference 的 owner + WORK 作用域，为 EBOOK 保存书籍级字号、行高、内容宽度、主题和滚动/分页设置；修正响应式授权/仓库调用的延迟求值，其他用户的 Work 返回 NotFound。
+- Console：电子书导入页新增“阅读设置”，打开时读取已保存配置，未配置使用明确默认值；保存后立即重新读取确认，校验非法字号/行高/宽度并展示加载、错误和成功状态。
+- 验证：`PersistentReadingPreferenceServiceTest` 2/2；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`c19f1aff`。
