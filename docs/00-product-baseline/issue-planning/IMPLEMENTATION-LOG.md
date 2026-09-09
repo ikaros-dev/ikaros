@@ -405,3 +405,10 @@
 - 推荐决策：重复外部身份由数据库唯一约束作为并发最终裁决；Application 将 DuplicateKey 映射为稳定 Conflict，不采用静默覆盖或先查后写的竞态方案。
 - 失败语义：重复请求只允许第一次写入成功；冲突请求在身份保存阶段失败，不发布绑定事件、不写绑定审计，也不影响已有映射。
 - 验证：`DefaultResourceServiceTest` 19/19 通过，新增先成功后重复提交的回归测试，并验证保存次数为 2、成功审计仅 1 次；真实 PostgreSQL 并发约束联调仍需 Docker/Testcontainers。
+
+## A10-05 展示字段来源
+
+- 日期：2026-09-09
+- 推荐决策：复用 metadata 查询 API；每个字段返回当前值、`source`、`sourceReference`、`manuallyLocked` 与 `applied`，让调用方可区分用户确认值、自动来源和被人工锁定而未应用的自动结果。
+- 失败语义：查询严格按 owner-scoped Resource；不存在或无权目标拒绝，空字段列表返回空结果；自动来源遇到人工锁定时保留现值并返回 `applied=false`。
+- 验证：`DefaultResourceMetadataServiceTest` 2/2 通过，覆盖字段来源展示及人工锁定不覆盖；ResourceMetadataController 已接入 GET 公开路径。真实 PostgreSQL 联调仍需 Docker/Testcontainers。
