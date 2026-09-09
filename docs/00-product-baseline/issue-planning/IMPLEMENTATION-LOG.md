@@ -204,3 +204,11 @@
 - 失败语义：非法类型/标题/locale 在 Application 层拒绝；幂等 key 同请求返回原资源，不同请求返回 Conflict；资源、标题、事件、审计或幂等记录任一失败不返回伪成功。
 - 验证：`DefaultResourceServiceTest` 覆盖创建及首标题、非法输入、幂等重放/冲突和审计事件；资源回归 13 项通过。真实 PostgreSQL 约束、事务回滚和并发幂等仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
 - 追加验证：补充跨 owner 读取拒绝测试，资源服务回归 `DefaultResourceServiceTest` 8 项通过。
+
+## A06-03 隔离用户私有资源
+
+- 日期：2026-09-09
+- 推荐决策：Resource Owner 是唯一资源隔离边界；所有单资源读取/变更通过 `findByIdAndOwnerId`，列表与计数 SQL 同时限定 `owner_id`，未授权对象统一表现为 NotFound，不向调用方泄露存在性。
+- 原因：资源模块已实现 Resource-centric 私有模型，A06-03 只补充授权验收，不引入跨模块 Repository 或额外 `tenant_id`。
+- 失败语义：不同用户读取、修改或通过外部身份查找私有资源均不得获得目标数据；失败不触发标题、Blob 或审计写入。
+- 验证：`DefaultResourceServiceTest` 覆盖跨 owner 读取拒绝、创建 owner 固定和资源幂等；资源回归通过。真实 PostgreSQL SQL 隔离和 API 联调仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
