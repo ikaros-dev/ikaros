@@ -55,10 +55,12 @@ async function openReader() {
     await loadReaderPreference();
     const result: any = await http.get(`/reading/chapters/${readerChapterId.value.trim()}/pages`);
     readerPages.value = Array.isArray(result) ? result : [];
+    readerPageIndex.value = 0;
+    try { const progress: any = await http.get(`/reading/works/${readerWorkId.value.trim()}/progress?editionId=${readerEditionId.value.trim()}`); const savedIndex = readerPages.value.findIndex(page => String(page.id) === String(progress?.locatorValue)); if (savedIndex >= 0) readerPageIndex.value = savedIndex; } catch { /* first-time reader has no saved progress */ }
     const images: Record<string, string> = {};
     for (const page of readerPages.value) { const blob = await http.get<Blob, unknown>(`/reading/pages/${page.id}/content`, { responseType: "blob" }); images[page.id] = URL.createObjectURL(blob as Blob); }
-    readerImages.value = images; readerPageIndex.value = 0;
-    readerSession.value = await http.post(`/reading/works/${readerWorkId.value.trim()}/sessions`, { data: { editionId: readerEditionId.value.trim(), chapterId: readerChapterId.value.trim(), locatorKind: "COMIC_PAGE", locatorValue: readerPages.value[0]?.id || "", offline: false } });
+    readerImages.value = images;
+    readerSession.value = await http.post(`/reading/works/${readerWorkId.value.trim()}/sessions`, { data: { editionId: readerEditionId.value.trim(), chapterId: readerChapterId.value.trim(), locatorKind: "COMIC_PAGE", locatorValue: readerPages.value[readerPageIndex.value]?.id || "", offline: false } });
     tab.value = "reader";
   } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "漫画页面加载失败"; }
   finally { readerLoading.value = false; }
