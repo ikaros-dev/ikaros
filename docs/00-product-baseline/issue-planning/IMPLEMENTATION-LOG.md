@@ -419,3 +419,11 @@
 - 推荐决策：手动覆盖写入 `MetadataSource.USER` 并设置 `manuallyLocked=true`；写入、审计和已有值读取在同一 reactive transaction 内完成。自动来源遇到锁定字段只返回现值并标记 `applied=false`，解除锁定必须走显式 restore Action。
 - 失败语义：owner-scoped Resource 不存在或无权时拒绝；API 校验空/超长字段值；写入失败不产生成功结果，用户值不会被自动同步静默覆盖。
 - 验证：`DefaultResourceMetadataServiceTest` 3/3 通过，覆盖手动值 USER/locked 持久化、自动更新保护、显式恢复和字段来源读取；真实 PostgreSQL 事务联调仍需 Docker/Testcontainers。
+
+## A10 资源描述信息（父 issue）
+
+- 日期：2026-09-09
+- 本地验收结论：A10-01 至 A10-06 已按顺序完成，覆盖多语言标题、别名、外部身份绑定、重复身份冲突、字段来源展示和用户手动覆盖。
+- 主要 commits：`a9b38af5`、`6c383f32`、`0c2ef3d0`、`47c0d322`、`fa092e8f`、`a1f77796`。
+- 统一决策：标题与别名保持明确类型和数据库唯一性；外部身份由唯一约束最终裁决；metadata 来源与用户锁定状态显式返回，自动同步不得静默覆盖人工值；所有写路径遵守 owner scope、审计和 reactive transaction。
+- 验证证据：标题、Resource 外部身份和 metadata 服务/控制器回归均通过；真实 PostgreSQL 唯一约束、迁移和事务联调仍需 Docker/Testcontainers。
