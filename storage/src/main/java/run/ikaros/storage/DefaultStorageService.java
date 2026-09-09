@@ -165,7 +165,8 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
         if (providerRegistry == null || objectProviderRegistry == null) {
             return Mono.error(new ConflictException("Storage Provider 上传能力未配置"));
         }
-        return providerRegistry.requireWritableByKey(request.provider())
+        return owned(ownerId, resourceId)
+            .then(Mono.defer(() -> providerRegistry.requireWritableByKey(request.provider())))
             .flatMap(provider -> verifyUploadedObject(provider, request)
                 .then(attachInternal(ownerId, resourceId, request.asAttachment(), request.idempotencyKey())));
     }

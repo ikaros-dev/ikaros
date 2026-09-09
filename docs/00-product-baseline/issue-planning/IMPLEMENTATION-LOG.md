@@ -571,6 +571,14 @@
 - 失败语义：不满足上传约束时返回参数错误，不创建上传意图、Attachment、Blob 或 Placement，也不访问 Provider 认证/物理 adapter。
 - 验证：`DefaultStorageServiceTest` 9/9 通过，覆盖约束失败、未知 Resource、已有附件边界和相关回归；真实 Provider/PostgreSQL/Testcontainers 联调仍需 Docker/外部 Provider。
 
+## A14-03 校验并提交上传结果
+
+- 日期：2026-09-09
+- 推荐决策：复用 `POST /api/resources/{resourceId}/upload-commit`，先校验 Resource owner 与可写 Provider，再确认远端对象的 SHA-256、大小和 Provider tier，最后在事务内提交 Attachment、Blob 与 Placement。
+- 实现修复：提交链改为先授权 Resource，再惰性查询 Provider 和验证远端对象，防止越权请求触发 Provider/对象验证；保留已有 Attachment、Blob、Placement 身份分离及幂等提交路径。
+- 失败语义：未知/无权 Resource、Provider 不可写、SHA-256/大小/tier 不匹配或远端对象不可确认均失败，不产生伪成功 Attachment 或错误成功事件。
+- 验证：`DefaultStorageServiceTest` 10/10 通过，覆盖越权提交不访问 Provider/对象 adapter 及附件存储回归；真实 Provider 对象校验和 PostgreSQL/Testcontainers 联调仍需 Docker/外部 Provider。
+
 ## A12 资源关系管理（父 issue）
 
 - 日期：2026-09-09

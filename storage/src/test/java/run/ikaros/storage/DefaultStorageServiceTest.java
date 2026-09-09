@@ -258,6 +258,26 @@ class DefaultStorageServiceTest {
     }
 
     @Test
+    void rejectsUnknownResourceBeforeVerifyingUploadedObject() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
+        StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
+        DefaultStorageService uploadService = new DefaultStorageService(resourceOwnership, attachmentRepository,
+            blobRepository, placementRepository, derivedAttachmentRepository, auditService,
+            mock(TransactionalOperator.class), providers, null, null);
+        uploadService.setObjectProviderRegistry(objects);
+        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.error(
+            new run.ikaros.common.NotFoundException("资源不存在或无权访问")));
+
+        StepVerifier.create(uploadService.commitUpload(ownerId, resourceId,
+                new CommitUploadRequest("a".repeat(64), 10, "application/octet-stream", "a.bin",
+                    AttachmentKind.ORIGINAL, "local", StorageTier.WARM, "a.bin")))
+            .expectErrorMessage("资源不存在或无权访问").verify();
+        verifyNoInteractions(providers, objects, attachmentRepository, blobRepository, placementRepository);
+    }
+
+    @Test
     void recordsApprovedGarbageCollectionDecision() {
         UUID actorId = UUID.randomUUID();
         BlobEntity blob = new BlobEntity(UUID.randomUUID(), "e".repeat(64), 30L, "text/plain",
