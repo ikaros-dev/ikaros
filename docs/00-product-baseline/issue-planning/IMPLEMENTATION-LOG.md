@@ -853,3 +853,9 @@
 - 失败语义：视频 Resource 创建失败不落媒体主体；剧集顺序校验主体/Season 所属关系并在事务中避免唯一键冲突；附件关联必须通过可读/活动引用校验；可用性查询失败显示 `UNKNOWN`，不伪造为可用。
 - 契约追溯：媒体 subjects、episodes reorder、releases、subtitles 和 attachment availability 已同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：媒体目录、Release、字幕服务测试累计 8/8；Console `pnpm typecheck` 通过。B01-05 主要提交：`d9c6b903`（Console 展示附件可用状态与契约登记）。
+## B02-01 选择附件开始播放
+- 日期：2026-09-10
+- 实现：视频条目页选择可用 Release 后，先调用授权播放源解析，再创建播放 Session，并通过预览授权地址打开真实视频播放器；不可用 Release 在页面上不可播放。
+- 边界：播放源只引用 Attachment，播放 Session 只保存 Resource/Release/用户和位置，不把物理存储路径写入媒体业务状态。
+- 验证：`PersistentMediaPlaybackServiceTest` 2/2，覆盖自有可用 Release 创建 ACTIVE Session 和归档 Release 拒绝且不保存；Console `pnpm typecheck` 通过；播放源与 Session API 已登记 OpenAPI/HTTP Registry。
+- 主要提交：`bc401c1e`。
