@@ -535,7 +535,8 @@
 - 日期：2026-09-09
 - 推荐决策：权限与凭据变更继续统一调用 `AuditService`：角色权限授予/替换、用户角色分配/撤销、Token 全量失效、验证挑战发起/成功/失败/取消均写入独立 `audit_event`；不保存 JWT、OTP、Grant 或 Secret 明文。
 - 失败语义：审计写入失败沿业务调用链传播；权限/凭据拒绝不产生成功审计或伪成功状态，审计详情保持最小化脱敏 JSON。
-- 验证：`DefaultRoleServiceTest` 6 项、`DefaultUserServiceTest` 7 项、`EmailOtpVerificationProviderTest` 11 项通过，覆盖权限与凭据操作的正常及失败路径；相关回归共 24 项通过。
+- Console 对接审计：`console/src/views/security/Permissions.vue` 真实保存角色权限，`Users.vue` 真实分配/撤销角色并支持旧 Token 失效，`Authentication.vue` 真实发起/验证/取消 challenge；三类操作成功后刷新或更新页面状态，失败显示错误，页面不展示 JWT/OTP/Grant/Secret。
+- 验证：`DefaultRoleServiceTest` 6 项、`DefaultUserServiceTest` 7 项、`EmailOtpVerificationProviderTest` 11 项通过，覆盖权限与凭据操作的正常及失败路径；相关回归共 24 项通过；Console `/identity-center/roles`、`/identity-center/users`、`/identity-center/authentication` 均返回 HTTP 200。
 
 ## A08-03 按操作者和时间查询
 
