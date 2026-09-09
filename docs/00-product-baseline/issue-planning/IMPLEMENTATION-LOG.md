@@ -1067,3 +1067,9 @@
 - Console：`/music` 队列区支持填写 Entry 顺序和 Queue 版本并保存，保存后重新读取顺序，展示加载、成功和错误结果。
 - 契约追溯：新增 `music.reorder-queue`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentMusicQueueServiceTest` 3/3；Music compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；运行时数据库版本 `202609100801`，队列重排 API 未认证返回 401，Console `/music` 返回 200；主要提交：`8b3c5f0e`、`df0dacbb`。
+## B08-04 切换播放模式
+- 日期：2026-09-10
+- 实现：队列播放策略支持 `OFF`、`QUEUE`、`ONE` 三种 Repeat 模式和 Shuffle 开关；更新操作使用 `If-Match` 校验并在响应式事务内持久化，拒绝过期版本。
+- Console：`/music` 队列区新增播放模式控件和保存操作，使用 Queue 版本提交并反馈保存结果或冲突错误。
+- 契约追溯：新增 `music.update-queue-policy`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`PersistentMusicQueueServiceTest` 4/4；Music compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`41443de6`。
