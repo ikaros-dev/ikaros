@@ -161,4 +161,24 @@ class ResourceAuthorizationWebFilterTest {
 
         assertEquals(401, exchange.getResponse().getStatusCode().value());
     }
+
+    @Test
+    void requiresResourceWritePermissionForDirectResourceMutation() {
+        UUID actor = UUID.randomUUID();
+        String path = "/api/resources";
+        WebFilterChain chain = mock(WebFilterChain.class);
+
+        MockServerWebExchange denied = MockServerWebExchange.from(MockServerHttpRequest.post(path).build());
+        denied.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 0L, java.util.List.of("resource.read")));
+        new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(denied, chain).block();
+        assertEquals(403, denied.getResponse().getStatusCode().value());
+
+        MockServerWebExchange allowed = MockServerWebExchange.from(MockServerHttpRequest.post(path).build());
+        allowed.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 0L, java.util.List.of("resource.write")));
+        when(chain.filter(allowed)).thenReturn(Mono.empty());
+        new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(allowed, chain).block();
+        verify(chain).filter(allowed);
+    }
 }

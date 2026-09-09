@@ -212,3 +212,10 @@
 - 原因：资源模块已实现 Resource-centric 私有模型，A06-03 只补充授权验收，不引入跨模块 Repository 或额外 `tenant_id`。
 - 失败语义：不同用户读取、修改或通过外部身份查找私有资源均不得获得目标数据；失败不触发标题、Blob 或审计写入。
 - 验证：`DefaultResourceServiceTest` 覆盖跨 owner 读取拒绝、创建 owner 固定和资源幂等；资源回归通过。真实 PostgreSQL SQL 隔离和 API 联调仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
+
+## A06-04 校验资源变更权限
+
+- 日期：2026-09-09
+- 推荐决策：资源变更统一经过 `ResourceAuthorizationWebFilter`，按 HTTP 方法和路径要求 `resource.write`/`resource.delete` 等注册权限；业务服务继续执行 owner 与领域不变量校验，HTTP 门禁不替代领域授权。
+- 失败语义：无认证主体返回 401；有 Access JWT 但缺少资源变更权限返回 403；拒绝路径不进入 Controller/Repository，不泄露资源数据。
+- 验证：`ResourceAuthorizationWebFilterTest` 新增资源写操作“仅读权限拒绝/写权限通过”覆盖，授权回归 16 项通过；资源服务跨 owner 隔离测试已通过。
