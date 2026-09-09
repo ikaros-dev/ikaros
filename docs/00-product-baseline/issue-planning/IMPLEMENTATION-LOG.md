@@ -751,6 +751,7 @@
 - 推荐决策：复用 ResourceRelation API 创建有向关系；关系类型使用受限枚举，来源与目标必须同属当前 owner，Resource UUID 保持为双方稳定身份。
 - 失败语义：自关联在持久化前拒绝；任一资源不存在/无权返回 NotFound；数据库重复关系映射为 Conflict，失败不产生审计或关系记录。
 - 验证：`DefaultResourceRelationServiceTest` 3/3、`ResourceRelationControllerTest` 1/1 通过，覆盖指定类型创建、双端 owner 校验路径、自关联拒绝和公开 API。真实 PostgreSQL 约束联调仍需 Docker/Testcontainers。
+- Console 对接审计：集合页“关系浏览器”提供关系类型、来源 Resource ID 和目标 Resource ID 输入，创建时调用 `POST /resources/{resourceId}/relations`，成功后重新加载关系。
 
 ## A12-02 展示关联资源
 
@@ -759,6 +760,7 @@
 - 失败语义：先 owner-scoped 校验来源 Resource，再惰性查询关系；未知/无权来源返回 NotFound，空关系返回空流，不暴露跨 owner 关系。
 - 实现修复：将关系查询包装为 `Flux.defer`，避免 owner 校验前 eager 访问关系仓储。
 - 验证：`DefaultResourceRelationServiceTest` 4/4、`ResourceRelationControllerTest` 1/1 通过，覆盖正常、空结果、未知来源和公开查询入口；真实 PostgreSQL 分页/排序联调仍需 Docker/Testcontainers。
+- Console 对接审计：点击“加载关系”调用 `GET /resources/{resourceId}/relations`，展示目标 ID、类型和位置，并提供空状态和加载状态。
 
 ## A12-03 移除关系
 
@@ -767,6 +769,7 @@
 - 失败语义：来源不存在/无权返回 NotFound；关系不存在或不属于来源返回 NotFound；失败不删除、不审计。
 - 实现修复：关系读取与删除审计均改为惰性 Publisher，避免授权/关系存在性校验前产生仓储或审计副作用。
 - 验证：`DefaultResourceRelationServiceTest` 5/5、`ResourceRelationControllerTest` 1/1 通过，覆盖正常、空结果、未知来源、未知关系和公开入口；真实 PostgreSQL 联调仍需 Docker/Testcontainers。
+- Console 对接审计：关系表的“删除”按钮调用 `DELETE /resources/{resourceId}/relations/{relationId}`，成功后刷新；不会删除任一 Resource。
 
 ## A12-04 阻止无效或重复关系
 
@@ -774,6 +777,7 @@
 - 推荐决策：关系类型使用枚举与数据库 CHECK 约束，双方 Resource 使用 FK；应用层提前拒绝空目标/类型和负 position，自关联拒绝，数据库唯一约束最终裁决重复关系。
 - 失败语义：无效请求、任一资源无权/不存在、自关联和重复关系均显式失败，不保存、不审计、不发布错误成功事件。
 - 验证：`DefaultResourceRelationServiceTest` 6/6、`ResourceRelationControllerTest` 1/1 通过，覆盖指定类型、无效请求、自关联、重复冲突、双方 owner、空结果和移除边界；真实 PostgreSQL 约束联调仍需 Docker/Testcontainers。
+- Console 对接审计：关系类型使用后端允许的枚举选项，409 显示“不能创建自关联或重复关系”，其他校验/权限错误保留后端错误信息。
 
 ## A13-01 收藏与取消收藏
 
