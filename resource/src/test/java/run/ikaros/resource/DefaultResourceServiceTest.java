@@ -187,6 +187,44 @@ class DefaultResourceServiceTest {
     }
 
     @Test
+    void archivesActiveResourceWithoutDeletingItsIdentity() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity active = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
+            "视频", null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE, now, now, null, 2L);
+        ResourceEntity archived = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
+            "视频", null, ResourceClassification.PRIVATE, ResourceLifecycle.ARCHIVED, now, now, null, 3L);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(active));
+        when(resourceRepository.save(any(ResourceEntity.class))).thenReturn(Mono.just(archived));
+        when(auditService.record(ownerId, "resource.archive", "RESOURCE", resourceId, "{}")).thenReturn(Mono.empty());
+        when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.empty());
+        when(identityRepository.findAllByResourceIdOrderByProviderAsc(resourceId)).thenReturn(Flux.empty());
+
+        StepVerifier.create(service.archive(ownerId, resourceId, 2L))
+            .assertNext(view -> assertThat(view.lifecycle()).isEqualTo(ResourceLifecycle.ARCHIVED))
+            .verifyComplete();
+        verify(resourceRepository).save(argThat(saved -> saved.lifecycle() == ResourceLifecycle.ARCHIVED
+            && saved.id().equals(resourceId)));
+    }
+
+    @Test
+    void rejectsArchivingTrashedResourceWithoutWriting() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity trashed = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
+            "视频", null, ResourceClassification.PRIVATE, ResourceLifecycle.TRASHED, now, now, now, 2L);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(trashed));
+
+        StepVerifier.create(service.archive(ownerId, resourceId, 2L))
+            .expectErrorSatisfies(error -> assertThat(error).isInstanceOf(ConflictException.class)
+                .hasMessage("只有活动 Resource 才能归档"))
+            .verify();
+        org.mockito.Mockito.verify(resourceRepository, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
     void reportsConflictWhenExternalIdentityIsAlreadyBound() {
         UUID ownerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();

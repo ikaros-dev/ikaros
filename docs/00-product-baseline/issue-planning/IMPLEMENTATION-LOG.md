@@ -339,3 +339,10 @@
 - 推荐决策：更新必须携带 expected_version/If-Match；Application 层先按 owner 读取并比较版本，持久化继续使用 Resource `@Version` 乐观并发，不允许旧版本静默覆盖新值。
 - 失败语义：版本过期返回稳定 Conflict；冲突路径不写 Resource、标题、事件或审计，不改变 Resource 身份或共享 Blob。
 - 验证：`DefaultResourceServiceTest` 以两次重复更新复现首个版本提交后旧版本拒绝，确认只发生一次保存；resource 回归 11 项通过。
+
+## A09-04 归档资源
+
+- 日期：2026-09-09
+- 推荐决策：仅 ACTIVE Resource 可归档；归档保持 Resource UUID、owner、标题和任何 Attachment/Blob 身份不变，只更新生命周期与版本并发布事件/审计。
+- 失败语义：跨 owner/不存在由 owner-scoped 查询统一 NotFound；TRASHED 等非 ACTIVE 状态返回 Conflict；拒绝路径不写 Resource、不触碰 Blob。
+- 验证：`DefaultResourceServiceTest` 覆盖 ACTIVE 归档成功、Resource 身份保留、TRASHED 状态拒绝和无写入；resource 回归 13 项通过。
