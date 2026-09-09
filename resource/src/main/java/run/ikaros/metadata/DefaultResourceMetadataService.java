@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.resource.ResourceRepository;
@@ -15,14 +16,17 @@ import run.ikaros.resource.ResourceRepository;
 @Service
 public class DefaultResourceMetadataService implements ResourceMetadataService {
     private final ResourceRepository resourceRepository; private final ResourceMetadataRepository metadataRepository;
-    private final AuditService auditService;
+    private final AuditService auditService; private final TransactionalOperator transactionalOperator;
     public DefaultResourceMetadataService(ResourceRepository resourceRepository, ResourceMetadataRepository metadataRepository,
-                                          AuditService auditService) { this.resourceRepository=resourceRepository; this.metadataRepository=metadataRepository; this.auditService=auditService; }
+                                          AuditService auditService, TransactionalOperator transactionalOperator) {
+        this.resourceRepository=resourceRepository; this.metadataRepository=metadataRepository;
+        this.auditService=auditService; this.transactionalOperator=transactionalOperator;
+    }
     @Override public Mono<ResourceMetadataView> setManual(UUID ownerId, UUID resourceId, String fieldKey, MetadataValueRequest request) {
-        return owned(ownerId, resourceId).then(metadataRepository.findByResourceIdAndFieldKey(resourceId, fieldKey).defaultIfEmpty(
+        return transactionalOperator.transactional(owned(ownerId, resourceId).then(metadataRepository.findByResourceIdAndFieldKey(resourceId, fieldKey).defaultIfEmpty(
             new ResourceMetadataEntity(null, resourceId, fieldKey, request.value(), MetadataSource.USER, null, true, Instant.now(), null)))
             .flatMap(current -> metadataRepository.save(new ResourceMetadataEntity(current.id(), resourceId, fieldKey, request.value(), MetadataSource.USER, null, true, Instant.now(), current.version())))
-            .flatMap(saved -> auditService.record(ownerId,"resource.metadata.manual.set","RESOURCE",resourceId,"{}").thenReturn(view(saved,true)));
+            .flatMap(saved -> auditService.record(ownerId,"resource.metadata.manual.set","RESOURCE",resourceId,"{}").thenReturn(view(saved,true))));
     }
     @Override public Mono<ResourceMetadataView> applyAutomatic(UUID ownerId, UUID resourceId, String fieldKey, AutomaticMetadataRequest request) {
         return owned(ownerId, resourceId).then(metadataRepository.findByResourceIdAndFieldKey(resourceId, fieldKey)

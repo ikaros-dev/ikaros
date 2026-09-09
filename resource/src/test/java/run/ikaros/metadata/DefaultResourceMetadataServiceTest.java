@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -25,7 +26,7 @@ import run.ikaros.resource.api.ResourceType;
 class DefaultResourceMetadataServiceTest {
     private ResourceRepository resourceRepository; private ResourceMetadataRepository metadataRepository;
     private AuditService auditService; private DefaultResourceMetadataService service;
-    @BeforeEach void setUp(){resourceRepository=mock(ResourceRepository.class);metadataRepository=mock(ResourceMetadataRepository.class);auditService=mock(AuditService.class);service=new DefaultResourceMetadataService(resourceRepository,metadataRepository,auditService);}
+    @BeforeEach void setUp(){resourceRepository=mock(ResourceRepository.class);metadataRepository=mock(ResourceMetadataRepository.class);auditService=mock(AuditService.class);TransactionalOperator tx=mock(TransactionalOperator.class);when(tx.transactional(any(Mono.class))).thenAnswer(i->i.getArgument(0));service=new DefaultResourceMetadataService(resourceRepository,metadataRepository,auditService,tx);}
     @Test void preservesManualLockAndAllowsExplicitRestore() {
         UUID owner=UUID.randomUUID(), resource=UUID.randomUUID(); Instant now=Instant.now();
         ResourceEntity entity=new ResourceEntity(resource,owner,ResourceType.DOCUMENT,ResourceLifecycle.ACTIVE,now,now,null,0L);
@@ -38,6 +39,20 @@ class DefaultResourceMetadataServiceTest {
             .assertNext(view->{assertThat(view.applied()).isFalse();assertThat(view.value()).isEqualTo("人工标题");}).verifyComplete();
         StepVerifier.create(service.restoreAutomatic(owner,resource,"title"))
             .assertNext(view->assertThat(view.manuallyLocked()).isFalse()).verifyComplete();
+    }
+
+    @Test void persistsManualValueAsUserLockedMetadata() {
+        UUID owner=UUID.randomUUID(), resource=UUID.randomUUID(); Instant now=Instant.now();
+        ResourceEntity entity=new ResourceEntity(resource,owner,ResourceType.DOCUMENT,ResourceLifecycle.ACTIVE,now,now,null,0L);
+        when(resourceRepository.findByIdAndOwnerId(resource,owner)).thenReturn(Mono.just(entity));
+        when(metadataRepository.findByResourceIdAndFieldKey(resource,"title")).thenReturn(Mono.empty());
+        when(metadataRepository.save(any())).thenAnswer(i->Mono.just(i.getArgument(0)));
+        when(auditService.record(eq(owner),eq("resource.metadata.manual.set"),eq("RESOURCE"),eq(resource),eq("{}")))
+            .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.setManual(owner,resource,"title",new MetadataValueRequest("人工标题")))
+            .assertNext(view->{assertThat(view.source()).isEqualTo(MetadataSource.USER);assertThat(view.manuallyLocked()).isTrue();})
+            .verifyComplete();
     }
     @Test void listsOwnedMetadataFields() {
         UUID owner=UUID.randomUUID(), resource=UUID.randomUUID(); Instant now=Instant.now();

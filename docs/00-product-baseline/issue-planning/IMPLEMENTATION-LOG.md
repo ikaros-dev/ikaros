@@ -412,3 +412,10 @@
 - 推荐决策：复用 metadata 查询 API；每个字段返回当前值、`source`、`sourceReference`、`manuallyLocked` 与 `applied`，让调用方可区分用户确认值、自动来源和被人工锁定而未应用的自动结果。
 - 失败语义：查询严格按 owner-scoped Resource；不存在或无权目标拒绝，空字段列表返回空结果；自动来源遇到人工锁定时保留现值并返回 `applied=false`。
 - 验证：`DefaultResourceMetadataServiceTest` 2/2 通过，覆盖字段来源展示及人工锁定不覆盖；ResourceMetadataController 已接入 GET 公开路径。真实 PostgreSQL 联调仍需 Docker/Testcontainers。
+
+## A10-06 保存用户手动覆盖值
+
+- 日期：2026-09-09
+- 推荐决策：手动覆盖写入 `MetadataSource.USER` 并设置 `manuallyLocked=true`；写入、审计和已有值读取在同一 reactive transaction 内完成。自动来源遇到锁定字段只返回现值并标记 `applied=false`，解除锁定必须走显式 restore Action。
+- 失败语义：owner-scoped Resource 不存在或无权时拒绝；API 校验空/超长字段值；写入失败不产生成功结果，用户值不会被自动同步静默覆盖。
+- 验证：`DefaultResourceMetadataServiceTest` 3/3 通过，覆盖手动值 USER/locked 持久化、自动更新保护、显式恢复和字段来源读取；真实 PostgreSQL 事务联调仍需 Docker/Testcontainers。
