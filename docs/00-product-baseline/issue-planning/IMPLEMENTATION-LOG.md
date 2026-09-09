@@ -1,5 +1,13 @@
 # Ikaros V2 实施记录
 
+## A17-04 恢复失败后重试
+
+- 日期：2026-09-09
+- 推荐决策：重试入口仅接受 FAILED/PARTIAL_FAILURE 请求，提交带 `retry_failed_only=true` 的新 Background Task；Task Handler 只处理失败的 Request Item，已成功项保持不变。
+- 原因：失败恢复必须可重复执行且不破坏活动引用；通过新的任务幂等键区分重试尝试，同时保留原 Restore Request 身份和已完成计数。
+- 失败语义：非失败状态拒绝重试；重复调用已提交的重试请求直接返回原状态和任务 ID，不重复提交任务或发布 retry 事件；失败项保留安全错误摘要供查询观察。
+- 验证：`mvn -pl storage -am -Dtest=StorageRestoreRequestServiceTest,StorageRestoreContractControllerTest -Dsurefire.failIfNoSpecifiedTests=false test`；4 个测试全部通过，覆盖恢复申请幂等、重试幂等、ACTIVE 进度和 PARTIAL 失败计数。
+
 ## A17-03 展示恢复进度
 
 - 日期：2026-09-09

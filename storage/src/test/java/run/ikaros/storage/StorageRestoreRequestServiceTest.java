@@ -50,4 +50,25 @@ class StorageRestoreRequestServiceTest {
 
         verifyNoInteractions(attachments, resources, blobs, placements, tasks, budget, mediaTargets, events);
     }
+
+    @Test
+    void repeatedRetryReturnsCommittedTaskWithoutDuplicateSideEffects() {
+        UUID actorId = UUID.randomUUID();
+        UUID requestId = UUID.randomUUID();
+        UUID taskId = UUID.randomUUID();
+        StorageRestoreRequestEntity existing = new StorageRestoreRequestEntity(requestId, actorId,
+            StorageRestoreScope.ATTACHMENT, UUID.randomUUID(), StorageRestoreRequestStatus.REQUESTED, 2, 1, 256,
+            "restore-failed", "original-key", taskId, Instant.now(), Instant.now(), "ACCEPTED", null, 0L);
+        when(requests.findById(requestId)).thenReturn(Mono.just(existing));
+
+        StepVerifier.create(service.retry(actorId, requestId, "retry-key"))
+            .assertNext(view -> {
+                org.junit.jupiter.api.Assertions.assertEquals(requestId, view.id());
+                org.junit.jupiter.api.Assertions.assertEquals(taskId, view.backgroundTaskId());
+                org.junit.jupiter.api.Assertions.assertEquals(StorageRestoreRequestStatus.REQUESTED, view.status());
+            })
+            .verifyComplete();
+
+        verifyNoInteractions(attachments, resources, blobs, placements, tasks, budget, mediaTargets, events);
+    }
 }

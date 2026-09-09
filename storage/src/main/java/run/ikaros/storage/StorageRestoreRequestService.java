@@ -225,6 +225,9 @@ public class StorageRestoreRequestService {
         return requests.findById(id).filter(request -> request.actorId().equals(actorId))
             .switchIfEmpty(Mono.error(new NotFoundException("Restore Request 不存在或无权访问")))
             .flatMap(request -> {
+                if (request.status() == StorageRestoreRequestStatus.REQUESTED && request.backgroundTaskId() != null) {
+                    return Mono.just(request);
+                }
                 if (request.status() != StorageRestoreRequestStatus.FAILED
                     && request.status() != StorageRestoreRequestStatus.PARTIAL_FAILURE) {
                     return Mono.error(new ConflictException("只有失败或部分失败的 Restore Request 可以重试"));
