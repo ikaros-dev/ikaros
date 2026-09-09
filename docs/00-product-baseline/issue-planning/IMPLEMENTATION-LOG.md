@@ -502,14 +502,16 @@
 - 日期：2026-09-09
 - 推荐决策：挑战过期时立即转为 EXPIRED 并拒绝；已 VERIFIED/LOCKED 等终态不可再次验证。Verification Grant 由 JWT `exp` 约束，后续 Security Policy 还必须检查 verification expiry，不以 Access JWT 有效替代 Step-up 有效。
 - 失败语义：过期挑战返回 Conflict，拒绝 OTP 匹配与 Grant 签发；已消费挑战不可重放；过期验证保证不执行限定操作。
-- 验证：`EmailOtpVerificationProviderTest` 新增过期挑战状态转换与已消费挑战重放拒绝；`DefaultAccessControlServiceTest` 已覆盖过期 SVL 拒绝；本轮认证/授权相关回归共 14 项通过。
+- Console 对接审计：`console/src/views/security/Authentication.vue` 在验证失败后根据服务端错误把挑战标记为 `EXPIRED`，禁用继续验证并保留可见错误；验证成功后 Grant 由服务端 `exp` 控制，客户端不自行延长有效期。
+- 验证：`EmailOtpVerificationProviderTest` 覆盖过期挑战状态转换与已消费挑战重放拒绝；`DefaultAccessControlServiceTest` 覆盖过期 SVL 拒绝；本轮认证/授权相关回归共 14 项通过；Console `pnpm typecheck`、`pnpm build` 通过。
 
 ## A07-04 限制验证失败重试
 
 - 日期：2026-09-09
 - 推荐决策：每次错误 OTP 都持久化递增 attempt_count；达到 5 次将挑战置为 LOCKED，后续请求由终态门禁拒绝；发起挑战另按用户 10 分钟窗口最多 3 次限制。
 - 失败语义：中间失败只产生一次失败审计与状态更新，不执行任何业务副作用；锁定后不再匹配 OTP、不重置计数、不允许重放。
-- 验证：`EmailOtpVerificationProviderTest` 覆盖中间失败计数、最终锁定、锁定终态和发起频率限制；本轮 11 项通过。
+- Console 对接审计：`console/src/views/security/Authentication.vue` 只允许 6 位验证码输入，验证按钮在 `LOCKED`/`EXPIRED` 状态禁用；服务端错误会显示在页面并同步锁定状态，页面没有绕过重试次数或重新启用终态挑战的逻辑。
+- 验证：`EmailOtpVerificationProviderTest` 覆盖中间失败计数、最终锁定、锁定终态和发起频率限制；本轮 11 项通过；Console `pnpm typecheck`、`pnpm build` 通过。
 
 ## A07 敏感操作验证（父 issue）
 
