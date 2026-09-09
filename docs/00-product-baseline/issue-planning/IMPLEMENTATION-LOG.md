@@ -528,7 +528,7 @@
 - 推荐决策：资源管理 Application 服务统一通过 `AuditService` 记录 create/update/trash/archive/restore 及标题、标签、收藏、关系等操作；审计事件独立存储于 `audit_event`，不复用 Resource Activity。
 - 失败语义：审计写入失败沿调用链传播，不返回伪成功；事件保留 actor、action、target、occurred_at、request/correlation context，details 仅允许脱敏 JSON。
 - Console 对接审计：`console/src/views/communications/Audit.vue` 通过 `GET /audit-events` 展示操作者、动作、目标和时间，并通过 `GET /audit-events/{event_id}` 查看资源操作详情；页面提供时间/操作者/请求过滤、加载/空状态/错误反馈，资源操作不会只写到不可见日志。
-- 验证：新增 `DefaultAuditServiceTest` 覆盖用户资源更新、系统归档、目标关联和独立审计落库契约；现有资源服务测试覆盖各资源管理入口的 `AuditService` 调用；本轮审计模块 2 项通过；Console `pnpm typecheck`、`pnpm build` 通过。
+- 验证：新增 `DefaultAuditServiceTest` 覆盖用户资源更新、系统归档、目标关联和独立审计落库契约；现有资源服务测试覆盖各资源管理入口的 `AuditService` 调用；本轮审计模块 3 项通过；Console `pnpm typecheck`、`pnpm build` 通过。
 
 ## A08-02 记录权限与凭据操作
 
