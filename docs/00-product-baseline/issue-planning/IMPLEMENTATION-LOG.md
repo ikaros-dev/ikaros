@@ -357,6 +357,7 @@
 - 推荐决策：沿用首次注册作为初始化路径；首个用户在同一 reactive transaction 中写入平台用户、PBKDF2-SHA256 密码凭据并幂等分配 `admin` 初始角色，不创建 SecuritySession、Token Digest 或持久化令牌。
 - 原因：当前 V2 无独立登录 Session 模型；首个用户是唯一明确的管理员初始化边界，后续登录/刷新由 A05-02/A05-03 负责。
 - 失败语义：非法初始化输入在持久化前拒绝；用户名/邮箱冲突返回 Conflict；凭据或角色绑定失败由事务回滚，不返回伪成功；重复角色绑定保持幂等。
+- Console 对接审计：`console/src/views/setup/index.vue` 先调用 `GET /health/ready` 检查服务就绪，再通过 `registerUser` 调用 `POST /auth/register`；表单校验用户名/显示名/密码确认，成功跳转 `/login`，不展示或保存密码明文。
 - 验证：`AuthenticationServiceTest` 覆盖首用户 admin 角色、PBKDF2 哈希、事务入口和非法输入；真实 PostgreSQL 回滚、唯一约束和初始化重放仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
 - 外部权限记录：向 GitHub #926 发布完成评论的请求被安全策略拦截；本地实现与 commit 已保留，待权限恢复后补发评论并关闭。根据执行规则继续处理后续子 issue。
 
