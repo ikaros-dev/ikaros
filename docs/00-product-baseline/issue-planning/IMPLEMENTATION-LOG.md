@@ -450,7 +450,8 @@
 - 日期：2026-09-09
 - 推荐决策：资源变更统一经过 `ResourceAuthorizationWebFilter`，按 HTTP 方法和路径要求 `resource.write`/`resource.delete` 等注册权限；业务服务继续执行 owner 与领域不变量校验，HTTP 门禁不替代领域授权。
 - 失败语义：无认证主体返回 401；有 Access JWT 但缺少资源变更权限返回 403；拒绝路径不进入 Controller/Repository，不泄露资源数据。
-- 验证：`ResourceAuthorizationWebFilterTest` 新增资源写操作“仅读权限拒绝/写权限通过”覆盖，授权回归 16 项通过；资源服务跨 owner 隔离测试已通过。
+- Console 对接审计：`console/src/views/resources/Detail.vue` 的编辑、标题/元数据覆盖、外部身份、关系、标签、收藏、用户状态、归档和回收站按钮均调用资源 API；统一 HTTP 拦截器携带 JWT 对应 Actor，服务端 `ResourceAuthorizationWebFilter` 按方法和路径执行 `resource.write`/`resource.delete` 门禁，页面对 401/403/409 显示可见错误并要求高风险操作确认。
+- 验证：`ResourceAuthorizationWebFilterTest` 覆盖资源写操作“仅读权限拒绝/写权限通过”，授权回归 16 项通过；资源服务跨 owner 隔离测试已通过；Console `pnpm typecheck`、`pnpm build` 通过；运行中的资源详情路由可访问，未认证资源变更 API 返回 401。
 
 ## A06-05 权限撤销后阻止后续访问
 
