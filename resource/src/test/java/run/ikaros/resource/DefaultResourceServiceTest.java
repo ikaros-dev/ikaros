@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
@@ -276,6 +277,45 @@ class DefaultResourceServiceTest {
                 .hasMessage("只有已归档或已移入回收站的 Resource 才能恢复"))
             .verify();
         verify(resourceRepository, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
+    void purgesTrashedResourceAsAuditedTerminalStateWithoutTouchingBlobReferences() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity trashed = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
+            "视频", null, ResourceClassification.PRIVATE, ResourceLifecycle.TRASHED, now, now, now, 2L);
+        ResourceEntity purged = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
+            "视频", null, ResourceClassification.PRIVATE, ResourceLifecycle.PURGED, now, now, now, 3L);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(trashed));
+        when(resourceRepository.save(any(ResourceEntity.class))).thenReturn(Mono.just(purged));
+        when(auditService.record(ownerId, "resource.purge", "RESOURCE", resourceId, "{}"))
+            .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.purge(ownerId, resourceId, 2L)).verifyComplete();
+
+        verify(resourceRepository).save(argThat(saved -> saved.id().equals(resourceId)
+            && saved.lifecycle() == ResourceLifecycle.PURGED && saved.deletedAt().equals(now)));
+        verify(auditService).record(ownerId, "resource.purge", "RESOURCE", resourceId, "{}");
+        verifyNoInteractions(titleRepository, identityRepository);
+    }
+
+    @Test
+    void refusesPurgingActiveResourceAndDoesNotWrite() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity active = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
+            "视频", null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE, now, now, null, 2L);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(active));
+
+        StepVerifier.create(service.purge(ownerId, resourceId, 2L))
+            .expectErrorSatisfies(error -> assertThat(error).isInstanceOf(ConflictException.class)
+                .hasMessage("只有已满足保留条件的回收站 Resource 才能永久删除"))
+            .verify();
+        verify(resourceRepository, org.mockito.Mockito.never()).save(any());
+        verifyNoInteractions(auditService);
     }
 
     @Test

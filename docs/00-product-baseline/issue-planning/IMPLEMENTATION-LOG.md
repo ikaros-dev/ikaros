@@ -360,3 +360,11 @@
 - 推荐决策：仅 TRASHED 或 ARCHIVED Resource 可恢复为 ACTIVE；恢复保持 Resource UUID、owner、标题及 Attachment/Blob 身份不变，状态、事件和审计在同一 reactive transaction 内提交。
 - 失败语义：跨 owner/不存在统一 NotFound；ACTIVE 或版本不匹配返回 Conflict/Precondition Failed；拒绝路径不写 Resource、不重复产生业务副作用。
 - 验证：`DefaultResourceServiceTest` 覆盖 TRASHED 恢复成功、身份/删除时间清理、ACTIVE 拒绝和版本边界；resource 回归 16 项通过。
+
+## A09-07 执行符合保留规则的永久删除
+
+- 日期：2026-09-09
+- 推荐决策：当前 Resource Schema 未单独建模 retention deadline，因此以 `TRASHED + deleted_at` 作为当前最小保留条件；永久删除写入 `PURGED` 可审计终态并保留 Resource UUID，不物理删除 Resource、标题或外部身份。
+- 安全边界：入口为独立 purge Action，要求 `If-Match` 和显式 `X-Ikaros-Confirmation: PURGE`；状态事件与 Audit 在同一 reactive transaction 内提交；Attachment/Blob 引用释放和物理 GC 留给其 Owner 按引用、备份及保留规则处理。
+- 失败语义：ACTIVE/ARCHIVED、缺少 `deleted_at` 或版本过期均拒绝且不写入、不审计；owner-scoped 查询隔离其他用户和对象。
+- 验证：`DefaultResourceServiceTest` 覆盖 TRASHED 成功转为 PURGED、身份/Blob 边界、ACTIVE 禁止分支；resource 回归 18 项通过。未启动真实 PostgreSQL/Testcontainers（本机 Docker 不可用），未伪造 SQL 联调证据。

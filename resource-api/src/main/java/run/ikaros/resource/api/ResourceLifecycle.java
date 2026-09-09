@@ -6,5 +6,6 @@ package run.ikaros.resource.api;
 public enum ResourceLifecycle {
     ACTIVE,
     ARCHIVED,
-    TRASHED
+    TRASHED,
+    PURGED
 }

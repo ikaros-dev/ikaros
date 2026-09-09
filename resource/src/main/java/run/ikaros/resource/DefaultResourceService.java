@@ -314,6 +314,24 @@ public class DefaultResourceService implements ResourceService {
             .as(transactionalOperator::transactional);
     }
 
+    @Override
+    public Mono<Void> purge(UUID ownerId, UUID resourceId, long expectedVersion) {
+        return transactionalOperator.transactional(owned(ownerId, resourceId)
+            .flatMap(resource -> {
+                checkVersion(resource.version(), expectedVersion);
+                if (resource.lifecycle() != ResourceLifecycle.TRASHED || resource.deletedAt() == null) {
+                    return Mono.error(new ConflictException("只有已满足保留条件的回收站 Resource 才能永久删除"));
+                }
+                ResourceEntity purged = new ResourceEntity(
+                    resource.id(), resource.ownerId(), resource.resourceType(), resource.primaryTitle(), resource.summary(),
+                    resource.dataClassification(), ResourceLifecycle.PURGED,
+                    resource.createdAt(), Instant.now(), resource.deletedAt(), resource.version());
+                return resourceRepository.save(purged)
+                    .then(emit("resource.resource.purged", purged))
+                    .then(auditService.record(ownerId, "resource.purge", "RESOURCE", resourceId, "{}"));
+            }));
+    }
+
     private void checkVersion(Long actualVersion, Long expectedVersion) {
         if (expectedVersion != null && (actualVersion == null ? 0 : actualVersion) != expectedVersion) {
             throw new PreconditionFailedException("If-Match 与 Resource 当前版本不匹配");

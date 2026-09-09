@@ -76,6 +76,9 @@ public interface ResourceService {
 
     Mono<ResourceView> restore(UUID ownerId, UUID resourceId, long expectedVersion);
 
+    /** 永久删除已满足保留条件的回收站 Resource，并保留其身份作为终态记录。 */
+    Mono<Void> purge(UUID ownerId, UUID resourceId, long expectedVersion);
+
     /**
      * 为 Resource 添加稳定外部身份映射。
      *
