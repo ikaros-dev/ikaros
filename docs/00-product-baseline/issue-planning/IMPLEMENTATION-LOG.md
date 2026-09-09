@@ -17,6 +17,15 @@
 - 验证：`ModuleDependencyBoundaryTest` 2/2 通过，覆盖当前真实 POM 通过样例和模拟新增实现直连失败样例；Maven application reactor BUILD SUCCESS。
 - 主要提交：`031454d1`、`9d134ae8`。
 
+## A01-03 检查公开 API 与契约一致性
+
+- 日期：2026-09-10
+- 实现：修正 Registry 中带 `{parameter}` 路径未加引号的 YAML 语法；修正主 OpenAPI 的 `components` 缩进；将 `POST /music/queues/{queue_id}/entries` 放回正确的 path item；补齐附件可用性 operation 的 contract id。
+- 测试增强：Registry/OpenAPI 集合不一致时现在报告具体 `missingFromOpenApi` 和 `missingFromRegistry`，path item/operation 类型错误也报告具体来源和路径。
+- Console：本 issue 是公开契约治理，不新增独立页面；已完成的 Console 功能继续以同一 Registry/OpenAPI 契约为 API 边界。
+- 验证：`ControllerRouteConventionTest` 2/2、`HttpOperationRegistryTest` 2/2、`OpenApiRouteConventionTest` 1/1、`PublicApiContractTest` 4/4，共 9 项通过；Maven application reactor BUILD SUCCESS。
+- 主要提交：`0fea5aaa`、`e5e1d1cf`。
+
 ## A02-01 首次启动检查必需配置
 
 - 日期：2026-09-10
