@@ -594,21 +594,24 @@
 - 日期：2026-09-09
 - 推荐决策：仅 ACTIVE Resource 可归档；归档保持 Resource UUID、owner、标题和任何 Attachment/Blob 身份不变，只更新生命周期与版本并发布事件/审计。
 - 失败语义：跨 owner/不存在由 owner-scoped 查询统一 NotFound；TRASHED 等非 ACTIVE 状态返回 Conflict；拒绝路径不写 Resource、不触碰 Blob。
-- 验证：`DefaultResourceServiceTest` 覆盖 ACTIVE 归档成功、Resource 身份保留、TRASHED 状态拒绝和无写入；resource 回归 13 项通过。
+- Console 对接审计：`console/src/views/resources/Detail.vue` 的归档按钮要求确认并调用 `/resources/{resource_id}/actions/archive`，携带当前 `If-Match`；成功更新详情，失败显示状态错误，不删除 Attachment/Blob。
+- 验证：`DefaultResourceServiceTest` 覆盖 ACTIVE 归档成功、Resource 身份保留、TRASHED 状态拒绝和无写入；resource 回归 19 项通过；Console 资源详情路由返回 HTTP 200。
 
 ## A09-05 移入回收站
 
 - 日期：2026-09-09
 - 推荐决策：移入回收站是 Resource 的逻辑生命周期变更；状态、事件和审计在同一 reactive transaction 内提交，绝不直接删除 Attachment/Blob。
 - 失败语义：跨 owner/不存在统一 NotFound；旧版本按 If-Match 拒绝；重复处理已 TRASHED 资源保持幂等且不重复写入、审计或业务副作用。
-- 验证：`DefaultResourceServiceTest` 覆盖正常移入、身份/Blob 保留、重复幂等和版本边界；resource 回归 14 项通过。
+- Console 对接审计：资源详情页的“移入回收站”调用 `/resources/{resource_id}/actions/trash`，携带 `If-Match` 并在确认后返回列表；错误和版本冲突在页面显示，附件/Blob 不由页面直接删除。
+- 验证：`DefaultResourceServiceTest` 覆盖正常移入、身份/Blob 保留、重复幂等和版本边界；resource 回归 19 项通过；Console 资源详情路由返回 HTTP 200。
 
 ## A09-06 恢复资源
 
 - 日期：2026-09-09
 - 推荐决策：仅 TRASHED 或 ARCHIVED Resource 可恢复为 ACTIVE；恢复保持 Resource UUID、owner、标题及 Attachment/Blob 身份不变，状态、事件和审计在同一 reactive transaction 内提交。
 - 失败语义：跨 owner/不存在统一 NotFound；ACTIVE 或版本不匹配返回 Conflict/Precondition Failed；拒绝路径不写 Resource、不重复产生业务副作用。
-- 验证：`DefaultResourceServiceTest` 覆盖 TRASHED 恢复成功、身份/删除时间清理、ACTIVE 拒绝和版本边界；resource 回归 16 项通过。
+- Console 对接审计：`console/src/views/storage/Archive.vue` 先按 Resource ID 调用详情 API，再调用 `/resources/{resource_id}/actions/restore`，携带 `If-Match`；恢复结果刷新页面并对非法状态/版本错误显示提示。
+- 验证：`DefaultResourceServiceTest` 覆盖 TRASHED 恢复成功、身份/删除时间清理、ACTIVE 拒绝和版本边界；resource 回归 19 项通过；Console 存储归档路由返回 HTTP 200。
 
 ## A09-07 执行符合保留规则的永久删除
 
@@ -616,7 +619,8 @@
 - 推荐决策：当前 Resource Schema 未单独建模 retention deadline，因此以 `TRASHED + deleted_at` 作为当前最小保留条件；永久删除写入 `PURGED` 可审计终态并保留 Resource UUID，不物理删除 Resource、标题或外部身份。
 - 安全边界：入口为独立 purge Action，要求 `If-Match` 和显式 `X-Ikaros-Confirmation: PURGE`；状态事件与 Audit 在同一 reactive transaction 内提交；Attachment/Blob 引用释放和物理 GC 留给其 Owner 按引用、备份及保留规则处理。
 - 失败语义：ACTIVE/ARCHIVED、缺少 `deleted_at` 或版本过期均拒绝且不写入、不审计；owner-scoped 查询隔离其他用户和对象。
-- 验证：`DefaultResourceServiceTest` 覆盖 TRASHED 成功转为 PURGED、身份/Blob 边界、ACTIVE 禁止分支；resource 回归 18 项通过。未启动真实 PostgreSQL/Testcontainers（本机 Docker 不可用），未伪造 SQL 联调证据。
+- Console 对接审计：`console/src/views/storage/Archive.vue` 的永久删除按钮要求用户输入 Resource ID，先读取当前版本，再经显式确认发送 `If-Match` 与 `X-Ikaros-Confirmation: PURGE`；成功清空输入并刷新，失败显示错误，不在页面物理删除 Blob。
+- 验证：`DefaultResourceServiceTest` 覆盖 TRASHED 成功转为 PURGED、身份/Blob 边界、ACTIVE 禁止分支；resource 回归 19 项通过；Console 存储归档路由返回 HTTP 200。未启动真实 PostgreSQL/Testcontainers（本机 Docker 不可用），未伪造 SQL 联调证据。
 
 ## A09 资源生命周期（父 issue）
 
