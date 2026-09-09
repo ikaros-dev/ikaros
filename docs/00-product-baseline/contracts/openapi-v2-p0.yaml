@@ -1310,6 +1310,20 @@ paths:
         '200': { description: Ordered EPUB chapters, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/EbookChapter' } } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /reading/ebook-imports/{import_id}/chapters/{chapter_id}/content:
+    get:
+      tags: [Reading]
+      operationId: getEbookChapterContent
+      x-ikaros-contract-id: reading.get-ebook-chapter-content
+      summary: Read the text content of an EPUB chapter
+      parameters:
+        - { name: import_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: chapter_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: EPUB chapter content, content: { application/json: { schema: { $ref: '#/components/schemas/EbookChapterContent' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
   components:
   securitySchemes:
     bearerAuth:
@@ -1750,6 +1764,14 @@ paths:
         import_status: { type: string, enum: [ACCEPTED, PARSING, SUCCEEDED, FAILED] }
         error_code: { type: [string, 'null'] }
         error_message: { type: [string, 'null'] }
+    EbookChapterContent:
+      type: object
+      required: [chapter_id, title, href, content]
+      properties:
+        chapter_id: { type: string, format: uuid }
+        title: { type: string }
+        href: { type: string }
+        content: { type: string }
     ReorderComicPagesRequest:
       type: object
       required: [chapter_key, entry_ids]

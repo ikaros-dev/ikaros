@@ -33,6 +33,15 @@ class PersistentEbookTocParseServiceTest {
         StepVerifier.create(new PersistentEbookTocParseService(content,imports,chapters,catalog).parse(owner,importId)).expectNextMatches(v->v.status()==ComicImportStatus.FAILED && "ebook.toc_parse_failed".equals(v.errorCode()) && v.errorMessage()!=null).verifyComplete();
         org.mockito.Mockito.verify(chapters).deleteAllByImportId(importId); org.mockito.Mockito.verify(catalog, org.mockito.Mockito.never()).createChapter(any(),any(),any(),any());
     }
+    @Test void readsSelectedChapterTextForOwner() throws Exception {
+        UUID owner=UUID.randomUUID(), importId=UUID.randomUUID(), attachment=UUID.randomUUID(), chapterId=UUID.randomUUID(); Instant now=Instant.now();
+        EbookImportEntity record=new EbookImportEntity(importId,owner,attachment,UUID.randomUUID(),UUID.randomUUID(),ComicImportStatus.SUCCEEDED.name(),null,null,"key",now,now,0L);
+        EbookChapterEntity chapter=new EbookChapterEntity(UUID.randomUUID(),importId,chapterId,"OEBPS/chapter.xhtml","第一章",0);
+        AttachmentContentService content=org.mockito.Mockito.mock(AttachmentContentService.class); EbookImportRepository imports=org.mockito.Mockito.mock(EbookImportRepository.class); EbookChapterRepository chapters=org.mockito.Mockito.mock(EbookChapterRepository.class);
+        when(imports.findByIdAndOwnerId(importId,owner)).thenReturn(Mono.just(record)); when(chapters.findById(chapter.id())).thenReturn(Mono.just(chapter)); when(content.read(owner,attachment)).thenReturn(Flux.just(DefaultDataBufferFactory.sharedInstance.wrap(epubChapterBytes())));
+        StepVerifier.create(new PersistentEbookChapterContentService(content,imports,chapters).get(owner,importId,chapter.id())).expectNextMatches(v->v.chapterId().equals(chapterId) && v.content().contains("第一章正文")).verifyComplete();
+    }
     private byte[] epubBytes() throws Exception { ByteArrayOutputStream output=new ByteArrayOutputStream(); try(ZipOutputStream zip=new ZipOutputStream(output)){ add(zip,"META-INF/container.xml","<container><rootfiles><rootfile full-path=\"OEBPS/content.opf\"/></rootfiles></container>"); add(zip,"OEBPS/content.opf","<package xmlns=\"urn:oasis:names:tc:opendocument:xmlns:container\"><manifest><item id=\"c1\" href=\"chapter-1.xhtml\"/><item id=\"c2\" href=\"chapter-2.xhtml\"/></manifest><spine><itemref idref=\"c2\"/><itemref idref=\"c1\"/></spine></package>"); } return output.toByteArray(); }
+    private byte[] epubChapterBytes() throws Exception { ByteArrayOutputStream output=new ByteArrayOutputStream(); try(ZipOutputStream zip=new ZipOutputStream(output)){ add(zip,"OEBPS/chapter.xhtml","<html xmlns=\"http://www.w3.org/1999/xhtml\"><body><h1>第一章</h1><p>第一章正文</p></body></html>"); } return output.toByteArray(); }
     private void add(ZipOutputStream zip,String name,String value) throws Exception { zip.putNextEntry(new ZipEntry(name)); zip.write(value.getBytes(StandardCharsets.UTF_8)); zip.closeEntry(); }
 }
