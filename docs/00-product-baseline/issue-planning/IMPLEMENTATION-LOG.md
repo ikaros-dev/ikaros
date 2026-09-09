@@ -919,3 +919,9 @@
 - 失败语义：成功或进行中的导入不能通过重试接口重复执行；重试失败继续保留 `FAILED` 和明确错误原因，不伪造成功。
 - 契约追溯：新增 `reading.retry-comic-import-parse`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentComicImportParseServiceTest`、`PersistentComicImportServiceTest` 共 6/6；Console `pnpm typecheck` 通过；主要提交：`b71d7a4a`。
+## B04-01 按页阅读
+- 日期：2026-09-10
+- 实现：Reading 新增按章节读取有序漫画页列表和按页读取 Attachment 内容的 API；服务端先校验章节所有权，再读取页面对应附件，避免通过页面 ID 越权读取。
+- Console：阅读库新增“按页阅读”入口，输入章节 ID 后通过真实 API 加载页面并渲染图片，同时展示加载失败和空结果状态。
+- 契约追溯：新增 `reading.list-comic-chapter-pages`、`reading.get-comic-page-content`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：Reading 模块 compile BUILD SUCCESS；Console `pnpm typecheck` BUILD SUCCESS；主要提交：`30bc58d0`。

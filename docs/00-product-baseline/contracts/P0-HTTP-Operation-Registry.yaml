@@ -25,6 +25,8 @@ operations:
   - { method: GET, path: '/reading/comic-imports/{import_id}/entries', operation_id: listComicImportEntries, contract_id: reading.list-comic-import-entries, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: '/reading/comic-imports/{import_id}/actions/reorder-pages', operation_id: reorderComicPages, contract_id: reading.reorder-comic-pages, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: '/reading/comic-imports/{import_id}/actions/retry-parse', operation_id: retryComicImportParse, contract_id: reading.retry-comic-import-parse, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/reading/chapters/{chapter_id}/pages', operation_id: listComicChapterPages, contract_id: reading.list-comic-chapter-pages, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/reading/pages/{page_id}/content', operation_id: getComicPageContent, contract_id: reading.get-comic-page-content, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /background-tasks, operation_id: submitBackgroundTask, contract_id: operations.submit-background-task, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /resources, operation_id: createResource, contract_id: resource.create-resource, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /resources, operation_id: listResources, contract_id: resource.list-resources, source: contracts/openapi-v2-p0.yaml }

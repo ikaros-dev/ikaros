@@ -1100,6 +1100,48 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
+  /reading/chapters/{chapter_id}/pages:
+    get:
+      tags: [Reading]
+      operationId: listComicChapterPages
+      x-ikaros-contract-id: reading.list-comic-chapter-pages
+      summary: List ordered comic pages in a chapter
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Ordered comic pages
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/ComicPage' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reading/pages/{page_id}/content:
+    get:
+      tags: [Reading]
+      operationId: getComicPageContent
+      x-ikaros-contract-id: reading.get-comic-page-content
+      summary: Read comic page content
+      parameters:
+        - name: page_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Comic page bytes, content: { application/octet-stream: { schema: { type: string, format: binary } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
 components:
   securitySchemes:
     bearerAuth:
@@ -1425,6 +1467,18 @@ components:
         entry_name: { type: string }
         page_order: { type: integer, minimum: 0 }
         page_role: { type: string, enum: [NORMAL, COVER] }
+    ComicPage:
+      type: object
+      required: [id, chapter_id, attachment_id, page_order, page_role]
+      properties:
+        id: { type: string, format: uuid }
+        chapter_id: { type: string, format: uuid }
+        attachment_id: { type: string, format: uuid }
+        page_order: { type: integer, minimum: 0 }
+        page_role: { type: string }
+        width: { type: [integer, 'null'] }
+        height: { type: [integer, 'null'] }
+        spread_hint: { type: [string, 'null'] }
     ReorderComicPagesRequest:
       type: object
       required: [chapter_key, entry_ids]
