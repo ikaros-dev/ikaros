@@ -999,3 +999,8 @@
 - Console：电子书章节阅读对话框支持添加当前章节书签，导入记录支持查看/移除书签；所有操作调用真实 API，并展示加载、空结果、成功和错误状态。
 - 契约追溯：新增 `reading.create-bookmark`、`reading.list-bookmarks`、`reading.delete-bookmark`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentReadingBookmarkServiceTest` 2/2；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；运行时 migration `202609100500` 已应用，新 API 未认证请求返回 401；主要提交：`0a784be9`。
+## B06-04 保存阅读位置
+- 日期：2026-09-10
+- 实现：电子书章节打开时建立 Reading Session，使用 `EPUB_LOCATION` 逻辑定位；保存按钮通过 `If-Match` 更新 Session，并在同一进度链路持久化 Work/Edition 的 Reading Progress。
+- Console：章节阅读对话框新增“保存阅读位置”，显示保存中、成功和失败状态；保存失败不伪造成功结果。
+- 验证：`PersistentReadingProgressServiceTest` 1/1；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`e78dd8f1`。
