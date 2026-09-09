@@ -1,0 +1,7 @@
+package run.ikaros.music;
+import static org.junit.jupiter.api.Assertions.*; import java.nio.charset.StandardCharsets; import java.util.Arrays; import org.junit.jupiter.api.Test;
+class MusicTagParserTest {
+    @Test void parsesId3TagsWithoutChangingTrackIdentity() { byte[] title=tag("TIT2","Song"); byte[] artist=tag("TPE1","Artist"); int size=title.length+artist.length; byte[] bytes=new byte[10+size]; bytes[0]='I';bytes[1]='D';bytes[2]='3';bytes[3]=3;bytes[6]=(byte)(size>>21);bytes[7]=(byte)(size>>14);bytes[8]=(byte)(size>>7);bytes[9]=(byte)size; System.arraycopy(title,0,bytes,10,title.length);System.arraycopy(artist,0,bytes,10+title.length,artist.length); MusicTagParser.Parsed parsed=MusicTagParser.parse("fallback.mp3",bytes); assertEquals("Song",parsed.title()); assertEquals("Artist",parsed.artist()); assertEquals("ID3",parsed.source()); }
+    @Test void fallsBackToAttachmentNameWhenTagsAreAbsent() { MusicTagParser.Parsed parsed=MusicTagParser.parse("folder/untagged.flac",new byte[]{'f','L','a','C'}); assertEquals("untagged",parsed.title()); assertEquals("VORBIS",parsed.source()); }
+    private byte[] tag(String id,String text){byte[] value=text.getBytes(StandardCharsets.UTF_8);byte[] frame=new byte[10+1+value.length];System.arraycopy(id.getBytes(StandardCharsets.ISO_8859_1),0,frame,0,4);int n=1+value.length;frame[4]=(byte)(n>>24);frame[5]=(byte)(n>>16);frame[6]=(byte)(n>>8);frame[7]=(byte)n;frame[10]=3;System.arraycopy(value,0,frame,11,value.length);return frame;}
+}
