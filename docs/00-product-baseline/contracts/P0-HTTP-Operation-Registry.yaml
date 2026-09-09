@@ -44,6 +44,8 @@ operations:
   - { method: DELETE, path: '/reading/bookmarks/{bookmark_id}', operation_id: deleteReadingBookmark, contract_id: reading.delete-bookmark, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /music/imports, operation_id: createMusicImport, contract_id: music.create-import, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /music/imports, operation_id: listMusicImports, contract_id: music.list-imports, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: /music/tracks/{track_id}/audio-sources, operation_id: listMusicAudioSources, contract_id: music.list-audio-sources, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: /music/playback/tracks/{track_id}/sessions, operation_id: startMusicPlayback, contract_id: music.start-playback, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /music/tracks/{track_id}/metadata/recognize, operation_id: recognizeMusicMetadata, contract_id: music.recognize-metadata, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /music/tracks/{track_id}/metadata/candidates, operation_id: listMusicMetadataCandidates, contract_id: music.list-metadata-candidates, source: contracts/openapi-v2-p0.yaml }
   - { method: PATCH, path: /music/metadata-candidates/{candidate_id}, operation_id: updateMusicMetadataCandidate, contract_id: music.update-metadata-candidate, source: contracts/openapi-v2-p0.yaml }

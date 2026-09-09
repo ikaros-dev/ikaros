@@ -1166,6 +1166,34 @@ paths:
       responses:
         '200': { description: Imported music, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicImport' } } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
+  /music/tracks/{track_id}/audio-sources:
+    get:
+      tags: [Music]
+      operationId: listMusicAudioSources
+      x-ikaros-contract-id: music.list-audio-sources
+      summary: List playable audio sources for a music track
+      parameters:
+        - { name: track_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Audio sources, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicAudioSource' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /music/playback/tracks/{track_id}/sessions:
+    post:
+      tags: [Music]
+      operationId: startMusicPlayback
+      x-ikaros-contract-id: music.start-playback
+      summary: Start playback for a music track
+      parameters:
+        - { name: track_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/StartMusicPlaybackRequest' } } } }
+      responses:
+        '200': { description: Active playback session, content: { application/json: { schema: { $ref: '#/components/schemas/MusicPlaybackSession' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /music/tracks/{track_id}/metadata/recognize:
     post:
       tags: [Music]
@@ -1804,6 +1832,38 @@ paths:
         error_message: { type: [string, 'null'] }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+    MusicAudioSource:
+      type: object
+      required: [id, track_id, attachment_id, availability, preference_weight]
+      properties:
+        id: { type: string, format: uuid }
+        track_id: { type: string, format: uuid }
+        attachment_id: { type: string, format: uuid }
+        codec: { type: [string, 'null'] }
+        container: { type: [string, 'null'] }
+        duration_millis: { type: [integer, 'null'], format: int64, minimum: 0 }
+        availability: { type: string }
+        preference_weight: { type: integer }
+    StartMusicPlaybackRequest:
+      type: object
+      required: [source_id]
+      additionalProperties: false
+      properties:
+        source_id: { type: string, format: uuid }
+        queue_id: { type: [string, 'null'], format: uuid }
+        position_millis: { type: integer, format: int64, minimum: 0 }
+    MusicPlaybackSession:
+      type: object
+      required: [id, track_id, source_id, state, started_at, position_millis]
+      properties:
+        id: { type: string, format: uuid }
+        track_id: { type: string, format: uuid }
+        source_id: { type: string, format: uuid }
+        queue_id: { type: [string, 'null'], format: uuid }
+        state: { type: string, enum: [ACTIVE, COMPLETED, SKIPPED, ABANDONED] }
+        started_at: { type: string, format: date-time }
+        ended_at: { type: [string, 'null'], format: date-time }
+        position_millis: { type: integer, format: int64, minimum: 0 }
     MusicMetadataCandidate:
       type: object
       required: [id, track_id, attachment_id, source, created_at, updated_at, version]

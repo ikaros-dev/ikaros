@@ -1049,3 +1049,9 @@
 - 日期：2026-09-10
 - 汇总：B07-01 至 B07-05 均已完成后端能力、契约追溯、自动化验证和 Console `/music` 真实 API 对接；导入、识别候选、人工修正、艺术家/专辑关联、重复检测均有明确 loading、空态、成功、冲突或错误反馈。
 - 主要提交：`d5ba529b`、`7aadd7dd`、`efa29eef`、`60ef8501`、`8b216f07`。
+## B08-01 播放指定歌曲
+- 日期：2026-09-10
+- 实现：补齐音乐 Audio Source 列表和播放会话启动的公开契约；播放前校验 Track 所有权、Audio Source 所有权及 `AVAILABLE` 状态，成功后持久化 ACTIVE Playback Session，非法位置、目标不存在和越权来源均拒绝且不创建会话。
+- Console：`/music` 导入记录点击歌曲即可查询可用 Audio Source、创建播放会话并获取授权预览 URL，通过 HTML5 Audio 播放；页面展示准备中、授权/播放失败、当前会话和关闭状态。
+- 契约追溯：新增 `music.list-audio-sources`、`music.start-playback`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`PersistentMusicPlaybackServiceTest` 3/3；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`5a7de3f1`。
