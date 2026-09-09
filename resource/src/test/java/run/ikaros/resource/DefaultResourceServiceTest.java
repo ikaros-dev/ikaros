@@ -92,6 +92,19 @@ class DefaultResourceServiceTest {
     }
 
     @Test
+    void hidesResourceFromDifferentOwner() {
+        UUID otherOwnerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        when(resourceRepository.findByIdAndOwnerId(resourceId, otherOwnerId)).thenReturn(Mono.empty());
+
+        StepVerifier.create(service.get(otherOwnerId, resourceId))
+            .expectError(run.ikaros.common.NotFoundException.class)
+            .verify();
+        org.mockito.Mockito.verify(resourceRepository).findByIdAndOwnerId(resourceId, otherOwnerId);
+        org.mockito.Mockito.verifyNoMoreInteractions(resourceRepository);
+    }
+
+    @Test
     void movesResourceToTrashWithoutDeletingIt() {
         UUID ownerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();

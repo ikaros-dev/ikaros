@@ -203,3 +203,4 @@
 - 推荐决策：复用 Resource Owner 的创建路径，以 `owner_id` 固定资源归属，同时在同一事务创建首个主标题；创建结果支持 `Idempotency-Key` replay/conflict，避免重试产生重复资源。
 - 失败语义：非法类型/标题/locale 在 Application 层拒绝；幂等 key 同请求返回原资源，不同请求返回 Conflict；资源、标题、事件、审计或幂等记录任一失败不返回伪成功。
 - 验证：`DefaultResourceServiceTest` 覆盖创建及首标题、非法输入、幂等重放/冲突和审计事件；资源回归 13 项通过。真实 PostgreSQL 约束、事务回滚和并发幂等仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
+- 追加验证：补充跨 owner 读取拒绝测试，资源服务回归 `DefaultResourceServiceTest` 8 项通过。
