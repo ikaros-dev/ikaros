@@ -45,6 +45,13 @@
 - Console：`/setup` 向导真实检查 `/health/ready`，绑定管理员用户名/显示名/邮箱/密码，调用 `/auth/register`，展示校验、加载和失败状态，成功后跳转登录；不展示密码摘要。
 - 验证：`AuthenticationServiceTest` 4/4；Console `pnpm typecheck` 与 `pnpm build` 通过；Console `/setup` 返回 200；主要提交：`8f49bc35`。
 
+## A15-01 添加 Provider
+
+- 日期：2026-09-10
+- 实现审计：Storage Provider Registry 支持校验 Provider 标识、类型、层级和 `secret://` 引用，保存凭据时加密；重复标识、缺失凭据和明文凭据 metadata 拒绝且不落库。
+- Console：`存储 → Provider` 页面真实加载 Provider，支持创建、启用/停用、探测、状态查看和凭据更新，并提供加载/失败反馈；凭据响应不展示明文。
+- 验证：`PersistentStorageProviderRegistryTest` 2/2；Console 页面 `/storage-center/providers` 返回 200；未认证创建请求返回 401；主要提交：本轮测试补强与追溯记录。
+
 ## A18 副本与 Blob 清理（父 issue）
 
 - 日期：2026-09-09
