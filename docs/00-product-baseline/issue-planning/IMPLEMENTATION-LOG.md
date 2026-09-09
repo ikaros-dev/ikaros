@@ -507,3 +507,11 @@
 - 推荐决策：关系类型使用枚举与数据库 CHECK 约束，双方 Resource 使用 FK；应用层提前拒绝空目标/类型和负 position，自关联拒绝，数据库唯一约束最终裁决重复关系。
 - 失败语义：无效请求、任一资源无权/不存在、自关联和重复关系均显式失败，不保存、不审计、不发布错误成功事件。
 - 验证：`DefaultResourceRelationServiceTest` 6/6、`ResourceRelationControllerTest` 1/1 通过，覆盖指定类型、无效请求、自关联、重复冲突、双方 owner、空结果和移除边界；真实 PostgreSQL 约束联调仍需 Docker/Testcontainers。
+
+## A12 资源关系管理（父 issue）
+
+- 日期：2026-09-09
+- 本地验收结论：A12-01 至 A12-04 已按顺序完成，覆盖指定类型关系创建、关联资源展示、关系移除及无效/重复关系阻止。
+- 主要 commits：`dfa9687e`、`52e15855`、`0b73425f`、`1b0f113a`。
+- 统一决策：关系类型、方向和双方 Resource owner 均由 Application/Schema 校验；查询和删除遵守先授权后访问、惰性副作用；关系操作不删除 Resource。
+- 验证证据：关系服务与控制器回归覆盖正常、空结果、未知资源/关系、自关联、重复和非法输入；真实 PostgreSQL FK/唯一约束联调仍需 Docker/Testcontainers。
