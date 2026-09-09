@@ -516,6 +516,14 @@
 - 失败语义：未知/无权 Resource 统一 NotFound；重复收藏不重复保存/审计，重复取消不产生删除/审计；成功路径写 Audit。
 - 验证：`DefaultFavoriteServiceTest` 4/4、`FavoriteControllerTest` 2/2 通过，覆盖添加、重复添加、查询未收藏、未知资源和公开入口；真实 PostgreSQL 唯一约束联调仍需 Docker/Testcontainers。
 
+## A13-02 管理个人标签
+
+- 日期：2026-09-09
+- 推荐决策：标签关系按 `(owner_id, resource_id, name)` 隔离并唯一；添加幂等，列表按名称返回，删除只解除用户标签关系，不修改 Resource。
+- 实现修复：添加、列表、删除均改为先 owner 校验再惰性访问标签仓储；未知/无权 Resource 不访问标签数据，不产生写入或审计副作用。
+- 失败语义：重复标签保持现有关系；未知 Resource/标签统一 NotFound；删除成功写审计和事件。
+- 验证：`DefaultResourceTagServiceTest` 4/4 通过，覆盖添加、列表、删除、未知 Resource 和审计路径；真实 PostgreSQL 唯一约束联调仍需 Docker/Testcontainers。
+
 ## A12 资源关系管理（父 issue）
 
 - 日期：2026-09-09
