@@ -200,6 +200,7 @@ Cursor 对客户端 opaque。
 | `storage.create-provider` | `storage.provider.manage` | REQUIRED | no | `storage.provider.created` |
 | `storage.probe-provider` | `storage.provider.manage` | REQUIRED | no | — |
 | `storage.replace-provider-credentials` | `storage.provider.manage` | REQUIRED | no | — |
+| `storage.get-provider-status` | `storage.provider.read` | REQUIRED | no | — |
 | `storage.update-provider` | `storage.provider.manage` | OPTIONAL | no | `storage.provider.updated` |
 | `storage.enable-provider` | `storage.provider.manage` | NATURAL | no | `storage.provider.enabled` |
 | `storage.disable-provider` | `storage.provider.manage` | NATURAL | maybe drain precondition | `storage.provider.disabled` |

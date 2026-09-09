@@ -650,3 +650,9 @@
 - 实现修复：`POST /api/admin/storage-providers/{provider_id}/credentials` 先加密替换凭据，再调用 Provider probe；补齐 OpenAPI、HTTP Operation 和 Command 契约。
 - 失败语义：目标 Provider 不存在返回 NotFound；非法请求由 Bean Validation 拒绝；错误凭据/过期凭据只返回 `FAILED` 与稳定错误码，不泄露认证材料或目标对象数据。
 - 验证：沿用 `StorageProviderCredentialServiceTest` 验证凭据以当前密钥加密保存；Provider probe 的成功、未支持和目标不存在分支由 `StorageProviderProbeServiceTest` 3/3 覆盖，Maven BUILD SUCCESS。
+## A15-05 查看容量和健康状态
+- 日期：2026-09-09
+- 推荐决策：增加只读入口 `GET /api/admin/storage-providers/{provider_id}/status`；健康状态实时复用 Provider probe，容量从 Provider 自有 metadata 读取，缺失返回 `null`，不把未知容量伪装为 0。
+- 实现修复：新增状态查询服务与 API 视图，支持 Provider 状态、健康摘要、可选容量/已用容量和检查时间；目标不存在沿用 NotFound。
+- 失败语义：probe 失败或过期不会显示为健康成功；未配置容量不产生推测值；不触碰 Attachment、Blob、Placement。
+- 验证：`StorageProviderStatusServiceTest` 2/2，覆盖正常和容量空结果/目标不存在；与既有 probe/registry 测试合计 Maven BUILD SUCCESS。

@@ -23,15 +23,18 @@ public class StorageProviderController {
     private final StorageProviderCredentialRotationService credentialRotation;
     private final StorageProviderCredentialService credentialService;
     private final StorageProviderProbeService probeService;
+    private final StorageProviderStatusService statusService;
 
     public StorageProviderController(StorageProviderRegistry registry,
                                      StorageProviderCredentialRotationService credentialRotation,
                                      StorageProviderCredentialService credentialService,
-                                     StorageProviderProbeService probeService) {
+                                     StorageProviderProbeService probeService,
+                                     StorageProviderStatusService statusService) {
         this.registry = registry;
         this.credentialRotation = credentialRotation;
         this.credentialService = credentialService;
         this.probeService = probeService;
+        this.statusService = statusService;
     }
 
     @PostMapping
@@ -60,6 +63,11 @@ public class StorageProviderController {
     @PostMapping("/{providerId}/probe")
     public Mono<StorageProviderProbeResult> probe(@PathVariable UUID providerId) {
         return probeService.probe(providerId);
+    }
+
+    @GetMapping("/{providerId}/status")
+    public Mono<StorageProviderStatusView> status(@PathVariable UUID providerId) {
+        return statusService.get(providerId);
     }
 
     @PostMapping("/{providerId}/actions/rotate-credentials")

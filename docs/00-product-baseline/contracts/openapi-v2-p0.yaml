@@ -400,6 +400,35 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /admin/storage-providers/{provider_id}/status:
+    get:
+      tags: [Admin Storage]
+      operationId: getStorageProviderStatus
+      x-ikaros-contract-id: storage.get-provider-status
+      summary: View storage provider health and optional capacity
+      parameters:
+        - name: provider_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Provider status
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [provider_id, provider_status, health, checked_at]
+                properties:
+                  provider_id: { type: string, format: uuid }
+                  provider_status: { type: string }
+                  health: { $ref: '#/components/schemas/StorageProviderProbeResult' }
+                  capacity_bytes: { type: [integer, 'null'], format: int64, minimum: 0 }
+                  used_bytes: { type: [integer, 'null'], format: int64, minimum: 0 }
+                  checked_at: { type: string, format: date-time }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /admin/users:
     get:
       tags: [Admin Identity]
