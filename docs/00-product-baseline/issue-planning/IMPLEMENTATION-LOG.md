@@ -1,5 +1,13 @@
 # Ikaros V2 实施记录
 
+## A18-01 校验副本完整性
+
+- 日期：2026-09-09
+- 推荐决策：通过 `POST /api/storage/blobs/{blobId}/actions/verify` 读取活动副本并校验 Blob 的 SHA-256 与大小；成功保留副本可用，失败将 Blob 标记为 CORRUPTED、Placement 标记为 UNAVAILABLE，并写入对应 durable event。
+- 原因：完整性失败的副本不能继续作为内容读取来源；Attachment、Blob、Placement 身份仍分离，校验结果只更新 Owner 状态，不改变 Blob 内容身份。
+- 失败语义：Blob 不存在/无权访问、无可读副本、Provider 不可用或无匹配 Reader 均拒绝；校验失败不产生 VERIFIED 状态，并阻止后续读取该副本。
+- 验证：`mvn -pl storage -am -Dtest=BlobVerificationServiceTest,Sha256BlobIntegrityServiceTest -Dsurefire.failIfNoSpecifiedTests=false test`；成功匹配、损坏内容和 SHA-256 校验分支共 4 个测试全部通过。
+
 ## A17 归档与恢复（父 issue）
 
 - 日期：2026-09-09

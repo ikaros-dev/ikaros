@@ -50,7 +50,8 @@ public class BlobVerificationService {
         BlobAvailability availability = result.status() == BlobIntegrityStatus.VERIFIED
             ? BlobAvailability.AVAILABLE : BlobAvailability.CORRUPTED;
         BlobPlacementEntity updatedPlacement = new BlobPlacementEntity(placement.id(), placement.blobId(), placement.provider(),
-            placement.storageTier(), placement.objectKey(), placement.placementState(),
+            placement.storageTier(), placement.objectKey(), result.status() == BlobIntegrityStatus.VERIFIED
+                ? placement.placementState() : PlacementState.UNAVAILABLE,
             result.status() == BlobIntegrityStatus.VERIFIED ? now : placement.verifiedAt(), placement.createdAt(), placement.version());
         BlobEntity updatedBlob = new BlobEntity(blob.id(), blob.hashAlgorithm(), blob.sha256(), blob.sizeBytes(), blob.mediaType(),
             availability, blob.createdAt(), blob.version());
