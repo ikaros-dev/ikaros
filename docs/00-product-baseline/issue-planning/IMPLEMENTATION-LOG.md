@@ -317,3 +317,11 @@
 - 安全边界：审计仍不保存 JWT、OTP、Verification Grant、密码或 Secret 明文；固定替换为 `[REDACTED]`，保留非敏感结果字段和审计主体/目标关联。
 - 失败语义：空详情归一为 `{}`；审计事件仍独立落库，脱敏不改变审计成功/失败语义。
 - 验证：`DefaultAuditServiceTest` 覆盖用户/系统事件和敏感 token/password 值落库前脱敏；operations 模块 3 项通过。
+
+## A08 操作审计（父 issue）
+
+- 日期：2026-09-09
+- 本地验收结论：A08-01 至 A08-05 已按顺序完成，覆盖资源管理审计、权限/凭据审计、按操作者/时间查询、单条关联对象查看和敏感字段脱敏。
+- 主要 commits：`2fc5c986`、`40cfa377`、`86b6448c`、`3511cd42`、`0f50041d`。
+- 统一决策：审计与 Resource Activity 分离；查询要求 `system.audit.read` 并实时复核 RBAC；事件按稳定时间/id 排序；写入边界集中脱敏且不保存认证材料明文。
+- 验证证据：审计与授权相关回归通过；operations 查询/写入测试和授权过滤器测试均通过。真实 PostgreSQL 分页 SQL、约束和完整 API 联调仍需 Docker/Testcontainers，未伪造运行证据。
