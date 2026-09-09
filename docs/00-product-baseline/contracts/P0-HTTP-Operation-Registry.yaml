@@ -35,6 +35,8 @@ operations:
   - { method: POST, path: /reading/ebook-imports, operation_id: createEbookImport, contract_id: reading.create-ebook-import, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /reading/ebook-imports, operation_id: listEbookImports, contract_id: reading.list-ebook-imports, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: '/reading/ebook-imports/{import_id}', operation_id: getEbookImport, contract_id: reading.get-ebook-import, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/reading/ebook-imports/{import_id}/actions/parse-toc', operation_id: parseEbookToc, contract_id: reading.parse-ebook-toc, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/reading/ebook-imports/{import_id}/chapters', operation_id: listEbookChapters, contract_id: reading.list-ebook-chapters, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /background-tasks, operation_id: submitBackgroundTask, contract_id: operations.submit-background-task, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /resources, operation_id: createResource, contract_id: resource.create-resource, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /resources, operation_id: listResources, contract_id: resource.list-resources, source: contracts/openapi-v2-p0.yaml }

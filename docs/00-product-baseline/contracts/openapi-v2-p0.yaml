@@ -1270,6 +1270,33 @@ paths:
         '200': { description: Ebook import, content: { application/json: { schema: { $ref: '#/components/schemas/EbookImport' } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /reading/ebook-imports/{import_id}/actions/parse-toc:
+    post:
+      tags: [Reading]
+      operationId: parseEbookToc
+      x-ikaros-contract-id: reading.parse-ebook-toc
+      summary: Parse EPUB package table of contents
+      parameters:
+        - { name: import_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Parsed EPUB import, content: { application/json: { schema: { $ref: '#/components/schemas/EbookImport' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /reading/ebook-imports/{import_id}/chapters:
+    get:
+      tags: [Reading]
+      operationId: listEbookChapters
+      x-ikaros-contract-id: reading.list-ebook-chapters
+      summary: List EPUB chapters in reading order
+      parameters:
+        - { name: import_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Ordered EPUB chapters, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/EbookChapter' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
   components:
   securitySchemes:
     bearerAuth:
@@ -1685,6 +1712,16 @@ paths:
         error_message: { type: [string, 'null'] }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+    EbookChapter:
+      type: object
+      required: [id, import_id, chapter_id, href, title, sort_order]
+      properties:
+        id: { type: string, format: uuid }
+        import_id: { type: string, format: uuid }
+        chapter_id: { type: string, format: uuid }
+        href: { type: string }
+        title: { type: string }
+        sort_order: { type: integer, minimum: 0 }
     ReorderComicPagesRequest:
       type: object
       required: [chapter_key, entry_ids]

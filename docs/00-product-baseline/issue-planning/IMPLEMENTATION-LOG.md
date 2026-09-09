@@ -957,3 +957,10 @@
 - Console：新增“电子书导入”后台菜单页，支持提交 Attachment ID、书名/语言、导入记录刷新和失败状态展示，全部调用真实 Reading API。
 - 契约追溯：新增 `reading.create-ebook-import`、`reading.list-ebook-imports`、`reading.get-ebook-import`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentEbookImportServiceTest` 2/2；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`fa41fcf3`、`8b73ce26`。
+## B05-02 解析目录
+- 日期：2026-09-10
+- 实现：流式读取 EPUB Attachment，安全解析 `META-INF/container.xml`、OPF manifest/spine，按 spine 稳定顺序创建 Reading Chapter，并以导入关联表持久化 href/title/order。
+- 失败语义：缺少 container/rootfile、无可阅读 spine、附件不可读或损坏时导入进入 `FAILED`，清理本次章节关联，不伪造成功目录。
+- Console：电子书导入页新增“解析目录/重试解析目录”和“查看目录”，通过真实 API 展示章节顺序、内容路径、加载/空结果/错误状态。
+- 契约追溯：新增 `reading.parse-ebook-toc`、`reading.list-ebook-chapters`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`PersistentEbookTocParseServiceTest`、`PersistentEbookImportServiceTest` 共 3/3；Reading compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`e02de228`、`ccc0db0f`。
