@@ -487,7 +487,7 @@
 - 安全边界：网关 API Key 只从环境 Secret 注入 Authorization Header；OTP 仅存在当前投递调用体，错误只返回固定非敏感信息，不记录网关响应正文或验证码。
 - 失败语义：用户邮箱不可用或网关返回错误均失败，不产生伪成功；发送仍由 Email OTP Provider 的用途绑定、过期和频率限制控制。
 - Console 对接审计：由于 endpoint/from/API Key 属于部署 Secret 边界，Console 不提供可泄露或覆盖环境 Secret 的编辑器；`console/src/views/security/Authentication.vue` 的“发起验证”是真实邮件投递链路入口，按用途调用 challenge API，页面只展示状态/过期时间并对投递失败显示错误，不显示 OTP、API Key 或网关响应。
-- 验证：`HttpEmailOtpDeliveryTest` 覆盖 HTTP 成功、Authorization Secret 传递、网关错误脱敏；连同 A07-01 回归当前 15 项通过；Console `pnpm typecheck`、`pnpm build` 通过。真实第三方邮件网关联调需要部署环境提供 endpoint/from/API Key，当前未发送外部邮件。
+- 验证：`HttpEmailOtpDeliveryTest` 覆盖 HTTP 成功、Authorization Secret 传递、网关错误脱敏；连同 A07-01 回归当前 14 项通过；Console `pnpm typecheck`、`pnpm build` 通过。真实第三方邮件网关联调需要部署环境提供 endpoint/from/API Key，当前未发送外部邮件。
 
 ## A07-02 验证成功后执行限定操作
 
