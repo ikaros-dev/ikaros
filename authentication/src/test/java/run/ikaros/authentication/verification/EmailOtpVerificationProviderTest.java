@@ -192,6 +192,27 @@ class EmailOtpVerificationProviderTest {
     }
 
     @Test
+    void recordsIntermediateFailureWithoutRepeatingBusinessSideEffects() {
+        UUID userId = UUID.randomUUID();
+        UUID challengeId = UUID.randomUUID();
+        Instant now = Instant.now();
+        VerificationChallengeEntity challenge = new VerificationChallengeEntity(challengeId, userId,
+            VerificationMethod.EMAIL_OTP, VerificationPurpose.CHANGE_SECURITY_SETTING, null, "digest", now,
+            now.plusSeconds(300), 1, 5, null, VerificationChallengeStatus.ISSUED, 0L);
+        when(challengeRepository.findById(challengeId)).thenReturn(Mono.just(challenge));
+        when(otpHasher.matches("000000", "digest")).thenReturn(false);
+        when(challengeRepository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(auditService.record(eq(userId), eq("security.verification.failed"), eq("VERIFICATION_CHALLENGE"),
+            eq(challengeId), eq("{}"))).thenReturn(Mono.empty());
+
+        StepVerifier.create(provider.verify(userId, challengeId, new VerifyOtpRequest("000000")))
+            .expectErrorSatisfies(error -> assertThat(error).hasMessage("验证码错误"))
+            .verify();
+        verify(challengeRepository).save(org.mockito.ArgumentMatchers.argThat(saved ->
+            saved.attemptCount() == 2 && saved.status() == VerificationChallengeStatus.ISSUED));
+    }
+
+    @Test
     void cancelsIssuedChallenge() {
         UUID userId = UUID.randomUUID();
         UUID challengeId = UUID.randomUUID();
