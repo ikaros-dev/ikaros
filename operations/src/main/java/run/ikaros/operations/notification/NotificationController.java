@@ -36,4 +36,5 @@ public class NotificationController {
                                             @PathVariable UUID notificationId) {
         return notifications.markRead(actorId, notificationId);
     }
+
 }

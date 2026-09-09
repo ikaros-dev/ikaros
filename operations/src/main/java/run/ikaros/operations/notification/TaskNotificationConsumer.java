@@ -15,10 +15,12 @@ public class TaskNotificationConsumer implements DurableEventConsumer {
     private static final String FAILED = "operations.background-task.failed";
     private static final String TIMED_OUT = "operations.background-task.timed-out";
     private final NotificationService notifications;
+    private final NotificationPreferenceService preferences;
     private final ObjectMapper mapper;
 
-    public TaskNotificationConsumer(NotificationService notifications, ObjectMapper mapper) {
-        this.notifications = notifications;
+    public TaskNotificationConsumer(NotificationService notifications, NotificationPreferenceService preferences,
+                                    ObjectMapper mapper) {
+        this.notifications = notifications; this.preferences = preferences;
         this.mapper = mapper;
     }
 
@@ -32,10 +34,11 @@ public class TaskNotificationConsumer implements DurableEventConsumer {
         if (event == null || !isTaskTerminal(event.eventType()) || event.subjectId() == null) {
             return Mono.empty();
         }
-        return recipient(event).flatMap(recipient -> notifications.create(new NotificationEntity(
+        return recipient(event).flatMap(recipient -> preferences.enabled(recipient, status(event.eventType())))
+            .filter(Boolean.TRUE::equals).flatMap(ignored -> recipient(event).flatMap(recipient -> notifications.create(new NotificationEntity(
             null, event.id(), recipient, "TASK", event.eventType(), title(event.eventType()),
             body(event), "FAILED".equals(status(event.eventType())) ? "HIGH" : "NORMAL",
-            "UNREAD", event.subjectId(), null, event.occurredAt(), null, null, 0L))).then();
+            "UNREAD", event.subjectId(), null, event.occurredAt(), null, null, 0L)))).then();
     }
 
     private Mono<UUID> recipient(DurableEvent event) {
