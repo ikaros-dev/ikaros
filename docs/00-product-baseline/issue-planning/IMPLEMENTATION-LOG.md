@@ -174,3 +174,11 @@
 - 权限选择：自助入口要求已认证主体且目标固定为自身；管理员入口沿用 `system.user.manage` 的用户管理权限，拒绝逻辑由统一授权过滤器执行。
 - 失败语义：未知用户返回 NotFound；版本递增失败、事件或审计失败不返回伪成功；事件 payload 仅包含 user_id 与新 security_version。
 - 验证：`DefaultUserServiceTest` 覆盖版本递增、事务入口、durable event payload 和审计；认证/授权回归共 26 项通过。真实 PostgreSQL 乐观并发、事务回滚和权限联调仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
+
+## A05 账号与 JWT 认证（父 issue）
+
+- 日期：2026-09-09
+- 本地验收结论：A05-01 至 A05-05 已完成；覆盖首次管理员初始化、无状态登录/客户端退出、Access/Refresh JWT、请求侧 security_version 校验和用户级 Token 全量失效。
+- 主要 commits：`1c156217`、`ab1e239b`、`4f557967`、`a60c4998`、`5ca5d087`。
+- 统一决策：不建立 Login/Security Session 或 Token Digest；普通登出由客户端清理本地凭证，紧急全量失效通过递增用户 `security_version`，并产生最小化 durable event 与审计。
+- 验证证据：认证/授权相关回归通过；console `pnpm typecheck` 与 `pnpm build` 通过。真实 PostgreSQL/Testcontainers 并发、事务回滚和完整权限联调仍受当前环境 Docker 未安装限制，未伪造运行证据。
