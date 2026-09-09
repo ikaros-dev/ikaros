@@ -8,6 +8,11 @@ const error = ref("");
 const status = ref("");
 const type = ref("");
 const detail = ref<any>(false);
+const submitDialog = ref(false);
+const submitting = ref(false);
+const submitType = ref("");
+const submitPayload = ref("{}");
+const idempotencyKey = ref("");
 const counts = computed(() => ({
   running: rows.value.filter(
     row => String(row.status).toUpperCase() === "RUNNING"
@@ -40,6 +45,41 @@ async function load() {
     loading.value = false;
   }
 }
+async function submitTask() {
+  if (!submitType.value.trim()) {
+    error.value = "任务类型不能为空";
+    return;
+  }
+  let payload: Record<string, unknown>;
+  try {
+    payload = JSON.parse(submitPayload.value || "{}");
+    if (!payload || Array.isArray(payload) || typeof payload !== "object") {
+      throw new Error("payload 必须是 JSON 对象");
+    }
+  } catch (e: any) {
+    error.value = e?.message || "任务参数必须是合法 JSON 对象";
+    return;
+  }
+  submitting.value = true;
+  error.value = "";
+  try {
+    await http.post("/background-tasks", {
+      data: { type: submitType.value.trim(), payload },
+      headers: idempotencyKey.value.trim()
+        ? { "Idempotency-Key": idempotencyKey.value.trim() }
+        : undefined
+    });
+    submitDialog.value = false;
+    submitType.value = "";
+    submitPayload.value = "{}";
+    idempotencyKey.value = "";
+    await load();
+  } catch (e: any) {
+    error.value = e?.response?.data?.detail || e?.message || "后台任务提交失败";
+  } finally {
+    submitting.value = false;
+  }
+}
 load();
 </script>
 <template>
@@ -51,7 +91,10 @@ load();
           统一查看导入、备份、恢复、迁移和其他异步任务。
         </p>
       </div>
-      <el-button :loading="loading" @click="load">刷新</el-button>
+      <div class="flex gap-2">
+        <el-button type="primary" @click="submitDialog = true">提交任务</el-button>
+        <el-button :loading="loading" @click="load">刷新</el-button>
+      </div>
     </div>
     <el-alert
       v-if="error"
@@ -155,5 +198,29 @@ load();
         ><el-step title="排队" /><el-step title="执行" /><el-step
           title="完成 / 失败" /></el-steps
     ></el-drawer>
+    <el-dialog v-model="submitDialog" title="提交后台任务" width="560px">
+      <el-form label-position="top">
+        <el-form-item label="任务类型" required>
+          <el-input v-model="submitType" placeholder="例如 resource.rebuild" />
+        </el-form-item>
+        <el-form-item label="任务参数 JSON">
+          <el-input
+            v-model="submitPayload"
+            type="textarea"
+            :rows="7"
+            placeholder='{"resource_id":"..."}'
+          />
+        </el-form-item>
+        <el-form-item label="幂等键（可选）">
+          <el-input v-model="idempotencyKey" placeholder="重复提交时保持相同" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="submitDialog = false">取消</el-button>
+        <el-button type="primary" :loading="submitting" @click="submitTask">
+          提交
+        </el-button>
+      </template>
+    </el-dialog>
   </main>
 </template>
