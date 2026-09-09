@@ -111,6 +111,15 @@ class DefaultResourceRelationServiceTest {
         verify(auditService, never()).record(any(), any(), any(), any(), any());
     }
 
+    @Test
+    void rejectsInvalidRelationRequestBeforePersistence() {
+        UUID ownerId = UUID.randomUUID(), sourceId = UUID.randomUUID(), targetId = UUID.randomUUID();
+        StepVerifier.create(service.create(ownerId, sourceId,
+                new CreateResourceRelationRequest(targetId, null, -1)))
+            .expectErrorMessage("资源关系请求不合法").verify();
+        verify(relationRepository, never()).save(any());
+    }
+
     private ResourceEntity resource(UUID id, UUID ownerId, Instant now) {
         return new ResourceEntity(id, ownerId, ResourceType.DOCUMENT, ResourceLifecycle.ACTIVE, now, now, null, 0L);
     }

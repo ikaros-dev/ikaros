@@ -500,3 +500,10 @@
 - 失败语义：来源不存在/无权返回 NotFound；关系不存在或不属于来源返回 NotFound；失败不删除、不审计。
 - 实现修复：关系读取与删除审计均改为惰性 Publisher，避免授权/关系存在性校验前产生仓储或审计副作用。
 - 验证：`DefaultResourceRelationServiceTest` 5/5、`ResourceRelationControllerTest` 1/1 通过，覆盖正常、空结果、未知来源、未知关系和公开入口；真实 PostgreSQL 联调仍需 Docker/Testcontainers。
+
+## A12-04 阻止无效或重复关系
+
+- 日期：2026-09-09
+- 推荐决策：关系类型使用枚举与数据库 CHECK 约束，双方 Resource 使用 FK；应用层提前拒绝空目标/类型和负 position，自关联拒绝，数据库唯一约束最终裁决重复关系。
+- 失败语义：无效请求、任一资源无权/不存在、自关联和重复关系均显式失败，不保存、不审计、不发布错误成功事件。
+- 验证：`DefaultResourceRelationServiceTest` 6/6、`ResourceRelationControllerTest` 1/1 通过，覆盖指定类型、无效请求、自关联、重复冲突、双方 owner、空结果和移除边界；真实 PostgreSQL 约束联调仍需 Docker/Testcontainers。

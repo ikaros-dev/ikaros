@@ -38,6 +38,10 @@ public class DefaultResourceRelationService implements ResourceRelationService {
 
     @Override
     public Mono<ResourceRelationView> create(UUID ownerId, UUID sourceResourceId, CreateResourceRelationRequest request) {
+        if (sourceResourceId == null || request == null || request.targetResourceId() == null
+            || request.type() == null || (request.position() != null && request.position() < 0)) {
+            return Mono.error(new IllegalArgumentException("资源关系请求不合法"));
+        }
         if (sourceResourceId.equals(request.targetResourceId())) {
             return Mono.error(new ConflictException("资源不能与自身建立关系"));
         }
