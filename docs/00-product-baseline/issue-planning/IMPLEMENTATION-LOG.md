@@ -26,6 +26,15 @@
 - 验证：`ControllerRouteConventionTest` 2/2、`HttpOperationRegistryTest` 2/2、`OpenApiRouteConventionTest` 1/1、`PublicApiContractTest` 4/4，共 9 项通过；Maven application reactor BUILD SUCCESS。
 - 主要提交：`0fea5aaa`、`e5e1d1cf`。
 
+## A01-04 建立提交检查门禁
+
+- 日期：2026-09-10
+- 实现审计：复用现有 `.github/workflows/ikaros-server-ci.yml` PR 门禁；它在 `main`/`release-*` pull request 上执行 Maven compile、全量 test、application 架构/契约测试、verify/package，以及 Console 依赖安装、typecheck、lint 和 build。
+- 失败语义：任一 Maven、架构/契约或 Console 质量步骤失败即阻止门禁通过；本地静态断言已确认工作流包含上述全部关键步骤，`git diff --check` 通过。
+- Console：Console 已作为同一 PR 门禁的独立质量 job，不是只检查后端。
+- 验证：工作流配置关键步骤断言通过；A01-02 边界测试 2/2、A01-03 API/路由测试 9/9、Console `pnpm typecheck` 与 `pnpm build` 均已通过。
+- 主要提交：复用既有 CI 配置；本轮提交门禁验收追溯记录。
+
 ## A02-01 首次启动检查必需配置
 
 - 日期：2026-09-10
