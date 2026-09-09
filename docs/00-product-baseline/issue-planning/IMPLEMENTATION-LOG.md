@@ -16,6 +16,14 @@
 - 验证：`StartupConfigurationValidatorTest` 3/3；application reactor BUILD SUCCESS；Console 健康页路由 `/operations-center/health` 返回 200；诊断输出不包含配置值。
 - 主要提交：复用既有实现，本轮提交验收追溯记录。
 
+## A02-02 初始化数据库（复核）
+
+- 日期：2026-09-10
+- 复核结果：发现并修正 migration 契约测试对 Maven reactor 聚合 classpath 中同内容副本的误报；现在同名 migration 必须内容一致，逻辑版本仍必须唯一，真实冲突仍失败。
+- Console：数据库初始化没有独立业务操作页；`系统运维 → 系统健康` 通过 readiness 探针展示迁移完成后的可用状态，启动未完成或数据库故障显示 DOWN。
+- 验证：`DatabaseInitializationContractTest` 2/2；`HealthControllerTest` 3/3；application/operations reactor BUILD SUCCESS；当前真实空库/升级故障回放仍受 Docker Desktop 缺失限制，未伪造通过。
+- 主要提交：本轮提交 migration 契约测试修正与复核记录。
+
 ## A18 副本与 Blob 清理（父 issue）
 
 - 日期：2026-09-09

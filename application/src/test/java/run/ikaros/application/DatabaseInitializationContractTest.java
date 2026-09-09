@@ -7,8 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.Resource;
@@ -22,12 +22,19 @@ class DatabaseInitializationContractTest {
         Resource[] resources = migrationResources();
 
         assertTrue(resources.length > 0, "the application must expose database migrations");
-        Set<String> names = new HashSet<>();
+        Map<String, byte[]> contents = new HashMap<>();
         Arrays.stream(resources).forEach(resource -> {
             String filename = resource.getFilename();
             assertTrue(filename != null && MIGRATION_NAME.matcher(filename).matches(),
                 () -> "invalid migration filename: " + filename);
-            assertTrue(names.add(filename), () -> "duplicate migration filename: " + filename);
+            try {
+                byte[] bytes = resource.getInputStream().readAllBytes();
+                byte[] previous = contents.putIfAbsent(filename, bytes);
+                assertTrue(previous == null || Arrays.equals(previous, bytes),
+                    () -> "conflicting migration content: " + filename);
+            } catch (IOException exception) {
+                throw new IllegalStateException("cannot read migration: " + filename, exception);
+            }
         });
     }
 
@@ -39,6 +46,7 @@ class DatabaseInitializationContractTest {
             .map(MIGRATION_NAME::matcher)
             .peek(matcher -> assertTrue(matcher.matches()))
             .mapToLong(matcher -> Long.parseLong(matcher.group(1)))
+            .distinct()
             .sorted()
             .toArray();
 
