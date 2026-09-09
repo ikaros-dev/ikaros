@@ -552,7 +552,8 @@
 - 日期：2026-09-09
 - 推荐决策：在审计查询路径增加 `GET /api/audit-events/{event_id}`，返回审计事件的 actor、action、target、结果详情及 request/correlation 关联信息；查询仍受 `system.audit.read` 统一权限门禁保护。
 - 失败语义：不存在的审计事件返回稳定 NotFound；审计记录与 Resource Activity 保持独立，分页查询和单条查询均不伪造成功状态。
-- 验证：`AuditQueryServiceTest` 覆盖单条事件读取与目标不存在；`ResourceAuthorizationWebFilterTest` 覆盖审计查询权限和实时 RBAC；相关回归共 18 项通过。敏感字段进一步脱敏由 A08-05 处理。
+- Console 对接审计：`console/src/views/communications/Audit.vue` 点击审计行调用 `/audit-events/{event_id}`，在抽屉展示 Event、Actor、目标、时间、Request/Correlation ID 和结果详情；详情加载失败会回到页面错误提示。
+- 验证：`AuditQueryServiceTest` 覆盖单条事件读取与目标不存在；`ResourceAuthorizationWebFilterTest` 覆盖审计查询权限和实时 RBAC；相关回归共 18 项通过；Console 审计详情路由返回 HTTP 200。敏感字段进一步脱敏由 A08-05 处理。
 
 ## A08-05 隐藏敏感字段
 
@@ -560,7 +561,8 @@
 - 推荐决策：在 `DefaultAuditService` 的统一写入边界集中脱敏 JSON 中的 password、token、otp、secret、credential、authorization、api_key、private_key、code 等敏感字段；调用方即使误传明文也不会直接落库。
 - 安全边界：审计仍不保存 JWT、OTP、Verification Grant、密码或 Secret 明文；固定替换为 `[REDACTED]`，保留非敏感结果字段和审计主体/目标关联。
 - 失败语义：空详情归一为 `{}`；审计事件仍独立落库，脱敏不改变审计成功/失败语义。
-- 验证：`DefaultAuditServiceTest` 覆盖用户/系统事件和敏感 token/password 值落库前脱敏；operations 模块 3 项通过。
+- Console 对接审计：审计页明确标注数据来自服务端“按权限过滤并脱敏”的结果，详情抽屉只显示后端返回的 `details`，不在浏览器端接触或拼接 JWT、OTP、Grant、Password、Secret 等明文。
+- 验证：`DefaultAuditServiceTest` 覆盖用户/系统事件和敏感 token/password 值落库前脱敏；operations 模块 3 项通过；Console 审计列表/详情路由返回 HTTP 200。
 
 ## A08 操作审计（父 issue）
 
