@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -33,6 +34,26 @@ class PersistentMusicPlaylistServiceTest {
         MusicPlaylistRepository playlists = Mockito.mock(MusicPlaylistRepository.class);
         when(playlists.findById(id)).thenReturn(Mono.just(new MusicPlaylistEntity(id, UUID.randomUUID(), "Old", null, now, now, 0L)));
         StepVerifier.create(new PersistentMusicPlaylistService(playlists, Mockito.mock(MusicPlaylistEntryRepository.class), Mockito.mock(MusicTrackRepository.class)).update(owner, id, new UpdateMusicPlaylistRequest("New", null, 0L)))
+            .expectError(run.ikaros.common.NotFoundException.class).verify();
+    }
+
+    @Test void appendsOwnedTrackToPlaylist() {
+        UUID owner = UUID.randomUUID(); UUID id = UUID.randomUUID(); UUID trackId = UUID.randomUUID(); Instant now = Instant.now();
+        MusicPlaylistRepository playlists = Mockito.mock(MusicPlaylistRepository.class); MusicPlaylistEntryRepository entries = Mockito.mock(MusicPlaylistEntryRepository.class); MusicTrackRepository tracks = Mockito.mock(MusicTrackRepository.class);
+        when(playlists.findById(id)).thenReturn(Mono.just(new MusicPlaylistEntity(id, owner, "List", null, now, now, 0L)));
+        when(tracks.findById(trackId)).thenReturn(Mono.just(new MusicTrackEntity(trackId, owner, UUID.randomUUID(), "Song", 1000L, null, false, 0L)));
+        when(entries.findAllByPlaylistIdOrderByPositionAsc(id)).thenReturn(Flux.empty());
+        when(entries.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        StepVerifier.create(new PersistentMusicPlaylistService(playlists, entries, tracks).add(owner, id, new AddMusicPlaylistEntryRequest(trackId)))
+            .expectNextMatches(view -> view.trackId().equals(trackId) && view.position() == 0).verifyComplete();
+    }
+
+    @Test void rejectsTrackOwnedByAnotherUser() {
+        UUID owner = UUID.randomUUID(); UUID id = UUID.randomUUID(); UUID trackId = UUID.randomUUID(); Instant now = Instant.now();
+        MusicPlaylistRepository playlists = Mockito.mock(MusicPlaylistRepository.class); MusicTrackRepository tracks = Mockito.mock(MusicTrackRepository.class);
+        when(playlists.findById(id)).thenReturn(Mono.just(new MusicPlaylistEntity(id, owner, "List", null, now, now, 0L)));
+        when(tracks.findById(trackId)).thenReturn(Mono.just(new MusicTrackEntity(trackId, UUID.randomUUID(), UUID.randomUUID(), "Song", 1000L, null, false, 0L)));
+        StepVerifier.create(new PersistentMusicPlaylistService(playlists, Mockito.mock(MusicPlaylistEntryRepository.class), tracks).add(owner, id, new AddMusicPlaylistEntryRequest(trackId)))
             .expectError(run.ikaros.common.NotFoundException.class).verify();
     }
 }

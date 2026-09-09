@@ -46,6 +46,10 @@ const playlists = ref<Row[]>([]);
 const playlistLoading = ref(false);
 const playlistSaving = ref(false);
 const playlistForm = ref({ id: "", name: "", description: "", version: "0" });
+const playlistEntries = ref<Row[]>([]);
+const playlistEntryLoading = ref(false);
+const playlistEntrySaving = ref(false);
+const playlistTrackId = ref("");
 const musicForm = ref({ attachmentId: "", title: "", durationMillis: null as number | null, codec: "", container: "" });
 
 const kind = computed(() => String(route.path.split("/").pop()));
@@ -238,8 +242,31 @@ async function savePlaylist() {
   finally { playlistSaving.value = false; }
 }
 
-function editPlaylist(item: Row) { playlistForm.value = { id: String(item.id), name: item.name || "", description: item.description || "", version: String(item.version ?? 0) }; }
+function editPlaylist(item: Row) { playlistForm.value = { id: String(item.id), name: item.name || "", description: item.description || "", version: String(item.version ?? 0) }; loadPlaylistEntries(String(item.id)); }
 function resetPlaylist() { playlistForm.value = { id: "", name: "", description: "", version: "0" }; }
+
+async function loadPlaylistEntries(id = playlistForm.value.id) {
+  if (!id.trim()) { playlistEntries.value = []; return; }
+  playlistEntryLoading.value = true; error.value = "";
+  try { const result = await http.get<unknown, unknown>(`/music/playlists/${id}/entries`); playlistEntries.value = Array.isArray(result) ? result as Row[] : []; }
+  catch (e: any) { playlistEntries.value = []; error.value = e?.response?.data?.detail || e?.message || "加载播放列表歌曲失败"; }
+  finally { playlistEntryLoading.value = false; }
+}
+
+async function addPlaylistEntry() {
+  if (!playlistForm.value.id || !playlistTrackId.value.trim()) { error.value = "请先选择列表并输入 Track ID"; return; }
+  playlistEntrySaving.value = true; error.value = "";
+  try { await http.post(`/music/playlists/${playlistForm.value.id}/entries`, { data: { trackId: playlistTrackId.value.trim() } }); playlistTrackId.value = ""; await loadPlaylistEntries(); message.value = "歌曲已加入播放列表"; }
+  catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "添加歌曲失败"; }
+  finally { playlistEntrySaving.value = false; }
+}
+
+async function removePlaylistEntry(entry: Row) {
+  playlistEntrySaving.value = true; error.value = "";
+  try { await http.request("delete", `/music/playlists/entries/${entry.id}`); await loadPlaylistEntries(); message.value = "歌曲已从播放列表移除"; }
+  catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "移除歌曲失败"; }
+  finally { playlistEntrySaving.value = false; }
+}
 
 onMounted(() => { load(); if (isMusic.value) { loadActiveSessions(); loadPlaylists(); } });
 </script>
@@ -249,6 +276,7 @@ onMounted(() => { load(); if (isMusic.value) { loadActiveSessions(); loadPlaylis
     <div class="flex justify-between items-start mb-6"><div><h1 class="text-2xl font-semibold">{{ title }}</h1><p class="mt-1 text-[var(--el-text-color-secondary)]">资源、附件和技术元数据分层管理，敏感内容遵循授权边界。</p></div><el-button :loading="loading" @click="load">刷新</el-button></div>
     <el-alert v-if="error" :title="error" type="warning" show-icon :closable="false" class="mb-4"/><el-alert v-if="message" :title="message" type="success" show-icon :closable="false" class="mb-4"/>
     <template v-if="isMusic">
+      <el-card shadow="never" class="mb-4"><template #header><span>列表歌曲</span></template><div class="flex flex-wrap gap-2 mb-3"><el-input v-model="playlistTrackId" placeholder="Track ID" class="w-96"/><el-button :disabled="!playlistForm.id" :loading="playlistEntrySaving" type="primary" @click="addPlaylistEntry">添加歌曲</el-button><el-button :disabled="!playlistForm.id" :loading="playlistEntryLoading" @click="loadPlaylistEntries()">刷新歌曲</el-button><span class="text-xs text-[var(--el-text-color-secondary)] self-center">先在上方列表点击“编辑”选择目标列表</span></div><el-skeleton v-if="playlistEntryLoading" :rows="2" animated/><el-empty v-else-if="!playlistEntries.length" description="当前列表暂无歌曲"/><el-table v-else :data="playlistEntries" stripe><el-table-column prop="position" label="位置" width="90"/><el-table-column prop="trackId" label="Track ID" min-width="300"/><el-table-column label="操作" width="100"><template #default="scope"><el-button link type="danger" :loading="playlistEntrySaving" @click="removePlaylistEntry(scope.row)">移除</el-button></template></el-table-column></el-table></el-card>
       <el-card shadow="never" class="mb-4"><template #header><span>播放列表</span></template><el-form inline><el-form-item label="名称"><el-input v-model="playlistForm.name" placeholder="播放列表名称" class="w-56"/></el-form-item><el-form-item label="描述"><el-input v-model="playlistForm.description" placeholder="可选描述" class="w-64"/></el-form-item><el-button type="primary" :loading="playlistSaving" @click="savePlaylist">{{ playlistForm.id ? "保存修改" : "创建列表" }}</el-button><el-button v-if="playlistForm.id" @click="playlistForm={ id: '', name: '', description: '', version: '0' }">新建</el-button></el-form><el-skeleton v-if="playlistLoading" :rows="2" animated/><el-empty v-else-if="!playlists.length" description="暂无播放列表"/><el-table v-else :data="playlists" stripe><el-table-column prop="name" label="名称" min-width="180"/><el-table-column prop="description" label="描述" min-width="240"/><el-table-column prop="version" label="版本" width="90"/><el-table-column label="操作" width="100"><template #default="scope"><el-button link type="primary" @click="editPlaylist(scope.row)">编辑</el-button></template></el-table-column></el-table></el-card>
       <el-card shadow="never" class="mb-4"><template #header><span>未完成播放会话</span></template><el-skeleton v-if="sessionLoading" :rows="2" animated/><el-empty v-else-if="!activeSessions.length" description="暂无可恢复的播放会话"/><el-table v-else :data="activeSessions" stripe><el-table-column prop="trackId" label="Track ID" min-width="300"/><el-table-column prop="positionMillis" label="位置（毫秒）" width="140"/><el-table-column prop="startedAt" label="开始时间" min-width="180"/><el-table-column label="操作" width="100"><template #default="scope"><el-button link type="primary" :loading="sessionLoading" @click="resumeMusicSession(scope.row)">恢复</el-button></template></el-table-column></el-table><el-button class="mt-3" :loading="sessionLoading" @click="loadActiveSessions">刷新会话</el-button></el-card>
       <el-card shadow="never" class="mb-4"><template #header><span>导入音乐附件</span></template><el-form label-position="top" class="max-w-3xl"><el-form-item label="音频 Attachment ID" required><el-input v-model="musicForm.attachmentId" placeholder="先在附件与存储上传音频，再粘贴 Attachment ID" clearable/></el-form-item><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><el-form-item label="歌曲标题"><el-input v-model="musicForm.title" placeholder="留空使用附件文件名"/></el-form-item><el-form-item label="时长（毫秒）"><el-input-number v-model="musicForm.durationMillis" :min="0" controls-position="right" class="w-full"/></el-form-item><el-form-item label="编码"><el-input v-model="musicForm.codec" placeholder="如 MP3、FLAC"/></el-form-item><el-form-item label="容器"><el-input v-model="musicForm.container" placeholder="如 MPEG、OGG"/></el-form-item></div><div class="flex gap-2"><el-button :loading="duplicateLoading" @click="checkDuplicates">检查重复</el-button><el-button type="primary" :loading="submitting" @click="importMusic">导入音乐</el-button></div></el-form><el-alert v-if="duplicateRows.length" title="发现相同内容的已入库歌曲，导入前请确认是否复用。" type="warning" show-icon :closable="false" class="mt-4"/><el-table v-if="duplicateRows.length" :data="duplicateRows" stripe class="mt-3"><el-table-column prop="title" label="已存在歌曲"/><el-table-column prop="trackId" label="Track ID" min-width="280"/><el-table-column prop="attachmentId" label="附件 ID" min-width="280"/></el-table><el-empty v-else-if="!duplicateLoading && musicForm.attachmentId" description="未发现相同内容的音乐" :image-size="50" class="py-3"/></el-card>
