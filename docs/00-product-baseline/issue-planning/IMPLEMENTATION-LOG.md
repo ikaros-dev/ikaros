@@ -859,3 +859,9 @@
 - 边界：播放源只引用 Attachment，播放 Session 只保存 Resource/Release/用户和位置，不把物理存储路径写入媒体业务状态。
 - 验证：`PersistentMediaPlaybackServiceTest` 2/2，覆盖自有可用 Release 创建 ACTIVE Session 和归档 Release 拒绝且不保存；Console `pnpm typecheck` 通过；播放源与 Session API 已登记 OpenAPI/HTTP Registry。
 - 主要提交：`bc401c1e`。
+## B02-02 保存播放进度
+- 日期：2026-09-10
+- 实现：播放器在播放过程中按位置变化保存，暂停和关闭时强制保存；请求携带 Session 版本，关闭播放器后结束会话，避免遗留 ACTIVE 会话。
+- 持久化：媒体服务更新 Playback Session，并通过 `ResourceProgressService` 写入 `VIDEO_SECONDS` 进度；超过已知总时长的输入在持久化前拒绝。
+- 验证：`PersistentMediaPlaybackServiceTest` 4/4，覆盖创建会话、不可播放 Release、进度持久化和超时长拒绝；Console `pnpm typecheck` 通过；PATCH API 已登记 OpenAPI/HTTP Registry。
+- 主要提交：`1c7aa0bd`。
