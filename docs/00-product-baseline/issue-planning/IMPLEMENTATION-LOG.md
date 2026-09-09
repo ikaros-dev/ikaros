@@ -1090,4 +1090,4 @@
 - 实现：播放列表支持创建和 owner-scoped 编辑；编辑使用 `If-Match`/version 拒绝过期更新，保留 Playlist 与 Track 的身份分离。
 - Console：`/music` 新增播放列表创建、编辑、版本显示和新建切换，全部调用真实 Music API，并展示加载、空结果和错误状态。
 - 契约追溯：新增 `music.create-playlist`、`music.update-playlist`，同步 HTTP Operation Registry 与 OpenAPI。
-- 验证：Music compile 与现有播放回归 4/4；Console `pnpm typecheck` 通过；application package、版本冲突专项测试和运行验证待本轮完成；主要提交：待本轮提交。
+- 验证：`PersistentMusicPlaylistServiceTest` 3/3；Console `pnpm typecheck` 通过；application package BUILD SUCCESS；运行时迁移版本 `202609100900`，播放列表创建/编辑 API 未认证均返回 401，运行时 OpenAPI 已出现创建与编辑路径，Console `/music` 返回 200；主要提交：`55830c41`、`7f483b5e`。
