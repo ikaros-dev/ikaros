@@ -698,3 +698,8 @@
 - 实现修复：现有 Grant/Attachment Controller 已实现拒绝越权、过期、未知 token 和非法 Range；补充服务级自动化测试覆盖合法 owner、其他 owner、过期和未知 token。
 - 失败语义：所有拒绝分支统一为 NotFound，避免泄露 token 是否存在或目标对象信息；失败不创建读取结果、不改变 Attachment、Blob、Placement。
 - 验证：`PersistentDeliveryGrantServiceTest` 4/4，Maven targeted test BUILD SUCCESS。
+## A16 内容分发
+- 日期：2026-09-09
+- 子任务汇总：A16-01 #996、A16-02 #997、A16-03 #998、A16-04 #999、A16-05 #1000、A16-06 #1001 均已独立验收并关闭。
+- 组合交付：Delivery Provider 配置、Storage Binding、优先级选择、预览地址、Range 下载及 Grant 授权/过期控制已接入 API；相关 OpenAPI/HTTP Operation/Command 契约已同步。
+- 验证证据：配置、绑定、优先级、预览、Range、Grant 授权测试均通过；失败路径不泄露凭据、不产生伪成功、不破坏 Attachment/Blob/Placement 引用。
