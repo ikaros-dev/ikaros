@@ -172,6 +172,15 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
 
     @Override
     public Mono<StorageUploadIntentView> beginUpload(UUID ownerId, UUID resourceId, BeginUploadRequest request) {
+        if (request != null && request.sizeBytes() < 0) {
+            return Mono.error(new IllegalArgumentException("上传大小不能为负数"));
+        }
+        if (request == null || request.fileName() == null || request.fileName().isBlank()
+            || request.mediaType() == null || request.mediaType().isBlank()
+            || request.provider() == null || request.provider().isBlank()
+            || request.sha256() == null || !request.sha256().matches("^[A-Fa-f0-9]{64}$")) {
+            return Mono.error(new IllegalArgumentException("上传约束参数不合法"));
+        }
         if (providerRegistry == null || objectProviderRegistry == null) {
             return Mono.error(new ConflictException("Storage Provider 上传能力未配置"));
         }

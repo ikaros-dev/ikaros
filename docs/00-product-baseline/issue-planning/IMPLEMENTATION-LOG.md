@@ -563,6 +563,14 @@
 - 失败语义：未配置上传能力、未知/无权 Resource、不可写/不存在 Provider 和同 SHA 大小冲突均失败；不泄露认证材料，不创建 Attachment/Blob/Placement。
 - 验证：`DefaultStorageServiceTest` 8/8 通过，覆盖附件边界回归及未知 Resource 不创建上传意图；真实 Provider 预签名和 PostgreSQL/Testcontainers 联调仍需 Docker/外部 Provider。
 
+## A14-02 检查上传约束
+
+- 日期：2026-09-09
+- 推荐决策：上传请求在 DTO 层使用 Bean Validation，并在 Application API 再校验必要字段、SHA-256 格式和非负大小；约束失败必须发生在 Provider/Blob/adapter 访问之前。
+- 实现修复：`beginUpload` 增加直接调用边界校验，负大小、空必要字段和非法 SHA-256 均显式拒绝；Provider 查询保持在 Resource 授权之后惰性执行。
+- 失败语义：不满足上传约束时返回参数错误，不创建上传意图、Attachment、Blob 或 Placement，也不访问 Provider 认证/物理 adapter。
+- 验证：`DefaultStorageServiceTest` 9/9 通过，覆盖约束失败、未知 Resource、已有附件边界和相关回归；真实 Provider/PostgreSQL/Testcontainers 联调仍需 Docker/外部 Provider。
+
 ## A12 资源关系管理（父 issue）
 
 - 日期：2026-09-09

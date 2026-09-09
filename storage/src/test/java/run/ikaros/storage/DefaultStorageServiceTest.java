@@ -243,6 +243,21 @@ class DefaultStorageServiceTest {
     }
 
     @Test
+    void rejectsInvalidUploadConstraintsBeforeProviderAccess() {
+        StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
+        StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
+        DefaultStorageService uploadService = new DefaultStorageService(resourceOwnership, attachmentRepository,
+            blobRepository, placementRepository, derivedAttachmentRepository, auditService,
+            mock(TransactionalOperator.class), providers, null, null);
+        uploadService.setObjectProviderRegistry(objects);
+
+        StepVerifier.create(uploadService.beginUpload(UUID.randomUUID(), UUID.randomUUID(),
+                new BeginUploadRequest("book.pdf", -1, "application/pdf", "local", null, "bad")))
+            .expectErrorMessage("上传大小不能为负数").verify();
+        verifyNoInteractions(providers, objects);
+    }
+
+    @Test
     void recordsApprovedGarbageCollectionDecision() {
         UUID actorId = UUID.randomUUID();
         BlobEntity blob = new BlobEntity(UUID.randomUUID(), "e".repeat(64), 30L, "text/plain",
