@@ -46,6 +46,10 @@ operations:
   - { method: GET, path: /music/imports, operation_id: listMusicImports, contract_id: music.list-imports, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /music/tracks/{track_id}/audio-sources, operation_id: listMusicAudioSources, contract_id: music.list-audio-sources, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /music/playback/tracks/{track_id}/sessions, operation_id: startMusicPlayback, contract_id: music.start-playback, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: /music/queues, operation_id: createMusicQueue, contract_id: music.create-queue, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: /music/queues/{queue_id}/entries, operation_id: listMusicQueueEntries, contract_id: music.list-queue-entries, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: /music/queues/{queue_id}/entries, operation_id: addMusicQueueEntry, contract_id: music.add-queue-entry, source: contracts/openapi-v2-p0.yaml }
+  - { method: DELETE, path: /music/queues/entries/{entry_id}, operation_id: removeMusicQueueEntry, contract_id: music.remove-queue-entry, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /music/tracks/{track_id}/metadata/recognize, operation_id: recognizeMusicMetadata, contract_id: music.recognize-metadata, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /music/tracks/{track_id}/metadata/candidates, operation_id: listMusicMetadataCandidates, contract_id: music.list-metadata-candidates, source: contracts/openapi-v2-p0.yaml }
   - { method: PATCH, path: /music/metadata-candidates/{candidate_id}, operation_id: updateMusicMetadataCandidate, contract_id: music.update-metadata-candidate, source: contracts/openapi-v2-p0.yaml }

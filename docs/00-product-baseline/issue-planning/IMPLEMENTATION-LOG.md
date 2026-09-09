@@ -1055,3 +1055,9 @@
 - Console：`/music` 导入记录点击歌曲即可查询可用 Audio Source、创建播放会话并获取授权预览 URL，通过 HTML5 Audio 播放；页面展示准备中、授权/播放失败、当前会话和关闭状态。
 - 契约追溯：新增 `music.list-audio-sources`、`music.start-playback`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentMusicPlaybackServiceTest` 3/3；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；运行时数据库版本 `202609100801`，播放会话和 Audio Source API 未认证均返回 401，Console `/music` 返回 200；主要提交：`5a7de3f1`、`2d35bb0d`。
+## B08-02 添加与移除队列项
+- 日期：2026-09-10
+- 实现：新增 owner-scoped Queue Entry 添加 API；新项按当前最大 `active_position + 1` 追加，Track 与 Queue 均校验所有权；保留已有删除入口并覆盖不存在/越权目标，不修改歌曲原件。
+- Console：`/music` 新增播放队列管理区，支持创建队列、加载队列、添加 Track 和移除 Entry，展示加载、空结果、成功和错误状态。
+- 契约追溯：新增 `music.create-queue`、`music.list-queue-entries`、`music.add-queue-entry`、`music.remove-queue-entry`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`PersistentMusicQueueServiceTest` 2/2；Music compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`4ef7bd1e`。

@@ -1194,6 +1194,58 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
+  /music/queues:
+    post:
+      tags: [Music]
+      operationId: createMusicQueue
+      x-ikaros-contract-id: music.create-queue
+      summary: Create a playback queue from tracks
+      parameters:
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CreateMusicQueueRequest' } } } }
+      responses:
+        '200': { description: Playback queue, content: { application/json: { schema: { $ref: '#/components/schemas/MusicQueue' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /music/queues/{queue_id}/entries:
+    get:
+      tags: [Music]
+      operationId: listMusicQueueEntries
+      x-ikaros-contract-id: music.list-queue-entries
+      summary: List queue entries in playback order
+      parameters:
+        - { name: queue_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Queue entries, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicQueueEntry' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Music]
+      operationId: addMusicQueueEntry
+      x-ikaros-contract-id: music.add-queue-entry
+      summary: Add a track to a playback queue
+      parameters:
+        - { name: queue_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/AddMusicQueueEntryRequest' } } } }
+      responses:
+        '200': { description: Added queue entry, content: { application/json: { schema: { $ref: '#/components/schemas/MusicQueueEntry' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /music/queues/entries/{entry_id}:
+    delete:
+      tags: [Music]
+      operationId: removeMusicQueueEntry
+      x-ikaros-contract-id: music.remove-queue-entry
+      summary: Remove an entry from a playback queue
+      parameters:
+        - { name: entry_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Queue entry removed }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /music/tracks/{track_id}/metadata/recognize:
     post:
       tags: [Music]
@@ -1844,6 +1896,37 @@ paths:
         duration_millis: { type: [integer, 'null'], format: int64, minimum: 0 }
         availability: { type: string }
         preference_weight: { type: integer }
+    CreateMusicQueueRequest:
+      type: object
+      required: [track_ids]
+      additionalProperties: false
+      properties:
+        track_ids: { type: array, minItems: 1, maxItems: 100, items: { type: string, format: uuid } }
+    AddMusicQueueEntryRequest:
+      type: object
+      required: [track_id]
+      additionalProperties: false
+      properties:
+        track_id: { type: string, format: uuid }
+    MusicQueue:
+      type: object
+      required: [id, shuffle_enabled, repeat_mode, updated_at, version]
+      properties:
+        id: { type: string, format: uuid }
+        shuffle_enabled: { type: boolean }
+        repeat_mode: { type: string, enum: [OFF, QUEUE, ONE] }
+        current_entry_id: { type: [string, 'null'], format: uuid }
+        updated_at: { type: string, format: date-time }
+        version: { type: integer, format: int64 }
+    MusicQueueEntry:
+      type: object
+      required: [id, queue_id, track_id, base_position, active_position]
+      properties:
+        id: { type: string, format: uuid }
+        queue_id: { type: string, format: uuid }
+        track_id: { type: string, format: uuid }
+        base_position: { type: integer, minimum: 0 }
+        active_position: { type: integer, minimum: 0 }
     StartMusicPlaybackRequest:
       type: object
       required: [source_id]
