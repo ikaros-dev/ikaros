@@ -23,6 +23,7 @@ public class DefaultRoleService implements RoleService {
     private static final int MAX_UNPAGED_RESULTS = 100;
     private final PlatformRoleRepository roleRepository;
     private final RolePermissionRepository permissionRepository;
+    private final UserRoleRepository userRoleRepository;
     private final AuditService auditService;
     private final DurableEventPublisher eventService;
 
@@ -35,16 +36,24 @@ public class DefaultRoleService implements RoleService {
      */
     public DefaultRoleService(PlatformRoleRepository roleRepository, RolePermissionRepository permissionRepository,
                               AuditService auditService) {
-        this(roleRepository, permissionRepository, auditService, null);
+        this(roleRepository, permissionRepository, auditService, null, null);
     }
 
     @Autowired
     public DefaultRoleService(PlatformRoleRepository roleRepository, RolePermissionRepository permissionRepository,
                               AuditService auditService, DurableEventPublisher eventService) {
+        this(roleRepository, permissionRepository, auditService, eventService, null);
+    }
+
+    @Autowired
+    public DefaultRoleService(PlatformRoleRepository roleRepository, RolePermissionRepository permissionRepository,
+                              AuditService auditService, DurableEventPublisher eventService,
+                              UserRoleRepository userRoleRepository) {
         this.roleRepository = roleRepository;
         this.permissionRepository = permissionRepository;
         this.auditService = auditService;
         this.eventService = eventService;
+        this.userRoleRepository = userRoleRepository;
     }
 
     @Override
@@ -109,6 +118,25 @@ public class DefaultRoleService implements RoleService {
                 }))
             .flatMap(view -> auditService.record(actorId, "identity.role.permission.replace", "ROLE", roleId, "{}")
                 .thenReturn(view));
+    }
+
+    @Override
+    public Mono<Void> assignRole(UUID actorId, UUID userId, UUID roleId) {
+        Instant now = Instant.now();
+        return requiredRole(roleId)
+            .then(userRoleRepository.findByUserIdAndRoleId(userId, roleId))
+            .switchIfEmpty(userRoleRepository.save(new UserRoleEntity(null, userId, roleId, now, null)))
+            .flatMap(binding -> auditService.record(actorId, "identity.user.role.assign", "USER", userId,
+                "{\"role_id\":\"" + roleId + "\"}"))
+            .then();
+    }
+
+    @Override
+    public Mono<Void> revokeRole(UUID actorId, UUID userId, UUID roleId) {
+        return requiredRole(roleId)
+            .then(userRoleRepository.deleteByUserIdAndRoleId(userId, roleId))
+            .then(auditService.record(actorId, "identity.user.role.revoke", "USER", userId,
+                "{\"role_id\":\"" + roleId + "\"}"));
     }
 
     private Mono<Void> emit(String type, UUID roleId, String payload) {

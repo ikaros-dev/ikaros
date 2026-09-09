@@ -189,3 +189,10 @@
 - 推荐决策：复用 `RoleController`/`DefaultRoleService` 的公开创建与权限配置路径；角色权限只能接受 `PlatformPermission` 注册枚举，拒绝任意未声明权限，角色创建输入在 Application 层再次校验。
 - 失败语义：非法角色资料在持久化前拒绝；重复角色编码返回 Conflict；不存在角色返回 NotFound；权限变更写入审计并发布 durable authorization event，不包含认证材料。
 - 验证：`DefaultRoleServiceTest` 覆盖合法角色创建、非法输入、已声明权限授予、权限列表和边界；授权过滤器回归覆盖直接 API 的认证/权限拒绝路径；本轮授权回归 20 项通过。
+
+## A06-02 分配和撤销用户角色
+
+- 日期：2026-09-09
+- 推荐决策：通过 `RoleController` 暴露用户-角色绑定与撤销动作；绑定前确认角色存在，重复绑定保持幂等，撤销只删除指定 user/role 绑定，不影响其他用户或角色；两类动作均写审计。
+- 失败语义：角色不存在返回 NotFound；重复分配不创建重复绑定；撤销目标不存在保持幂等完成；权限入口由统一 `system.role.manage` 授权过滤器保护。
+- 验证：`DefaultRoleServiceTest` 覆盖分配、撤销、重复/指定目标边界；授权回归 21 项通过。真实 PostgreSQL 唯一约束和并发绑定回放仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。

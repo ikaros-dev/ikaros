@@ -36,4 +36,8 @@ public interface RoleService {
     Mono<RoleView> grantPermission(UUID actorId, UUID roleId, PlatformPermission permission);
 
     Mono<RoleView> replacePermissions(UUID actorId, UUID roleId, ReplaceRolePermissionsRequest request);
+
+    Mono<Void> assignRole(UUID actorId, UUID userId, UUID roleId);
+
+    Mono<Void> revokeRole(UUID actorId, UUID userId, UUID roleId);
 }
