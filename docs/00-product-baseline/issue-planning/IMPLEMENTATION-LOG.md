@@ -820,3 +820,10 @@
 - 失败语义：缺少 actor、空关键词或非法游标返回空页；候选授权失败/投影读取失败不泄露目标对象；limit 上限为 100。
 - 契约追溯：新增 `search.keyword-search`，同步 P0 Command/Query Catalog、HTTP Operation Registry 和 OpenAPI `searchResources`。
 - 验证：`PersistentSearchQueryServiceTest` 2/2，覆盖授权过滤、分页游标和空关键词不读库；`mvn -pl search -am '-Dtest=PersistentSearchQueryServiceTest' '-Dsurefire.failIfNoSpecifiedTests=false' test` BUILD SUCCESS。
+## A19-02 按类型和标签筛选
+- 日期：2026-09-09
+- 推荐决策：在同一 Search Query Contract 增加白名单语义参数 `type` 与 `tag`；候选查询直接使用 JSONB 投影字段过滤，保留实时 Resource 授权和稳定游标。
+- 实现修复：`GET /api/search` 支持类型精确匹配和标签数组包含匹配；空筛选保持全量关键词语义，筛选结果仍经过逐条授权。
+- 失败语义：不存在的类型/标签返回空页；授权失败、投影失败不泄露结果；不修改资源真相或投影内容。
+- 契约追溯：Search OpenAPI 参数与 `search.keyword-search` 查询契约同步。
+- 验证：服务查询测试覆盖筛选参数绑定、授权过滤与空关键词短路；Maven targeted test BUILD SUCCESS。

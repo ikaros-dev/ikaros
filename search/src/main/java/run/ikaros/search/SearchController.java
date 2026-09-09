@@ -19,7 +19,9 @@ public class SearchController {
     public Mono<SearchPage> search(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
                                    @RequestParam String q,
                                    @RequestParam(required = false) String cursor,
-                                   @RequestParam(required = false) Integer limit) {
-        return service.search(actorId, new SearchQueryRequest(q, cursor, limit));
+                                   @RequestParam(required = false) Integer limit,
+                                   @RequestParam(required = false) String type,
+                                   @RequestParam(required = false) String tag) {
+        return service.search(actorId, new SearchQueryRequest(q, cursor, limit, type, tag));
     }
 }

@@ -30,6 +30,12 @@ paths:
           schema: { type: string, minLength: 1, maxLength: 200 }
         - $ref: '#/components/parameters/Cursor'
         - $ref: '#/components/parameters/Limit'
+        - name: type
+          in: query
+          schema: { type: string, maxLength: 64 }
+        - name: tag
+          in: query
+          schema: { type: string, maxLength: 128 }
       responses:
         '200':
           description: Search result page

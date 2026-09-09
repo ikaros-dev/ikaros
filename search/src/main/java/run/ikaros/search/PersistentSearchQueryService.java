@@ -30,7 +30,8 @@ public class PersistentSearchQueryService implements SearchQueryService {
         }
         int limit = request.effectiveLimit();
         Cursor cursor = Cursor.decode(request.cursor());
-        return documents.search("%" + escapeLike(request.query().trim()) + "%", cursor.at(), cursor.id(), limit * 4)
+        return documents.search("%" + escapeLike(request.query().trim()) + "%", normalized(request.type()),
+                normalized(request.tag()), cursor.at(), cursor.id(), limit * 4)
             .flatMap(entity -> ownership.requireOwned(actorId, entity.sourceId())
                 .then(Mono.defer(() -> projections.get(entity.sourceId())))
                 .map(document -> new Hit(entity.projectedAt(), entity.documentId(),
@@ -44,6 +45,10 @@ public class PersistentSearchQueryService implements SearchQueryService {
 
     private static String escapeLike(String value) {
         return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+    }
+
+    private static String normalized(String value) {
+        return value == null ? "" : value.trim();
     }
 
     private static String cursorFor(Hit hit) {
