@@ -49,6 +49,12 @@ public class DefaultRoleService implements RoleService {
 
     @Override
     public Mono<RoleView> create(UUID actorId, CreateRoleRequest request) {
+        if (request == null || request.code() == null || request.name() == null
+            || !request.code().matches("[A-Z][A-Z0-9_]*") || request.code().length() > 96
+            || request.name().isBlank() || request.name().length() > 128
+            || request.description() != null && request.description().length() > 2000) {
+            return Mono.error(new IllegalArgumentException("角色资料不合法"));
+        }
         Instant now = Instant.now();
         PlatformRoleEntity role = new PlatformRoleEntity(null, request.code().trim(), request.name().trim(),
             request.description(), false, now, now, null);

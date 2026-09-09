@@ -50,6 +50,13 @@ class DefaultRoleServiceTest {
     }
 
     @Test
+    void rejectsInvalidRoleInputBeforePersistence() {
+        StepVerifier.create(service.create(UUID.randomUUID(), new CreateRoleRequest("invalid-code", "", null)))
+            .expectError(IllegalArgumentException.class)
+            .verify();
+    }
+
+    @Test
     void listsRolesWithGrantedPermissions() {
         UUID roleId = UUID.randomUUID();
         Instant now = Instant.now();
