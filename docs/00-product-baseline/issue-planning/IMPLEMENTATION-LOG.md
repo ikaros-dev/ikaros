@@ -1021,3 +1021,9 @@
 - 契约追溯：新增 `music.create-import`、`music.list-imports`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentMusicImportServiceTest` 1/1；Music compile BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；application package/runtime migration `202609100600`。
 - 主要提交：`d5ba529b`。
+## B07-02 识别歌曲信息
+- 日期：2026-09-10
+- 实现：新增 owner-scoped 音乐元数据识别 API，读取授权 Audio Source 的 Attachment 内容，解析 MP3 ID3 与 FLAC Vorbis 标签；结果持久化为 Metadata Candidate，保留 Track/Attachment 身份边界，不静默覆盖人工元数据。
+- Console：音乐库导入记录新增“识别信息”，展示识别中的 loading、候选结果、无标签空态和错误状态。
+- 契约追溯：新增 `music.recognize-metadata`、`music.list-metadata-candidates`，同步 HTTP Operation Registry 与 OpenAPI。
+- 验证：`MusicTagParserTest`、`PersistentMusicImportServiceTest` 共 3/3；Music compile BUILD SUCCESS；Console `pnpm typecheck` 通过；主要提交：`7aadd7dd`。
