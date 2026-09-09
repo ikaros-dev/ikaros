@@ -930,10 +930,10 @@
 - 实现：阅读器支持从左到右/从右到左和单页/双页布局切换；设置按作品级 `WORK + COMIC` 写入 Reading Preference，重新打开章节时从 API 恢复。
 - Console：切换控件和保存按钮已接入阅读库页面，渲染布局与方向即时生效，保存失败会显示错误。
 - 契约追溯：补登记 `reading.update-preference`、`reading.get-preference`，同步 HTTP Operation Registry 与 OpenAPI。
-- 验证：Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：待提交。
+- 验证：Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；主要提交：`17a3c718`。
 ## B04-03 保存阅读位置
 - 日期：2026-09-10
 - 实现：Console 打开章节时创建 Reading Session；翻页以 `COMIC_PAGE` 逻辑 locator 通过 PATCH 保存当前页面、完成状态和版本，使用 If-Match 避免并发覆盖。
 - Console：阅读器提供上一页/下一页，显示当前页和保存中状态；加载/保存失败均进入可见错误状态。
 - 契约追溯：登记 `reading.start-session`、`reading.update-progress`、`reading.get-progress`，同步 HTTP Operation Registry 与 OpenAPI。
-- 验证：Console `pnpm typecheck` 通过；主要提交：待提交。
+- 验证：Console `pnpm typecheck` 通过；主要提交：`96be9163`。
