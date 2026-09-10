@@ -39,4 +39,24 @@ class PersistentDocumentServiceTest {
         verify(resources).create(any(), any());
         verify(copies).save(any());
     }
+
+    @Test
+    void savesWorkingCopyWithMatchingVersion() {
+        UUID owner = UUID.randomUUID();
+        UUID documentId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceService resources = mock(ResourceService.class);
+        DocumentRepository documents = mock(DocumentRepository.class);
+        DocumentWorkingCopyRepository copies = mock(DocumentWorkingCopyRepository.class);
+        DocumentRevisionRepository revisions = mock(DocumentRevisionRepository.class);
+        DocumentPublicationRepository publications = mock(DocumentPublicationRepository.class);
+        when(documents.findById(documentId)).thenReturn(Mono.just(new DocumentEntity(documentId, owner, UUID.randomUUID(), DocumentKind.DOCUMENT, null, now, now, 0L)));
+        when(copies.findByDocumentId(documentId)).thenReturn(Mono.just(new DocumentWorkingCopyEntity(UUID.randomUUID(), documentId, owner, "old", "v1", null, now, 2L)));
+        when(copies.save(any())).thenReturn(Mono.just(new DocumentWorkingCopyEntity(UUID.randomUUID(), documentId, owner, "new", "v1", null, now, 3L)));
+
+        StepVerifier.create(new PersistentDocumentService(resources, documents, copies, revisions, publications)
+                .updateWorkingCopy(owner, documentId, new UpdateWorkingCopyRequest("new", "v1", 2L)))
+            .expectNextMatches(copy -> copy.content().equals("new"))
+            .verifyComplete();
+    }
 }
