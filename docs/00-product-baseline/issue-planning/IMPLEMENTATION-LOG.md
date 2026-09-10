@@ -73,9 +73,8 @@
 
 - 日期：2026-09-10
 - 当前实现：`r2dbc-migrate` 启动时读取 migration history，只执行 pending migration，并启用等待数据库与 PostgreSQL advisory lock；当前本地运行实例已报告数据库版本 `202609100900`。
-- 未完成项：当前环境没有 Docker CLI，无法执行真实旧版本 PostgreSQL → 当前版本的 Testcontainers 回放；不将配置审查当作升级回放通过。
-- 下一步：获得 Docker Desktop/PostgreSQL 环境后，补执行旧版本、pending migration、重启幂等和失败回滚/未就绪场景，再提交该 issue 的完成评论。
-- 本轮复验：`mvn -pl application -am package -DskipTests` 成功；使用 `java -jar application/target/application-2.0.0-SNAPSHOT.jar --spring.profiles.active=local` 可进入 Spring Boot 与 R2DBC migration，但因本机 `localhost:5432` 无 PostgreSQL 而保持未就绪。根目录直接执行 `mvn spring-boot:run` 的 main class 问题已由 `448343fd` 修正到运行文档。
+- 验证：在隔离数据库 `ikaros_upgrade_20260910_1128` 中预置前 137 个 migration，application 启动仅执行 pending `202609100900`；升级后 history 为 138 条，第二次启动不重复执行，`/api/health/live`、`/api/health/ready` 和 `/openapi.json` 均返回 200。
+- 失败语义：数据库不可达时 application 保持 migration 重试且不开放 readiness；根目录直接执行 `mvn spring-boot:run` 的 main class 问题已由 `448343fd` 修正到运行文档。
 
 ## A02-04 升级失败时阻止服务进入就绪状态（复核）
 
@@ -264,6 +263,7 @@
 - 推荐决策：保留当前最小组合路径，不新增独立初始化/升级 HTTP API；通过 PostgreSQL R2DBC + r2dbc-migrate 的启动生命周期完成数据库准备，Operations health 只报告已完成启动且数据库可用的服务为 ready。
 - 验证证据：`mvn -pl application -am -DskipTests compile`；`mvn -pl application -am -Dtest=DatabaseInitializationContractTest,StartupConfigurationValidatorTest -Dsurefire.failIfNoSpecifiedTests=false test`；`mvn -pl operations -am -Dtest=HealthControllerTest -Dsurefire.failIfNoSpecifiedTests=false test`；全部 BUILD SUCCESS。
 - 剩余限制：当前开发环境未安装 Docker，真实 PostgreSQL 空库初始化、旧版本升级回放和故障启动回放未执行；相关测试门禁和操作路径已保留，未将环境缺失伪造为通过。
+- 本轮补充验收：PostgreSQL 18 已启动，隔离旧版本数据库完成 pending migration 与重启幂等回放；故障启动回放仍保留为环境门禁，未宣称已通过。
 
 ## A03-01 业务修改与事件原子提交
 
