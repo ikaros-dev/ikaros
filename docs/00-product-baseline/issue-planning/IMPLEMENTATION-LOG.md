@@ -993,6 +993,7 @@
 - 主要限制：容量字段依赖 Provider-owned metadata，未配置时明确返回 `null`；未提供 probe adapter 的 Provider 返回 `UNSUPPORTED`。所有内容对象边界仍由 Attachment/Blob/Placement 原有服务负责。
 - 验证证据：A15 子任务 targeted Maven 测试均通过；关键汇总测试覆盖 provider 注册、probe、启停事件、凭据加密替换与状态查询。
 - Console 对接总审计：`console/src/views/storage/Tiers.vue` 已覆盖 A15 五项 API 操作；Provider 页面 `/storage-center/tiers` 返回 HTTP 200，Console typecheck/build 已通过。真实 Provider 网络探测需配置外部 Provider。
+- 本轮复验（2026-09-10）：storage 全量回归 77/77 通过，其中覆盖 Provider 注册、probe、启停、凭据加密替换、状态/容量查询；`DeliveryProviders.vue` 已确认真实调用对应管理 API，Secret 只通过输入提交、不回显，Console 构建通过。
 ## A16-01 配置 Delivery Provider
 - 日期：2026-09-09
 - 推荐决策：复用现有 `POST /api/admin/delivery-providers` 配置入口；要求 `Idempotency-Key`，credential_ref 只允许 `secret://` URI，创建后触发 probe。
