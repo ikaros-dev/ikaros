@@ -601,6 +601,7 @@
 - 主要 commits：`2fc5c986`、`40cfa377`、`86b6448c`、`3511cd42`、`0f50041d`。
 - 统一决策：审计与 Resource Activity 分离；查询要求 `system.audit.read` 并实时复核 RBAC；事件按稳定时间/id 排序；写入边界集中脱敏且不保存认证材料明文。
 - 验证证据：审计与授权相关回归通过；operations 查询/写入测试和授权过滤器测试均通过。真实 PostgreSQL 分页 SQL、约束和完整 API 联调仍需 Docker/Testcontainers，未伪造运行证据。
+- 本轮复验（2026-09-10）：审计查询/写入测试 6/6、授权过滤器测试 18/18 通过；Console `Audit.vue` 的列表、过滤和详情抽屉分别调用 `/audit-events` 与 `/audit-events/{event_id}`，`pnpm typecheck`/`pnpm build` 通过。
 
 ## A09-02 浏览列表和详情
 
