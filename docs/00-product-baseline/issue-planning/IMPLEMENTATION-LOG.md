@@ -1333,6 +1333,12 @@
 - 日期：2026-09-10
 - 汇总：B07-01 至 B07-05 均已完成后端能力、契约追溯、自动化验证和 Console `/music` 真实 API 对接；导入、识别候选、人工修正、艺术家/专辑关联、重复检测均有明确 loading、空态、成功、冲突或错误反馈。
 - 主要提交：`d5ba529b`、`7aadd7dd`、`efa29eef`、`60ef8501`、`8b216f07`。
+## B07 Console 对接逐项审计
+- B07-01/B07-04：`console/src/views/media/Catalog.vue` 通过 `POST /music/imports`（Idempotency-Key）和 `GET /music/duplicates` 完成导入与重复检查。
+- B07-02/B07-03：识别按钮调用 `POST /music/tracks/{trackId}/metadata/recognize`，候选与关联分别通过 GET/POST API 读取和提交。
+- B07-05：修正表单通过带 `If-Match` 的 `PATCH /music/metadata-candidates/{id}` 保存，成功后重新 GET 候选。
+- 验证：音乐库页 `/music` 返回 HTTP 200，Console typecheck/build 已通过。
+
 ## B08-01 播放指定歌曲
 - 日期：2026-09-10
 - 实现：补齐音乐 Audio Source 列表和播放会话启动的公开契约；播放前校验 Track 所有权、Audio Source 所有权及 `AVAILABLE` 状态，成功后持久化 ACTIVE Playback Session，非法位置、目标不存在和越权来源均拒绝且不创建会话。
@@ -1369,6 +1375,13 @@
 - Console：`/music` 启动时加载未完成会话，支持刷新并通过真实 Audio Source/预览地址恢复播放；来源不可用时展示具体失败原因。
 - 契约追溯：新增 `music.list-active-playback-sessions`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentMusicPlaybackServiceTest` 4/4；Console `pnpm typecheck`、`pnpm build` BUILD SUCCESS；application package BUILD SUCCESS；运行时迁移版本 `202609100900`，活跃会话 API 未认证返回 401，运行时 OpenAPI 已出现 `/api/music/playback/sessions`，Console `/music` 返回 200；主要提交：`b8bbe5d6`。
+## B08 Console 对接逐项审计
+- B08-01：点击歌曲真实读取 `/music/tracks/{trackId}/audio-sources`，创建 `/music/playback/tracks/{trackId}/sessions`，再获取附件预览 URL 播放。
+- B08-02/B08-03/B08-04：队列创建、增删、重排和播放策略分别调用 `/music/queues` 及其 Entry/Policy API，重排与策略提交携带 `If-Match`。
+- B08-05：歌词区调用 `GET /music/tracks/{trackId}/lyrics`，展示加载、空结果、版本和错误。
+- B08-06：页面启动调用 `GET /music/playback/sessions`，恢复时重新读取 Audio Source 和预览 URL，不复用失效地址。
+- 验证：音乐库页 `/music` 返回 HTTP 200，Console typecheck/build 已通过。
+
 ## B09-01 创建和编辑列表
 - 日期：2026-09-10
 - 实现：播放列表支持创建和 owner-scoped 编辑；编辑使用 `If-Match`/version 拒绝过期更新，保留 Playlist 与 Track 的身份分离。
