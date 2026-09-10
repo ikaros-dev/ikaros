@@ -149,6 +149,8 @@ export default {
       { path: "drive/trash", name: "DriveTrash", component: () => import("@/views/drive/Operations.vue"), meta: { title: "云盘回收站", showLink: false } },
       { path: "drive/transfers", name: "DriveTransfers", component: () => import("@/views/drive/Operations.vue"), meta: { title: "传输任务", showLink: false } },
       { path: "drive/sync", name: "DriveSync", component: () => import("@/views/drive/Operations.vue"), meta: { title: "云盘同步", showLink: false } },
+      { path: "drive/devices", name: "DriveDevices", component: () => import("@/views/drive/Devices.vue"), meta: { title: "同步设备", showLink: false } },
+      { path: "drive/backup", name: "DriveBackup", component: () => import("@/views/drive/BackupBindings.vue"), meta: { title: "备份目录", showLink: false } },
       { path: "drive/conflicts", name: "DriveConflicts", component: () => import("@/views/drive/Operations.vue"), meta: { title: "同步冲突", showLink: false } },
       { path: "drive/quota", name: "DriveQuota", component: () => import("@/views/drive/Operations.vue"), meta: { title: "云盘配额", showLink: false } },
       { path: "drive/policies", name: "DrivePolicies", component: () => import("@/views/drive/Operations.vue"), meta: { title: "云盘策略", showLink: false } },
