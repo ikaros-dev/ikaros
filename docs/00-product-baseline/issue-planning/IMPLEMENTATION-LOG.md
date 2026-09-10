@@ -958,42 +958,49 @@
 - 实现修复：现有持久化服务已完成配置编码、重复 key/幂等处理、创建事件和自动 probe；补充非法 credential_ref 与目标不存在的自动化验收证据。
 - 失败语义：非法凭据引用在持久化前拒绝；目标不存在返回 NotFound；不向 Attachment、Blob、Placement 写入任何状态。
 - 验证：`PersistentDeliveryProviderServiceValidationTest` 2/2，Maven targeted test BUILD SUCCESS。
+- Console 对接审计：`console/src/views/storage/DeliveryProviders.vue` 的 Delivery Provider 配置向导调用 `POST /admin/delivery-providers`，要求 Secret Reference 使用 `secret://`，创建后显示真实状态。
 ## A16-02 绑定存储来源
 - 日期：2026-09-09
 - 推荐决策：复用 `POST /api/storage/providers/{providerId}/delivery-bindings`，由 Storage Provider 作为 owner 校验来源、由 Delivery Provider key 解析目标。
 - 实现修复：现有绑定服务已持久化绑定、校验两端 Provider、处理重复约束并发布创建事件；补充正常创建和目标不存在的验收测试。
 - 失败语义：Storage Provider 或 Delivery Provider 不存在返回 NotFound；重复绑定返回 Conflict；保存前失败不产生绑定或事件；Attachment、Blob、Placement 身份保持分离。
 - 验证：`PersistentMediaDeliveryBindingServiceTest` 2/2，Maven targeted test BUILD SUCCESS。
+- Console 对接审计：选择存储 Provider 后，Binding 对话框调用 `POST /storage/providers/{providerId}/delivery-bindings`，编辑使用带 `If-Match` 的 `PUT`，解绑使用 `DELETE`；页面展示真实 Binding 列表。
 ## A16-03 按优先级选择可用路径
 - 日期：2026-09-09
 - 推荐决策：复用现有预览/租约选择链，按 Binding priority 升序选择，并跳过禁用、失败或不存在的 Delivery Provider；不新增旁路选择逻辑。
 - 实现修复：现有 `AttachmentPreviewService` 已实现优先级选择和可用性过滤；扩展测试为两条不同优先级路径，确认低 priority 的可用绑定被选中。
 - 失败语义：没有可用绑定返回 `StorageUnavailableException`；不产生 grant/lease 伪成功；不修改 Attachment、Blob、Placement。
 - 验证：`AttachmentPreviewServiceTest` 2/2，Maven targeted test BUILD SUCCESS。
+- Console 对接审计：Binding 表单提供 priority、启用状态和 Range 策略，说明数值越小越优先；预览时由附件详情页选择后端返回的可用分发 Provider。
 ## A16-04 生成预览地址
 - 日期：2026-09-09
 - 推荐决策：复用 `GET /api/attachments/{attachmentId}/preview-url`，由资源 owner 校验、Blob/Placement 查询、Binding 优先级选择和 Delivery Grant 合同共同生成短期地址。
 - 实现修复：现有预览路径已接入授权、可用 Placement、Provider 健康和绑定选择；扩展测试覆盖多优先级候选，确认返回的是选中路径的预览地址。
 - 失败语义：附件不存在或无权访问、无可用绑定分别沿用既有错误；失败不创建 grant/lease 伪成功，不暴露原始凭据。
 - 验证：`AttachmentPreviewServiceTest` 2/2，Maven targeted test BUILD SUCCESS。
+- Console 对接审计：附件详情页“预览”调用 `GET /attachments/{attachmentId}/preview-url`，按真实返回地址渲染图片、视频、音频或文档，并支持切换返回的分发 Provider。
 ## A16-05 支持 Range 下载
 - 日期：2026-09-09
 - 推荐决策：复用附件内容读取 API 的单段 `bytes` Range 语义；授权先于物理读取，Local/S3 adapter 采用流式读取，不聚合整个对象。
 - 实现修复：现有控制器返回 206、Content-Range、Content-Length 和 Accept-Ranges；reader 对非法、多段、超限 Range 拒绝并保持 Provider/Blob 边界。
 - 失败语义：无权/不存在附件和非法 Range 沿用既有错误；不创建或修改业务引用，不暴露 Provider 凭据。
 - 验证：`AttachmentControllerTest`、`AttachmentPreviewServiceTest`、`DeliveryGrantContractServiceTest` 共 4/4，Maven BUILD SUCCESS。
+- Console 对接审计：附件详情页“下载”调用 `/attachments/{attachmentId}/content`，浏览器媒体预览使用原生 Range 请求；页面不自行拼接或绕过授权 URL。
 ## A16-06 拒绝越权和过期访问
 - 日期：2026-09-09
 - 推荐决策：复用 Delivery Grant 授权链；token 仅保存 hash，授权同时校验 attachment、owner、撤销时间、过期时间和请求 Range，授权通过后才读取物理内容。
 - 实现修复：现有 Grant/Attachment Controller 已实现拒绝越权、过期、未知 token 和非法 Range；补充服务级自动化测试覆盖合法 owner、其他 owner、过期和未知 token。
 - 失败语义：所有拒绝分支统一为 NotFound，避免泄露 token 是否存在或目标对象信息；失败不创建读取结果、不改变 Attachment、Blob、Placement。
 - 验证：`PersistentDeliveryGrantServiceTest` 4/4，Maven targeted test BUILD SUCCESS。
+- Console 对接审计：预览和内容下载均从授权 API 获取入口，错误直接显示为预览/下载失败；页面没有本地 token 校验或绕过 owner/过期检查的旁路。
 ## A16 内容分发
 - 日期：2026-09-09
 - 子任务汇总：A16-01 #996、A16-02 #997、A16-03 #998、A16-04 #999、A16-05 #1000、A16-06 #1001 均已独立验收并关闭。
 - 组合交付：Delivery Provider 配置、Storage Binding、优先级选择、预览地址、Range 下载及 Grant 授权/过期控制已接入 API；相关 OpenAPI/HTTP Operation/Command 契约已同步。
 - 验证证据：配置、绑定、优先级、预览、Range、Grant 授权测试均通过；失败路径不泄露凭据、不产生伪成功、不破坏 Attachment/Blob/Placement 引用。
 - Console 回溯：`Delivery 运维` 页面已接入真实 Delivery Provider 列表、健康/启用状态和带幂等键的连接检测任务；没有后端契约的 Purge 不提供伪造执行入口。
+- Console 对接总审计：Delivery 运维页已覆盖 Provider 配置、存储来源 Binding、优先级/RANGE 策略、探测和启停；附件详情页已覆盖预览、Provider 切换和下载。运行页面 `/edge-acceleration/providers` 与 `/storage-center/attachments/{attachmentId}` 返回 HTTP 200，Console typecheck/build 已通过。
 ## A17-01 展示归档可用状态
 - 日期：2026-09-09
 - 推荐决策：复用 Attachment 元数据查询返回的 `availability` 字段；由 Attachment Reference 授权后汇总 Blob、Placement、Provider 与临时恢复状态。
