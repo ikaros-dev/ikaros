@@ -1205,6 +1205,7 @@
 - B02-05：读取浏览器实际暴露的 AudioTrack 并切换 `enabled`，未暴露时明确提示。
 - B02-06：不可用附件禁止播放，提供带幂等键的恢复请求；恢复后刷新 availability，只有 READY 才开放播放。
 - 验证：视频播放页 `/media/videos` 返回 HTTP 200，Console typecheck/build 已通过；播放服务相关测试覆盖创建、进度和恢复边界。
+- 本轮复验（2026-09-10）：media 模块全量回归 12/12 通过，其中 `PersistentMediaPlaybackServiceTest` 4/4 覆盖创建会话、不可播放 Release、进度持久化和越界拒绝；`VideoCatalog.vue` 的播放、进度/字幕相关入口与真实媒体 API 保持对接，归档附件仅提供恢复后再播放。
 
 ## B03-01 导入受支持的漫画包
 - 日期：2026-09-10
