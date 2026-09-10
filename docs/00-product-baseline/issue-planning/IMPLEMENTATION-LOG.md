@@ -1418,6 +1418,12 @@
 - B09-04：“从此处播放”先创建后续歌曲 Queue，再复用 Audio Source、预览地址和播放 Session API。
 - 验证：音乐库页 `/music` 返回 HTTP 200，Console typecheck/build 已通过。
 
+## C01-01/C01-02/C01-03/C01-05 Console 对接审计
+- `/sharing` 已改为只调用真实 `GET /shares`、`POST /shares` 和 `POST /shares/{id}/actions/revoke`；创建表单字段与 `CreateShareRequest` 对齐：`targetType`、`targetId`、`granteeType`、`granteeId`、`capabilities`、`expiresAt`。
+- 创建链接令牌时展示后端本次返回的 token，并提示仅在创建结果中保存；列表展示真实 Share Grant 字段和 ACTIVE/REVOKED 状态。
+- 移除了不存在的 `/rooms` 请求，Room/实时协作页明确标记为后续 C02/C03/C04，避免分享列表因无关接口失败。
+- 验证：Console `pnpm typecheck`、`pnpm build` 通过；`/sharing` 返回 HTTP 200；主要提交：`60b76efc`。
+
 ## 媒体消费 Console API 对齐修复
 - `/media` 原页面把不存在于 `PlaybackHistoryView` 的标题、进度和删除能力渲染成可用操作；已改为仅展示 `/media/playback/history` 实际返回的 `resourceId`、`sessionId`、`startedAt`、`endedAt` 和 `watchedSeconds`。
 - 移除无后端契约支撑的“继续”“从历史中移除”和通用队列“保存顺序”伪入口；音乐播放/队列继续使用 `/music` 的真实 API 页面。
