@@ -1278,6 +1278,7 @@
 - 日期：2026-09-10
 - 子任务汇总：B04-01 至 B04-05 已按顺序完成本地实现，均接入 Reading Console 阅读器。
 - 组合交付：章节目录选择、按页内容读取、阅读方向/布局设置、逻辑阅读位置保存、上次位置恢复和章节切换形成真实 API 联调路径。
+- 本轮复验（2026-09-10）：reading 全量 18/18 通过，其中阅读偏好 2/2、书签 2/2、阅读进度 2/2；Console 阅读器已核对页面内容、偏好、Session/If-Match、进度恢复和章节目录 API。页面二进制真实读取仍需外部附件样本/Testcontainers，未伪造集成证据。
 ## B04 Console 对接逐项审计
 - B04-01：`console/src/views/reading/index.vue` 调用 `GET /reading/chapters/{chapterId}/pages` 获取有序页面，并逐页调用 `GET /reading/pages/{pageId}/content` 渲染图片。
 - B04-02：方向/布局切换真实读写 `GET/PUT /reading/preferences?scope=WORK&kind=COMIC&workId=...`，不是仅改本地状态。
