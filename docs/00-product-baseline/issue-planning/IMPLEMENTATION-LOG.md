@@ -1157,6 +1157,7 @@
 - B01-04：字幕/封面区真实加载附件与字幕 API，字幕关联调用 `POST /media/releases/{releaseId}/subtitles`，封面按 Attachment 角色展示。
 - B01-05：Release 和封面通过 `/attachments/{attachmentId}/availability` 刷新真实可用状态，失败显示 UNKNOWN，不伪造 READY。
 - 验证：视频条目页面 `/media/videos` 返回 HTTP 200，Console typecheck/build 已通过；后端媒体相关测试累计 8/8 通过。
+- 本轮复验（2026-09-10）：media 模块全量回归 12/12 通过（目录 4、播放/会话 4、Release 2、技术元数据 2）；`console/src/views/media/VideoCatalog.vue` 持续调用真实 subjects、Season/Episode、Release、字幕、Attachment availability API。Docker/Testcontainers 联调仍未伪造。
 
 ## B02-01 选择附件开始播放
 - 日期：2026-09-10
