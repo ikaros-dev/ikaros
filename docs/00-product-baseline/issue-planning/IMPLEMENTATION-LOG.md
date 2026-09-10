@@ -839,6 +839,7 @@
 - 实现修复：Provider 可写能力查询改为在 Resource 授权成功后惰性执行，错误身份不会触发 Provider、Blob 或物理上传 adapter 查询；已存在相同内容且有可用 Placement 时返回去重 SKIP 意图。
 - 失败语义：未配置上传能力、未知/无权 Resource、不可写/不存在 Provider 和同 SHA 大小冲突均失败；不泄露认证材料，不创建 Attachment/Blob/Placement。
 - 验证：`DefaultStorageServiceTest` 8/8 通过，覆盖附件边界回归及未知 Resource 不创建上传意图；真实 Provider 预签名和 PostgreSQL/Testcontainers 联调仍需 Docker/外部 Provider。
+- Console 对接审计：`console/src/views/attachments/index.vue` 的“上传附件”对话框读取启用 Provider，并调用 `POST /resources/{id}/attachments/upload-intents` 获取短时效上传地址；页面不自行保存 Provider 凭据。
 
 ## A14-02 检查上传约束
 
@@ -847,6 +848,7 @@
 - 实现修复：`beginUpload` 增加直接调用边界校验，负大小、空必要字段和非法 SHA-256 均显式拒绝；Provider 查询保持在 Resource 授权之后惰性执行。
 - 失败语义：不满足上传约束时返回参数错误，不创建上传意图、Attachment、Blob 或 Placement，也不访问 Provider 认证/物理 adapter。
 - 验证：`DefaultStorageServiceTest` 9/9 通过，覆盖约束失败、未知 Resource、已有附件边界和相关回归；真实 Provider/PostgreSQL/Testcontainers 联调仍需 Docker/外部 Provider。
+- Console 对接审计：文件选择、Provider、Object Key 和 Attachment 角色在上传前由页面校验，SHA-256/大小/媒体类型由浏览器计算后交给后端约束，失败在页面可见。
 
 ## A14-03 校验并提交上传结果
 
@@ -855,6 +857,7 @@
 - 实现修复：提交链改为先授权 Resource，再惰性查询 Provider 和验证远端对象，防止越权请求触发 Provider/对象验证；保留已有 Attachment、Blob、Placement 身份分离及幂等提交路径。
 - 失败语义：未知/无权 Resource、Provider 不可写、SHA-256/大小/tier 不匹配或远端对象不可确认均失败，不产生伪成功 Attachment 或错误成功事件。
 - 验证：`DefaultStorageServiceTest` 10/10 通过，覆盖越权提交不访问 Provider/对象 adapter 及附件存储回归；真实 Provider 对象校验和 PostgreSQL/Testcontainers 联调仍需 Docker/外部 Provider。
+- Console 对接审计：获得意图后按返回的 method/url 上传真实文件，再调用 `POST /resources/{id}/attachments/commit` 提交 Attachment、Blob 和 Placement；成功刷新附件列表，失败保留错误。
 
 ## A14-04 相同内容复用 Blob
 
@@ -863,6 +866,7 @@
 - 实现确认：`findOrCreateBlob` 先按 SHA-256 查找，复用时强制校验大小与哈希算法；已有可用 Placement 的上传意图返回去重结果，不重复创建物理对象。
 - 失败语义：同 SHA 大小不一致显式冲突，不创建新 Blob 或 Attachment；所有 Attachment/Blob/Placement 关系保持独立，失败不破坏既有引用。
 - 验证：`DefaultStorageServiceTest` 11/11 通过，覆盖既有 Blob 复用、大小冲突及无新写入；真实 PostgreSQL 唯一约束/Testcontainers 并发联调仍需 Docker。
+- Console 对接审计：上传流程使用后端返回的 `deduplicated` 分支，去重时跳过物理上传但仍提交独立 Attachment，页面展示刷新后的 Blob/Placement 结果。
 
 ## A14-05 恢复中断上传
 
@@ -871,6 +875,7 @@
 - 实现确认：提交路径在授权与远端对象校验后进入既有幂等 Attachment 分支；同一资源和 key 已有提交时返回原 Attachment 与 Blob，不再次保存。
 - 失败语义：恢复重试中的摘要、大小、Provider 或对象校验失败继续明确失败；既有成功状态不回退、不重复创建、不删除有效引用。
 - 验证：`DefaultStorageServiceTest` 12/12 通过，覆盖同一 Idempotency-Key 重试不重复创建 Attachment/Blob 及越权、约束和 Blob 复用回归；真实 Multipart Provider 断点续传联调仍需 Docker/外部 Provider。
+- Console 对接审计：上传流程为每次会话生成并复用 `Idempotency-Key`，意图返回 `sessionId`；“终止上传”调用 `DELETE /resources/{id}/attachments/upload-intents/{sessionId}` 并明确提示临时对象清理。
 
 ## A14-06 终止并清理失效上传会话（契约与 Schema）
 
@@ -885,6 +890,7 @@
 - 验证：`UploadSessionExpirySchedulerTest` 2/2 通过，覆盖过期标记、临时对象清理、事件发布及 Provider 不可用时保留重试机会。
 - 最终验收：会话创建已返回 `session_id`，终止入口按 Owner 隔离并清理临时对象，过期扫描可重试清理；`DefaultStorageServiceTest` 15/15、`UploadSessionExpirySchedulerTest` 2/2 通过。主要 commits：`a6f60eb0`、`e6909303`、`2f628294`、`a5408adc`、`6748d3e0`、`e87f1de0`、`1af16c2c`。
 - 契约追溯：已登记上传意图/终止会话 HTTP operation、请求/响应 Schema 及 `storage.upload-session.expired@1` 事件。
+- Console 对接审计：附件页已覆盖 A14-06 的会话终止入口；过期扫描属于服务端定时清理，页面通过上传会话状态/错误反馈呈现结果，不伪造后台完成状态。
 
 ## A12 资源关系管理（父 issue）
 
@@ -901,6 +907,7 @@
 - 主要 commits：`a4d6792d`、`7d710ea4`、`0e9a45a2`、`9478c140`、`eb1f8ae9`、`a6f60eb0`、`e6909303`、`2f628294`、`a5408adc`、`6748d3e0`、`e87f1de0`、`1af16c2c`、`c5bf1970`。
 - 统一边界：Attachment、Blob、Placement、Upload Session 身份分离；授权先于 Provider/对象访问；失败不产生伪成功；临时对象清理可重试。
 - 验证证据：storage 服务与上传会话测试通过；真实 PostgreSQL/Testcontainers、Multipart/外部 Provider 联调仍需 Docker/外部环境。
+- Console 对接总审计：附件页 `/storage-center/attachments` 已覆盖 A14 上传、提交、去重、幂等恢复和会话终止操作，运行页面返回 HTTP 200；Console typecheck/build 已通过。真实 Provider 上传仍需外部 Provider 配置。
 
 ## A15-01 添加 Provider
 
