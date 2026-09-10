@@ -92,7 +92,7 @@ class PersistentPhotoServiceTest {
         AttachmentReferenceQuery references = mock(AttachmentReferenceQuery.class);
         StorageService storage = mock(StorageService.class);
         BackgroundTaskService tasks = mock(BackgroundTaskService.class);
-        when(albums.findById(albumId)).thenReturn(Mono.just(new PhotoAlbumEntity(albumId, owner, "Old", null, Instant.now(), Instant.now(), 2L)));
+        when(albums.findById(albumId)).thenReturn(Mono.just(new PhotoAlbumEntity(albumId, owner, "Old", null, Instant.now(), Instant.now(), null, 2L)));
 
         StepVerifier.create(new PersistentPhotoService(resources, photos, assets, albums, members, references, storage, tasks)
                 .updateAlbum(owner, albumId, new UpdatePhotoAlbumRequest("New", null), 1L))
