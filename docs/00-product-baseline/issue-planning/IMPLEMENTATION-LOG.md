@@ -75,6 +75,7 @@
 - 当前实现：`r2dbc-migrate` 启动时读取 migration history，只执行 pending migration，并启用等待数据库与 PostgreSQL advisory lock；当前本地运行实例已报告数据库版本 `202609100900`。
 - 未完成项：当前环境没有 Docker CLI，无法执行真实旧版本 PostgreSQL → 当前版本的 Testcontainers 回放；不将配置审查当作升级回放通过。
 - 下一步：获得 Docker Desktop/PostgreSQL 环境后，补执行旧版本、pending migration、重启幂等和失败回滚/未就绪场景，再提交该 issue 的完成评论。
+- 本轮复验：`mvn -pl application -am package -DskipTests` 成功；使用 `java -jar application/target/application-2.0.0-SNAPSHOT.jar --spring.profiles.active=local` 可进入 Spring Boot 与 R2DBC migration，但因本机 `localhost:5432` 无 PostgreSQL 而保持未就绪。根目录直接执行 `mvn spring-boot:run` 的 main class 问题已由 `448343fd` 修正到运行文档。
 
 ## A02-04 升级失败时阻止服务进入就绪状态（复核）
 
