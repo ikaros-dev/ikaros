@@ -3,6 +3,8 @@ package run.ikaros.drive;
 import java.text.Normalizer;
 import java.time.Instant;
 import java.util.Locale;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.PageRequest;
@@ -61,7 +63,28 @@ public class PersistentDriveService implements DriveService {
         }); }));
     }
     @Override public Mono<DriveNodeView> rename(UUID actor, UUID id, RenameDriveNodeRequest req) { return transactionalOperator.transactional(ownedNode(actor,id).flatMap(n -> ownedSpace(actor,n.driveSpaceId()).flatMap(space -> { check(n.nodeVersion(),req.expectedVersion()); DriveNodeEntity c=new DriveNodeEntity(n.id(),n.driveSpaceId(),n.parentId(),n.nodeType(),req.name().trim(),normalize(req.name()),n.lifecycle(),n.currentRevisionId(),n.createdBy(),n.createdAt(),Instant.now(),n.trashedAt(),n.nodeVersion()+1,n.version()); return nodes.save(c).onErrorMap(DuplicateKeyException.class,e->new ConflictException("同目录下名称已存在")).flatMap(saved->record(space,saved,DriveMutationKind.NODE_RENAMED,null).thenReturn(view(saved))); })) ); }
-    @Override public Mono<DriveNodeView> move(UUID actor, UUID id, MoveDriveNodeRequest req) { return transactionalOperator.transactional(ownedNode(actor,id).flatMap(n -> nodes.findByIdAndDriveSpaceId(req.parentId(),n.driveSpaceId()).switchIfEmpty(Mono.error(new NotFoundException("目标父节点不存在"))).flatMap(p -> { check(n.nodeVersion(),req.expectedVersion()); if(p.nodeType()!=DriveNodeType.FOLDER||p.id().equals(n.id())) return Mono.error(new ConflictException("目标父节点无效")); DriveNodeEntity c=new DriveNodeEntity(n.id(),n.driveSpaceId(),p.id(),n.nodeType(),n.name(),n.normalizedName(),n.lifecycle(),n.currentRevisionId(),n.createdBy(),n.createdAt(),Instant.now(),n.trashedAt(),n.nodeVersion()+1,n.version()); return nodes.save(c).onErrorMap(DuplicateKeyException.class,e->new ConflictException("目标目录下名称已存在")).flatMap(saved -> ownedSpace(actor, saved.driveSpaceId()).flatMap(space -> record(space, saved, DriveMutationKind.NODE_MOVED, null).thenReturn(view(saved)))); }))); }
+    @Override public Mono<DriveNodeView> move(UUID actor, UUID id, MoveDriveNodeRequest req) {
+        return transactionalOperator.transactional(ownedNode(actor, id)
+            .flatMap(n -> nodes.findByIdAndDriveSpaceId(req.parentId(), n.driveSpaceId())
+                .switchIfEmpty(Mono.error(new NotFoundException("目标父节点不存在")))
+                .flatMap(p -> {
+                    check(n.nodeVersion(), req.expectedVersion());
+                    if (p.nodeType() != DriveNodeType.FOLDER || p.id().equals(n.id())) {
+                        return Mono.error(new ConflictException("目标父节点无效"));
+                    }
+                    return parentChainContains(n.driveSpaceId(), p.id(), n.id(), new HashSet<>()).flatMap(cycle -> {
+                        if (cycle) return Mono.error(new ConflictException("不能将目录移动到自身或其子目录"));
+                        DriveNodeEntity c = new DriveNodeEntity(n.id(), n.driveSpaceId(), p.id(), n.nodeType(), n.name(),
+                            n.normalizedName(), n.lifecycle(), n.currentRevisionId(), n.createdBy(), n.createdAt(), Instant.now(),
+                            n.trashedAt(), n.nodeVersion() + 1, n.version());
+                        return nodes.save(c).onErrorMap(DuplicateKeyException.class,
+                                e -> new ConflictException("目标目录下名称已存在"))
+                            .flatMap(saved -> ownedSpace(actor, saved.driveSpaceId())
+                                .flatMap(space -> record(space, saved, DriveMutationKind.NODE_MOVED, null)
+                                    .thenReturn(view(saved))));
+                    });
+                })));
+    }
     @Override public Mono<DriveNodeView> trash(UUID actor, UUID id, long expected) { return lifecycle(actor,id,expected,DriveLifecycle.TRASHED); }
     @Override public Mono<DriveNodeView> restore(UUID actor, UUID id, long expected) { return lifecycle(actor,id,expected,DriveLifecycle.ACTIVE); }
     @Override
@@ -161,6 +184,13 @@ public class PersistentDriveService implements DriveService {
     private Mono<DriveNodeView> lifecycle(UUID actor,UUID id,long expected,DriveLifecycle state){return transactionalOperator.transactional(ownedNode(actor,id).flatMap(n->ownedSpace(actor,n.driveSpaceId()).flatMap(space->{check(n.nodeVersion(),expected); if(n.lifecycle()==DriveLifecycle.PURGED)return Mono.error(new ConflictException("节点已永久删除")); Instant now=Instant.now(); DriveNodeEntity c=new DriveNodeEntity(n.id(),n.driveSpaceId(),n.parentId(),n.nodeType(),n.name(),n.normalizedName(),state,n.currentRevisionId(),n.createdBy(),n.createdAt(),now,state==DriveLifecycle.TRASHED?now:null,n.nodeVersion()+1,n.version()); DriveMutationKind kind=state==DriveLifecycle.TRASHED?DriveMutationKind.NODE_TRASHED:DriveMutationKind.NODE_RESTORED; return nodes.save(c).flatMap(saved->advance(space,saved,kind,null).flatMap(updated->state==DriveLifecycle.TRASHED?tombstoneRepository.save(new DriveTombstoneEntity(null,saved.driveSpaceId(),saved.id(),updated.changeGeneration(),saved.nodeVersion(),TombstoneLifecycle.TRASHED,saved.parentId(),saved.name(),now,now.plusSeconds(30L*24*3600))).thenReturn(saved):Mono.just(saved))).map(this::view);})));}
     private Mono<DriveSpaceEntity> ownedSpace(UUID actor,UUID id){return spaces.findById(id).filter(s->s.ownerUserId().equals(actor)).switchIfEmpty(Mono.error(new NotFoundException("Drive Space 不存在")));}
     private Mono<DriveNodeEntity> ownedNode(UUID actor,UUID id){return nodes.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Drive Node 不存在"))).flatMap(n->ownedSpace(actor,n.driveSpaceId()).thenReturn(n));}
+    private Mono<Boolean> parentChainContains(UUID spaceId, UUID currentId, UUID movingId, Set<UUID> visited) {
+        if (currentId.equals(movingId)) return Mono.just(true);
+        if (!visited.add(currentId)) return Mono.just(false);
+        return nodes.findByIdAndDriveSpaceId(currentId, spaceId)
+            .flatMap(node -> node.parentId() == null ? Mono.just(false) : parentChainContains(spaceId, node.parentId(), movingId, visited))
+            .defaultIfEmpty(false);
+    }
     private Mono<DriveSpaceEntity> advance(DriveSpaceEntity s){return spaces.save(new DriveSpaceEntity(s.id(),s.ownerUserId(),s.displayName(),s.rootNodeId(),s.changeGeneration()+1,s.state(),s.createdAt(),Instant.now(),s.version()));}
     private Mono<DriveSpaceEntity> advance(DriveSpaceEntity s, DriveNodeEntity node, DriveMutationKind kind, UUID revisionId) { long sequence=s.changeGeneration()+1; Instant now=Instant.now(); return spaces.save(new DriveSpaceEntity(s.id(),s.ownerUserId(),s.displayName(),s.rootNodeId(),sequence,s.state(),s.createdAt(),now,s.version())).flatMap(saved->changes.save(new DriveChangeEntity(null,s.id(),sequence,node.id(),kind,node.nodeVersion(),revisionId,now)).thenReturn(saved)); }
     private Mono<Void> record(DriveSpaceEntity space, DriveNodeEntity node, DriveMutationKind kind, UUID revisionId) {
