@@ -19,6 +19,7 @@ import run.ikaros.storage.api.AttachmentReference;
 import run.ikaros.storage.api.AttachmentReferenceQuery;
 import run.ikaros.storage.api.AttachmentView;
 import run.ikaros.storage.api.StorageService;
+import run.ikaros.operations.api.BackgroundTaskService;
 
 class PersistentPhotoServiceTest {
     @Test
@@ -34,6 +35,7 @@ class PersistentPhotoServiceTest {
         PhotoAlbumMemberRepository members = mock(PhotoAlbumMemberRepository.class);
         AttachmentReferenceQuery references = mock(AttachmentReferenceQuery.class);
         StorageService storage = mock(StorageService.class);
+        BackgroundTaskService tasks = mock(BackgroundTaskService.class);
         ResourceView resource = mock(ResourceView.class);
         PhotoEntity photo = new PhotoEntity(photoId, owner, resourceId, null, null, null, null, null, null, null, null, null, null, null, 0L);
 
@@ -46,7 +48,7 @@ class PersistentPhotoServiceTest {
         when(photos.save(any())).thenReturn(Mono.just(photo));
         when(assets.save(any())).thenReturn(Mono.just(mock(PhotoAssetEntity.class)));
 
-        StepVerifier.create(new PersistentPhotoService(resources, photos, assets, albums, members, references, storage)
+        StepVerifier.create(new PersistentPhotoService(resources, photos, assets, albums, members, references, storage, tasks)
                 .create(owner, new CreatePhotoRequest("Sunset", attachmentId, "zh-CN")))
             .expectNextMatches(view -> view.id().equals(photoId) && view.resourceId().equals(resourceId))
             .verifyComplete();
@@ -64,11 +66,12 @@ class PersistentPhotoServiceTest {
         PhotoAlbumMemberRepository members = mock(PhotoAlbumMemberRepository.class);
         AttachmentReferenceQuery references = mock(AttachmentReferenceQuery.class);
         StorageService storage = mock(StorageService.class);
+        BackgroundTaskService tasks = mock(BackgroundTaskService.class);
 
         when(references.requireReadable(owner, attachmentId)).thenReturn(Mono.just(new AttachmentReference(attachmentId, resourceId)));
         when(storage.get(owner, attachmentId)).thenReturn(Mono.just(new AttachmentView(attachmentId, resourceId, "notes.txt", AttachmentKind.ORIGINAL, "hash", 42, "text/plain", AttachmentAvailabilityStatus.READY)));
 
-        StepVerifier.create(new PersistentPhotoService(resources, photos, assets, albums, members, references, storage)
+        StepVerifier.create(new PersistentPhotoService(resources, photos, assets, albums, members, references, storage, tasks)
                 .create(owner, new CreatePhotoRequest("Not photo", attachmentId, "en-US")))
             .expectError(run.ikaros.common.ConflictException.class)
             .verify();

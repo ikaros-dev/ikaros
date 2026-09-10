@@ -13,6 +13,8 @@ import run.ikaros.storage.api.AttachmentReferenceQuery;
 import run.ikaros.storage.api.AttachmentAvailabilityStatus;
 import run.ikaros.storage.api.AttachmentView;
 import run.ikaros.storage.api.StorageService;
+import run.ikaros.operations.api.BackgroundTaskService;
+import run.ikaros.operations.api.TaskReference;
 
 @Service
 public class PersistentPhotoService implements PhotoService {
@@ -23,9 +25,10 @@ public class PersistentPhotoService implements PhotoService {
     private final PhotoAlbumMemberRepository members;
     private final AttachmentReferenceQuery attachments;
     private final StorageService storage;
+    private final BackgroundTaskService tasks;
 
-    public PersistentPhotoService(ResourceService r, PhotoRepository p, PhotoAssetRepository a, PhotoAlbumRepository l, PhotoAlbumMemberRepository m, AttachmentReferenceQuery at, StorageService s) {
-        resources = r; photos = p; assets = a; albums = l; members = m; attachments = at; storage = s;
+    public PersistentPhotoService(ResourceService r, PhotoRepository p, PhotoAssetRepository a, PhotoAlbumRepository l, PhotoAlbumMemberRepository m, AttachmentReferenceQuery at, StorageService s, BackgroundTaskService t) {
+        resources = r; photos = p; assets = a; albums = l; members = m; attachments = at; storage = s; tasks = t;
     }
 
     @Override public Mono<PhotoView> create(UUID o, CreatePhotoRequest r) {
@@ -46,6 +49,19 @@ public class PersistentPhotoService implements PhotoService {
     private boolean isUsableImage(AttachmentView attachment) {
         return attachment.mediaType() != null && attachment.mediaType().toLowerCase(java.util.Locale.ROOT).startsWith("image/")
             && attachment.availability() == AttachmentAvailabilityStatus.READY;
+    }
+
+    @Override
+    public Mono<TaskReference> requestThumbnail(UUID owner, UUID photoId) {
+        return photos.findById(photoId)
+            .filter(photo -> photo.ownerId().equals(owner))
+            .switchIfEmpty(Mono.error(new NotFoundException("图片不存在或无权访问")))
+            .flatMap(photo -> assets.findByPhotoIdAndRole(photo.id(), PhotoAssetRole.ORIGINAL_PRIMARY)
+                .switchIfEmpty(Mono.error(new ConflictException("图片没有可生成缩略图的原图")))
+                .flatMap(asset -> tasks.submit("photo.thumbnail",
+                    java.util.Map.of("photo_id", photo.id().toString(), "owner_id", owner.toString(),
+                        "source_attachment_id", asset.attachmentId().toString()),
+                    "photo-thumbnail:" + photo.id()).map(task -> new TaskReference(task.id(), task.taskType()))));
     }
 
     @Override public Flux<PhotoView> timeline(UUID o) { return photos.findAllByOwnerIdOrderByCaptureTimeDesc(o).take(100).map(this::photoView); }
