@@ -1568,3 +1568,38 @@
 ## A22 插件生命周期（父 issue）
 - 整体验收：A22-01 至 A22-06 已逐项完成；插件安装校验、兼容性、显式启用、扩展撤销、升级失败保护和卸载保留策略均有运行时行为与 Console `/plugins` 入口。
 - 验证证据：`InMemoryPluginRuntimeTest` 当前 12/12；Console 插件页已通过 typecheck/build 审计。持久化运行时使用同一生命周期契约，完整 PostgreSQL/Testcontainers 验证仍受本机 Docker 不可用限制。
+
+## A23-01 任务完成或失败生成通知
+- 日期：2026-09-10
+- 实现：Durable Task terminal event consumer 对成功、失败和超时事件按用户偏好生成站内通知；失败/超时使用高优先级，禁用偏好或无合法收件人时不生成。
+- Console：通知中心读取真实通知 API，展示来源、标题、正文预览、优先级、状态和渠道。
+- 验证：`NotificationServiceTest` 6/6，覆盖成功、失败、禁用偏好和非终态忽略；Console typecheck 通过；主要提交：`5477defd`。
+
+## A23-02 查看通知列表
+- 日期：2026-09-10
+- 实现：通知查询按 recipient owner scope 分页，并支持状态、来源和优先级筛选。
+- Console：`/communications-center/notifications` 通过真实 `GET /api/communications/notifications` 加载列表，展示加载、空结果、错误和筛选结果。
+- 验证：`NotificationServiceTest` 列表筛选分支通过；Console typecheck 通过。
+
+## A23-03 标记已读
+- 日期：2026-09-10
+- 实现：标记已读按 notification 与 recipient 双条件更新，重复标记保持幂等，越权通知不可操作。
+- Console：通知行的“标记已读”调用真实 `POST /api/communications/notifications/{notificationId}/actions/read`，成功后更新状态，失败可见。
+- 验证：通知服务实现与 Console API 对接已审计；Console typecheck 通过。
+
+## A23-04 跳转到关联任务或资源
+- 日期：2026-09-10
+- 实现：通知保留 task/resource 关联身份，响应不暴露无关敏感内容。
+- Console：通知中心根据真实返回的 `taskId` 或 `resourceId` 跳转到后台任务页或资源详情页，无关联时不显示伪操作。
+- 验证：Console 路由与字段对接已审计；Console typecheck 通过。
+
+## A23-05 设置支持的通知偏好
+- 日期：2026-09-10
+- 实现：按用户保存任务成功/失败通知偏好，未配置时默认开启，事件消费者读取偏好后决定是否生成通知。
+- Console：账户偏好页通过真实 `GET/PUT /api/communications/notification-preferences` 展示并保存通知开关。
+- 验证：`NotificationServiceTest` 偏好默认/更新分支通过；Console typecheck 通过。
+
+## A23 通知中心（父 issue）
+- 整体验收：A23-01 至 A23-05 已逐项核验，完成通知生成、列表筛选、已读、关联跳转和偏好设置的 API 与 Console 对接。
+- 限制：通知投递规则和投递日志仍是其他功能范围，页面明确显示未接入，不冒充 A23 已完成能力。
+- 验证证据：`NotificationServiceTest` 6/6、Console typecheck 通过；主要提交：`5477defd`。
