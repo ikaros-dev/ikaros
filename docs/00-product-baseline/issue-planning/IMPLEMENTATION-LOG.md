@@ -6,7 +6,7 @@
 - 决策：保留 Maven Multi-Module、Java 21、Spring Boot 4.x、WebFlux、R2DBC、PostgreSQL 与 `r2dbc-migrate` 基线；不切换 Gradle，不引入 JPA/JDBC/Flyway 第二持久化栈。
 - 差异记录：新增 `A01-01-ARCHITECTURE-DIFF.md`，记录既有模块分层、显式组装和自动化门禁尚未完全收敛的差异及后续处理边界。
 - 验证：根 `pom.xml` 聚合包含 `application` Server；上述架构决策与 Technical Architecture 文档一致；application package 已在后续音乐功能验证中 BUILD SUCCESS。
-- 主要提交：待本轮提交。
+- 主要提交：`83d31391`。
 
 ## A01-02 确定模块依赖边界
 
