@@ -1516,3 +1516,10 @@
 - 实现：新增显式刷新检测 API；校验同步来源启用状态与 Resource owner，比较当前 metadata 值，变化时创建 `PENDING` Provider candidate，未变化返回 `UNCHANGED` 且不写入。
 - Console：`/ingestion` 的“检测外部更新”表单调用真实 `POST /api/metadata/sync-sources/{sourceId}/refresh`，展示候选创建或值未变化结果。
 - 验证：`DefaultMetadataSyncServiceTest` 2/2；Console `pnpm typecheck` 通过；主要提交：`dde659f5`。
+
+## A21-03 至 A21-05 元数据冲突与人工决策
+- 日期：2026-09-10
+- A21-03：`ResourceMetadataService` 对人工保存字段设置 `USER` 来源和 `manuallyLocked`，Provider 自动更新不会覆盖人工值；可通过显式恢复自动来源解除锁定。
+- A21-04：资源详情页通过真实 `GET /api/ingestion/resources/{resourceId}/metadata-candidates` 展示候选字段、候选值、来源、置信度和状态，并与字段来源的人工覆盖标记并列展示。
+- A21-05：资源详情页通过真实 `POST /api/ingestion/resources/metadata-candidates/{candidateId}/resolution` 应用或拒绝候选；人工锁定字段应用候选会被后端拒绝，不静默覆盖。
+- 验证：`DefaultResourceMetadataServiceTest` 3/3、`DefaultMetadataCandidateServiceTest` 2/2；Console `pnpm typecheck` 已通过；主要既有提交：`efe18ed3` 及元数据候选实现提交。
