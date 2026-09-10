@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.neo4j.bolt</groupId>
+  <artifactId>neo4j-bolt-connection-bom</artifactId>
+  <version>10.1.0</version>
+  <packaging>pom</packaging>
+  <name>Neo4j Bolt Connection (BOM)</name>
+  <description>The BOM for the Neo4j Bolt Connection providers</description>
+  <url>https://github.com/neo4j/bolt-connection-java/neo4j-bolt-connection-bom</url>
+  <licenses>
+    <license>
+      <name>Apache License, Version 2</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>neo4j</id>
+      <name>The Neo4j Team</name>
+      <url>http://www.neo4j.com/</url>
+      <organization>Neo4j Sweden AB</organization>
+      <organizationUrl>http://www.neo4j.com/</organizationUrl>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:git://github.com/neo4j/bolt-connection-java.git/neo4j-bolt-connection-bom</connection>
+    <developerConnection>scm:git:git@github.com:neo4j/bolt-connection-java.git/neo4j-bolt-connection-bom</developerConnection>
+    <url>https://github.com/neo4j/bolt-connection-java/neo4j-bolt-connection-bom</url>
+  </scm>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.neo4j.bolt</groupId>
+        <artifactId>neo4j-bolt-connection</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.neo4j.bolt</groupId>
+        <artifactId>neo4j-bolt-connection-netty</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.neo4j.bolt</groupId>
+        <artifactId>neo4j-bolt-connection-pooled</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.neo4j.bolt</groupId>
+        <artifactId>neo4j-bolt-connection-query-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.neo4j.bolt</groupId>
+        <artifactId>neo4j-bolt-connection-routed</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>

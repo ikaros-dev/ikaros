@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.neo4j.driver</groupId>
+  <artifactId>neo4j-java-driver-bom</artifactId>
+  <version>6.0.2</version>
+  <packaging>pom</packaging>
+  <name>Neo4j Java Driver (BOM)</name>
+  <description>The BOM for the Neo4j Java Driver</description>
+  <url>https://github.com/neo4j/neo4j-java-driver</url>
+  <licenses>
+    <license>
+      <name>Apache License, Version 2</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>neo4j</id>
+      <name>The Neo4j Team</name>
+      <url>http://www.neo4j.com/</url>
+      <organization>Neo4j Sweden AB</organization>
+      <organizationUrl>http://www.neo4j.com/</organizationUrl>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:git://github.com/neo4j/neo4j-java-driver.git</connection>
+    <developerConnection>scm:git:git@github.com:neo4j/neo4j-java-driver.git</developerConnection>
+    <url>https://github.com/neo4j/neo4j-java-driver</url>
+  </scm>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.neo4j.driver</groupId>
+        <artifactId>neo4j-java-driver</artifactId>
+        <version>6.0.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.neo4j.driver</groupId>
+        <artifactId>neo4j-java-driver-all</artifactId>
+        <version>6.0.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.neo4j.driver</groupId>
+        <artifactId>neo4j-java-driver-observation-metrics</artifactId>
+        <version>6.0.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.neo4j.driver</groupId>
+        <artifactId>neo4j-java-driver-observation-micrometer</artifactId>
+        <version>6.0.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.neo4j.bolt</groupId>
+        <artifactId>neo4j-bolt-connection-bom</artifactId>
+        <version>10.1.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>
