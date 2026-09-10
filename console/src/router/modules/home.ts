@@ -126,6 +126,7 @@ export default {
       { path: "library", name: "Resources", component: ResourcesPage, meta: { title: "资源管理", description: "管理资源、标题、标签和生命周期。", icon: "ep:files" } },
       { path: "library/:resourceId", name: "ResourceDetail", component: () => import("@/views/resources/Detail.vue"), meta: { title: "资源详情", showLink: false } },
       { path: "documents", name: "Documents", component: DocumentsPage, meta: { title: "文档管理", description: "管理个人文档和工作副本。", icon: "ep:document" } },
+      { path: "documents/editor", name: "DocumentEditor", component: () => import("@/views/documents/Editor.vue"), meta: { title: "协作编辑", description: "编辑并保存文档工作副本。", icon: "ep:edit" } },
       { path: "collections", name: "Collections", component: CollectionsPage, meta: { title: "收藏集合", description: "管理资源集合及其成员。", icon: "ep:collection" } },
       { path: "activity", name: "Activity", component: () => import("@/views/workbench/Activity.vue"), meta: { title: "资源活动", icon: "ep:histogram" } },
       { path: "activity/overview", name: "WorkbenchActivity", component: () => import("@/views/workbench/Activity.vue"), meta: { title: "我的活动与收藏", showLink: false } }
