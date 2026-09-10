@@ -1635,3 +1635,9 @@
 - 实现：Media Release 只能关联 owner 可访问且 ACTIVE 的 Resource Attachment，保存后初始为 AVAILABLE；非 VIDEO Resource 或不可用/越权 Attachment 会失败且不保存 Release。
 - Console：`/media/video` 的“播放附件”入口真实读取 Release，并使用 Attachment ID 关联播放附件；页面展示加载、空结果和错误状态。
 - 验证：`PersistentMediaReleaseServiceTest` 2/2；Console 视频页真实 API 对接已审计。
+
+## B01-04 关联字幕和封面
+- 日期：2026-09-10
+- 实现：字幕只能挂到 owner 可访问的 Media Release，并要求字幕 Attachment 对该 Resource 有效；封面复用 Resource Attachment 的 `COVER` 角色，保持 Attachment 与 Media Resource 身份分离。
+- Console：`/media/video` 的“字幕 / 封面”入口真实读取 Release、字幕和 Resource Attachments，支持按 `COVER` 展示并通过真实字幕 API 关联字幕。
+- 验证：`PersistentMediaTechnicalMetadataServiceTest` 2/2，覆盖合法字幕关联和未知 Release 拒绝；Console 视频页真实 API 对接已审计。
