@@ -1452,3 +1452,8 @@
 - 新增 `/documents/editor` 协作编辑页，真实调用 `GET /documents`、`GET /documents/{id}/working-copy` 和 `PUT /documents/{id}/working-copy`。
 - 保存携带 `expectedVersion`；后端返回 409 时页面明确提示工作副本已被其他编辑者修改，避免静默覆盖。
 - 验证：Console typecheck/build 通过；主要提交：`6232c405`。
+
+## C05-02 Console 对接审计
+- `document` 新增 owner-scoped Presence 心跳、查询和离开 API：`PUT/GET/DELETE /documents/{documentId}/presence`，Presence 使用 30 秒短 TTL，不写入文档版本真相。
+- `/documents/editor` 每 10 秒发送心跳并刷新在线人数，组件卸载时 best-effort 离开；Presence 请求失败显示可见错误。
+- 验证：`mvn -s .mvn-local-settings.xml -pl document -am -DskipTests compile` BUILD SUCCESS；主要提交：`1771997c`、`ee2a054`。
