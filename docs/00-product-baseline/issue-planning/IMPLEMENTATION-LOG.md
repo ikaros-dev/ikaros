@@ -781,6 +781,7 @@
 - 统一决策：Collection 与 Resource 关系保持逻辑解耦；owner scope、事务、唯一约束、完整顺序校验和层级循环保护由 Application/Schema 共同保证；删除 Collection 不级联删除 Resource 或 Blob。
 - 验证证据：Collection 服务回归覆盖创建编辑、成员关系、排序、循环和删除边界；真实 PostgreSQL FK/事务/排序联调仍需 Docker/Testcontainers。
 - Console 对接总审计：`console/src/views/collections/index.vue` 已覆盖 A11 全部六项真实读写入口，未使用假数据或仅修改本地状态；运行页面 `/resource-center/collections` 返回 HTTP 200，Console typecheck/build 已通过。
+- 本轮复验（2026-09-10）：`DefaultCollectionServiceTest` 5/5 通过；集合页已确认真实调用列表、创建、编辑（If-Match）、成员增删、完整顺序保存、层级移动和删除 API，`pnpm typecheck` 与 `pnpm build` 通过。
 
 ## A12-01 创建指定类型的关系
 
