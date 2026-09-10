@@ -916,36 +916,42 @@
 - 实现修复：持久化注册路径拒绝将 password/secret 等明文凭据写入 Provider metadata；内存 registry 同样执行 metadata 安全边界，重复 Provider key 显式冲突。
 - 失败语义：参数不完整、缺少 `secret://` 引用/凭据、非法 metadata 或重复 key 均在持久化前失败；成功注册默认 ENABLED 并发布 Provider created 事件。
 - 验证：`InMemoryStorageProviderRegistryTest` 2/2、`PersistentStorageProviderRegistryTest` 1/1 通过；真实 PostgreSQL 唯一约束联调仍需 Docker。
+- Console 对接审计：持久化存储层页面的“添加对象存储 Provider”表单调用 `POST /storage/providers`，支持 Secret Reference 或一次性凭据输入，列表只显示“已配置（引用）”，不回显密钥。
 ## A15-02 检测连接和读写能力
 - 日期：2026-09-09
 - 推荐决策：增加 Provider 独立探测入口 `POST /api/admin/storage-providers/{provider_id}/probe`；探测不读取或修改 Attachment、Blob、Placement，也不持久化健康结果。
 - 实现修复：新增 `StorageProviderProbeResult`/状态契约、Provider probe service 和 HTTP 路径；S3 adapter 使用随机哨兵对象执行 PUT → HEAD → DELETE，删除置于 finally，失败返回脱敏错误码；未支持的 adapter 返回 `UNSUPPORTED`。
 - 失败语义：Provider 不存在沿用 NotFound；无 adapter/凭据/网络失败不产生伪成功；哨兵对象创建后即使 HEAD 失败也尝试清理。
 - 验证：`StorageProviderProbeServiceTest` 3/3、`StorageObjectProviderRegistryTest` 1/1，`mvn -pl storage -am '-Dtest=StorageProviderProbeServiceTest,StorageObjectProviderRegistryTest' '-Dsurefire.failIfNoSpecifiedTests=false' test` BUILD SUCCESS。
+- Console 对接审计：Provider 表格新增“探测”按钮，调用 `POST /storage/providers/{providerId}/probe`，展示 connection/read/write 探测结果及失败状态。
 ## A15-03 启用与停用 Provider
 - 日期：2026-09-09
 - 推荐决策：复用已有 `POST /api/storage/providers/{providerId}/enable` 和 `DELETE /api/storage/providers/{providerId}` 路径，不新增同义状态接口。
 - 实现修复：现有 Registry 已将状态变更持久化并分别发布 `storage.provider.enabled` / `storage.provider.disabled`；补充重新查询状态和事件转移验收测试。
 - 失败语义：停用 Provider 后 `requireWritable` 拒绝写入；不存在的 Provider 沿用 NotFound；重新启用只改变目标 Provider，不触碰 Attachment、Blob、Placement。
 - 验证：`InMemoryStorageProviderRegistryTest` 3/3（含停用拒写、停用后重新启用并重新查询、配置更新事件），Maven targeted test BUILD SUCCESS。
+- Console 对接审计：启用/停用按钮分别调用 `POST /storage/providers/{providerId}/enable` 与 `DELETE /storage/providers/{providerId}`，成功后重新加载列表，不修改附件数据。
 ## A15-04 更新凭据并验证
 - 日期：2026-09-09
 - 推荐决策：保留凭据替换入口并在同一调用链完成 Provider probe，返回脱敏能力摘要；不返回原始凭据，不把凭据写入事件或日志。
 - 实现修复：`POST /api/admin/storage-providers/{provider_id}/credentials` 先加密替换凭据，再调用 Provider probe；补齐 OpenAPI、HTTP Operation 和 Command 契约。
 - 失败语义：目标 Provider 不存在返回 NotFound；非法请求由 Bean Validation 拒绝；错误凭据/过期凭据只返回 `FAILED` 与稳定错误码，不泄露认证材料或目标对象数据。
 - 验证：沿用 `StorageProviderCredentialServiceTest` 验证凭据以当前密钥加密保存；Provider probe 的成功、未支持和目标不存在分支由 `StorageProviderProbeServiceTest` 3/3 覆盖，Maven BUILD SUCCESS。
+- Console 对接审计：Provider 行的“凭据”入口调用 `POST /storage/providers/{providerId}/credentials`，输入框为密码控件，页面仅接收脱敏 probe 结果。
 ## A15-05 查看容量和健康状态
 - 日期：2026-09-09
 - 推荐决策：增加只读入口 `GET /api/admin/storage-providers/{provider_id}/status`；健康状态实时复用 Provider probe，容量从 Provider 自有 metadata 读取，缺失返回 `null`，不把未知容量伪装为 0。
 - 实现修复：新增状态查询服务与 API 视图，支持 Provider 状态、健康摘要、可选容量/已用容量和检查时间；目标不存在沿用 NotFound。
 - 失败语义：probe 失败或过期不会显示为健康成功；未配置容量不产生推测值；不触碰 Attachment、Blob、Placement。
 - 验证：`StorageProviderStatusServiceTest` 2/2，覆盖正常和容量空结果/目标不存在；与既有 probe/registry 测试合计 Maven BUILD SUCCESS。
+- Console 对接审计：新增“健康 / 容量”按钮调用 `GET /storage/providers/{providerId}/status`，分别展示健康状态和容量/已用容量；容量缺失显示“—”，不把未知值显示为 0。
 ## A15 存储提供者管理
 - 日期：2026-09-09
 - 子任务汇总：A15-01 #984、A15-02 #991、A15-03 #992、A15-04 #993、A15-05 #994 均已独立验收并关闭。
 - 组合交付：Provider 注册/凭据加密、S3 连接读写 probe、启停状态事件、凭据替换后验证、健康与可选容量查询均已接入 storage API；公开路径已同步 OpenAPI 与 HTTP Operation Registry。
 - 主要限制：容量字段依赖 Provider-owned metadata，未配置时明确返回 `null`；未提供 probe adapter 的 Provider 返回 `UNSUPPORTED`。所有内容对象边界仍由 Attachment/Blob/Placement 原有服务负责。
 - 验证证据：A15 子任务 targeted Maven 测试均通过；关键汇总测试覆盖 provider 注册、probe、启停事件、凭据加密替换与状态查询。
+- Console 对接总审计：`console/src/views/storage/Tiers.vue` 已覆盖 A15 五项 API 操作；Provider 页面 `/storage-center/tiers` 返回 HTTP 200，Console typecheck/build 已通过。真实 Provider 网络探测需配置外部 Provider。
 ## A16-01 配置 Delivery Provider
 - 日期：2026-09-09
 - 推荐决策：复用现有 `POST /api/admin/delivery-providers` 配置入口；要求 `Idempotency-Key`，credential_ref 只允许 `secret://` URI，创建后触发 probe。
