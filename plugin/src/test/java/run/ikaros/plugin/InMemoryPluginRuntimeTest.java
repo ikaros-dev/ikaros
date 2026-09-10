@@ -115,6 +115,16 @@ class InMemoryPluginRuntimeTest {
     }
 
     @Test
+    void deleteDataRemovesPluginRecordAfterDisable() {
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0");
+        runtime.install(manifest, Set.of("resource.read")).block();
+
+        runtime.uninstall(manifest.pluginId(), PluginUninstallPolicy.DELETE_DATA).block();
+
+        assertThrows(RuntimeException.class, () -> runtime.get(manifest.pluginId()).block());
+    }
+
+    @Test
     void enabledPluginCannotBeUninstalledWithEitherPolicy() {
         InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0");
         runtime.install(manifest, Set.of("resource.read")).block();
