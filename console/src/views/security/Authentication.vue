@@ -38,7 +38,7 @@ async function verify() {
 }
 async function cancel() {
   if (!challenge.value) return;
-  try { await http.request("delete", `/security/verification-challenges/${challenge.value.id}`); challenge.value = null; verificationGrant.value = ""; clearVerificationGrant(); code.value = ""; result.value = "挑战已取消。"; }
+  try { const prefix = purpose.value === "LOGIN_STEP_UP" ? "/security/step-up" : "/security/verification-challenges"; await http.request("delete", `${prefix}/${challenge.value.id}`); challenge.value = null; verificationGrant.value = ""; clearVerificationGrant(); code.value = ""; result.value = "挑战已取消。"; }
   catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "挑战取消失败"; }
 }
 </script>
