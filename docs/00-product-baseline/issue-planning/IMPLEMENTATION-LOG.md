@@ -1043,6 +1043,7 @@
 - 验证证据：配置、绑定、优先级、预览、Range、Grant 授权测试均通过；失败路径不泄露凭据、不产生伪成功、不破坏 Attachment/Blob/Placement 引用。
 - Console 回溯：`Delivery 运维` 页面已接入真实 Delivery Provider 列表、健康/启用状态和带幂等键的连接检测任务；没有后端契约的 Purge 不提供伪造执行入口。
 - Console 对接总审计：Delivery 运维页已覆盖 Provider 配置、存储来源 Binding、优先级/RANGE 策略、探测和启停；附件详情页已覆盖预览、Provider 切换和下载。运行页面 `/edge-acceleration/providers` 与 `/storage-center/attachments/{attachmentId}` 返回 HTTP 200，Console typecheck/build 已通过。
+- 本轮复验（2026-09-10）：Delivery Provider、Storage Binding、预览、Grant 和附件 Controller targeted 回归 8/8 通过；分发管理页和附件详情页的配置、绑定、探测、预览、下载路径均调用真实 API，Console 构建通过。
 ## A17-01 展示归档可用状态
 - 日期：2026-09-09
 - 推荐决策：复用 Attachment 元数据查询返回的 `availability` 字段；由 Attachment Reference 授权后汇总 Blob、Placement、Provider 与临时恢复状态。
