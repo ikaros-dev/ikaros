@@ -1623,3 +1623,9 @@
 - 实现：创建视频 Subject 时先通过 Resource API 创建 `VIDEO` Resource，再保存 owner-scoped Media Subject；Resource 创建失败不会写入 Subject。
 - Console：`/media/video` 的“创建视频条目”表单真实调用 `POST /api/media/subjects`，创建后刷新列表并展示空/加载/错误状态。
 - 验证：`PersistentMediaCatalogServiceTest` 4/4；Console 视频页已完成真实 API 对接审计；主要既有实现提交：媒体目录实现提交。
+
+## B01-02 维护剧集顺序
+- 日期：2026-09-10
+- 实现：剧集重排要求提交目标 Season 的完整、无重复 Episode 集合，owner 和 Subject/Season 归属均由后端校验；通过受控编号偏移后按新顺序持久化，非法集合不写入。
+- Console：`/media/video` 真实读取 Season/Episode，支持上下移动并调用 `POST /api/media/subjects/{subjectId}/seasons/{seasonId}/actions/reorder-episodes`，保存后重新读取。
+- 验证：`PersistentMediaCatalogServiceTest` 4/4，覆盖完整重排和重复 Episode 拒绝；Console 视频页真实 API 对接已审计。
