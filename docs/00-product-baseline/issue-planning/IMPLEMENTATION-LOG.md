@@ -1134,6 +1134,16 @@
 - 子任务汇总：B02-01 至 B02-06 已按清单顺序完成本地实现，并全部接入视频条目 Console 播放入口。
 - 组合交付：选择 Release 开始播放、保存进度、断点续播、字幕切换、内嵌音轨切换和归档恢复后的继续播放形成一条真实 API 联调路径；Session、Resource Progress、Subtitle、Attachment Restore 各自保持边界。
 - 验证：`PersistentMediaPlaybackServiceTest` 4/4；Console `pnpm typecheck` 通过；相关播放/进度/恢复接口已同步 OpenAPI 与 HTTP Operation Registry。
+## B02 Console 对接逐项审计
+
+- B02-01：选择可用 Release 后调用播放源、播放 Session 和附件预览授权 API，真实 `<video>` 播放器使用返回地址。
+- B02-02：播放器暂停/时间更新/关闭时调用 Session PATCH 保存位置，并使用 `If-Match` 版本控制。
+- B02-03：开始播放前读取 `/media/playback/resources/{resourceId}/progress`，在 `loadedmetadata` 后恢复未完成位置。
+- B02-04：字幕来自 Release API，并为每个字幕附件获取预览地址后生成原生字幕轨道。
+- B02-05：读取浏览器实际暴露的 AudioTrack 并切换 `enabled`，未暴露时明确提示。
+- B02-06：不可用附件禁止播放，提供带幂等键的恢复请求；恢复后刷新 availability，只有 READY 才开放播放。
+- 验证：视频播放页 `/media/videos` 返回 HTTP 200，Console typecheck/build 已通过；播放服务相关测试覆盖创建、进度和恢复边界。
+
 ## B03-01 导入受支持的漫画包
 - 日期：2026-09-10
 - 实现：阅读库 Console 提供漫画包导入入口；服务端校验当前用户可读附件的 CBZ、CBR、ZIP 扩展名，创建 Comic Work、Edition 和持久化导入记录，并支持按幂等键重复提交。
