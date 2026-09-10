@@ -10,6 +10,15 @@ import reactor.core.publisher.Mono;
 public interface OutboxEventRepository extends ReactiveCrudRepository<OutboxEventEntity, UUID> {
     Flux<OutboxEventEntity> findTop100ByDispatchedAtIsNullOrderByOccurredAtAsc();
 
+    @Query("select count(*) from event_outbox where dispatched_at is null")
+    Mono<Long> countPending();
+
+    @Query("select count(*) from event_outbox where dispatched_at is null and attempt_count > 0")
+    Mono<Long> countAttemptedPending();
+
+    @Query("select max(last_attempt_at) from event_outbox where last_attempt_at is not null")
+    Mono<java.time.Instant> lastAttemptAt();
+
     @Modifying
     @Query("update event_outbox set attempt_count = attempt_count + 1, last_attempt_at = :attemptedAt "
         + "where id = :id and dispatched_at is null")

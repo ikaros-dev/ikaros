@@ -20,6 +20,7 @@ import run.ikaros.authorization.api.RoleMembershipQuery;
 import run.ikaros.operations.api.AuditService;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
+import org.springframework.transaction.reactive.TransactionalOperator;
 
 /** 验证平台用户服务的创建、查询与状态规则。 */
 class DefaultUserServiceTest {
@@ -92,6 +93,35 @@ class DefaultUserServiceTest {
             .assertNext(view -> assertThat(view.status()).isEqualTo(UserStatus.LOCKED))
             .verifyComplete();
         verify(auditService).record(actorId, "identity.user.status.change", "USER", userId, "{}");
+    }
+
+    @Test
+    void invalidatesAllUserTokensByAtomicallyIncreasingSecurityVersion() {
+        UUID actorId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity current = new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, now, now, null, 4L, 2L);
+        PlatformUserEntity saved = new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, now, now, null, 5L, 3L);
+        DurableEventPublisher events = mock(DurableEventPublisher.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.findById(userId)).thenReturn(Mono.just(current));
+        when(userRepository.save(any())).thenReturn(Mono.just(saved));
+        when(events.append(any(EventAppendRequest.class))).thenReturn(Mono.just(mock(run.ikaros.integration.api.EventReference.class)));
+        when(auditService.record(eq(actorId), eq("identity.user.tokens.invalidate"), eq("USER"), eq(userId),
+            eq("{\"security_version\":5}"))).thenReturn(Mono.empty());
+
+        DefaultUserService invalidating = new DefaultUserService(userRepository, roleMembershipQuery, auditService,
+            events, transaction);
+        StepVerifier.create(invalidating.invalidateTokens(actorId, userId))
+            .assertNext(result -> assertThat(result.securityVersion()).isEqualTo(5L))
+            .verifyComplete();
+        verify(transaction).transactional(any(Mono.class));
+        verify(events).append(argThat(request -> request.eventType().equals("authentication.user.tokens-invalidated")
+            && request.payloadJson().contains("\"security_version\":5")
+            && !request.payloadJson().contains("token")));
     }
 
     @Test

@@ -33,7 +33,13 @@ class PublicApiContractTest {
         Map<String, RegisteredOperation> registered = readRegistry(registry);
         Map<String, ApiOperation> openApi = readOpenApiOperations(registry);
 
-        assertEquals(registered.keySet(), openApi.keySet(), "Registry 与 OpenAPI 的 method/path 集合必须一致");
+        Set<String> missingFromOpenApi = new HashSet<>(registered.keySet());
+        missingFromOpenApi.removeAll(openApi.keySet());
+        Set<String> missingFromRegistry = new HashSet<>(openApi.keySet());
+        missingFromRegistry.removeAll(registered.keySet());
+        assertTrue(missingFromOpenApi.isEmpty() && missingFromRegistry.isEmpty(),
+            "Registry 与 OpenAPI 的 method/path 集合必须一致; missingFromOpenApi="
+                + missingFromOpenApi + "; missingFromRegistry=" + missingFromRegistry);
         assertEquals(registered.size(), new HashSet<>(registered.values()).size(), "Registry operation 不得重复");
         assertEquals(openApi.size(), openApi.values().stream().map(ApiOperation::operationId).distinct().count(),
             "operationId 必须全局唯一");
@@ -132,11 +138,16 @@ class PublicApiContractTest {
         for (String source : stringList(registry, "sources")) {
             Map<String, Object> document = load(CONTRACT_ROOT.resolve(source));
             for (Map.Entry<String, Object> pathEntry : map(document, "paths").entrySet()) {
+                assertTrue(pathEntry.getValue() instanceof Map<?, ?>,
+                    source + " " + pathEntry.getKey() + " must define a path item object");
                 Map<String, Object> pathItem = map(pathEntry.getValue());
                 for (Map.Entry<String, Object> methodEntry : pathItem.entrySet()) {
                     if (!HTTP_METHODS.contains(methodEntry.getKey())) {
                         continue;
                     }
+                    assertTrue(methodEntry.getValue() instanceof Map<?, ?>,
+                        source + " " + pathEntry.getKey() + " " + methodEntry.getKey()
+                            + " must define an operation object");
                     Map<String, Object> operation = effectiveOperation(pathItem, methodEntry.getValue());
                     String key = key(methodEntry.getKey().toUpperCase(), pathEntry.getKey());
                     ApiOperation parsed = new ApiOperation(

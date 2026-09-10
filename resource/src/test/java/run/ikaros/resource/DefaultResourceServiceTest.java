@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
@@ -84,6 +85,81 @@ class DefaultResourceServiceTest {
     }
 
     @Test
+    void rejectsInvalidCreateInputBeforeRepositoryWrite() {
+        StepVerifier.create(service.create(UUID.randomUUID(), new CreateResourceRequest(ResourceType.BOOK, "", "zh-CN")))
+            .expectError(IllegalArgumentException.class)
+            .verify();
+        org.mockito.Mockito.verifyNoInteractions(resourceRepository, titleRepository);
+    }
+
+    @Test
+    void hidesResourceFromDifferentOwner() {
+        UUID otherOwnerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        when(resourceRepository.findByIdAndOwnerId(resourceId, otherOwnerId)).thenReturn(Mono.empty());
+
+        StepVerifier.create(service.get(otherOwnerId, resourceId))
+            .expectError(run.ikaros.common.NotFoundException.class)
+            .verify();
+        org.mockito.Mockito.verify(resourceRepository).findByIdAndOwnerId(resourceId, otherOwnerId);
+        org.mockito.Mockito.verifyNoMoreInteractions(resourceRepository);
+    }
+
+    @Test
+    void listsOnlyOwnerScopedActiveResourcesWithPaging() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity resource = new ResourceEntity(resourceId, ownerId, ResourceType.BOOK,
+            ResourceLifecycle.ACTIVE, now, now, null, 0L);
+        ResourceTitleEntity title = new ResourceTitleEntity(UUID.randomUUID(), resourceId, "zh-CN", "测试书籍",
+            true, now, now, 0L);
+        when(resourceRepository.search(ownerId, "", "书", "ACTIVE", 20, 20)).thenReturn(Flux.just(resource));
+        when(resourceRepository.countSearch(ownerId, "", "书", "ACTIVE")).thenReturn(Mono.just(1L));
+        when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.just(title));
+        when(identityRepository.findAllByResourceIdOrderByProviderAsc(resourceId)).thenReturn(Flux.empty());
+
+        StepVerifier.create(service.list(ownerId, null, " 书 ", 1, 20))
+            .assertNext(page -> {
+                assertThat(page.items()).hasSize(1);
+                assertThat(page.items().getFirst().id()).isEqualTo(resourceId);
+                assertThat(page.page()).isEqualTo(1);
+                assertThat(page.total()).isEqualTo(1L);
+            }).verifyComplete();
+    }
+
+    @Test
+    void returnsEmptyPageWhenOwnerHasNoActiveResources() {
+        UUID ownerId = UUID.randomUUID();
+        when(resourceRepository.search(ownerId, "", "", "ACTIVE", 0, 20)).thenReturn(Flux.empty());
+        when(resourceRepository.countSearch(ownerId, "", "", "ACTIVE")).thenReturn(Mono.just(0L));
+
+        StepVerifier.create(service.list(ownerId, null, null, 0, 20))
+            .assertNext(page -> assertThat(page.items()).isEmpty())
+            .verifyComplete();
+    }
+
+    @Test
+    void listsArchivedResourcesWhenRequested() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity archived = new ResourceEntity(resourceId, ownerId, ResourceType.BOOK,
+            ResourceLifecycle.ARCHIVED, now, now, null, 2L);
+        ResourceTitleEntity title = new ResourceTitleEntity(UUID.randomUUID(), resourceId, "zh-CN", "归档书籍",
+            true, now, now, 0L);
+        when(resourceRepository.search(ownerId, "", "", "ARCHIVED", 0, 20)).thenReturn(Flux.just(archived));
+        when(resourceRepository.countSearch(ownerId, "", "", "ARCHIVED")).thenReturn(Mono.just(1L));
+        when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.just(title));
+        when(identityRepository.findAllByResourceIdOrderByProviderAsc(resourceId)).thenReturn(Flux.empty());
+
+        StepVerifier.create(service.list(ownerId, null, null, ResourceLifecycle.ARCHIVED, 0, 20))
+            .assertNext(page -> assertThat(page.items()).singleElement()
+                .satisfies(item -> assertThat(item.lifecycle()).isEqualTo(ResourceLifecycle.ARCHIVED)))
+            .verifyComplete();
+    }
+
+    @Test
     void movesResourceToTrashWithoutDeletingIt() {
         UUID ownerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();
@@ -108,6 +184,161 @@ class DefaultResourceServiceTest {
     }
 
     @Test
+    void rejectsRepeatedUpdateAfterFirstVersionIsCommitted() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity current = new ResourceEntity(resourceId, ownerId, ResourceType.BOOK,
+            "测试书籍", null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE, now, now, null, 0L);
+        ResourceEntity updated = new ResourceEntity(resourceId, ownerId, ResourceType.BOOK,
+            "测试书籍", "第一版", ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE, now, now, null, 1L);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(current), Mono.just(updated));
+        when(resourceRepository.save(any(ResourceEntity.class))).thenReturn(Mono.just(updated));
+        when(auditService.record(ownerId, "resource.update", "RESOURCE", resourceId, "{}")).thenReturn(Mono.empty());
+        when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.empty());
+        when(identityRepository.findAllByResourceIdOrderByProviderAsc(resourceId)).thenReturn(Flux.empty());
+
+        StepVerifier.create(service.update(ownerId, resourceId, new UpdateResourceRequest(0L, null, "第一版")))
+            .expectNextCount(1).verifyComplete();
+        StepVerifier.create(service.update(ownerId, resourceId, new UpdateResourceRequest(0L, null, "覆盖")))
+            .expectErrorSatisfies(error -> assertThat(error).isInstanceOf(ConflictException.class)
+                .hasMessage("Resource 版本已过期"))
+            .verify();
+        verify(resourceRepository).save(any(ResourceEntity.class));
+    }
+
+    @Test
+    void archivesActiveResourceWithoutDeletingItsIdentity() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity active = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
+            "视频", null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE, now, now, null, 2L);
+        ResourceEntity archived = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
+            "视频", null, ResourceClassification.PRIVATE, ResourceLifecycle.ARCHIVED, now, now, null, 3L);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(active));
+        when(resourceRepository.save(any(ResourceEntity.class))).thenReturn(Mono.just(archived));
+        when(auditService.record(ownerId, "resource.archive", "RESOURCE", resourceId, "{}")).thenReturn(Mono.empty());
+        when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.empty());
+        when(identityRepository.findAllByResourceIdOrderByProviderAsc(resourceId)).thenReturn(Flux.empty());
+
+        StepVerifier.create(service.archive(ownerId, resourceId, 2L))
+            .assertNext(view -> assertThat(view.lifecycle()).isEqualTo(ResourceLifecycle.ARCHIVED))
+            .verifyComplete();
+        verify(resourceRepository).save(argThat(saved -> saved.lifecycle() == ResourceLifecycle.ARCHIVED
+            && saved.id().equals(resourceId)));
+    }
+
+    @Test
+    void repeatsTrashIdempotentlyWithoutWritingAgain() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity trashed = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
+            "视频", null, ResourceClassification.PRIVATE, ResourceLifecycle.TRASHED, now, now, now, 2L);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(trashed));
+
+        StepVerifier.create(service.trash(ownerId, resourceId, 2L)).verifyComplete();
+        verify(resourceRepository, org.mockito.Mockito.never()).save(any());
+        org.mockito.Mockito.verifyNoInteractions(auditService);
+    }
+
+    @Test
+    void rejectsArchivingTrashedResourceWithoutWriting() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity trashed = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
+            "视频", null, ResourceClassification.PRIVATE, ResourceLifecycle.TRASHED, now, now, now, 2L);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(trashed));
+
+        StepVerifier.create(service.archive(ownerId, resourceId, 2L))
+            .expectErrorSatisfies(error -> assertThat(error).isInstanceOf(ConflictException.class)
+                .hasMessage("只有活动 Resource 才能归档"))
+            .verify();
+        org.mockito.Mockito.verify(resourceRepository, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
+    void restoresTrashedResourceInTransactionWithoutChangingIdentity() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity trashed = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
+            "视频", null, ResourceClassification.PRIVATE, ResourceLifecycle.TRASHED, now, now, now, 2L);
+        ResourceEntity restored = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
+            "视频", null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE, now, now, null, 3L);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(trashed));
+        when(resourceRepository.save(any(ResourceEntity.class))).thenReturn(Mono.just(restored));
+        when(auditService.record(ownerId, "resource.restore", "RESOURCE", resourceId, "{}")).thenReturn(Mono.empty());
+        when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.empty());
+        when(identityRepository.findAllByResourceIdOrderByProviderAsc(resourceId)).thenReturn(Flux.empty());
+
+        StepVerifier.create(service.restore(ownerId, resourceId, 2L))
+            .assertNext(view -> {
+                assertThat(view.id()).isEqualTo(resourceId);
+                assertThat(view.lifecycle()).isEqualTo(ResourceLifecycle.ACTIVE);
+            }).verifyComplete();
+        verify(resourceRepository).save(argThat(saved -> saved.id().equals(resourceId)
+            && saved.lifecycle() == ResourceLifecycle.ACTIVE && saved.deletedAt() == null));
+    }
+
+    @Test
+    void refusesRestoringActiveResourceWithoutWriting() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity active = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
+            "视频", null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE, now, now, null, 2L);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(active));
+
+        StepVerifier.create(service.restore(ownerId, resourceId, 2L))
+            .expectErrorSatisfies(error -> assertThat(error).isInstanceOf(ConflictException.class)
+                .hasMessage("只有已归档或已移入回收站的 Resource 才能恢复"))
+            .verify();
+        verify(resourceRepository, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
+    void purgesTrashedResourceAsAuditedTerminalStateWithoutTouchingBlobReferences() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity trashed = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
+            "视频", null, ResourceClassification.PRIVATE, ResourceLifecycle.TRASHED, now, now, now, 2L);
+        ResourceEntity purged = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
+            "视频", null, ResourceClassification.PRIVATE, ResourceLifecycle.PURGED, now, now, now, 3L);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(trashed));
+        when(resourceRepository.save(any(ResourceEntity.class))).thenReturn(Mono.just(purged));
+        when(auditService.record(ownerId, "resource.purge", "RESOURCE", resourceId, "{}"))
+            .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.purge(ownerId, resourceId, 2L)).verifyComplete();
+
+        verify(resourceRepository).save(argThat(saved -> saved.id().equals(resourceId)
+            && saved.lifecycle() == ResourceLifecycle.PURGED && saved.deletedAt().equals(now)));
+        verify(auditService).record(ownerId, "resource.purge", "RESOURCE", resourceId, "{}");
+        verifyNoInteractions(titleRepository, identityRepository);
+    }
+
+    @Test
+    void refusesPurgingActiveResourceAndDoesNotWrite() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity active = new ResourceEntity(resourceId, ownerId, ResourceType.VIDEO,
+            "视频", null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE, now, now, null, 2L);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(active));
+
+        StepVerifier.create(service.purge(ownerId, resourceId, 2L))
+            .expectErrorSatisfies(error -> assertThat(error).isInstanceOf(ConflictException.class)
+                .hasMessage("只有已满足保留条件的回收站 Resource 才能永久删除"))
+            .verify();
+        verify(resourceRepository, org.mockito.Mockito.never()).save(any());
+        verifyNoInteractions(auditService);
+    }
+
+    @Test
     void reportsConflictWhenExternalIdentityIsAlreadyBound() {
         UUID ownerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();
@@ -126,6 +357,34 @@ class DefaultResourceServiceTest {
                 assertThat(error).hasMessage("该外部身份已绑定到其他资源");
             })
             .verify();
+    }
+
+    @Test
+    void rejectsRepeatedExternalIdentityBindingAfterFirstRequestSucceeds() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        UUID identityId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceEntity resource = new ResourceEntity(resourceId, ownerId, ResourceType.MUSIC,
+            ResourceLifecycle.ACTIVE, now, now, null, 0L);
+        ExternalIdentityEntity identity = new ExternalIdentityEntity(identityId, resourceId,
+            "musicbrainz", "recording", "abc", now, now, 0L);
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource));
+        when(identityRepository.save(any(ExternalIdentityEntity.class)))
+            .thenReturn(Mono.just(identity), Mono.error(new DuplicateKeyException("duplicate")));
+        when(auditService.record(ownerId, "resource.external-identity.create", "RESOURCE", resourceId, "{}"))
+            .thenReturn(Mono.empty());
+        CreateExternalIdentityRequest request = new CreateExternalIdentityRequest("musicbrainz", "recording", "abc");
+
+        StepVerifier.create(service.addExternalIdentity(ownerId, resourceId, request))
+            .expectNextCount(1).verifyComplete();
+        StepVerifier.create(service.addExternalIdentity(ownerId, resourceId, request))
+            .expectErrorSatisfies(error -> assertThat(error).isInstanceOf(ConflictException.class)
+                .hasMessage("该外部身份已绑定到其他资源"))
+            .verify();
+
+        verify(identityRepository, org.mockito.Mockito.times(2)).save(any(ExternalIdentityEntity.class));
+        verify(auditService).record(ownerId, "resource.external-identity.create", "RESOURCE", resourceId, "{}");
     }
 
     @Test

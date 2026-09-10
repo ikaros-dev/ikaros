@@ -48,7 +48,8 @@ R2DBC URL: r2dbc:postgresql://localhost:5432/ikaros
 主配置文件是 `src/main/resources/application.yaml`，默认 HTTP 端口为 `10000`。本地私有配置使用未提交的 `src/main/resources/application-local.yaml`，该文件按需创建。
 
 ```shell
-mvn spring-boot:run -Dspring-boot.run.profiles=local
+mvn -pl application -am package -DskipTests
+java -jar application/target/application-2.0.0-SNAPSHOT.jar --spring.profiles.active=local
 ```
 
 IntelliJ IDEA 运行配置：主类 `run.ikaros.IkarosApplication`，Active profiles 设置为 `local`，项目 JDK 使用 21。
@@ -93,7 +94,7 @@ mvn clean package -DskipTests
 运行完整测试前需要启动 Docker Desktop，因为部分测试使用 Testcontainers。Spring Boot JAR 位于 `target/ikaros-2.0.0-SNAPSHOT.jar`，运行方式：
 
 ```shell
-java -jar target/ikaros-2.0.0-SNAPSHOT.jar --spring.profiles.active=local
+java -jar application/target/ikaros-2.0.0-SNAPSHOT.jar --spring.profiles.active=local
 ```
 
 ## 存储与 Delivery Provider 验证

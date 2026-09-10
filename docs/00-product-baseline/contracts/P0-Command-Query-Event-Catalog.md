@@ -155,6 +155,14 @@ Command 必须：
 
 # Part B — Resource Queries
 
+## Search Queries
+
+| Query ID | Permission | Pagination | HTTP |
+|---|---|---|---|
+| `search.keyword-search` | authenticated + per-resource visibility | cursor | `GET /search` |
+
+Keyword search is a rebuildable projection query. The search index only supplies candidates; final visibility is checked by the owning Resource capability before a result is returned.
+
 ## 3. Resource Query Catalog
 
 | Query ID | Permission | Pagination | HTTP |
@@ -198,6 +206,9 @@ Cursor 对客户端 opaque。
 | `storage.trash-attachment` | owner-domain permission | NATURAL | no | `storage.attachment.trashed` |
 | `storage.verify-blob` | `storage.provider.manage` or system | REQUIRED | yes | `storage.blob.verified`, `storage.blob.integrity-failed` |
 | `storage.create-provider` | `storage.provider.manage` | REQUIRED | no | `storage.provider.created` |
+| `storage.probe-provider` | `storage.provider.manage` | REQUIRED | no | — |
+| `storage.replace-provider-credentials` | `storage.provider.manage` | REQUIRED | no | — |
+| `storage.get-provider-status` | `storage.provider.read` | REQUIRED | no | — |
 | `storage.update-provider` | `storage.provider.manage` | OPTIONAL | no | `storage.provider.updated` |
 | `storage.enable-provider` | `storage.provider.manage` | NATURAL | no | `storage.provider.enabled` |
 | `storage.disable-provider` | `storage.provider.manage` | NATURAL | maybe drain precondition | `storage.provider.disabled` |
@@ -278,6 +289,8 @@ Attachment Content Query 必须支持 HTTP Range，并在返回内容前重新�
 | Query ID | Permission | HTTP |
 |---|---|---|
 | `operations.get-background-task` | actor/subject permission or `platform.task.read` | `GET /background-tasks/{task_id}` |
+| `operations.submit-background-task` | `platform.task.submit` | `POST /background-tasks` |
+| `operations.retry-background-task` | `platform.task.retry` | `POST /background-tasks/{task_id}/actions/retry` |
 | `operations.list-background-tasks` | `platform.task.read` for global list | `GET /background-tasks` |
 | `operations.list-task-attempts` | same as task | `GET /background-tasks/{task_id}/attempts` |
 
@@ -510,6 +523,8 @@ P0 Operation ID 必须映射到 Catalog：
 | `GET /api/attachments/{attachment_id}` | `getAttachment` | `storage.get-attachment` |
 | `GET /api/attachments/{attachment_id}/content` | `getAttachmentContent` | `storage.get-attachment-content` |
 | `GET /api/background-tasks/{task_id}` | `getBackgroundTask` | `operations.get-background-task` |
+| `POST /api/background-tasks` | `submitBackgroundTask` | `operations.submit-background-task` |
+| `POST /api/background-tasks/{task_id}/actions/retry` | `retryBackgroundTask` | `operations.retry-background-task` |
 | `POST /api/background-tasks/{task_id}/actions/cancel` | `cancelBackgroundTask` | `operations.cancel-background-task` |
 | `GET /api/admin/storage-providers` | `listStorageProviders` | `storage.list-providers` |
 | `POST /api/admin/storage-providers` | `createStorageProvider` | `storage.create-provider` |

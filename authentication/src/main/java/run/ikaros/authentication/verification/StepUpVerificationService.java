@@ -24,4 +24,13 @@ public interface StepUpVerificationService {
      * @return 验证结果
      */
     Mono<VerificationResult> verifyEmailOtp(UUID userId, UUID challengeId, VerifyOtpRequest request);
+
+    /**
+     * 取消当前用户仍未使用的 Step-up 挑战。
+     *
+     * @param userId 当前用户标识
+     * @param challengeId 验证挑战标识
+     * @return 完成信号
+     */
+    Mono<Void> cancelEmailOtp(UUID userId, UUID challengeId);
 }

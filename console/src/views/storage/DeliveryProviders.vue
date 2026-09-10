@@ -30,6 +30,15 @@ const providerTypes: Array<{
 
 const providers = ref<Provider[]>([]);
 const storageProviders = ref<Provider[]>([]);
+const storageProviderDialog = ref(false);
+const storageProviderSaving = ref(false);
+const storageProbeLoading = ref<Set<string>>(new Set());
+const storageStatus = ref<Record<string, any>>({});
+const storageForm = ref({ providerKey: "", providerType: "LOCAL", tier: "HOT", secretReference: "", accessKeyId: "", secretAccessKey: "", sessionToken: "" });
+const storageCredentialDialog = ref(false);
+const storageCredentialSaving = ref(false);
+const storageCredentialProviderId = ref("");
+const storageCredentialForm = ref({ accessKeyId: "", secretAccessKey: "", sessionToken: "" });
 const loading = ref(false);
 const saving = ref(false);
 const error = ref("");
@@ -194,6 +203,14 @@ async function load() {
     loading.value = false;
   }
 }
+function openStorageProviderDialog() { storageForm.value = { providerKey: "", providerType: "LOCAL", tier: "HOT", secretReference: "", accessKeyId: "", secretAccessKey: "", sessionToken: "" }; storageProviderDialog.value = true; }
+async function saveStorageProvider() { if (!storageForm.value.providerKey.trim() || !storageForm.value.providerType.trim() || !storageForm.value.tier) { error.value = "存储 Provider 标识、类型和层级不能为空"; return; } storageProviderSaving.value = true; try { await http.post("/admin/storage-providers", { data: { ...storageForm.value, providerKey: storageForm.value.providerKey.trim(), providerType: storageForm.value.providerType.trim(), secretReference: storageForm.value.secretReference.trim() || undefined, accessKeyId: storageForm.value.accessKeyId.trim() || undefined, secretAccessKey: storageForm.value.secretAccessKey || undefined, sessionToken: storageForm.value.sessionToken || undefined, metadata: {} } }); storageProviderDialog.value = false; await load(); } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "存储 Provider 添加失败"; } finally { storageProviderSaving.value = false; } }
+function setStorageProbeLoading(id: string, loading: boolean) { const next = new Set(storageProbeLoading.value); loading ? next.add(id) : next.delete(id); storageProbeLoading.value = next; }
+async function probeStorageProvider(row: Provider) { const id = String(row.id || ""); if (!id) return; setStorageProbeLoading(id, true); try { const result = await http.post(`/admin/storage-providers/${id}/probe`); storageStatus.value[id] = result; } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "存储 Provider 探测失败"; } finally { setStorageProbeLoading(id, false); } }
+async function loadStorageStatus(row: Provider) { const id = String(row.id || ""); if (!id) return; try { storageStatus.value[id] = await http.get(`/admin/storage-providers/${id}/status`); } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "存储 Provider 状态加载失败"; } }
+async function toggleStorageProvider(row: Provider) { const id = String(row.id || ""); if (!id) return; try { if (!window.confirm(`${row.status === 'ENABLED' ? '确认停用' : '确认启用'}存储 Provider ${row.providerKey}？`)) return; if (row.status === "ENABLED") await http.request("delete", `/admin/storage-providers/${id}`); else await http.post(`/admin/storage-providers/${id}/enable`); await load(); } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "存储 Provider 状态更新失败"; } }
+function openStorageCredentials(row: Provider) { storageCredentialProviderId.value = String(row.id || ""); storageCredentialForm.value = { accessKeyId: "", secretAccessKey: "", sessionToken: "" }; storageCredentialDialog.value = true; }
+async function saveStorageCredentials() { if (!storageCredentialProviderId.value || !storageCredentialForm.value.accessKeyId.trim() || !storageCredentialForm.value.secretAccessKey) { error.value = "Access Key ID 和 Secret Access Key 不能为空"; return; } storageCredentialSaving.value = true; try { const result = await http.post(`/admin/storage-providers/${storageCredentialProviderId.value}/credentials`, { data: storageCredentialForm.value }); storageStatus.value[storageCredentialProviderId.value] = result; storageCredentialDialog.value = false; } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "凭据更新或验证失败"; } finally { storageCredentialSaving.value = false; } }
 function closeBindingDialog() {
   if (bindingSaving.value) return;
   bindingDialog.value = false;
@@ -527,6 +544,9 @@ onMounted(load);
       </el-table>
     </el-card>
 
+    <el-card shadow="never" class="mt-5"><template #header><div class="flex justify-between items-center"><span>存储 Provider</span><el-button type="primary" @click="openStorageProviderDialog">添加存储 Provider</el-button></div></template><el-empty v-if="!storageProviders.length" description="暂无存储 Provider" /><el-table v-else :data="storageProviders" stripe><el-table-column prop="providerKey" label="标识" min-width="180" /><el-table-column prop="providerType" label="类型" width="140" /><el-table-column prop="tier" label="层级" width="100" /><el-table-column label="状态" width="120"><template #default="{ row }"><el-tag>{{ row.status }}</el-tag></template></el-table-column><el-table-column label="健康" min-width="220"><template #default="{ row }"><span v-if="storageStatus[row.id]">{{ storageStatus[row.id].health?.status || storageStatus[row.id].status || "已检查" }}</span><span v-else>未检查</span></template></el-table-column><el-table-column label="操作" width="380"><template #default="{ row }"><el-button link :loading="storageProbeLoading.has(String(row.id))" @click="probeStorageProvider(row)">探测</el-button><el-button link @click="loadStorageStatus(row)">状态</el-button><el-button link @click="openStorageCredentials(row)">更新凭据</el-button><el-button link :type="row.status === 'ENABLED' ? 'warning' : 'success'" @click="toggleStorageProvider(row)">{{ row.status === 'ENABLED' ? '停用' : '启用' }}</el-button></template></el-table-column></el-table></el-card>
+    <el-dialog v-model="storageProviderDialog" title="添加存储 Provider" width="520px"><el-form label-position="top"><el-form-item label="Provider 标识" required><el-input v-model="storageForm.providerKey" /></el-form-item><el-form-item label="Provider 类型" required><el-input v-model="storageForm.providerType" placeholder="LOCAL / S3" /></el-form-item><el-form-item label="存储层级" required><el-select v-model="storageForm.tier" class="w-full"><el-option v-for="tier in ['HOT','WARM','COLD','ARCHIVE']" :key="tier" :label="tier" :value="tier" /></el-select></el-form-item><el-form-item label="Secret Reference"><el-input v-model="storageForm.secretReference" placeholder="secret://...（可选）" /></el-form-item><el-form-item label="Access Key ID"><el-input v-model="storageForm.accessKeyId" /></el-form-item><el-form-item label="Secret Access Key"><el-input v-model="storageForm.secretAccessKey" type="password" show-password /></el-form-item></el-form><template #footer><el-button @click="storageProviderDialog = false">取消</el-button><el-button type="primary" :loading="storageProviderSaving" @click="saveStorageProvider">保存</el-button></template></el-dialog>
+    <el-dialog v-model="storageCredentialDialog" title="更新存储 Provider 凭据" width="460px"><el-alert title="凭据只提交给后端并加密保存；更新后会自动执行连接、读、写探测。" type="warning" :closable="false" class="mb-4"/><el-form label-position="top"><el-form-item label="Access Key ID" required><el-input v-model="storageCredentialForm.accessKeyId" /></el-form-item><el-form-item label="Secret Access Key" required><el-input v-model="storageCredentialForm.secretAccessKey" type="password" show-password /></el-form-item><el-form-item label="Session Token"><el-input v-model="storageCredentialForm.sessionToken" type="password" show-password /></el-form-item></el-form><template #footer><el-button @click="storageCredentialDialog = false">取消</el-button><el-button type="primary" :loading="storageCredentialSaving" @click="saveStorageCredentials">更新并验证</el-button></template></el-dialog>
     <el-drawer
       v-model="drawer"
       title="添加分发 Provider"

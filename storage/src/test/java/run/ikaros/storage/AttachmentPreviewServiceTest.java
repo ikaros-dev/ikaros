@@ -59,9 +59,12 @@ class AttachmentPreviewServiceTest {
 
     @Test
     void prefersDeliveryBinding() {
-        MediaDeliveryBindingEntity binding = new MediaDeliveryBindingEntity(UUID.randomUUID(), storageProviderId, "cdn",
+        MediaDeliveryBindingEntity preferred = new MediaDeliveryBindingEntity(UUID.randomUUID(), storageProviderId, "preferred",
             1, true,
             DeliveryBindingCacheKeyPolicy.CONTENT_IDENTITY, DeliveryBindingRangePolicy.PASSTHROUGH, true,
+            Instant.now(), Instant.now(), 0L);
+        MediaDeliveryBindingEntity fallback = new MediaDeliveryBindingEntity(UUID.randomUUID(), storageProviderId, "fallback",
+            10, true, DeliveryBindingCacheKeyPolicy.CONTENT_IDENTITY, DeliveryBindingRangePolicy.PASSTHROUGH, true,
             Instant.now(), Instant.now(), 0L);
         DeliveryProviderEntity deliveryProvider = mock(DeliveryProviderEntity.class);
         DeliveryGrantView grant = new DeliveryGrantView(UUID.randomUUID(), attachmentId, "token", "GET",
@@ -71,18 +74,19 @@ class AttachmentPreviewServiceTest {
         DeliveryGrantContractView contract = new DeliveryGrantContractView(grant.id(), attachmentId, lease.id(),
             UUID.randomUUID(), "GET", "/api/attachments/" + attachmentId + "/content?delivery_grant=token",
             grant.expiresAt(), true, "video/mp4", 100L, DeliveryGrantRevocationLevel.IMMEDIATE);
-        when(bindings.findAllByStorageProviderIdOrderByPriorityAsc(storageProviderId)).thenReturn(Flux.just(binding));
-        when(deliveryProviders.findByProviderKey("cdn")).thenReturn(Mono.just(deliveryProvider));
+        when(bindings.findAllByStorageProviderIdOrderByPriorityAsc(storageProviderId)).thenReturn(Flux.just(fallback, preferred));
+        when(deliveryProviders.findByProviderKey("preferred")).thenReturn(Mono.just(deliveryProvider));
+        when(deliveryProviders.findByProviderKey("fallback")).thenReturn(Mono.empty());
         when(deliveryProvider.enabled()).thenReturn(true);
         when(deliveryProvider.healthStatus()).thenReturn(DeliveryProviderHealthStatus.HEALTHY);
         when(grants.issue(eq(actorId), eq(attachmentId), any())).thenReturn(Mono.just(grant));
-        when(leases.create(eq(actorId), eq(attachmentId), any(), eq(binding.id()))).thenReturn(Mono.just(lease));
+        when(leases.create(eq(actorId), eq(attachmentId), any(), eq(preferred.id()))).thenReturn(Mono.just(lease));
         when(contracts.contract(attachmentId, grant, lease)).thenReturn(Mono.just(contract));
 
         StepVerifier.create(service.issue(actorId, attachmentId))
             .assertNext(result -> assertThat(result.url()).contains("delivery_grant=token"))
             .verifyComplete();
-        verify(leases).create(eq(actorId), eq(attachmentId), any(), eq(binding.id()));
+        verify(leases).create(eq(actorId), eq(attachmentId), any(), eq(preferred.id()));
     }
 
     @Test

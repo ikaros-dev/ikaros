@@ -22,13 +22,19 @@ public class StorageProviderController {
     private final StorageProviderRegistry registry;
     private final StorageProviderCredentialRotationService credentialRotation;
     private final StorageProviderCredentialService credentialService;
+    private final StorageProviderProbeService probeService;
+    private final StorageProviderStatusService statusService;
 
     public StorageProviderController(StorageProviderRegistry registry,
                                      StorageProviderCredentialRotationService credentialRotation,
-                                     StorageProviderCredentialService credentialService) {
+                                     StorageProviderCredentialService credentialService,
+                                     StorageProviderProbeService probeService,
+                                     StorageProviderStatusService statusService) {
         this.registry = registry;
         this.credentialRotation = credentialRotation;
         this.credentialService = credentialService;
+        this.probeService = probeService;
+        this.statusService = statusService;
     }
 
     @PostMapping
@@ -54,16 +60,26 @@ public class StorageProviderController {
         return registry.enable(providerId);
     }
 
+    @PostMapping("/{providerId}/probe")
+    public Mono<StorageProviderProbeResult> probe(@PathVariable UUID providerId) {
+        return probeService.probe(providerId);
+    }
+
+    @GetMapping("/{providerId}/status")
+    public Mono<StorageProviderStatusView> status(@PathVariable UUID providerId) {
+        return statusService.get(providerId);
+    }
+
     @PostMapping("/{providerId}/actions/rotate-credentials")
     public Mono<StorageCredentialRotationView> rotateCredentials(@PathVariable UUID providerId) {
         return credentialRotation.rotate(providerId);
     }
 
     @PostMapping("/{providerId}/credentials")
-    public Mono<ResponseEntity<Void>> replaceCredentials(@PathVariable UUID providerId,
+    public Mono<StorageProviderProbeResult> replaceCredentials(@PathVariable UUID providerId,
                                                           @Valid @RequestBody ReplaceStorageProviderCredentialsRequest request) {
         return credentialService.replace(providerId, request)
-            .thenReturn(ResponseEntity.noContent().build());
+            .then(probeService.probe(providerId));
     }
 
     @PostMapping("/actions/rotate-credentials")

@@ -1,0 +1,322 @@
+<!--
+  ~ Copyright 2017-2022 the original author or authors.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      https://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<project
+        xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+                http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.r2dbc</groupId>
+    <artifactId>r2dbc-spi-parent</artifactId>
+    <version>1.0.0.RELEASE</version>
+    <packaging>pom</packaging>
+
+    <name>Reactive Relational Database Connectivity - SPI Parent</name>
+    <description>Parent module for Reactive Relational Database Connectivity</description>
+    <url>https://r2dbc.io</url>
+
+    <modules>
+        <module>r2dbc-spi</module>
+        <module>r2dbc-spi-test</module>
+    </modules>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <jsr305.version>3.0.2</jsr305.version>
+        <junit.version>5.8.2</junit.version>
+        <assertj.version>3.22.0</assertj.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <reactive-streams.version>1.0.3</reactive-streams.version>
+        <reactor.version>Dysprosium-SR25</reactor.version>
+    </properties>
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:https://github.com/r2dbc/r2dbc-spi</connection>
+        <url>https://github.com/r2dbc/r2dbc-spi</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>Ben Hale</name>
+            <email>bhale@pivotal.io</email>
+        </developer>
+        <developer>
+            <name>Mark Paluch</name>
+            <email>mpaluch@vmware.com</email>
+        </developer>
+        <developer>
+            <name>Mirro Mutth</name>
+            <email>mirromutth@gmail.com</email>
+        </developer>
+        <developer>
+            <name>Greg Turnquist</name>
+            <email>gturnquist@pivotal.io</email>
+        </developer>
+    </developers>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>${jsr305.version}</version>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.10.1</version>
+                    <configuration>
+                        <compilerArgs>
+                            <arg>-Werror</arg>
+                            <arg>-Xlint:all</arg>
+                            <arg>-Xlint:-options</arg>
+                            <arg>-Xlint:-processing</arg>
+                            <arg>-Xlint:-serial</arg>
+                        </compilerArgs>
+                        <showWarnings>true</showWarnings>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.2.2</version>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                            </manifest>
+                            <manifestEntries>
+                                <R2DBC-Specification-Version>${project.version}</R2DBC-Specification-Version>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.8.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.4.0</version>
+                    <configuration>
+                        <locale>en_US</locale>
+                        <links>
+                            <link>https://www.reactive-streams.org/reactive-streams-${reactive-streams.version}-javadoc/</link>
+                        </links>
+                        <doclint>html,reference,missing,syntax</doclint>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.2.1</version>
+                    <executions>
+                        <execution>
+                            <id>attach-source</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.22.2</version>
+                    <configuration>
+                        <runOrder>random</runOrder>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>flatten-maven-plugin</artifactId>
+                    <version>1.2.7</version>
+                    <executions>
+                        <execution>
+                            <id>flatten</id>
+                            <phase>process-resources</phase>
+                            <goals>
+                                <goal>flatten</goal>
+                            </goals>
+                            <configuration>
+                                <updatePomFile>true</updatePomFile>
+                                <flattenMode>oss</flattenMode>
+                                <pomElements>
+                                    <pluginManagement>keep</pluginManagement>
+                                    <properties>keep</properties>
+                                    <parent>expand</parent>
+                                    <repositories>remove</repositories>
+                                </pomElements>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>flatten-clean</id>
+                            <phase>clean</phase>
+                            <goals>
+                                <goal>clean</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>spec</id>
+            <modules>
+                <module>r2dbc-spec</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>snapshot</id>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>sonatype</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+
+        <profile>
+            <id>central</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+
+                        <!-- Sign JARs -->
+
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-gpg-plugin</artifactId>
+                            <version>3.0.1</version>
+                            <executions>
+                                <execution>
+                                    <id>sign-artifacts</id>
+                                    <phase>verify</phase>
+                                    <goals>
+                                        <goal>sign</goal>
+                                    </goals>
+                                    <configuration>
+                                        <gpgArguments>
+                                            <arg>--pinentry-mode</arg>
+                                            <arg>loopback</arg>
+                                        </gpgArguments>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+
+                        <!-- Deploy to Sonatype OSS Nexus -->
+
+                        <plugin>
+                            <groupId>org.sonatype.plugins</groupId>
+                            <artifactId>nexus-staging-maven-plugin</artifactId>
+                            <version>1.6.13</version>
+                            <extensions>true</extensions>
+                            <configuration>
+                                <serverId>sonatype</serverId>
+                                <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                                <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                                <keepStagingRepositoryOnFailure>true</keepStagingRepositoryOnFailure>
+                                <skipStagingRepositoryClose>true</skipStagingRepositoryClose>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+
+                </pluginManagement>
+
+                <plugins>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                    </plugin>
+
+                </plugins>
+
+            </build>
+
+            <distributionManagement>
+                <repository>
+                    <id>sonatype</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                </repository>
+            </distributionManagement>
+
+        </profile>
+
+    </profiles>
+
+    <repositories>
+        <repository>
+            <id>spring-libs-milestone</id>
+            <url>https://repo.spring.io/libs-milestone</url>
+        </repository>
+    </repositories>
+
+</project>

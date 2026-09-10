@@ -19,6 +19,8 @@ public interface CollectionService {
      */
     Mono<CollectionView> create(UUID ownerId, CreateCollectionRequest request);
 
+    Mono<CollectionView> update(UUID ownerId, UUID collectionId, UpdateCollectionRequest request);
+
     /**
      * 查询当前用户的 Collection。
      *
@@ -40,8 +42,14 @@ public interface CollectionService {
      */
     Mono<Void> addResource(UUID ownerId, UUID collectionId, UUID resourceId, int position);
 
+    Mono<List<CollectionResourceView>> listResources(UUID ownerId, UUID collectionId);
+
     /** 移动集合并拒绝自引用及任意深度祖先循环。 */
     Mono<CollectionView> move(UUID ownerId, UUID collectionId, UUID parentId);
 
     Mono<Void> removeResource(UUID ownerId, UUID collectionId, UUID resourceId);
+
+    Mono<Void> reorderResources(UUID ownerId, UUID collectionId, List<UUID> resourceIds);
+
+    Mono<Void> delete(UUID ownerId, UUID collectionId);
 }

@@ -143,9 +143,7 @@ public class StorageRestoreTaskHandler {
                 ? StorageRestoreOperationStatus.SUCCEEDED : StorageRestoreOperationStatus.READY_TEMPORARILY;
             Mono<Void> status = completeRequest ? updateStatus(request, StorageRestoreRequestStatus.COMPLETED).then() : Mono.empty();
             return updateOperation(operation, readyStatus, result.providerOperationId(), result.expiresAt())
-                .flatMap(ready -> events.append(new EventAppendRequest("storage.restore-operation.ready", 1, "storage", "restore_operation", ready.id(),
-                    "{\"operation_id\":\"" + ready.id() + "\",\"placement_id\":\"" + ready.placementId()
-                        + "\",\"restore_expires_at\":" + (ready.restoreExpiresAt() == null ? "null" : "\"" + ready.restoreExpiresAt() + "\"") + "}")).then())
+                .flatMap(ready -> activatePlacement(placement, blob, readyStatus).then(emitReady(ready)))
                 .then(updateItem(request.id(), placement.id(),
                     readyStatus == StorageRestoreOperationStatus.READY_TEMPORARILY
                         ? StorageRestoreRequestItemStatus.READY_TEMPORARILY : StorageRestoreRequestItemStatus.READY, null))
@@ -158,6 +156,27 @@ public class StorageRestoreTaskHandler {
             .then(updateItem(request.id(), placement.id(), StorageRestoreRequestItemStatus.FAILED, error.getMessage()))
             .then(completeRequest ? updateStatus(request, StorageRestoreRequestStatus.FAILED).then() : Mono.empty())
             .thenReturn(Map.<String, Object>of("restore_request_id", requestId.toString(), "completed_items", 0)));
+    }
+
+    Mono<Void> activatePlacement(BlobPlacementEntity placement, BlobEntity blob,
+        StorageRestoreOperationStatus readyStatus) {
+        Instant now = Instant.now();
+        PlacementState placementState = readyStatus == StorageRestoreOperationStatus.READY_TEMPORARILY
+            ? PlacementState.READY_TEMPORARILY : PlacementState.ACTIVE;
+        BlobPlacementEntity updatedPlacement = new BlobPlacementEntity(placement.id(), placement.blobId(), placement.provider(),
+            placement.storageTier(), placement.objectKey(), placementState, placement.durabilityRole(), placement.evictable(),
+            placement.gcProtected(), placement.retentionUntil(), placement.minimumRetentionUntil(), now,
+            placement.sourcePlacementId(), now, placement.createdAt(), placement.version());
+        BlobEntity availableBlob = new BlobEntity(blob.id(), blob.hashAlgorithm(), blob.sha256(), blob.sizeBytes(),
+            blob.mediaType(), BlobAvailability.AVAILABLE, blob.createdAt(), blob.version());
+        return placements.save(updatedPlacement).then(blobs.save(availableBlob)).then();
+    }
+
+    private Mono<Void> emitReady(StorageRestoreOperationEntity operation) {
+        return events.append(new EventAppendRequest("storage.restore-operation.ready", 1, "storage", "restore_operation", operation.id(),
+            "{\"operation_id\":\"" + operation.id() + "\",\"placement_id\":\"" + operation.placementId()
+                + "\",\"restore_expires_at\":" + (operation.restoreExpiresAt() == null ? "null"
+                    : "\"" + operation.restoreExpiresAt() + "\"") + "}")).then();
     }
 
     private Mono<StorageRestoreOperationEntity> operation(StorageRestoreRequestEntity request,

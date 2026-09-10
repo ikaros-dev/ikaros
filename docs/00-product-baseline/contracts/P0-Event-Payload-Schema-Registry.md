@@ -152,6 +152,16 @@ Payload 与 attached 相同 identity key。
 }
 ```
 
+### `storage.upload-session.expired@1`
+
+```json
+{
+  "session_id": "uuid"
+}
+```
+
+会话过期后先标记为 `EXPIRED`，临时 Provider 对象清理可重试；该事件不表示 Attachment、Blob 或 Durable Placement 被删除。
+
 ## 3. Storage Payloads
 
 ### `storage.attachment.created@1`

@@ -12,10 +12,11 @@ import {
   type RefreshTokenResult,
   getLogin,
   refreshTokenApi,
-  logoutApi
+  logoutApi,
 } from "@/api/user";
 import { useMultiTagsStoreHook } from "./multiTags";
 import { type DataInfo, setToken, removeToken, userKey } from "@/utils/auth";
+import { clearVerificationGrant } from "@/utils/verificationGrant";
 
 export const useUserStore = defineStore("pure-user", {
   state: (): userType => ({
@@ -77,16 +78,20 @@ export const useUserStore = defineStore("pure-user", {
           });
       });
     },
-    /** 登出并撤销后端安全会话 */
+    /** 登出并清除本地 token */
     async logOut() {
-      await logoutApi().catch(() => undefined);
-      this.username = "";
-      this.roles = [];
-      this.permissions = [];
-      removeToken();
-      useMultiTagsStoreHook().handleTags("equal", [...routerArrays]);
-      resetRouter();
-      router.push("/login");
+      try {
+        await logoutApi();
+      } finally {
+        this.username = "";
+        this.roles = [];
+        this.permissions = [];
+        removeToken();
+        clearVerificationGrant();
+        useMultiTagsStoreHook().handleTags("equal", [...routerArrays]);
+        resetRouter();
+        router.push("/login");
+      }
     },
     /** 刷新`token` */
     async handRefreshToken(data) {

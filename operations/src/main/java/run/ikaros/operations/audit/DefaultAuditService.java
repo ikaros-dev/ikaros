@@ -2,6 +2,7 @@ package run.ikaros.operations.audit;
 
 import java.time.Instant;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.PrincipalContext;
@@ -13,6 +14,9 @@ import run.ikaros.operations.api.AuditService;
  */
 @Service
 public class DefaultAuditService implements AuditService {
+    private static final Pattern SENSITIVE_JSON_FIELD = Pattern.compile(
+        "(?i)(\\\"(?:password|token|otp|secret|credential|authorization|api_key|private_key|code)\\\"\\s*:\\s*)"
+            + "(\\\"(?:\\\\.|[^\\\"\\\\])*\\\"|[^,}\\s]+)");
     private final AuditEventRepository auditEventRepository;
 
     /**
@@ -39,12 +43,17 @@ public class DefaultAuditService implements AuditService {
                 action,
                 targetType,
                 targetId,
-                details,
+                sanitizeDetails(details),
                 Instant.now(),
                 null,
                 context == null ? null : context.requestId(),
                 context == null ? null : context.correlationId()
         );
         return auditEventRepository.save(event).then();
+    }
+
+    private String sanitizeDetails(String details) {
+        String normalized = details == null || details.isBlank() ? "{}" : details;
+        return SENSITIVE_JSON_FIELD.matcher(normalized).replaceAll("$1\"[REDACTED]\"");
     }
 }

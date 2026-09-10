@@ -5,6 +5,70 @@ sources:
   - contracts/openapi-v2-p0.yaml
   - contracts/openapi-v2-p0-contract-convergence.yaml
 operations:
+  - { method: GET, path: /search, operation_id: searchResources, contract_id: search.keyword-search, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: /health/operations, operation_id: getOperationsDiagnostics, contract_id: operations.get-diagnostics, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: /admin/integration/events, operation_id: listPendingIntegrationEvents, contract_id: integration.list-pending-events, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/admin/integration/events/{event_id}/actions/retry', operation_id: retryIntegrationEvent, contract_id: integration.retry-event, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: /media/subjects, operation_id: createMediaSubject, contract_id: media.create-subject, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: /media/subjects, operation_id: listMediaSubjects, contract_id: media.list-subjects, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/media/subjects/{subject_id}/seasons/{season_id}/actions/reorder-episodes', operation_id: reorderMediaEpisodes, contract_id: media.reorder-episodes, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/media/resources/{resource_id}/releases', operation_id: addMediaRelease, contract_id: media.add-release, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/media/resources/{resource_id}/releases', operation_id: listMediaReleases, contract_id: media.list-releases, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/media/releases/{release_id}/subtitles', operation_id: addMediaSubtitle, contract_id: media.add-subtitle, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/media/releases/{release_id}/subtitles', operation_id: listMediaSubtitles, contract_id: media.list-subtitles, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/media/resources/{resource_id}/playback-source', operation_id: resolvePlaybackSource, contract_id: media.resolve-playback-source, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/media/playback/resources/{resource_id}/sessions', operation_id: startPlaybackSession, contract_id: media.start-playback-session, source: contracts/openapi-v2-p0.yaml }
+  - { method: PATCH, path: '/media/playback/sessions/{session_id}', operation_id: updatePlaybackProgress, contract_id: media.update-playback-progress, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/media/playback/resources/{resource_id}/progress', operation_id: getPlaybackProgress, contract_id: media.get-playback-progress, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: /reading/comic-imports, operation_id: createComicImport, contract_id: reading.create-comic-import, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: /reading/comic-imports, operation_id: listComicImports, contract_id: reading.list-comic-imports, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/reading/comic-imports/{import_id}', operation_id: getComicImport, contract_id: reading.get-comic-import, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/reading/comic-imports/{import_id}/actions/parse', operation_id: parseComicImport, contract_id: reading.parse-comic-import, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/reading/comic-imports/{import_id}/entries', operation_id: listComicImportEntries, contract_id: reading.list-comic-import-entries, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/reading/comic-imports/{import_id}/actions/reorder-pages', operation_id: reorderComicPages, contract_id: reading.reorder-comic-pages, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/reading/comic-imports/{import_id}/actions/retry-parse', operation_id: retryComicImportParse, contract_id: reading.retry-comic-import-parse, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/reading/chapters/{chapter_id}/pages', operation_id: listComicChapterPages, contract_id: reading.list-comic-chapter-pages, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/reading/pages/{page_id}/content', operation_id: getComicPageContent, contract_id: reading.get-comic-page-content, source: contracts/openapi-v2-p0.yaml }
+  - { method: PUT, path: /reading/preferences, operation_id: updateReadingPreference, contract_id: reading.update-preference, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: /reading/preferences, operation_id: getReadingPreference, contract_id: reading.get-preference, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/reading/works/{work_id}/sessions', operation_id: startReadingSession, contract_id: reading.start-session, source: contracts/openapi-v2-p0.yaml }
+  - { method: PATCH, path: '/reading/sessions/{session_id}', operation_id: updateReadingProgress, contract_id: reading.update-progress, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/reading/works/{work_id}/progress', operation_id: getReadingProgress, contract_id: reading.get-progress, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: /reading/ebook-imports, operation_id: createEbookImport, contract_id: reading.create-ebook-import, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: /reading/ebook-imports, operation_id: listEbookImports, contract_id: reading.list-ebook-imports, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/reading/ebook-imports/{import_id}', operation_id: getEbookImport, contract_id: reading.get-ebook-import, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/reading/ebook-imports/{import_id}/info', operation_id: getEbookBookInfo, contract_id: reading.get-ebook-book-info, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/reading/ebook-imports/{import_id}/actions/parse-toc', operation_id: parseEbookToc, contract_id: reading.parse-ebook-toc, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/reading/ebook-imports/{import_id}/chapters', operation_id: listEbookChapters, contract_id: reading.list-ebook-chapters, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/reading/ebook-imports/{import_id}/chapters/{chapter_id}/content', operation_id: getEbookChapterContent, contract_id: reading.get-ebook-chapter-content, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/reading/works/{work_id}/bookmarks', operation_id: listReadingBookmarks, contract_id: reading.list-bookmarks, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/reading/works/{work_id}/editions/{edition_id}/chapters/{chapter_id}/bookmarks', operation_id: createReadingBookmark, contract_id: reading.create-bookmark, source: contracts/openapi-v2-p0.yaml }
+  - { method: DELETE, path: '/reading/bookmarks/{bookmark_id}', operation_id: deleteReadingBookmark, contract_id: reading.delete-bookmark, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: /music/imports, operation_id: createMusicImport, contract_id: music.create-import, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: /music/imports, operation_id: listMusicImports, contract_id: music.list-imports, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/music/tracks/{track_id}/audio-sources', operation_id: listMusicAudioSources, contract_id: music.list-audio-sources, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/music/tracks/{track_id}/lyrics', operation_id: listMusicLyrics, contract_id: music.list-lyrics, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/music/playback/tracks/{track_id}/sessions', operation_id: startMusicPlayback, contract_id: music.start-playback, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: /music/playback/sessions, operation_id: listActiveMusicPlaybackSessions, contract_id: music.list-active-playback-sessions, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: /music/playlists, operation_id: createMusicPlaylist, contract_id: music.create-playlist, source: contracts/openapi-v2-p0.yaml }
+  - { method: PATCH, path: '/music/playlists/{playlist_id}', operation_id: updateMusicPlaylist, contract_id: music.update-playlist, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/music/playlists/{playlist_id}/entries', operation_id: listMusicPlaylistEntries, contract_id: music.list-playlist-entries, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/music/playlists/{playlist_id}/entries', operation_id: addMusicPlaylistEntry, contract_id: music.add-playlist-entry, source: contracts/openapi-v2-p0.yaml }
+  - { method: PATCH, path: '/music/playlists/{playlist_id}/entries/order', operation_id: reorderMusicPlaylist, contract_id: music.reorder-playlist, source: contracts/openapi-v2-p0.yaml }
+  - { method: DELETE, path: '/music/playlists/entries/{entry_id}', operation_id: removeMusicPlaylistEntry, contract_id: music.remove-playlist-entry, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: /music/queues, operation_id: createMusicQueue, contract_id: music.create-queue, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/music/queues/{queue_id}/entries', operation_id: listMusicQueueEntries, contract_id: music.list-queue-entries, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/music/queues/{queue_id}/entries', operation_id: addMusicQueueEntry, contract_id: music.add-queue-entry, source: contracts/openapi-v2-p0.yaml }
+  - { method: PATCH, path: '/music/queues/{queue_id}/entries/order', operation_id: reorderMusicQueue, contract_id: music.reorder-queue, source: contracts/openapi-v2-p0.yaml }
+  - { method: PATCH, path: '/music/queues/{queue_id}/policy', operation_id: updateMusicQueuePolicy, contract_id: music.update-queue-policy, source: contracts/openapi-v2-p0.yaml }
+  - { method: DELETE, path: '/music/queues/entries/{entry_id}', operation_id: removeMusicQueueEntry, contract_id: music.remove-queue-entry, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/music/tracks/{track_id}/metadata/recognize', operation_id: recognizeMusicMetadata, contract_id: music.recognize-metadata, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/music/tracks/{track_id}/metadata/candidates', operation_id: listMusicMetadataCandidates, contract_id: music.list-metadata-candidates, source: contracts/openapi-v2-p0.yaml }
+  - { method: PATCH, path: '/music/metadata-candidates/{candidate_id}', operation_id: updateMusicMetadataCandidate, contract_id: music.update-metadata-candidate, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/music/tracks/{track_id}/associations', operation_id: createMusicTrackAssociation, contract_id: music.create-track-association, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/music/tracks/{track_id}/associations', operation_id: listMusicTrackAssociations, contract_id: music.list-track-associations, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: /music/duplicates, operation_id: findMusicDuplicates, contract_id: music.find-duplicates, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: /background-tasks, operation_id: submitBackgroundTask, contract_id: operations.submit-background-task, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /resources, operation_id: createResource, contract_id: resource.create-resource, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /resources, operation_id: listResources, contract_id: resource.list-resources, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: '/resources/{resource_id}', operation_id: getResource, contract_id: resource.get-resource, source: contracts/openapi-v2-p0.yaml }
@@ -12,14 +76,26 @@ operations:
   - { method: POST, path: '/resources/{resource_id}/actions/archive', operation_id: archiveResource, contract_id: resource.archive-resource, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: '/resources/{resource_id}/actions/restore', operation_id: restoreResource, contract_id: resource.restore-resource, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: '/attachments/{attachment_id}', operation_id: getAttachment, contract_id: storage.get-attachment, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/attachments/{attachment_id}/availability', operation_id: getAttachmentMediaAvailability, contract_id: media.get-attachment-availability, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/attachments/{attachment_id}/restore-requests', operation_id: requestAttachmentRestore, contract_id: storage.request-attachment-restore, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: '/attachments/{attachment_id}/content', operation_id: getAttachmentContent, contract_id: storage.get-attachment-content, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/resources/{resource_id}/attachments/upload-intents', operation_id: beginAttachmentUpload, contract_id: storage.begin-upload, source: contracts/openapi-v2-p0-contract-convergence.yaml }
+  - { method: DELETE, path: '/resources/{resource_id}/attachments/upload-intents/{session_id}', operation_id: abortAttachmentUpload, contract_id: storage.abort-upload, source: contracts/openapi-v2-p0-contract-convergence.yaml }
   - { method: GET, path: '/background-tasks/{task_id}', operation_id: getBackgroundTask, contract_id: operations.get-background-task, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: '/background-tasks/{task_id}/actions/cancel', operation_id: cancelBackgroundTask, contract_id: operations.cancel-background-task, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/background-tasks/{task_id}/actions/retry', operation_id: retryBackgroundTask, contract_id: operations.retry-background-task, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /admin/storage-providers, operation_id: listStorageProviders, contract_id: storage.list-providers, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /admin/storage-providers, operation_id: createStorageProvider, contract_id: storage.create-provider, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/admin/storage-providers/{provider_id}/probe', operation_id: probeStorageProvider, contract_id: storage.probe-provider, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/admin/storage-providers/{provider_id}/credentials', operation_id: replaceStorageProviderCredentials, contract_id: storage.replace-provider-credentials, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/admin/storage-providers/{provider_id}/status', operation_id: getStorageProviderStatus, contract_id: storage.get-provider-status, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /admin/users, operation_id: listUsers, contract_id: identity.list-users, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: /admin/users, operation_id: createUser, contract_id: identity.create-user, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /admin/roles, operation_id: listRoles, contract_id: identity.list-roles, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: /admin/roles, operation_id: createRole, contract_id: identity.create-role, source: contracts/openapi-v2-p0.yaml }
+  - { method: PUT, path: '/admin/roles/{role_id}/permissions', operation_id: replaceRolePermissions, contract_id: identity.replace-role-permissions, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/admin/roles/users/{user_id}/roles/{role_id}', operation_id: assignUserRole, contract_id: identity.assign-user-role, source: contracts/openapi-v2-p0.yaml }
+  - { method: POST, path: '/admin/roles/users/{user_id}/roles/{role_id}/actions/revoke', operation_id: revokeUserRole, contract_id: identity.revoke-user-role, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /admin/permissions, operation_id: listPermissions, contract_id: identity.list-permissions, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: '/resources:by-external-identity', operation_id: findResourceByExternalIdentity, contract_id: resource.find-by-external-identity, source: contracts/openapi-v2-p0-contract-convergence.yaml }
   - { method: POST, path: '/resources/{resource_id}/actions/trash', operation_id: trashResource, contract_id: resource.trash-resource, source: contracts/openapi-v2-p0-contract-convergence.yaml }

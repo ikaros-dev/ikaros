@@ -61,4 +61,7 @@ public interface AttachmentRepository extends ReactiveCrudRepository<AttachmentE
     Flux<AttachmentEntity> findAllByBlobIdAndArchivedAtIsNullAndDeletedAtIsNull(UUID blobId);
 
     Mono<AttachmentEntity> findFirstByBlobIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(UUID blobId);
+
+    @Query("select a.* from attachment a join resource r on r.id = a.resource_id join blob b on b.id = a.blob_id where r.owner_id = :ownerId and a.archived_at is null and a.deleted_at is null and b.sha256 = :sha256 and b.size_bytes = :sizeBytes order by a.created_at asc, a.id asc")
+    Flux<AttachmentEntity> findByContentIdentity(UUID ownerId, String sha256, long sizeBytes);
 }

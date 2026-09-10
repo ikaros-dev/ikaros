@@ -76,6 +76,21 @@ public class DefaultCollectionService implements CollectionService {
     }
 
     @Override
+    public Mono<CollectionView> update(UUID ownerId, UUID collectionId, UpdateCollectionRequest request) {
+        return transactionalOperator.transactional(ownedCollection(ownerId, collectionId)
+            .flatMap(collection -> {
+                if (collection.version() == null || collection.version() != request.expectedVersion()) {
+                    return Mono.error(new ConflictException("Collection 版本已过期"));
+                }
+                CollectionEntity updated = new CollectionEntity(collection.id(), collection.ownerId(), collection.parentId(),
+                    request.name(), request.description(), collection.createdAt(), Instant.now(), collection.version());
+                return collectionRepository.save(updated)
+                    .flatMap(saved -> auditService.record(ownerId, "collection.update", "COLLECTION", collectionId, "{}")
+                        .thenReturn(toView(saved)));
+            }));
+    }
+
+    @Override
     public Mono<List<CollectionView>> list(UUID ownerId) {
         return collectionRepository.findAllByOwnerIdOrderByUpdatedAtDesc(ownerId)
             .take(MAX_UNPAGED_RESULTS).map(this::toView)
@@ -131,6 +146,48 @@ public class DefaultCollectionService implements CollectionService {
                 "{\"resourceId\":\"" + resourceId + "\"}")));
     }
 
+    @Override
+    public Mono<List<CollectionResourceView>> listResources(UUID ownerId, UUID collectionId) {
+        return ownedCollection(ownerId, collectionId)
+            .then(collectionResourceRepository.findAllByCollectionIdOrderByPositionAsc(collectionId)
+                .map(member -> new CollectionResourceView(member.resourceId(), member.position()))
+                .collectList());
+    }
+
+    @Override
+    public Mono<Void> reorderResources(UUID ownerId, UUID collectionId, List<UUID> resourceIds) {
+        if (resourceIds == null || resourceIds.isEmpty() || resourceIds.size() > MAX_UNPAGED_RESULTS
+            || resourceIds.stream().anyMatch(java.util.Objects::isNull)
+            || resourceIds.stream().distinct().count() != resourceIds.size()) {
+            return Mono.error(new IllegalArgumentException("资源顺序请求不合法"));
+        }
+        return transactionalOperator.transactional(ownedCollection(ownerId, collectionId)
+            .then(collectionResourceRepository.findAllByCollectionId(collectionId).collectList())
+            .flatMap(existing -> {
+                java.util.Map<UUID, CollectionResourceEntity> byResource = existing.stream()
+                    .collect(java.util.stream.Collectors.toMap(CollectionResourceEntity::resourceId, value -> value));
+                if (byResource.size() != resourceIds.size() || !byResource.keySet().containsAll(resourceIds)) {
+                    return Mono.error(new ConflictException("资源顺序必须完整覆盖该集合成员"));
+                }
+                List<CollectionResourceEntity> reordered = new java.util.ArrayList<>();
+                for (int position = 0; position < resourceIds.size(); position++) {
+                    CollectionResourceEntity value = byResource.get(resourceIds.get(position));
+                    reordered.add(new CollectionResourceEntity(value.id(), value.collectionId(), value.resourceId(),
+                        position, value.createdAt(), value.version()));
+                }
+                return collectionResourceRepository.saveAll(reordered)
+                    .then(auditService.record(ownerId, "collection.resource.reorder", "COLLECTION", collectionId, "{}"));
+            }));
+    }
+
+    @Override
+    public Mono<Void> delete(UUID ownerId, UUID collectionId) {
+        return transactionalOperator.transactional(ownedCollection(ownerId, collectionId)
+            .then(collectionResourceRepository.deleteAllByCollectionId(collectionId))
+            .then(collectionRepository.deleteById(collectionId))
+            .then(auditService.record(ownerId, "collection.delete", "COLLECTION", collectionId, "{}")));
+    }
+
     private Mono<Void> parent(UUID ownerId, UUID parentId) {
         if (parentId == null) {
             return Mono.empty();
@@ -158,7 +215,7 @@ public class DefaultCollectionService implements CollectionService {
 
     private CollectionView toView(CollectionEntity collection) {
         return new CollectionView(collection.id(), collection.parentId(), collection.name(), collection.description(), collection.createdAt(),
-            collection.updatedAt());
+            collection.updatedAt(), collection.version());
     }
 
     private Mono<Void> emitCreated(CollectionEntity collection) {

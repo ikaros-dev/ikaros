@@ -62,14 +62,35 @@ public class PersistentPluginRuntime implements PluginRuntime {
     public Mono<PluginDescriptor> enable(String pluginId) { return change(pluginId, PluginLifecycle.ENABLED); }
 
     @Override
+    public Mono<PluginDescriptor> upgrade(String pluginId, PluginManifest manifest, Set<String> grantedPermissions) {
+        return repository.findByPluginId(pluginId).switchIfEmpty(Mono.error(new NotFoundException("插件不存在")))
+            .flatMap(entity -> descriptor(entity).flatMap(current -> {
+                if (!pluginId.equals(manifest.pluginId())) return Mono.error(new ConflictException("升级不得改变 Plugin ID"));
+                if (!compatible(manifest)) return Mono.error(new ConflictException("插件与当前 Server 版本不兼容"));
+                Set<String> grants = grantedPermissions == null ? Set.of() : Set.copyOf(grantedPermissions);
+                if (!manifest.permissions().containsAll(grants)) return Mono.error(new ConflictException("不能授予插件未声明的权限"));
+                return encode(manifest, grants).flatMap(json -> repository.save(new PluginEntity(entity.id(), pluginId,
+                    json.manifest(), entity.status(), json.permissions(), entity.createdAt(), Instant.now())))
+                    .map(saved -> {
+                        if (current.lifecycle() == PluginLifecycle.ENABLED) { unregister(pluginId); register(manifest); }
+                        return new PluginDescriptor(manifest, current.lifecycle(), grants);
+                    });
+            }));
+    }
+
+    @Override
     public Mono<PluginDescriptor> disable(String pluginId) { return change(pluginId, PluginLifecycle.DISABLED); }
 
     @Override
-    public Mono<Void> uninstall(String pluginId) {
+    public Mono<Void> uninstall(String pluginId, PluginUninstallPolicy policy) {
         return repository.findByPluginId(pluginId).switchIfEmpty(Mono.error(new NotFoundException("插件不存在")))
             .flatMap(entity -> PluginLifecycle.ENABLED.name().equals(entity.status())
-                ? Mono.error(new ConflictException("启用中的插件必须先禁用")) : repository.delete(entity)
-                    .doOnSuccess(ignored -> unregister(pluginId)));
+                ? Mono.error(new ConflictException("启用中的插件必须先禁用"))
+                : policy == PluginUninstallPolicy.KEEP_DATA
+                    ? repository.save(new PluginEntity(entity.id(), entity.pluginId(), entity.manifestJson(),
+                        PluginLifecycle.UNINSTALLED.name(), entity.grantedPermissionsJson(), entity.createdAt(), Instant.now()))
+                        .doOnSuccess(ignored -> unregister(pluginId)).then()
+                    : repository.delete(entity).doOnSuccess(ignored -> unregister(pluginId)));
     }
 
     @Override

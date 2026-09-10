@@ -126,12 +126,14 @@ export default {
       { path: "library", name: "Resources", component: ResourcesPage, meta: { title: "资源管理", description: "管理资源、标题、标签和生命周期。", icon: "ep:files" } },
       { path: "library/:resourceId", name: "ResourceDetail", component: () => import("@/views/resources/Detail.vue"), meta: { title: "资源详情", showLink: false } },
       { path: "documents", name: "Documents", component: DocumentsPage, meta: { title: "文档管理", description: "管理个人文档和工作副本。", icon: "ep:document" } },
+      { path: "documents/editor", name: "DocumentEditor", component: () => import("@/views/documents/Editor.vue"), meta: { title: "协作编辑", description: "编辑并保存文档工作副本。", icon: "ep:edit" } },
       { path: "collections", name: "Collections", component: CollectionsPage, meta: { title: "收藏集合", description: "管理资源集合及其成员。", icon: "ep:collection" } },
       { path: "activity", name: "Activity", component: () => import("@/views/workbench/Activity.vue"), meta: { title: "资源活动", icon: "ep:histogram" } },
       { path: "activity/overview", name: "WorkbenchActivity", component: () => import("@/views/workbench/Activity.vue"), meta: { title: "我的活动与收藏", showLink: false } }
     ]),
     subsystem("/content-center", "ContentCenter", "内容与媒体", "ep:video-camera", [
-      { path: "media", name: "Media", component: () => import("@/views/media/index.vue"), meta: { title: "媒体库", icon: "ep:video-camera" } },
+      { path: "media", name: "Media", component: () => import("@/views/media/index.vue"), meta: { title: "媒体消费", icon: "ep:video-camera" } },
+      { path: "media/catalog", name: "MediaCatalog", component: () => import("@/views/media/VideoCatalog.vue"), meta: { title: "视频条目", icon: "ep:collection" } },
       { path: "reading", name: "Reading", component: () => import("@/views/reading/index.vue"), meta: { title: "阅读库", icon: "ep:reading" } },
       { path: "music", name: "Music", component: () => import("@/views/media/Catalog.vue"), meta: { title: "音乐库", icon: "ep:headset" } },
       { path: "photos", name: "Photos", component: () => import("@/views/media/Catalog.vue"), meta: { title: "照片管理", icon: "ep:picture" } },
@@ -171,8 +173,11 @@ export default {
       { path: "tasks", name: "BackgroundTasks", component: OpsBackgroundPage, meta: { title: "后台任务", icon: "ep:operation" } }
     ]),
     subsystem("/collaboration-center", "CollaborationCenter", "协作与分享", "ep:chat-line-round", [
-      { path: "rooms", name: "Rooms", component: () => import("@/views/sharing/index.vue"), meta: { title: "协作房间", icon: "ep:chat-line-round" } },
-      { path: "sharing", name: "Sharing", component: () => import("@/views/sharing/index.vue"), meta: { title: "分享协作", icon: "ep:share" } }
+      { path: "rooms", name: "Rooms", component: () => import("@/views/sharing/RoomManager.vue"), meta: { title: "协作房间", icon: "ep:chat-line-round" } },
+      { path: "sharing", name: "Sharing", component: () => import("@/views/sharing/index.vue"), meta: { title: "分享协作", icon: "ep:share" } },
+      { path: "redeem", name: "ShareRedeem", component: () => import("@/views/sharing/Redeem.vue"), meta: { title: "验证分享", icon: "ep:ticket" } },
+      { path: "watch", name: "WatchRoom", component: () => import("@/views/sharing/WatchRoom.vue"), meta: { title: "一起看", icon: "ep:video-camera" } },
+      { path: "listen", name: "ListenRoom", component: () => import("@/views/sharing/ListenRoom.vue"), meta: { title: "一起听", icon: "ep:headset" } }
     ]),
     subsystem("/planning-center", "PlanningCenter", "项目与计划", "ep:calendar", [
       { path: "overview", name: "Planning", component: () => import("@/views/planning/Projects.vue"), meta: { title: "生产力与计划", icon: "ep:calendar" } },

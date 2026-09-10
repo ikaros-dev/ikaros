@@ -40,4 +40,97 @@ class InMemoryPluginRuntimeTest {
             "Example", "1", "2.0.0", null, "example.Entry", List.of(), List.of(), List.of());
         assertEquals(PluginLifecycle.INSTALLED, runtime.install(minimumTen, Set.of()).block().lifecycle());
     }
+
+    @Test
+    void disablingPluginRevokesRegisteredExtensions() {
+        InMemoryPluginExtensionRegistry registry = new InMemoryPluginExtensionRegistry();
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0", registry);
+        runtime.install(manifest, Set.of("resource.read")).block();
+        runtime.enable(manifest.pluginId()).block();
+        assertEquals(1, registry.find("parser").size());
+
+        runtime.disable(manifest.pluginId()).block();
+
+        assertEquals(0, registry.find("parser").size());
+        assertEquals(PluginLifecycle.DISABLED, runtime.get(manifest.pluginId()).block().lifecycle());
+    }
+
+    @Test
+    void cannotDisablePluginBeforeItIsEnabled() {
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0");
+        runtime.install(manifest, Set.of("resource.read")).block();
+
+        assertThrows(RuntimeException.class, () -> runtime.disable(manifest.pluginId()).block());
+    }
+
+    @Test
+    void upgradeKeepsLifecycleAndReplacesManifest() {
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0");
+        runtime.install(manifest, Set.of("resource.read")).block();
+        PluginManifest upgraded = new PluginManifest("example.plugin", "Example 2", "2.0.0",
+            "Example", "1", "2.0.0", null, "example.EntryV2", List.of("parser"),
+            List.of("resource.read"), List.of("parser"));
+
+        PluginDescriptor result = runtime.upgrade(manifest.pluginId(), upgraded, Set.of("resource.read")).block();
+
+        assertEquals(PluginLifecycle.INSTALLED, result.lifecycle());
+        assertEquals("2.0.0", result.manifest().version());
+    }
+
+    @Test
+    void incompatibleUpgradeLeavesExistingPluginUntouched() {
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0");
+        runtime.install(manifest, Set.of("resource.read")).block();
+        PluginManifest incompatible = new PluginManifest("example.plugin", "Example 2", "2.0.0",
+            "Example", "1", "3.0.0", null, "example.EntryV2", List.of(), List.of(), List.of());
+
+        assertThrows(RuntimeException.class, () -> runtime.upgrade(manifest.pluginId(), incompatible, Set.of()).block());
+        assertEquals("1.0.0", runtime.get(manifest.pluginId()).block().manifest().version());
+    }
+
+    @Test
+    void enabledUpgradeReplacesRegisteredExtension() {
+        InMemoryPluginExtensionRegistry registry = new InMemoryPluginExtensionRegistry();
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0", registry);
+        runtime.install(manifest, Set.of("resource.read")).block();
+        runtime.enable(manifest.pluginId()).block();
+        PluginManifest upgraded = new PluginManifest("example.plugin", "Example 2", "2.0.0",
+            "Example", "1", "2.0.0", null, "example.EntryV2", List.of("parser"),
+            List.of("resource.read"), List.of("parser"));
+
+        runtime.upgrade(manifest.pluginId(), upgraded, Set.of("resource.read")).block();
+
+        assertEquals("example.EntryV2", registry.find("parser").getFirst().entrypoint());
+        assertEquals(PluginLifecycle.ENABLED, runtime.get(manifest.pluginId()).block().lifecycle());
+    }
+
+    @Test
+    void uninstallCanKeepPluginDataAsUninstalledRecord() {
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0");
+        runtime.install(manifest, Set.of("resource.read")).block();
+
+        runtime.uninstall(manifest.pluginId(), PluginUninstallPolicy.KEEP_DATA).block();
+
+        assertEquals(PluginLifecycle.UNINSTALLED, runtime.get(manifest.pluginId()).block().lifecycle());
+    }
+
+    @Test
+    void deleteDataRemovesPluginRecordAfterDisable() {
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0");
+        runtime.install(manifest, Set.of("resource.read")).block();
+
+        runtime.uninstall(manifest.pluginId(), PluginUninstallPolicy.DELETE_DATA).block();
+
+        assertThrows(RuntimeException.class, () -> runtime.get(manifest.pluginId()).block());
+    }
+
+    @Test
+    void enabledPluginCannotBeUninstalledWithEitherPolicy() {
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0");
+        runtime.install(manifest, Set.of("resource.read")).block();
+        runtime.enable(manifest.pluginId()).block();
+
+        assertThrows(RuntimeException.class,
+            () -> runtime.uninstall(manifest.pluginId(), PluginUninstallPolicy.KEEP_DATA).block());
+    }
 }

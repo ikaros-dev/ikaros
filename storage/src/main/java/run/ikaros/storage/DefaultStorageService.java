@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
@@ -28,7 +29,7 @@ import run.ikaros.operations.api.TaskReference;
  * 默认存储服务实现，严格保持 Attachment、Blob 与物理 Placement 三层分离。
  */
 @Service
-public class DefaultStorageService implements StorageService, AttachmentContentReader {
+public class DefaultStorageService implements StorageService, AttachmentContentReader, run.ikaros.storage.api.AttachmentContentService {
     private static final int MAX_PAGE_SIZE = 100;
     private static final int MAX_UNPAGED_RESULTS = 100;
     private final ResourceOwnershipQuery resourceOwnership;
@@ -41,6 +42,7 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
     private final StorageProviderRegistry providerRegistry;
     private final BackgroundTaskService taskService;
     private final DurableEventPublisher eventService;
+    private final UploadSessionRepository uploadSessionRepository;
     private List<StorageContentReader> contentReaders = List.of();
     private StorageObjectProviderRegistry objectProviderRegistry;
 
@@ -62,7 +64,7 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
                                  AuditService auditService,
                                  TransactionalOperator transactionalOperator) {
         this(resourceOwnership, attachmentRepository, blobRepository, placementRepository,
-            derivedAttachmentRepository, auditService, transactionalOperator, null, null, null);
+            derivedAttachmentRepository, auditService, transactionalOperator, null, null, null, null);
     }
 
     public DefaultStorageService(ResourceOwnershipQuery resourceOwnership,
@@ -74,7 +76,7 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
                                  TransactionalOperator transactionalOperator,
                                  StorageProviderRegistry providerRegistry) {
         this(resourceOwnership, attachmentRepository, blobRepository, placementRepository,
-            derivedAttachmentRepository, auditService, transactionalOperator, providerRegistry, null, null);
+            derivedAttachmentRepository, auditService, transactionalOperator, providerRegistry, null, null, null);
     }
 
     public DefaultStorageService(ResourceOwnershipQuery resourceOwnership,
@@ -87,7 +89,21 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
                                  StorageProviderRegistry providerRegistry,
                                  BackgroundTaskService taskService) {
         this(resourceOwnership, attachmentRepository, blobRepository, placementRepository, derivedAttachmentRepository,
-            auditService, transactionalOperator, providerRegistry, taskService, null);
+            auditService, transactionalOperator, providerRegistry, taskService, null, null);
+    }
+
+    public DefaultStorageService(ResourceOwnershipQuery resourceOwnership,
+                                 AttachmentRepository attachmentRepository,
+                                 BlobRepository blobRepository,
+                                 BlobPlacementRepository placementRepository,
+                                 DerivedAttachmentRepository derivedAttachmentRepository,
+                                 AuditService auditService,
+                                 TransactionalOperator transactionalOperator,
+                                 StorageProviderRegistry providerRegistry,
+                                 BackgroundTaskService taskService,
+                                 DurableEventPublisher eventService) {
+        this(resourceOwnership, attachmentRepository, blobRepository, placementRepository, derivedAttachmentRepository,
+            auditService, transactionalOperator, providerRegistry, taskService, eventService, null);
     }
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -100,7 +116,8 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
                                  TransactionalOperator transactionalOperator,
                                  StorageProviderRegistry providerRegistry,
                                  BackgroundTaskService taskService,
-                                 DurableEventPublisher eventService) {
+                                 DurableEventPublisher eventService,
+                                 UploadSessionRepository uploadSessionRepository) {
         this.resourceOwnership = resourceOwnership;
         this.attachmentRepository = attachmentRepository;
         this.blobRepository = blobRepository;
@@ -111,6 +128,7 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
         this.providerRegistry = providerRegistry;
         this.taskService = taskService;
         this.eventService = eventService;
+        this.uploadSessionRepository = uploadSessionRepository;
     }
 
     @Autowired(required = false)
@@ -165,20 +183,70 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
         if (providerRegistry == null || objectProviderRegistry == null) {
             return Mono.error(new ConflictException("Storage Provider 上传能力未配置"));
         }
-        return providerRegistry.requireWritableByKey(request.provider())
+        return owned(ownerId, resourceId)
+            .then(Mono.defer(() -> providerRegistry.requireWritableByKey(request.provider())))
             .flatMap(provider -> verifyUploadedObject(provider, request)
                 .then(attachInternal(ownerId, resourceId, request.asAttachment(), request.idempotencyKey())));
     }
 
     @Override
+    public Mono<UploadSessionView> abortUploadSession(UUID ownerId, UUID sessionId) {
+        if (uploadSessionRepository == null) {
+            return Mono.error(new ConflictException("上传会话能力未配置"));
+        }
+        return Mono.defer(() -> uploadSessionRepository.findByIdAndOwnerId(sessionId, ownerId))
+            .switchIfEmpty(Mono.error(new NotFoundException("上传会话不存在或无权访问")))
+            .flatMap(session -> {
+                if (session.state() == UploadSessionState.COMPLETED) {
+                    return Mono.error(new ConflictException("已完成的上传会话不能终止"));
+                }
+                if (session.state() == UploadSessionState.ABORTED
+                    || session.state() == UploadSessionState.EXPIRED) {
+                    return Mono.just(session);
+                }
+                return uploadSessionRepository.save(new UploadSessionEntity(session.id(), session.ownerId(),
+                    session.resourceId(), session.provider(), session.objectKey(), session.expectedSize(),
+                    session.declaredSha256(), UploadSessionState.ABORTED, session.expiresAt(), session.createdAt(),
+                    Instant.now(), session.version(), session.idempotencyKey()));
+            })
+            .map(this::toSessionView)
+            .as(transactionalOperator::transactional)
+            .flatMap(view -> cleanupUploadObject(view).thenReturn(view));
+    }
+
+    private Mono<Void> cleanupUploadObject(UploadSessionView session) {
+        if (providerRegistry == null || objectProviderRegistry == null) {
+            return Mono.error(new ConflictException("上传会话物理清理能力未配置"));
+        }
+        return providerRegistry.getByKey(session.provider())
+            .switchIfEmpty(Mono.error(new ConflictException("上传会话 Provider 不存在")))
+            .flatMap(provider -> objectProviderRegistry.deleteObject(provider, session.objectKey()));
+    }
+
+    @Override
     public Mono<StorageUploadIntentView> beginUpload(UUID ownerId, UUID resourceId, BeginUploadRequest request) {
+        return beginUpload(ownerId, resourceId, request, null);
+    }
+
+    @Override
+    public Mono<StorageUploadIntentView> beginUpload(UUID ownerId, UUID resourceId, BeginUploadRequest request,
+                                                     String idempotencyKey) {
+        if (request != null && request.sizeBytes() < 0) {
+            return Mono.error(new IllegalArgumentException("上传大小不能为负数"));
+        }
+        if (request == null || request.fileName() == null || request.fileName().isBlank()
+            || request.mediaType() == null || request.mediaType().isBlank()
+            || request.provider() == null || request.provider().isBlank()
+            || request.sha256() == null || !request.sha256().matches("^[A-Fa-f0-9]{64}$")) {
+            return Mono.error(new IllegalArgumentException("上传约束参数不合法"));
+        }
         if (providerRegistry == null || objectProviderRegistry == null) {
             return Mono.error(new ConflictException("Storage Provider 上传能力未配置"));
         }
         String objectKey = request.objectKey() == null || request.objectKey().isBlank()
             ? "attachments/" + UUID.randomUUID() + "/" + safeFileName(request.fileName()) : request.objectKey();
         return owned(ownerId, resourceId)
-            .then(providerRegistry.requireWritableByKey(request.provider()))
+            .then(Mono.defer(() -> providerRegistry.requireWritableByKey(request.provider())))
             .flatMap(provider -> blobRepository.findBySha256(request.sha256().toLowerCase())
                 .flatMap(blob -> {
                     if (blob.sizeBytes() != request.sizeBytes()) {
@@ -191,7 +259,24 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
                 .switchIfEmpty(Mono.defer(() -> objectProviderRegistry.createUploadIntent(provider,
                     new StorageUploadRequest(objectKey, request.sizeBytes(), request.mediaType(), request.sha256()))
                     .map(intent -> new StorageUploadIntentView(provider.providerKey(), provider.tier(), intent.method(),
-                        intent.url(), intent.objectKey(), intent.expiresAt(), request.sha256(), false)))));
+                        intent.url(), intent.objectKey(), intent.expiresAt(), request.sha256(), false)))))
+            .flatMap(view -> persistUploadSession(ownerId, resourceId, request, idempotencyKey, view));
+    }
+
+    private Mono<StorageUploadIntentView> persistUploadSession(UUID ownerId, UUID resourceId,
+                                                                BeginUploadRequest request, String idempotencyKey,
+                                                                StorageUploadIntentView view) {
+        if (uploadSessionRepository == null) {
+            return Mono.just(view);
+        }
+        Instant now = Instant.now();
+        UploadSessionEntity session = new UploadSessionEntity(null, ownerId, resourceId, view.provider(),
+            view.objectKey(), request.sizeBytes(), request.sha256(),
+            view.deduplicated() ? UploadSessionState.COMPLETED : UploadSessionState.OPEN,
+            view.expiresAt(), now, now, 0L, idempotencyKey);
+        return uploadSessionRepository.save(session)
+            .map(saved -> new StorageUploadIntentView(view.provider(), view.tier(), view.method(), view.url(),
+                view.objectKey(), view.expiresAt(), view.sha256(), view.deduplicated(), saved.id()));
     }
 
     private Mono<Void> verifyUploadedObject(StorageProvider provider, CommitUploadRequest request) {
@@ -404,6 +489,23 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
         String payload = "{\"attachment_id\":\"" + attachment.id() + "\",\"resource_id\":\""
             + attachment.resourceId() + "\",\"blob_id\":\"" + attachment.blobId() + "\"}";
         return eventService.append(new EventAppendRequest(eventType, 1, "storage", "attachment", attachment.id(), payload)).then();
+    }
+
+    @Override
+    public Mono<List<AttachmentView>> findByContentIdentity(UUID ownerId, String sha256, long sizeBytes) {
+        if (sha256 == null || sha256.isBlank() || sizeBytes < 0) return Mono.just(List.of());
+        return attachmentRepository.findByContentIdentity(ownerId, sha256, sizeBytes).flatMap(this::view).take(MAX_UNPAGED_RESULTS).collectList();
+    }
+
+    @Override
+    public Flux<org.springframework.core.io.buffer.DataBuffer> read(UUID ownerId, UUID attachmentId) {
+        return readContent(ownerId, attachmentId, null).flatMapMany(StorageContent::body);
+    }
+
+    private UploadSessionView toSessionView(UploadSessionEntity session) {
+        return new UploadSessionView(session.id(), session.ownerId(), session.resourceId(), session.provider(),
+            session.objectKey(), session.expectedSize(), session.declaredSha256(), session.state(),
+            session.expiresAt(), session.createdAt(), session.updatedAt(), session.version());
     }
 
     private Mono<AttachmentView> toView(AttachmentEntity attachment, BlobEntity blob) {

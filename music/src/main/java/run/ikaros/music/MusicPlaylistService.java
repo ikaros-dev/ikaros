@@ -2,8 +2,10 @@ package run.ikaros.music;
 import java.util.UUID; import reactor.core.publisher.Flux; import reactor.core.publisher.Mono;
 public interface MusicPlaylistService {
     Mono<MusicPlaylistView> create(UUID ownerId, CreateMusicPlaylistRequest request);
+    Mono<MusicPlaylistView> update(UUID ownerId, UUID playlistId, UpdateMusicPlaylistRequest request);
     Flux<MusicPlaylistView> list(UUID ownerId);
     Flux<MusicPlaylistEntryView> entries(UUID ownerId, UUID playlistId);
     Mono<MusicPlaylistEntryView> add(UUID ownerId, UUID playlistId, AddMusicPlaylistEntryRequest request);
+    Mono<MusicPlaylistView> reorder(UUID ownerId, UUID playlistId, ReorderMusicPlaylistRequest request, long expectedVersion);
     Mono<Void> remove(UUID ownerId, UUID entryId);
 }

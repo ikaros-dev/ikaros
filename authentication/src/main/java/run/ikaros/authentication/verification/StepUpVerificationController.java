@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -77,5 +78,26 @@ public class StepUpVerificationController {
         @Valid @RequestBody VerifyOtpRequest request
     ) {
         return stepUpService.verifyEmailOtp(userId, challengeId, request);
+    }
+
+    /**
+     * 取消当前用户尚未使用的 Step-up 挑战。
+     *
+     * @param userId 当前认证用户标识
+     * @param challengeId 挑战标识
+     * @return 无响应体的完成信号
+     */
+    @Operation(summary = "取消增强验证", description = "取消当前用户仍处于 ISSUED 状态的 LOGIN_STEP_UP 挑战。")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "挑战已取消或已处于终态"),
+        @ApiResponse(responseCode = "404", description = "验证挑战不存在", content = @Content)
+    })
+    @DeleteMapping("/{challengeId}")
+    public Mono<ResponseEntity<Void>> cancel(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID userId,
+        @PathVariable UUID challengeId
+    ) {
+        return stepUpService.cancelEmailOtp(userId, challengeId)
+            .thenReturn(ResponseEntity.noContent().build());
     }
 }

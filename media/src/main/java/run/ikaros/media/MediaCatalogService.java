@@ -11,4 +11,5 @@ public interface MediaCatalogService {
     Flux<MediaSeasonView> listSeasons(UUID ownerId, UUID subjectId);
     Mono<MediaEpisodeView> createEpisode(UUID ownerId, UUID subjectId, UUID seasonId, CreateMediaEpisodeRequest request);
     Flux<MediaEpisodeView> listEpisodes(UUID ownerId, UUID subjectId, UUID seasonId);
+    Mono<Void> reorderEpisodes(UUID ownerId, UUID subjectId, UUID seasonId, ReorderMediaEpisodesRequest request);
 }

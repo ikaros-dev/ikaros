@@ -2,6 +2,8 @@ package run.ikaros.collection;
 
 import run.ikaros.resource.api.*;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -16,6 +18,7 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.operations.api.AuditService;
+import run.ikaros.common.ConflictException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
 import run.ikaros.resource.ResourceEntity;
@@ -65,5 +68,104 @@ class DefaultCollectionServiceTest {
         verify(events).append(argThat(request -> request.eventType().equals("resource.collection.member-removed")
             && request.producerSubsystem().equals("resource") && request.subjectType().equals("collection")
             && request.subjectId().equals(collectionId)));
+    }
+
+    @Test
+    void updatesCollectionWithOwnerAndVersionChecks() {
+        UUID ownerId = UUID.randomUUID();
+        UUID collectionId = UUID.randomUUID();
+        Instant now = Instant.now();
+        CollectionRepository collections = mock(CollectionRepository.class);
+        CollectionResourceRepository members = mock(CollectionResourceRepository.class);
+        ResourceRepository resources = mock(ResourceRepository.class);
+        AuditService audit = mock(AuditService.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        CollectionEntity current = new CollectionEntity(collectionId, ownerId, null, "旧名", null, now, now, 1L);
+        CollectionEntity updated = new CollectionEntity(collectionId, ownerId, null, "新名", "描述", now, now, 2L);
+        when(collections.findByIdAndOwnerId(collectionId, ownerId)).thenReturn(Mono.just(current));
+        when(collections.save(any(CollectionEntity.class))).thenReturn(Mono.just(updated));
+        when(audit.record(ownerId, "collection.update", "COLLECTION", collectionId, "{}")).thenReturn(Mono.empty());
+        DefaultCollectionService service = new DefaultCollectionService(collections, members, resources, audit, transaction);
+
+        StepVerifier.create(service.update(ownerId, collectionId, new UpdateCollectionRequest("新名", "描述", 1L)))
+            .assertNext(view -> assertThat(view.name()).isEqualTo("新名")).verifyComplete();
+        verify(collections).save(argThat(value -> value.name().equals("新名") && value.version().equals(1L)));
+    }
+
+    @Test
+    void reordersAllCollectionMembersAndRejectsPartialOrder() {
+        UUID ownerId = UUID.randomUUID(), collectionId = UUID.randomUUID();
+        UUID first = UUID.randomUUID(), second = UUID.randomUUID();
+        Instant now = Instant.now();
+        CollectionRepository collections = mock(CollectionRepository.class);
+        CollectionResourceRepository members = mock(CollectionResourceRepository.class);
+        ResourceRepository resources = mock(ResourceRepository.class);
+        AuditService audit = mock(AuditService.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(collections.findByIdAndOwnerId(collectionId, ownerId)).thenReturn(Mono.just(
+            new CollectionEntity(collectionId, ownerId, "收藏", null, now, now, 0L)));
+        when(members.findAllByCollectionId(collectionId)).thenReturn(reactor.core.publisher.Flux.just(
+            new CollectionResourceEntity(UUID.randomUUID(), collectionId, first, 0, now, 0L),
+            new CollectionResourceEntity(UUID.randomUUID(), collectionId, second, 1, now, 0L)));
+        when(members.saveAll(any(Iterable.class))).thenReturn(reactor.core.publisher.Flux.empty());
+        when(audit.record(ownerId, "collection.resource.reorder", "COLLECTION", collectionId, "{}"))
+            .thenReturn(Mono.empty());
+        DefaultCollectionService service = new DefaultCollectionService(collections, members, resources, audit, transaction);
+
+        StepVerifier.create(service.reorderResources(ownerId, collectionId, java.util.List.of(second, first)))
+            .verifyComplete();
+        StepVerifier.create(service.reorderResources(ownerId, collectionId, java.util.List.of(first)))
+            .expectError(ConflictException.class).verify();
+        verify(members).saveAll(any(Iterable.class));
+    }
+
+    @Test
+    void rejectsSelfReferenceAndDeepAncestorCycleBeforeSaving() {
+        UUID owner = UUID.randomUUID(), currentId = UUID.randomUUID(), parentId = UUID.randomUUID(), ancestorId = UUID.randomUUID();
+        Instant now = Instant.now();
+        CollectionRepository collections = mock(CollectionRepository.class);
+        CollectionResourceRepository members = mock(CollectionResourceRepository.class);
+        ResourceRepository resources = mock(ResourceRepository.class);
+        AuditService audit = mock(AuditService.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        CollectionEntity current = new CollectionEntity(currentId, owner, "当前", null, now, now, 0L);
+        when(collections.findByIdAndOwnerId(currentId, owner)).thenReturn(Mono.just(current));
+        when(collections.findByIdAndOwnerId(parentId, owner)).thenReturn(Mono.just(
+            new CollectionEntity(parentId, owner, ancestorId, "父", null, now, now, 0L)));
+        when(collections.findById(parentId)).thenReturn(Mono.just(
+            new CollectionEntity(parentId, owner, ancestorId, "父", null, now, now, 0L)));
+        when(collections.findById(ancestorId)).thenReturn(Mono.just(
+            new CollectionEntity(ancestorId, owner, currentId, "祖先", null, now, now, 0L)));
+        DefaultCollectionService service = new DefaultCollectionService(collections, members, resources, audit, transaction);
+
+        StepVerifier.create(service.move(owner, currentId, currentId)).expectError(ConflictException.class).verify();
+        StepVerifier.create(service.move(owner, currentId, parentId)).expectError(ConflictException.class).verify();
+        verify(collections, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
+    void deletesCollectionMembershipsButNeverDeletesResources() {
+        UUID owner = UUID.randomUUID(), collectionId = UUID.randomUUID();
+        Instant now = Instant.now();
+        CollectionRepository collections = mock(CollectionRepository.class);
+        CollectionResourceRepository members = mock(CollectionResourceRepository.class);
+        ResourceRepository resources = mock(ResourceRepository.class);
+        AuditService audit = mock(AuditService.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(collections.findByIdAndOwnerId(collectionId, owner)).thenReturn(Mono.just(
+            new CollectionEntity(collectionId, owner, "收藏", null, now, now, 0L)));
+        when(members.deleteAllByCollectionId(collectionId)).thenReturn(Mono.empty());
+        when(collections.deleteById(collectionId)).thenReturn(Mono.empty());
+        when(audit.record(owner, "collection.delete", "COLLECTION", collectionId, "{}")).thenReturn(Mono.empty());
+        DefaultCollectionService service = new DefaultCollectionService(collections, members, resources, audit, transaction);
+
+        StepVerifier.create(service.delete(owner, collectionId)).verifyComplete();
+        verify(members).deleteAllByCollectionId(collectionId);
+        verify(collections).deleteById(collectionId);
+        org.mockito.Mockito.verifyNoInteractions(resources);
     }
 }

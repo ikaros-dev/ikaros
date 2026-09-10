@@ -21,6 +21,7 @@ import run.ikaros.operations.api.AuditService;
 class DefaultRoleServiceTest {
     private PlatformRoleRepository roleRepository;
     private RolePermissionRepository permissionRepository;
+    private UserRoleRepository userRoleRepository;
     private AuditService auditService;
     private DefaultRoleService service;
 
@@ -28,8 +29,9 @@ class DefaultRoleServiceTest {
     void setUp() {
         roleRepository = mock(PlatformRoleRepository.class);
         permissionRepository = mock(RolePermissionRepository.class);
+        userRoleRepository = mock(UserRoleRepository.class);
         auditService = mock(AuditService.class);
-        service = new DefaultRoleService(roleRepository, permissionRepository, auditService);
+        service = new DefaultRoleService(roleRepository, permissionRepository, auditService, null, userRoleRepository);
     }
 
     @Test
@@ -47,6 +49,13 @@ class DefaultRoleServiceTest {
         StepVerifier.create(service.create(actorId, new CreateRoleRequest("CONTENT_ADMIN", "内容管理员", "管理内容")))
             .assertNext(view -> assertThat(view.code()).isEqualTo("CONTENT_ADMIN"))
             .verifyComplete();
+    }
+
+    @Test
+    void rejectsInvalidRoleInputBeforePersistence() {
+        StepVerifier.create(service.create(UUID.randomUUID(), new CreateRoleRequest("invalid-code", "", null)))
+            .expectError(IllegalArgumentException.class)
+            .verify();
     }
 
     @Test
@@ -97,5 +106,27 @@ class DefaultRoleServiceTest {
             .assertNext(view -> assertThat(view.permissions()).containsExactly("system.user.manage"))
             .verifyComplete();
         verify(permissionRepository).save(any(RolePermissionEntity.class));
+    }
+
+    @Test
+    void assignsAndRevokesUserRoleWithoutCrossUserSideEffects() {
+        UUID actorId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID roleId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformRoleEntity role = new PlatformRoleEntity(roleId, "EDITOR", "Editor", null, false, now, now, 0L);
+        when(roleRepository.findById(roleId)).thenReturn(Mono.just(role));
+        when(userRoleRepository.findByUserIdAndRoleId(userId, roleId)).thenReturn(Mono.empty());
+        when(userRoleRepository.save(any())).thenReturn(Mono.just(new UserRoleEntity(UUID.randomUUID(), userId, roleId, now, 0L)));
+        when(auditService.record(eq(actorId), eq("identity.user.role.assign"), eq("USER"), eq(userId), any()))
+            .thenReturn(Mono.empty());
+        when(userRoleRepository.deleteByUserIdAndRoleId(userId, roleId)).thenReturn(Mono.empty());
+        when(auditService.record(eq(actorId), eq("identity.user.role.revoke"), eq("USER"), eq(userId), any()))
+            .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.assignRole(actorId, userId, roleId)).verifyComplete();
+        StepVerifier.create(service.revokeRole(actorId, userId, roleId)).verifyComplete();
+        verify(userRoleRepository).save(any(UserRoleEntity.class));
+        verify(userRoleRepository).deleteByUserIdAndRoleId(userId, roleId);
     }
 }

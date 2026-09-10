@@ -15,6 +15,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.ConflictException;
+import run.ikaros.common.NotFoundException;
 import run.ikaros.authentication.PlatformUserEntity;
 import run.ikaros.authentication.PlatformUserRepository;
 import run.ikaros.authentication.api.SecurityVerificationLevel;
@@ -45,6 +46,50 @@ class EmailOtpVerificationProviderTest {
     @Test
     void identifiesItselfAsEmailOtpProvider() {
         assertThat(provider.method()).isEqualTo(VerificationMethod.EMAIL_OTP);
+    }
+
+    @Test
+    void rejectsUnknownInactiveOrUnverifiedIdentityBeforeIssuingChallenge() {
+        UUID userId = UUID.randomUUID();
+        when(userRepository.findById(userId)).thenReturn(Mono.empty());
+        when(challengeRepository.countByUserIdAndIssuedAtAfter(eq(userId), any())).thenReturn(Mono.just(0L));
+
+        StepVerifier.create(provider.issue(userId, new IssueVerificationRequest(VerificationPurpose.LOGIN_STEP_UP,
+                "session-1")))
+            .expectError(NotFoundException.class)
+            .verify();
+        verify(challengeRepository, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
+    void rejectsIssuingWhenUserHasNoUsableEmail() {
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        when(userRepository.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice",
+            null, UserStatus.ACTIVE, now, now, null, 0L)));
+        when(challengeRepository.countByUserIdAndIssuedAtAfter(eq(userId), any())).thenReturn(Mono.just(0L));
+
+        StepVerifier.create(provider.issue(userId, new IssueVerificationRequest(VerificationPurpose.LOGIN_STEP_UP,
+                "session-1")))
+            .expectError(NotFoundException.class)
+            .verify();
+        verify(challengeRepository, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
+    void rejectsIssuingWhenRateLimitIsReached() {
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity user = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
+            UserStatus.ACTIVE, now, now, null, 0L);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(user));
+        when(challengeRepository.countByUserIdAndIssuedAtAfter(eq(userId), any())).thenReturn(Mono.just(3L));
+
+        StepVerifier.create(provider.issue(userId, new IssueVerificationRequest(VerificationPurpose.LOGIN_STEP_UP,
+                "session-1")))
+            .expectError(ConflictException.class)
+            .verify();
+        verify(challengeRepository, org.mockito.Mockito.never()).save(any());
     }
 
     @Test
@@ -93,6 +138,38 @@ class EmailOtpVerificationProviderTest {
     }
 
     @Test
+    void rejectsExpiredChallengeAndMarksItExpired() {
+        UUID userId = UUID.randomUUID();
+        UUID challengeId = UUID.randomUUID();
+        Instant expiredAt = Instant.now().minusSeconds(1);
+        VerificationChallengeEntity challenge = new VerificationChallengeEntity(challengeId, userId,
+            VerificationMethod.EMAIL_OTP, VerificationPurpose.EXPORT_SECURE_VAULT, null, "digest",
+            expiredAt.minusSeconds(300), expiredAt, 0, 5, null, VerificationChallengeStatus.ISSUED, 0L);
+        when(challengeRepository.findById(challengeId)).thenReturn(Mono.just(challenge));
+        when(challengeRepository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        StepVerifier.create(provider.verify(userId, challengeId, new VerifyOtpRequest("123456")))
+            .expectError(ConflictException.class).verify();
+        verify(challengeRepository).save(org.mockito.ArgumentMatchers.argThat(saved ->
+            saved.status() == VerificationChallengeStatus.EXPIRED));
+    }
+
+    @Test
+    void rejectsAlreadyConsumedChallengeWithoutReplayingOtp() {
+        UUID userId = UUID.randomUUID();
+        UUID challengeId = UUID.randomUUID();
+        Instant now = Instant.now();
+        VerificationChallengeEntity challenge = new VerificationChallengeEntity(challengeId, userId,
+            VerificationMethod.EMAIL_OTP, VerificationPurpose.EXPORT_SECURE_VAULT, null, "digest", now,
+            now.plusSeconds(300), 0, 5, now, VerificationChallengeStatus.VERIFIED, 0L);
+        when(challengeRepository.findById(challengeId)).thenReturn(Mono.just(challenge));
+
+        StepVerifier.create(provider.verify(userId, challengeId, new VerifyOtpRequest("123456")))
+            .expectError(ConflictException.class).verify();
+        org.mockito.Mockito.verifyNoInteractions(otpHasher);
+    }
+
+    @Test
     void locksChallengeAtMaximumFailedAttempts() {
         UUID userId = UUID.randomUUID();
         UUID challengeId = UUID.randomUUID();
@@ -112,6 +189,27 @@ class EmailOtpVerificationProviderTest {
                 assertThat(error).hasMessage("验证码错误次数过多，挑战已锁定");
             })
             .verify();
+    }
+
+    @Test
+    void recordsIntermediateFailureWithoutRepeatingBusinessSideEffects() {
+        UUID userId = UUID.randomUUID();
+        UUID challengeId = UUID.randomUUID();
+        Instant now = Instant.now();
+        VerificationChallengeEntity challenge = new VerificationChallengeEntity(challengeId, userId,
+            VerificationMethod.EMAIL_OTP, VerificationPurpose.CHANGE_SECURITY_SETTING, null, "digest", now,
+            now.plusSeconds(300), 1, 5, null, VerificationChallengeStatus.ISSUED, 0L);
+        when(challengeRepository.findById(challengeId)).thenReturn(Mono.just(challenge));
+        when(otpHasher.matches("000000", "digest")).thenReturn(false);
+        when(challengeRepository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(auditService.record(eq(userId), eq("security.verification.failed"), eq("VERIFICATION_CHALLENGE"),
+            eq(challengeId), eq("{}"))).thenReturn(Mono.empty());
+
+        StepVerifier.create(provider.verify(userId, challengeId, new VerifyOtpRequest("000000")))
+            .expectErrorSatisfies(error -> assertThat(error).hasMessage("验证码错误"))
+            .verify();
+        verify(challengeRepository).save(org.mockito.ArgumentMatchers.argThat(saved ->
+            saved.attemptCount() == 2 && saved.status() == VerificationChallengeStatus.ISSUED));
     }
 
     @Test

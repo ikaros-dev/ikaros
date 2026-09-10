@@ -1,0 +1,1 @@
+CREATE TABLE music_track_artist (id UUID PRIMARY KEY DEFAULT uuid_v7(), owner_id UUID NOT NULL, track_id UUID NOT NULL, artist_id UUID NOT NULL, role VARCHAR(32) NOT NULL, position INTEGER NOT NULL DEFAULT 0, CHECK(position>=0), FOREIGN KEY(track_id) REFERENCES music_track(id), FOREIGN KEY(artist_id) REFERENCES music_artist(id), UNIQUE(track_id,artist_id,role));

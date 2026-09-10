@@ -6,4 +6,5 @@ import reactor.core.publisher.Mono;
 public interface ImportRunRepository extends ReactiveCrudRepository<ImportRunEntity, UUID> {
     Flux<ImportRunEntity> findAllByOwnerIdOrderByCreatedAtDesc(UUID ownerId);
     Mono<ImportRunEntity> findByIdAndOwnerId(UUID id, UUID ownerId);
+    Mono<ImportRunEntity> findByOwnerIdAndIdempotencyKey(UUID ownerId, String idempotencyKey);
 }

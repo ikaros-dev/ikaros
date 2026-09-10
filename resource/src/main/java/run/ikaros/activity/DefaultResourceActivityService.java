@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.resource.ResourceEntity;
@@ -37,8 +38,8 @@ public class DefaultResourceActivityService implements ResourceActivityService {
     @Override
     public Mono<ResourceActivityView> record(UUID ownerId, UUID resourceId, RecordActivityRequest request) {
         return owned(ownerId, resourceId)
-            .then(activityRepository.save(new ResourceActivityEntity(null, ownerId, resourceId, request.type(),
-                request.details() == null ? "{}" : request.details(), Instant.now(), null)))
+            .then(Mono.defer(() -> activityRepository.save(new ResourceActivityEntity(null, ownerId, resourceId,
+                request.type(), request.details() == null ? "{}" : request.details(), Instant.now(), null))))
             .map(this::toView)
             .as(transactionalOperator::transactional);
     }
@@ -48,7 +49,7 @@ public class DefaultResourceActivityService implements ResourceActivityService {
         if (limit < 1 || limit > 200) {
             return Mono.error(new IllegalArgumentException("Activity 查询数量必须介于 1 和 200 之间"));
         }
-        return activityRepository.findAllByOwnerIdOrderByOccurredAtDesc(ownerId)
+        return Flux.defer(() -> activityRepository.findAllByOwnerIdOrderByOccurredAtDesc(ownerId))
             .take(limit)
             .map(this::toView)
             .collectList();
@@ -56,10 +57,11 @@ public class DefaultResourceActivityService implements ResourceActivityService {
 
     @Override
     public Mono<Void> delete(UUID ownerId, UUID activityId) {
-        return activityRepository.findByIdAndOwnerId(activityId, ownerId)
+        return Mono.defer(() -> activityRepository.findByIdAndOwnerId(activityId, ownerId))
             .switchIfEmpty(Mono.error(new NotFoundException("Activity 不存在或无权访问")))
             .flatMap(activity -> activityRepository.deleteById(activity.id())
-                .then(auditService.record(ownerId, "resource.activity.delete", "RESOURCE_ACTIVITY", activity.id(), "{}")))
+                .then(Mono.defer(() -> auditService.record(ownerId, "resource.activity.delete", "RESOURCE_ACTIVITY",
+                    activity.id(), "{}"))))
             .as(transactionalOperator::transactional);
     }
 

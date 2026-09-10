@@ -6,10 +6,12 @@ import jakarta.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import run.ikaros.operations.api.BackgroundTask;
 import run.ikaros.operations.api.BackgroundTaskDispatcher;
+import run.ikaros.operations.api.AuditService;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
 
@@ -20,10 +22,11 @@ public class BlobGcTaskHandler {
     private final StorageService storage;
     private final BlobGarbageCollector collector;
     private final DurableEventPublisher events;
+    private final AuditService audit;
 
     public BlobGcTaskHandler(BackgroundTaskDispatcher dispatcher, StorageService storage,
-                             BlobGarbageCollector collector, DurableEventPublisher events) {
-        this.dispatcher = dispatcher; this.storage = storage; this.collector = collector; this.events = events;
+                             BlobGarbageCollector collector, DurableEventPublisher events, AuditService audit) {
+        this.dispatcher = dispatcher; this.storage = storage; this.collector = collector; this.events = events; this.audit = audit;
     }
 
     @PostConstruct
@@ -31,7 +34,7 @@ public class BlobGcTaskHandler {
         dispatcher.register("storage.blob-gc", this::handle);
     }
 
-    private Mono<Map<String, Object>> handle(BackgroundTask task) {
+    Mono<Map<String, Object>> handle(BackgroundTask task) {
         int limit = (int) number(task.payload().get("limit"), 100);
         long age = number(task.payload().get("minimum_age_seconds"), 86400L);
         return storage.findGarbageCollectionCandidates(limit, Duration.ofSeconds(age))
@@ -40,9 +43,11 @@ public class BlobGcTaskHandler {
                 String requested = "{\"blob_id\":\"" + candidate.blobId() + "\",\"task_id\":\"" + task.id() + "\"}";
                 return events.append(new EventAppendRequest("storage.blob.gc-requested", 1, "storage", "blob", candidate.blobId(), requested))
                     .then(collector.purge(candidate.blobId()))
-                    .flatMap(purgedCount -> events.append(new EventAppendRequest("storage.blob.purged", 1, "storage", "blob", candidate.blobId(),
-                        "{\"blob_id\":\"" + candidate.blobId() + "\",\"purged_placement_count\":" + purgedCount + "}"))
-                        .thenReturn(candidate.blobId()));
+                    .flatMap(purgedCount -> audit.record(actorId(task), "blob.gc.purge", "BLOB", candidate.blobId(),
+                        "{\"purged_placement_count\":" + purgedCount + ",\"task_id\":\"" + task.id() + "\"}")
+                        .then(events.append(new EventAppendRequest("storage.blob.purged", 1, "storage", "blob", candidate.blobId(),
+                            "{\"blob_id\":\"" + candidate.blobId() + "\",\"purged_placement_count\":" + purgedCount + "}"))
+                            .thenReturn(candidate.blobId())));
             })
             .collectList()
             .map(purged -> {
@@ -55,5 +60,15 @@ public class BlobGcTaskHandler {
 
     private long number(Object value, long fallback) {
         return value instanceof Number number ? number.longValue() : fallback;
+    }
+
+    private UUID actorId(BackgroundTask task) {
+        Object value = task.payload().get("requested_by");
+        if (value == null) return null;
+        try {
+            return UUID.fromString(value.toString());
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
     }
 }

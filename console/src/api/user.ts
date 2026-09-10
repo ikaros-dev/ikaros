@@ -8,8 +8,6 @@ export type UserResult = {
     /** 用户名 */
     username: string;
     actorId: string;
-    /** 后端安全会话 ID */
-    sessionId: string;
     /** 昵称 */
     nickname: string;
     /** 当前登录用户的角色 */
@@ -28,10 +26,10 @@ export type UserResult = {
 export type RefreshTokenResult = UserResult;
 
 /** 登录 */
-type AuthenticationView = { userId: string; sessionId: string; accessToken: string; refreshToken: string; expiresAt: string; user?: { username?: string; displayName?: string; roleCodes?: string[] }; permissions?: string[] };
+type AuthenticationView = { userId: string; accessToken: string; refreshToken: string; expiresAt: string; user?: { username?: string; displayName?: string; roleCodes?: string[] }; permissions?: string[] };
 
 const toUserResult = (result: AuthenticationView): UserResult => {
-  return { success: true, data: { avatar: "", username: result.user?.username || "", actorId: result.userId, sessionId: result.sessionId, nickname: result.user?.displayName || "", roles: result.user?.roleCodes || [], permissions: result.permissions || [], accessToken: result.accessToken, refreshToken: result.refreshToken, expires: new Date(result.expiresAt) } };
+  return { success: true, data: { avatar: "", username: result.user?.username || "", actorId: result.userId, nickname: result.user?.displayName || "", roles: result.user?.roleCodes || [], permissions: result.permissions || [], accessToken: result.accessToken, refreshToken: result.refreshToken, expires: new Date(result.expiresAt) } };
 };
 
 export const getLogin = async (data?: object): Promise<UserResult> => {

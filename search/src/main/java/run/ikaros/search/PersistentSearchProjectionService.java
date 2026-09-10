@@ -65,6 +65,11 @@ public class PersistentSearchProjectionService implements SearchProjectionServic
     }
 
     @Override
+    public Mono<Void> delete(UUID sourceId) {
+        return repository.deleteById(sourceId);
+    }
+
+    @Override
     public Mono<ProjectionFailure> recordFailure(UUID sourceId, long sourceVersion,
                                                   long rebuildGeneration, String reason) {
         String failureReason = reason == null ? "unknown" : reason;
@@ -106,7 +111,7 @@ public class PersistentSearchProjectionService implements SearchProjectionServic
 
     private Mono<SearchDocument> fromEntity(SearchDocumentEntity entity) {
         try {
-            Map<String, Object> fields = mapper.readValue(entity.fieldsJson(), new TypeReference<>() { });
+            Map<String, Object> fields = mapper.readValue(entity.fieldsJson().asString(), new TypeReference<>() { });
             return Mono.just(new SearchDocument(entity.documentId(), entity.sourceId(), entity.sourceVersion(),
                 entity.projectorVersion(), entity.rebuildGeneration(), fields, entity.projectedAt()));
         } catch (JacksonException error) {

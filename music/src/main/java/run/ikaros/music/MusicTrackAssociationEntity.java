@@ -1,0 +1,3 @@
+package run.ikaros.music;
+import java.time.Instant; import java.util.UUID; import org.springframework.data.annotation.Id; import org.springframework.data.annotation.Version; import org.springframework.data.relational.core.mapping.Column; import org.springframework.data.relational.core.mapping.Table;
+@Table("music_track_association") public record MusicTrackAssociationEntity(@Id UUID id,@Column("owner_id") UUID ownerId,@Column("track_id") UUID trackId,@Column("candidate_id") UUID candidateId,@Column("artist_id") UUID artistId,@Column("album_id") UUID albumId,@Column("edition_id") UUID editionId,@Column("disc_id") UUID discId,@Column("membership_id") UUID membershipId,@Column("created_at") Instant createdAt,@Version Long version) {}

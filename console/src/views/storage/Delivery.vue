@@ -1,5 +1,41 @@
 <script setup lang="ts">
-import { computed, ref } from "vue"; import { useRoute } from "vue-router";
-const route = useRoute(); const confirmed = ref(false); const section = computed(() => String(route.path.split("/").pop())); const titles: Record<string, string> = { reliability: "Delivery Reliability", failover: "Failover 观测", restore: "Restore Reconciliation", budget: "Traffic Budget", purge: "CDN Purge" };
+import { computed, onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
+import { http } from "@/utils/http";
+
+type Provider = Record<string, any>;
+const route = useRoute();
+const section = computed(() => String(route.path.split("/").pop()));
+const titles: Record<string, string> = { reliability: "Delivery Reliability", failover: "Failover 观测", restore: "Restore Reconciliation", budget: "Traffic Budget", purge: "CDN Purge" };
+const providers = ref<Provider[]>([]);
+const loading = ref(false);
+const probing = ref<string | null>(null);
+const error = ref("");
+
+async function load() {
+  loading.value = true; error.value = "";
+  try {
+    const result = await http.get<unknown, unknown>("/admin/delivery-providers");
+    providers.value = Array.isArray(result) ? result as Provider[] : [];
+  } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "Delivery Provider 状态加载失败"; }
+  finally { loading.value = false; }
+}
+async function probe(row: Provider) {
+  if (!row.id || probing.value) return;
+  probing.value = row.id; error.value = "";
+  try { await http.post(`/admin/delivery-providers/${row.id}/probe`, { headers: { "Idempotency-Key": crypto.randomUUID() } }); await load(); }
+  catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "Delivery Provider 检测任务提交失败"; }
+  finally { probing.value = null; }
+}
+onMounted(load);
 </script>
-<template><main class="p-4 md:p-6"><div class="mb-6"><h1 class="text-2xl font-semibold">{{ titles[section] || 'Delivery 运维' }}</h1><p class="mt-1 text-[var(--el-text-color-secondary)]">展示 Provider / Binding 技术状态，不暴露 Signed URL、Raw Token 或 Origin Credential。</p></div><el-alert v-if="section === 'purge'" title="CDN Purge 是高风险运维动作，必须选择范围、填写原因并完成二次确认；操作会产生审计记录。" type="error" show-icon :closable="false" class="mb-5"/><div class="grid grid-cols-1 gap-4 md:grid-cols-3 mb-5"><el-card v-for="item in (section === 'budget' ? ['CDN Delivered','Origin Bytes','Direct Egress','Server Proxy Bytes','Cross-region Origin'] : ['Binding Health','Circuit State','Selection Epochs','Failover Events','Restore Reconciliation'])" :key="item" shadow="never"><div class="text-sm text-[var(--el-text-color-secondary)]">{{ item }}</div><div class="text-2xl font-semibold mt-2">—</div><div class="text-xs mt-2">等待后端观测数据</div></el-card></div><el-card shadow="never"><template #header><div class="flex justify-between"><span>{{ titles[section] || 'Delivery 运维记录' }}</span><el-button disabled>刷新</el-button></div></template><el-table :data="[]"><el-table-column label="Binding / Operation" min-width="200"/><el-table-column label="Provider Health Snapshot" min-width="220"/><el-table-column label="State" width="130"/><el-table-column label="Occurred At" width="180"/><el-table-column label="操作" width="180"/></el-table><el-empty description="暂无后端 Delivery 运维数据"/></el-card><el-card v-if="section === 'reliability'" shadow="never" class="mt-4"><template #header>Circuit Breaker 配置</template><el-form inline><el-form-item label="failure_window"><el-input disabled placeholder="由后端策略提供"/></el-form-item><el-form-item label="failure_threshold"><el-input disabled placeholder="由后端策略提供"/></el-form-item><el-form-item label="cooldown"><el-input disabled placeholder="由后端策略提供"/></el-form-item></el-form><el-alert title="threshold 过低、cooldown = 0 或将 SERVER_PROXY 放入低带宽自动 fallback 链时存在抖动/带宽风险。" type="warning" :closable="false"/></el-card><el-card v-if="section === 'purge'" shadow="never" class="mt-4"><el-form label-position="top" class="max-w-xl"><el-form-item label="Provider / Binding"><el-select class="w-full" disabled/></el-form-item><el-form-item label="不可变 Representation / Path Scope"><el-input disabled/></el-form-item><el-form-item label="原因" required><el-input type="textarea" disabled/></el-form-item><el-checkbox v-model="confirmed">我确认这是高风险 Purge 操作</el-checkbox><div><el-button type="danger" class="mt-4" :disabled="!confirmed">执行 Purge</el-button></div></el-form></el-card></main></template>
+
+<template>
+  <main class="p-4 md:p-6">
+    <div class="flex justify-between items-start mb-6"><div><h1 class="text-2xl font-semibold">{{ titles[section] || "Delivery 运维" }}</h1><p class="mt-1 text-[var(--el-text-color-secondary)]">展示真实 Provider 健康状态，不暴露 Signed URL、Raw Token 或 Origin Credential。</p></div><el-button :loading="loading" @click="load">刷新</el-button></div>
+    <el-alert v-if="error" :title="error" type="warning" show-icon :closable="false" class="mb-4" />
+    <el-skeleton v-if="loading" :rows="7" animated />
+    <el-card v-else shadow="never"><el-empty v-if="!providers.length" description="暂无已配置 Delivery Provider" /><el-table v-else :data="providers" stripe><el-table-column prop="displayName" label="Provider" min-width="220"><template #default="{ row }">{{ row.displayName || row.providerKey || row.id }}</template></el-table-column><el-table-column prop="providerType" label="类型" width="150" /><el-table-column prop="healthStatus" label="健康状态" width="150"><template #default="{ row }"><el-tag :type="String(row.healthStatus).toUpperCase() === 'HEALTHY' ? 'success' : 'warning'">{{ row.healthStatus || "UNKNOWN" }}</el-tag></template></el-table-column><el-table-column prop="enabled" label="启用" width="100"><template #default="{ row }">{{ row.enabled ? "是" : "否" }}</template></el-table-column><el-table-column prop="updatedAt" label="最近更新" min-width="180" /><el-table-column label="操作" width="130"><template #default="{ row }"><el-button link type="primary" :loading="probing === row.id" @click="probe(row)">检测连接</el-button></template></el-table-column></el-table></el-card>
+    <el-alert v-if="section === 'purge'" title="Purge 当前没有对应的后端操作契约，页面不提供伪造的执行按钮。" type="info" show-icon :closable="false" class="mt-4" />
+  </main>
+</template>

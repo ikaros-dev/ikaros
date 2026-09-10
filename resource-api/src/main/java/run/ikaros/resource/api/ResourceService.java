@@ -46,6 +46,20 @@ public interface ResourceService {
      */
     Mono<PageResponse<ResourceView>> list(UUID ownerId, ResourceType type, String query, int page, int size);
 
+    /**
+     * 按生命周期查询当前用户拥有的资源。
+     *
+     * @param ownerId 资源拥有者
+     * @param type 类型过滤
+     * @param query 标题关键词
+     * @param lifecycle 生命周期
+     * @param page 页码
+     * @param size 页大小
+     * @return 分页资源视图
+     */
+    Mono<PageResponse<ResourceView>> list(UUID ownerId, ResourceType type, String query,
+                                          ResourceLifecycle lifecycle, int page, int size);
+
     Mono<ResourceView> findByExternalIdentity(UUID ownerId, String provider, String externalType,
                                                String externalId);
 
@@ -75,6 +89,9 @@ public interface ResourceService {
     Mono<ResourceView> restore(UUID ownerId, UUID resourceId);
 
     Mono<ResourceView> restore(UUID ownerId, UUID resourceId, long expectedVersion);
+
+    /** 永久删除已满足保留条件的回收站 Resource，并保留其身份作为终态记录。 */
+    Mono<Void> purge(UUID ownerId, UUID resourceId, long expectedVersion);
 
     /**
      * 为 Resource 添加稳定外部身份映射。

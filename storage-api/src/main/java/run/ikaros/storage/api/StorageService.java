@@ -26,6 +26,13 @@ public interface StorageService {
 
     Mono<StorageUploadIntentView> beginUpload(UUID ownerId, UUID resourceId, BeginUploadRequest request);
 
+    default Mono<StorageUploadIntentView> beginUpload(UUID ownerId, UUID resourceId, BeginUploadRequest request,
+                                                       String idempotencyKey) {
+        return beginUpload(ownerId, resourceId, request);
+    }
+
+    Mono<UploadSessionView> abortUploadSession(UUID ownerId, UUID sessionId);
+
     /**
      * 登记一个可追溯到原始附件的派生附件。
      *
@@ -64,6 +71,9 @@ public interface StorageService {
      * @return 附件元数据
      */
     Mono<AttachmentView> get(UUID ownerId, UUID attachmentId);
+
+    /** 查询当前拥有者中具有相同内容身份的活动附件。 */
+    Mono<List<AttachmentView>> findByContentIdentity(UUID ownerId, String sha256, long sizeBytes);
 
     Mono<Void> remove(UUID ownerId, UUID resourceId, UUID attachmentId);
 

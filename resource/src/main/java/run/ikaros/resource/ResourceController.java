@@ -97,10 +97,11 @@ public class ResourceController {
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @RequestParam(required = false) ResourceType type,
         @RequestParam(required = false) String query,
+        @RequestParam(name = "lifecycle_status", defaultValue = "ACTIVE") ResourceLifecycle lifecycle,
         @RequestParam(defaultValue = "0") @Min(0) int page,
         @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
-        return resourceService.list(actorId, type, query, page, size);
+        return resourceService.list(actorId, type, query, lifecycle, page, size);
     }
 
     @Operation(summary = "按外部身份查找资源", description = "使用 Provider、类型和外部 ID 查找当前用户拥有的 Resource。")
@@ -242,6 +243,28 @@ public class ResourceController {
         @RequestHeader(value = "If-Match", required = false) String ifMatch
     ) {
         return resourceService.restore(actorId, resourceId, IfMatchVersion.parse(ifMatch));
+    }
+
+    @Operation(summary = "永久删除资源", description = "仅永久删除已在回收站且满足保留条件的 Resource。"
+        + "该操作保留 Resource 身份记录，不直接删除 Attachment 或 Blob；必须显式确认。")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "资源已永久删除"),
+        @ApiResponse(responseCode = "400", description = "缺少高风险操作确认", content = @Content),
+        @ApiResponse(responseCode = "404", description = "资源不存在或无权访问", content = @Content),
+        @ApiResponse(responseCode = "409", description = "资源当前状态或保留条件不允许永久删除", content = @Content)
+    })
+    @PostMapping("/{resourceId}/actions/purge")
+    public Mono<ResponseEntity<Void>> purge(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID resourceId,
+        @RequestHeader(value = "If-Match", required = false) String ifMatch,
+        @RequestHeader(value = "X-Ikaros-Confirmation", required = false) String confirmation
+    ) {
+        if (!"PURGE".equals(confirmation)) {
+            return Mono.error(new IllegalArgumentException("永久删除需要 X-Ikaros-Confirmation: PURGE"));
+        }
+        return resourceService.purge(actorId, resourceId, IfMatchVersion.parse(ifMatch))
+            .thenReturn(ResponseEntity.noContent().build());
     }
 
     /**

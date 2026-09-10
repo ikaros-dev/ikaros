@@ -45,4 +45,19 @@ class JwtTokenServiceTest {
         assertThat(claims.purpose()).isEqualTo(VerificationPurpose.LOGIN_STEP_UP);
         assertThat(claims.achievedSvl()).isEqualTo(1);
     }
+
+    @Test
+    void rejectsExpiredAndTamperedJwt() {
+        JwtTokenService expiredService = new JwtTokenService("ikaros", "a-development-secret-with-at-least-32-characters",
+            Duration.ofMinutes(-1), Duration.ofDays(30));
+        String expired = expiredService.issue(UUID.randomUUID(), 1L, List.of()).accessToken();
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> expiredService.verifyAccess(expired))
+            .isInstanceOf(RuntimeException.class);
+
+        JwtTokenService validService = new JwtTokenService("ikaros", "a-development-secret-with-at-least-32-characters",
+            Duration.ofMinutes(15), Duration.ofDays(30));
+        String tampered = validService.issue(UUID.randomUUID(), 1L, List.of()).accessToken() + "tampered";
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> validService.verifyAccess(tampered))
+            .isInstanceOf(RuntimeException.class);
+    }
 }

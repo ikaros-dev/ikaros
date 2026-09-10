@@ -48,17 +48,21 @@ public class DefaultStepUpVerificationService implements StepUpVerificationServi
         return boundStepUpChallenge(userId, challengeId)
             .then(Mono.defer(() -> userRepository.findById(userId))
                 .filter(user -> user.status() == UserStatus.ACTIVE)
-                .switchIfEmpty(Mono.error(new NotFoundException("用户不存在或已停用"))))
-            .zipWith(Mono.defer(() -> emailOtpProvider.verify(userId, challengeId, request)))
-            .map(pair -> {
-                PlatformUserEntity user = pair.getT1();
-                VerificationResult result = pair.getT2();
-                String grant = tokens.issueVerificationGrant(user.id(), user.securityVersion(),
-                    VerificationPurpose.LOGIN_STEP_UP, null, result.achievedSvl().value(),
-                    result.verifiedAt(), result.expiresAt());
-                return new VerificationResult(result.challengeId(), result.method(), result.achievedSvl(),
-                    result.subjectId(), result.verifiedAt(), result.expiresAt(), grant);
-            });
+                .switchIfEmpty(Mono.error(new NotFoundException("用户不存在或已停用")))
+                .flatMap(user -> emailOtpProvider.verify(userId, challengeId, request)
+                    .map(result -> {
+                        String grant = tokens.issueVerificationGrant(user.id(), user.securityVersion(),
+                            VerificationPurpose.LOGIN_STEP_UP, null, result.achievedSvl().value(),
+                            result.verifiedAt(), result.expiresAt());
+                        return new VerificationResult(result.challengeId(), result.method(), result.achievedSvl(),
+                            result.subjectId(), result.verifiedAt(), result.expiresAt(), grant);
+                    }))); 
+    }
+
+    @Override
+    public Mono<Void> cancelEmailOtp(UUID userId, UUID challengeId) {
+        return boundStepUpChallenge(userId, challengeId)
+            .then(emailOtpProvider.cancel(userId, challengeId));
     }
 
     private Mono<Void> boundStepUpChallenge(UUID userId, UUID challengeId) {

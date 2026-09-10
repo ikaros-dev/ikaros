@@ -38,6 +38,10 @@ public class DefaultResourceRelationService implements ResourceRelationService {
 
     @Override
     public Mono<ResourceRelationView> create(UUID ownerId, UUID sourceResourceId, CreateResourceRelationRequest request) {
+        if (sourceResourceId == null || request == null || request.targetResourceId() == null
+            || request.type() == null || (request.position() != null && request.position() < 0)) {
+            return Mono.error(new IllegalArgumentException("资源关系请求不合法"));
+        }
         if (sourceResourceId.equals(request.targetResourceId())) {
             return Mono.error(new ConflictException("资源不能与自身建立关系"));
         }
@@ -53,18 +57,19 @@ public class DefaultResourceRelationService implements ResourceRelationService {
     @Override
     public Flux<ResourceRelationView> list(UUID ownerId, UUID sourceResourceId) {
         return owned(ownerId, sourceResourceId)
-            .thenMany(relationRepository.findAllBySourceResourceIdOrderByRelationTypeAscPositionAsc(sourceResourceId)
-                .map(this::toView));
+            .thenMany(Flux.defer(() -> relationRepository
+                .findAllBySourceResourceIdOrderByRelationTypeAscPositionAsc(sourceResourceId)
+                .map(this::toView)));
     }
 
     @Override
     public Mono<Void> remove(UUID ownerId, UUID sourceResourceId, UUID relationId) {
         return owned(ownerId, sourceResourceId)
-            .then(relationRepository.findById(relationId))
+            .then(Mono.defer(() -> relationRepository.findById(relationId)))
             .filter(relation -> relation.sourceResourceId().equals(sourceResourceId))
             .switchIfEmpty(Mono.error(new NotFoundException("资源关系不存在")))
             .flatMap(relationRepository::delete)
-            .then(auditService.record(ownerId, "resource.relation.delete", "RESOURCE", sourceResourceId, "{}"));
+            .then(Mono.defer(() -> auditService.record(ownerId, "resource.relation.delete", "RESOURCE", sourceResourceId, "{}")));
     }
 
     private Mono<Void> owned(UUID ownerId, UUID resourceId) {

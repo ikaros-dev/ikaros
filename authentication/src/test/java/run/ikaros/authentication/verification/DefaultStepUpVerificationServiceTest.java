@@ -69,8 +69,32 @@ class DefaultStepUpVerificationServiceTest {
             .assertNext(actual -> {
                 assertThat(actual.verificationGrant()).isNotBlank();
                 assertThat(actual.verificationGrant()).isNotEqualTo(result.verificationGrant());
+                JwtTokenService.VerificationGrantClaims claims = new JwtTokenService("ikaros",
+                    "a-development-secret-with-at-least-32-characters", java.time.Duration.ofMinutes(15),
+                    java.time.Duration.ofDays(30)).verifyVerificationGrant(actual.verificationGrant());
+                assertThat(claims.userId()).isEqualTo(userId);
+                assertThat(claims.purpose()).isEqualTo(VerificationPurpose.LOGIN_STEP_UP);
+                assertThat(claims.achievedSvl()).isEqualTo(SecurityVerificationLevel.SVL_1.value());
+                assertThat(claims.expiresAt()).isAfter(claims.verifiedAt());
             })
             .verifyComplete();
+    }
+
+    @Test
+    void refusesLimitedOperationForInactiveUser() {
+        UUID userId = UUID.randomUUID();
+        UUID challengeId = UUID.randomUUID();
+        Instant now = Instant.now();
+        VerificationChallengeEntity challenge = new VerificationChallengeEntity(challengeId, userId,
+            VerificationMethod.EMAIL_OTP, VerificationPurpose.LOGIN_STEP_UP, null, "digest", now,
+            now.plusSeconds(300), 0, 5, null, VerificationChallengeStatus.ISSUED, 0L);
+        when(challengeRepository.findById(challengeId)).thenReturn(Mono.just(challenge));
+        when(userRepository.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.DISABLED, now, now, null, 2L, 0L)));
+
+        StepVerifier.create(service.verifyEmailOtp(userId, challengeId, new VerifyOtpRequest("123456")))
+            .expectError(run.ikaros.common.NotFoundException.class).verify();
+        org.mockito.Mockito.verifyNoInteractions(otpProvider);
     }
 
     @Test
@@ -89,5 +113,20 @@ class DefaultStepUpVerificationServiceTest {
                 assertThat(error).hasMessage("验证码挑战未绑定到当前用户的 Step-up 用途");
             })
             .verify();
+    }
+
+    @Test
+    void cancelsOnlyBoundStepUpChallenge() {
+        UUID userId = UUID.randomUUID();
+        UUID challengeId = UUID.randomUUID();
+        Instant now = Instant.now();
+        VerificationChallengeEntity challenge = new VerificationChallengeEntity(challengeId, userId,
+            VerificationMethod.EMAIL_OTP, VerificationPurpose.LOGIN_STEP_UP, null, "digest", now,
+            now.plusSeconds(300), 0, 5, null, VerificationChallengeStatus.ISSUED, 0L);
+        when(challengeRepository.findById(challengeId)).thenReturn(Mono.just(challenge));
+        when(otpProvider.cancel(userId, challengeId)).thenReturn(Mono.empty());
+
+        StepVerifier.create(service.cancelEmailOtp(userId, challengeId)).verifyComplete();
+        verify(otpProvider).cancel(userId, challengeId);
     }
 }

@@ -104,6 +104,11 @@ public class DefaultResourceService implements ResourceService {
 
     private Mono<ResourceView> createInternal(UUID ownerId, CreateResourceRequest request,
                                                CreationIdempotency idempotency) {
+        if (request == null || request.type() == null || request.title() == null || request.title().isBlank()
+            || request.title().length() > 512 || request.locale() == null || request.locale().isBlank()
+            || request.locale().length() > 32) {
+            return Mono.error(new IllegalArgumentException("Resource 创建信息不合法"));
+        }
         Instant now = Instant.now();
         ResourceEntity resource = new ResourceEntity(
             null, ownerId, request.type(), request.title(), null, ResourceClassification.PRIVATE,
@@ -194,16 +199,25 @@ public class DefaultResourceService implements ResourceService {
     @Override
     public Mono<PageResponse<ResourceView>> list(UUID ownerId, ResourceType type, String query,
                                                   int page, int size) {
+        return list(ownerId, type, query, ResourceLifecycle.ACTIVE, page, size);
+    }
+
+    @Override
+    public Mono<PageResponse<ResourceView>> list(UUID ownerId, ResourceType type, String query,
+                                                  ResourceLifecycle lifecycle, int page, int size) {
         if (page < 0 || size < 1 || size > MAX_PAGE_SIZE) {
             return Mono.error(new IllegalArgumentException("分页参数不合法"));
+        }
+        if (lifecycle == null) {
+            return Mono.error(new IllegalArgumentException("生命周期参数不合法"));
         }
         String typeValue = type == null ? "" : type.name();
         String queryValue = query == null ? "" : query.trim();
         long offset = (long) page * size;
-        Mono<List<ResourceView>> items = resourceRepository.search(ownerId, typeValue, queryValue, offset, size)
+        Mono<List<ResourceView>> items = resourceRepository.search(ownerId, typeValue, queryValue, lifecycle.name(), offset, size)
             .flatMap(this::toView)
             .collectList();
-        return Mono.zip(items, resourceRepository.countSearch(ownerId, typeValue, queryValue))
+        return Mono.zip(items, resourceRepository.countSearch(ownerId, typeValue, queryValue, lifecycle.name()))
             .map(result -> new PageResponse<>(result.getT1(), result.getT2(), page, size));
     }
 
@@ -241,7 +255,8 @@ public class DefaultResourceService implements ResourceService {
                 return resourceRepository.save(trashed)
                     .then(emit("resource.resource.trashed", trashed))
                     .then(auditService.record(ownerId, "resource.trash", "RESOURCE", resourceId, "{}"));
-            });
+            })
+            .as(transactionalOperator::transactional);
     }
 
     @Override
@@ -304,7 +319,26 @@ public class DefaultResourceService implements ResourceService {
                     .flatMap(saved -> emit("resource.resource.restored", saved)
                         .then(auditService.record(ownerId, "resource.restore", "RESOURCE", resourceId, "{}"))
                         .then(toView(saved)));
-            });
+            })
+            .as(transactionalOperator::transactional);
+    }
+
+    @Override
+    public Mono<Void> purge(UUID ownerId, UUID resourceId, long expectedVersion) {
+        return transactionalOperator.transactional(owned(ownerId, resourceId)
+            .flatMap(resource -> {
+                checkVersion(resource.version(), expectedVersion);
+                if (resource.lifecycle() != ResourceLifecycle.TRASHED || resource.deletedAt() == null) {
+                    return Mono.error(new ConflictException("只有已满足保留条件的回收站 Resource 才能永久删除"));
+                }
+                ResourceEntity purged = new ResourceEntity(
+                    resource.id(), resource.ownerId(), resource.resourceType(), resource.primaryTitle(), resource.summary(),
+                    resource.dataClassification(), ResourceLifecycle.PURGED,
+                    resource.createdAt(), Instant.now(), resource.deletedAt(), resource.version());
+                return resourceRepository.save(purged)
+                    .then(emit("resource.resource.purged", purged))
+                    .then(auditService.record(ownerId, "resource.purge", "RESOURCE", resourceId, "{}"));
+            }));
     }
 
     private void checkVersion(Long actualVersion, Long expectedVersion) {

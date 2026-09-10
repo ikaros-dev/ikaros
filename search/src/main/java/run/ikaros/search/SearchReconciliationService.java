@@ -6,5 +6,5 @@ import reactor.core.publisher.Mono;
 
 public interface SearchReconciliationService {
     Flux<ProjectionFailureView> pendingFailures();
-    Mono<Void> resolve(UUID failureId);
+    Mono<ProjectionFailureView> retry(UUID failureId);
 }

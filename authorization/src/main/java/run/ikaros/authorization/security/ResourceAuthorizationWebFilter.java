@@ -40,9 +40,25 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
         }
         AuthenticatedPrincipal jwtPrincipal = exchange.getAttribute(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE);
         if (jwtPrincipal == null) return reject(exchange, HttpStatus.UNAUTHORIZED);
+        if (path.equals("/api/me/actions/invalidate-tokens")) return chain.filter(exchange);
         PlatformPermission permission = permission(exchange.getRequest().getMethod().name(), path);
         if (!jwtPrincipal.permissions().contains(permission.key())) return reject(exchange, HttpStatus.FORBIDDEN);
+        SecurityPolicy securityPolicy = policy(permission);
+        Mono<Void> currentAuthorization = accessControl.require(jwtPrincipal.actorId(),
+            jwtPrincipal.verificationLevel(), jwtPrincipal.verificationExpiresAt(), securityPolicy);
+        if (currentAuthorization != null) {
+            return currentAuthorization.then(Mono.defer(() -> chain.filter(exchange)))
+                .onErrorResume(error -> reject(exchange, HttpStatus.FORBIDDEN));
+        }
         return chain.filter(exchange);
+    }
+
+    private boolean isResourcePermission(PlatformPermission permission) {
+        return permission == PlatformPermission.RESOURCE_READ
+            || permission == PlatformPermission.RESOURCE_WRITE
+            || permission == PlatformPermission.RESOURCE_DELETE
+            || permission == PlatformPermission.RESOURCE_DOWNLOAD
+            || permission == PlatformPermission.RESOURCE_SHARE;
     }
 
     private PlatformPermission permission(String method, String path) {
@@ -53,6 +69,7 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             return PlatformPermission.SYSTEM_ROLE_MANAGE;
         }
         if (path.contains("/permissions")) return PlatformPermission.SYSTEM_ROLE_READ;
+        if (path.startsWith("/api/audit-events")) return PlatformPermission.SYSTEM_AUDIT_READ;
         if (path.contains("/roles")) {
             return "GET".equals(method) ? PlatformPermission.SYSTEM_ROLE_READ
                 : PlatformPermission.SYSTEM_ROLE_MANAGE;

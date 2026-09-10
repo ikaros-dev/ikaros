@@ -106,4 +106,24 @@ public class RoleController {
     ) {
         return roleService.replacePermissions(actorId, roleId, request);
     }
+
+    @PostMapping("/users/{userId}/roles/{roleId}")
+    public Mono<ResponseEntity<Void>> assignRole(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID userId,
+        @PathVariable UUID roleId
+    ) {
+        return roleService.assignRole(actorId, userId, roleId)
+            .thenReturn(ResponseEntity.noContent().build());
+    }
+
+    @PostMapping("/users/{userId}/roles/{roleId}/actions/revoke")
+    public Mono<ResponseEntity<Void>> revokeRole(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID userId,
+        @PathVariable UUID roleId
+    ) {
+        return roleService.revokeRole(actorId, userId, roleId)
+            .thenReturn(ResponseEntity.noContent().build());
+    }
 }

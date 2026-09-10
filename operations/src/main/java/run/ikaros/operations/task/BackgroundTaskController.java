@@ -2,6 +2,7 @@ package run.ikaros.operations.task;
 
 import java.util.UUID;
 import java.util.Map;
+import java.net.URI;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,7 @@ import reactor.core.publisher.Mono;
 import run.ikaros.common.PageResponse;
 import run.ikaros.operations.api.BackgroundTask;
 import run.ikaros.operations.api.TaskStatus;
+import run.ikaros.operations.api.SubmitBackgroundTaskRequest;
 
 @RestController
 @RequestMapping({"/api/background-tasks"})
@@ -30,6 +32,20 @@ public class BackgroundTaskController {
     @GetMapping
     public Flux<BackgroundTask> list(@RequestParam(required = false) TaskStatus status) {
         return service.list(status);
+    }
+
+    @PostMapping
+    public Mono<ResponseEntity<BackgroundTask>> submit(
+        @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+        @RequestBody SubmitBackgroundTaskRequest request
+    ) {
+        if (request == null) {
+            return Mono.error(new IllegalArgumentException("Task 请求不能为空"));
+        }
+        return service.submit(request.type(), request.payload(), idempotencyKey)
+            .map(task -> ResponseEntity.accepted()
+                .location(URI.create("/api/background-tasks/" + task.id()))
+                .body(task));
     }
 
     @GetMapping(params = "page")

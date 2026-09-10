@@ -49,7 +49,7 @@ public class DefaultResourceTagService implements ResourceTagService {
     @Override
     public Mono<ResourceTagView> add(UUID ownerId, UUID resourceId, CreateResourceTagRequest request) {
         return owned(ownerId, resourceId)
-            .then(tagRepository.findByOwnerIdAndResourceIdAndName(ownerId, resourceId, request.name().trim())
+            .then(Mono.defer(() -> tagRepository.findByOwnerIdAndResourceIdAndName(ownerId, resourceId, request.name().trim())
                 .map(this::toView)
                 .switchIfEmpty(Mono.defer(() -> tagRepository.save(new ResourceTagEntity(null, ownerId, resourceId,
                     request.name().trim(), request.color(), Instant.now(), Instant.now(), null))
@@ -58,13 +58,15 @@ public class DefaultResourceTagService implements ResourceTagService {
                         .then(emitAdded(saved))
                         .then(auditService.record(ownerId, "resource.tag.add", "RESOURCE", resourceId, "{}"))
                         .thenReturn(toView(saved))))))
+            )
             .as(transactionalOperator::transactional);
     }
 
     @Override
     public Mono<List<ResourceTagView>> list(UUID ownerId, UUID resourceId) {
         return owned(ownerId, resourceId)
-            .thenMany(tagRepository.findAllByOwnerIdAndResourceIdOrderByNameAsc(ownerId, resourceId).take(MAX_UNPAGED_RESULTS))
+            .thenMany(reactor.core.publisher.Flux.defer(() -> tagRepository
+                .findAllByOwnerIdAndResourceIdOrderByNameAsc(ownerId, resourceId).take(MAX_UNPAGED_RESULTS)))
             .map(this::toView)
             .collectList();
     }
@@ -90,11 +92,11 @@ public class DefaultResourceTagService implements ResourceTagService {
     @Override
     public Mono<Void> remove(UUID ownerId, UUID resourceId, UUID tagId) {
         return owned(ownerId, resourceId)
-            .then(tagRepository.findByIdAndOwnerIdAndResourceId(tagId, ownerId, resourceId)
+            .then(Mono.defer(() -> tagRepository.findByIdAndOwnerIdAndResourceId(tagId, ownerId, resourceId)
                 .switchIfEmpty(Mono.error(new NotFoundException("资源标签不存在或无权访问")))
                 .flatMap(tag -> tagRepository.deleteById(tag.id())
                     .then(emitRemoved(tag))
-                    .then(auditService.record(ownerId, "resource.tag.remove", "RESOURCE", resourceId, "{}"))))
+                    .then(Mono.defer(() -> auditService.record(ownerId, "resource.tag.remove", "RESOURCE", resourceId, "{}"))))))
             .then()
             .as(transactionalOperator::transactional);
     }

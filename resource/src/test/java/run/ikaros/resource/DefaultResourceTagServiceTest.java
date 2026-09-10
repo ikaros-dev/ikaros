@@ -5,6 +5,7 @@ import run.ikaros.resource.api.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -83,6 +84,16 @@ class DefaultResourceTagServiceTest {
 
         StepVerifier.create(service.remove(ownerId, resourceId, tagId)).verifyComplete();
         verify(tagRepository).deleteById(tagId);
+    }
+
+    @Test
+    void rejectsUnknownResourceBeforeReadingTags() {
+        UUID ownerId = UUID.randomUUID(), resourceId = UUID.randomUUID();
+        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.empty());
+
+        StepVerifier.create(service.list(ownerId, resourceId))
+            .expectErrorMessage("资源不存在或无权访问").verify();
+        verify(tagRepository, never()).findAllByOwnerIdAndResourceIdOrderByNameAsc(ownerId, resourceId);
     }
 
     private ResourceEntity resource(UUID ownerId, UUID resourceId, Instant now) {

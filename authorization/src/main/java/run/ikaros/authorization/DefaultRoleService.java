@@ -23,6 +23,7 @@ public class DefaultRoleService implements RoleService {
     private static final int MAX_UNPAGED_RESULTS = 100;
     private final PlatformRoleRepository roleRepository;
     private final RolePermissionRepository permissionRepository;
+    private final UserRoleRepository userRoleRepository;
     private final AuditService auditService;
     private final DurableEventPublisher eventService;
 
@@ -35,20 +36,33 @@ public class DefaultRoleService implements RoleService {
      */
     public DefaultRoleService(PlatformRoleRepository roleRepository, RolePermissionRepository permissionRepository,
                               AuditService auditService) {
-        this(roleRepository, permissionRepository, auditService, null);
+        this(roleRepository, permissionRepository, auditService, null, null);
+    }
+
+    public DefaultRoleService(PlatformRoleRepository roleRepository, RolePermissionRepository permissionRepository,
+                              AuditService auditService, DurableEventPublisher eventService) {
+        this(roleRepository, permissionRepository, auditService, eventService, null);
     }
 
     @Autowired
     public DefaultRoleService(PlatformRoleRepository roleRepository, RolePermissionRepository permissionRepository,
-                              AuditService auditService, DurableEventPublisher eventService) {
+                              AuditService auditService, DurableEventPublisher eventService,
+                              UserRoleRepository userRoleRepository) {
         this.roleRepository = roleRepository;
         this.permissionRepository = permissionRepository;
         this.auditService = auditService;
         this.eventService = eventService;
+        this.userRoleRepository = userRoleRepository;
     }
 
     @Override
     public Mono<RoleView> create(UUID actorId, CreateRoleRequest request) {
+        if (request == null || request.code() == null || request.name() == null
+            || !request.code().matches("[A-Z][A-Z0-9_]*") || request.code().length() > 96
+            || request.name().isBlank() || request.name().length() > 128
+            || request.description() != null && request.description().length() > 2000) {
+            return Mono.error(new IllegalArgumentException("角色资料不合法"));
+        }
         Instant now = Instant.now();
         PlatformRoleEntity role = new PlatformRoleEntity(null, request.code().trim(), request.name().trim(),
             request.description(), false, now, now, null);
@@ -103,6 +117,25 @@ public class DefaultRoleService implements RoleService {
                 }))
             .flatMap(view -> auditService.record(actorId, "identity.role.permission.replace", "ROLE", roleId, "{}")
                 .thenReturn(view));
+    }
+
+    @Override
+    public Mono<Void> assignRole(UUID actorId, UUID userId, UUID roleId) {
+        Instant now = Instant.now();
+        return requiredRole(roleId)
+            .then(userRoleRepository.findByUserIdAndRoleId(userId, roleId))
+            .switchIfEmpty(userRoleRepository.save(new UserRoleEntity(null, userId, roleId, now, null)))
+            .flatMap(binding -> auditService.record(actorId, "identity.user.role.assign", "USER", userId,
+                "{\"role_id\":\"" + roleId + "\"}"))
+            .then();
+    }
+
+    @Override
+    public Mono<Void> revokeRole(UUID actorId, UUID userId, UUID roleId) {
+        return requiredRole(roleId)
+            .then(userRoleRepository.deleteByUserIdAndRoleId(userId, roleId))
+            .then(auditService.record(actorId, "identity.user.role.revoke", "USER", userId,
+                "{\"role_id\":\"" + roleId + "\"}"));
     }
 
     private Mono<Void> emit(String type, UUID roleId, String payload) {

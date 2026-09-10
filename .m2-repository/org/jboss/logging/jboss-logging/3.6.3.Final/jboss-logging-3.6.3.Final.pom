@@ -1,0 +1,485 @@
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~
+  ~ Copyright 2023 Red Hat, Inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~  http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+
+    <parent>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-parent</artifactId>
+        <version>52</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.jboss.logging</groupId>
+    <artifactId>jboss-logging</artifactId>
+    <version>3.6.3.Final</version>
+    <packaging>jar</packaging>
+    <name>JBoss Logging 3</name>
+    <url>https://www.jboss.org</url>
+    <description>The JBoss Logging Framework</description>
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>https://repository.jboss.org/licenses/apache-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+
+    <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
+        <connection>scm:git:git://github.com/jboss-logging/jboss-logging.git</connection>
+        <developerConnection>scm:git:git@github.com:jboss-logging/jboss-logging.git</developerConnection>
+        <url>https://github.com/jboss-logging/jboss-logging/tree/main/</url>
+        <tag>v3.6.3.Final</tag>
+    </scm>
+
+    <properties>
+        <!-- Dependency versions -->
+        <version.ch.qos.logback>1.5.32</version.ch.qos.logback>
+        <version.org.apache.log4j>1.2.17</version.org.apache.log4j>
+        <version.org.apache.logging.log4j>2.25.3</version.org.apache.logging.log4j>
+        <version.org.jboss.logmanager>3.1.2.Final</version.org.jboss.logmanager>
+        <version.org.junit>5.13.4</version.org.junit>
+        <version.org.sfl4j>2.0.12</version.org.sfl4j>
+
+        <!-- Plugin versions -->
+        <version.central.publishing.maven.plugin>0.10.0</version.central.publishing.maven.plugin>
+        <version.formatter.maven.plugin>2.29.0</version.formatter.maven.plugin>
+        <version.impsort.maven.plugin>1.13.0</version.impsort.maven.plugin>
+        <version.module-info>2.2</version.module-info>
+
+        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+        <cp.test.classes.dir>${project.build.directory}${file.separator}cp-test-classes</cp.test.classes.dir>
+
+        <!-- JDK configuration: require Java 17 to build -->
+        <jdk.min.version>17</jdk.min.version>
+        <maven.compiler.release>11</maven.compiler.release>
+
+        <!-- maven-release-plugin configuration -->
+        <autoVersionSubmodules>true</autoVersionSubmodules>
+        <releaseProfiles>central-release</releaseProfiles>
+        <signTag>true</signTag>
+        <tagNameFormat>v@{project.version}</tagNameFormat>
+        <arguments>-DskipTests -Dcentral.autoPublish=${central.autoPublish} -Dcentral.waitUntil=${central.waitUntil}</arguments>
+        <!-- Do not push changes by default when using the maven-release-plugin:prepare -->
+        <pushChanges>true</pushChanges>
+        <!-- Use the local directory when using perform -->
+        <localCheckout>true</localCheckout>
+        <!-- Maven Central properties -->
+        <central.sonatype.url>https://central.sonatype.com</central.sonatype.url>
+        <central.serverId>central</central.serverId>
+        <central.deploymentName>jboss-logging-${project.version}</central.deploymentName>
+        <central.autoPublish>true</central.autoPublish>
+        <central.waitUntil>validated</central.waitUntil>
+        <central.skipPublishing>false</central.skipPublishing>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${version.org.junit}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jboss.logmanager</groupId>
+            <artifactId>jboss-logmanager</artifactId>
+            <version>${version.org.jboss.logmanager}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>${version.org.apache.log4j}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sun.jdmk</groupId>
+                    <artifactId>jmxtools</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.jmx</groupId>
+                    <artifactId>jmxri</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${version.org.apache.logging.log4j}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${version.org.sfl4j}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${version.ch.qos.logback}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${version.org.apache.logging.log4j}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>net.revelc.code.formatter</groupId>
+                <artifactId>formatter-maven-plugin</artifactId>
+                <version>${version.formatter.maven.plugin}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>ide-config</artifactId>
+                        <version>1.0.4.Final</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <excludes>module-info.java</excludes>
+                    <compilerCompliance>${maven.compiler.release}</compilerCompliance>
+                    <!-- store outside of target to speed up formatting when mvn clean is used -->
+                    <cachedir>.cache</cachedir>
+                    <configFile>eclipse-code-formatter.xml</configFile>
+                    <configXmlFile>wildfly-xml.properties</configXmlFile>
+                    <lineEnding>LF</lineEnding>
+                    <includeResources>true</includeResources>
+                    <removeTrailingWhitespace>true</removeTrailingWhitespace>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>format-source</id>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>net.revelc.code</groupId>
+                <artifactId>impsort-maven-plugin</artifactId>
+                <version>${version.impsort.maven.plugin}</version>
+                <configuration>
+                    <excludes>module-info.java</excludes>
+                    <compliance>${maven.compiler.release}</compliance>
+                    <!-- store outside of target to speed up formatting when mvn clean is used -->
+                    <cachedir>.cache</cachedir>
+                    <groups>java.,javax.,jakarta.,org.,com.</groups>
+                    <staticGroups>*</staticGroups>
+                    <removeUnused>true</removeUnused>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>format-import-source</id>
+                        <goals>
+                            <goal>sort</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <useModulePath>false</useModulePath>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <phase>test-compile</phase>
+                        <configuration>
+                            <testExcludes>
+                                <testExclude>**/*ClassPathTestCase.java</testExclude>
+                            </testExcludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>cp-test-compile</id>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <phase>test-compile</phase>
+                        <configuration>
+                            <outputDirectory>${cp.test.classes.dir}</outputDirectory>
+                            <testIncludes>
+                                <testInclude>**/*ClassPathTestCase.java</testInclude>
+                            </testIncludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <redirectTestOutputToFile>${maven.test.redirectTestOutputToFile}</redirectTestOutputToFile>
+                    <!-- Required so we can test the various providers -->
+                    <reuseForks>false</reuseForks>
+                    <skip>true</skip>
+                    <useModulePath>false</useModulePath>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>default</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>false</skip>
+                            <excludes>
+                                <exclude>**/*ClassPathTestCase.java</exclude>
+                            </excludes>
+                            <systemPropertyVariables>
+                                <!-- This is required as JUnit 5 initializes a logger too early for it to be set
+                                     in the JBossLogManagerTestCase. -->
+                                <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jboss-logmanager-cp-test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>false</skip>
+                            <useModulePath>false</useModulePath>
+                            <testClassesDirectory>${cp.test.classes.dir}</testClassesDirectory>
+                            <includes>
+                                <include>**/JBossLogManagerClassPathTestCase.java</include>
+                            </includes>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>org.apache.logging.log4j</classpathDependencyExclude>
+                                <classpathDependencyExclude>log4j</classpathDependencyExclude>
+                                <classpathDependencyExclude>org.slf4j</classpathDependencyExclude>
+                                <classpathDependencyExclude>ch.qos.logback</classpathDependencyExclude>
+                            </classpathDependencyExcludes>
+                            <systemPropertyVariables>
+                                <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>log4j2-cp-test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <phase>test</phase>
+                        <configuration>
+                            <skip>false</skip>
+                            <testClassesDirectory>${cp.test.classes.dir}</testClassesDirectory>
+                            <includes>
+                                <include>**/Log4j2ClassPathTestCase.java</include>
+                            </includes>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>org.jboss.logmanager</classpathDependencyExclude>
+                                <classpathDependencyExclude>log4j</classpathDependencyExclude>
+                                <classpathDependencyExclude>org.slf4j</classpathDependencyExclude>
+                                <classpathDependencyExclude>ch.qos.logback</classpathDependencyExclude>
+                            </classpathDependencyExcludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>log4j-cp-test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <phase>test</phase>
+                        <configuration>
+                            <skip>false</skip>
+                            <testClassesDirectory>${cp.test.classes.dir}</testClassesDirectory>
+                            <includes>
+                                <include>**/Log4jClassPathTestCase.java</include>
+                            </includes>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>org.apache.logging.log4j</classpathDependencyExclude>
+                                <classpathDependencyExclude>org.jboss.logmanager</classpathDependencyExclude>
+                                <classpathDependencyExclude>org.slf4j</classpathDependencyExclude>
+                                <classpathDependencyExclude>ch.qos.logback</classpathDependencyExclude>
+                            </classpathDependencyExcludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>slf4j-cp-test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <phase>test</phase>
+                        <configuration>
+                            <skip>false</skip>
+                            <testClassesDirectory>${cp.test.classes.dir}</testClassesDirectory>
+                            <includes>
+                                <include>**/Slf4jClassPathTestCase.java</include>
+                            </includes>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>org.apache.logging.log4j</classpathDependencyExclude>
+                                <classpathDependencyExclude>org.jboss.logmanager</classpathDependencyExclude>
+                                <classpathDependencyExclude>log4j</classpathDependencyExclude>
+                            </classpathDependencyExcludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jul-cp-test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>false</skip>
+                            <testClassesDirectory>${cp.test.classes.dir}</testClassesDirectory>
+                            <includes>
+                                <include>**/JulClassPathTestCase.java</include>
+                            </includes>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>org.apache.logging.log4j</classpathDependencyExclude>
+                                <classpathDependencyExclude>org.jboss.logmanager</classpathDependencyExclude>
+                                <classpathDependencyExclude>log4j</classpathDependencyExclude>
+                                <classpathDependencyExclude>org.slf4j</classpathDependencyExclude>
+                                <classpathDependencyExclude>ch.qos.logback</classpathDependencyExclude>
+                            </classpathDependencyExcludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Adding OSGI metadata to the JAR without changing the packaging type. -->
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <doclint>none</doclint>
+                    <sourcepath>${project.build.sourceDirectory}</sourcepath>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultSpecificationEntries>false</addDefaultSpecificationEntries>
+                        </manifest>
+                    </archive>
+                    <instructions>
+                        <Export-Package>
+                            ${project.groupId}.*;version=${project.version};-split-package:=error
+                        </Export-Package>
+                        <Import-Package>
+                            org.apache.log4j.config;resolution:=optional,
+                            *;resolution:=optional
+                        </Import-Package>
+                    </instructions>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.github.dmlloyd.module-info</groupId>
+                <artifactId>module-info</artifactId>
+                <version>${version.module-info}</version>
+                <executions>
+                    <execution>
+                        <id>module-info</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>format-check</id>
+            <build>
+                <plugins>
+                    <!-- Validate formatting -->
+                    <plugin>
+                        <groupId>net.revelc.code.formatter</groupId>
+                        <artifactId>formatter-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>validate-format</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>validate</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>net.revelc.code</groupId>
+                        <artifactId>impsort-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>check-import-sort</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

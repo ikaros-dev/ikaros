@@ -79,7 +79,9 @@ public class DefaultResourceTitleService implements ResourceTitleService {
         }
         Instant now = Instant.now();
         ResourceTitleEntity current = existing.stream()
-            .filter(title -> title.locale().equalsIgnoreCase(request.locale()))
+            .filter(title -> kind == ResourceTitleKind.TITLE
+                && title.titleKind() == ResourceTitleKind.TITLE
+                && title.locale().equalsIgnoreCase(request.locale()))
             .findFirst()
             .orElse(null);
         boolean primary = request.primary() || current == null && existing.isEmpty()
@@ -99,7 +101,11 @@ public class DefaultResourceTitleService implements ResourceTitleService {
             updated.add(target);
         }
         return titleRepository.saveAll(updated).collectList()
-            .flatMap(saved -> saved.stream().filter(title -> title.locale().equalsIgnoreCase(target.locale())).findFirst()
+            .flatMap(saved -> saved.stream()
+                .filter(title -> title.locale().equalsIgnoreCase(target.locale())
+                    && title.titleKind() == target.titleKind()
+                    && title.title().equals(target.title()))
+                .findFirst()
                 .map(value -> auditService.record(ownerId, "resource.title.set", "RESOURCE", resourceId, "{}")
                     .thenReturn(toView(value)))
                 .orElseGet(() -> Mono.error(new ConflictException("标题保存失败"))));

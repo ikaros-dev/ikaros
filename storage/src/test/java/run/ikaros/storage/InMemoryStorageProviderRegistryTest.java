@@ -29,6 +29,21 @@ class InMemoryStorageProviderRegistryTest {
     }
 
     @Test
+    void providerCanBeReenabledAfterDisableAndPublishesBothTransitions() {
+        DurableEventPublisher events = mock(DurableEventPublisher.class);
+        when(events.append(any(EventAppendRequest.class))).thenReturn(Mono.empty());
+        InMemoryStorageProviderRegistry registry = new InMemoryStorageProviderRegistry(events);
+        StorageProvider provider = registry.register("local", "filesystem", StorageTier.HOT,
+            "secret://storage/local", Map.of()).block();
+
+        registry.disable(provider.id()).block();
+        assertEquals(StorageProviderStatus.DISABLED, registry.get(provider.id()).block().status());
+        registry.enable(provider.id()).block();
+        assertEquals(StorageProviderStatus.ENABLED, registry.get(provider.id()).block().status());
+        verify(events, org.mockito.Mockito.times(2)).append(any(EventAppendRequest.class));
+    }
+
+    @Test
     void updatesProviderConfigurationAndPublishesChangedEvent() {
         DurableEventPublisher events = mock(DurableEventPublisher.class);
         when(events.append(any(EventAppendRequest.class))).thenReturn(Mono.empty());

@@ -52,6 +52,30 @@ class BackgroundTaskDispatcherTest {
     }
 
     @org.junit.jupiter.api.Test
+    void manualRetryKeepsFailedTaskHistoryAndAllowsChildToSucceed() {
+        InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
+        BackgroundTaskDispatcher dispatcher = new BackgroundTaskDispatcher(tasks);
+        java.util.concurrent.atomic.AtomicInteger executions = new java.util.concurrent.atomic.AtomicInteger();
+        dispatcher.register("recoverable", task -> {
+            if (executions.getAndIncrement() == 0) {
+                return reactor.core.publisher.Mono.error(new IllegalArgumentException("permanent failure"));
+            }
+            return reactor.core.publisher.Mono.just(Map.of("recovered", true));
+        });
+        BackgroundTask original = tasks.submit("recoverable", Map.of(), "manual-retry").block();
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+            () -> dispatcher.dispatchOnce("runner", Duration.ofMinutes(1)).block());
+        assertEquals(TaskStatus.FAILED, tasks.get(original.id()).block().status());
+
+        BackgroundTask child = tasks.retry(original.id()).block();
+        BackgroundTask completed = dispatcher.dispatchOnce("runner", Duration.ofMinutes(1)).block();
+        assertEquals(child.id(), completed.id());
+        assertEquals(TaskStatus.SUCCEEDED, completed.status());
+        assertEquals(TaskStatus.FAILED, tasks.get(original.id()).block().status());
+        assertEquals(2, executions.get());
+    }
+
+    @org.junit.jupiter.api.Test
     void expiredLeaseIsReclaimedOnNextClaim() throws InterruptedException {
         InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
         tasks.submit("recoverable", Map.of(), "lease-recovery").block();
@@ -60,6 +84,9 @@ class BackgroundTaskDispatcherTest {
         BackgroundTask reclaimed = tasks.claim("healthy-runner", Duration.ofMinutes(1)).block();
         assertEquals(TaskStatus.RUNNING, reclaimed.status());
         assertEquals(2, reclaimed.attempt());
+        org.junit.jupiter.api.Assertions.assertEquals("LEASE_LOST",
+            tasks.attempts(reclaimed.id()).collectList().block().get(0).status());
+        assertEquals(2, tasks.attempts(reclaimed.id()).collectList().block().size());
     }
 
     @org.junit.jupiter.api.Test
@@ -70,6 +97,34 @@ class BackgroundTaskDispatcherTest {
         BackgroundTask requested = tasks.cancel(running.id()).block();
         assertEquals(TaskStatus.RUNNING, requested.status());
         org.junit.jupiter.api.Assertions.assertNotNull(requested.cancelRequestedAt());
+    }
+
+    @org.junit.jupiter.api.Test
+    void cancellingPendingTaskTransitionsToCancelledAndSucceededTaskIsProtected() {
+        InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
+        BackgroundTask pending = tasks.submit("cancellable", Map.of(), "cancel-pending").block();
+        BackgroundTask cancelled = tasks.cancel(pending.id()).block();
+
+        assertEquals(TaskStatus.CANCELLED, cancelled.status());
+        org.junit.jupiter.api.Assertions.assertNotNull(cancelled.cancelRequestedAt());
+        assertEquals(TaskStatus.CANCELLED, tasks.cancel(pending.id()).block().status());
+
+        BackgroundTask successfulTask = tasks.submit("completed", Map.of(), "cancel-completed").block();
+        BackgroundTask running = tasks.claim("runner", Duration.ofMinutes(1)).block();
+        tasks.complete(running.id(), running.leaseToken(), Map.of("ok", true)).block();
+        org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class,
+            () -> tasks.cancel(successfulTask.id()).block());
+    }
+
+    @org.junit.jupiter.api.Test
+    void progressIsPersistedAndVisibleThroughTaskQuery() {
+        InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
+        BackgroundTask submitted = tasks.submit("progress", Map.of(), "progress-1").block();
+        BackgroundTask running = tasks.claim("runner", Duration.ofMinutes(1)).block();
+        BackgroundTask updated = tasks.updateProgress(running.id(), running.leaseToken(), Map.of("percent", 42, "stage", "scan")).block();
+
+        assertEquals(42, updated.progress().get("percent"));
+        assertEquals("scan", tasks.get(submitted.id()).block().progress().get("stage"));
     }
 
     @org.junit.jupiter.api.Test

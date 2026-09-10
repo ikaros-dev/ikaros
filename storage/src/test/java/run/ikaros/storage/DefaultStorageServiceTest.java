@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -91,6 +92,150 @@ class DefaultStorageServiceTest {
         assertThat(attachmentCaptor.getValue().resourceId()).isEqualTo(resourceId);
         assertThat(attachmentCaptor.getValue().blobId()).isEqualTo(blobId);
         verify(blobRepository).findBySha256("a".repeat(64));
+    }
+
+    @Test
+    void rejectsSameHashWithDifferentSizeBeforeCreatingAttachment() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        BlobEntity existing = new BlobEntity(UUID.randomUUID(), "a".repeat(64), 2048L, "video/mp4",
+            BlobAvailability.AVAILABLE, now, 0L);
+        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.empty());
+        when(blobRepository.findBySha256("a".repeat(64))).thenReturn(Mono.just(existing));
+
+        StepVerifier.create(service.attach(ownerId, resourceId, new AttachBlobRequest("A".repeat(64), 1024L,
+                "video/mp4", "episode.mp4", AttachmentKind.ORIGINAL, "nas", StorageTier.WARM, "episode.mp4")))
+            .expectErrorMessage("相同 SHA-256 的 Blob 大小不一致").verify();
+        verify(blobRepository, org.mockito.Mockito.never()).save(any(BlobEntity.class));
+        verify(attachmentRepository, org.mockito.Mockito.never()).save(any(AttachmentEntity.class));
+    }
+
+    @Test
+    void retriesCommitWithSameIdempotencyKeyWithoutCreatingAnotherAttachment() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        UUID attachmentId = UUID.randomUUID();
+        UUID blobId = UUID.randomUUID();
+        Instant now = Instant.now();
+        StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
+        StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        DefaultStorageService uploadService = new DefaultStorageService(resourceOwnership, attachmentRepository,
+            blobRepository, placementRepository, derivedAttachmentRepository, auditService, transaction,
+            providers, null, null);
+        uploadService.setObjectProviderRegistry(objects);
+        StorageProvider provider = new StorageProvider(UUID.randomUUID(), "local", "local", StorageTier.WARM,
+            StorageProviderStatus.ENABLED, null, java.util.Map.of(), now, now);
+        AttachmentEntity existing = new AttachmentEntity(attachmentId, resourceId, blobId, "a.bin",
+            AttachmentKind.ORIGINAL, now, null, 0L, "retry-key");
+        BlobEntity blob = new BlobEntity(blobId, "a".repeat(64), 10L, "application/octet-stream",
+            BlobAvailability.AVAILABLE, now, 0L);
+        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.empty());
+        when(providers.requireWritableByKey("local")).thenReturn(Mono.just(provider));
+        when(objects.verify(provider, "a.bin")).thenReturn(Mono.just(new StorageObjectMetadata(
+            "a.bin", 10L, "application/octet-stream", "etag")));
+        when(attachmentRepository.findByResourceIdAndIdempotencyKeyAndArchivedAtIsNullAndDeletedAtIsNull(
+            resourceId, "retry-key")).thenReturn(Mono.just(existing));
+        when(blobRepository.findById(blobId)).thenReturn(Mono.just(blob));
+
+        CommitUploadRequest request = new CommitUploadRequest("a".repeat(64), "a".repeat(64), false, 10L,
+            "application/octet-stream", "a.bin", AttachmentKind.ORIGINAL, "local", StorageTier.WARM,
+            "a.bin", "retry-key");
+        StepVerifier.create(uploadService.commitUpload(ownerId, resourceId, request))
+            .assertNext(view -> assertThat(view.id()).isEqualTo(attachmentId))
+            .verifyComplete();
+        verify(attachmentRepository, org.mockito.Mockito.never()).save(any(AttachmentEntity.class));
+        verify(blobRepository, org.mockito.Mockito.never()).save(any(BlobEntity.class));
+    }
+
+    @Test
+    void abortsOwnedOpenUploadSessionIdempotently() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        UUID sessionId = UUID.randomUUID();
+        Instant now = Instant.now();
+        UploadSessionRepository sessions = mock(UploadSessionRepository.class);
+        StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
+        StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        DefaultStorageService uploadService = new DefaultStorageService(resourceOwnership, attachmentRepository,
+            blobRepository, placementRepository, derivedAttachmentRepository, auditService, transaction,
+            providers, null, null, sessions);
+        uploadService.setObjectProviderRegistry(objects);
+        UploadSessionEntity open = new UploadSessionEntity(sessionId, ownerId, resourceId, "local", "tmp/a.bin",
+            10L, "a".repeat(64), UploadSessionState.OPEN, now.plusSeconds(600), now, now, 0L, "key");
+        UploadSessionEntity aborted = new UploadSessionEntity(sessionId, ownerId, resourceId, "local", "tmp/a.bin",
+            10L, "a".repeat(64), UploadSessionState.ABORTED, open.expiresAt(), now, now.plusSeconds(1), 1L, "key");
+        when(sessions.findByIdAndOwnerId(sessionId, ownerId)).thenReturn(Mono.just(open));
+        when(sessions.save(any(UploadSessionEntity.class))).thenReturn(Mono.just(aborted));
+        StorageProvider provider = new StorageProvider(UUID.randomUUID(), "local", "local", StorageTier.WARM,
+            StorageProviderStatus.ENABLED, null, java.util.Map.of(), now, now);
+        when(providers.getByKey("local")).thenReturn(Mono.just(provider));
+        when(objects.deleteObject(provider, "tmp/a.bin")).thenReturn(Mono.empty());
+
+        StepVerifier.create(uploadService.abortUploadSession(ownerId, sessionId))
+            .assertNext(view -> assertThat(view.state()).isEqualTo(UploadSessionState.ABORTED))
+            .verifyComplete();
+        verify(sessions).save(argThat(value -> value.state() == UploadSessionState.ABORTED));
+        verify(objects).deleteObject(provider, "tmp/a.bin");
+    }
+
+    @Test
+    void persistsSessionAndReturnsItsIdWhenBeginningUpload() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
+        StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
+        UploadSessionRepository sessions = mock(UploadSessionRepository.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        DefaultStorageService uploadService = new DefaultStorageService(resourceOwnership, attachmentRepository,
+            blobRepository, placementRepository, derivedAttachmentRepository, auditService, transaction,
+            providers, null, null, sessions);
+        uploadService.setObjectProviderRegistry(objects);
+        StorageProvider provider = new StorageProvider(UUID.randomUUID(), "local", "local", StorageTier.WARM,
+            StorageProviderStatus.ENABLED, null, java.util.Map.of(), now, now);
+        UUID sessionId = UUID.randomUUID();
+        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.empty());
+        when(providers.requireWritableByKey("local")).thenReturn(Mono.just(provider));
+        when(blobRepository.findBySha256("a".repeat(64))).thenReturn(Mono.empty());
+        when(objects.createUploadIntent(eq(provider), any(StorageUploadRequest.class))).thenReturn(Mono.just(
+            new StorageUploadIntent("PUT", "https://upload.example", "attachments/a.bin", now.plusSeconds(600))));
+        when(sessions.save(any(UploadSessionEntity.class))).thenReturn(Mono.just(new UploadSessionEntity(sessionId,
+            ownerId, resourceId, "local", "attachments/a.bin", 10L, "a".repeat(64), UploadSessionState.OPEN,
+            now.plusSeconds(600), now, now, 0L, "key")));
+
+        StepVerifier.create(uploadService.beginUpload(ownerId, resourceId,
+                new BeginUploadRequest("a.bin", 10L, "application/octet-stream", "local", null, "a".repeat(64)),
+            "key"))
+            .assertNext(view -> {
+                assertThat(view.sessionId()).isEqualTo(sessionId);
+                assertThat(view.deduplicated()).isFalse();
+            }).verifyComplete();
+        verify(sessions).save(argThat(session -> session.state() == UploadSessionState.OPEN
+            && session.idempotencyKey().equals("key")));
+    }
+
+    @Test
+    void refusesToAbortCompletedUploadSession() {
+        UploadSessionRepository sessions = mock(UploadSessionRepository.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        DefaultStorageService uploadService = new DefaultStorageService(resourceOwnership, attachmentRepository,
+            blobRepository, placementRepository, derivedAttachmentRepository, auditService, transaction,
+            null, null, null, sessions);
+        Instant now = Instant.now();
+        UploadSessionEntity completed = new UploadSessionEntity(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+            "local", "tmp/a.bin", 10L, "a".repeat(64), UploadSessionState.COMPLETED, now, now, now, 1L, "key");
+        when(sessions.findByIdAndOwnerId(completed.id(), completed.ownerId())).thenReturn(Mono.just(completed));
+
+        StepVerifier.create(uploadService.abortUploadSession(completed.ownerId(), completed.id()))
+            .expectErrorMessage("已完成的上传会话不能终止").verify();
+        verify(sessions, org.mockito.Mockito.never()).save(any(UploadSessionEntity.class));
     }
 
     @Test
@@ -218,6 +363,62 @@ class DefaultStorageServiceTest {
         StepVerifier.create(service.findGarbageCollectionCandidates(10, null))
             .expectError(IllegalArgumentException.class).verify();
         verifyNoInteractions(blobRepository);
+    }
+
+    @Test
+    void rejectsUnknownResourceBeforeCreatingUploadIntent() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
+        StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
+        TransactionalOperator transaction = mock(TransactionalOperator.class);
+        DefaultStorageService uploadService = new DefaultStorageService(resourceOwnership, attachmentRepository,
+            blobRepository, placementRepository, derivedAttachmentRepository, auditService, transaction,
+            providers, null, null);
+        uploadService.setObjectProviderRegistry(objects);
+        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.error(
+            new run.ikaros.common.NotFoundException("资源不存在或无权访问")));
+
+        StepVerifier.create(uploadService.beginUpload(ownerId, resourceId,
+                new BeginUploadRequest("book.pdf", 10, "application/pdf", "local", null, "a".repeat(64))))
+            .expectErrorMessage("资源不存在或无权访问").verify();
+        verify(providers, never()).requireWritableByKey("local");
+        verifyNoInteractions(blobRepository);
+    }
+
+    @Test
+    void rejectsInvalidUploadConstraintsBeforeProviderAccess() {
+        StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
+        StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
+        DefaultStorageService uploadService = new DefaultStorageService(resourceOwnership, attachmentRepository,
+            blobRepository, placementRepository, derivedAttachmentRepository, auditService,
+            mock(TransactionalOperator.class), providers, null, null);
+        uploadService.setObjectProviderRegistry(objects);
+
+        StepVerifier.create(uploadService.beginUpload(UUID.randomUUID(), UUID.randomUUID(),
+                new BeginUploadRequest("book.pdf", -1, "application/pdf", "local", null, "bad")))
+            .expectErrorMessage("上传大小不能为负数").verify();
+        verifyNoInteractions(providers, objects);
+    }
+
+    @Test
+    void rejectsUnknownResourceBeforeVerifyingUploadedObject() {
+        UUID ownerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
+        StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
+        DefaultStorageService uploadService = new DefaultStorageService(resourceOwnership, attachmentRepository,
+            blobRepository, placementRepository, derivedAttachmentRepository, auditService,
+            mock(TransactionalOperator.class), providers, null, null);
+        uploadService.setObjectProviderRegistry(objects);
+        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.error(
+            new run.ikaros.common.NotFoundException("资源不存在或无权访问")));
+
+        StepVerifier.create(uploadService.commitUpload(ownerId, resourceId,
+                new CommitUploadRequest("a".repeat(64), 10, "application/octet-stream", "a.bin",
+                    AttachmentKind.ORIGINAL, "local", StorageTier.WARM, "a.bin")))
+            .expectErrorMessage("资源不存在或无权访问").verify();
+        verifyNoInteractions(providers, objects, attachmentRepository, blobRepository, placementRepository);
     }
 
     @Test

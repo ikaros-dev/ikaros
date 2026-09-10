@@ -52,6 +52,9 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
         }
         boolean hasCredentials = accessKeyId != null && !accessKeyId.isBlank() && secretAccessKey != null && !secretAccessKey.isBlank();
         if (!hasCredentials && (secretReference == null || secretReference.isBlank())) return Mono.error(new IllegalArgumentException("必须提供 Secret 引用或 AccessKey/SecretKey"));
+        if (containsPlaintextCredential(metadata)) {
+            return Mono.error(new ConflictException("Provider metadata 不得保存明文凭据"));
+        }
         String reference = hasCredentials ? "secret://provider/" + providerKey : secretReference;
         if (!reference.startsWith("secret://")) {
             return Mono.error(new ConflictException("Provider secret reference 必须使用 secret:// URI"));
@@ -161,6 +164,11 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
         } catch (JacksonException error) {
             return Mono.error(new IllegalArgumentException("Provider metadata 无法序列化", error));
         }
+    }
+
+    private boolean containsPlaintextCredential(Map<String, Object> metadata) {
+        return metadata != null && metadata.values().stream().anyMatch(value -> value instanceof String text
+            && (text.toLowerCase().contains("password") || text.toLowerCase().contains("secret")));
     }
 
     private Map<String, Object> readMetadata(String json) {

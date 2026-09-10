@@ -3,4 +3,5 @@ import jakarta.validation.Valid; import java.util.List; import java.util.UUID; i
 @RestController @RequestMapping({"/api/ingestion/resources"})
 public class MetadataCandidateController { private final MetadataCandidateService service; public MetadataCandidateController(MetadataCandidateService service){this.service=service;}
  @PostMapping("/{resourceId}/metadata-candidates") public Mono<MetadataCandidateView> submit(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID resourceId,@Valid @RequestBody SubmitMetadataCandidateRequest request){return service.submit(actor,resourceId,request);}
- @GetMapping("/{resourceId}/metadata-candidates") public Mono<List<MetadataCandidateView>> list(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID resourceId){return service.list(actor,resourceId);}}
+ @GetMapping("/{resourceId}/metadata-candidates") public Mono<List<MetadataCandidateView>> list(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID resourceId){return service.list(actor,resourceId);}
+ @PostMapping("/metadata-candidates/{candidateId}/resolution") public Mono<MetadataCandidateView> resolve(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID candidateId,@Valid @RequestBody ResolveMetadataCandidateRequest request){return service.resolve(actor,candidateId,request);}}

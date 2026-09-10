@@ -2,6 +2,7 @@ package run.ikaros.storage;
 
 import java.net.URI;
 import reactor.core.publisher.Mono;
+import run.ikaros.storage.api.StorageProviderProbeResult;
 
 /**
  * 物理对象操作的统一 seam。业务层只依赖上传地址生成和对象完整性确认。
@@ -23,5 +24,12 @@ public interface StorageObjectProvider {
     }
 
     Mono<StorageObjectMetadata> verify(StorageProvider provider, String objectKey);
+
+    /** 删除仅属于临时上传会话的对象；业务 Attachment 不通过此能力删除。 */
+    Mono<Void> deleteObject(StorageProvider provider, String objectKey);
+
+    default Mono<StorageProviderProbeResult> probe(StorageProvider provider) {
+        return Mono.error(new UnsupportedOperationException("Provider probe unsupported"));
+    }
 
 }

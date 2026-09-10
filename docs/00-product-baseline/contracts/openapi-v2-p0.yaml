@@ -11,11 +11,479 @@ security:
   - bearerAuth: []
 tags:
   - name: Resources
+  - name: Search
   - name: Attachments
   - name: Background Tasks
+  - name: Operations Diagnostics
+  - name: Media
   - name: Admin Storage
   - name: Admin Identity
 paths:
+  /attachments/{attachment_id}/availability:
+    get:
+      operationId: getAttachmentMediaAvailability
+      x-ikaros-contract-id: media.get-attachment-availability
+      summary: Get media availability for an attachment
+      tags: [Media]
+      parameters:
+        - in: header
+          name: X-Ikaros-Actor-Id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: attachment_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Attachment media availability
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MediaAvailabilityResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /attachments/{attachment_id}/restore-requests:
+    post:
+      tags: [Attachments]
+      operationId: requestAttachmentRestore
+      x-ikaros-contract-id: storage.request-attachment-restore
+      summary: Request asynchronous restoration of an archived attachment
+      parameters:
+        - $ref: '#/components/parameters/AttachmentId'
+        - in: header
+          name: X-Ikaros-Actor-Id
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                provider_restore_class: { type: [string, 'null'] }
+                budget_confirmation_token: { type: [string, 'null'], writeOnly: true }
+      responses:
+        '202':
+          description: Restore request accepted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RestoreRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /media/resources/{resource_id}/playback-source:
+    get:
+      tags: [Media]
+      operationId: resolvePlaybackSource
+      x-ikaros-contract-id: media.resolve-playback-source
+      summary: Resolve an authorized playable source
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - in: header
+          name: X-Ikaros-Actor-Id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: release_id
+          required: false
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Playable source
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlaybackSource' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /media/playback/resources/{resource_id}/sessions:
+    post:
+      tags: [Media]
+      operationId: startPlaybackSession
+      x-ikaros-contract-id: media.start-playback-session
+      summary: Start a playback session
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - in: header
+          name: X-Ikaros-Actor-Id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StartPlaybackRequest' }
+      responses:
+        '200':
+          description: Active playback session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlaybackSession' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /media/playback/sessions/{session_id}:
+    patch:
+      tags: [Media]
+      operationId: updatePlaybackProgress
+      x-ikaros-contract-id: media.update-playback-progress
+      summary: Save playback progress
+      parameters:
+        - in: path
+          name: session_id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: header
+          name: X-Ikaros-Actor-Id
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdatePlaybackProgressRequest' }
+      responses:
+        '200':
+          description: Updated playback session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlaybackSession' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+  /media/playback/resources/{resource_id}/progress:
+    get:
+      tags: [Media]
+      operationId: getPlaybackProgress
+      x-ikaros-contract-id: media.get-playback-progress
+      summary: Get saved playback progress
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+        - in: header
+          name: X-Ikaros-Actor-Id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Saved playback progress
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResourceProgress' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /media/subjects:
+    get:
+      tags: [Media]
+      operationId: listMediaSubjects
+      x-ikaros-contract-id: media.list-subjects
+      summary: List owned video subjects
+      parameters:
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Video subjects
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/MediaSubject' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Media]
+      operationId: createMediaSubject
+      x-ikaros-contract-id: media.create-subject
+      summary: Create a video subject and its Resource
+      parameters:
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, kind]
+              properties:
+                title: { type: string, minLength: 1, maxLength: 512 }
+                kind: { type: string, enum: [SERIES, MOVIE, VIDEO] }
+                locale: { type: string, minLength: 1, maxLength: 32, default: en-US }
+      responses:
+        '200':
+          description: Created video subject
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MediaSubject' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /health/operations:
+    get:
+      tags: [Operations Diagnostics]
+      operationId: getOperationsDiagnostics
+      x-ikaros-contract-id: operations.get-diagnostics
+      summary: View background task and durable event delivery diagnostics
+      responses:
+        '200':
+          description: Operations diagnostics
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [pending_tasks, running_tasks, failed_tasks, timed_out_tasks, event_delivery]
+                properties:
+                  pending_tasks: { type: integer, format: int64, minimum: 0 }
+                  running_tasks: { type: integer, format: int64, minimum: 0 }
+                  failed_tasks: { type: integer, format: int64, minimum: 0 }
+                  timed_out_tasks: { type: integer, format: int64, minimum: 0 }
+                  event_delivery:
+                    type: object
+                    required: [pending_count, attempted_pending_count]
+                    properties:
+                      pending_count: { type: integer, format: int64, minimum: 0 }
+                      attempted_pending_count: { type: integer, format: int64, minimum: 0 }
+                      last_attempt_at: { type: [string, 'null'], format: date-time }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/integration/events:
+    get:
+      tags: [Integration]
+      operationId: listPendingIntegrationEvents
+      x-ikaros-contract-id: integration.list-pending-events
+      summary: List pending durable integration events
+      responses:
+        '200':
+          description: Pending durable events
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/DurableEvent' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/integration/events/{event_id}/actions/retry:
+    post:
+      tags: [Integration]
+      operationId: retryIntegrationEvent
+      x-ikaros-contract-id: integration.retry-event
+      summary: Retry one pending durable integration event
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 128 }
+      responses:
+        '200':
+          description: Retry result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DurableEventRetryResult' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /media/subjects/{subject_id}/seasons/{season_id}/actions/reorder-episodes:
+    post:
+      tags: [Media]
+      operationId: reorderMediaEpisodes
+      x-ikaros-contract-id: media.reorder-episodes
+      summary: Reorder all episodes in a season
+      parameters:
+        - name: subject_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: season_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [episode_ids]
+              properties:
+                episode_ids:
+                  type: array
+                  minItems: 1
+                  uniqueItems: true
+                  items: { type: string, format: uuid }
+      responses:
+        '200': { description: Episode order saved }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /media/resources/{resource_id}/releases:
+    get:
+      tags: [Media]
+      operationId: listMediaReleases
+      x-ikaros-contract-id: media.list-releases
+      summary: List playback releases for a video Resource
+      parameters:
+        - name: resource_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Playback releases
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/MediaRelease' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Media]
+      operationId: addMediaRelease
+      x-ikaros-contract-id: media.add-release
+      summary: Associate an active Attachment as a playback release
+      parameters:
+        - name: resource_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [attachment_id]
+              properties:
+                attachment_id: { type: string, format: uuid }
+                release_group: { type: [string, 'null'] }
+                version_label: { type: [string, 'null'] }
+                content_fingerprint: { type: [string, 'null'] }
+      responses:
+        '200':
+          description: Playback release created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MediaRelease' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /media/releases/{release_id}/subtitles:
+    get:
+      tags: [Media]
+      operationId: listMediaSubtitles
+      x-ikaros-contract-id: media.list-subtitles
+      summary: List subtitles for a playback release
+      parameters:
+        - name: release_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: External subtitles
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/MediaSubtitle' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Media]
+      operationId: addMediaSubtitle
+      x-ikaros-contract-id: media.add-subtitle
+      summary: Associate an active subtitle Attachment with a release
+      parameters:
+        - name: release_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [attachment_id, language, format]
+              properties:
+                attachment_id: { type: string, format: uuid }
+                language: { type: string, minLength: 1 }
+                title: { type: [string, 'null'] }
+                format: { type: string, minLength: 1 }
+                provider: { type: [string, 'null'] }
+                offset_millis: { type: integer, format: int64 }
+                forced: { type: boolean }
+                hearing_impaired: { type: boolean }
+      responses:
+        '200':
+          description: Subtitle association created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MediaSubtitle' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /search:
+    get:
+      tags: [Search]
+      operationId: searchResources
+      x-ikaros-contract-id: search.keyword-search
+      summary: Search visible resources by keyword
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 200 }
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - name: type
+          in: query
+          schema: { type: string, maxLength: 64 }
+        - name: tag
+          in: query
+          schema: { type: string, maxLength: 128 }
+      responses:
+        '200':
+          description: Search result page
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SearchPage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
   /resources:
     get:
       tags: [Resources]
@@ -225,6 +693,33 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+  /background-tasks:
+    post:
+      tags: [Background Tasks]
+      operationId: submitBackgroundTask
+      x-ikaros-contract-id: operations.submit-background-task
+      summary: Submit a durable background task
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitBackgroundTaskRequest'
+      responses:
+        '202':
+          description: Background task accepted after durable persistence
+          headers:
+            Location:
+              schema: { type: string, format: uri }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BackgroundTask' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /background-tasks/{task_id}:
     parameters:
       - $ref: '#/components/parameters/TaskId'
@@ -258,6 +753,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BackgroundTask'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /background-tasks/{task_id}/actions/retry:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    post:
+      tags: [Background Tasks]
+      operationId: retryBackgroundTask
+      x-ikaros-contract-id: operations.retry-background-task
+      summary: Retry a failed background task
+      responses:
+        '200':
+          description: New pending task created from the failed task
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BackgroundTask' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
@@ -303,6 +816,87 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '409': { $ref: '#/components/responses/Conflict' }
+  /admin/storage-providers/{provider_id}/probe:
+    post:
+      tags: [Admin Storage]
+      operationId: probeStorageProvider
+      x-ikaros-contract-id: storage.probe-provider
+      summary: Probe storage provider connection and read/write capability
+      parameters:
+        - name: provider_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Probe result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StorageProviderProbeResult' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /admin/storage-providers/{provider_id}/credentials:
+    post:
+      tags: [Admin Storage]
+      operationId: replaceStorageProviderCredentials
+      x-ikaros-contract-id: storage.replace-provider-credentials
+      summary: Replace provider credentials and verify access
+      parameters:
+        - name: provider_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [access_key_id, secret_access_key]
+              properties:
+                access_key_id: { type: string, minLength: 1, maxLength: 256, writeOnly: true }
+                secret_access_key: { type: string, minLength: 1, maxLength: 512, writeOnly: true }
+                session_token: { type: [string, 'null'], maxLength: 2048, writeOnly: true }
+      responses:
+        '200':
+          description: Credential verification result; raw credentials are never returned
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StorageProviderProbeResult' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /admin/storage-providers/{provider_id}/status:
+    get:
+      tags: [Admin Storage]
+      operationId: getStorageProviderStatus
+      x-ikaros-contract-id: storage.get-provider-status
+      summary: View storage provider health and optional capacity
+      parameters:
+        - name: provider_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Provider status
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [provider_id, provider_status, health, checked_at]
+                properties:
+                  provider_id: { type: string, format: uuid }
+                  provider_status: { type: string }
+                  health: { $ref: '#/components/schemas/StorageProviderProbeResult' }
+                  capacity_bytes: { type: [integer, 'null'], format: int64, minimum: 0 }
+                  used_bytes: { type: [integer, 'null'], format: int64, minimum: 0 }
+                  checked_at: { type: string, format: date-time }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /admin/users:
     get:
       tags: [Admin Identity]
@@ -362,6 +956,109 @@ paths:
                   $ref: '#/components/schemas/Role'
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Admin Identity]
+      operationId: createRole
+      x-ikaros-contract-id: identity.create-role
+      summary: Create a platform role
+      parameters:
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRoleRequest' }
+      responses:
+        '201':
+          description: Role created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Role' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /admin/roles/{role_id}/permissions:
+    put:
+      tags: [Admin Identity]
+      operationId: replaceRolePermissions
+      x-ikaros-contract-id: identity.replace-role-permissions
+      summary: Replace a role's platform permissions
+      parameters:
+        - name: role_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReplaceRolePermissionsRequest' }
+      responses:
+        '200':
+          description: Updated role
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Role' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /admin/roles/users/{user_id}/roles/{role_id}:
+    post:
+      tags: [Admin Identity]
+      operationId: assignUserRole
+      x-ikaros-contract-id: identity.assign-user-role
+      summary: Assign a role to a user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: role_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Role assigned or already assigned }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /admin/roles/users/{user_id}/roles/{role_id}/actions/revoke:
+    post:
+      tags: [Admin Identity]
+      operationId: revokeUserRole
+      x-ikaros-contract-id: identity.revoke-user-role
+      summary: Revoke a role from a user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: role_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Role revoked or already absent }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /admin/permissions:
     get:
       tags: [Admin Identity]
@@ -376,9 +1073,772 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Permission'
+                  type: string
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+  /reading/comic-imports:
+    post:
+      tags: [Reading]
+      operationId: createComicImport
+      x-ikaros-contract-id: reading.create-comic-import
+      summary: Register a supported comic package for import
+      parameters:
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateComicImportRequest' }
+      responses:
+        '200':
+          description: Comic package accepted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ComicImport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    get:
+      tags: [Reading]
+      operationId: listComicImports
+      x-ikaros-contract-id: reading.list-comic-imports
+      summary: List comic package imports
+      parameters:
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Comic package imports
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/ComicImport' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /reading/comic-imports/{import_id}:
+    get:
+      tags: [Reading]
+      operationId: getComicImport
+      x-ikaros-contract-id: reading.get-comic-import
+      summary: Get one comic package import
+      parameters:
+        - name: import_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Comic package import
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ComicImport' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reading/comic-imports/{import_id}/actions/parse:
+    post:
+      tags: [Reading]
+      operationId: parseComicImport
+      x-ikaros-contract-id: reading.parse-comic-import
+      summary: Parse chapters and page order from a comic package
+      parameters:
+        - name: import_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Comic package parse result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ComicImport' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /reading/comic-imports/{import_id}/entries:
+    get:
+      tags: [Reading]
+      operationId: listComicImportEntries
+      x-ikaros-contract-id: reading.list-comic-import-entries
+      summary: List discovered comic pages
+      parameters:
+        - name: import_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Discovered chapter and page entries
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/ComicImportEntry' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reading/comic-imports/{import_id}/actions/reorder-pages:
+    post:
+      tags: [Reading]
+      operationId: reorderComicPages
+      x-ikaros-contract-id: reading.reorder-comic-pages
+      summary: Reorder pages in one discovered comic chapter
+      parameters:
+        - name: import_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReorderComicPagesRequest' }
+      responses:
+        '200':
+          description: Updated comic import
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ComicImport' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /reading/comic-imports/{import_id}/actions/retry-parse:
+    post:
+      tags: [Reading]
+      operationId: retryComicImportParse
+      x-ikaros-contract-id: reading.retry-comic-import-parse
+      summary: Retry a failed comic package parse
+      parameters:
+        - name: import_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Retried comic package parse result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ComicImport' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /reading/chapters/{chapter_id}/pages:
+    get:
+      tags: [Reading]
+      operationId: listComicChapterPages
+      x-ikaros-contract-id: reading.list-comic-chapter-pages
+      summary: List ordered comic pages in a chapter
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Ordered comic pages
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/ComicPage' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reading/pages/{page_id}/content:
+    get:
+      tags: [Reading]
+      operationId: getComicPageContent
+      x-ikaros-contract-id: reading.get-comic-page-content
+      summary: Read comic page content
+      parameters:
+        - name: page_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Comic page bytes, content: { application/octet-stream: { schema: { type: string, format: binary } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /music/imports:
+    post:
+      tags: [Music]
+      operationId: createMusicImport
+      x-ikaros-contract-id: music.create-import
+      summary: Import an audio Attachment as a music Track
+      parameters:
+        - { name: Idempotency-Key, in: header, required: true, schema: { type: string, minLength: 8, maxLength: 256 } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CreateMusicImportRequest' } } } }
+      responses:
+        '200': { description: Imported music, content: { application/json: { schema: { $ref: '#/components/schemas/MusicImport' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    get:
+      tags: [Music]
+      operationId: listMusicImports
+      x-ikaros-contract-id: music.list-imports
+      summary: List imported music for the current owner
+      parameters:
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Imported music, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicImport' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /music/tracks/{track_id}/audio-sources:
+    get:
+      tags: [Music]
+      operationId: listMusicAudioSources
+      x-ikaros-contract-id: music.list-audio-sources
+      summary: List playable audio sources for a music track
+      parameters:
+        - { name: track_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Audio sources, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicAudioSource' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /music/tracks/{track_id}/lyrics:
+    get:
+      tags: [Music]
+      operationId: listMusicLyrics
+      x-ikaros-contract-id: music.list-lyrics
+      summary: List available lyrics for a music track
+      parameters:
+        - { name: track_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Lyrics versions, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicLyrics' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /music/playback/sessions:
+    get:
+      tags: [Music]
+      operationId: listActiveMusicPlaybackSessions
+      x-ikaros-contract-id: music.list-active-playback-sessions
+      summary: List active music playback sessions for resume
+      parameters:
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Active playback sessions, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicPlaybackSession' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /music/playlists:
+    post:
+      tags: [Music]
+      operationId: createMusicPlaylist
+      x-ikaros-contract-id: music.create-playlist
+      summary: Create a music playlist
+      parameters:
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CreateMusicPlaylistRequest' } } } }
+      responses:
+        '200': { description: Created playlist, content: { application/json: { schema: { $ref: '#/components/schemas/MusicPlaylist' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /music/playlists/{playlist_id}:
+    patch:
+      tags: [Music]
+      operationId: updateMusicPlaylist
+      x-ikaros-contract-id: music.update-playlist
+      summary: Edit a music playlist
+      parameters:
+        - { name: playlist_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: false, schema: { type: string } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UpdateMusicPlaylistRequest' } } } }
+      responses:
+        '200': { description: Updated playlist, content: { application/json: { schema: { $ref: '#/components/schemas/MusicPlaylist' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /music/playlists/{playlist_id}/entries:
+    get:
+      tags: [Music]
+      operationId: listMusicPlaylistEntries
+      x-ikaros-contract-id: music.list-playlist-entries
+      summary: List songs in a music playlist
+      parameters:
+        - { name: playlist_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Playlist entries, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicPlaylistEntry' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Music]
+      operationId: addMusicPlaylistEntry
+      x-ikaros-contract-id: music.add-playlist-entry
+      summary: Add a song to a music playlist
+      parameters:
+        - { name: playlist_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/AddMusicPlaylistEntryRequest' } } } }
+      responses:
+        '200': { description: Added playlist entry, content: { application/json: { schema: { $ref: '#/components/schemas/MusicPlaylistEntry' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /music/playlists/entries/{entry_id}:
+    delete:
+      tags: [Music]
+      operationId: removeMusicPlaylistEntry
+      x-ikaros-contract-id: music.remove-playlist-entry
+      summary: Remove a song from a music playlist
+      parameters:
+        - { name: entry_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Removed playlist entry }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /music/playlists/{playlist_id}/entries/order:
+    patch:
+      tags: [Music]
+      operationId: reorderMusicPlaylist
+      x-ikaros-contract-id: music.reorder-playlist
+      summary: Reorder songs in a music playlist
+      parameters:
+        - { name: playlist_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ReorderMusicPlaylistRequest' } } } }
+      responses:
+        '200': { description: Reordered playlist, content: { application/json: { schema: { $ref: '#/components/schemas/MusicPlaylist' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+  /music/playback/tracks/{track_id}/sessions:
+    post:
+      tags: [Music]
+      operationId: startMusicPlayback
+      x-ikaros-contract-id: music.start-playback
+      summary: Start playback for a music track
+      parameters:
+        - { name: track_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/StartMusicPlaybackRequest' } } } }
+      responses:
+        '200': { description: Active playback session, content: { application/json: { schema: { $ref: '#/components/schemas/MusicPlaybackSession' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /music/queues:
+    post:
+      tags: [Music]
+      operationId: createMusicQueue
+      x-ikaros-contract-id: music.create-queue
+      summary: Create a playback queue from tracks
+      parameters:
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CreateMusicQueueRequest' } } } }
+      responses:
+        '200': { description: Playback queue, content: { application/json: { schema: { $ref: '#/components/schemas/MusicQueue' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /music/queues/{queue_id}/entries:
+    get:
+      tags: [Music]
+      operationId: listMusicQueueEntries
+      x-ikaros-contract-id: music.list-queue-entries
+      summary: List queue entries in playback order
+      parameters:
+        - { name: queue_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Queue entries, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicQueueEntry' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Music]
+      operationId: addMusicQueueEntry
+      x-ikaros-contract-id: music.add-queue-entry
+      summary: Add a track to a playback queue
+      parameters:
+        - { name: queue_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/AddMusicQueueEntryRequest' } } } }
+      responses:
+        '200': { description: Added queue entry, content: { application/json: { schema: { $ref: '#/components/schemas/MusicQueueEntry' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /music/queues/{queue_id}/entries/order:
+    patch:
+      tags: [Music]
+      operationId: reorderMusicQueue
+      x-ikaros-contract-id: music.reorder-queue
+      summary: Reorder entries in a playback queue
+      parameters:
+        - { name: queue_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ReorderMusicQueueRequest' } } } }
+      responses:
+        '200': { description: Reordered queue, content: { application/json: { schema: { $ref: '#/components/schemas/MusicQueue' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+  /music/queues/{queue_id}/policy:
+    patch:
+      tags: [Music]
+      operationId: updateMusicQueuePolicy
+      x-ikaros-contract-id: music.update-queue-policy
+      summary: Update playback repeat and shuffle policy
+      parameters:
+        - { name: queue_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UpdateMusicQueuePolicyRequest' } } } }
+      responses:
+        '200': { description: Updated playback policy, content: { application/json: { schema: { $ref: '#/components/schemas/MusicQueue' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
+  /music/queues/entries/{entry_id}:
+    delete:
+      tags: [Music]
+      operationId: removeMusicQueueEntry
+      x-ikaros-contract-id: music.remove-queue-entry
+      summary: Remove an entry from a playback queue
+      parameters:
+        - { name: entry_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Queue entry removed }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /music/tracks/{track_id}/metadata/recognize:
+    post:
+      tags: [Music]
+      operationId: recognizeMusicMetadata
+      x-ikaros-contract-id: music.recognize-metadata
+      summary: Recognize embedded music metadata as a candidate
+      parameters:
+        - { name: track_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Metadata candidate, content: { application/json: { schema: { $ref: '#/components/schemas/MusicMetadataCandidate' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /music/tracks/{track_id}/metadata/candidates:
+    get:
+      tags: [Music]
+      operationId: listMusicMetadataCandidates
+      x-ikaros-contract-id: music.list-metadata-candidates
+      summary: List recognized music metadata candidates
+      parameters:
+        - { name: track_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Metadata candidates, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicMetadataCandidate' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /music/tracks/{track_id}/associations:
+    post:
+      tags: [Music]
+      operationId: createMusicTrackAssociation
+      x-ikaros-contract-id: music.create-track-association
+      summary: Associate a recognized music candidate with an artist and album
+      parameters:
+        - { name: track_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CreateMusicTrackAssociationRequest' } } } }
+      responses:
+        '200': { description: Track association, content: { application/json: { schema: { $ref: '#/components/schemas/MusicTrackAssociation' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    get:
+      tags: [Music]
+      operationId: listMusicTrackAssociations
+      x-ikaros-contract-id: music.list-track-associations
+      summary: List artist and album associations for a music track
+      parameters:
+        - { name: track_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Track associations, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicTrackAssociation' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /music/metadata-candidates/{candidate_id}:
+    patch:
+      tags: [Music]
+      operationId: updateMusicMetadataCandidate
+      x-ikaros-contract-id: music.update-metadata-candidate
+      summary: Correct a recognized music metadata candidate
+      parameters:
+        - { name: candidate_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: false, schema: { type: integer, format: int64, minimum: 0 } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UpdateMusicMetadataCandidateRequest' } } } }
+      responses:
+        '200': { description: Corrected metadata candidate, content: { application/json: { schema: { $ref: '#/components/schemas/MusicMetadataCandidate' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /music/duplicates:
+    get:
+      tags: [Music]
+      operationId: findMusicDuplicates
+      x-ikaros-contract-id: music.find-duplicates
+      summary: Find imported music with the same content identity
+      parameters:
+        - { name: attachment_id, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Duplicate tracks, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicDuplicate' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reading/preferences:
+    put:
+      tags: [Reading]
+      operationId: updateReadingPreference
+      x-ikaros-contract-id: reading.update-preference
+      summary: Save a reading preference override
+      parameters:
+        - { name: scope, in: query, required: true, schema: { type: string, enum: [GLOBAL, KIND, WORK] } }
+        - { name: kind, in: query, required: false, schema: { type: string } }
+        - { name: work_id, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReadingPreferenceRequest' }
+      responses:
+        '200': { description: Saved preference, content: { application/json: { schema: { $ref: '#/components/schemas/ReadingPreference' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    get:
+      tags: [Reading]
+      operationId: getReadingPreference
+      x-ikaros-contract-id: reading.get-preference
+      summary: Get a reading preference override
+      parameters:
+        - { name: scope, in: query, required: true, schema: { type: string, enum: [GLOBAL, KIND, WORK] } }
+        - { name: kind, in: query, required: false, schema: { type: string } }
+        - { name: work_id, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Reading preference, content: { application/json: { schema: { $ref: '#/components/schemas/ReadingPreference' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reading/works/{work_id}/sessions:
+    post:
+      tags: [Reading]
+      operationId: startReadingSession
+      x-ikaros-contract-id: reading.start-session
+      summary: Start a comic reading session
+      parameters:
+        - { name: work_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StartReadingSessionRequest' }
+      responses:
+        '200': { description: Started session, content: { application/json: { schema: { $ref: '#/components/schemas/ReadingSession' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reading/sessions/{session_id}:
+    patch:
+      tags: [Reading]
+      operationId: updateReadingProgress
+      x-ikaros-contract-id: reading.update-progress
+      summary: Save the current logical reading position
+      parameters:
+        - { name: session_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateReadingProgressRequest' }
+      responses:
+        '200': { description: Updated session, content: { application/json: { schema: { $ref: '#/components/schemas/ReadingSession' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+  /reading/works/{work_id}/progress:
+    get:
+      tags: [Reading]
+      operationId: getReadingProgress
+      x-ikaros-contract-id: reading.get-progress
+      summary: Get saved reading position
+      parameters:
+        - { name: work_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: edition_id, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Saved reading position, content: { application/json: { schema: { $ref: '#/components/schemas/ReadingProgress' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reading/ebook-imports:
+    post:
+      tags: [Reading]
+      operationId: createEbookImport
+      x-ikaros-contract-id: reading.create-ebook-import
+      summary: Import a supported EPUB ebook
+      parameters:
+        - { name: Idempotency-Key, in: header, required: true, schema: { type: string, maxLength: 256 } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateEbookImportRequest' }
+      responses:
+        '200': { description: Accepted EPUB import, content: { application/json: { schema: { $ref: '#/components/schemas/EbookImport' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    get:
+      tags: [Reading]
+      operationId: listEbookImports
+      x-ikaros-contract-id: reading.list-ebook-imports
+      summary: List ebook imports
+      parameters:
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Ebook imports, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/EbookImport' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /reading/ebook-imports/{import_id}:
+    get:
+      tags: [Reading]
+      operationId: getEbookImport
+      x-ikaros-contract-id: reading.get-ebook-import
+      summary: Get an ebook import
+      parameters:
+        - { name: import_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Ebook import, content: { application/json: { schema: { $ref: '#/components/schemas/EbookImport' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reading/ebook-imports/{import_id}/info:
+    get:
+      tags: [Reading]
+      operationId: getEbookBookInfo
+      x-ikaros-contract-id: reading.get-ebook-book-info
+      summary: Get basic ebook information
+      parameters:
+        - { name: import_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Basic ebook information, content: { application/json: { schema: { $ref: '#/components/schemas/EbookBookInfo' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reading/ebook-imports/{import_id}/actions/parse-toc:
+    post:
+      tags: [Reading]
+      operationId: parseEbookToc
+      x-ikaros-contract-id: reading.parse-ebook-toc
+      summary: Parse EPUB package table of contents
+      parameters:
+        - { name: import_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Parsed EPUB import, content: { application/json: { schema: { $ref: '#/components/schemas/EbookImport' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /reading/ebook-imports/{import_id}/chapters:
+    get:
+      tags: [Reading]
+      operationId: listEbookChapters
+      x-ikaros-contract-id: reading.list-ebook-chapters
+      summary: List EPUB chapters in reading order
+      parameters:
+        - { name: import_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Ordered EPUB chapters, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/EbookChapter' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reading/ebook-imports/{import_id}/chapters/{chapter_id}/content:
+    get:
+      tags: [Reading]
+      operationId: getEbookChapterContent
+      x-ikaros-contract-id: reading.get-ebook-chapter-content
+      summary: Read the text content of an EPUB chapter
+      parameters:
+        - { name: import_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: chapter_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: EPUB chapter content, content: { application/json: { schema: { $ref: '#/components/schemas/EbookChapterContent' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reading/works/{work_id}/bookmarks:
+    get:
+      tags: [Reading]
+      operationId: listReadingBookmarks
+      x-ikaros-contract-id: reading.list-bookmarks
+      summary: List private reading bookmarks for a work
+      parameters:
+        - { name: work_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Reading bookmarks, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/ReadingBookmark' } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reading/works/{work_id}/editions/{edition_id}/chapters/{chapter_id}/bookmarks:
+    post:
+      tags: [Reading]
+      operationId: createReadingBookmark
+      x-ikaros-contract-id: reading.create-bookmark
+      summary: Add a private reading bookmark
+      parameters:
+        - { name: work_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: edition_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: chapter_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ReadingBookmarkRequest' } } } }
+      responses:
+        '200': { description: Created bookmark, content: { application/json: { schema: { $ref: '#/components/schemas/ReadingBookmark' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reading/bookmarks/{bookmark_id}:
+    delete:
+      tags: [Reading]
+      operationId: deleteReadingBookmark
+      x-ikaros-contract-id: reading.delete-bookmark
+      summary: Remove a private reading bookmark
+      parameters:
+        - { name: bookmark_id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: X-Ikaros-Actor-Id, in: header, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Bookmark removed }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
 components:
   securitySchemes:
     bearerAuth:
@@ -536,6 +1996,20 @@ components:
           type: array
           items: { $ref: '#/components/schemas/Resource' }
         next_cursor: { type: [string, 'null'] }
+    SearchPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [resource_id, source_version, fields]
+            properties:
+              resource_id: { type: string, format: uuid }
+              source_version: { type: integer, format: int64, minimum: 0 }
+              fields: { type: object, additionalProperties: true }
+        next_cursor: { type: [string, 'null'] }
     Attachment:
       type: object
       required: [id, blob_id, data_classification, lifecycle_status, version, created_at]
@@ -552,6 +2026,525 @@ components:
         version: { type: integer, format: int64, minimum: 0 }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+    MediaSubject:
+      type: object
+      required: [id, resource_id, kind, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        resource_id: { type: string, format: uuid }
+        kind: { type: string, enum: [SERIES, MOVIE, VIDEO] }
+        created_at: { type: string, format: date-time }
+    MediaRelease:
+      type: object
+      required: [id, playable_resource_id, attachment_id, state, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        playable_resource_id: { type: string, format: uuid }
+        attachment_id: { type: string, format: uuid }
+        release_group: { type: [string, 'null'] }
+        version_label: { type: [string, 'null'] }
+        state: { type: string, enum: [AVAILABLE, MISSING, CORRUPTED, ARCHIVED] }
+        content_fingerprint: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    MediaAvailabilityResponse:
+      type: object
+      required: [attachment_id, availability]
+      properties:
+        attachment_id: { type: string, format: uuid }
+        availability:
+          type: string
+          enum: [READY, RESTORE_REQUIRED, RESTORING, READY_TEMPORARILY, UNAVAILABLE, MISSING, CORRUPTED]
+        restore_request_id: { type: [string, 'null'], format: uuid }
+        restore_latency_min_seconds: { type: [integer, 'null'], minimum: 0 }
+        restore_latency_max_seconds: { type: [integer, 'null'], minimum: 0 }
+        temporary_copy_expires_at: { type: [string, 'null'], format: date-time }
+    PlaybackSource:
+      type: object
+      required: [release_id, attachment_id, mode, reason, content_url]
+      properties:
+        release_id: { type: string, format: uuid }
+        attachment_id: { type: string, format: uuid }
+        mode: { type: string, enum: [DIRECT_PLAY, RESTORE_THEN_PLAY] }
+        reason: { type: string }
+        content_url: { type: string }
+    StartPlaybackRequest:
+      type: object
+      required: [release_id, start_position_seconds]
+      properties:
+        release_id: { type: string, format: uuid }
+        start_position_seconds: { type: integer, format: int64, minimum: 0 }
+    UpdatePlaybackProgressRequest:
+      type: object
+      required: [position_seconds, completed]
+      properties:
+        position_seconds: { type: integer, format: int64, minimum: 0 }
+        total_seconds: { type: [integer, 'null'], format: int64, minimum: 0 }
+        completed: { type: boolean }
+    ResourceProgress:
+      type: object
+      required: [id, resource_id, type, position, completed]
+      properties:
+        id: { type: string, format: uuid }
+        resource_id: { type: string, format: uuid }
+        type: { type: string, enum: [VIDEO_SECONDS, AUDIO_SECONDS, READING_PAGES, READING_PERCENT] }
+        position: { type: integer, format: int64, minimum: 0 }
+        total: { type: [integer, 'null'], format: int64, minimum: 0 }
+        completed: { type: boolean }
+        updated_at: { type: [string, 'null'], format: date-time }
+        version: { type: [integer, 'null'], format: int64, minimum: 0 }
+    RestoreRequest:
+      type: object
+      required: [id, scope_type, scope_id, status, item_count, total_bytes, ready_items, failed_items, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        scope_type: { type: string, enum: [ATTACHMENT, SEASON] }
+        scope_id: { type: string, format: uuid }
+        status: { type: string, enum: [PENDING, ACTIVE, SUCCEEDED, PARTIAL, FAILED, CANCELLED] }
+        item_count: { type: integer, minimum: 0 }
+        total_bytes: { type: integer, format: int64, minimum: 0 }
+        ready_items: { type: integer, minimum: 0 }
+        failed_items: { type: integer, minimum: 0 }
+        budget_decision: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+    PlaybackSession:
+      type: object
+      required: [id, resource_id, release_id, state, started_at, last_position_seconds]
+      properties:
+        id: { type: string, format: uuid }
+        resource_id: { type: string, format: uuid }
+        release_id: { type: string, format: uuid }
+        state: { type: string, enum: [ACTIVE, ENDED] }
+        started_at: { type: string, format: date-time }
+        ended_at: { type: [string, 'null'], format: date-time }
+        last_position_seconds: { type: integer, format: int64, minimum: 0 }
+        version: { type: [integer, 'null'], format: int64, minimum: 0 }
+    MediaSubtitle:
+      type: object
+      required: [id, release_id, attachment_id, language, format, offset_millis, forced, hearing_impaired]
+      properties:
+        id: { type: string, format: uuid }
+        release_id: { type: string, format: uuid }
+        attachment_id: { type: string, format: uuid }
+        language: { type: string }
+        title: { type: [string, 'null'] }
+        format: { type: string }
+        provider: { type: [string, 'null'] }
+        offset_millis: { type: integer, format: int64 }
+        forced: { type: boolean }
+        hearing_impaired: { type: boolean }
+    CreateComicImportRequest:
+      type: object
+      required: [attachment_id]
+      additionalProperties: false
+      properties:
+        attachment_id: { type: string, format: uuid }
+        title: { type: [string, 'null'] }
+        language: { type: [string, 'null'] }
+    CreateMusicImportRequest:
+      type: object
+      required: [attachment_id]
+      additionalProperties: false
+      properties:
+        attachment_id: { type: string, format: uuid }
+        title: { type: [string, 'null'] }
+        duration_millis: { type: [integer, 'null'], format: int64, minimum: 0 }
+        codec: { type: [string, 'null'] }
+        container: { type: [string, 'null'] }
+        sample_rate: { type: [integer, 'null'], minimum: 1 }
+        bit_depth: { type: [integer, 'null'], minimum: 1 }
+        channels: { type: [integer, 'null'], minimum: 1 }
+        bitrate: { type: [integer, 'null'], minimum: 1 }
+        lossless: { type: boolean }
+    MusicImport:
+      type: object
+      required: [id, attachment_id, status, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        attachment_id: { type: string, format: uuid }
+        track_id: { type: [string, 'null'], format: uuid }
+        title: { type: [string, 'null'] }
+        duration_millis: { type: [integer, 'null'], format: int64 }
+        status: { type: string, enum: [SUCCEEDED, FAILED] }
+        error_code: { type: [string, 'null'] }
+        error_message: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    MusicAudioSource:
+      type: object
+      required: [id, track_id, attachment_id, availability, preference_weight]
+      properties:
+        id: { type: string, format: uuid }
+        track_id: { type: string, format: uuid }
+        attachment_id: { type: string, format: uuid }
+        codec: { type: [string, 'null'] }
+        container: { type: [string, 'null'] }
+        duration_millis: { type: [integer, 'null'], format: int64, minimum: 0 }
+        availability: { type: string }
+        preference_weight: { type: integer }
+    MusicLyrics:
+      type: object
+      required: [id, track_id, type]
+      properties:
+        id: { type: string, format: uuid }
+        track_id: { type: string, format: uuid }
+        language: { type: string, nullable: true }
+        type: { type: string, enum: [PLAIN, TIMED_LINE, TIMED_WORD, TRANSLATION, ROMANIZATION] }
+        content: { type: string, nullable: true }
+        timing_data: { type: string, nullable: true }
+        source: { type: string, nullable: true }
+        provenance: { type: string, nullable: true }
+        confidence: { type: number, format: double, minimum: 0, maximum: 1, nullable: true }
+        created_at: { type: string, format: date-time }
+        version: { type: integer, format: int64 }
+    CreateMusicPlaylistRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 512 }
+        description: { type: string, nullable: true, maxLength: 4096 }
+    UpdateMusicPlaylistRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 512 }
+        description: { type: string, nullable: true, maxLength: 4096 }
+    MusicPlaylist:
+      type: object
+      required: [id, name, created_at, updated_at, version]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        version: { type: integer, format: int64 }
+    AddMusicPlaylistEntryRequest:
+      type: object
+      required: [track_id]
+      properties:
+        track_id: { type: string, format: uuid }
+    MusicPlaylistEntry:
+      type: object
+      required: [id, playlist_id, track_id, position, added_at]
+      properties:
+        id: { type: string, format: uuid }
+        playlist_id: { type: string, format: uuid }
+        track_id: { type: string, format: uuid }
+        position: { type: integer }
+        added_at: { type: string, format: date-time }
+    ReorderMusicPlaylistRequest:
+      type: object
+      required: [entry_ids]
+      additionalProperties: false
+      properties:
+        entry_ids: { type: array, minItems: 1, maxItems: 100, items: { type: string, format: uuid } }
+    CreateMusicQueueRequest:
+      type: object
+      required: [track_ids]
+      additionalProperties: false
+      properties:
+        track_ids: { type: array, minItems: 1, maxItems: 100, items: { type: string, format: uuid } }
+    AddMusicQueueEntryRequest:
+      type: object
+      required: [track_id]
+      additionalProperties: false
+      properties:
+        track_id: { type: string, format: uuid }
+    ReorderMusicQueueRequest:
+      type: object
+      required: [entry_ids]
+      additionalProperties: false
+      properties:
+        entry_ids: { type: array, minItems: 1, maxItems: 100, items: { type: string, format: uuid } }
+    UpdateMusicQueuePolicyRequest:
+      type: object
+      required: [repeat_mode]
+      additionalProperties: false
+      properties:
+        repeat_mode: { type: string, enum: [OFF, QUEUE, ONE] }
+        shuffle_enabled: { type: boolean }
+    MusicQueue:
+      type: object
+      required: [id, shuffle_enabled, repeat_mode, updated_at, version]
+      properties:
+        id: { type: string, format: uuid }
+        shuffle_enabled: { type: boolean }
+        repeat_mode: { type: string, enum: [OFF, QUEUE, ONE] }
+        current_entry_id: { type: [string, 'null'], format: uuid }
+        updated_at: { type: string, format: date-time }
+        version: { type: integer, format: int64 }
+    MusicQueueEntry:
+      type: object
+      required: [id, queue_id, track_id, base_position, active_position]
+      properties:
+        id: { type: string, format: uuid }
+        queue_id: { type: string, format: uuid }
+        track_id: { type: string, format: uuid }
+        base_position: { type: integer, minimum: 0 }
+        active_position: { type: integer, minimum: 0 }
+    StartMusicPlaybackRequest:
+      type: object
+      required: [source_id]
+      additionalProperties: false
+      properties:
+        source_id: { type: string, format: uuid }
+        queue_id: { type: [string, 'null'], format: uuid }
+        position_millis: { type: integer, format: int64, minimum: 0 }
+    MusicPlaybackSession:
+      type: object
+      required: [id, track_id, source_id, state, started_at, position_millis]
+      properties:
+        id: { type: string, format: uuid }
+        track_id: { type: string, format: uuid }
+        source_id: { type: string, format: uuid }
+        queue_id: { type: [string, 'null'], format: uuid }
+        state: { type: string, enum: [ACTIVE, COMPLETED, SKIPPED, ABANDONED] }
+        started_at: { type: string, format: date-time }
+        ended_at: { type: [string, 'null'], format: date-time }
+        position_millis: { type: integer, format: int64, minimum: 0 }
+    MusicMetadataCandidate:
+      type: object
+      required: [id, track_id, attachment_id, source, created_at, updated_at, version]
+      properties:
+        id: { type: string, format: uuid }
+        track_id: { type: string, format: uuid }
+        attachment_id: { type: string, format: uuid }
+        title: { type: [string, 'null'] }
+        artist: { type: [string, 'null'] }
+        album: { type: [string, 'null'] }
+        album_artist: { type: [string, 'null'] }
+        isrc: { type: [string, 'null'] }
+        genre: { type: [string, 'null'] }
+        track_number: { type: [integer, 'null'], minimum: 1 }
+        disc_number: { type: [integer, 'null'], minimum: 1 }
+        release_year: { type: [string, 'null'] }
+        source: { type: string, enum: [ID3, VORBIS, FILENAME, MANUAL] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        version: { type: [integer, 'null'], format: int64, minimum: 0 }
+    UpdateMusicMetadataCandidateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        title: { type: [string, 'null'], maxLength: 512 }
+        artist: { type: [string, 'null'], maxLength: 512 }
+        album: { type: [string, 'null'], maxLength: 512 }
+        album_artist: { type: [string, 'null'], maxLength: 512 }
+        isrc: { type: [string, 'null'], maxLength: 64 }
+        genre: { type: [string, 'null'], maxLength: 256 }
+        track_number: { type: [integer, 'null'], minimum: 1 }
+        disc_number: { type: [integer, 'null'], minimum: 1 }
+        release_year: { type: [string, 'null'], maxLength: 16 }
+    CreateMusicTrackAssociationRequest:
+      type: object
+      required: [candidate_id]
+      additionalProperties: false
+      properties:
+        candidate_id: { type: string, format: uuid }
+    MusicTrackAssociation:
+      type: object
+      required: [id, track_id, candidate_id, artist_id, album_id, edition_id, membership_id, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        track_id: { type: string, format: uuid }
+        candidate_id: { type: string, format: uuid }
+        artist_id: { type: string, format: uuid }
+        album_id: { type: string, format: uuid }
+        edition_id: { type: string, format: uuid }
+        membership_id: { type: string, format: uuid }
+        artist: { type: [string, 'null'] }
+        album: { type: [string, 'null'] }
+        edition_name: { type: string }
+        track_number: { type: [integer, 'null'], minimum: 1 }
+        created_at: { type: string, format: date-time }
+    MusicDuplicate:
+      type: object
+      required: [attachment_id, track_id, title, sha256, size_bytes]
+      properties:
+        attachment_id: { type: string, format: uuid }
+        track_id: { type: string, format: uuid }
+        title: { type: string }
+        sha256: { type: string, pattern: '^[A-Fa-f0-9]{64}$' }
+        size_bytes: { type: integer, format: int64, minimum: 0 }
+    ComicImport:
+      type: object
+      required: [id, source_attachment_id, work_id, edition_id, status, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        source_attachment_id: { type: string, format: uuid }
+        work_id: { type: string, format: uuid }
+        edition_id: { type: string, format: uuid }
+        status: { type: string, enum: [ACCEPTED, PARSING, SUCCEEDED, FAILED] }
+        error_code: { type: [string, 'null'] }
+        error_message: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    ComicImportEntry:
+      type: object
+      required: [id, import_id, chapter_key, entry_name, page_order, page_role]
+      properties:
+        id: { type: string, format: uuid }
+        import_id: { type: string, format: uuid }
+        chapter_key: { type: string }
+        entry_name: { type: string }
+        page_order: { type: integer, minimum: 0 }
+        page_role: { type: string, enum: [NORMAL, COVER] }
+    ComicPage:
+      type: object
+      required: [id, chapter_id, attachment_id, page_order, page_role]
+      properties:
+        id: { type: string, format: uuid }
+        chapter_id: { type: string, format: uuid }
+        attachment_id: { type: string, format: uuid }
+        page_order: { type: integer, minimum: 0 }
+        page_role: { type: string }
+        width: { type: [integer, 'null'] }
+        height: { type: [integer, 'null'] }
+        spread_hint: { type: [string, 'null'] }
+    ReadingPreferenceRequest:
+      type: object
+      required: [settings]
+      additionalProperties: false
+      properties:
+        settings: { type: string }
+    ReadingPreference:
+      type: object
+      required: [id, scope, settings, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        scope: { type: string, enum: [GLOBAL, KIND, WORK] }
+        reading_kind: { type: [string, 'null'] }
+        work_id: { type: [string, 'null'], format: uuid }
+        settings: { type: string }
+        updated_at: { type: string, format: date-time }
+    StartReadingSessionRequest:
+      type: object
+      required: [edition_id, chapter_id]
+      properties:
+        edition_id: { type: string, format: uuid }
+        chapter_id: { type: string, format: uuid }
+        locator_kind: { type: [string, 'null'] }
+        locator_value: { type: [string, 'null'] }
+        offline: { type: boolean }
+    UpdateReadingProgressRequest:
+      type: object
+      required: [locator_kind, locator_value]
+      properties:
+        locator_kind: { type: string }
+        locator_value: { type: string }
+        completed: { type: boolean }
+        intent: { type: [string, 'null'] }
+        content_version: { type: [string, 'null'] }
+    ReadingSession:
+      type: object
+      required: [id, work_id, edition_id, current_locator_kind, current_locator_value, version]
+      properties:
+        id: { type: string, format: uuid }
+        work_id: { type: string, format: uuid }
+        edition_id: { type: string, format: uuid }
+        current_chapter_id: { type: [string, 'null'], format: uuid }
+        current_locator_kind: { type: [string, 'null'] }
+        current_locator_value: { type: [string, 'null'] }
+        version: { type: integer, format: int64 }
+    ReadingProgress:
+      type: object
+      required: [id, work_id, edition_id, locator_kind, locator_value, completed, updated_at, version]
+      properties:
+        id: { type: string, format: uuid }
+        work_id: { type: string, format: uuid }
+        edition_id: { type: string, format: uuid }
+        chapter_id: { type: [string, 'null'], format: uuid }
+        locator_kind: { type: string }
+        locator_value: { type: string }
+        completed: { type: boolean }
+        updated_at: { type: string, format: date-time }
+        version: { type: integer, format: int64 }
+    CreateEbookImportRequest:
+      type: object
+      required: [attachment_id]
+      properties:
+        attachment_id: { type: string, format: uuid }
+        title: { type: [string, 'null'] }
+        language: { type: [string, 'null'] }
+    EbookImport:
+      type: object
+      required: [id, source_attachment_id, work_id, edition_id, status, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        source_attachment_id: { type: string, format: uuid }
+        work_id: { type: string, format: uuid }
+        edition_id: { type: string, format: uuid }
+        status: { type: string, enum: [ACCEPTED, PARSING, SUCCEEDED, FAILED] }
+        error_code: { type: [string, 'null'] }
+        error_message: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    EbookChapter:
+      type: object
+      required: [id, import_id, chapter_id, href, title, sort_order]
+      properties:
+        id: { type: string, format: uuid }
+        import_id: { type: string, format: uuid }
+        chapter_id: { type: string, format: uuid }
+        href: { type: string }
+        title: { type: string }
+        sort_order: { type: integer, minimum: 0 }
+    EbookBookInfo:
+      type: object
+      required: [import_id, work_id, edition_id, title, chapter_count, import_status]
+      properties:
+        import_id: { type: string, format: uuid }
+        work_id: { type: string, format: uuid }
+        edition_id: { type: string, format: uuid }
+        title: { type: [string, 'null'] }
+        language: { type: [string, 'null'] }
+        publisher: { type: [string, 'null'] }
+        source: { type: [string, 'null'] }
+        chapter_count: { type: integer, format: int64, minimum: 0 }
+        import_status: { type: string, enum: [ACCEPTED, PARSING, SUCCEEDED, FAILED] }
+        error_code: { type: [string, 'null'] }
+        error_message: { type: [string, 'null'] }
+    EbookChapterContent:
+      type: object
+      required: [chapter_id, title, href, content]
+      properties:
+        chapter_id: { type: string, format: uuid }
+        title: { type: string }
+        href: { type: string }
+        content: { type: string }
+    ReadingBookmarkRequest:
+      type: object
+      required: [locator_kind, locator_value]
+      properties:
+        locator_kind: { type: string, minLength: 1, maxLength: 32 }
+        locator_value: { type: string, minLength: 1, maxLength: 1024 }
+        content_version: { type: [string, 'null'] }
+        label: { type: [string, 'null'] }
+    ReadingBookmark:
+      type: object
+      required: [id, work_id, edition_id, chapter_id, locator_kind, locator_value, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        work_id: { type: string, format: uuid }
+        edition_id: { type: string, format: uuid }
+        chapter_id: { type: string, format: uuid }
+        locator_kind: { type: string }
+        locator_value: { type: string }
+        content_version: { type: [string, 'null'] }
+        label: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+    ReorderComicPagesRequest:
+      type: object
+      required: [chapter_key, entry_ids]
+      additionalProperties: false
+      properties:
+        chapter_key: { type: string, minLength: 1 }
+        entry_ids:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items: { type: string, format: uuid }
     BackgroundTask:
       type: object
       required: [id, task_type, status, created_at, updated_at]
@@ -571,6 +2564,37 @@ components:
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
         completed_at: { type: [string, 'null'], format: date-time }
+    DurableEvent:
+      type: object
+      required: [id, event_type, schema_version, producer_subsystem, subject_type, payload_json, occurred_at]
+      properties:
+        id: { type: string, format: uuid }
+        event_type: { type: string }
+        schema_version: { type: integer, minimum: 1 }
+        producer_subsystem: { type: string }
+        subject_type: { type: string }
+        subject_id: { type: [string, 'null'], format: uuid }
+        payload_json: { type: string }
+        occurred_at: { type: string, format: date-time }
+        request_id: { type: [string, 'null'] }
+        correlation_id: { type: [string, 'null'] }
+        causation_id: { type: [string, 'null'] }
+        actor_id: { type: [string, 'null'], format: uuid }
+    DurableEventRetryResult:
+      type: object
+      required: [event_id, dispatched_count]
+      properties:
+        event_id: { type: string, format: uuid }
+        dispatched_count: { type: integer, format: int64, minimum: 0 }
+    SubmitBackgroundTaskRequest:
+      type: object
+      required: [type]
+      additionalProperties: false
+      properties:
+        type: { type: string, minLength: 1 }
+        payload:
+          type: object
+          additionalProperties: true
     StorageProvider:
       type: object
       required: [id, provider_key, provider_type, display_name, tier, enabled, drain_status, version]
@@ -590,6 +2614,17 @@ components:
           type: object
           additionalProperties: true
         version: { type: integer, format: int64 }
+    StorageProviderProbeResult:
+      type: object
+      required: [provider_id, status, connection, read, write, checked_at]
+      properties:
+        provider_id: { type: string, format: uuid }
+        status: { type: string, enum: [HEALTHY, DEGRADED, FAILED, UNSUPPORTED] }
+        connection: { type: boolean }
+        read: { type: boolean }
+        write: { type: boolean }
+        checked_at: { type: string, format: date-time }
+        error_code: { type: [string, 'null'] }
     CreateStorageProviderRequest:
       type: object
       required: [provider_key, provider_type, display_name, tier, capabilities]
@@ -642,23 +2677,36 @@ components:
           description: Accepted only over authenticated TLS; never persisted or logged in plaintext.
     Role:
       type: object
-      required: [id, role_key, display_name, system_role, version]
+      required: [id, code, name, built_in, permissions]
       properties:
         id: { type: string, format: uuid }
-        role_key: { type: string }
-        display_name: { type: string }
-        system_role: { type: boolean }
-        version: { type: integer, format: int64 }
+        code: { type: string }
+        name: { type: string }
+        description: { type: [string, 'null'] }
+        built_in: { type: boolean }
+        permissions:
+          type: array
+          uniqueItems: true
+          items: { type: string }
+    CreateRoleRequest:
+      type: object
+      required: [code, name]
+      additionalProperties: false
+      properties:
+        code: { type: string, pattern: '^[A-Z][A-Z0-9_]*$', maxLength: 96 }
+        name: { type: string, minLength: 1, maxLength: 128 }
+        description: { type: [string, 'null'], maxLength: 2000 }
+    ReplaceRolePermissionsRequest:
+      type: object
+      required: [permissions]
+      additionalProperties: false
+      properties:
+        permissions:
+          type: array
+          uniqueItems: true
+          items: { type: string }
     Permission:
       type: object
-      required: [permission_key, owner_subsystem, description, risk_level, minimum_svl, fresh_verification_required, deprecated]
+      required: [permission_key]
       properties:
         permission_key: { type: string }
-        owner_subsystem: { type: string }
-        description: { type: string }
-        risk_level:
-          type: string
-          enum: [LOW, MEDIUM, HIGH, CRITICAL]
-        minimum_svl: { type: integer, minimum: 0 }
-        fresh_verification_required: { type: boolean }
-        deprecated: { type: boolean }

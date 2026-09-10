@@ -8,4 +8,5 @@ public record ImportRunEntity(@Id UUID id, @Column("plan_id") UUID planId, @Colu
     @Column("actor_id") UUID actorId, String status, String checkpoint, @Column("completed_count") long completedCount,
     @Column("failed_count") long failedCount, @Column("skipped_count") long skippedCount,
     @Column("background_task_id") UUID backgroundTaskId, @Column("started_at") Instant startedAt,
-    @Column("finished_at") Instant finishedAt, @Column("created_at") Instant createdAt, @Version Long version) { }
+    @Column("finished_at") Instant finishedAt, @Column("created_at") Instant createdAt,
+    @Column("idempotency_key") String idempotencyKey, @Version Long version) { }
