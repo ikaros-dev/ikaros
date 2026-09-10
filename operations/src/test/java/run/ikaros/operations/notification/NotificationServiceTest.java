@@ -52,6 +52,21 @@ class NotificationServiceTest {
     }
 
     @Test
+    void terminalTaskFailureCreatesNotificationForEventActor() {
+        NotificationService notifications = mock(NotificationService.class);
+        NotificationPreferenceService preferences = mock(NotificationPreferenceService.class);
+        UUID actor = UUID.randomUUID();
+        DurableEvent event = new DurableEvent(UUID.randomUUID(), "operations.background-task.failed", 1,
+            "operations", "background_task", UUID.randomUUID(), "{}", Instant.now(), null, null, null, actor);
+        when(preferences.enabled(actor, "FAILED")).thenReturn(Mono.just(true));
+        when(notifications.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        StepVerifier.create(new TaskNotificationConsumer(notifications, preferences, new ObjectMapper()).consume(event))
+            .verifyComplete();
+        verify(notifications).create(any());
+    }
+
+    @Test
     void disabledFailurePreferenceDoesNotCreateNotification() {
         NotificationService notifications = mock(NotificationService.class);
         NotificationPreferenceService preferences = mock(NotificationPreferenceService.class);
