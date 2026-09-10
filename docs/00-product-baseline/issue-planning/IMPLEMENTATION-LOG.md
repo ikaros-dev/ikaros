@@ -81,7 +81,7 @@
 - 日期：2026-09-10
 - 实现审计：`ApplicationReadiness` 只有在完整 Spring 启动成功后才开放；readiness 在启动未完成或 `select 1` 失败时返回 DOWN/503，liveness 不依赖数据库。
 - Console：`系统运维 → 系统健康` 读取 readiness 原始状态并显示异常，未将数据库可连接推导为应用已完成迁移。
-- 验证：`HealthControllerTest` 3/3；operations reactor BUILD SUCCESS；Console `/operations-center/health` 返回 200；真实 migration 失败启动回放仍受 Docker 缺失限制。
+- 验证：`HealthControllerTest` 3/3；operations reactor BUILD SUCCESS；Console `/operations-center/health` 返回 200；隔离失败库中 pending migration 因目标表已存在而启动失败，10002 未监听，migration history 保持 137 条。
 
 ## A05-01 初始化管理员
 
@@ -262,8 +262,8 @@
 - 验收结论：A02-01 至 A02-04 已按顺序完成并在 GitHub 关闭；实现覆盖首次配置校验、空库 migration 聚合、已有实例 pending migration 升级，以及 migration/启动未完成时的 readiness 保护。
 - 推荐决策：保留当前最小组合路径，不新增独立初始化/升级 HTTP API；通过 PostgreSQL R2DBC + r2dbc-migrate 的启动生命周期完成数据库准备，Operations health 只报告已完成启动且数据库可用的服务为 ready。
 - 验证证据：`mvn -pl application -am -DskipTests compile`；`mvn -pl application -am -Dtest=DatabaseInitializationContractTest,StartupConfigurationValidatorTest -Dsurefire.failIfNoSpecifiedTests=false test`；`mvn -pl operations -am -Dtest=HealthControllerTest -Dsurefire.failIfNoSpecifiedTests=false test`；全部 BUILD SUCCESS。
-- 剩余限制：当前开发环境未安装 Docker，真实 PostgreSQL 空库初始化、旧版本升级回放和故障启动回放未执行；相关测试门禁和操作路径已保留，未将环境缺失伪造为通过。
-- 本轮补充验收：PostgreSQL 18 已启动，隔离旧版本数据库完成 pending migration 与重启幂等回放；故障启动回放仍保留为环境门禁，未宣称已通过。
+- 剩余限制：真实 PostgreSQL 空库初始化的 Testcontainers 回放仍未执行；相关测试门禁和操作路径已保留，未将环境缺失伪造为通过。
+- 本轮补充验收：PostgreSQL 18 已启动，隔离旧版本数据库完成 pending migration、重启幂等和失败启动回放；失败时未写入 pending history，服务未进入监听状态。
 
 ## A03-01 业务修改与事件原子提交
 
