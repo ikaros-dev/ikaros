@@ -370,6 +370,7 @@
 - 推荐决策：保持 Task 与 Attempt 分离；任务提交先持久化后返回 202；Worker 使用 Lease/`SKIP LOCKED` 领取，过期后保留 `LEASE_LOST` Attempt 并重试；人工 retry 创建 child Task；取消采用 cooperative cancellation。
 - 验证证据：Operations 任务回归测试 17 项全部通过；console `pnpm typecheck`、`pnpm lint`、`pnpm build` 已通过；公开提交与 retry action 已登记 OpenAPI、HTTP Registry 和 Catalog。Console 对接审计已覆盖 A04-01 至 A04-06 的真实查询、提交、进度、取消、重试和 Attempt 历史路径。
 - 剩余限制：Docker 未安装，真实 PostgreSQL 约束、事务、并发 claim、权限和跨 API 联调未执行；GitHub issue 评论/关闭受 gh token 无效（401）阻塞，待 `gh auth login -h github.com` 后补发。
+- 本轮复验（2026-09-10）：`operations` 模块后台任务回归 17/17 通过；`console` 执行 `pnpm typecheck` 与 `pnpm build` 通过。`Background.vue` 已实际调用任务列表、提交、详情、Attempt、取消和重试 API，页面不是静态占位。
 
 ## A05-01 初始化管理员
 
@@ -428,6 +429,7 @@
 - 主要 commits：`1c156217`、`ab1e239b`、`4f557967`、`a60c4998`、`5ca5d087`。
 - 统一决策：不建立 Login/Security Session 或 Token Digest；普通登出由客户端清理本地凭证，紧急全量失效通过递增用户 `security_version`，并产生最小化 durable event 与审计。
 - 验证证据：认证/授权相关回归通过；console `pnpm typecheck` 与 `pnpm build` 通过。Console 对接审计已覆盖初始化、登录退出、刷新、受保护请求校验和管理员 Token 失效操作。真实 PostgreSQL/Testcontainers 并发、事务回滚和完整权限联调仍受当前环境 Docker 未安装限制，未伪造运行证据。
+- 本轮复验（2026-09-10）：认证、授权与资源授权过滤回归 24/24 通过；`console` 执行 `pnpm typecheck` 与 `pnpm build` 通过。登录/注册、Refresh Token 自动重放、JWT 状态、用户角色和 Token 失效页面均已接入实际 HTTP API 或本地认证状态。
 
 ## A06-01 创建角色并配置权限
 
