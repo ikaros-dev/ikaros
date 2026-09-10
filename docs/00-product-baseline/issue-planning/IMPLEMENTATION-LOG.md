@@ -305,6 +305,7 @@
 - 推荐决策：Integration Owner 暴露 durable event capability 与已登记的管理 HTTP 适配；A03-03 的诊断展示和 A03-04 的事件列表/重试均已接入 Console。事件 payload 保留 request/correlation/causation/actor 追踪字段。
 - 验证证据：A03-03 事件回归测试 11 项、A03-04 相关控制器/dispatcher/契约测试 15 项通过；Console `pnpm typecheck`、`pnpm build` 通过；各子 issue 的独立测试与 commit 已记录在本日志，GitHub 同步因当前 API 401 暂缓。
 - 剩余限制：当前开发环境未安装 Docker，真实 PostgreSQL 事务回滚、Outbox 重启回放、Inbox 唯一约束和跨 API 联调未执行；未将环境缺失伪造为通过。
+- 本轮复验：事件相关测试 13/13 通过，Console production build 通过；运行中的 application `/api/health/live` 与 `/api/health/ready` 返回 200，受保护的 `/api/health/operations` 未带凭据返回 401，符合授权边界。PostgreSQL 真实事件事务/并发回放仍未执行，保持为明确限制。
 
 ## A04-01 提交任务并查询状态
 
