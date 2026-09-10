@@ -102,4 +102,26 @@ class PersistentDocumentServiceTest {
             .expectNextMatches(revision -> revision.revisionNumber() == 1L)
             .verifyComplete();
     }
+
+    @Test
+    void comparesTwoOwnedRevisionsByLine() {
+        UUID owner = UUID.randomUUID();
+        UUID documentId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceService resources = mock(ResourceService.class);
+        DocumentRepository documents = mock(DocumentRepository.class);
+        DocumentWorkingCopyRepository copies = mock(DocumentWorkingCopyRepository.class);
+        DocumentRevisionRepository revisions = mock(DocumentRevisionRepository.class);
+        DocumentPublicationRepository publications = mock(DocumentPublicationRepository.class);
+        when(documents.findById(documentId)).thenReturn(Mono.just(new DocumentEntity(documentId, owner, UUID.randomUUID(), DocumentKind.DOCUMENT, null, now, now, 0L)));
+        when(revisions.findAllByDocumentIdOrderByRevisionNumberDesc(documentId)).thenReturn(Flux.just(
+                new DocumentRevisionEntity(UUID.randomUUID(), documentId, owner, 2L, "标题\n新内容", "v1", now, owner),
+                new DocumentRevisionEntity(UUID.randomUUID(), documentId, owner, 1L, "标题\n旧内容", "v1", now, owner)));
+
+        StepVerifier.create(new PersistentDocumentService(resources, documents, copies, revisions, publications)
+                .compareRevisions(owner, documentId, 1L, 2L))
+            .expectNextMatches(result -> result.lines().stream().anyMatch(line -> line.type().equals("REMOVED") && line.content().equals("旧内容"))
+                    && result.lines().stream().anyMatch(line -> line.type().equals("ADDED") && line.content().equals("新内容")))
+            .verifyComplete();
+    }
 }
