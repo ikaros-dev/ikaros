@@ -7,6 +7,7 @@ public interface DriveService {
     Mono<DriveSpaceView> createSpace(UUID actorId, CreateDriveSpaceRequest request);
     Flux<DriveSpaceView> listSpaces(UUID actorId);
     Flux<DriveNodeView> children(UUID actorId, UUID spaceId, UUID parentId);
+    Mono<DriveNodeView> node(UUID actorId, UUID nodeId);
     default Mono<PageResponse<DriveNodeView>> childrenPage(UUID actorId, UUID spaceId, UUID parentId, int page, int size) {
         return children(actorId, spaceId, parentId).collectList().map(all -> new PageResponse<>(all.stream().skip((long) page * size).limit(size).toList(), all.size(), page, size));
     }

@@ -55,6 +55,7 @@ public class PersistentDriveService implements DriveService {
                     .collectList()
                     .map(items -> new run.ikaros.common.PageResponse<>(items, total, safePage, safeSize))));
     }
+    @Override public Mono<DriveNodeView> node(UUID actor, UUID id) { return ownedNode(actor, id).map(this::view); }
     @Override public Mono<DriveNodeView> createNode(UUID actor, UUID sid, CreateDriveNodeRequest req) {
         return transactionalOperator.transactional(ownedSpace(actor,sid).flatMap(s -> { UUID parent = req.parentId()==null?s.rootNodeId():req.parentId(); return nodes.findByIdAndDriveSpaceId(parent,sid).switchIfEmpty(Mono.error(new NotFoundException("父节点不存在"))).flatMap(p -> {
             if (p.nodeType()!=DriveNodeType.FOLDER) return Mono.error(new ConflictException("父节点不是目录")); Instant now=Instant.now();

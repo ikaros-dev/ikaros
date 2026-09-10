@@ -69,6 +69,7 @@ public class DefaultDriveService implements DriveService {
             .filter(n -> n.space().equals(spaceId) && java.util.Objects.equals(n.parent(), parentId)
                 && n.lifecycle() == DriveLifecycle.ACTIVE).take(100).map(this::view));
     }
+    @Override public Mono<DriveNodeView> node(UUID actorId, UUID nodeId) { return ownedNode(actorId, nodeId).map(this::view); }
     @Override public Mono<DriveNodeView> createNode(UUID actorId, UUID spaceId, CreateDriveNodeRequest request) {
         return ownedSpace(actorId, spaceId).flatMap(space -> {
             UUID parent = request.parentId() == null ? space.root() : request.parentId();
