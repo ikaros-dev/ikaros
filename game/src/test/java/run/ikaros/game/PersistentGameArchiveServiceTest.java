@@ -40,4 +40,25 @@ class PersistentGameArchiveServiceTest {
         verify(resources).create(any(), any());
         verify(games).save(any());
     }
+
+    @Test
+    void createsVersionWithoutOptionalPlatform() {
+        UUID owner = UUID.randomUUID();
+        UUID gameId = UUID.randomUUID();
+        UUID versionId = UUID.randomUUID();
+        ResourceService resources = mock(ResourceService.class);
+        GameRepository games = mock(GameRepository.class);
+        GamePlatformRepository platforms = mock(GamePlatformRepository.class);
+        GameVersionRepository versions = mock(GameVersionRepository.class);
+        GameAssetRepository assets = mock(GameAssetRepository.class);
+        AttachmentReferenceQuery attachments = mock(AttachmentReferenceQuery.class);
+        Instant now = Instant.now();
+        when(games.findById(gameId)).thenReturn(Mono.just(new GameEntity(gameId, owner, UUID.randomUUID(), "PC", 0L)));
+        when(versions.save(any())).thenReturn(Mono.just(new GameVersionEntity(versionId, owner, gameId, null, "1.0", now, 0L)));
+
+        StepVerifier.create(new PersistentGameArchiveService(resources, games, platforms, versions, assets, attachments)
+                .createVersion(owner, gameId, new CreateGameVersionRequest("1.0", null, now)))
+            .expectNextMatches(version -> version.id().equals(versionId) && version.platformId() == null)
+            .verifyComplete();
+    }
 }

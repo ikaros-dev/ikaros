@@ -79,6 +79,12 @@ const photoAlbumPhotosLoading = ref(false);
 const photoAlbumPhotoSaving = ref(false);
 const gameForm = ref({ title: "", gameKind: "PC", locale: "zh-CN" });
 const gameSubmitting = ref(false);
+const selectedGameId = ref("");
+const gameVersions = ref<Row[]>([]);
+const gamePlatforms = ref<Row[]>([]);
+const gameVersionForm = ref({ versionLabel: "", platformId: "", releaseDate: "" });
+const gameVersionLoading = ref(false);
+const gameVersionSubmitting = ref(false);
 
 async function load() {
   loading.value = true; error.value = "";
@@ -86,6 +92,7 @@ async function load() {
     const endpoint = isMusic.value ? "/music/imports" : kind.value === "photos" ? "/photos/timeline" : "/games";
     const result = await http.get<unknown, unknown>(endpoint);
     rows.value = Array.isArray(result) ? result as Row[] : [];
+    if (kind.value === "games" && !selectedGameId.value && rows.value[0]?.id) { selectedGameId.value = String(rows.value[0].id); await loadGameVersions(); }
   } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "媒体目录加载失败"; }
   finally { loading.value = false; }
 }
@@ -113,6 +120,30 @@ async function createGame() {
     await load();
   } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "游戏条目创建失败"; }
   finally { gameSubmitting.value = false; }
+}
+
+async function loadGameVersions() {
+  if (!selectedGameId.value) { gameVersions.value = []; return; }
+  gameVersionLoading.value = true;
+  try {
+    const [versions, platforms] = await Promise.all([
+      http.get<unknown, unknown>(`/games/${selectedGameId.value}/versions`),
+      http.get<unknown, unknown>("/games/platforms")
+    ]);
+    gameVersions.value = Array.isArray(versions) ? versions as Row[] : [];
+    gamePlatforms.value = Array.isArray(platforms) ? platforms as Row[] : [];
+  } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "游戏版本加载失败"; }
+  finally { gameVersionLoading.value = false; }
+}
+
+async function createGameVersion() {
+  if (!selectedGameId.value || !gameVersionForm.value.versionLabel.trim()) { error.value = "请选择游戏并填写版本号"; return; }
+  gameVersionSubmitting.value = true; error.value = ""; message.value = "";
+  try {
+    await http.post(`/games/${selectedGameId.value}/versions`, { data: { versionLabel: gameVersionForm.value.versionLabel.trim(), platformId: gameVersionForm.value.platformId || undefined, releaseDate: gameVersionForm.value.releaseDate.trim() || undefined } });
+    gameVersionForm.value = { versionLabel: "", platformId: "", releaseDate: "" }; message.value = "游戏版本已创建"; await loadGameVersions();
+  } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "游戏版本创建失败"; }
+  finally { gameVersionSubmitting.value = false; }
 }
 
 async function loadPhotoAlbums() {
@@ -504,6 +535,6 @@ onMounted(() => { load(); if (isMusic.value) { loadActiveSessions(); loadPlaylis
       <el-card shadow="never"><template #header><div class="flex justify-between"><span>图片时间线</span><el-input v-model="query" clearable placeholder="搜索 Photo / Resource ID" class="w-64" /></div></template><el-skeleton v-if="loading" :rows="6" animated /><el-empty v-else-if="!filtered.length" description="暂无图片；请先上传图片附件并登记" /><el-table v-else :data="filtered" stripe @row-click="openPhoto"><el-table-column prop="id" label="Photo ID" min-width="260" /><el-table-column prop="resourceId" label="Resource ID" min-width="260" /><el-table-column prop="captureTime" label="拍摄时间" min-width="190" /><el-table-column prop="width" label="宽" width="80" /><el-table-column prop="height" label="高" width="80" /><el-table-column prop="cameraMake" label="相机厂商" min-width="140" /><el-table-column prop="cameraModel" label="相机型号" min-width="160" /><el-table-column label="操作" width="120"><template #default="scope"><el-button link type="primary" @click.stop="openPhoto(scope.row)">查看元数据</el-button></template></el-table-column></el-table></el-card>
       <el-drawer v-model="photoDrawerVisible" title="图片元数据" size="560px"><el-skeleton v-if="photoDetailLoading" :rows="10" animated /><template v-else-if="photoDetail"><div v-if="photoPreviewUrl" class="mb-4 flex justify-center max-h-64 overflow-auto"><img :src="photoPreviewUrl" alt="图片原图预览" class="max-w-full object-contain" /></div><el-button v-if="photoPreviewUrl" class="mb-4" @click="openOriginalPhoto">打开原图</el-button><el-alert v-if="photoThumbnailStatus === 'FAILED' || photoThumbnailStatus === 'TIMED_OUT'" title="缩略图生成失败" :description="photoThumbnailError || '请查看后台任务详情后重新生成。'" type="error" show-icon :closable="false" class="mb-4" /><el-form label-position="top"><div class="grid grid-cols-2 gap-3"><el-form-item label="拍摄时间"><el-input v-model="photoMetadataForm.captureTime" placeholder="RFC 3339，可留空" /></el-form-item><el-form-item label="本地时间"><el-input v-model="photoMetadataForm.captureTimeLocal" /></el-form-item><el-form-item label="时区"><el-input v-model="photoMetadataForm.timeZone" /></el-form-item><el-form-item label="方向"><el-input-number v-model="photoMetadataForm.orientation" :min="1" :max="8" class="w-full" /></el-form-item><el-form-item label="宽"><el-input-number v-model="photoMetadataForm.width" :min="1" class="w-full" /></el-form-item><el-form-item label="高"><el-input-number v-model="photoMetadataForm.height" :min="1" class="w-full" /></el-form-item><el-form-item label="相机厂商"><el-input v-model="photoMetadataForm.cameraMake" /></el-form-item><el-form-item label="相机型号"><el-input v-model="photoMetadataForm.cameraModel" /></el-form-item><el-form-item label="镜头"><el-input v-model="photoMetadataForm.lensModel" /></el-form-item><el-form-item label="纬度"><el-input v-model="photoMetadataForm.latitude" /></el-form-item><el-form-item label="经度"><el-input v-model="photoMetadataForm.longitude" /></el-form-item></div></el-form><el-divider /><div class="text-sm mb-3">资产：{{ photoAssets.length }} 个；缩略图任务状态：{{ photoThumbnailStatus }}；原图与派生图身份分离。</div><el-table :data="photoAssets" size="small"><el-table-column prop="role" label="角色" width="150" /><el-table-column prop="availability" label="可用性" width="130" /><el-table-column prop="attachmentId" label="Attachment ID" min-width="220" /></el-table><div class="flex gap-2 mt-4"><el-button type="primary" :loading="photoDetailLoading" @click="savePhotoMetadata">保存元数据</el-button><el-button type="success" :loading="photoThumbnailLoading" @click="generatePhotoThumbnail">{{ photoThumbnailStatus === 'FAILED' || photoThumbnailStatus === 'TIMED_OUT' ? '重新生成缩略图' : '生成缩略图' }}</el-button></div><div v-if="photoThumbnailTask" class="text-xs text-[var(--el-text-color-secondary)] mt-2">后台任务：{{ photoThumbnailTask }}</div></template><el-empty v-else description="选择一张图片" /></el-drawer>
     </template>
-    <template v-else><el-card shadow="never" class="mb-4"><template #header><span>创建游戏条目</span></template><el-form inline @submit.prevent="createGame"><el-form-item label="标题" required><el-input v-model="gameForm.title" placeholder="游戏标题" class="w-64" clearable/></el-form-item><el-form-item label="类型"><el-input v-model="gameForm.gameKind" placeholder="PC / CONSOLE" class="w-40"/></el-form-item><el-form-item label="语言"><el-input v-model="gameForm.locale" class="w-32"/></el-form-item><el-button type="primary" :loading="gameSubmitting" @click="createGame">创建游戏</el-button></el-form></el-card><el-tabs v-model="tab"><el-tab-pane label="目录" name="catalog"/><el-tab-pane label="元数据" name="metadata"/><el-tab-pane label="播放 / 时间线" name="activity"/></el-tabs><el-card shadow="never"><template #header><div class="flex justify-between"><span>{{ title }}目录</span><el-input v-model="query" clearable placeholder="搜索标题或资源 ID" class="w-64"/></div></template><el-skeleton v-if="loading" :rows="5" animated/><el-empty v-else-if="!filtered.length" description="暂无可展示条目；其他媒体目录接口尚未接入"/><el-table v-else :data="filtered" stripe><el-table-column prop="id" label="ID" min-width="240"/><el-table-column prop="name" label="名称" min-width="200"/><el-table-column prop="status" label="状态" width="140"/><el-table-column prop="createdAt" label="创建时间" min-width="180"/></el-table><el-alert title="附件物理存储请在“附件与存储”模块管理。" type="info" show-icon :closable="false" class="mt-4"/></el-card></template>
+    <template v-else><el-card shadow="never" class="mb-4"><template #header><span>创建游戏条目</span></template><el-form inline @submit.prevent="createGame"><el-form-item label="标题" required><el-input v-model="gameForm.title" placeholder="游戏标题" class="w-64" clearable/></el-form-item><el-form-item label="类型"><el-input v-model="gameForm.gameKind" placeholder="PC / CONSOLE" class="w-40"/></el-form-item><el-form-item label="语言"><el-input v-model="gameForm.locale" class="w-32"/></el-form-item><el-button type="primary" :loading="gameSubmitting" @click="createGame">创建游戏</el-button></el-form></el-card><el-card shadow="never" class="mb-4"><template #header><span>维护版本信息</span></template><el-form inline @submit.prevent="createGameVersion"><el-form-item label="游戏" required><el-select v-model="selectedGameId" placeholder="选择游戏" class="w-64" @change="loadGameVersions"><el-option v-for="game in rows" :key="game.id" :label="game.id" :value="game.id"/></el-select></el-form-item><el-form-item label="版本号" required><el-input v-model="gameVersionForm.versionLabel" placeholder="1.0.0" class="w-40"/></el-form-item><el-form-item label="平台"><el-select v-model="gameVersionForm.platformId" clearable placeholder="可选平台" class="w-40"><el-option v-for="platform in gamePlatforms" :key="platform.id" :label="platform.name" :value="platform.id"/></el-select></el-form-item><el-form-item label="发布日期"><el-input v-model="gameVersionForm.releaseDate" placeholder="RFC 3339，可选" class="w-52"/></el-form-item><el-button type="primary" :loading="gameVersionSubmitting" @click="createGameVersion">添加版本</el-button></el-form><el-skeleton v-if="gameVersionLoading" :rows="2" animated/><el-empty v-else-if="!gameVersions.length" description="暂无版本信息"/><el-table v-else :data="gameVersions" size="small"><el-table-column prop="versionLabel" label="版本号" width="140"/><el-table-column prop="platformId" label="平台 ID" min-width="220"/><el-table-column prop="releaseDate" label="发布日期" min-width="180"/></el-table></el-card><el-tabs v-model="tab"><el-tab-pane label="目录" name="catalog"/><el-tab-pane label="元数据" name="metadata"/><el-tab-pane label="播放 / 时间线" name="activity"/></el-tabs><el-card shadow="never"><template #header><div class="flex justify-between"><span>{{ title }}目录</span><el-input v-model="query" clearable placeholder="搜索标题或资源 ID" class="w-64"/></div></template><el-skeleton v-if="loading" :rows="5" animated/><el-empty v-else-if="!filtered.length" description="暂无可展示条目；其他媒体目录接口尚未接入"/><el-table v-else :data="filtered" stripe><el-table-column prop="id" label="ID" min-width="240"/><el-table-column prop="name" label="名称" min-width="200"/><el-table-column prop="status" label="状态" width="140"/><el-table-column prop="createdAt" label="创建时间" min-width="180"/></el-table><el-alert title="附件物理存储请在“附件与存储”模块管理。" type="info" show-icon :closable="false" class="mt-4"/></el-card></template>
   </main>
 </template>
