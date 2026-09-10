@@ -1,6 +1,7 @@
 package run.ikaros.drive;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.api.UuidV7Generator;
+import run.ikaros.common.ConflictException;
 import run.ikaros.sync.api.DeviceTrustQuery;
 
 class PersistentDriveServiceTest {
@@ -55,5 +57,51 @@ class PersistentDriveServiceTest {
 
         assertEquals(oldRevisionId, result.currentRevisionId());
         assertEquals(3L, result.nodeVersion());
+    }
+
+    @Test
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    void initialBackupPersistsDegradedStateAndResetsCursor() {
+        SyncBindingRepository bindings = mock(SyncBindingRepository.class);
+        UUID actor = UUID.randomUUID();
+        UUID bindingId = UUID.randomUUID();
+        Instant now = Instant.now();
+        SyncBindingEntity binding = new SyncBindingEntity(bindingId, actor, UUID.randomUUID(), UUID.randomUUID(),
+            UUID.randomUUID(), "camera-roll", "/Pictures", SyncSourceKind.DIRECTORY, SyncMode.BACKUP,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH, true, SyncBindingState.ACTIVE, 12, now, now, 3L);
+        when(bindings.findById(bindingId)).thenReturn(Mono.just(binding));
+        when(bindings.save(any(SyncBindingEntity.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        PersistentDriveService service = new PersistentDriveService(mock(DriveSpaceRepository.class), mock(DriveNodeRepository.class),
+            mock(DriveFileRevisionRepository.class), mock(DriveChangeRepository.class), mock(DriveQuotaRepository.class),
+            mock(DriveQuotaReservationRepository.class), bindings, mock(SyncConflictRepository.class),
+            mock(DeviceTrustQuery.class), mock(SyncMappingRepository.class), mock(DriveTombstoneRepository.class),
+            mock(CameraBackupRepository.class), mock(TransactionalOperator.class), mock(UuidV7Generator.class));
+
+        SyncBindingView result = service.requestFullResync(actor, bindingId).block();
+
+        assertEquals(SyncBindingState.DEGRADED, result.state());
+        assertEquals(0, result.cursor());
+        assertEquals(SyncMode.BACKUP, result.mode());
+    }
+
+    @Test
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    void initialBackupRejectsNonBackupPersistentBinding() {
+        SyncBindingRepository bindings = mock(SyncBindingRepository.class);
+        UUID actor = UUID.randomUUID();
+        UUID bindingId = UUID.randomUUID();
+        Instant now = Instant.now();
+        SyncBindingEntity binding = new SyncBindingEntity(bindingId, actor, UUID.randomUUID(), UUID.randomUUID(),
+            UUID.randomUUID(), "documents", null, SyncSourceKind.DIRECTORY, SyncMode.TWO_WAY,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH, true, SyncBindingState.ACTIVE, 0, now, now, 1L);
+        when(bindings.findById(bindingId)).thenReturn(Mono.just(binding));
+        PersistentDriveService service = new PersistentDriveService(mock(DriveSpaceRepository.class), mock(DriveNodeRepository.class),
+            mock(DriveFileRevisionRepository.class), mock(DriveChangeRepository.class), mock(DriveQuotaRepository.class),
+            mock(DriveQuotaReservationRepository.class), bindings, mock(SyncConflictRepository.class),
+            mock(DeviceTrustQuery.class), mock(SyncMappingRepository.class), mock(DriveTombstoneRepository.class),
+            mock(CameraBackupRepository.class), mock(TransactionalOperator.class), mock(UuidV7Generator.class));
+
+        assertThrows(ConflictException.class, () -> service.requestFullResync(actor, bindingId).block());
     }
 }
