@@ -665,6 +665,7 @@
 - 主要 commits：`645954b1`、`8a5bd90e`、`a9dd07dc`、`b998f8c1`、`0b6b9b0f`、`35a5afa5`、`f459a19a`。
 - 统一决策：Resource 生命周期由显式 Application Action 管理；owner scope、乐观并发、事务内事件与审计保持一致；逻辑生命周期绝不隐式删除共享 Attachment/Blob。
 - 验证证据：Resource 服务单测已覆盖各子行为的成功、状态拒绝、权限边界、幂等和版本冲突分支；真实 PostgreSQL/Testcontainers 仍需 Docker 环境补跑。
+- 本轮复验（2026-09-10）：`resource` 模块全量回归 69/69 通过，覆盖资源、标题、标签、收藏、关系、进度、活动及生命周期控制器；Console `pnpm typecheck` 与 `pnpm build` 通过，资源库/详情和存储归档页面均已接入真实 API。
 
 ## A10-01 添加多语言标题
 
