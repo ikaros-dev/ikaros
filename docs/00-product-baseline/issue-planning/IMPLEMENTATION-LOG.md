@@ -723,6 +723,7 @@
 - 主要 commits：`a9b38af5`、`6c383f32`、`0c2ef3d0`、`47c0d322`、`fa092e8f`、`a1f77796`。
 - 统一决策：标题与别名保持明确类型和数据库唯一性；外部身份由唯一约束最终裁决；metadata 来源与用户锁定状态显式返回，自动同步不得静默覆盖人工值；所有写路径遵守 owner scope、审计和 reactive transaction。
 - 验证证据：标题、Resource 外部身份和 metadata 服务/控制器回归均通过；真实 PostgreSQL 唯一约束、迁移和事务联调仍需 Docker/Testcontainers。
+- 本轮复验（2026-09-10）：资源描述相关回归 9/9 通过，覆盖多语言标题/别名、元数据来源和外部身份绑定；Console `Detail.vue` 的标题、别名、外部身份操作均调用真实 API，`pnpm typecheck` 与 `pnpm build` 通过。
 
 ## A11-01 创建和编辑 Collection
 
