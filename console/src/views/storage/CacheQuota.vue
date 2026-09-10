@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import { http } from "@/utils/http";
+
+type Quota = { deviceId: string; quotaBytes: number; usedBytes: number; availableBytes: number; updatedAt?: string };
+const deviceId = ref(""); const quotaBytes = ref(1073741824); const quota = ref<Quota | null>(null); const loading = ref(false); const saving = ref(false); const error = ref(""); const message = ref("");
+function formatBytes(value: number) { const units = ["Bytes", "KiB", "MiB", "GiB", "TiB"]; let size = Math.max(0, value); let index = 0; while (size >= 1024 && index < units.length - 1) { size /= 1024; index++; } return `${size.toFixed(index ? 2 : 0)} ${units[index]}`; }
+async function load() { if (!deviceId.value.trim()) { error.value = "请输入 Device ID"; return; } loading.value = true; error.value = ""; try { quota.value = await http.get<unknown, unknown>(`/offline/cache/quota?deviceId=${encodeURIComponent(deviceId.value.trim())}`) as Quota; quotaBytes.value = Number(quota.value.quotaBytes); } catch (e: any) { quota.value = null; error.value = e?.response?.data?.detail || e?.message || "缓存配额加载失败"; } finally { loading.value = false; } }
+async function save() { if (!deviceId.value.trim() || !Number.isInteger(quotaBytes.value) || quotaBytes.value < 1) { error.value = "Device ID 不能为空，配额必须是正整数 Bytes"; return; } saving.value = true; error.value = ""; message.value = ""; try { quota.value = await http.request("put", "/offline/cache/quota", { data: { deviceId: deviceId.value.trim(), quotaBytes: quotaBytes.value } }) as Quota; message.value = "缓存配额已保存并重新计算使用量"; } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "缓存配额保存失败"; } finally { saving.value = false; } }
+</script>
+
+<template>
+  <main class="p-4 md:p-6"><div class="flex items-start justify-between gap-4 mb-6"><div><h1 class="text-2xl font-semibold">缓存配额</h1><p class="mt-1 text-[var(--el-text-color-secondary)]">按设备设置自动缓存上限；用户明确下载不计入自动缓存清理范围。</p></div><el-button :loading="loading" @click="load">重新读取</el-button></div>
+    <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" class="mb-4"/><el-alert v-if="message" :title="message" type="success" show-icon :closable="false" class="mb-4"/>
+    <el-card shadow="never" class="mb-4"><template #header><span>设备配额</span></template><el-form label-position="top" class="max-w-2xl"><el-form-item label="Device ID" required><el-input v-model="deviceId" placeholder="设备 UUID" clearable @keyup.enter="load"/></el-form-item><el-form-item label="缓存配额（Bytes）" required><el-input-number v-model="quotaBytes" :min="1" :step="1073741824" class="w-full"/></el-form-item><div class="flex gap-2"><el-button :loading="loading" @click="load">读取配额</el-button><el-button type="primary" :loading="saving" @click="save">保存配额</el-button></div></el-form></el-card>
+    <el-card v-if="quota" shadow="never"><template #header><span>当前使用量</span></template><el-descriptions :column="1" border><el-descriptions-item label="设备">{{ quota.deviceId }}</el-descriptions-item><el-descriptions-item label="配额">{{ formatBytes(quota.quotaBytes) }}（{{ quota.quotaBytes.toLocaleString() }} Bytes）</el-descriptions-item><el-descriptions-item label="已使用">{{ formatBytes(quota.usedBytes) }}（{{ quota.usedBytes.toLocaleString() }} Bytes）</el-descriptions-item><el-descriptions-item label="可用">{{ formatBytes(quota.availableBytes) }}（{{ quota.availableBytes.toLocaleString() }} Bytes）</el-descriptions-item><el-descriptions-item label="更新时间">{{ quota.updatedAt || "默认值，尚未持久化" }}</el-descriptions-item></el-descriptions><el-progress class="mt-4" :percentage="Math.min(100, Math.round((quota.usedBytes / quota.quotaBytes) * 100))" :format="value => `${value}%`"/></el-card>
+  </main>
+</template>
