@@ -1540,3 +1540,9 @@
 - 实现：安装和升级共用兼容性校验，要求 Plugin API 版本匹配，并要求 Server 版本落在 Manifest 的最小/最大范围内；不兼容升级保留原版本和生命周期。
 - Console：`/plugins` 安装/升级表单展示兼容性字段，真实提交到安装/升级 API，并展示失败信息；升级失败不会刷新成伪成功状态。
 - 验证：`InMemoryPluginRuntimeTest` 9/9 覆盖不支持 API、版本范围和不兼容升级回滚保持；Console 插件页 typecheck/build 审计通过。
+
+## A22-03 启用插件扩展
+- 日期：2026-09-10
+- 实现：插件安装后保持 `INSTALLED`；只有显式 enable 才进入 `ENABLED` 并注册 Manifest 声明的扩展点，disable 会撤销注册；启用/禁用非法生命周期会失败。
+- Console：`/plugins` 清单通过真实 `POST /api/plugins/{pluginId}/enable` 与 `/disable` 操作，并即时刷新生命周期及已启用数量。
+- 验证：`InMemoryPluginRuntimeTest` 9/9，包含扩展注册、禁用撤销、非法生命周期路径；Console 插件页 typecheck/build 审计通过。
