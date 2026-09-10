@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import run.ikaros.common.ConflictException;
 import run.ikaros.resource.api.ResourceLifecycle;
 import run.ikaros.resource.api.ResourceService;
 import run.ikaros.resource.api.ResourceType;
@@ -58,5 +59,24 @@ class PersistentDocumentServiceTest {
                 .updateWorkingCopy(owner, documentId, new UpdateWorkingCopyRequest("new", "v1", 2L)))
             .expectNextMatches(copy -> copy.content().equals("new"))
             .verifyComplete();
+    }
+
+    @Test
+    void rejectsWorkingCopyWhenVersionChanged() {
+        UUID owner = UUID.randomUUID();
+        UUID documentId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceService resources = mock(ResourceService.class);
+        DocumentRepository documents = mock(DocumentRepository.class);
+        DocumentWorkingCopyRepository copies = mock(DocumentWorkingCopyRepository.class);
+        DocumentRevisionRepository revisions = mock(DocumentRevisionRepository.class);
+        DocumentPublicationRepository publications = mock(DocumentPublicationRepository.class);
+        when(documents.findById(documentId)).thenReturn(Mono.just(new DocumentEntity(documentId, owner, UUID.randomUUID(), DocumentKind.DOCUMENT, null, now, now, 0L)));
+        when(copies.findByDocumentId(documentId)).thenReturn(Mono.just(new DocumentWorkingCopyEntity(UUID.randomUUID(), documentId, owner, "server", "v1", null, now, 3L)));
+
+        StepVerifier.create(new PersistentDocumentService(resources, documents, copies, revisions, publications)
+                .updateWorkingCopy(owner, documentId, new UpdateWorkingCopyRequest("local", "v1", 2L)))
+            .expectErrorMatches(error -> error instanceof ConflictException)
+            .verify();
     }
 }
