@@ -172,7 +172,7 @@ export default {
       { path: "tasks", name: "BackgroundTasks", component: OpsBackgroundPage, meta: { title: "后台任务", icon: "ep:operation" } }
     ]),
     subsystem("/collaboration-center", "CollaborationCenter", "协作与分享", "ep:chat-line-round", [
-      { path: "rooms", name: "Rooms", component: () => import("@/views/sharing/index.vue"), meta: { title: "协作房间", icon: "ep:chat-line-round" } },
+      { path: "rooms", name: "Rooms", component: () => import("@/views/sharing/RoomManager.vue"), meta: { title: "协作房间", icon: "ep:chat-line-round" } },
       { path: "sharing", name: "Sharing", component: () => import("@/views/sharing/index.vue"), meta: { title: "分享协作", icon: "ep:share" } },
       { path: "redeem", name: "ShareRedeem", component: () => import("@/views/sharing/Redeem.vue"), meta: { title: "验证分享", icon: "ep:ticket" } }
     ]),
