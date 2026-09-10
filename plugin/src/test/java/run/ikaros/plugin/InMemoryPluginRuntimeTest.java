@@ -52,6 +52,15 @@ class InMemoryPluginRuntimeTest {
         runtime.disable(manifest.pluginId()).block();
 
         assertEquals(0, registry.find("parser").size());
+        assertEquals(PluginLifecycle.DISABLED, runtime.get(manifest.pluginId()).block().lifecycle());
+    }
+
+    @Test
+    void cannotDisablePluginBeforeItIsEnabled() {
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0");
+        runtime.install(manifest, Set.of("resource.read")).block();
+
+        assertThrows(RuntimeException.class, () -> runtime.disable(manifest.pluginId()).block());
     }
 
     @Test
