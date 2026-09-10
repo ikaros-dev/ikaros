@@ -64,6 +64,14 @@ public class PersistentPhotoService implements PhotoService {
                     "photo-thumbnail:" + photo.id()).map(task -> new TaskReference(task.id(), task.taskType()))));
     }
 
+    @Override
+    public Mono<PhotoThumbnailStatusView> thumbnailStatus(UUID owner, UUID photoId) {
+        return ownedPhoto(owner, photoId)
+            .flatMap(photo -> tasks.findByTaskTypeAndIdempotencyKey("photo.thumbnail", "photo-thumbnail:" + photo.id())
+                .map(task -> new PhotoThumbnailStatusView(task.id(), task.status().name(), task.result())))
+            .defaultIfEmpty(new PhotoThumbnailStatusView(null, "NOT_REQUESTED", java.util.Map.of()));
+    }
+
     @Override public Flux<PhotoView> timeline(UUID o) { return photos.findAllByOwnerIdOrderByCaptureTimeDesc(o).take(100).map(this::photoView); }
     @Override public Flux<PhotoTimelineGroupView> timelineByDay(UUID o) { return photos.findAllByOwnerIdOrderByCaptureTimeDesc(o).take(100).map(this::photoView).collectMultimap(p -> p.captureTime() == null ? java.time.LocalDate.MIN : p.captureTime().atZone(java.time.ZoneOffset.UTC).toLocalDate(), p -> p, () -> new java.util.LinkedHashMap<java.time.LocalDate, java.util.Collection<PhotoView>>()).flatMapMany(m -> Flux.fromIterable(m.entrySet()).map(e -> new PhotoTimelineGroupView(e.getKey(), java.util.List.copyOf(e.getValue())))); }
     @Override public Flux<PhotoAssetView> assets(UUID o, UUID id) { return ownedPhoto(o, id).flatMapMany(p -> assets.findAllByPhotoId(id).take(100).map(this::assetView)); }
