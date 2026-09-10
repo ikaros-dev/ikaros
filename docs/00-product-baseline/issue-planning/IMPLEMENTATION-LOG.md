@@ -1088,6 +1088,12 @@
 - A19-03：结果使用后端授权候选；“下一页”使用 `nextCursor` 继续请求，页面不缓存或暴露未授权结果。
 - 验证：搜索页面 `/workbench/search` 返回 HTTP 200；Console typecheck/build 已通过。
 
+## A20 内容导入（父 issue）
+
+- Console 对接审计：`console/src/views/ingestion/index.vue` 已覆盖来源创建/启停、扫描、候选预览、导入计划逐项修改与审批、导入运行结果、失败项重试和取消；所有操作调用 `/ingestion/*` 真实 API，并显示加载、空、错误和后台运行状态。
+- 本地验收证据：`DefaultIngestionSourceServiceTest` 2/2、`DefaultImportRunServiceTest` 2/2、`DefaultMetadataCandidateServiceTest` 2/2，合计 6/6；Console 页面已通过既有 typecheck/build 验证。
+- 证据限制：扫描/计划组合路径的专门服务测试和真实 Provider/文件系统联调仍需补充；Docker/Testcontainers 不可用期间不伪造该环境证据。
+
 ## A23 通知中心
 - 日期：2026-09-10
 - 子任务汇总：通知持久化、筛选分页、标记已读、关联目标跳转和任务通知偏好已分别实现并提交；Console 通知中心与账户偏好页均使用服务端 API。
