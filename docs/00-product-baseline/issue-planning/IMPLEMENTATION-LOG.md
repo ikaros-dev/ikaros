@@ -1534,3 +1534,9 @@
 - 实现：插件运行时在安装前校验 Plugin API/Server 版本兼容性，并要求授予权限必须属于 Manifest 声明权限；校验失败不会写入安装记录，安装成功保持 `INSTALLED`，不自动启用。
 - Console：`/plugins` 的“安装插件”表单调用真实 `POST /api/plugins`，展示安装结果、生命周期、声明/授予权限及错误状态。
 - 验证：`InMemoryPluginRuntimeTest` 9/9；Console 插件页已完成 typecheck/build 审计；主要既有实现提交：插件生命周期实现提交。
+
+## A22-02 检查版本兼容性
+- 日期：2026-09-10
+- 实现：安装和升级共用兼容性校验，要求 Plugin API 版本匹配，并要求 Server 版本落在 Manifest 的最小/最大范围内；不兼容升级保留原版本和生命周期。
+- Console：`/plugins` 安装/升级表单展示兼容性字段，真实提交到安装/升级 API，并展示失败信息；升级失败不会刷新成伪成功状态。
+- 验证：`InMemoryPluginRuntimeTest` 9/9 覆盖不支持 API、版本范围和不兼容升级回滚保持；Console 插件页 typecheck/build 审计通过。
