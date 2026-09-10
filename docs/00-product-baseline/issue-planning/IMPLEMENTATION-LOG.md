@@ -1552,3 +1552,9 @@
 - 实现：disable 仅允许 `ENABLED` 插件执行；持久化生命周期先保存为 `DISABLED` 并撤销扩展注册，内存运行时同样移除扩展索引；重新读取插件确认状态已生效。
 - Console：`/plugins` 禁用按钮带明确确认提示，调用真实 disable API 后重新加载清单和启用计数。
 - 验证：`InMemoryPluginRuntimeTest` 10/10，覆盖扩展撤销、重新读取状态及未启用状态拒绝 disable；Console 插件页 typecheck/build 审计通过；主要提交：`1aa629ba`。
+
+## A22-05 升级插件并处理失败
+- 日期：2026-09-10
+- 实现：升级要求 Plugin ID 不变、版本兼容且授予权限仍属于新 Manifest；启用中的插件升级会先撤销旧扩展再注册新扩展，失败时保留原版本、生命周期和扩展注册。
+- Console：`/plugins` 的升级入口复用真实 upgrade API，表单锁定 Plugin ID；失败提示可见且不会刷新成伪成功。
+- 验证：`InMemoryPluginRuntimeTest` 11/11，覆盖启用升级替换扩展和不兼容升级保持旧版本；Console 插件页 typecheck/build 审计通过；主要提交：`6e58c707`。
