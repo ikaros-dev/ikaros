@@ -492,6 +492,7 @@
 - 主要 commits：`1b793395`、`7fb67818`、`af4a7cb8`、`49927c25`、`ef1a5f59`；A09-01 前置 commits：`645954b1`、`43441b91`。
 - 统一决策：权限注册枚举和统一授权过滤器负责入口门禁，领域服务负责 owner/状态不变量；资源访问在 JWT 快速检查后实时复核当前 RBAC，避免权限撤销等待 token 过期。
 - 验证证据：授权回归通过，资源服务 owner 隔离回归通过；真实 PostgreSQL 唯一约束、并发绑定、事务回滚和完整 API 联调仍需要 Docker Desktop/Testcontainers，当前环境未安装 Docker，未伪造运行证据。
+- 本轮复验（2026-09-10）：`DefaultResourceServiceTest` 20/20 通过，覆盖 owner 限制、资源生命周期和幂等边界；前一轮授权过滤器回归 18/18 通过。Console `pnpm typecheck` 与 `pnpm build` 同轮通过，资源库、资源详情、用户角色和角色权限页面均使用真实 API。
 
 ## A07-01 发起二次验证
 
