@@ -1457,3 +1457,9 @@
 - `document` 新增 owner-scoped Presence 心跳、查询和离开 API：`PUT/GET/DELETE /documents/{documentId}/presence`，Presence 使用 30 秒短 TTL，不写入文档版本真相。
 - `/documents/editor` 每 10 秒发送心跳并刷新在线人数，组件卸载时 best-effort 离开；Presence 请求失败显示可见错误。
 - 验证：`mvn -s .mvn-local-settings.xml -pl document -am -DskipTests compile` BUILD SUCCESS；主要提交：`1771997c`、`ee2a054`。
+
+## C05-03 Console 对接审计
+- 新增 `POST /documents/{documentId}/working-copy/actions/merge`，以基线内容、离线本地内容和服务端当前工作副本执行保守三方合并。
+- 服务端未发生变更时直接采用本地内容；双方均变更时返回 `<<<<<<< LOCAL` / `=======` / `>>>>>>> SERVER` 冲突标记，不静默覆盖，也不自动保存合并结果。
+- `/documents/editor` 在工作副本保存返回 409 时自动请求合并结果，将结果放回编辑器供用户人工处理后再保存。
+- 验证：`DocumentMergeServiceTest` 2/2；Console `pnpm typecheck`、`pnpm build` 通过；后端 compile BUILD SUCCESS；主要提交：`d03d7d8c`、`e2c551d5`。
