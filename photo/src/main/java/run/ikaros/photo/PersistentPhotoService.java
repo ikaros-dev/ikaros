@@ -5,11 +5,14 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
-import run.ikaros.resource.api.CreateResourceRequest;
 import run.ikaros.resource.api.ResourceService;
 import run.ikaros.resource.api.ResourceType;
 import run.ikaros.storage.api.AttachmentReferenceQuery;
+import run.ikaros.storage.api.AttachmentAvailabilityStatus;
+import run.ikaros.storage.api.AttachmentView;
+import run.ikaros.storage.api.StorageService;
 
 @Service
 public class PersistentPhotoService implements PhotoService {
@@ -19,18 +22,30 @@ public class PersistentPhotoService implements PhotoService {
     private final PhotoAlbumRepository albums;
     private final PhotoAlbumMemberRepository members;
     private final AttachmentReferenceQuery attachments;
+    private final StorageService storage;
 
-    public PersistentPhotoService(ResourceService r, PhotoRepository p, PhotoAssetRepository a, PhotoAlbumRepository l, PhotoAlbumMemberRepository m, AttachmentReferenceQuery at) {
-        resources = r; photos = p; assets = a; albums = l; members = m; attachments = at;
+    public PersistentPhotoService(ResourceService r, PhotoRepository p, PhotoAssetRepository a, PhotoAlbumRepository l, PhotoAlbumMemberRepository m, AttachmentReferenceQuery at, StorageService s) {
+        resources = r; photos = p; assets = a; albums = l; members = m; attachments = at; storage = s;
     }
 
     @Override public Mono<PhotoView> create(UUID o, CreatePhotoRequest r) {
-        String locale = r.locale() == null || r.locale().isBlank() ? "en-US" : r.locale();
-        return resources.create(o, new CreateResourceRequest(ResourceType.PHOTO, r.title(), locale))
-            .flatMap(x -> attachments.requireActiveForResource(o, x.id(), r.attachmentId())
-                .flatMap(a -> photos.save(new PhotoEntity(null, o, x.id(), null, null, null, null, null, null, null, null, null, null, null, null))
-                    .flatMap(p -> assets.save(new PhotoAssetEntity(null, o, p.id(), a.attachmentId(), PhotoAssetRole.ORIGINAL_PRIMARY, true, "AVAILABLE", null)).thenReturn(p))))
-            .map(this::photoView);
+        return attachments.requireReadable(o, r.attachmentId()).flatMap(reference ->
+            storage.get(o, reference.attachmentId())
+                .filter(this::isUsableImage)
+                .switchIfEmpty(Mono.error(new ConflictException("附件必须是可用的图片原始内容")))
+                .flatMap(attachment -> resources.get(o, reference.resourceId())
+                    .filter(resource -> resource.type() == ResourceType.PHOTO)
+                    .switchIfEmpty(Mono.error(new ConflictException("图片附件所属 Resource 必须是 PHOTO 类型")))
+                    .flatMap(resource -> photos.findByOwnerIdAndResourceId(o, resource.id())
+                        .flatMap(existing -> Mono.<PhotoEntity>error(new ConflictException("该 Resource 已经建立 Photo")))
+                        .switchIfEmpty(photos.save(new PhotoEntity(null, o, resource.id(), null, null, null, null, null, null, null, null, null, null, null, null))
+                            .flatMap(p -> assets.save(new PhotoAssetEntity(null, o, p.id(), attachment.id(), PhotoAssetRole.ORIGINAL_PRIMARY, true, "AVAILABLE", null))
+                                .thenReturn(p)))))).map(this::photoView);
+    }
+
+    private boolean isUsableImage(AttachmentView attachment) {
+        return attachment.mediaType() != null && attachment.mediaType().toLowerCase(java.util.Locale.ROOT).startsWith("image/")
+            && attachment.availability() == AttachmentAvailabilityStatus.READY;
     }
 
     @Override public Flux<PhotoView> timeline(UUID o) { return photos.findAllByOwnerIdOrderByCaptureTimeDesc(o).take(100).map(this::photoView); }

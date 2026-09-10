@@ -54,8 +54,17 @@ const musicForm = ref({ attachmentId: "", title: "", durationMillis: null as num
 
 const kind = computed(() => String(route.path.split("/").pop()));
 const isMusic = computed(() => kind.value === "music");
+const isPhotos = computed(() => kind.value === "photos");
 const title = computed(() => ({ music: "音乐库", photos: "照片管理", games: "游戏档案" }[kind.value] || "媒体目录"));
 const filtered = computed(() => !query.value ? rows.value : rows.value.filter(row => JSON.stringify(row).toLowerCase().includes(query.value.toLowerCase())));
+const photoForm = ref({ attachmentId: "", title: "", locale: "zh-CN" });
+const photoSubmitting = ref(false);
+const photoDetail = ref<Row | null>(null);
+const photoDrawerVisible = ref(false);
+const photoAssets = ref<Row[]>([]);
+const photoDetailLoading = ref(false);
+const photoPreviewUrl = ref("");
+const photoMetadataForm = ref({ captureTime: "", captureTimeLocal: "", timeZone: "", width: null as number | null, height: null as number | null, orientation: null as number | null, cameraMake: "", cameraModel: "", lensModel: "", latitude: "", longitude: "" });
 
 async function load() {
   loading.value = true; error.value = "";
@@ -65,6 +74,47 @@ async function load() {
     rows.value = Array.isArray(result) ? result as Row[] : [];
   } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "媒体目录加载失败"; }
   finally { loading.value = false; }
+}
+
+async function createPhoto() {
+  if (!photoForm.value.attachmentId.trim() || !photoForm.value.title.trim()) { error.value = "图片 Attachment ID 和标题不能为空"; return; }
+  photoSubmitting.value = true; error.value = ""; message.value = "";
+  try {
+    const result: any = await http.post("/photos", { data: { attachmentId: photoForm.value.attachmentId.trim(), title: photoForm.value.title.trim(), locale: photoForm.value.locale || "zh-CN" } });
+    photoForm.value = { attachmentId: "", title: "", locale: "zh-CN" };
+    message.value = `图片已登记：${result?.id || "已创建"}`;
+    await load();
+    if (result?.id) await openPhoto(result);
+  } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "图片登记失败"; }
+  finally { photoSubmitting.value = false; }
+}
+
+async function openPhoto(row: Row) {
+  if (!row?.id) return;
+  photoDrawerVisible.value = true;
+  photoDetailLoading.value = true; error.value = ""; photoPreviewUrl.value = "";
+  try {
+    const [metadata, assets] = await Promise.all([http.get(`/photos/${row.id}/metadata`), http.get(`/photos/${row.id}/assets`)]);
+    photoDetail.value = metadata as Row;
+    photoAssets.value = Array.isArray(assets) ? assets as Row[] : [];
+    photoMetadataForm.value = { ...photoMetadataForm.value, ...(metadata as Row), captureTime: String((metadata as Row)?.captureTime || ""), width: (metadata as Row)?.width ?? null, height: (metadata as Row)?.height ?? null, orientation: (metadata as Row)?.orientation ?? null };
+    const primary = photoAssets.value.find(asset => asset.primary) || photoAssets.value[0];
+    if (primary?.attachmentId) {
+      const preview: any = await http.get(`/attachments/${primary.attachmentId}/preview-url`);
+      photoPreviewUrl.value = String(preview?.url || "");
+    }
+  } catch (e: any) { photoDetail.value = null; photoAssets.value = []; error.value = e?.response?.data?.detail || e?.message || "图片元数据加载失败"; }
+  finally { photoDetailLoading.value = false; }
+}
+
+async function savePhotoMetadata() {
+  if (!photoDetail.value?.id) return;
+  photoDetailLoading.value = true; error.value = "";
+  try {
+    const result: any = await http.request("put", `/photos/${photoDetail.value.id}/metadata`, { headers: { "If-Match": `\"${photoDetail.value.version ?? 0}\"` }, data: { ...photoMetadataForm.value, captureTime: photoMetadataForm.value.captureTime || null, width: photoMetadataForm.value.width || null, height: photoMetadataForm.value.height || null, orientation: photoMetadataForm.value.orientation || null } });
+    photoDetail.value = result as Row; message.value = "图片元数据已保存并重新读取"; await load();
+  } catch (e: any) { error.value = e?.response?.status === 412 ? "图片版本已变化，请重新加载后再保存" : e?.response?.data?.detail || e?.message || "图片元数据保存失败"; }
+  finally { photoDetailLoading.value = false; }
 }
 
 async function importMusic() {
@@ -312,6 +362,12 @@ onMounted(() => { load(); if (isMusic.value) { loadActiveSessions(); loadPlaylis
       <el-dialog v-model="correctionDialog" title="修正歌曲信息" width="560px"><el-form label-position="top"><div class="grid grid-cols-1 md:grid-cols-2 gap-3"><el-form-item label="标题"><el-input v-model="correctionCandidate.title"/></el-form-item><el-form-item label="艺术家"><el-input v-model="correctionCandidate.artist"/></el-form-item><el-form-item label="专辑"><el-input v-model="correctionCandidate.album"/></el-form-item><el-form-item label="专辑艺术家"><el-input v-model="correctionCandidate.albumArtist"/></el-form-item><el-form-item label="曲目号"><el-input-number v-model="correctionCandidate.trackNumber" :min="1" class="w-full"/></el-form-item><el-form-item label="碟号"><el-input-number v-model="correctionCandidate.discNumber" :min="1" class="w-full"/></el-form-item><el-form-item label="流派"><el-input v-model="correctionCandidate.genre"/></el-form-item><el-form-item label="发行年份"><el-input v-model="correctionCandidate.releaseYear"/></el-form-item></div></el-form><template #footer><el-button @click="correctionDialog=false">取消</el-button><el-button type="primary" :loading="correctionSaving" @click="saveCorrection">保存修正</el-button></template></el-dialog>
       <el-card shadow="never" class="mb-4"><template #header><span>播放模式</span></template><div class="flex flex-wrap items-center gap-3"><el-select v-model="queueRepeatMode" class="w-36"><el-option label="不循环" value="OFF"/><el-option label="队列循环" value="QUEUE"/><el-option label="单曲循环" value="ONE"/></el-select><el-switch v-model="queueShuffleEnabled" active-text="随机播放"/><el-button type="primary" :loading="queueSaving" :disabled="!queueId" @click="saveQueuePolicy">保存模式</el-button><span class="text-xs text-[var(--el-text-color-secondary)]">使用上方 Queue 版本进行并发校验</span></div></el-card>
       <el-card shadow="never" class="mb-4"><template #header><span>可用歌词</span></template><div class="flex flex-wrap gap-2 mb-3"><el-input v-model="lyricsTrackId" placeholder="Track ID" class="w-96" clearable/><el-button type="primary" :loading="lyricsLoading" @click="loadLyrics()">加载歌词</el-button></div><el-skeleton v-if="lyricsLoading" :rows="4" animated/><el-empty v-else-if="!lyricsRows.length" description="暂无可用歌词"/><el-table v-else :data="lyricsRows" stripe><el-table-column prop="language" label="语言" width="110"/><el-table-column prop="type" label="类型" width="140"/><el-table-column prop="source" label="来源" width="140"/><el-table-column prop="provenance" label="溯源" min-width="160"/><el-table-column label="内容" min-width="320"><template #default="scope"><pre class="whitespace-pre-wrap text-sm">{{ scope.row.content || scope.row.timingData || "—" }}</pre></template></el-table-column></el-table></el-card>
+    </template>
+    <template v-else-if="isPhotos">
+      <el-alert title="先在附件与存储中创建 PHOTO Resource 并上传图片 Attachment，再在此登记图片。原图不会被复制或暴露物理路径。" type="info" show-icon :closable="false" class="mb-4" />
+      <el-card shadow="never" class="mb-4"><template #header><span>登记图片并读取元数据</span></template><el-form inline @submit.prevent="createPhoto"><el-form-item label="图片 Attachment ID" required><el-input v-model="photoForm.attachmentId" class="w-80" clearable /></el-form-item><el-form-item label="标题" required><el-input v-model="photoForm.title" class="w-56" /></el-form-item><el-form-item label="语言"><el-input v-model="photoForm.locale" class="w-32" /></el-form-item><el-button type="primary" :loading="photoSubmitting" @click="createPhoto">登记图片</el-button></el-form></el-card>
+      <el-card shadow="never"><template #header><div class="flex justify-between"><span>图片时间线</span><el-input v-model="query" clearable placeholder="搜索 Photo / Resource ID" class="w-64" /></div></template><el-skeleton v-if="loading" :rows="6" animated /><el-empty v-else-if="!filtered.length" description="暂无图片；请先上传图片附件并登记" /><el-table v-else :data="filtered" stripe @row-click="openPhoto"><el-table-column prop="id" label="Photo ID" min-width="260" /><el-table-column prop="resourceId" label="Resource ID" min-width="260" /><el-table-column prop="captureTime" label="拍摄时间" min-width="190" /><el-table-column prop="width" label="宽" width="80" /><el-table-column prop="height" label="高" width="80" /><el-table-column prop="cameraMake" label="相机厂商" min-width="140" /><el-table-column prop="cameraModel" label="相机型号" min-width="160" /><el-table-column label="操作" width="120"><template #default="scope"><el-button link type="primary" @click.stop="openPhoto(scope.row)">查看元数据</el-button></template></el-table-column></el-table></el-card>
+      <el-drawer v-model="photoDrawerVisible" title="图片元数据" size="560px"><el-skeleton v-if="photoDetailLoading" :rows="10" animated /><template v-else-if="photoDetail"><div v-if="photoPreviewUrl" class="mb-4 flex justify-center max-h-64 overflow-auto"><img :src="photoPreviewUrl" alt="图片原图预览" class="max-w-full object-contain" /></div><el-form label-position="top"><div class="grid grid-cols-2 gap-3"><el-form-item label="拍摄时间"><el-input v-model="photoMetadataForm.captureTime" placeholder="RFC 3339，可留空" /></el-form-item><el-form-item label="本地时间"><el-input v-model="photoMetadataForm.captureTimeLocal" /></el-form-item><el-form-item label="时区"><el-input v-model="photoMetadataForm.timeZone" /></el-form-item><el-form-item label="方向"><el-input-number v-model="photoMetadataForm.orientation" :min="1" :max="8" class="w-full" /></el-form-item><el-form-item label="宽"><el-input-number v-model="photoMetadataForm.width" :min="1" class="w-full" /></el-form-item><el-form-item label="高"><el-input-number v-model="photoMetadataForm.height" :min="1" class="w-full" /></el-form-item><el-form-item label="相机厂商"><el-input v-model="photoMetadataForm.cameraMake" /></el-form-item><el-form-item label="相机型号"><el-input v-model="photoMetadataForm.cameraModel" /></el-form-item><el-form-item label="镜头"><el-input v-model="photoMetadataForm.lensModel" /></el-form-item><el-form-item label="纬度"><el-input v-model="photoMetadataForm.latitude" /></el-form-item><el-form-item label="经度"><el-input v-model="photoMetadataForm.longitude" /></el-form-item></div></el-form><el-divider /><div class="text-sm mb-3">资产：{{ photoAssets.length }} 个；原图与派生图身份分离。</div><el-table :data="photoAssets" size="small"><el-table-column prop="role" label="角色" width="150" /><el-table-column prop="availability" label="可用性" width="130" /><el-table-column prop="attachmentId" label="Attachment ID" min-width="220" /></el-table><el-button type="primary" class="mt-4" :loading="photoDetailLoading" @click="savePhotoMetadata">保存元数据</el-button></template><el-empty v-else description="选择一张图片" /></el-drawer>
     </template>
     <template v-else><el-tabs v-model="tab"><el-tab-pane label="目录" name="catalog"/><el-tab-pane label="元数据" name="metadata"/><el-tab-pane label="播放 / 时间线" name="activity"/></el-tabs><el-card shadow="never"><template #header><div class="flex justify-between"><span>{{ title }}目录</span><el-input v-model="query" clearable placeholder="搜索标题或资源 ID" class="w-64"/></div></template><el-skeleton v-if="loading" :rows="5" animated/><el-empty v-else-if="!filtered.length" description="暂无可展示条目；其他媒体目录接口尚未接入"/><el-table v-else :data="filtered" stripe><el-table-column prop="id" label="ID" min-width="240"/><el-table-column prop="name" label="名称" min-width="200"/><el-table-column prop="status" label="状态" width="140"/><el-table-column prop="createdAt" label="创建时间" min-width="180"/></el-table><el-alert title="附件物理存储请在“附件与存储”模块管理。" type="info" show-icon :closable="false" class="mt-4"/></el-card></template>
   </main>
