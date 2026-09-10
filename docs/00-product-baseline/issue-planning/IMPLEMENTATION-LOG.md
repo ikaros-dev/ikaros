@@ -1641,3 +1641,13 @@
 - 实现：字幕只能挂到 owner 可访问的 Media Release，并要求字幕 Attachment 对该 Resource 有效；封面复用 Resource Attachment 的 `COVER` 角色，保持 Attachment 与 Media Resource 身份分离。
 - Console：`/media/video` 的“字幕 / 封面”入口真实读取 Release、字幕和 Resource Attachments，支持按 `COVER` 展示并通过真实字幕 API 关联字幕。
 - 验证：`PersistentMediaTechnicalMetadataServiceTest` 2/2，覆盖合法字幕关联和未知 Release 拒绝；Console 视频页真实 API 对接已审计。
+
+## B01-05 展示附件可用状态
+- 日期：2026-09-10
+- 实现：Attachment availability API 按读取授权返回 READY、RESTORING、MISSING 或 CORRUPTED；Media availability 汇总 Release 状态与底层 Blob/Placement 状态，不把恢复中或损坏内容报告为可用。
+- Console：`/media/video` 对播放 Release 和 COVER Attachment 调用真实可用性 API，展示当前状态；仅 READY Release 开放播放，其他状态提供刷新/恢复入口。
+- 验证：媒体可用性 API 与 Storage availability 契约已审计；Console 视频页真实 API 对接已审计。
+
+## B01 视频与剧集管理（父 issue）
+- 整体验收：B01-01 至 B01-05 已逐项完成本地核验/审计，覆盖视频条目创建、剧集顺序、播放附件、字幕/封面和附件可用状态；Console `/media/video` 已提供对应真实 API 操作入口。
+- 验证证据：`PersistentMediaCatalogServiceTest` 4/4、`PersistentMediaReleaseServiceTest` 2/2、`PersistentMediaTechnicalMetadataServiceTest` 2/2；Console 视频页 API 对接已审计。
