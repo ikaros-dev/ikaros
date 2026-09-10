@@ -97,10 +97,11 @@ public class ResourceController {
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @RequestParam(required = false) ResourceType type,
         @RequestParam(required = false) String query,
+        @RequestParam(name = "lifecycle_status", defaultValue = "ACTIVE") ResourceLifecycle lifecycle,
         @RequestParam(defaultValue = "0") @Min(0) int page,
         @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
-        return resourceService.list(actorId, type, query, page, size);
+        return resourceService.list(actorId, type, query, lifecycle, page, size);
     }
 
     @Operation(summary = "按外部身份查找资源", description = "使用 Provider、类型和外部 ID 查找当前用户拥有的 Resource。")

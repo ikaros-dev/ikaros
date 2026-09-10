@@ -199,16 +199,25 @@ public class DefaultResourceService implements ResourceService {
     @Override
     public Mono<PageResponse<ResourceView>> list(UUID ownerId, ResourceType type, String query,
                                                   int page, int size) {
+        return list(ownerId, type, query, ResourceLifecycle.ACTIVE, page, size);
+    }
+
+    @Override
+    public Mono<PageResponse<ResourceView>> list(UUID ownerId, ResourceType type, String query,
+                                                  ResourceLifecycle lifecycle, int page, int size) {
         if (page < 0 || size < 1 || size > MAX_PAGE_SIZE) {
             return Mono.error(new IllegalArgumentException("分页参数不合法"));
+        }
+        if (lifecycle == null) {
+            return Mono.error(new IllegalArgumentException("生命周期参数不合法"));
         }
         String typeValue = type == null ? "" : type.name();
         String queryValue = query == null ? "" : query.trim();
         long offset = (long) page * size;
-        Mono<List<ResourceView>> items = resourceRepository.search(ownerId, typeValue, queryValue, offset, size)
+        Mono<List<ResourceView>> items = resourceRepository.search(ownerId, typeValue, queryValue, lifecycle.name(), offset, size)
             .flatMap(this::toView)
             .collectList();
-        return Mono.zip(items, resourceRepository.countSearch(ownerId, typeValue, queryValue))
+        return Mono.zip(items, resourceRepository.countSearch(ownerId, typeValue, queryValue, lifecycle.name()))
             .map(result -> new PageResponse<>(result.getT1(), result.getT2(), page, size));
     }
 

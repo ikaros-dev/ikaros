@@ -42,7 +42,8 @@ public interface ResourceRepository extends ReactiveCrudRepository<ResourceEntit
         order by r.updated_at desc
         offset :offset limit :limit
         """)
-    Flux<ResourceEntity> search(UUID ownerId, String resourceType, String query, long offset, int limit);
+    Flux<ResourceEntity> search(UUID ownerId, String resourceType, String query, String lifecycle,
+                                long offset, int limit);
 
     /**
      * 统计活动资源搜索结果总数。
@@ -56,9 +57,9 @@ public interface ResourceRepository extends ReactiveCrudRepository<ResourceEntit
         select count(distinct r.id) from resource r
         join resource_title t on t.resource_id = r.id
         where r.owner_id = :ownerId
-          and r.lifecycle = 'ACTIVE'
+          and r.lifecycle = :lifecycle
           and (:resourceType = '' or r.resource_type = :resourceType)
           and (:query = '' or t.title ilike '%' || :query || '%')
         """)
-    Mono<Long> countSearch(UUID ownerId, String resourceType, String query);
+    Mono<Long> countSearch(UUID ownerId, String resourceType, String query, String lifecycle);
 }
