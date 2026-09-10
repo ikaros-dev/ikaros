@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { http } from "@/utils/http";
 
@@ -11,6 +11,7 @@ const refresh = ref("off");
 const metricRange = ref("1h");
 const lastChecked = ref("");
 const router = useRouter();
+let refreshTimer: number | undefined;
 
 async function load() {
   loading.value = true;
@@ -61,7 +62,15 @@ function hasAction(name: string) {
   return name === "Background Task Queue" || name === "Durable Event Delivery" || name.startsWith("Storage /");
 }
 
-onMounted(load);
+function scheduleRefresh() {
+  if (refreshTimer !== undefined) window.clearInterval(refreshTimer);
+  const seconds = Number(refresh.value);
+  if (seconds > 0) refreshTimer = window.setInterval(load, seconds * 1000);
+}
+
+watch(refresh, scheduleRefresh);
+onMounted(() => { load(); scheduleRefresh(); });
+onBeforeUnmount(() => { if (refreshTimer !== undefined) window.clearInterval(refreshTimer); });
 </script>
 
 <template>

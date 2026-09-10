@@ -1073,6 +1073,14 @@
 - 失败语义：探针请求失败显示 DOWN；积压显示 DEGRADED；未知状态不显示为健康；诊断响应不包含凭据或物理路径。
 - 验证：后端 `mvn -s .mvn-local-settings.xml -pl application -am -DskipTests package` BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` 通过；运行时 `/openapi.json` 确认 `/api/health/operations`，未认证访问返回 401。
 - 主要提交：`bfb85fa2`（任务/投递诊断）、`df0ffbb2`（可操作异常提示）、`6b227ebc`（HTTP 契约登记）。
+## A24 Console 对接审计
+
+- 健康页调用 `/health/live`、`/health/ready`、`/health/operations` 和 Provider status API，展示服务就绪、任务队列、Durable Event 投递和存储探针状态。
+- Request ID/审计筛选继续通过审计页真实 API；异常卡片跳转后台任务、通知投递或存储 Provider 页面。
+- 修复自动刷新下拉框仅改本地状态的问题：选择 30 秒、1 分钟或 5 分钟后会定时重新请求健康 API，离开页面时清理定时器。
+- 未提供真实指标/告警 API 的 CPU、Memory、Incident 区域继续显示空状态，不伪造监控数据。
+- 验证：健康页 `/operations-center/health` 返回 HTTP 200，Console typecheck/build 已通过。
+
 ## B01 视频与剧集管理
 - 日期：2026-09-10
 - 子任务汇总：B01-01 至 B01-05 已按依赖顺序完成；每个功能均有后端 API、Console 管理入口和针对性验证。
