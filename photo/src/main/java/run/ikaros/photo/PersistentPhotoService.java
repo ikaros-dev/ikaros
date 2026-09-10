@@ -67,9 +67,21 @@ public class PersistentPhotoService implements PhotoService {
     @Override
     public Mono<PhotoThumbnailStatusView> thumbnailStatus(UUID owner, UUID photoId) {
         return ownedPhoto(owner, photoId)
-            .flatMap(photo -> tasks.findByTaskTypeAndIdempotencyKey("photo.thumbnail", "photo-thumbnail:" + photo.id())
-                .map(task -> new PhotoThumbnailStatusView(task.id(), task.status().name(), task.result())))
+            .flatMap(photo -> assets.findByPhotoIdAndRole(photo.id(), PhotoAssetRole.THUMBNAIL)
+                .filter(asset -> "AVAILABLE".equalsIgnoreCase(asset.availability()))
+                .map(asset -> new PhotoThumbnailStatusView(null, "SUCCEEDED", java.util.Map.of()))
+                .switchIfEmpty(tasks.findByTaskTypeAndIdempotencyKey("photo.thumbnail", "photo-thumbnail:" + photo.id())
+                    .map(task -> new PhotoThumbnailStatusView(task.id(), task.status().name(), task.result()))))
             .defaultIfEmpty(new PhotoThumbnailStatusView(null, "NOT_REQUESTED", java.util.Map.of()));
+    }
+
+    @Override
+    public Mono<TaskReference> regenerateThumbnail(UUID owner, UUID photoId) {
+        return ownedPhoto(owner, photoId)
+            .flatMap(photo -> tasks.findByTaskTypeAndIdempotencyKey("photo.thumbnail", "photo-thumbnail:" + photo.id())
+                .switchIfEmpty(Mono.error(new NotFoundException("缩略图任务不存在，不能重试")))
+                .flatMap(task -> tasks.retry(task.id())
+                    .map(retry -> new TaskReference(retry.id(), retry.taskType()))));
     }
 
     @Override public Flux<PhotoView> timeline(UUID o) { return photos.findAllByOwnerIdOrderByCaptureTimeDesc(o).take(100).map(this::photoView); }
