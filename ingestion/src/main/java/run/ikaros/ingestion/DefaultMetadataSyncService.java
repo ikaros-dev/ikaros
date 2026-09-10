@@ -15,13 +15,16 @@ public class DefaultMetadataSyncService implements MetadataSyncService {
     private final ResourceOwnershipQuery resources;
     private final ResourceMetadataService metadata;
     private final MetadataCandidateService candidates;
+    private final MetadataSyncStatusRepository statuses;
 
     public DefaultMetadataSyncService(MetadataSyncSourceRepository sources, ResourceOwnershipQuery resources,
-                                      ResourceMetadataService metadata, MetadataCandidateService candidates) {
+                                      ResourceMetadataService metadata, MetadataCandidateService candidates,
+                                      MetadataSyncStatusRepository statuses) {
         this.sources = sources;
         this.resources = resources;
         this.metadata = metadata;
         this.candidates = candidates;
+        this.statuses = statuses;
     }
 
     @Override
@@ -35,7 +38,11 @@ public class DefaultMetadataSyncService implements MetadataSyncService {
                 .flatMap(current -> sameValue(current, request.value().trim())
                     ? Mono.just(new MetadataRefreshResult("UNCHANGED", null))
                     : createCandidate(ownerId, source, request))
-                .switchIfEmpty(Mono.defer(() -> createCandidate(ownerId, source, request))));
+                .switchIfEmpty(Mono.defer(() -> createCandidate(ownerId, source, request)))
+                .flatMap(result -> statuses.save(new MetadataSyncStatusEntity(UUID.randomUUID(), ownerId, source.id(),
+                    request.resourceId(), request.fieldKey().trim(), result.status(),
+                    result.candidate() == null ? null : result.candidate().id(), java.time.Instant.now()))
+                    .thenReturn(result)));
     }
 
     private boolean sameValue(ResourceMetadataView current, String incoming) {

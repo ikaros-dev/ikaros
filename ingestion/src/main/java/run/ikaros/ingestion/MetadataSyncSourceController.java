@@ -14,16 +14,20 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 @RestController
 @RequestMapping("/api/metadata/sync-sources")
 public class MetadataSyncSourceController {
     private final MetadataSyncSourceService service;
     private final MetadataSyncService syncService;
+    private final MetadataSyncStatusRepository statusRepository;
 
-    public MetadataSyncSourceController(MetadataSyncSourceService service, MetadataSyncService syncService) {
+    public MetadataSyncSourceController(MetadataSyncSourceService service, MetadataSyncService syncService,
+                                       MetadataSyncStatusRepository statusRepository) {
         this.service = service;
         this.syncService = syncService;
+        this.statusRepository = statusRepository;
     }
 
     @PostMapping
@@ -50,6 +54,14 @@ public class MetadataSyncSourceController {
                                                @PathVariable UUID sourceId,
                                                @Valid @RequestBody DetectMetadataUpdateRequest request) {
         return syncService.detect(actorId, sourceId, request);
+    }
+
+    @GetMapping("/{sourceId}/status")
+    public Flux<MetadataSyncStatusView> status(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+                                               @PathVariable UUID sourceId) {
+        return statusRepository.findTop50ByOwnerIdAndSyncSourceIdOrderByCheckedAtDesc(actorId, sourceId)
+            .map(value -> new MetadataSyncStatusView(value.id(), value.syncSourceId(), value.resourceId(),
+                value.fieldKey(), value.status(), value.candidateId(), value.checkedAt()));
     }
 
     @DeleteMapping("/{sourceId}")

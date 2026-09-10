@@ -22,7 +22,8 @@ class DefaultMetadataSyncServiceTest {
     private final ResourceOwnershipQuery resources = org.mockito.Mockito.mock(ResourceOwnershipQuery.class);
     private final ResourceMetadataService metadata = org.mockito.Mockito.mock(ResourceMetadataService.class);
     private final MetadataCandidateService candidates = org.mockito.Mockito.mock(MetadataCandidateService.class);
-    private final DefaultMetadataSyncService service = new DefaultMetadataSyncService(sources, resources, metadata, candidates);
+    private final MetadataSyncStatusRepository statuses = org.mockito.Mockito.mock(MetadataSyncStatusRepository.class);
+    private final DefaultMetadataSyncService service = new DefaultMetadataSyncService(sources, resources, metadata, candidates, statuses);
 
     @Test
     void createsCandidateWhenProviderValueChanges() {
@@ -38,6 +39,7 @@ class DefaultMetadataSyncServiceTest {
             "title", "old", MetadataSource.USER, "user", true, true)));
         when(candidates.submit(any(UUID.class), any(UUID.class), any(SubmitMetadataCandidateRequest.class)))
             .thenReturn(Mono.just(candidate));
+        when(statuses.save(any(MetadataSyncStatusEntity.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         StepVerifier.create(service.detect(owner, sourceId,
                 new DetectMetadataUpdateRequest(resourceId, "title", "new", null, 90)))
@@ -57,6 +59,7 @@ class DefaultMetadataSyncServiceTest {
         when(resources.requireOwned(owner, resourceId)).thenReturn(Mono.empty());
         when(metadata.list(owner, resourceId)).thenReturn(Flux.just(new ResourceMetadataView(UUID.randomUUID(),
             "title", "same", MetadataSource.PROVIDER, "tmdb", false, true)));
+        when(statuses.save(any(MetadataSyncStatusEntity.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         StepVerifier.create(service.detect(owner, sourceId,
                 new DetectMetadataUpdateRequest(resourceId, "title", "same", null, 90)))
