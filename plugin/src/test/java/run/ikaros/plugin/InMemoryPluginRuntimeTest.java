@@ -89,6 +89,22 @@ class InMemoryPluginRuntimeTest {
     }
 
     @Test
+    void enabledUpgradeReplacesRegisteredExtension() {
+        InMemoryPluginExtensionRegistry registry = new InMemoryPluginExtensionRegistry();
+        InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0", registry);
+        runtime.install(manifest, Set.of("resource.read")).block();
+        runtime.enable(manifest.pluginId()).block();
+        PluginManifest upgraded = new PluginManifest("example.plugin", "Example 2", "2.0.0",
+            "Example", "1", "2.0.0", null, "example.EntryV2", List.of("parser"),
+            List.of("resource.read"), List.of("parser"));
+
+        runtime.upgrade(manifest.pluginId(), upgraded, Set.of("resource.read")).block();
+
+        assertEquals("example.EntryV2", registry.find("parser").getFirst().entrypoint());
+        assertEquals(PluginLifecycle.ENABLED, runtime.get(manifest.pluginId()).block().lifecycle());
+    }
+
+    @Test
     void uninstallCanKeepPluginDataAsUninstalledRecord() {
         InMemoryPluginRuntime runtime = new InMemoryPluginRuntime("2.0.0");
         runtime.install(manifest, Set.of("resource.read")).block();
