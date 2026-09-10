@@ -150,7 +150,6 @@ export default {
       { path: "drive/transfers", name: "DriveTransfers", component: () => import("@/views/drive/Operations.vue"), meta: { title: "传输任务", showLink: false } },
       { path: "drive/sync", name: "DriveSync", component: () => import("@/views/drive/Operations.vue"), meta: { title: "云盘同步", showLink: false } },
       { path: "drive/device-mutations", name: "DriveDeviceMutations", component: () => import("@/views/drive/DeviceMutations.vue"), meta: { title: "设备变更上传", showLink: false } },
-      { path: "drive/device-mutations", name: "DriveDeviceMutations", component: () => import("@/views/drive/DeviceMutations.vue"), meta: { title: "设备变更上传", showLink: false } },
       { path: "drive/devices", name: "DriveDevices", component: () => import("@/views/integration/Devices.vue"), meta: { title: "同步设备", showLink: false } },
       { path: "drive/backup", name: "DriveBackup", component: () => import("@/views/drive/BackupBindings.vue"), meta: { title: "备份目录", showLink: false } },
       { path: "drive/backup-files", name: "DriveBackupFiles", component: () => import("@/views/drive/BackupFiles.vue"), meta: { title: "备份文件检测", showLink: false } },
@@ -167,6 +166,7 @@ export default {
       { path: "cache", name: "StorageCache", component: () => import("@/views/storage/Cache.vue"), meta: { title: "缓存与我的下载", icon: "ep:coffee-cup" } },
       { path: "downloads", name: "StorageDownloads", component: () => import("@/views/storage/Downloads.vue"), meta: { title: "下载管理", icon: "ep:download" } },
       { path: "cache-eviction", name: "StorageCacheEviction", component: () => import("@/views/storage/CacheEviction.vue"), meta: { title: "清理可淘汰缓存", icon: "ep:delete" } },
+      { path: "cache-quota", name: "StorageCacheQuota", component: () => import("@/views/storage/CacheQuota.vue"), meta: { title: "缓存配额", icon: "ep:pie-chart" } },
       { path: "backup", name: "Backup", component: () => import("@/views/storage/Backup.vue"), meta: { title: "备份恢复", icon: "ep:files" } },
     ]),
     subsystem("/edge-acceleration", "EdgeAccelerationCenter", "边缘加速", "ep:connection", [
