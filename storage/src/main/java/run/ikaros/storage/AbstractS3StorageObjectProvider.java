@@ -101,6 +101,20 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
     }
 
     @Override
+    public Mono<StorageObjectMetadata> write(StorageProvider provider, String objectKey,
+                                             String mediaType, byte[] content) {
+        return credentialResolver.resolve(provider.secretReference()).flatMap(credentials -> Mono.fromCallable(() -> {
+            S3Settings settings = S3Settings.from(provider);
+            return withClient(settings, credentials, client -> {
+                client.putObject(PutObjectRequest.builder().bucket(settings.bucket()).key(objectKey)
+                    .contentType(mediaType).contentLength((long) content.length).build(),
+                    software.amazon.awssdk.core.sync.RequestBody.fromBytes(content));
+                return new StorageObjectMetadata(objectKey, content.length, mediaType, null, null);
+            });
+        })).subscribeOn(Schedulers.boundedElastic());
+    }
+
+    @Override
     public Mono<Void> deleteObject(StorageProvider provider, String objectKey) {
         return credentialResolver.resolve(provider.secretReference()).flatMap(credentials -> Mono.fromRunnable(() -> {
             S3Settings settings = S3Settings.from(provider);

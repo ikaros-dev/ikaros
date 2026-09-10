@@ -44,6 +44,12 @@ public interface StorageService {
     Mono<AttachmentView> attachDerived(UUID ownerId, UUID resourceId, CreateDerivedAttachmentRequest request);
 
     /**
+     * 服务端写入并登记可重建的派生附件。实现必须先完成物理写入，再提交 Attachment 关系。
+     */
+    Mono<AttachmentView> writeDerived(UUID ownerId, UUID resourceId, UUID sourceAttachmentId,
+                                      String fileName, String mediaType, byte[] content);
+
+    /**
      * 查询 Resource 的附件及其当前已知 Storage Placement。
      *
      * @param ownerId 当前拥有者标识
