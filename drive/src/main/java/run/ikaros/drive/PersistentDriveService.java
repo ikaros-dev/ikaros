@@ -41,6 +41,7 @@ public class PersistentDriveService implements DriveService {
     }
     @Override public Flux<DriveSpaceView> listSpaces(UUID actor) { return spaces.findAllByOwnerUserIdOrderByCreatedAtAsc(actor).take(100).map(this::view); }
     @Override public Flux<DriveNodeView> children(UUID actor, UUID sid, UUID parent) { return ownedSpace(actor,sid).flatMapMany(s -> nodes.findAllByDriveSpaceIdAndParentIdAndLifecycleOrderByNormalizedNameAsc(sid,parent,DriveLifecycle.ACTIVE).take(100).map(this::view)); }
+    @Override public Mono<DriveNodeView> node(UUID actor, UUID id) { return ownedNode(actor, id).map(this::view); }
     @Override public Mono<DriveNodeView> createNode(UUID actor, UUID sid, CreateDriveNodeRequest req) {
         return transactionalOperator.transactional(ownedSpace(actor,sid).flatMap(s -> { UUID parent = req.parentId()==null?s.rootNodeId():req.parentId(); return nodes.findByIdAndDriveSpaceId(parent,sid).switchIfEmpty(Mono.error(new NotFoundException("父节点不存在"))).flatMap(p -> {
             if (p.nodeType()!=DriveNodeType.FOLDER) return Mono.error(new ConflictException("父节点不是目录")); Instant now=Instant.now();
