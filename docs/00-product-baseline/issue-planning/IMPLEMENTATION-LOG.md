@@ -1447,3 +1447,8 @@
 - `/media` 原页面把不存在于 `PlaybackHistoryView` 的标题、进度和删除能力渲染成可用操作；已改为仅展示 `/media/playback/history` 实际返回的 `resourceId`、`sessionId`、`startedAt`、`endedAt` 和 `watchedSeconds`。
 - 移除无后端契约支撑的“继续”“从历史中移除”和通用队列“保存顺序”伪入口；音乐播放/队列继续使用 `/music` 的真实 API 页面。
 - 验证：`/media` 返回 HTTP 200，Console `pnpm typecheck`、`pnpm build` 通过；主要提交：`efe18ed3`。
+
+## C05-01 Console 对接审计
+- 新增 `/documents/editor` 协作编辑页，真实调用 `GET /documents`、`GET /documents/{id}/working-copy` 和 `PUT /documents/{id}/working-copy`。
+- 保存携带 `expectedVersion`；后端返回 409 时页面明确提示工作副本已被其他编辑者修改，避免静默覆盖。
+- 验证：Console typecheck/build 通过；主要提交：`6232c405`。
