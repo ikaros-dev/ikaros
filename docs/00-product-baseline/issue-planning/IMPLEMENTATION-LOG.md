@@ -1423,6 +1423,8 @@
 - 创建链接令牌时展示后端本次返回的 token，并提示仅在创建结果中保存；列表展示真实 Share Grant 字段和 ACTIVE/REVOKED 状态。
 - 移除了不存在的 `/rooms` 请求，Room/实时协作页明确标记为后续 C02/C03/C04，避免分享列表因无关接口失败。
 - 验证：Console `pnpm typecheck`、`pnpm build` 通过；`/sharing` 返回 HTTP 200；主要提交：`60b76efc`。
+- C01-04/C01-06：新增 `/collaboration-center/redeem` 验证分享页，调用公开 `POST /shares/redeem?token=...`；成功展示授权目标，失效、过期和撤销令牌直接展示服务端失败原因。
+- 验证：Console typecheck/build 通过；主要提交：`8800aae8`。
 
 ## 媒体消费 Console API 对齐修复
 - `/media` 原页面把不存在于 `PlaybackHistoryView` 的标题、进度和删除能力渲染成可用操作；已改为仅展示 `/media/playback/history` 实际返回的 `resourceId`、`sessionId`、`startedAt`、`endedAt` 和 `watchedSeconds`。
