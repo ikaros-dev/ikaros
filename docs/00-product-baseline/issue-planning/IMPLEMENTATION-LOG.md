@@ -1528,3 +1528,9 @@
 - 整体验收：A21-01 至 A21-06 已逐项完成；同步来源、外部更新检测、人工锁定、候选冲突决策和最近状态均有 API、持久化边界及 Console 入口。
 - 限制：当前 A21-02 是显式刷新检测入口，尚未接入具体第三方 Provider 拉取器、定时调度或 webhook；这些属于后续 Provider/调度任务，不在本父 issue 子任务范围内。
 - 验证证据：同步来源测试 2/2、检测测试 2/2、Resource Metadata 测试 3/3、候选决策测试 2/2、Console typecheck 通过；主要提交：`46edfab6`、`59da474f`、`dde659f5`、`eda158ed`、`b5e798ed`。
+
+## A22-01 安装并校验插件包
+- 日期：2026-09-10
+- 实现：插件运行时在安装前校验 Plugin API/Server 版本兼容性，并要求授予权限必须属于 Manifest 声明权限；校验失败不会写入安装记录，安装成功保持 `INSTALLED`，不自动启用。
+- Console：`/plugins` 的“安装插件”表单调用真实 `POST /api/plugins`，展示安装结果、生命周期、声明/授予权限及错误状态。
+- 验证：`InMemoryPluginRuntimeTest` 9/9；Console 插件页已完成 typecheck/build 审计；主要既有实现提交：插件生命周期实现提交。
