@@ -296,6 +296,10 @@ public class DefaultDriveService implements DriveService {
         return ownedBinding(actorId, bindingId).flatMapMany(binding -> {
             if (!binding.enabled()) return Flux.error(new NotFoundException("Sync Binding 不存在或已暂停"));
             return Flux.fromIterable(requests).concatMap(request -> {
+                if (request.kind() == SyncMutationKind.TRASH && binding.deletePolicy() != DeletePolicy.PROPAGATE) {
+                    return Mono.just(new SyncMutationResult(request.operationId(), false, null,
+                        "DELETE_POLICY_BLOCKED", "当前删除策略不允许设备删除传播到远端"));
+                }
                 Mono<DriveNodeView> action = switch (request.kind()) {
                     case RENAME -> rename(actorId, request.nodeId(), new RenameDriveNodeRequest(request.name(), request.expectedVersion()));
                     case MOVE -> move(actorId, request.nodeId(), new MoveDriveNodeRequest(request.parentId(), request.expectedVersion()));

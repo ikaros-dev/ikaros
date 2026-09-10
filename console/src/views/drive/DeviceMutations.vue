@@ -16,6 +16,7 @@ const results = ref<Row[]>([]);
 const saving = ref(false);
 const error = ref("");
 const message = ref("");
+const selectedBinding = () => bindings.value.find(item => String(item.id) === bindingId.value);
 
 async function loadBindings() {
   try {
@@ -89,6 +90,7 @@ onMounted(loadBindings);
             <el-select v-model="bindingId" class="w-full">
               <el-option v-for="binding in bindings" :key="binding.id" :label="`${binding.localDisplayPath || binding.localScopeId} → ${binding.driveSpaceId}`" :value="binding.id" />
             </el-select>
+            <p v-if="selectedBinding()?.deletePolicy !== 'PROPAGATE'" class="mt-1 text-xs text-[var(--el-text-color-secondary)]">当前删除策略为 {{ selectedBinding()?.deletePolicy || "未设置" }}，设备删除不会传播到远端。</p>
           </el-form-item>
           <el-form-item label="变更类型" required>
             <el-select v-model="kind" class="w-full">

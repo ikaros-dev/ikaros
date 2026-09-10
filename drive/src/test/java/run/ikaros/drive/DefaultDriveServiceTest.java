@@ -135,6 +135,21 @@ class DefaultDriveServiceTest {
         assertEquals(second.id(), history.get(0).id());
         assertEquals(first.id(), history.get(1).id());
         assertEquals(second.id(), service.node(user, file.id()).block().currentRevisionId());
+
+    }
+
+    @Test void deletePropagationHonorsBindingPolicy() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        DriveNodeView node = service.createNode(user, space.id(), new CreateDriveNodeRequest(DriveNodeType.FILE, "a.txt", null)).block();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(), space.rootNodeId(),
+            "scope", null, SyncSourceKind.DIRECTORY, SyncMode.TWO_WAY, DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+
+        SyncMutationResult blocked = service.applyMutations(user, binding.id(), java.util.List.of(
+            new SyncMutationRequest("delete-1", node.id(), SyncMutationKind.TRASH, node.nodeVersion(), null, null))).blockFirst();
+
+        assertEquals(false, blocked.applied());
+        assertEquals("DELETE_POLICY_BLOCKED", blocked.errorCode());
+        assertEquals(DriveLifecycle.ACTIVE, service.node(user, node.id()).block().lifecycle());
     }
 
     @Test void uploadReservationIsIdempotentForSameSession() {

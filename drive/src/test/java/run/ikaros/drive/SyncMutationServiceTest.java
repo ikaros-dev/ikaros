@@ -49,6 +49,6 @@ class SyncMutationServiceTest {
     private SyncBindingView binding(DriveSpaceView space) {
         return service.createBinding(actor, new CreateSyncBindingRequest(
             UUID.randomUUID(), space.id(), space.rootNodeId(), "Documents", null, SyncSourceKind.DIRECTORY,
-            SyncMode.TWO_WAY, DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+            SyncMode.TWO_WAY, DeletePolicy.PROPAGATE, ConflictPolicy.PRESERVE_BOTH)).block();
     }
 }
