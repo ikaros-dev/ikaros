@@ -1629,3 +1629,9 @@
 - 实现：剧集重排要求提交目标 Season 的完整、无重复 Episode 集合，owner 和 Subject/Season 归属均由后端校验；通过受控编号偏移后按新顺序持久化，非法集合不写入。
 - Console：`/media/video` 真实读取 Season/Episode，支持上下移动并调用 `POST /api/media/subjects/{subjectId}/seasons/{seasonId}/actions/reorder-episodes`，保存后重新读取。
 - 验证：`PersistentMediaCatalogServiceTest` 4/4，覆盖完整重排和重复 Episode 拒绝；Console 视频页真实 API 对接已审计。
+
+## B01-03 关联播放附件
+- 日期：2026-09-10
+- 实现：Media Release 只能关联 owner 可访问且 ACTIVE 的 Resource Attachment，保存后初始为 AVAILABLE；非 VIDEO Resource 或不可用/越权 Attachment 会失败且不保存 Release。
+- Console：`/media/video` 的“播放附件”入口真实读取 Release，并使用 Attachment ID 关联播放附件；页面展示加载、空结果和错误状态。
+- 验证：`PersistentMediaReleaseServiceTest` 2/2；Console 视频页真实 API 对接已审计。
