@@ -1051,6 +1051,7 @@
 - 失败语义：无权或不存在 Attachment 沿用统一拒绝；Provider 暂时不可用不会把状态显示为 READY；不修改任何引用。
 - 验证：`DefaultAttachmentReferenceQueryTest` 2/2、`DefaultStorageServiceTest` 相关可用性分支已通过，Maven targeted test BUILD SUCCESS。
 - Console 对接审计：附件列表和详情页均展示后端 `availability`；已修复前端只识别 `AVAILABLE` 而忽略契约状态 `READY` 的问题，READY/AVAILABLE 都显示为可用，其余状态保持明确的非成功提示。
+- 本轮复验（2026-09-10）：`DefaultAttachmentReferenceQueryTest` 2/2、`DefaultAttachmentAvailabilityQueryTest` 2/2、`DefaultStorageServiceTest` 15/15 均通过；附件列表和详情页按后端 `availability` 渲染 READY/AVAILABLE 与非成功状态，Console 构建通过。
 ## A19-01 关键词搜索与分页
 - 日期：2026-09-09
 - 推荐决策：补齐公开只读入口 `GET /api/search?q=&cursor=&limit=`；PostgreSQL Search Projection 仅负责关键词候选和稳定 `(projected_at, document_id)` 游标，Resource Ownership Capability 负责逐条最终授权。
