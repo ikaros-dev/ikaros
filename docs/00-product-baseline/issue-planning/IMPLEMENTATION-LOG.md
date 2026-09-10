@@ -1056,6 +1056,31 @@
 - 实现修复：补充 `/api/search` 直接调用的未认证与权限撤销验收证据；搜索服务对每个候选实时调用 `requireOwned`，不依赖旧 ACL 投影做最终授权。
 - 失败语义：无凭据返回 401，缺少/已撤销 resource.read 返回 403；单条资源无权或投影损坏时跳过该结果，不暴露资源数据、认证材料或索引内部状态。
 - 验证：`ResourceAuthorizationWebFilterTest` 17/17、`PersistentSearchQueryServiceTest` 2/2；相关 Maven targeted tests BUILD SUCCESS。
+
+## A19-04 资源变更后更新索引
+
+- 当前验收：`ResourceSearchProjectionConsumer` 消费 Resource/Tag Durable Event，重新读取当前可投影 Resource；资源进入不可投影生命周期时删除对应搜索投影，旧事件不会替换更新版本。
+- Console 对接审计：搜索页直接查询当前投影；资源详情页仍以 Resource API 作为 Read-your-write 真相，不等待索引更新伪造业务成功。
+- 验证：`ResourceSearchProjectionConsumerTest` 4/4；资源投影全量读取接口编译通过。主要提交：`be99b59a`。
+
+## A19-05 重建索引并切换
+
+- 实现：新增 `POST /api/admin/search/rebuild`，从 Resource Owner 提供的当前可投影数据生成新 rebuild generation；重建结果返回 generation、成功数和失败数，投影版本保持乐观保护。
+- Console 对接审计：`console/src/views/workbench/Search.vue` 的“重建并切换索引”按钮调用真实 Admin API，并在完成后刷新待处理失败项；页面不直接写 Search Projection。
+- 验证：Search 模块编译通过，重建服务既有回归通过；真实 PostgreSQL 全量重建联调仍需 Docker/Testcontainers。
+
+## A19-06 重试失败的投影更新
+
+- 实现：新增 `GET /api/admin/search/projection-failures` 和 `POST /api/admin/search/projection-failures/{failureId}/retry`；重试先从当前 Resource 投影重新投影，成功后才标记原失败记录 resolved，来源不存在或投影失败不会伪造成功。
+- Console 对接审计：搜索页索引运维区展示 Resource、来源版本、失败原因和时间，并提供真实“重试”按钮；成功后重新加载失败列表，错误保持可见。
+- 验证：`PersistentSearchReconciliationServiceTest` 1/1、`ResourceSearchProjectionConsumerTest` 4/4；Console `pnpm typecheck` 通过。主要提交：`9bd37d6b`。
+
+## A19 资源搜索（父 issue）
+
+- 本地验收结论：A19-01 至 A19-06 已按顺序完成，覆盖搜索查询、筛选、实时授权、增量索引、全量重建切换和失败投影重试。
+- 统一决策：Search Projection 仅作为可重建候选读取模型，Resource API 保持业务真相；重建采用 generation，失败项可观察且成功重试后才清除。
+- 验证限制：真实 PostgreSQL migration、全量重建和索引切换联调仍需 Docker/Testcontainers；当前环境未伪造该证据。
+
 ## A19 Console 对接逐项审计
 
 - A19-01：`console/src/views/workbench/Search.vue` 调用真实 `GET /search`，提交关键词后展示结果、空状态和错误状态，并把查询条件同步到 URL。
