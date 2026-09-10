@@ -1426,6 +1426,13 @@
 - C01-04/C01-06：新增 `/collaboration-center/redeem` 验证分享页，调用公开 `POST /shares/redeem?token=...`；成功展示授权目标，失效、过期和撤销令牌直接展示服务端失败原因。
 - 验证：Console typecheck/build 通过；主要提交：`8800aae8`。
 
+## C02-01 至 C02-06 Console 对接审计
+- 新增 `/collaboration-center/rooms` Room 管理页，真实调用 `GET/POST /rooms`，展示 Room 状态、版本和空/加载/错误状态。
+- 成员流程调用 `GET /rooms/{id}/members`、`POST /rooms/{id}/actions/join`、`POST /rooms/{id}/actions/leave`、`POST /rooms/{id}/members/{principal}/actions/remove`。
+- 角色与房主变更调用 `POST .../actions/role?role=...`、`POST .../actions/transfer-owner`；Room 生命周期调用 lock/unlock/end API。
+- 邀请调用 `POST /rooms/{roomId}/invites`，携带 `Idempotency-Key`；页面不再把 Room 当作未实现占位。
+- 验证：Console typecheck/build 通过；主要提交：`6feb874d`。
+
 ## 媒体消费 Console API 对齐修复
 - `/media` 原页面把不存在于 `PlaybackHistoryView` 的标题、进度和删除能力渲染成可用操作；已改为仅展示 `/media/playback/history` 实际返回的 `resourceId`、`sessionId`、`startedAt`、`endedAt` 和 `watchedSeconds`。
 - 移除无后端契约支撑的“继续”“从历史中移除”和通用队列“保存顺序”伪入口；音乐播放/队列继续使用 `/music` 的真实 API 页面。
