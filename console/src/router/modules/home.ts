@@ -175,7 +175,8 @@ export default {
       { path: "rooms", name: "Rooms", component: () => import("@/views/sharing/RoomManager.vue"), meta: { title: "协作房间", icon: "ep:chat-line-round" } },
       { path: "sharing", name: "Sharing", component: () => import("@/views/sharing/index.vue"), meta: { title: "分享协作", icon: "ep:share" } },
       { path: "redeem", name: "ShareRedeem", component: () => import("@/views/sharing/Redeem.vue"), meta: { title: "验证分享", icon: "ep:ticket" } },
-      { path: "watch", name: "WatchRoom", component: () => import("@/views/sharing/WatchRoom.vue"), meta: { title: "一起看", icon: "ep:video-camera" } }
+      { path: "watch", name: "WatchRoom", component: () => import("@/views/sharing/WatchRoom.vue"), meta: { title: "一起看", icon: "ep:video-camera" } },
+      { path: "listen", name: "ListenRoom", component: () => import("@/views/sharing/ListenRoom.vue"), meta: { title: "一起听", icon: "ep:headset" } }
     ]),
     subsystem("/planning-center", "PlanningCenter", "项目与计划", "ep:calendar", [
       { path: "overview", name: "Planning", component: () => import("@/views/planning/Projects.vue"), meta: { title: "生产力与计划", icon: "ep:calendar" } },
