@@ -56,7 +56,13 @@ public class DefaultStepUpVerificationService implements StepUpVerificationServi
                             result.verifiedAt(), result.expiresAt());
                         return new VerificationResult(result.challengeId(), result.method(), result.achievedSvl(),
                             result.subjectId(), result.verifiedAt(), result.expiresAt(), grant);
-                    })));
+                    }))); 
+    }
+
+    @Override
+    public Mono<Void> cancelEmailOtp(UUID userId, UUID challengeId) {
+        return boundStepUpChallenge(userId, challengeId)
+            .then(emailOtpProvider.cancel(userId, challengeId));
     }
 
     private Mono<Void> boundStepUpChallenge(UUID userId, UUID challengeId) {

@@ -114,4 +114,19 @@ class DefaultStepUpVerificationServiceTest {
             })
             .verify();
     }
+
+    @Test
+    void cancelsOnlyBoundStepUpChallenge() {
+        UUID userId = UUID.randomUUID();
+        UUID challengeId = UUID.randomUUID();
+        Instant now = Instant.now();
+        VerificationChallengeEntity challenge = new VerificationChallengeEntity(challengeId, userId,
+            VerificationMethod.EMAIL_OTP, VerificationPurpose.LOGIN_STEP_UP, null, "digest", now,
+            now.plusSeconds(300), 0, 5, null, VerificationChallengeStatus.ISSUED, 0L);
+        when(challengeRepository.findById(challengeId)).thenReturn(Mono.just(challenge));
+        when(otpProvider.cancel(userId, challengeId)).thenReturn(Mono.empty());
+
+        StepVerifier.create(service.cancelEmailOtp(userId, challengeId)).verifyComplete();
+        verify(otpProvider).cancel(userId, challengeId);
+    }
 }

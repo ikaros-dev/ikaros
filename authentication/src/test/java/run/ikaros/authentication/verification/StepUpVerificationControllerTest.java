@@ -44,4 +44,15 @@ class StepUpVerificationControllerTest {
             .exchange().expectStatus().isOk();
         verify(stepUpService).issueEmailOtp(userId);
     }
+
+    @Test
+    void exposesCancelEndpoint() {
+        UUID userId = UUID.randomUUID();
+        UUID challengeId = UUID.randomUUID();
+        when(stepUpService.cancelEmailOtp(userId, challengeId)).thenReturn(Mono.empty());
+
+        client.delete().uri("/api/security/step-up/{challengeId}", challengeId)
+            .header("X-Ikaros-Actor-Id", userId.toString()).exchange().expectStatus().isNoContent();
+        verify(stepUpService).cancelEmailOtp(userId, challengeId);
+    }
 }
