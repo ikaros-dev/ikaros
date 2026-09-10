@@ -178,4 +178,35 @@ class DefaultDriveServiceTest {
 
         assertThrows(ConflictException.class, () -> service.requestFullResync(user, binding.id()).block());
     }
+
+    @Test void cameraBackupDetectionUpsertsChangedSourceItem() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        UUID deviceId = UUID.randomUUID();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(deviceId, space.id(),
+            space.rootNodeId(), "camera-roll", "Camera Roll", SyncSourceKind.CAMERA_ROLL, SyncMode.BACKUP,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+
+        CameraBackupView discovered = service.updateCameraBackup(user, binding.id(), new CameraBackupRequest(
+            " photo-1 ", CameraBackupState.DISCOVERED, null, null, "sha256:old", null)).block();
+        CameraBackupView changed = service.updateCameraBackup(user, binding.id(), new CameraBackupRequest(
+            "photo-1", CameraBackupState.QUEUED, null, null, "sha256:new", null)).block();
+
+        assertEquals(discovered.id(), changed.id());
+        assertEquals("photo-1", changed.sourceItemId());
+        assertEquals(CameraBackupState.QUEUED, changed.state());
+        assertEquals("sha256:new", changed.contentFingerprint());
+        assertEquals(1, service.cameraBackups(user, binding.id()).count().block());
+    }
+
+    @Test void cameraBackupDetectionRejectsInvalidDowngradeAfterVerification() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(),
+            space.rootNodeId(), "camera-roll", "Camera Roll", SyncSourceKind.CAMERA_ROLL, SyncMode.BACKUP,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+        service.updateCameraBackup(user, binding.id(), new CameraBackupRequest("photo-2",
+            CameraBackupState.BACKUP_VERIFIED, null, null, "sha256:verified", null)).block();
+
+        assertThrows(ConflictException.class, () -> service.updateCameraBackup(user, binding.id(), new CameraBackupRequest(
+            "photo-2", CameraBackupState.ERROR, null, null, "sha256:broken", "upload failed")).block());
+    }
 }
