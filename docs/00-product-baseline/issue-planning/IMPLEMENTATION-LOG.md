@@ -869,6 +869,7 @@
 - 主要 commits：`a2903998`、`ed6fdc03`、`0d9771e0`、`6e950762`、`96b3188e`。
 - 验证证据：收藏、标签、用户状态和 Activity 服务/控制器测试均通过；真实 PostgreSQL/Testcontainers 联调仍需 Docker。
 - Console 对接总审计：资源详情页和集合页均已接入 A13 对应读写 API；已运行页面 `/resource-center/library/{resourceId}` 与 `/resource-center/collections` 返回 HTTP 200，Console typecheck/build 已通过。
+- 本轮复验（2026-09-10）：用户资源状态与 Activity 回归 22/22 通过；`Detail.vue`、`Activity.vue` 和集合页分别调用用户状态、收藏、标签、Activity 与刷新 API，保存失败/版本冲突有可见反馈，Console 构建通过。
 
 ## A14-01 创建上传会话
 
