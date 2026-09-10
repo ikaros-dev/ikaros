@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.Locale;
 import java.util.UUID;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -41,6 +42,17 @@ public class PersistentDriveService implements DriveService {
     }
     @Override public Flux<DriveSpaceView> listSpaces(UUID actor) { return spaces.findAllByOwnerUserIdOrderByCreatedAtAsc(actor).take(100).map(this::view); }
     @Override public Flux<DriveNodeView> children(UUID actor, UUID sid, UUID parent) { return ownedSpace(actor,sid).flatMapMany(s -> nodes.findAllByDriveSpaceIdAndParentIdAndLifecycleOrderByNormalizedNameAsc(sid,parent,DriveLifecycle.ACTIVE).take(100).map(this::view)); }
+    @Override public Mono<run.ikaros.common.PageResponse<DriveNodeView>> childrenPage(UUID actor, UUID sid, UUID parent, int page, int size) {
+        int safePage = Math.max(0, page);
+        int safeSize = Math.min(100, Math.max(1, size));
+        return ownedSpace(actor, sid).flatMap(space ->
+            nodes.countByDriveSpaceIdAndParentIdAndLifecycle(sid, parent, DriveLifecycle.ACTIVE)
+                .flatMap(total -> nodes.findAllByDriveSpaceIdAndParentIdAndLifecycleOrderByNormalizedNameAsc(
+                        sid, parent, DriveLifecycle.ACTIVE, PageRequest.of(safePage, safeSize))
+                    .map(this::view)
+                    .collectList()
+                    .map(items -> new run.ikaros.common.PageResponse<>(items, total, safePage, safeSize))));
+    }
     @Override public Mono<DriveNodeView> createNode(UUID actor, UUID sid, CreateDriveNodeRequest req) {
         return transactionalOperator.transactional(ownedSpace(actor,sid).flatMap(s -> { UUID parent = req.parentId()==null?s.rootNodeId():req.parentId(); return nodes.findByIdAndDriveSpaceId(parent,sid).switchIfEmpty(Mono.error(new NotFoundException("父节点不存在"))).flatMap(p -> {
             if (p.nodeType()!=DriveNodeType.FOLDER) return Mono.error(new ConflictException("父节点不是目录")); Instant now=Instant.now();
