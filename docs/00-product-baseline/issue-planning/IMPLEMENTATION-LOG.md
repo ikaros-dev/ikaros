@@ -1523,3 +1523,8 @@
 - A21-04：资源详情页通过真实 `GET /api/ingestion/resources/{resourceId}/metadata-candidates` 展示候选字段、候选值、来源、置信度和状态，并与字段来源的人工覆盖标记并列展示。
 - A21-05：资源详情页通过真实 `POST /api/ingestion/resources/metadata-candidates/{candidateId}/resolution` 应用或拒绝候选；人工锁定字段应用候选会被后端拒绝，不静默覆盖。
 - 验证：`DefaultResourceMetadataServiceTest` 3/3、`DefaultMetadataCandidateServiceTest` 2/2；Console `pnpm typecheck` 已通过；主要既有提交：`efe18ed3` 及元数据候选实现提交。
+
+## A21 元数据持续同步（父 issue）
+- 整体验收：A21-01 至 A21-06 已逐项完成；同步来源、外部更新检测、人工锁定、候选冲突决策和最近状态均有 API、持久化边界及 Console 入口。
+- 限制：当前 A21-02 是显式刷新检测入口，尚未接入具体第三方 Provider 拉取器、定时调度或 webhook；这些属于后续 Provider/调度任务，不在本父 issue 子任务范围内。
+- 验证证据：同步来源测试 2/2、检测测试 2/2、Resource Metadata 测试 3/3、候选决策测试 2/2、Console typecheck 通过；主要提交：`46edfab6`、`59da474f`、`dde659f5`、`eda158ed`、`b5e798ed`。
