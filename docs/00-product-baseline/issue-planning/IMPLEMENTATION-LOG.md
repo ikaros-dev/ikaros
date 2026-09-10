@@ -1356,6 +1356,7 @@
 - 子任务汇总：B06-01 至 B06-05 已按顺序完成，并全部接入电子书 Console 页面。
 - 组合交付：目录进入章节、EBOOK 阅读设置、书签增删、逻辑阅读位置保存和跨会话恢复形成真实 API 联调路径；权限、空态、错误态和持久化复查均有覆盖。
 - 验证：B06 相关 Reading 测试均通过；Console `pnpm typecheck`、`pnpm build` 通过；application package BUILD SUCCESS；运行时 migration `202609100500` 已应用；主要提交：`e5a4d622`、`c19f1aff`、`0a784be9`、`e78dd8f1`、`3919c205`。
+- 本轮复验（2026-09-10）：reading 全量回归 18/18 通过，覆盖 EPUB 章节/目录、偏好、书签和阅读进度；`EbookImport.vue` 已核对章节内容、设置保存回读、书签增删、Session If-Match 与跨会话进度恢复 API。真实 EPUB 内容读取仍需外部文件样本/Testcontainers。
 ## B06 Console 对接逐项审计
 - B06-01：目录“打开章节”调用 `GET /reading/ebook-imports/{importId}/chapters/{chapterId}/content`，正文加载、空正文和错误均有可见状态。
 - B06-02：阅读设置通过 `GET/PUT /reading/preferences?scope=WORK&kind=EBOOK&workId=...` 真实读写，并在保存后重新 GET 校验。
