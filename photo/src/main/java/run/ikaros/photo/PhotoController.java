@@ -30,4 +30,5 @@ public class PhotoController {
     @PostMapping("/albums/{albumId}/photos") public Mono<Void> add(@RequestHeader("X-Ikaros-Actor-Id") UUID o, @PathVariable UUID albumId, @Valid @RequestBody AddPhotoAlbumMemberRequest r) { return service.addToAlbum(o, albumId, r); }
     @DeleteMapping("/albums/{albumId}/photos/{photoId}") public Mono<Void> remove(@RequestHeader("X-Ikaros-Actor-Id") UUID o, @PathVariable UUID albumId, @PathVariable UUID photoId) { return service.removeFromAlbum(o, albumId, photoId); }
     @PostMapping("/albums/{albumId}/actions/reorder") public Mono<Void> reorder(@RequestHeader("X-Ikaros-Actor-Id") UUID o, @PathVariable UUID albumId, @Valid @RequestBody ReorderPhotoAlbumRequest r) { return service.reorderAlbum(o, albumId, r); }
+    @PostMapping("/albums/{albumId}/actions/set-cover") public Mono<ResponseEntity<PhotoAlbumView>> setCover(@RequestHeader("X-Ikaros-Actor-Id") UUID o, @PathVariable UUID albumId, @Valid @RequestBody SetPhotoAlbumCoverRequest r) { return service.setAlbumCover(o, albumId, r).map(view -> ResponseEntity.ok().eTag(IfMatchVersion.etag(view.version())).body(view)); }
 }
