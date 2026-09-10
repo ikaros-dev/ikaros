@@ -1173,6 +1173,15 @@
 - 失败语义：成功或进行中的导入不能通过重试接口重复执行；重试失败继续保留 `FAILED` 和明确错误原因，不伪造成功。
 - 契约追溯：新增 `reading.retry-comic-import-parse`，同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：`PersistentComicImportParseServiceTest`、`PersistentComicImportServiceTest` 共 6/6；Console `pnpm typecheck` 通过；主要提交：`b71d7a4a`。
+## B03 Console 对接逐项审计
+
+- B03-01：阅读库漫画导入表单调用 `POST /reading/comic-imports` 并携带幂等键，导入记录通过 `GET /reading/comic-imports` 加载。
+- B03-02：导入记录的解析按钮调用 `POST /reading/comic-imports/{id}/actions/parse`，随后加载 entries 展示章节和页数。
+- B03-03：按章节加载 entries，使用上移/下移调整本地顺序后调用 `POST /reading/comic-imports/{id}/actions/reorder-pages` 保存完整条目列表。
+- B03-04：导入表格直接展示后端 status/errorMessage，失败不会显示为成功。
+- B03-05：仅 FAILED 记录显示“重试解析”，调用 `retry-parse`；其他状态不显示伪造的重试入口。
+- 验证：阅读库页面 `/reading` 返回 HTTP 200，Console typecheck/build 已通过；B03 相关 Reading 测试累计 6/6 通过。
+
 ## B04-01 按页阅读
 - 日期：2026-09-10
 - 实现：Reading 新增按章节读取有序漫画页列表和按页读取 Attachment 内容的 API；服务端先校验章节所有权，再读取页面对应附件，避免通过页面 ID 越权读取。
