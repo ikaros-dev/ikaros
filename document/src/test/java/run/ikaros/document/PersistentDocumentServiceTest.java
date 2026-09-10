@@ -155,4 +155,27 @@ class PersistentDocumentServiceTest {
         verify(documents).save(any());
         verify(copies).save(any());
     }
+
+    @Test
+    void publishesAnOwnedRevision() {
+        UUID owner = UUID.randomUUID();
+        UUID documentId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceService resources = mock(ResourceService.class);
+        DocumentRepository documents = mock(DocumentRepository.class);
+        DocumentWorkingCopyRepository copies = mock(DocumentWorkingCopyRepository.class);
+        DocumentRevisionRepository revisions = mock(DocumentRevisionRepository.class);
+        DocumentPublicationRepository publications = mock(DocumentPublicationRepository.class);
+        DocumentEntity document = new DocumentEntity(documentId, owner, UUID.randomUUID(), DocumentKind.ARTICLE, null, now, now, 0L);
+        DocumentRevisionEntity revision = new DocumentRevisionEntity(UUID.randomUUID(), documentId, owner, 1L, "published", "v1", now, owner);
+        when(documents.findById(documentId)).thenReturn(Mono.just(document));
+        when(revisions.findAllByDocumentIdOrderByRevisionNumberDesc(documentId)).thenReturn(Flux.just(revision));
+        when(publications.findByDocumentId(documentId)).thenReturn(Mono.empty());
+        when(publications.save(any())).thenReturn(Mono.just(new DocumentPublicationEntity(UUID.randomUUID(), documentId, revision.id(), "hello", DocumentPublicationState.PUBLISHED, now, 0L)));
+
+        StepVerifier.create(new PersistentDocumentService(resources, documents, copies, revisions, publications)
+                .publish(owner, documentId, new PublishDocumentRequest("hello", 1L)))
+            .expectNextMatches(publication -> publication.state() == DocumentPublicationState.PUBLISHED && publication.revisionId().equals(revision.id()))
+            .verifyComplete();
+    }
 }
