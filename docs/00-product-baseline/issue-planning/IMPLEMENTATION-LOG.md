@@ -1251,6 +1251,13 @@
 - 子任务汇总：B05-01 至 B05-04 已按顺序完成；电子书导入、目录解析、基础信息展示和不支持/损坏文件处理均已形成真实 API 与 Console 管理页面闭环。
 - 组合交付：`电子书导入` 页面支持提交 EPUB、查看书籍信息、解析/重试目录、查看稳定章节顺序，并在失败时展示错误摘要；Resource/Edition/Chapter 和导入状态分别保持各自边界。
 - 验证：B05 相关 Reading 测试 6/6；Console `pnpm typecheck`、`pnpm build` 通过；application package BUILD SUCCESS；运行时 migration `202609100400` 已应用，主要提交：`fa41fcf3`、`8b73ce26`、`e02de228`、`ccc0db0f`、`6acb7de4`、`e29313d1`。
+## B05 Console 对接逐项审计
+- B05-01：`console/src/views/reading/EbookImport.vue` 通过 `POST/GET /reading/ebook-imports` 提交并刷新导入记录，携带 `Idempotency-Key`。
+- B05-02：解析/重试目录调用 `POST /reading/ebook-imports/{id}/actions/parse-toc`，目录通过 `GET /reading/ebook-imports/{id}/chapters` 加载并显示稳定顺序与内容路径。
+- B05-03：书籍信息按钮调用 `GET /reading/ebook-imports/{id}/info`，展示后端返回的基础字段、章节数和导入状态。
+- B05-04：失败状态与 `errorMessage` 直接展示；失败记录才提供重试解析目录入口，未用本地成功状态掩盖后端失败。
+- 验证：电子书导入页返回 HTTP 200，Console typecheck/build 已通过。
+
 ## B06-01 按目录进入章节
 - 日期：2026-09-10
 - 实现：新增 owner-scoped EPUB 章节内容查询，按已持久化章节 href 从源 EPUB 读取 XHTML 正文并提取可阅读文本；导入、章节和附件不属于当前用户或内容不存在时返回 NotFound，不产生伪内容。
@@ -1283,6 +1290,14 @@
 - 子任务汇总：B06-01 至 B06-05 已按顺序完成，并全部接入电子书 Console 页面。
 - 组合交付：目录进入章节、EBOOK 阅读设置、书签增删、逻辑阅读位置保存和跨会话恢复形成真实 API 联调路径；权限、空态、错误态和持久化复查均有覆盖。
 - 验证：B06 相关 Reading 测试均通过；Console `pnpm typecheck`、`pnpm build` 通过；application package BUILD SUCCESS；运行时 migration `202609100500` 已应用；主要提交：`e5a4d622`、`c19f1aff`、`0a784be9`、`e78dd8f1`、`3919c205`。
+## B06 Console 对接逐项审计
+- B06-01：目录“打开章节”调用 `GET /reading/ebook-imports/{importId}/chapters/{chapterId}/content`，正文加载、空正文和错误均有可见状态。
+- B06-02：阅读设置通过 `GET/PUT /reading/preferences?scope=WORK&kind=EBOOK&workId=...` 真实读写，并在保存后重新 GET 校验。
+- B06-03：书签列表/新增/删除分别调用 `GET/POST /reading/works/{workId}/bookmarks`、`POST /reading/works/{workId}/editions/{editionId}/chapters/{chapterId}/bookmarks`、`DELETE /reading/bookmarks/{id}`。
+- B06-04：章节阅读创建 Session，保存位置调用 `PATCH /reading/sessions/{sessionId}` 并携带 `If-Match`。
+- B06-05：恢复阅读调用 `GET /reading/works/{workId}/progress?editionId=...`，匹配当前目录章节后再打开真实正文。
+- 验证：电子书导入/阅读页返回 HTTP 200，Console typecheck/build 已通过。
+
 ## B07-01 导入音乐附件
 - 日期：2026-09-10
 - 实现：新增带 `Idempotency-Key` 的 Music 导入命令；校验 owner 可读的音频 Attachment，使用 Attachment 的 Resource identity 创建 Track，再绑定 Audio Source；重复 Resource 和非法音频被拒绝，操作在响应式事务中完成，不留伪成功记录。
