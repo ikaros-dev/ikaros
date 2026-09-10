@@ -136,4 +136,29 @@ class DefaultDriveServiceTest {
         BeginDriveUploadRequest request = new BeginDriveUploadRequest(UUID.randomUUID(), 100L * 1024 * 1024 * 1024 + 1);
         assertThrows(ConflictException.class, () -> service.beginUpload(user, space.id(), request).block());
     }
+
+    @Test void initialBackupResetsCursorAndMarksBindingForRescan() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        UUID device = UUID.randomUUID();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(device, space.id(),
+            space.rootNodeId(), "camera-roll", "/Pictures", SyncSourceKind.DIRECTORY, SyncMode.BACKUP,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+
+        service.advanceCursor(user, binding.id(), 42).block();
+        SyncBindingView rescan = service.requestFullResync(user, binding.id()).block();
+
+        assertEquals(SyncBindingState.DEGRADED, rescan.state());
+        assertEquals(0, rescan.cursor());
+        assertEquals(SyncMode.BACKUP, rescan.mode());
+        assertEquals(binding.id(), rescan.id());
+    }
+
+    @Test void initialBackupRejectsNonBackupBinding() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(),
+            space.rootNodeId(), "documents", null, SyncSourceKind.DIRECTORY, SyncMode.TWO_WAY,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+
+        assertThrows(ConflictException.class, () -> service.requestFullResync(user, binding.id()).block());
+    }
 }

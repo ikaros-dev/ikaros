@@ -305,12 +305,14 @@ public class DefaultDriveService implements DriveService {
         });
     }
     @Override public Mono<SyncBindingView> requestFullResync(UUID actorId, UUID bindingId) {
-        return ownedBinding(actorId, bindingId).map(binding -> {
+        return ownedBinding(actorId, bindingId).flatMap(binding -> {
+            if (binding.mode() != SyncMode.BACKUP) return Mono.error(new ConflictException("只有 BACKUP Binding 可以执行首次备份"));
+            if (!binding.enabled()) return Mono.error(new ConflictException("Backup Binding 已暂停"));
             Binding updated = new Binding(binding.id(), binding.user(), binding.device(), binding.space(), binding.root(),
                 binding.scope(), binding.displayPath(), binding.sourceKind(), binding.mode(), binding.deletePolicy(),
                 binding.conflictPolicy(), binding.enabled(), SyncBindingState.DEGRADED, 0, binding.created(), Instant.now());
             bindings.put(bindingId, updated);
-            return bindingView(updated);
+            return Mono.just(bindingView(updated));
         });
     }
     @Override public Mono<CameraBackupView> updateCameraBackup(UUID actorId, UUID bindingId, CameraBackupRequest request) {
