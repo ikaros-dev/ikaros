@@ -1546,3 +1546,9 @@
 - 实现：插件安装后保持 `INSTALLED`；只有显式 enable 才进入 `ENABLED` 并注册 Manifest 声明的扩展点，disable 会撤销注册；启用/禁用非法生命周期会失败。
 - Console：`/plugins` 清单通过真实 `POST /api/plugins/{pluginId}/enable` 与 `/disable` 操作，并即时刷新生命周期及已启用数量。
 - 验证：`InMemoryPluginRuntimeTest` 9/9，包含扩展注册、禁用撤销、非法生命周期路径；Console 插件页 typecheck/build 审计通过。
+
+## A22-04 禁用后撤销扩展
+- 日期：2026-09-10
+- 实现：disable 仅允许 `ENABLED` 插件执行；持久化生命周期先保存为 `DISABLED` 并撤销扩展注册，内存运行时同样移除扩展索引；重新读取插件确认状态已生效。
+- Console：`/plugins` 禁用按钮带明确确认提示，调用真实 disable API 后重新加载清单和启用计数。
+- 验证：`InMemoryPluginRuntimeTest` 10/10，覆盖扩展撤销、重新读取状态及未启用状态拒绝 disable；Console 插件页 typecheck/build 审计通过；主要提交：`1aa629ba`。
