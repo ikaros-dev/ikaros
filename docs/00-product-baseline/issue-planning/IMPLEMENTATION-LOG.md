@@ -1046,6 +1046,13 @@
 - 实现修复：补充 `/api/search` 直接调用的未认证与权限撤销验收证据；搜索服务对每个候选实时调用 `requireOwned`，不依赖旧 ACL 投影做最终授权。
 - 失败语义：无凭据返回 401，缺少/已撤销 resource.read 返回 403；单条资源无权或投影损坏时跳过该结果，不暴露资源数据、认证材料或索引内部状态。
 - 验证：`ResourceAuthorizationWebFilterTest` 17/17、`PersistentSearchQueryServiceTest` 2/2；相关 Maven targeted tests BUILD SUCCESS。
+## A19 Console 对接逐项审计
+
+- A19-01：`console/src/views/workbench/Search.vue` 调用真实 `GET /search`，提交关键词后展示结果、空状态和错误状态，并把查询条件同步到 URL。
+- A19-02：类型标签和标签输入分别传递 `type`/`tag` 参数，筛选变化会重新请求服务端，不在前端伪造筛选。
+- A19-03：结果使用后端授权候选；“下一页”使用 `nextCursor` 继续请求，页面不缓存或暴露未授权结果。
+- 验证：搜索页面 `/workbench/search` 返回 HTTP 200；Console typecheck/build 已通过。
+
 ## A23 通知中心
 - 日期：2026-09-10
 - 子任务汇总：通知持久化、筛选分页、标记已读、关联目标跳转和任务通知偏好已分别实现并提交；Console 通知中心与账户偏好页均使用服务端 API。
