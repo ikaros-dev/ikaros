@@ -19,8 +19,12 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/metadata/sync-sources")
 public class MetadataSyncSourceController {
     private final MetadataSyncSourceService service;
+    private final MetadataSyncService syncService;
 
-    public MetadataSyncSourceController(MetadataSyncSourceService service) { this.service = service; }
+    public MetadataSyncSourceController(MetadataSyncSourceService service, MetadataSyncService syncService) {
+        this.service = service;
+        this.syncService = syncService;
+    }
 
     @PostMapping
     public Mono<ResponseEntity<MetadataSyncSourceView>> create(
@@ -39,6 +43,13 @@ public class MetadataSyncSourceController {
     public Mono<MetadataSyncSourceView> enable(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
                                                @PathVariable UUID sourceId) {
         return service.enable(actorId, sourceId);
+    }
+
+    @PostMapping("/{sourceId}/refresh")
+    public Mono<MetadataRefreshResult> refresh(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+                                               @PathVariable UUID sourceId,
+                                               @Valid @RequestBody DetectMetadataUpdateRequest request) {
+        return syncService.detect(actorId, sourceId, request);
     }
 
     @DeleteMapping("/{sourceId}")
