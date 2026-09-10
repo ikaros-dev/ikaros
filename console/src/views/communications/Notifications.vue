@@ -6,7 +6,6 @@ import { http } from "@/utils/http";
 type Notification = Record<string, any>;
 const tab = ref("center");
 const router = useRouter();
-const scope = ref("mine");
 const readState = ref("all");
 const source = ref("all");
 const priority = ref("all");
@@ -80,10 +79,6 @@ load();
     <el-card shadow="never" class="mt-4">
       <template v-if="tab === 'center'">
         <div class="flex flex-wrap gap-3 mb-4">
-          <el-radio-group v-model="scope">
-            <el-radio-button label="mine">我的</el-radio-button>
-            <el-radio-button label="authorized">全部授权范围</el-radio-button>
-          </el-radio-group>
           <el-select v-model="readState" placeholder="阅读状态" class="w-32" @change="load">
             <el-option label="全部" value="all" />
             <el-option label="未读" value="unread" />

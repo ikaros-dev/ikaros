@@ -1059,6 +1059,13 @@
 - 组合交付：通知由 durable background-task terminal event 生成并按 recipient 去重；支持状态/来源/优先级筛选、已读操作、任务/Resource 关联跳转和成功/失败通知偏好。
 - 失败语义：未认证/越权请求由统一安全层拒绝；通知偏好关闭时不生成对应任务通知；没有 durable actor 的系统事件不伪造接收人。
 - 验证：`NotificationServiceTest` 5/5；Console `pnpm typecheck`、`pnpm build` 通过；运行时迁移至 `202609070700`，通知 API 已出现在 `/openapi.json`。
+## A23 Console 对接审计
+
+- 通知列表调用 `GET /communications/notifications`，真实传递阅读状态、来源、优先级和分页参数；标记已读调用 `POST /communications/notifications/{id}/actions/read`。
+- 任务/Resource 关联按钮分别跳转后台任务或资源详情；账户偏好页读取并保存 `GET/PUT /communications/notification-preferences`。
+- 移除没有后端契约支持的“我的/全部授权范围”伪筛选，避免页面显示与实际查询语义不一致；批量操作和投递日志继续明确显示为未接入。
+- 验证：通知页与偏好页路由返回 HTTP 200，Console typecheck/build 已通过。
+
 ## A24 运行诊断
 - 日期：2026-09-10
 - 子任务汇总：服务就绪、数据库/存储健康、Request ID 审计筛选、任务/事件投递积压和可操作异常提示均已接入对应 Console 健康/审计入口。
