@@ -1433,6 +1433,11 @@
 - 邀请调用 `POST /rooms/{roomId}/invites`，携带 `Idempotency-Key`；页面不再把 Room 当作未实现占位。
 - 验证：Console typecheck/build 通过；主要提交：`6feb874d`。
 
+## C03-01 至 C03-05 Console 对接审计
+- 新增 `/collaboration-center/watch`“一起看”页面，播放/暂停/跳转调用 `POST /rooms/{roomId}/control`，携带 `expectedStateVersion`，控制权限由后端校验。
+- 页面通过 `GET /rooms/{roomId}/events?afterSequence=...` 增量回放事件，展示 sequence、state version、操作者和 payload，并每 5 秒同步一次以覆盖重连恢复。
+- 验证：Console typecheck/build 通过；主要提交：`71d65d44`。
+
 ## 媒体消费 Console API 对齐修复
 - `/media` 原页面把不存在于 `PlaybackHistoryView` 的标题、进度和删除能力渲染成可用操作；已改为仅展示 `/media/playback/history` 实际返回的 `resourceId`、`sessionId`、`startedAt`、`endedAt` 和 `watchedSeconds`。
 - 移除无后端契约支撑的“继续”“从历史中移除”和通用队列“保存顺序”伪入口；音乐播放/队列继续使用 `/music` 的真实 API 页面。
