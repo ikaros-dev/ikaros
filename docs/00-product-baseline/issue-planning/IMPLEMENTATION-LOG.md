@@ -540,6 +540,11 @@
 - 统一决策：不建立 Session 或保存 OTP/Grant 明文；HTTP 邮件渠道显式配置启用；Grant 必须同时满足主体、用途、SVL、有效期和后续权限策略；状态校验先于 OTP 消费。
 - 验证证据：认证验证相关回归通过（本轮最大组合 14 项，邮件渠道 11 项）；真实第三方邮件与 PostgreSQL/Testcontainers 联调仍需部署环境，未伪造运行证据。
 
+## A07 Console 取消挑战对接修复
+- 发现并修复 `LOGIN_STEP_UP` 取消动作错误调用通用 verification-challenges 地址导致 404 的问题。
+- Step-up 新增 `DELETE /security/step-up/{challengeId}`，服务端复用绑定校验和 Email OTP Provider 取消逻辑；Console 按挑战用途选择对应取消 API。
+- 验证：Step-up 服务/控制器测试 7/7；Console `pnpm typecheck` 通过；主要提交：`773f0036`、`8b93e50e`。
+
 ## A08-01 记录资源管理操作
 
 - 日期：2026-09-09
