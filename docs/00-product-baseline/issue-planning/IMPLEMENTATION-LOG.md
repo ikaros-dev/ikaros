@@ -1417,3 +1417,8 @@
 - B09-03：上移/下移最终调用 `PATCH /music/playlists/{id}/entries/order`，提交完整 Entry 顺序及 `If-Match`。
 - B09-04：“从此处播放”先创建后续歌曲 Queue，再复用 Audio Source、预览地址和播放 Session API。
 - 验证：音乐库页 `/music` 返回 HTTP 200，Console typecheck/build 已通过。
+
+## 媒体消费 Console API 对齐修复
+- `/media` 原页面把不存在于 `PlaybackHistoryView` 的标题、进度和删除能力渲染成可用操作；已改为仅展示 `/media/playback/history` 实际返回的 `resourceId`、`sessionId`、`startedAt`、`endedAt` 和 `watchedSeconds`。
+- 移除无后端契约支撑的“继续”“从历史中移除”和通用队列“保存顺序”伪入口；音乐播放/队列继续使用 `/music` 的真实 API 页面。
+- 验证：`/media` 返回 HTTP 200，Console `pnpm typecheck`、`pnpm build` 通过；主要提交：`efe18ed3`。
