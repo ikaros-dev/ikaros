@@ -43,6 +43,16 @@
 - Console：A01-04 的门禁包含 Console typecheck、lint、build；A01-01/A01-02/A01-03 属于工程/契约治理，不产生独立业务页面。
 - 未伪造项：4 条历史实现模块直连已显式登记迁移白名单，未宣称其已完成最终架构收敛。
 
+## A17 Console 对接逐项审计
+
+- A17-01：附件列表/详情读取并展示真实 `availability`；恢复页展示恢复队列和当前状态。
+- A17-02：附件恢复入口调用 `POST /attachments/{attachmentId}/restore-requests`，每次提交携带幂等键。
+- A17-03：恢复页加载 `GET /restore-requests`，展示总大小、已完成项、状态和预算决策，并提供加载/空状态。
+- A17-04：FAILED/PARTIAL 任务才显示重试按钮，调用 `POST /restore-requests/{id}/actions/retry`；PENDING/ACTIVE 支持取消。
+- A17-05：页面加载 `GET /admin/restore-budget-policy` 展示预算门槛；超预算错误保留后端响应，不伪造确认或成功。
+- A17-06：恢复完成后附件详情仍通过真实可用性和预览/下载授权链访问，不直接读取物理路径。
+- 验证：`/storage-center/archive`、`/storage-center/attachments` 和附件详情页均返回 HTTP 200；Console typecheck/build 已通过。
+
 ## A02-01 首次启动检查必需配置
 
 - 日期：2026-09-10
