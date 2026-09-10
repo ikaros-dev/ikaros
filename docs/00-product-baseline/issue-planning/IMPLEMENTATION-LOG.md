@@ -1564,3 +1564,7 @@
 - 实现：启用中的插件必须先禁用；`KEEP_DATA` 保留卸载记录并标记 `UNINSTALLED`，`DELETE_DATA` 删除插件记录，两个路径都会撤销扩展注册。
 - Console：`/plugins` 提供真实“卸载并保留/卸载并删除”操作，均带确认提示并在成功后重新查询列表。
 - 验证：`InMemoryPluginRuntimeTest` 12/12，覆盖保留后可重新读取、删除后不可读取、启用中拒绝卸载；Console 插件页 typecheck/build 审计通过；主要提交：`b0cf3601`。
+
+## A22 插件生命周期（父 issue）
+- 整体验收：A22-01 至 A22-06 已逐项完成；插件安装校验、兼容性、显式启用、扩展撤销、升级失败保护和卸载保留策略均有运行时行为与 Console `/plugins` 入口。
+- 验证证据：`InMemoryPluginRuntimeTest` 当前 12/12；Console 插件页已通过 typecheck/build 审计。持久化运行时使用同一生命周期契约，完整 PostgreSQL/Testcontainers 验证仍受本机 Docker 不可用限制。
