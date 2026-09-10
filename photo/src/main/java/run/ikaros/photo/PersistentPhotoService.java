@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 import run.ikaros.resource.api.ResourceService;
 import run.ikaros.resource.api.ResourceType;
 import run.ikaros.storage.api.AttachmentReferenceQuery;
@@ -90,6 +91,7 @@ public class PersistentPhotoService implements PhotoService {
     @Override public Mono<PhotoAssetView> setPrimary(UUID o, UUID id, SetPrimaryPhotoAssetRequest r) { return ownedPhoto(o, id).then(assets.findById(r.assetId()).filter(a -> a.photoId().equals(id)).switchIfEmpty(Mono.error(new NotFoundException("Photo Asset 不存在")))).flatMap(target -> assets.findAllByPhotoId(id).flatMap(a -> a.primary() ? assets.save(new PhotoAssetEntity(a.id(), a.ownerId(), a.photoId(), a.attachmentId(), a.role(), false, a.availability(), a.version())) : Mono.just(a)).then(assets.save(new PhotoAssetEntity(target.id(), target.ownerId(), target.photoId(), target.attachmentId(), target.role(), true, target.availability(), target.version())))).map(this::assetView); }
     @Override public Mono<PhotoAlbumView> createAlbum(UUID o, CreatePhotoAlbumRequest r) { Instant now = Instant.now(); return albums.save(new PhotoAlbumEntity(null, o, r.name().trim(), r.description(), now, now, null)).map(this::albumView); }
     @Override public Flux<PhotoAlbumView> albums(UUID o) { return albums.findAllByOwnerIdOrderByUpdatedAtDesc(o).take(100).map(this::albumView); }
+    @Override public Mono<PhotoAlbumView> updateAlbum(UUID o, UUID id, UpdatePhotoAlbumRequest r, long expectedVersion) { return ownedAlbum(o, id).flatMap(a -> { long actual = a.version() == null ? 0 : a.version(); if (actual != expectedVersion) return Mono.error(new PreconditionFailedException("If-Match 与 Album 当前版本不匹配")); return albums.save(new PhotoAlbumEntity(a.id(), a.ownerId(), r.name().trim(), r.description(), a.createdAt(), Instant.now(), a.version())); }).map(this::albumView); }
     @Override public Flux<PhotoView> albumPhotos(UUID o, UUID id) { return ownedAlbum(o, id).flatMapMany(a -> members.findAllByAlbumIdOrderByAddedAtAsc(id).take(100).flatMap(m -> ownedPhoto(o, m.photoId()).map(this::photoView))); }
     @Override public Mono<Void> addToAlbum(UUID o, UUID id, AddPhotoAlbumMemberRequest r) { return ownedAlbum(o, id).then(ownedPhoto(o, r.photoId())).then(members.save(new PhotoAlbumMemberEntity(null, id, r.photoId(), Instant.now())).then()); }
     @Override public Mono<Void> removeFromAlbum(UUID o, UUID id, UUID photoId) { return ownedAlbum(o, id).then(members.findAllByAlbumIdOrderByAddedAtAsc(id).filter(m -> m.photoId().equals(photoId)).next().flatMap(members::delete)); }
@@ -97,5 +99,5 @@ public class PersistentPhotoService implements PhotoService {
     private Mono<PhotoAlbumEntity> ownedAlbum(UUID o, UUID id) { return albums.findById(id).filter(a -> a.ownerId().equals(o)).switchIfEmpty(Mono.error(new NotFoundException("Album 不存在或无权访问"))); }
     private PhotoView photoView(PhotoEntity p) { return new PhotoView(p.id(), p.resourceId(), p.captureTime(), p.width(), p.height(), p.cameraMake(), p.cameraModel()); }
     private PhotoAssetView assetView(PhotoAssetEntity a) { return new PhotoAssetView(a.id(), a.photoId(), a.attachmentId(), a.role(), a.primary(), a.availability()); }
-    private PhotoAlbumView albumView(PhotoAlbumEntity a) { return new PhotoAlbumView(a.id(), a.name(), a.description(), a.createdAt(), a.updatedAt()); }
+    private PhotoAlbumView albumView(PhotoAlbumEntity a) { return new PhotoAlbumView(a.id(), a.name(), a.description(), a.createdAt(), a.updatedAt(), a.version()); }
 }

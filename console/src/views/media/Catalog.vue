@@ -69,6 +69,10 @@ const photoThumbnailTask = ref("");
 const photoThumbnailStatus = ref("NOT_REQUESTED");
 const photoThumbnailError = ref("");
 const photoMetadataForm = ref({ captureTime: "", captureTimeLocal: "", timeZone: "", width: null as number | null, height: null as number | null, orientation: null as number | null, cameraMake: "", cameraModel: "", lensModel: "", latitude: "", longitude: "" });
+const photoAlbums = ref<Row[]>([]);
+const photoAlbumLoading = ref(false);
+const photoAlbumSaving = ref(false);
+const photoAlbumForm = ref({ id: "", name: "", description: "", version: 0 });
 
 async function load() {
   loading.value = true; error.value = "";
@@ -91,6 +95,31 @@ async function createPhoto() {
     if (result?.id) await openPhoto(result);
   } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "图片登记失败"; }
   finally { photoSubmitting.value = false; }
+}
+
+async function loadPhotoAlbums() {
+  photoAlbumLoading.value = true;
+  try { const result = await http.get<unknown, unknown>("/photos/albums"); photoAlbums.value = Array.isArray(result) ? result as Row[] : []; }
+  catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "相册加载失败"; }
+  finally { photoAlbumLoading.value = false; }
+}
+
+function editPhotoAlbum(album: Row) { photoAlbumForm.value = { id: String(album.id), name: String(album.name || ""), description: String(album.description || ""), version: Number(album.version || 0) }; }
+
+async function savePhotoAlbum() {
+  if (!photoAlbumForm.value.name.trim()) { error.value = "相册名称不能为空"; return; }
+  photoAlbumSaving.value = true; error.value = ""; message.value = "";
+  try {
+    const payload = { name: photoAlbumForm.value.name.trim(), description: photoAlbumForm.value.description.trim() || null };
+    const result: any = photoAlbumForm.value.id
+      ? await http.request("patch", `/photos/albums/${photoAlbumForm.value.id}`, { headers: { "If-Match": `\"${photoAlbumForm.value.version}\"` }, data: payload })
+      : await http.post("/photos/albums", { data: payload });
+    message.value = photoAlbumForm.value.id ? "相册已更新" : "相册已创建";
+    photoAlbumForm.value = { id: "", name: "", description: "", version: 0 };
+    await loadPhotoAlbums();
+    if (result?.version !== undefined) message.value += `（版本 ${result.version}）`;
+  } catch (e: any) { error.value = e?.response?.status === 412 ? "相册版本已变化，请重新加载后再保存" : e?.response?.data?.detail || e?.message || "相册保存失败"; }
+  finally { photoAlbumSaving.value = false; }
 }
 
 async function openPhoto(row: Row) {
@@ -381,7 +410,7 @@ async function playPlaylistEntry(index: number) {
   finally { playlistEntrySaving.value = false; }
 }
 
-onMounted(() => { load(); if (isMusic.value) { loadActiveSessions(); loadPlaylists(); } });
+onMounted(() => { load(); if (isMusic.value) { loadActiveSessions(); loadPlaylists(); } if (isPhotos.value) loadPhotoAlbums(); });
 </script>
 
 <template>
@@ -401,6 +430,7 @@ onMounted(() => { load(); if (isMusic.value) { loadActiveSessions(); loadPlaylis
     </template>
     <template v-else-if="isPhotos">
       <el-alert title="先在附件与存储中创建 PHOTO Resource 并上传图片 Attachment，再在此登记图片。原图不会被复制或暴露物理路径。" type="info" show-icon :closable="false" class="mb-4" />
+      <el-card shadow="never" class="mb-4"><template #header><span>相册</span></template><el-form inline @submit.prevent="savePhotoAlbum"><el-form-item label="名称" required><el-input v-model="photoAlbumForm.name" placeholder="相册名称" class="w-56" /></el-form-item><el-form-item label="描述"><el-input v-model="photoAlbumForm.description" placeholder="可选描述" class="w-64" /></el-form-item><el-button type="primary" :loading="photoAlbumSaving" @click="savePhotoAlbum">{{ photoAlbumForm.id ? "保存修改" : "创建相册" }}</el-button><el-button v-if="photoAlbumForm.id" @click="photoAlbumForm = { id: '', name: '', description: '', version: 0 }">新建</el-button></el-form><el-skeleton v-if="photoAlbumLoading" :rows="2" animated /><el-empty v-else-if="!photoAlbums.length" description="暂无相册" /><el-table v-else :data="photoAlbums" stripe><el-table-column prop="name" label="名称" min-width="180" /><el-table-column prop="description" label="描述" min-width="240" /><el-table-column prop="version" label="版本" width="90" /><el-table-column label="操作" width="100"><template #default="scope"><el-button link type="primary" @click="editPhotoAlbum(scope.row)">编辑</el-button></template></el-table-column></el-table></el-card>
       <el-card shadow="never" class="mb-4"><template #header><span>登记图片并读取元数据</span></template><el-form inline @submit.prevent="createPhoto"><el-form-item label="图片 Attachment ID" required><el-input v-model="photoForm.attachmentId" class="w-80" clearable /></el-form-item><el-form-item label="标题" required><el-input v-model="photoForm.title" class="w-56" /></el-form-item><el-form-item label="语言"><el-input v-model="photoForm.locale" class="w-32" /></el-form-item><el-button type="primary" :loading="photoSubmitting" @click="createPhoto">登记图片</el-button></el-form></el-card>
       <el-card shadow="never"><template #header><div class="flex justify-between"><span>图片时间线</span><el-input v-model="query" clearable placeholder="搜索 Photo / Resource ID" class="w-64" /></div></template><el-skeleton v-if="loading" :rows="6" animated /><el-empty v-else-if="!filtered.length" description="暂无图片；请先上传图片附件并登记" /><el-table v-else :data="filtered" stripe @row-click="openPhoto"><el-table-column prop="id" label="Photo ID" min-width="260" /><el-table-column prop="resourceId" label="Resource ID" min-width="260" /><el-table-column prop="captureTime" label="拍摄时间" min-width="190" /><el-table-column prop="width" label="宽" width="80" /><el-table-column prop="height" label="高" width="80" /><el-table-column prop="cameraMake" label="相机厂商" min-width="140" /><el-table-column prop="cameraModel" label="相机型号" min-width="160" /><el-table-column label="操作" width="120"><template #default="scope"><el-button link type="primary" @click.stop="openPhoto(scope.row)">查看元数据</el-button></template></el-table-column></el-table></el-card>
       <el-drawer v-model="photoDrawerVisible" title="图片元数据" size="560px"><el-skeleton v-if="photoDetailLoading" :rows="10" animated /><template v-else-if="photoDetail"><div v-if="photoPreviewUrl" class="mb-4 flex justify-center max-h-64 overflow-auto"><img :src="photoPreviewUrl" alt="图片原图预览" class="max-w-full object-contain" /></div><el-button v-if="photoPreviewUrl" class="mb-4" @click="openOriginalPhoto">打开原图</el-button><el-alert v-if="photoThumbnailStatus === 'FAILED' || photoThumbnailStatus === 'TIMED_OUT'" title="缩略图生成失败" :description="photoThumbnailError || '请查看后台任务详情后重新生成。'" type="error" show-icon :closable="false" class="mb-4" /><el-form label-position="top"><div class="grid grid-cols-2 gap-3"><el-form-item label="拍摄时间"><el-input v-model="photoMetadataForm.captureTime" placeholder="RFC 3339，可留空" /></el-form-item><el-form-item label="本地时间"><el-input v-model="photoMetadataForm.captureTimeLocal" /></el-form-item><el-form-item label="时区"><el-input v-model="photoMetadataForm.timeZone" /></el-form-item><el-form-item label="方向"><el-input-number v-model="photoMetadataForm.orientation" :min="1" :max="8" class="w-full" /></el-form-item><el-form-item label="宽"><el-input-number v-model="photoMetadataForm.width" :min="1" class="w-full" /></el-form-item><el-form-item label="高"><el-input-number v-model="photoMetadataForm.height" :min="1" class="w-full" /></el-form-item><el-form-item label="相机厂商"><el-input v-model="photoMetadataForm.cameraMake" /></el-form-item><el-form-item label="相机型号"><el-input v-model="photoMetadataForm.cameraModel" /></el-form-item><el-form-item label="镜头"><el-input v-model="photoMetadataForm.lensModel" /></el-form-item><el-form-item label="纬度"><el-input v-model="photoMetadataForm.latitude" /></el-form-item><el-form-item label="经度"><el-input v-model="photoMetadataForm.longitude" /></el-form-item></div></el-form><el-divider /><div class="text-sm mb-3">资产：{{ photoAssets.length }} 个；缩略图任务状态：{{ photoThumbnailStatus }}；原图与派生图身份分离。</div><el-table :data="photoAssets" size="small"><el-table-column prop="role" label="角色" width="150" /><el-table-column prop="availability" label="可用性" width="130" /><el-table-column prop="attachmentId" label="Attachment ID" min-width="220" /></el-table><div class="flex gap-2 mt-4"><el-button type="primary" :loading="photoDetailLoading" @click="savePhotoMetadata">保存元数据</el-button><el-button type="success" :loading="photoThumbnailLoading" @click="generatePhotoThumbnail">{{ photoThumbnailStatus === 'FAILED' || photoThumbnailStatus === 'TIMED_OUT' ? '重新生成缩略图' : '生成缩略图' }}</el-button></div><div v-if="photoThumbnailTask" class="text-xs text-[var(--el-text-color-secondary)] mt-2">后台任务：{{ photoThumbnailTask }}</div></template><el-empty v-else description="选择一张图片" /></el-drawer>
