@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import run.ikaros.storage.api.AttachmentReference;
 import run.ikaros.resource.api.ResourceLifecycle;
 import run.ikaros.resource.api.ResourceService;
 import run.ikaros.resource.api.ResourceType;
@@ -59,6 +60,30 @@ class PersistentGameArchiveServiceTest {
         StepVerifier.create(new PersistentGameArchiveService(resources, games, platforms, versions, assets, attachments)
                 .createVersion(owner, gameId, new CreateGameVersionRequest("1.0", null, now)))
             .expectNextMatches(version -> version.id().equals(versionId) && version.platformId() == null)
+            .verifyComplete();
+    }
+
+    @Test
+    void addsAssetForOwnedGameAttachment() {
+        UUID owner = UUID.randomUUID();
+        UUID gameId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        UUID attachmentId = UUID.randomUUID();
+        UUID assetId = UUID.randomUUID();
+        ResourceService resources = mock(ResourceService.class);
+        GameRepository games = mock(GameRepository.class);
+        GamePlatformRepository platforms = mock(GamePlatformRepository.class);
+        GameVersionRepository versions = mock(GameVersionRepository.class);
+        GameAssetRepository assets = mock(GameAssetRepository.class);
+        AttachmentReferenceQuery attachments = mock(AttachmentReferenceQuery.class);
+        when(games.findById(gameId)).thenReturn(Mono.just(new GameEntity(gameId, owner, resourceId, "PC", 0L)));
+        when(attachments.requireActiveForResource(owner, resourceId, attachmentId)).thenReturn(Mono.just(new AttachmentReference(attachmentId, resourceId)));
+        when(assets.save(any())).thenReturn(Mono.just(new GameAssetEntity(assetId, owner, gameId, null, attachmentId,
+            GameAssetCategory.INSTALLER, "installer", null, null, GameAssetAvailability.AVAILABLE, 0L)));
+
+        StepVerifier.create(new PersistentGameArchiveService(resources, games, platforms, versions, assets, attachments)
+                .addAsset(owner, gameId, new CreateGameAssetRequest(attachmentId, null, GameAssetCategory.INSTALLER, "installer", null, null)))
+            .expectNextMatches(asset -> asset.id().equals(assetId) && asset.attachmentId().equals(attachmentId))
             .verifyComplete();
     }
 }
