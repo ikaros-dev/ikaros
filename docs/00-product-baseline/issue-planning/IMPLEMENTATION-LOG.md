@@ -1617,3 +1617,9 @@
 - 整体验收：A24-01 至 A24-05 已逐项核验，完成服务就绪、数据库/存储异常、请求关联、任务/投递积压和可操作异常提示的 API 与 Console 对接。
 - 限制：资源指标和独立告警历史目前没有后端采样/告警数据，页面明确显示空状态，不伪造指标。
 - 验证证据：上述 9 条后端测试通过；Console `/operations-center/health` 与 `/communications-center/audit` 已完成真实 API 对接审计。
+
+## B01-01 创建视频条目
+- 日期：2026-09-10
+- 实现：创建视频 Subject 时先通过 Resource API 创建 `VIDEO` Resource，再保存 owner-scoped Media Subject；Resource 创建失败不会写入 Subject。
+- Console：`/media/video` 的“创建视频条目”表单真实调用 `POST /api/media/subjects`，创建后刷新列表并展示空/加载/错误状态。
+- 验证：`PersistentMediaCatalogServiceTest` 4/4；Console 视频页已完成真实 API 对接审计；主要既有实现提交：媒体目录实现提交。
