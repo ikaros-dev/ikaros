@@ -1603,3 +1603,17 @@
 - 整体验收：A23-01 至 A23-05 已逐项核验，完成通知生成、列表筛选、已读、关联跳转和偏好设置的 API 与 Console 对接。
 - 限制：通知投递规则和投递日志仍是其他功能范围，页面明确显示未接入，不冒充 A23 已完成能力。
 - 验证证据：`NotificationServiceTest` 6/6、Console typecheck 通过；主要提交：`5477defd`。
+
+## A24-01 至 A24-05 运行诊断
+- 日期：2026-09-10
+- A24-01：`/health/live` 不依赖数据库；`/health/ready` 在应用未完成启动或 PostgreSQL 探针失败时返回 DOWN/503。Console `/operations-center/health` 展示存活与就绪状态。
+- A24-02：健康页读取真实数据库就绪结果和每个 Storage Provider 状态，探针异常显示异常而不降级为成功，Credential 只展示状态摘要。
+- A24-03：请求通过 `X-Request-Id`/`X-Correlation-Id` 传播，审计事件持久化并可在 `/communications-center/audit` 以 Request ID 查询和展开关联 ID。
+- A24-04：健康诊断读取后台任务 pending/running/failed/timed-out 与 Durable Event 投递积压，Console 提供真实后台任务和通知投递跳转。
+- A24-05：异常卡片按后端状态显示告警，并将任务、投递和存储异常映射到对应运维页面；无法操作的状态明确显示“暂无操作”。
+- 验证：`HealthControllerTest` 3/3、`AuditQueryServiceTest` 3/3、`BackgroundTaskControllerTest` 3/3；Console typecheck 通过。
+
+## A24 运行诊断（父 issue）
+- 整体验收：A24-01 至 A24-05 已逐项核验，完成服务就绪、数据库/存储异常、请求关联、任务/投递积压和可操作异常提示的 API 与 Console 对接。
+- 限制：资源指标和独立告警历史目前没有后端采样/告警数据，页面明确显示空状态，不伪造指标。
+- 验证证据：上述 9 条后端测试通过；Console `/operations-center/health` 与 `/communications-center/audit` 已完成真实 API 对接审计。
