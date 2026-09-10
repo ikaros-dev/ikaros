@@ -24,7 +24,7 @@ const providerOptions = ref<Provider[]>([]);
 const upload = ref({ objectKey: "", provider: "s3-main", kind: "ORIGINAL" });
 const uploadSessionId = ref("");
 const uploadIdempotencyKey = ref("");
-const availableCount = computed(() => attachments.value.filter(item => String(item.availability || "").toUpperCase() === "AVAILABLE").length);
+const availableCount = computed(() => attachments.value.filter(item => ["READY", "AVAILABLE"].includes(String(item.availability || "").toUpperCase())).length);
 const uniqueBlobs = computed(() => new Set(attachments.value.map(item => item.blobId).filter(Boolean)).size);
 const allAttachments = computed(() => !resourceId.value.trim());
 const attachmentCount = computed(() => allAttachments.value ? total.value : attachments.value.length);
@@ -115,7 +115,7 @@ onMounted(async () => { try { const result = await http.get<unknown, unknown>("/
         <el-table-column label="Blob / SHA-256" min-width="240"><template #default="{ row }"><div>{{ row.blobId || '-' }}</div><div class="text-xs text-[var(--el-text-color-secondary)]">{{ row.sha256 || '-' }}</div></template></el-table-column>
         <el-table-column prop="sizeBytes" label="大小（Bytes）" width="140" />
         <el-table-column label="Placement" min-width="180"><template #default="{ row }">{{ placementSummary(row) }}</template></el-table-column>
-        <el-table-column label="可用性" width="130"><template #default="{ row }"><el-tag :type="String(row.availability).toUpperCase() === 'AVAILABLE' ? 'success' : 'danger'">{{ row.availability || '未知' }}</el-tag></template></el-table-column>
+        <el-table-column label="可用性" width="130"><template #default="{ row }"><el-tag :type="['READY', 'AVAILABLE'].includes(String(row.availability).toUpperCase()) ? 'success' : 'danger'">{{ row.availability || '未知' }}</el-tag></template></el-table-column>
       </el-table>
       <el-pagination v-if="allAttachments && loaded" v-model:current-page="page" v-model:page-size="pageSize" class="mt-4 justify-end" :page-sizes="[10, 20, 50, 100]" :total="total" layout="total, sizes, prev, pager, next, jumper" @current-change="changePage" @size-change="changePageSize" />
     </el-card>
