@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 import run.ikaros.common.ConflictException;
 import run.ikaros.resource.api.ResourceLifecycle;
@@ -78,5 +79,27 @@ class PersistentDocumentServiceTest {
                 .updateWorkingCopy(owner, documentId, new UpdateWorkingCopyRequest("local", "v1", 2L)))
             .expectErrorMatches(error -> error instanceof ConflictException)
             .verify();
+    }
+
+    @Test
+    void listsOnlyOwnedDocumentRevisionsInRepositoryOrder() {
+        UUID owner = UUID.randomUUID();
+        UUID documentId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceService resources = mock(ResourceService.class);
+        DocumentRepository documents = mock(DocumentRepository.class);
+        DocumentWorkingCopyRepository copies = mock(DocumentWorkingCopyRepository.class);
+        DocumentRevisionRepository revisions = mock(DocumentRevisionRepository.class);
+        DocumentPublicationRepository publications = mock(DocumentPublicationRepository.class);
+        when(documents.findById(documentId)).thenReturn(Mono.just(new DocumentEntity(documentId, owner, UUID.randomUUID(), DocumentKind.DOCUMENT, null, now, now, 0L)));
+        when(revisions.findAllByDocumentIdOrderByRevisionNumberDesc(documentId)).thenReturn(Flux.just(
+                new DocumentRevisionEntity(UUID.randomUUID(), documentId, owner, 2L, "second", "v1", now, owner),
+                new DocumentRevisionEntity(UUID.randomUUID(), documentId, owner, 1L, "first", "v1", now, owner)));
+
+        StepVerifier.create(new PersistentDocumentService(resources, documents, copies, revisions, publications)
+                .revisions(owner, documentId))
+            .expectNextMatches(revision -> revision.revisionNumber() == 2L)
+            .expectNextMatches(revision -> revision.revisionNumber() == 1L)
+            .verifyComplete();
     }
 }
