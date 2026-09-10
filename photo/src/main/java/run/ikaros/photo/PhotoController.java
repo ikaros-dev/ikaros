@@ -29,4 +29,5 @@ public class PhotoController {
     @GetMapping("/albums/{albumId}/photos") public Flux<PhotoView> albumPhotos(@RequestHeader("X-Ikaros-Actor-Id") UUID o, @PathVariable UUID albumId) { return service.albumPhotos(o, albumId); }
     @PostMapping("/albums/{albumId}/photos") public Mono<Void> add(@RequestHeader("X-Ikaros-Actor-Id") UUID o, @PathVariable UUID albumId, @Valid @RequestBody AddPhotoAlbumMemberRequest r) { return service.addToAlbum(o, albumId, r); }
     @DeleteMapping("/albums/{albumId}/photos/{photoId}") public Mono<Void> remove(@RequestHeader("X-Ikaros-Actor-Id") UUID o, @PathVariable UUID albumId, @PathVariable UUID photoId) { return service.removeFromAlbum(o, albumId, photoId); }
+    @PostMapping("/albums/{albumId}/actions/reorder") public Mono<Void> reorder(@RequestHeader("X-Ikaros-Actor-Id") UUID o, @PathVariable UUID albumId, @Valid @RequestBody ReorderPhotoAlbumRequest r) { return service.reorderAlbum(o, albumId, r); }
 }
