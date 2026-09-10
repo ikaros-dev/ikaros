@@ -1214,6 +1214,14 @@
 - 日期：2026-09-10
 - 子任务汇总：B04-01 至 B04-05 已按顺序完成本地实现，均接入 Reading Console 阅读器。
 - 组合交付：章节目录选择、按页内容读取、阅读方向/布局设置、逻辑阅读位置保存、上次位置恢复和章节切换形成真实 API 联调路径。
+## B04 Console 对接逐项审计
+- B04-01：`console/src/views/reading/index.vue` 调用 `GET /reading/chapters/{chapterId}/pages` 获取有序页面，并逐页调用 `GET /reading/pages/{pageId}/content` 渲染图片。
+- B04-02：方向/布局切换真实读写 `GET/PUT /reading/preferences?scope=WORK&kind=COMIC&workId=...`，不是仅改本地状态。
+- B04-03：打开章节创建 `POST /reading/works/{workId}/sessions`，翻页通过 `PATCH /reading/sessions/{sessionId}` 携带 `If-Match` 保存位置。
+- B04-04：打开章节先调用 `GET /reading/works/{workId}/progress?editionId=...`，按 `locatorValue` 恢复页面；无进度时回到第一页。
+- B04-05：章节选择器调用 `GET /reading/chapters/{editionId}`，选择后复用真实页面、进度和 Session 链路。
+- 验证：阅读库页面 `/reading` 返回 HTTP 200，Console typecheck/build 已通过。
+
 ## B05-01 导入受支持的电子书
 - 日期：2026-09-10
 - 实现：新增 EPUB 导入记录、幂等创建 API 和 `reading_ebook_import` 迁移；导入时校验当前用户可读 Attachment，仅接受 `.epub`，创建 EBOOK Work/Edition 并保留明确的 ACCEPTED 状态。
