@@ -1140,6 +1140,7 @@
 - 修复自动刷新下拉框仅改本地状态的问题：选择 30 秒、1 分钟或 5 分钟后会定时重新请求健康 API，离开页面时清理定时器。
 - 未提供真实指标/告警 API 的 CPU、Memory、Incident 区域继续显示空状态，不伪造监控数据。
 - 验证：健康页 `/operations-center/health` 返回 HTTP 200，Console typecheck/build 已通过。
+- 本轮复验（2026-09-10）：Operations 目标测试共 15/15 通过，覆盖健康探针、Request ID 审计查询、任务队列诊断和通知中心；健康页继续调用 `/health/live`、`/health/ready`、`/health/operations` 真实 API。CPU/Memory/告警历史仍保持空状态，不伪造指标。
 
 ## B01 视频与剧集管理
 - 日期：2026-09-10
