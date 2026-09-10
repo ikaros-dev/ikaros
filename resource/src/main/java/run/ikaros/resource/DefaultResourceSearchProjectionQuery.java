@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.resource.api.ResourceLifecycle;
 import run.ikaros.resource.api.ResourceSearchProjection;
@@ -39,5 +40,12 @@ public class DefaultResourceSearchProjectionQuery implements ResourceSearchProje
                     long version = resource.version() == null ? 0 : resource.version();
                     return new ResourceSearchProjection(resource.id(), version, fields);
                 }));
+    }
+
+    @Override
+    public Flux<ResourceSearchProjection> findAll() {
+        return resources.findAll()
+            .filter(resource -> resource.lifecycle() == ResourceLifecycle.ACTIVE)
+            .concatMap(resource -> find(resource.id()));
     }
 }
