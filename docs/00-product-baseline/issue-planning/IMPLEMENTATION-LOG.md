@@ -1244,6 +1244,7 @@
 - B03-04：导入表格直接展示后端 status/errorMessage，失败不会显示为成功。
 - B03-05：仅 FAILED 记录显示“重试解析”，调用 `retry-parse`；其他状态不显示伪造的重试入口。
 - 验证：阅读库页面 `/reading` 返回 HTTP 200，Console typecheck/build 已通过；B03 相关 Reading 测试累计 6/6 通过。
+- 本轮复验（2026-09-10）：reading 模块全量回归 18/18 通过；漫画导入/解析/重排/失败重试相关测试通过，`console/src/views/reading/index.vue` 对接真实 comic-imports、entries 和 reorder API，并按后端状态展示失败原因。真实附件容器联调仍需外部样本与 Testcontainers 环境。
 
 ## B04-01 按页阅读
 - 日期：2026-09-10
