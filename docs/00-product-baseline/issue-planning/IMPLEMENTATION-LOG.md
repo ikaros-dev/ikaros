@@ -948,6 +948,7 @@
 - 统一边界：Attachment、Blob、Placement、Upload Session 身份分离；授权先于 Provider/对象访问；失败不产生伪成功；临时对象清理可重试。
 - 验证证据：storage 服务与上传会话测试通过；真实 PostgreSQL/Testcontainers、Multipart/外部 Provider 联调仍需 Docker/外部环境。
 - Console 对接总审计：附件页 `/storage-center/attachments` 已覆盖 A14 上传、提交、去重、幂等恢复和会话终止操作，运行页面返回 HTTP 200；Console typecheck/build 已通过。真实 Provider 上传仍需外部 Provider 配置。
+- 本轮复验（2026-09-10）：storage 全量回归 77/77 通过，覆盖上传意图、约束、提交、去重、幂等恢复、Attachment/Blob 可用性、Provider、恢复、GC 和上传会话终止/过期；附件页真实调用列表、upload-intent、commit 和 abort API，Console 构建通过。
 
 ## A15-01 添加 Provider
 
