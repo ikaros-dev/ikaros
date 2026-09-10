@@ -178,4 +178,26 @@ class PersistentDocumentServiceTest {
             .expectNextMatches(publication -> publication.state() == DocumentPublicationState.PUBLISHED && publication.revisionId().equals(revision.id()))
             .verifyComplete();
     }
+
+    @Test
+    void unpublishesExistingPublicationWithoutDeletingRevision() {
+        UUID owner = UUID.randomUUID();
+        UUID documentId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceService resources = mock(ResourceService.class);
+        DocumentRepository documents = mock(DocumentRepository.class);
+        DocumentWorkingCopyRepository copies = mock(DocumentWorkingCopyRepository.class);
+        DocumentRevisionRepository revisions = mock(DocumentRevisionRepository.class);
+        DocumentPublicationRepository publications = mock(DocumentPublicationRepository.class);
+        DocumentEntity document = new DocumentEntity(documentId, owner, UUID.randomUUID(), DocumentKind.ARTICLE, UUID.randomUUID(), now, now, 0L);
+        DocumentPublicationEntity existing = new DocumentPublicationEntity(UUID.randomUUID(), documentId, document.currentRevisionId(), "hello", DocumentPublicationState.PUBLISHED, now, 1L);
+        when(documents.findById(documentId)).thenReturn(Mono.just(document));
+        when(publications.findByDocumentId(documentId)).thenReturn(Mono.just(existing));
+        when(publications.save(any())).thenReturn(Mono.just(new DocumentPublicationEntity(existing.id(), documentId, existing.revisionId(), existing.slug(), DocumentPublicationState.UNPUBLISHED, existing.publishedAt(), 2L)));
+
+        StepVerifier.create(new PersistentDocumentService(resources, documents, copies, revisions, publications)
+                .unpublish(owner, documentId))
+            .expectNextMatches(publication -> publication.state() == DocumentPublicationState.UNPUBLISHED)
+            .verifyComplete();
+    }
 }
