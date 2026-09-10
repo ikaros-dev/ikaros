@@ -937,6 +937,7 @@
 - 主要 commits：`dfa9687e`、`52e15855`、`0b73425f`、`1b0f113a`。
 - 统一决策：关系类型、方向和双方 Resource owner 均由 Application/Schema 校验；查询和删除遵守先授权后访问、惰性副作用；关系操作不删除 Resource。
 - 验证证据：关系服务与控制器回归覆盖正常、空结果、未知资源/关系、自关联、重复和非法输入；真实 PostgreSQL FK/唯一约束联调仍需 Docker/Testcontainers。
+- 本轮复验（2026-09-10）：关系服务与 Controller 回归 7/7 通过；`console/src/views/collections/index.vue` 的关系浏览器真实调用关系创建、查询和删除 API，并处理 409/空结果/加载错误，Console 构建通过。
 
 ## A14 附件上传（父 issue）
 
