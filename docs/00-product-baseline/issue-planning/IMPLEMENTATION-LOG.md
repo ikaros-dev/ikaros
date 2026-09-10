@@ -158,6 +158,14 @@
 - 失败语义：Blob 不存在/无权访问、无可读副本、Provider 不可用或无匹配 Reader 均拒绝；校验失败不产生 VERIFIED 状态，并阻止后续读取该副本。
 - 验证：`mvn -pl storage -am -Dtest=BlobVerificationServiceTest,Sha256BlobIntegrityServiceTest -Dsurefire.failIfNoSpecifiedTests=false test`；成功匹配、损坏内容和 SHA-256 校验分支共 4 个测试全部通过。
 
+## A18 Console 对接逐项审计
+
+- A18-01/A18-02：附件列表和详情页展示真实 `availability`，并正确识别 `READY`、`RESTORE_REQUIRED`、`MISSING`、`CORRUPTED`。
+- A18-03：存储层 Blob 副本诊断对不可用副本调用 `POST /storage/placements/{placementId}/actions/promote`，携带幂等键并以后台任务结果为准。
+- A18-04：清理候选区调用 `GET /storage/gc/candidates`，只做预览；A18-05 的批准/拒绝调用 `POST /storage/gc/{blobId}/decision`，保留后端执行时的引用/保留期门禁。
+- A18-06：物理清理任务按钮经显式确认调用 `POST /storage/gc/request`，成功后刷新，不伪造完成状态。
+- 验证：`/storage-center/tiers`、`/storage-center/attachments` 和 `/storage-center/attachments/{attachmentId}` 页面均返回 HTTP 200；Console typecheck/build 已通过。
+
 ## A17 归档与恢复（父 issue）
 
 - 日期：2026-09-09
