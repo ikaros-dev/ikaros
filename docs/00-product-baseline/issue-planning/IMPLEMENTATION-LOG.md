@@ -544,6 +544,7 @@
 - 主要 commits：`7a78a788`、`49f168cf`、`8e4036f1`、`9acb627d`、`67a076d0`。
 - 统一决策：不建立 Session 或保存 OTP/Grant 明文；HTTP 邮件渠道显式配置启用；Grant 必须同时满足主体、用途、SVL、有效期和后续权限策略；状态校验先于 OTP 消费。
 - 验证证据：认证验证相关回归通过（本轮最大组合 14 项，邮件渠道 11 项）；真实第三方邮件与 PostgreSQL/Testcontainers 联调仍需部署环境，未伪造运行证据。
+- 本轮复验（2026-09-10）：敏感操作验证回归 22/22 通过，覆盖挑战生命周期、OTP 摘要、Grant 边界、过期/锁定、HTTP 邮件适配和 Controller 响应；Console 构建通过，`Authentication.vue` 的发起、验证、取消路径均调用真实后端接口。
 
 ## A07 Console 取消挑战对接修复
 - 发现并修复 `LOGIN_STEP_UP` 取消动作错误调用通用 verification-challenges 地址导致 404 的问题。
