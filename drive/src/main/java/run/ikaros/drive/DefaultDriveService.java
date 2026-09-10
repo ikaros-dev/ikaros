@@ -324,7 +324,12 @@ public class DefaultDriveService implements DriveService {
     }
     private Mono<DriveNodeView> changeLifecycle(UUID actor, UUID id, long expected, DriveLifecycle target) {
         return ownedNode(actor,id).flatMap(node -> { checkVersion(node, expected); if (node.lifecycle()==DriveLifecycle.PURGED) return Mono.error(new ConflictException("已永久删除的节点不能恢复"));
-            Instant now = Instant.now(); Node changed = new Node(node.id(),node.space(),node.parent(),node.type(),node.name(),node.normalized(),target,node.revision(),node.version()+1,node.created(),now); nodes.put(id,changed); advance(spaces.get(node.space()));
+            UUID parentId = node.parent();
+            if (target == DriveLifecycle.ACTIVE) {
+                Node parent = parentId == null ? null : nodes.get(parentId);
+                if (parent == null || parent.lifecycle() != DriveLifecycle.ACTIVE || parent.type() != DriveNodeType.FOLDER) parentId = spaces.get(node.space()).root();
+            }
+            Instant now = Instant.now(); Node changed = new Node(node.id(),node.space(),parentId,node.type(),node.name(),node.normalized(),target,node.revision(),node.version()+1,node.created(),now); nodes.put(id,changed); advance(spaces.get(node.space()));
             DriveMutationKind kind = target == DriveLifecycle.TRASHED ? DriveMutationKind.NODE_TRASHED : DriveMutationKind.NODE_RESTORED;
             recordChange(node.space(), node.id(), kind, changed.version(), null);
             if (target == DriveLifecycle.TRASHED) tombstoneLog.put(node.id(), new DriveTombstoneView(ids.next(), node.space(), node.id(), spaces.get(node.space()).generation(),
