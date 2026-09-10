@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.UUID;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -77,5 +78,26 @@ class PersistentPhotoServiceTest {
             .verify();
         verify(resources, never()).get(any(), any());
         verify(photos, never()).save(any());
+    }
+
+    @Test
+    void rejectsAlbumUpdateWhenVersionIsStale() {
+        UUID owner = UUID.randomUUID();
+        UUID albumId = UUID.randomUUID();
+        ResourceService resources = mock(ResourceService.class);
+        PhotoRepository photos = mock(PhotoRepository.class);
+        PhotoAssetRepository assets = mock(PhotoAssetRepository.class);
+        PhotoAlbumRepository albums = mock(PhotoAlbumRepository.class);
+        PhotoAlbumMemberRepository members = mock(PhotoAlbumMemberRepository.class);
+        AttachmentReferenceQuery references = mock(AttachmentReferenceQuery.class);
+        StorageService storage = mock(StorageService.class);
+        BackgroundTaskService tasks = mock(BackgroundTaskService.class);
+        when(albums.findById(albumId)).thenReturn(Mono.just(new PhotoAlbumEntity(albumId, owner, "Old", null, Instant.now(), Instant.now(), 2L)));
+
+        StepVerifier.create(new PersistentPhotoService(resources, photos, assets, albums, members, references, storage, tasks)
+                .updateAlbum(owner, albumId, new UpdatePhotoAlbumRequest("New", null), 1L))
+            .expectError(run.ikaros.common.PreconditionFailedException.class)
+            .verify();
+        verify(albums, never()).save(any());
     }
 }
