@@ -1088,6 +1088,15 @@
 - 失败语义：视频 Resource 创建失败不落媒体主体；剧集顺序校验主体/Season 所属关系并在事务中避免唯一键冲突；附件关联必须通过可读/活动引用校验；可用性查询失败显示 `UNKNOWN`，不伪造为可用。
 - 契约追溯：媒体 subjects、episodes reorder、releases、subtitles 和 attachment availability 已同步 HTTP Operation Registry 与 OpenAPI。
 - 验证：媒体目录、Release、字幕服务测试累计 8/8；Console `pnpm typecheck` 通过。B01-05 主要提交：`d9c6b903`（Console 展示附件可用状态与契约登记）。
+## B01 Console 对接逐项审计
+
+- B01-01：视频条目页调用 `POST /media/subjects` 创建条目，并通过 `/media/subjects` 与资源 API 加载真实列表。
+- B01-02：Season/Episode 顺序抽屉调用真实 Season/Episode 查询和 `POST /media/subjects/{subjectId}/seasons/{seasonId}/actions/reorder-episodes` 保存顺序。
+- B01-03：播放附件区调用 `/media/resources/{resourceId}/releases`，不把附件 ID 当作静态演示数据。
+- B01-04：字幕/封面区真实加载附件与字幕 API，字幕关联调用 `POST /media/releases/{releaseId}/subtitles`，封面按 Attachment 角色展示。
+- B01-05：Release 和封面通过 `/attachments/{attachmentId}/availability` 刷新真实可用状态，失败显示 UNKNOWN，不伪造 READY。
+- 验证：视频条目页面 `/media/videos` 返回 HTTP 200，Console typecheck/build 已通过；后端媒体相关测试累计 8/8 通过。
+
 ## B02-01 选择附件开始播放
 - 日期：2026-09-10
 - 实现：视频条目页选择可用 Release 后，先调用授权播放源解析，再创建播放 Session，并通过预览授权地址打开真实视频播放器；不可用 Release 在页面上不可播放。
