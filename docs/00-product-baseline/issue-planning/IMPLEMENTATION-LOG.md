@@ -1504,3 +1504,15 @@
 - 服务端未发生变更时直接采用本地内容；双方均变更时返回 `<<<<<<< LOCAL` / `=======` / `>>>>>>> SERVER` 冲突标记，不静默覆盖，也不自动保存合并结果。
 - `/documents/editor` 在工作副本保存返回 409 时自动请求合并结果，将结果放回编辑器供用户人工处理后再保存。
 - 验证：`DocumentMergeServiceTest` 2/2；Console `pnpm typecheck`、`pnpm build` 通过；后端 compile BUILD SUCCESS；主要提交：`d03d7d8c`、`e2c551d5`。
+
+## A21-01 元数据同步来源配置
+- 日期：2026-09-10
+- 实现：新增独立的 `metadata_sync_source` Owner 边界，支持 owner-scoped Provider、`secret://` 凭据引用、MANUAL/HOURLY/DAILY 刷新策略及启停审计；响应只暴露凭据是否配置，不暴露引用内容。
+- Console：`/ingestion` 的“元数据同步”页支持真实 API 创建、列表、启用和停用同步来源，并展示凭据配置状态。
+- 验证：`DefaultMetadataSyncSourceServiceTest` 2/2；Console `pnpm typecheck` 通过；主要提交：`46edfab6`、`59da474f`。
+
+## A21-02 检测外部更新
+- 日期：2026-09-10
+- 实现：新增显式刷新检测 API；校验同步来源启用状态与 Resource owner，比较当前 metadata 值，变化时创建 `PENDING` Provider candidate，未变化返回 `UNCHANGED` 且不写入。
+- Console：`/ingestion` 的“检测外部更新”表单调用真实 `POST /api/metadata/sync-sources/{sourceId}/refresh`，展示候选创建或值未变化结果。
+- 验证：`DefaultMetadataSyncServiceTest` 2/2；Console `pnpm typecheck` 通过；主要提交：`dde659f5`。
