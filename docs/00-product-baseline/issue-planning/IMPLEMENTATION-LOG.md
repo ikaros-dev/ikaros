@@ -1558,3 +1558,9 @@
 - 实现：升级要求 Plugin ID 不变、版本兼容且授予权限仍属于新 Manifest；启用中的插件升级会先撤销旧扩展再注册新扩展，失败时保留原版本、生命周期和扩展注册。
 - Console：`/plugins` 的升级入口复用真实 upgrade API，表单锁定 Plugin ID；失败提示可见且不会刷新成伪成功。
 - 验证：`InMemoryPluginRuntimeTest` 11/11，覆盖启用升级替换扩展和不兼容升级保持旧版本；Console 插件页 typecheck/build 审计通过；主要提交：`6e58c707`。
+
+## A22-06 卸载时按保留策略处理插件数据
+- 日期：2026-09-10
+- 实现：启用中的插件必须先禁用；`KEEP_DATA` 保留卸载记录并标记 `UNINSTALLED`，`DELETE_DATA` 删除插件记录，两个路径都会撤销扩展注册。
+- Console：`/plugins` 提供真实“卸载并保留/卸载并删除”操作，均带确认提示并在成功后重新查询列表。
+- 验证：`InMemoryPluginRuntimeTest` 12/12，覆盖保留后可重新读取、删除后不可读取、启用中拒绝卸载；Console 插件页 typecheck/build 审计通过；主要提交：`b0cf3601`。
