@@ -636,6 +636,11 @@
 - Console 对接审计：`console/src/views/storage/Archive.vue` 先按 Resource ID 调用详情 API，再调用 `/resources/{resource_id}/actions/restore`，携带 `If-Match`；恢复结果刷新页面并对非法状态/版本错误显示提示。
 - 验证：`DefaultResourceServiceTest` 覆盖 TRASHED 恢复成功、身份/删除时间清理、ACTIVE 拒绝和版本边界；resource 回归 19 项通过；Console 存储归档路由返回 HTTP 200。
 
+## A09-04 Console 归档列表补齐
+- 修复存储中心“已归档资源”仍为占位的问题；资源列表 API 新增按契约参数 `lifecycle_status=ARCHIVED` 查询，保持 owner scope、分页和标题搜索能力。
+- `console/src/views/storage/Archive.vue` 真实加载归档资源并展示 Resource ID、标题、类型、状态和更新时间；空/错误状态沿用页面反馈。
+- 验证：`DefaultResourceServiceTest` 20/20；API/路由契约测试 9/9；Console `pnpm typecheck`、`pnpm build` 通过；主要提交：`e3e974e6`、`402b9525`。
+
 ## A09-07 执行符合保留规则的永久删除
 
 - 日期：2026-09-09
