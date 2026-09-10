@@ -124,4 +124,35 @@ class PersistentDocumentServiceTest {
                     && result.lines().stream().anyMatch(line -> line.type().equals("ADDED") && line.content().equals("新内容")))
             .verifyComplete();
     }
+
+    @Test
+    void restoresRevisionIntoWorkingCopyAndCurrentDocument() {
+        UUID owner = UUID.randomUUID();
+        UUID documentId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        Instant now = Instant.now();
+        ResourceService resources = mock(ResourceService.class);
+        DocumentRepository documents = mock(DocumentRepository.class);
+        DocumentWorkingCopyRepository copies = mock(DocumentWorkingCopyRepository.class);
+        DocumentRevisionRepository revisions = mock(DocumentRevisionRepository.class);
+        DocumentPublicationRepository publications = mock(DocumentPublicationRepository.class);
+        DocumentEntity document = new DocumentEntity(documentId, owner, resourceId, DocumentKind.DOCUMENT, null, now, now, 0L);
+        DocumentWorkingCopyEntity copy = new DocumentWorkingCopyEntity(UUID.randomUUID(), documentId, owner, "current", "v1", null, now, 2L);
+        DocumentRevisionEntity old = new DocumentRevisionEntity(UUID.randomUUID(), documentId, owner, 1L, "restored", "v1", now, owner);
+        DocumentRevisionEntity created = new DocumentRevisionEntity(UUID.randomUUID(), documentId, owner, 2L, "restored", "v1", now, owner);
+        when(documents.findById(documentId)).thenReturn(Mono.just(document));
+        when(revisions.findAllByDocumentIdOrderByRevisionNumberDesc(documentId)).thenReturn(Flux.just(old));
+        when(revisions.findTopByDocumentIdOrderByRevisionNumberDesc(documentId)).thenReturn(Mono.just(old));
+        when(revisions.save(any())).thenReturn(Mono.just(created));
+        when(documents.save(any())).thenReturn(Mono.just(document));
+        when(copies.findByDocumentId(documentId)).thenReturn(Mono.just(copy));
+        when(copies.save(any())).thenReturn(Mono.just(copy));
+
+        StepVerifier.create(new PersistentDocumentService(resources, documents, copies, revisions, publications)
+                .restore(owner, documentId, 1L))
+            .expectNextMatches(result -> result.revisionNumber() == 2L && result.content().equals("restored"))
+            .verifyComplete();
+        verify(documents).save(any());
+        verify(copies).save(any());
+    }
 }
