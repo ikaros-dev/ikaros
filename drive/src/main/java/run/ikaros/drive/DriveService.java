@@ -2,6 +2,7 @@ package run.ikaros.drive;
 import java.util.UUID;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import run.ikaros.common.PageResponse;
 public interface DriveService {
     Mono<DriveSpaceView> createSpace(UUID actorId, CreateDriveSpaceRequest request);
     Flux<DriveSpaceView> listSpaces(UUID actorId);
