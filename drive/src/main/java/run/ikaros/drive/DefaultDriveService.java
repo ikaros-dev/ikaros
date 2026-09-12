@@ -333,9 +333,9 @@ public class DefaultDriveService implements DriveService {
             return Mono.just(cameraView(updated));
         });
     }
-    @Override public Flux<CameraBackupView> cameraBackups(UUID actorId, UUID bindingId) {
+    @Override public Flux<CameraBackupView> cameraBackups(UUID actorId, UUID bindingId, boolean failuresOnly) {
         return ownedBinding(actorId, bindingId).flatMapMany(binding -> Flux.fromIterable(cameraBackups.values())
-            .filter(camera -> camera.binding().equals(binding.id())).sort(java.util.Comparator.comparing(CameraBackup::updated))
+            .filter(camera -> camera.binding().equals(binding.id()) && (!failuresOnly || camera.state().isFailure())).sort(java.util.Comparator.comparing(CameraBackup::updated))
             .map(this::cameraView));
     }
     private Mono<DriveNodeView> changeLifecycle(UUID actor, UUID id, long expected, DriveLifecycle target) {

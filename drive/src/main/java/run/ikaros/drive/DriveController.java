@@ -44,6 +44,6 @@ public class DriveController {
     @PostMapping("/bindings/{bindingId}/cursor") public Mono<SyncBindingView> cursor(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID bindingId,@Valid @RequestBody AdvanceSyncCursorRequest request){return service.advanceCursor(actor,bindingId,request.cursor());}
     @PostMapping("/bindings/{bindingId}/full-resync") public Mono<SyncBindingView> fullResync(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID bindingId){return service.requestFullResync(actor,bindingId);}
     @PutMapping("/bindings/{bindingId}/camera-backups") public Mono<CameraBackupView> cameraBackup(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID bindingId,@Valid @RequestBody CameraBackupRequest request){return service.updateCameraBackup(actor,bindingId,request);}
-    @GetMapping("/bindings/{bindingId}/camera-backups") public Flux<CameraBackupView> cameraBackups(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID bindingId){return service.cameraBackups(actor,bindingId);}
+    @GetMapping("/bindings/{bindingId}/camera-backups") public Flux<CameraBackupView> cameraBackups(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID bindingId,@RequestParam(defaultValue="false") boolean failuresOnly){return service.cameraBackups(actor,bindingId,failuresOnly);}
     private ResponseEntity<DriveNodeView> withEtag(DriveNodeView view){return ResponseEntity.ok().eTag(IfMatchVersion.etag(view.nodeVersion())).body(view);}
 }
