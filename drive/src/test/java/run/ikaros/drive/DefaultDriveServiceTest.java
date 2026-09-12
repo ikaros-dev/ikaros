@@ -121,7 +121,6 @@ class DefaultDriveServiceTest {
         assertThrows(ConflictException.class, () -> service.restoreRevision(user, file.id(), 1L, 0L).block());
         assertThrows(NotFoundException.class, () -> service.restoreRevision(user, file.id(), 99L, 1L).block());
     }
-
     @Test void revisionHistoryIsNewestFirstAndKeepsCurrentRevision() {
         DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
         DriveNodeView file = service.createNode(user, space.id(), new CreateDriveNodeRequest(DriveNodeType.FILE, "a.txt", null)).block();
