@@ -83,6 +83,7 @@ export default {
       { path: "executions", name: "IntegrationExecutions", component: () => import("@/views/integration/index.vue"), meta: { title: "自动化执行", icon: "ep:operation" } },
       { path: "events", name: "IntegrationEvents", component: () => import("@/views/integration/index.vue"), meta: { title: "集成事件", icon: "ep:bell" } },
       { path: "sync", name: "IntegrationSync", component: () => import("@/views/integration/index.vue"), meta: { title: "同步", icon: "ep:refresh" } },
+      { path: "devices", name: "SyncDevices", component: () => import("@/views/integration/Devices.vue"), meta: { title: "同步设备", icon: "ep:mobile-phone" } },
       { path: "plugins", name: "IntegrationPlugins", component: () => import("@/views/integration/index.vue"), meta: { title: "插件", icon: "ep:cpu" } }
     ]),
     subsystem("/communications-center", "CommunicationsCenter", "沟通与审计", "ep:notification", [
