@@ -58,11 +58,10 @@ public class PersistentGameArchiveService implements GameArchiveService {
     public Mono<GameVersionView> createVersion(UUID ownerId, UUID gameId, CreateGameVersionRequest request) {
         return ownedGame(ownerId, gameId)
             .flatMap(game -> request.platformId() == null
-                ? Mono.just((GamePlatformEntity) null)
+                ? versions.save(new GameVersionEntity(null, ownerId, gameId, null, request.versionLabel(), request.releaseDate(), null))
                 : platforms.findById(request.platformId()).filter(platform -> platform.ownerId().equals(ownerId))
-                    .switchIfEmpty(Mono.error(new NotFoundException("Platform 不存在或无权访问"))))
-            .flatMap(platform -> versions.save(new GameVersionEntity(null, ownerId, gameId,
-                platform == null ? null : platform.id(), request.versionLabel(), request.releaseDate(), null)))
+                    .switchIfEmpty(Mono.error(new NotFoundException("Platform 不存在或无权访问")))
+                    .flatMap(platform -> versions.save(new GameVersionEntity(null, ownerId, gameId, platform.id(), request.versionLabel(), request.releaseDate(), null))))
             .map(this::versionView);
     }
 

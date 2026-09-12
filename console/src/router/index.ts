@@ -63,7 +63,9 @@ const initConstantRoutes: Array<RouteRecordRaw> = cloneDeep(constantRoutes);
 
 /** 用于渲染菜单，保持原始层级 */
 export const constantMenus: Array<RouteComponent> = ascending(
-  routes.flat(Infinity)
+  routes.flat(Infinity).flatMap((route: RouteRecordRaw) =>
+    route.path === "/" ? (route.children ?? []) : [route]
+  )
 ).concat(...remainingRouter);
 
 /** 不参与菜单的路由 */

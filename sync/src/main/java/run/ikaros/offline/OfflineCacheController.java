@@ -14,4 +14,5 @@ public class OfflineCacheController {
     @GetMapping public Flux<CacheEntryView> list(@RequestHeader("X-Ikaros-Actor-Id") UUID user,@RequestParam UUID deviceId){return service.list(user,deviceId);}
     @PostMapping("/{entryId}/touch") public Mono<CacheEntryView> touch(@RequestHeader("X-Ikaros-Actor-Id") UUID user,@PathVariable UUID entryId){return service.touch(user,entryId);}
     @DeleteMapping("/{entryId}") public Mono<ResponseEntity<Void>> evict(@RequestHeader("X-Ikaros-Actor-Id") UUID user,@PathVariable UUID entryId){return service.evict(user,entryId).thenReturn(ResponseEntity.noContent().build());}
+    @PostMapping("/evict-eligible") public Mono<OfflineCacheEvictionView> evictEligible(@RequestHeader("X-Ikaros-Actor-Id") UUID user,@RequestParam UUID deviceId){return service.evictEligible(user,deviceId);}
 }

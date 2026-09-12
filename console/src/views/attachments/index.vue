@@ -24,6 +24,11 @@ const providerOptions = ref<Provider[]>([]);
 const upload = ref({ objectKey: "", provider: "s3-main", kind: "ORIGINAL" });
 const uploadSessionId = ref("");
 const uploadIdempotencyKey = ref("");
+const uploadPhase = ref<"idle" | "hashing" | "creating" | "uploading" | "committing" | "success" | "failed" | "aborted">("idle");
+const uploadProgress = ref(0);
+const uploadMessage = ref("");
+const uploadRequest = ref<XMLHttpRequest | null>(null);
+const uploadCancelRequested = ref(false);
 const availableCount = computed(() => attachments.value.filter(item => ["READY", "AVAILABLE"].includes(String(item.availability || "").toUpperCase())).length);
 const uniqueBlobs = computed(() => new Set(attachments.value.map(item => item.blobId).filter(Boolean)).size);
 const allAttachments = computed(() => !resourceId.value.trim());
@@ -63,31 +68,132 @@ function base64(bytes: Uint8Array) {
   for (const byte of bytes) binary += String.fromCharCode(byte);
   return btoa(binary);
 }
+function uploadPhaseLabel() {
+  return ({
+    idle: "等待选择文件",
+    hashing: "正在计算文件指纹",
+    creating: "正在创建上传会话",
+    uploading: "正在上传文件",
+    committing: "正在提交附件关系",
+    success: "上传完成",
+    failed: "上传失败",
+    aborted: "上传已终止"
+  } as const)[uploadPhase.value];
+}
+function resetUploadState() {
+  file.value = null;
+  uploadSessionId.value = "";
+  uploadIdempotencyKey.value = "";
+  uploadPhase.value = "idle";
+  uploadProgress.value = 0;
+  uploadMessage.value = "";
+  uploadRequest.value = null;
+  uploadCancelRequested.value = false;
+}
+function uploadErrorMessage(error: any) {
+  const status = error?.response?.status;
+  if (status === 403) return "上传被拒绝（403）：当前账号缺少资源写入权限或需要先完成二次验证。";
+  if (status === 409) return "上传会话发生冲突（409）：可重试当前会话，或先终止后重新上传。";
+  if (error?.name === "AbortError") return "上传已终止。";
+  if (error?.message === "Network Error" || error?.code === "NETWORK_ERROR") return "网络连接失败：可检查网络后重试，或终止当前上传会话。";
+  return error?.response?.data?.detail || error?.message || "附件上传失败，请确认对象存储可用。";
+}
+function throwIfUploadCancelled() {
+  if (uploadCancelRequested.value) throw new DOMException("上传已终止", "AbortError");
+}
+function uploadToProvider(url: string, method: string, mediaType: string, checksumSha256: string, selectedFile: File) {
+  return new Promise<void>((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    uploadRequest.value = request;
+    request.open(method || "PUT", url, true);
+    request.setRequestHeader("Content-Type", mediaType);
+    request.setRequestHeader("x-amz-checksum-sha256", checksumSha256);
+    request.upload.onprogress = event => {
+      if (event.lengthComputable) uploadProgress.value = Math.min(100, Math.round((event.loaded / event.total) * 100));
+    };
+    request.onload = () => {
+      uploadRequest.value = null;
+      if (request.status >= 200 && request.status < 300) resolve();
+      else reject(new Error(`对象上传失败（HTTP ${request.status}）`));
+    };
+    request.onerror = () => { uploadRequest.value = null; reject(new Error("对象上传网络错误，请检查 Provider 连接后重试")); };
+    request.onabort = () => { uploadRequest.value = null; reject(new DOMException("上传已终止", "AbortError")); };
+    request.send(selectedFile);
+  });
+}
 async function commitUpload() {
   if (!resourceId.value.trim() || !file.value || !upload.value.provider) { error.value = "Resource ID、文件和 Provider 均不能为空"; return; }
   uploadLoading.value = true;
+  error.value = "";
+  uploadMessage.value = "";
+  uploadProgress.value = 0;
+  uploadCancelRequested.value = false;
+  const selectedFile = file.value;
   try {
-    const mediaType = file.value.type || "application/octet-stream";
-    const digest = await crypto.subtle.digest("SHA-256", await file.value.arrayBuffer());
+    uploadPhase.value = "hashing";
+    const mediaType = selectedFile.type || "application/octet-stream";
+    const digest = await crypto.subtle.digest("SHA-256", await selectedFile.arrayBuffer());
+    throwIfUploadCancelled();
     const digestBytes = new Uint8Array(digest);
     const sha256 = Array.from(digestBytes).map(byte => byte.toString(16).padStart(2, "0")).join("");
     const checksumSha256 = base64(digestBytes);
     uploadIdempotencyKey.value ||= crypto.randomUUID();
+    uploadPhase.value = "creating";
     const intent = await http.post<any, any>(`/resources/${resourceId.value.trim()}/attachments/upload-intents`, { headers: { "Idempotency-Key": uploadIdempotencyKey.value }, data: {
-      fileName: file.value.name, sizeBytes: file.value.size, mediaType, provider: upload.value.provider,
+      fileName: selectedFile.name, sizeBytes: selectedFile.size, mediaType, provider: upload.value.provider,
       objectKey: upload.value.objectKey || undefined, sha256
     } });
     uploadSessionId.value = intent.sessionId || "";
-    if (!intent.deduplicated) {
-      const uploaded = await fetch(intent.url, { method: intent.method || "PUT", headers: { "Content-Type": mediaType, "x-amz-checksum-sha256": checksumSha256 }, body: file.value });
-      if (!uploaded.ok) throw new Error(`对象上传失败（HTTP ${uploaded.status}）`);
+    if (uploadCancelRequested.value) {
+      await abortUploadSession();
+      throw new DOMException("上传已终止", "AbortError");
     }
+    if (!intent.deduplicated) {
+      uploadPhase.value = "uploading";
+      await uploadToProvider(intent.url, intent.method || "PUT", mediaType, checksumSha256, selectedFile);
+    } else {
+      uploadProgress.value = 100;
+    }
+    uploadPhase.value = "committing";
     await http.post(`/resources/${resourceId.value.trim()}/attachments/commit`, { data: { sha256, uploadSha256: intent.sha256 || sha256, deduplicated: Boolean(intent.deduplicated), sizeBytes: file.value.size, mediaType, fileName: file.value.name, kind: upload.value.kind, provider: intent.provider, tier: intent.tier, objectKey: intent.objectKey, idempotencyKey: uploadIdempotencyKey.value } });
-    uploadDialog.value = false; uploadSessionId.value = ""; uploadIdempotencyKey.value = ""; await load();
-  } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "附件提交失败，请确认对象已存在于 Provider"; }
+    uploadPhase.value = "success";
+    uploadProgress.value = 100;
+    uploadMessage.value = intent.deduplicated ? "检测到相同内容，已复用现有 Blob 并提交附件。" : "文件已上传并提交 Attachment。";
+    uploadSessionId.value = "";
+    uploadIdempotencyKey.value = "";
+    await load();
+  } catch (e: any) {
+    if (e?.name === "AbortError") {
+      uploadPhase.value = "aborted";
+      uploadMessage.value = "上传已终止；临时对象清理请求正在处理。";
+    } else {
+      uploadPhase.value = "failed";
+      uploadMessage.value = uploadErrorMessage(e);
+      error.value = uploadMessage.value;
+    }
+  }
   finally { uploadLoading.value = false; }
 }
-async function abortUpload() { if (!uploadSessionId.value || !window.confirm("确认终止当前上传会话并清理临时对象吗？")) return; try { await http.request("delete", `/resources/${resourceId.value.trim()}/attachments/upload-intents/${uploadSessionId.value}`); uploadSessionId.value = ""; uploadIdempotencyKey.value = ""; error.value = "上传会话已终止"; } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "上传会话终止失败"; } }
+async function abortUploadSession() {
+  if (!uploadSessionId.value) return;
+  await http.request("delete", `/resources/${resourceId.value.trim()}/attachments/upload-intents/${uploadSessionId.value}`);
+  uploadSessionId.value = "";
+  uploadIdempotencyKey.value = "";
+}
+async function abortUpload() {
+  if ((!uploadLoading.value && !uploadSessionId.value && !uploadRequest.value) || !window.confirm("确认终止当前上传并清理临时对象吗？")) return;
+  uploadCancelRequested.value = true;
+  uploadRequest.value?.abort();
+  try {
+    await abortUploadSession();
+    uploadPhase.value = "aborted";
+    uploadMessage.value = "上传已终止，临时对象已请求清理。";
+  } catch (e: any) {
+    uploadPhase.value = "failed";
+    uploadMessage.value = uploadErrorMessage(e);
+    error.value = uploadMessage.value;
+  }
+}
 onMounted(() => { const value = route.query.resourceId; if (typeof value === "string" && value) resourceId.value = value; load(); });
 onMounted(async () => { try { const result = await http.get<unknown, unknown>("/storage/providers"); providerOptions.value = Array.isArray(result) ? (result as Provider[]).filter(item => String(item.status).toUpperCase() === "ENABLED") : []; if (!providerOptions.value.some(item => item.providerKey === upload.value.provider)) upload.value.provider = providerOptions.value[0]?.providerKey || ""; } catch { providerOptions.value = []; } });
 </script>
@@ -96,7 +202,7 @@ onMounted(async () => { try { const result = await http.get<unknown, unknown>("/
   <main class="p-4 md:p-6">
     <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
       <div><h1 class="text-2xl font-semibold">附件与 Blob</h1><p class="mt-1 text-[var(--el-text-color-secondary)]">Resource → Attachment → Blob → Placement</p></div>
-      <div class="flex gap-2"><el-input v-model="resourceId" placeholder="Resource ID（留空查询全部）" clearable @keyup.enter="reload" /><el-button type="primary" :loading="loading" @click="reload">查询附件</el-button><el-button @click="uploadDialog = true">上传附件</el-button></div>
+      <div class="flex gap-2"><el-input v-model="resourceId" placeholder="Resource ID（留空查询全部）" clearable @keyup.enter="reload" /><el-button type="primary" :loading="loading" @click="reload">查询附件</el-button><el-button @click="uploadDialog = true; resetUploadState()">上传附件</el-button></div>
     </div>
     <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" class="mb-4" />
     <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -120,6 +226,14 @@ onMounted(async () => { try { const result = await http.get<unknown, unknown>("/
       <el-pagination v-if="allAttachments && loaded" v-model:current-page="page" v-model:page-size="pageSize" class="mt-4 justify-end" :page-sizes="[10, 20, 50, 100]" :total="total" layout="total, sizes, prev, pager, next, jumper" @current-change="changePage" @size-change="changePageSize" />
     </el-card>
     <el-drawer v-model="detailVisible" title="附件详情" size="420px"><template v-if="selected"><el-descriptions :column="1" border><el-descriptions-item label="Attachment ID">{{ selected.id }}</el-descriptions-item><el-descriptions-item label="Resource ID">{{ selected.resourceId || '-' }}</el-descriptions-item><el-descriptions-item label="文件名">{{ selected.fileName }}</el-descriptions-item><el-descriptions-item label="MIME">{{ selected.mediaType || '-' }}</el-descriptions-item><el-descriptions-item label="Blob ID">{{ selected.blobId || '-' }}</el-descriptions-item><el-descriptions-item label="SHA-256">{{ selected.sha256 || '-' }}</el-descriptions-item><el-descriptions-item label="大小">{{ selected.sizeBytes }} Bytes</el-descriptions-item></el-descriptions><el-button class="mt-4" @click="$router.push(`/storage-center/attachments/${selected.id}`)">打开完整详情</el-button></template></el-drawer>
-    <el-dialog v-model="uploadDialog" title="上传附件" width="520px"><el-alert title="选择文件后将先上传到 Provider，再提交 Attachment 关系。Object Key 留空则由后端生成。" type="info" :closable="false" class="mb-4"/><el-form label-position="top"><el-form-item label="文件" required><input type="file" @change="file = ($event.target as HTMLInputElement).files?.[0] || null" /></el-form-item><el-form-item label="Object Key"><el-input v-model="upload.objectKey" placeholder="留空自动生成" /></el-form-item><el-form-item label="Provider"><el-select v-model="upload.provider" class="w-full" placeholder="请选择已启用 Provider"><el-option v-for="provider in providerOptions" :key="provider.providerKey" :label="`${provider.providerKey} (${provider.providerType})`" :value="provider.providerKey" /></el-select></el-form-item><el-form-item label="Attachment 角色"><el-select v-model="upload.kind" class="w-full"><el-option label="原始内容" value="ORIGINAL"/><el-option label="封面" value="COVER"/><el-option label="字幕" value="SUBTITLE"/><el-option label="派生内容" value="DERIVED"/></el-select></el-form-item></el-form><el-alert v-if="uploadSessionId" title="上传会话已创建；可终止并清理临时对象。" type="warning" :closable="false" class="mt-3"/><template #footer><el-button @click="uploadDialog = false">取消</el-button><el-button v-if="uploadSessionId" type="danger" plain @click="abortUpload">终止上传</el-button><el-button type="primary" :loading="uploadLoading" @click="commitUpload">上传并提交附件</el-button></template></el-dialog>
+    <el-dialog v-model="uploadDialog" title="上传附件" width="560px" :close-on-click-modal="false" :close-on-press-escape="!uploadLoading">
+      <el-alert title="桌面端文件会先通过短时效 Upload Intent 上传到 Provider，再提交 Attachment 关系。Object Key 留空则由后端生成。" type="info" :closable="false" class="mb-4"/>
+      <el-form label-position="top"><el-form-item label="文件" required><input type="file" :disabled="uploadLoading" @change="file = ($event.target as HTMLInputElement).files?.[0] || null; uploadPhase = 'idle'; uploadMessage = ''; error = ''" /></el-form-item><div v-if="file" class="text-sm text-[var(--el-text-color-secondary)] mb-3">{{ file.name }} · {{ file.size.toLocaleString() }} Bytes</div><el-form-item label="Object Key"><el-input v-model="upload.objectKey" :disabled="uploadLoading" placeholder="留空自动生成" /></el-form-item><el-form-item label="Provider"><el-select v-model="upload.provider" :disabled="uploadLoading" class="w-full" placeholder="请选择已启用 Provider"><el-option v-for="provider in providerOptions" :key="provider.providerKey" :label="`${provider.providerKey} (${provider.providerType})`" :value="provider.providerKey" /></el-select></el-form-item><el-form-item label="Attachment 角色"><el-select v-model="upload.kind" :disabled="uploadLoading" class="w-full"><el-option label="原始内容" value="ORIGINAL"/><el-option label="封面" value="COVER"/><el-option label="字幕" value="SUBTITLE"/><el-option label="派生内容" value="DERIVED"/></el-select></el-form-item></el-form>
+      <el-progress v-if="uploadLoading || uploadPhase === 'success'" :percentage="uploadProgress" :status="uploadPhase === 'failed' ? 'exception' : uploadPhase === 'success' ? 'success' : undefined" class="mb-3" />
+      <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" class="mb-3" />
+      <el-alert v-if="uploadLoading || uploadMessage || uploadPhase === 'failed' || uploadPhase === 'aborted'" :title="`${uploadPhaseLabel()}：${uploadMessage || '请勿关闭窗口。'}`" :type="uploadPhase === 'failed' ? 'error' : uploadPhase === 'success' ? 'success' : 'info'" :closable="false" class="mb-3" />
+      <el-alert v-if="uploadSessionId" title="上传会话已创建；可以终止上传并清理临时对象。" type="warning" :closable="false" />
+      <template #footer><el-button :disabled="uploadLoading" @click="uploadDialog = false">取消</el-button><el-button v-if="uploadLoading || uploadSessionId || uploadRequest" type="danger" plain @click="abortUpload">{{ uploadSessionId ? '终止上传' : '取消上传' }}</el-button><el-button type="primary" :loading="uploadLoading" :disabled="!file || !resourceId.trim() || !upload.provider" @click="commitUpload">上传并提交附件</el-button></template>
+    </el-dialog>
   </main>
 </template>

@@ -25,6 +25,12 @@ public interface StorageObjectProvider {
 
     Mono<StorageObjectMetadata> verify(StorageProvider provider, String objectKey);
 
+    /** 服务端受控写入派生内容；大文件不得通过此接口写入。 */
+    default Mono<StorageObjectMetadata> write(StorageProvider provider, String objectKey,
+                                              String mediaType, byte[] content) {
+        return Mono.error(new UnsupportedOperationException("Storage Provider 不支持服务端写入"));
+    }
+
     /** 删除仅属于临时上传会话的对象；业务 Attachment 不通过此能力删除。 */
     Mono<Void> deleteObject(StorageProvider provider, String objectKey);
 

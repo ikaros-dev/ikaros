@@ -7,4 +7,5 @@ public interface OfflineCacheService {
     Flux<CacheEntryView> list(UUID userId, UUID deviceId);
     Mono<CacheEntryView> touch(UUID userId, UUID entryId);
     Mono<Void> evict(UUID userId, UUID entryId);
+    Mono<OfflineCacheEvictionView> evictEligible(UUID userId, UUID deviceId);
 }

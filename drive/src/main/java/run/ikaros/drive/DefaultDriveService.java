@@ -69,6 +69,7 @@ public class DefaultDriveService implements DriveService {
             .filter(n -> n.space().equals(spaceId) && java.util.Objects.equals(n.parent(), parentId)
                 && n.lifecycle() == DriveLifecycle.ACTIVE).take(100).map(this::view));
     }
+    @Override public Mono<DriveNodeView> node(UUID actorId, UUID nodeId) { return ownedNode(actorId, nodeId).map(this::view); }
     @Override public Mono<DriveNodeView> createNode(UUID actorId, UUID spaceId, CreateDriveNodeRequest request) {
         return ownedSpace(actorId, spaceId).flatMap(space -> {
             UUID parent = request.parentId() == null ? space.root() : request.parentId();
@@ -129,7 +130,23 @@ public class DefaultDriveService implements DriveService {
     @Override public Mono<DriveNodeView> restore(UUID actorId, UUID nodeId, long expectedVersion) { return changeLifecycle(actorId,nodeId,expectedVersion,DriveLifecycle.ACTIVE); }
     @Override public Mono<DriveRevisionView> createRevision(UUID actorId, UUID nodeId, CreateDriveRevisionRequest request) { return ownedNode(actorId,nodeId).flatMap(n->{ if(n.type()!=DriveNodeType.FILE)return Mono.error(new ConflictException("只有文件节点可以创建版本")); if(request.operationId()!=null){DriveRevisionView existing=revisionsByOperation.get(request.operationId()); if(existing!=null)return Mono.just(existing);} checkVersion(n,request.expectedNodeVersion()); UUID rid=ids.next(); Instant now=Instant.now(); Node changed=new Node(n.id(),n.space(),n.parent(),n.type(),n.name(),n.normalized(),n.lifecycle(),rid,n.version()+1,n.created(),now); nodes.put(nodeId,changed); DriveRevisionView revision=new DriveRevisionView(rid,nodeId,n.version()+1,request.attachmentId(),request.contentFingerprint(),now,now,actorId); revisionLog.compute(nodeId,(key,current)->{java.util.ArrayList<DriveRevisionView> values=new java.util.ArrayList<>(current==null?List.of():current); values.add(revision); return List.copyOf(values);}); if(request.operationId()!=null)revisionsByOperation.putIfAbsent(request.operationId(),revision); advance(spaces.get(n.space())); recordChange(n.space(), n.id(), DriveMutationKind.CONTENT_REVISION_CREATED, changed.version(), rid); return Mono.just(revision); }); }
     @Override public Flux<DriveRevisionView> revisions(UUID actorId, UUID nodeId) { return ownedNode(actorId,nodeId)
-        .flatMapMany(n -> Flux.fromIterable(revisionLog.getOrDefault(nodeId, List.of())).take(100)); }
+        .flatMapMany(n -> Flux.fromIterable(revisionLog.getOrDefault(nodeId, List.of()))
+            .sort(java.util.Comparator.comparing(DriveRevisionView::revisionNo).reversed()).take(100)); }
+    @Override public Mono<DriveNodeView> restoreRevision(UUID actorId, UUID nodeId, long revisionNo, long expectedNodeVersion) {
+        return ownedNode(actorId, nodeId).flatMap(node -> {
+            if (node.type() != DriveNodeType.FILE) return Mono.error(new ConflictException("只有文件节点可以恢复版本"));
+            checkVersion(node, expectedNodeVersion);
+            DriveRevisionView revision = revisionLog.getOrDefault(nodeId, List.of()).stream()
+                .filter(item -> item.revisionNo() == revisionNo).findFirst().orElse(null);
+            if (revision == null) return Mono.error(new NotFoundException("文件版本不存在"));
+            Node changed = new Node(node.id(), node.space(), node.parent(), node.type(), node.name(), node.normalized(),
+                node.lifecycle(), revision.id(), node.version() + 1, node.created(), Instant.now());
+            nodes.put(nodeId, changed);
+            advance(spaces.get(node.space()));
+            recordChange(node.space(), node.id(), DriveMutationKind.CONTENT_REVISION_CREATED, changed.version(), revision.id());
+            return Mono.just(view(changed));
+        });
+    }
     @Override public Flux<DriveChangeView> changes(UUID actorId, UUID spaceId, long afterSequence) { return ownedSpace(actorId,spaceId).flatMapMany(s -> Flux.fromIterable(changeLog.values()).filter(c -> c.space().equals(spaceId) && c.sequence() > afterSequence).sort(java.util.Comparator.comparing(Change::sequence)).take(100).map(this::changeView)); }
     @Override public Mono<DriveQuotaView> quota(UUID actorId, UUID spaceId) {
         return ownedSpace(actorId, spaceId).map(s -> {
@@ -187,7 +204,8 @@ public class DefaultDriveService implements DriveService {
                 || request.mode() == SyncMode.BACKUP;
             boolean overlap = bindings.values().stream().anyMatch(binding -> binding.user().equals(actorId)
                 && binding.device().equals(request.deviceId()) && binding.enabled() && write
-                && isWrite(binding.mode()) && scopesOverlap(scope, normalizeScope(binding.scope())));
+                && isWrite(binding.mode()) && (scopesOverlap(scope, normalizeScope(binding.scope()))
+                    || CameraBackupScopes.overlaps(scope, binding.scope())));
             if (overlap) return Mono.error(new ConflictException("设备本地同步 Scope 重叠"));
             Instant now = Instant.now();
             Binding binding = new Binding(ids.next(), actorId, request.deviceId(), space.id(), request.remoteRootNodeId(),
@@ -211,6 +229,36 @@ public class DefaultDriveService implements DriveService {
                 binding.deletePolicy(), binding.conflictPolicy(), enabled,
                 enabled ? SyncBindingState.ACTIVE : SyncBindingState.PAUSED, binding.cursor(), binding.created(), Instant.now());
                 bindings.put(bindingId, updated); return bindingView(updated); });
+    }
+    @Override public Mono<SyncBindingView> resumeSync(UUID actorId, UUID bindingId) {
+        return Mono.justOrEmpty(bindings.get(bindingId)).filter(binding -> binding.user().equals(actorId))
+            .switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在")))
+            .flatMap(binding -> {
+                if (binding.state() == SyncBindingState.REVOKED)
+                    return Mono.error(new ConflictException("已撤销的同步绑定不能恢复"));
+                if (binding.enabled() && binding.state() == SyncBindingState.ACTIVE)
+                    return Mono.just(bindingView(binding));
+                Binding updated = new Binding(binding.id(), binding.user(), binding.device(), binding.space(), binding.root(),
+                    binding.scope(), binding.displayPath(), binding.sourceKind(), binding.mode(), binding.deletePolicy(),
+                    binding.conflictPolicy(), true, SyncBindingState.ACTIVE, binding.cursor(), binding.created(), Instant.now());
+                bindings.put(bindingId, updated);
+                return Mono.just(bindingView(updated));
+            });
+    }
+    @Override public Mono<SyncBindingView> resumeBackup(UUID actorId, UUID bindingId) {
+        return ownedBinding(actorId, bindingId).flatMap(binding -> {
+            if (binding.mode() != SyncMode.BACKUP)
+                return Mono.error(new ConflictException("只有 BACKUP Binding 可以恢复中断备份"));
+            if (!binding.enabled())
+                return Mono.error(new ConflictException("Backup Binding 已暂停，请先启用绑定"));
+            if (binding.state() != SyncBindingState.DEGRADED)
+                return Mono.error(new ConflictException("Backup Binding 当前没有可恢复的中断任务"));
+            Binding updated = new Binding(binding.id(), binding.user(), binding.device(), binding.space(), binding.root(),
+                binding.scope(), binding.displayPath(), binding.sourceKind(), binding.mode(), binding.deletePolicy(),
+                binding.conflictPolicy(), true, SyncBindingState.ACTIVE, binding.cursor(), binding.created(), Instant.now());
+            bindings.put(bindingId, updated);
+            return Mono.just(bindingView(updated));
+        });
     }
     @Override public Mono<SyncConflictView> createConflict(UUID actorId, CreateSyncConflictRequest request) {
         return ownedBinding(actorId, request.bindingId()).flatMap(binding -> ownedNode(actorId, request.nodeId())
@@ -301,25 +349,93 @@ public class DefaultDriveService implements DriveService {
         return ownedBinding(actorId, bindingId).flatMap(binding -> {
             if (binding.mode() != SyncMode.BACKUP) return Mono.error(new NotFoundException("Backup Binding 不存在"));
             String source = request.sourceItemId().trim();
+            String fingerprint = normalizeFingerprint(request.contentFingerprint());
             String key = bindingId + "\u0000" + source;
-            CameraBackup current = cameraBackups.get(key);
-            if (current != null && current.state() == CameraBackupState.BACKUP_VERIFIED
-                && request.state() == CameraBackupState.ERROR)
-                return Mono.error(new ConflictException("已验证备份不能降级为错误"));
-            if (current != null && current.state() == CameraBackupState.REMOVED_AFTER_VERIFIED_BACKUP
-                && request.state() != CameraBackupState.REMOVED_AFTER_VERIFIED_BACKUP)
-                return Mono.error(new ConflictException("已释放本地空间的备份不能重新排队"));
-            CameraBackup updated = new CameraBackup(current == null ? ids.next() : current.id(), bindingId, source,
-                request.state(), request.remoteNodeId(), request.remoteRevisionId(), request.contentFingerprint(),
-                request.errorMessage(), Instant.now());
-            cameraBackups.put(key, updated);
-            return Mono.just(cameraView(updated));
+            synchronized (cameraBackups) {
+                CameraBackup current = cameraBackups.get(key);
+                if (current != null && current.state() == CameraBackupState.BACKUP_VERIFIED
+                    && request.state() == CameraBackupState.ERROR)
+                    return Mono.error(new ConflictException("已验证备份不能降级为错误"));
+                if (current != null && current.state() == CameraBackupState.REMOVED_AFTER_VERIFIED_BACKUP
+                    && request.state() != CameraBackupState.REMOVED_AFTER_VERIFIED_BACKUP)
+                    return Mono.error(new ConflictException("已释放本地空间的备份不能重新排队"));
+                if (current != null && sameFingerprint(current.fingerprint(), fingerprint)
+                    && (isUploadComplete(current.state()) || current.state() == request.state())
+                    && request.state() != CameraBackupState.ERROR)
+                    return Mono.just(cameraView(current, true, "CONTENT_FINGERPRINT_ALREADY_BACKED_UP"));
+                CameraBackup updated = new CameraBackup(current == null ? ids.next() : current.id(), bindingId, source,
+                    request.state(), request.remoteNodeId(), request.remoteRevisionId(), fingerprint,
+                    request.errorMessage(), Instant.now());
+                cameraBackups.put(key, updated);
+                return Mono.just(cameraView(updated, false, null));
+            }
         });
     }
-    @Override public Flux<CameraBackupView> cameraBackups(UUID actorId, UUID bindingId) {
+    @Override public Mono<CameraBackupScanView> scanCameraBackups(UUID actorId, UUID bindingId, CameraBackupScanRequest request) {
+        return ownedBinding(actorId, bindingId).flatMap(binding -> {
+            if (binding.mode() != SyncMode.BACKUP) return Mono.error(new NotFoundException("Backup Binding 不存在"));
+            java.util.List<CameraBackupView> discovered = new java.util.ArrayList<>();
+            java.util.List<CameraBackupView> known = new java.util.ArrayList<>();
+            synchronized (cameraBackups) {
+                for (CameraBackupScanItem item : request.items()) {
+                    String source = item.sourceItemId().trim();
+                    String fingerprint = normalizeFingerprint(item.contentFingerprint());
+                    String key = bindingId + "\u0000" + source;
+                    CameraBackup current = cameraBackups.get(key);
+                    if (current == null) {
+                        CameraBackup created = new CameraBackup(ids.next(), bindingId, source, CameraBackupState.DISCOVERED,
+                            null, null, fingerprint, null, Instant.now());
+                        cameraBackups.put(key, created);
+                        discovered.add(cameraView(created));
+                    } else if (!sameFingerprint(current.fingerprint(), fingerprint)) {
+                        CameraBackup changed = new CameraBackup(current.id(), bindingId, source, CameraBackupState.DISCOVERED,
+                            null, null, fingerprint, null, Instant.now());
+                        cameraBackups.put(key, changed);
+                        discovered.add(cameraView(changed, false, "CONTENT_FINGERPRINT_CHANGED"));
+                    } else {
+                        known.add(cameraView(current, true, "SOURCE_ITEM_AND_FINGERPRINT_ALREADY_SEEN"));
+                    }
+                }
+            }
+            return Mono.just(new CameraBackupScanView(java.util.List.copyOf(discovered), java.util.List.copyOf(known)));
+        });
+    }
+    @Override public Mono<CameraBackupView> retryCameraBackup(UUID actorId, UUID bindingId, UUID cameraBackupId) {
+        return ownedBinding(actorId, bindingId).flatMap(binding -> {
+            if (binding.mode() != SyncMode.BACKUP) return Mono.error(new NotFoundException("Backup Binding 不存在"));
+            synchronized (cameraBackups) {
+                CameraBackup current = cameraBackups.values().stream()
+                    .filter(camera -> camera.binding().equals(bindingId) && camera.id().equals(cameraBackupId))
+                    .findFirst().orElse(null);
+                if (current == null) return Mono.error(new NotFoundException("备份文件记录不存在"));
+                if (!current.state().isFailure()) return Mono.error(new ConflictException("只有失败的备份文件可以重试"));
+                CameraBackup retried = new CameraBackup(current.id(), bindingId, current.sourceItem(), CameraBackupState.QUEUED,
+                    null, null, current.fingerprint(), null, Instant.now());
+                cameraBackups.put(bindingId + "\u0000" + current.sourceItem(), retried);
+                return Mono.just(cameraView(retried));
+            }
+        });
+    }
+    @Override public Flux<CameraBackupView> cameraBackups(UUID actorId, UUID bindingId, boolean failuresOnly) {
         return ownedBinding(actorId, bindingId).flatMapMany(binding -> Flux.fromIterable(cameraBackups.values())
-            .filter(camera -> camera.binding().equals(binding.id())).sort(java.util.Comparator.comparing(CameraBackup::updated))
+            .filter(camera -> camera.binding().equals(binding.id()) && (!failuresOnly || camera.state().isFailure())).sort(java.util.Comparator.comparing(CameraBackup::updated))
             .map(this::cameraView));
+    }
+    @Override public Mono<CameraBackupScopeView> configureCameraBackupScope(UUID actorId, UUID bindingId,
+        CameraBackupScopeRequest request) {
+        return ownedBinding(actorId, bindingId).flatMap(binding -> {
+            if (binding.mode() != SyncMode.BACKUP || binding.sourceKind() != SyncSourceKind.CAMERA_ROLL) {
+                return Mono.error(new ConflictException("只有相机胶卷 BACKUP Binding 可以配置照片范围"));
+            }
+            String scope = CameraBackupScopes.encode(request);
+            Binding updated = new Binding(binding.id(), binding.user(), binding.device(), binding.space(), binding.root(),
+                scope, binding.displayPath(), binding.sourceKind(), binding.mode(), binding.deletePolicy(),
+                binding.conflictPolicy(), binding.enabled(), binding.state(), binding.cursor(), binding.created(), Instant.now());
+            bindings.put(bindingId, updated);
+            return Mono.just(new CameraBackupScopeView(updated.id(), request.scopeKind(),
+                request.scopeKind() == CameraBackupScopeKind.ALBUM ? request.albumId().trim() : null,
+                updated.scope(), updated.displayPath(), updated.updated()));
+        });
     }
     private Mono<DriveNodeView> changeLifecycle(UUID actor, UUID id, long expected, DriveLifecycle target) {
         return ownedNode(actor,id).flatMap(node -> { checkVersion(node, expected); if (node.lifecycle()==DriveLifecycle.PURGED) return Mono.error(new ConflictException("已永久删除的节点不能恢复"));
@@ -383,7 +499,19 @@ public class DefaultDriveService implements DriveService {
     private SyncMappingView mappingView(Mapping mapping) { return new SyncMappingView(mapping.id(), mapping.binding(),
         mapping.localItem(), mapping.remoteNode(), mapping.revision(), mapping.fingerprint(), mapping.remoteVersion(),
         mapping.state(), mapping.updated()); }
-    private CameraBackupView cameraView(CameraBackup camera) { return new CameraBackupView(camera.id(), camera.binding(),
+    private CameraBackupView cameraView(CameraBackup camera) { return cameraView(camera, false, null); }
+    private CameraBackupView cameraView(CameraBackup camera, boolean deduplicated, String reason) { return new CameraBackupView(camera.id(), camera.binding(),
         camera.sourceItem(), camera.state(), camera.remoteNode(), camera.remoteRevision(), camera.fingerprint(),
-        camera.error(), camera.updated()); }
+        camera.error(), camera.updated(), deduplicated, reason); }
+    private static String normalizeFingerprint(String fingerprint) {
+        return fingerprint == null || fingerprint.isBlank() ? null : fingerprint.trim();
+    }
+    private static boolean sameFingerprint(String left, String right) {
+        return left != null && right != null && left.equals(right);
+    }
+    private static boolean isUploadComplete(CameraBackupState state) {
+        return state == CameraBackupState.UPLOAD_COMPLETE || state == CameraBackupState.BLOB_VERIFIED
+            || state == CameraBackupState.DRIVE_COMMITTED || state == CameraBackupState.BACKUP_VERIFIED
+            || state == CameraBackupState.PHOTO_PROJECTION_PENDING || state == CameraBackupState.PHOTO_PROJECTED;
+    }
 }

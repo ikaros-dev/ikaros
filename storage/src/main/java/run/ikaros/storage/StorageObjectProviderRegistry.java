@@ -33,6 +33,11 @@ public class StorageObjectProviderRegistry {
         return find(provider).verify(provider, objectKey);
     }
 
+    public Mono<StorageObjectMetadata> write(StorageProvider provider, String objectKey,
+                                              String mediaType, byte[] content) {
+        return find(provider).write(provider, objectKey, mediaType, content);
+    }
+
     public Mono<Void> deleteObject(StorageProvider provider, String objectKey) {
         return find(provider).deleteObject(provider, objectKey);
     }

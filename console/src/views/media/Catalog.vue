@@ -54,8 +54,43 @@ const musicForm = ref({ attachmentId: "", title: "", durationMillis: null as num
 
 const kind = computed(() => String(route.path.split("/").pop()));
 const isMusic = computed(() => kind.value === "music");
+const isPhotos = computed(() => kind.value === "photos");
 const title = computed(() => ({ music: "音乐库", photos: "照片管理", games: "游戏档案" }[kind.value] || "媒体目录"));
 const filtered = computed(() => !query.value ? rows.value : rows.value.filter(row => JSON.stringify(row).toLowerCase().includes(query.value.toLowerCase())));
+const photoForm = ref({ attachmentId: "", title: "", locale: "zh-CN" });
+const photoSubmitting = ref(false);
+const photoDetail = ref<Row | null>(null);
+const photoDrawerVisible = ref(false);
+const photoAssets = ref<Row[]>([]);
+const photoDetailLoading = ref(false);
+const photoPreviewUrl = ref("");
+const photoThumbnailLoading = ref(false);
+const photoThumbnailTask = ref("");
+const photoThumbnailStatus = ref("NOT_REQUESTED");
+const photoThumbnailError = ref("");
+const photoMetadataForm = ref({ captureTime: "", captureTimeLocal: "", timeZone: "", width: null as number | null, height: null as number | null, orientation: null as number | null, cameraMake: "", cameraModel: "", lensModel: "", latitude: "", longitude: "" });
+const photoAlbums = ref<Row[]>([]);
+const photoAlbumLoading = ref(false);
+const photoAlbumSaving = ref(false);
+const photoAlbumForm = ref({ id: "", name: "", description: "", version: 0 });
+const photoAlbumPhotos = ref<Row[]>([]);
+const photoAlbumPhotoId = ref("");
+const photoAlbumPhotosLoading = ref(false);
+const photoAlbumPhotoSaving = ref(false);
+const gameForm = ref({ title: "", gameKind: "PC", locale: "zh-CN" });
+const gameSubmitting = ref(false);
+const selectedGameId = ref("");
+const gameVersions = ref<Row[]>([]);
+const gamePlatforms = ref<Row[]>([]);
+const gameVersionForm = ref({ versionLabel: "", platformId: "", releaseDate: "" });
+const gameVersionLoading = ref(false);
+const gameVersionSubmitting = ref(false);
+const gameAssets = ref<Row[]>([]);
+const gameAssetLoading = ref(false);
+const gameAssetSubmitting = ref(false);
+const gameAssetForm = ref({ attachmentId: "", versionId: "", category: "INSTALLER", displayName: "" });
+const gameAssetCategories = [{ label: "安装包", value: "INSTALLER" }, { label: "补丁", value: "PATCH" }, { label: "MOD", value: "MOD" }, { label: "存档", value: "SAVE" }, { label: "说明资料", value: "MANUAL" }, { label: "截图", value: "SCREENSHOT" }, { label: "其他", value: "OTHER" }];
+const gameAssetDownloadId = ref("");
 
 async function load() {
   loading.value = true; error.value = "";
@@ -63,8 +98,217 @@ async function load() {
     const endpoint = isMusic.value ? "/music/imports" : kind.value === "photos" ? "/photos/timeline" : "/games";
     const result = await http.get<unknown, unknown>(endpoint);
     rows.value = Array.isArray(result) ? result as Row[] : [];
+    if (kind.value === "games" && !selectedGameId.value && rows.value[0]?.id) { selectedGameId.value = String(rows.value[0].id); await loadGameVersions(); }
   } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "媒体目录加载失败"; }
   finally { loading.value = false; }
+}
+
+async function createPhoto() {
+  if (!photoForm.value.attachmentId.trim() || !photoForm.value.title.trim()) { error.value = "图片 Attachment ID 和标题不能为空"; return; }
+  photoSubmitting.value = true; error.value = ""; message.value = "";
+  try {
+    const result: any = await http.post("/photos", { data: { attachmentId: photoForm.value.attachmentId.trim(), title: photoForm.value.title.trim(), locale: photoForm.value.locale || "zh-CN" } });
+    photoForm.value = { attachmentId: "", title: "", locale: "zh-CN" };
+    message.value = `图片已登记：${result?.id || "已创建"}`;
+    await load();
+    if (result?.id) await openPhoto(result);
+  } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "图片登记失败"; }
+  finally { photoSubmitting.value = false; }
+}
+
+async function createGame() {
+  if (!gameForm.value.title.trim()) { error.value = "游戏标题不能为空"; return; }
+  gameSubmitting.value = true; error.value = ""; message.value = "";
+  try {
+    const result: any = await http.post("/games", { data: { title: gameForm.value.title.trim(), gameKind: gameForm.value.gameKind.trim() || "PC", locale: gameForm.value.locale || "zh-CN" } });
+    gameForm.value = { title: "", gameKind: "PC", locale: "zh-CN" };
+    message.value = `游戏条目已创建：${result?.id || "已创建"}`;
+    await load();
+  } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "游戏条目创建失败"; }
+  finally { gameSubmitting.value = false; }
+}
+
+async function loadGameVersions() {
+  if (!selectedGameId.value) { gameVersions.value = []; return; }
+  gameVersionLoading.value = true;
+  try {
+    const [versions, platforms, assets] = await Promise.all([
+      http.get<unknown, unknown>(`/games/${selectedGameId.value}/versions`),
+      http.get<unknown, unknown>("/games/platforms"),
+      http.get<unknown, unknown>(`/games/${selectedGameId.value}/assets`)
+    ]);
+    gameVersions.value = Array.isArray(versions) ? versions as Row[] : [];
+    gamePlatforms.value = Array.isArray(platforms) ? platforms as Row[] : [];
+    gameAssets.value = Array.isArray(assets) ? assets as Row[] : [];
+  } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "游戏版本加载失败"; }
+  finally { gameVersionLoading.value = false; }
+}
+
+async function createGameVersion() {
+  if (!selectedGameId.value || !gameVersionForm.value.versionLabel.trim()) { error.value = "请选择游戏并填写版本号"; return; }
+  gameVersionSubmitting.value = true; error.value = ""; message.value = "";
+  try {
+    await http.post(`/games/${selectedGameId.value}/versions`, { data: { versionLabel: gameVersionForm.value.versionLabel.trim(), platformId: gameVersionForm.value.platformId || undefined, releaseDate: gameVersionForm.value.releaseDate.trim() || undefined } });
+    gameVersionForm.value = { versionLabel: "", platformId: "", releaseDate: "" }; message.value = "游戏版本已创建"; await loadGameVersions();
+  } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "游戏版本创建失败"; }
+  finally { gameVersionSubmitting.value = false; }
+}
+
+async function createGameAsset() {
+  if (!selectedGameId.value || !gameAssetForm.value.attachmentId.trim()) { error.value = "请选择游戏并填写 Attachment ID"; return; }
+  gameAssetSubmitting.value = true; error.value = ""; message.value = "";
+  try {
+    await http.post(`/games/${selectedGameId.value}/assets`, { data: { attachmentId: gameAssetForm.value.attachmentId.trim(), versionId: gameAssetForm.value.versionId || undefined, category: gameAssetForm.value.category, displayName: gameAssetForm.value.displayName.trim() || undefined } });
+    gameAssetForm.value = { attachmentId: "", versionId: "", category: "INSTALLER", displayName: "" }; message.value = "游戏资料包已登记"; await loadGameVersions();
+  } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "游戏资料包登记失败"; }
+  finally { gameAssetSubmitting.value = false; }
+}
+
+async function downloadGameAsset(asset: Row) {
+  const attachmentId = String(asset.attachmentId || "");
+  if (!attachmentId) { error.value = "该资料包没有 Attachment ID"; return; }
+  gameAssetDownloadId.value = attachmentId; error.value = "";
+  try {
+    const blob = await http.get<Blob, unknown>(`/attachments/${attachmentId}/content`, { responseType: "blob" });
+    const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = String(asset.displayName || "game-asset"); link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "游戏资料下载失败"; }
+  finally { gameAssetDownloadId.value = ""; }
+}
+
+async function loadPhotoAlbums() {
+  photoAlbumLoading.value = true;
+  try { const result = await http.get<unknown, unknown>("/photos/albums"); photoAlbums.value = Array.isArray(result) ? result as Row[] : []; }
+  catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "相册加载失败"; }
+  finally { photoAlbumLoading.value = false; }
+}
+
+function editPhotoAlbum(album: Row) { photoAlbumForm.value = { id: String(album.id), name: String(album.name || ""), description: String(album.description || ""), version: Number(album.version || 0) }; loadPhotoAlbumPhotos(String(album.id)); }
+
+async function loadPhotoAlbumPhotos(albumId = photoAlbumForm.value.id) {
+  if (!albumId) { photoAlbumPhotos.value = []; return; }
+  photoAlbumPhotosLoading.value = true;
+  try { const result = await http.get<unknown, unknown>(`/photos/albums/${albumId}/photos`); photoAlbumPhotos.value = Array.isArray(result) ? result as Row[] : []; }
+  catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "相册照片加载失败"; }
+  finally { photoAlbumPhotosLoading.value = false; }
+}
+
+async function addPhotoToAlbum() {
+  if (!photoAlbumForm.value.id || !photoAlbumPhotoId.value.trim()) { error.value = "请先选择相册并填写 Photo ID"; return; }
+  photoAlbumPhotoSaving.value = true; error.value = "";
+  try { await http.post(`/photos/albums/${photoAlbumForm.value.id}/photos`, { data: { photoId: photoAlbumPhotoId.value.trim() } }); photoAlbumPhotoId.value = ""; await loadPhotoAlbumPhotos(); message.value = "图片已加入相册"; }
+  catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "添加图片失败"; }
+  finally { photoAlbumPhotoSaving.value = false; }
+}
+
+async function removePhotoFromAlbum(photo: Row) {
+  if (!photoAlbumForm.value.id || !photo?.id) return;
+  photoAlbumPhotoSaving.value = true; error.value = "";
+  try { await http.request("delete", `/photos/albums/${photoAlbumForm.value.id}/photos/${photo.id}`); await loadPhotoAlbumPhotos(); message.value = "图片已从相册移除"; }
+  catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "移除图片失败"; }
+  finally { photoAlbumPhotoSaving.value = false; }
+}
+
+async function movePhotoInAlbum(index: number, direction: number) {
+  const target = index + direction;
+  if (!photoAlbumForm.value.id || target < 0 || target >= photoAlbumPhotos.value.length) return;
+  const reordered = [...photoAlbumPhotos.value];
+  [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+  photoAlbumPhotoSaving.value = true; error.value = "";
+  try { await http.post(`/photos/albums/${photoAlbumForm.value.id}/actions/reorder`, { data: { photoIds: reordered.map(photo => photo.id) } }); await loadPhotoAlbumPhotos(); message.value = "相册图片顺序已保存"; }
+  catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "保存图片顺序失败"; }
+  finally { photoAlbumPhotoSaving.value = false; }
+}
+
+async function setPhotoAlbumCover(photo: Row) {
+  if (!photoAlbumForm.value.id || !photo?.id) return;
+  photoAlbumPhotoSaving.value = true; error.value = "";
+  try { await http.post(`/photos/albums/${photoAlbumForm.value.id}/actions/set-cover`, { data: { photoId: photo.id } }); await loadPhotoAlbums(); message.value = "相册封面已设置"; }
+  catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "设置相册封面失败"; }
+  finally { photoAlbumPhotoSaving.value = false; }
+}
+
+async function deletePhotoAlbum(album: Row) {
+  if (!album?.id || !window.confirm(`确认删除相册“${album.name || album.id}”？相册成员关系会删除，但 Photo、Attachment 和原图会保留。`)) return;
+  photoAlbumSaving.value = true; error.value = "";
+  try { await http.request("delete", `/photos/albums/${album.id}`, { headers: { "If-Match": `\"${Number(album.version || 0)}\"` } }); if (photoAlbumForm.value.id === album.id) { photoAlbumForm.value = { id: "", name: "", description: "", version: 0 }; photoAlbumPhotos.value = []; } await loadPhotoAlbums(); message.value = "相册已删除，原图和 Photo 已保留"; }
+  catch (e: any) { error.value = e?.response?.status === 412 ? "相册版本已变化，请刷新后再删除" : e?.response?.data?.detail || e?.message || "相册删除失败"; }
+  finally { photoAlbumSaving.value = false; }
+}
+
+async function savePhotoAlbum() {
+  if (!photoAlbumForm.value.name.trim()) { error.value = "相册名称不能为空"; return; }
+  photoAlbumSaving.value = true; error.value = ""; message.value = "";
+  try {
+    const payload = { name: photoAlbumForm.value.name.trim(), description: photoAlbumForm.value.description.trim() || null };
+    const result: any = photoAlbumForm.value.id
+      ? await http.request("patch", `/photos/albums/${photoAlbumForm.value.id}`, { headers: { "If-Match": `\"${photoAlbumForm.value.version}\"` }, data: payload })
+      : await http.post("/photos/albums", { data: payload });
+    message.value = photoAlbumForm.value.id ? "相册已更新" : "相册已创建";
+    photoAlbumForm.value = { id: "", name: "", description: "", version: 0 };
+    await loadPhotoAlbums();
+    if (result?.version !== undefined) message.value += `（版本 ${result.version}）`;
+  } catch (e: any) { error.value = e?.response?.status === 412 ? "相册版本已变化，请重新加载后再保存" : e?.response?.data?.detail || e?.message || "相册保存失败"; }
+  finally { photoAlbumSaving.value = false; }
+}
+
+async function openPhoto(row: Row) {
+  if (!row?.id) return;
+  photoDrawerVisible.value = true;
+  photoDetailLoading.value = true; error.value = ""; photoPreviewUrl.value = "";
+  try {
+    const [metadata, assets, thumbnailStatus] = await Promise.all([http.get(`/photos/${row.id}/metadata`), http.get(`/photos/${row.id}/assets`), http.get(`/photos/${row.id}/thumbnail/status`)]);
+    photoDetail.value = metadata as Row;
+    photoAssets.value = Array.isArray(assets) ? assets as Row[] : [];
+    photoThumbnailStatus.value = String((thumbnailStatus as Row)?.status || "NOT_REQUESTED").toUpperCase();
+    photoThumbnailTask.value = String((thumbnailStatus as Row)?.taskId || "");
+    photoThumbnailError.value = JSON.stringify((thumbnailStatus as Row)?.error || "");
+    photoMetadataForm.value = { ...photoMetadataForm.value, ...(metadata as Row), captureTime: String((metadata as Row)?.captureTime || ""), width: (metadata as Row)?.width ?? null, height: (metadata as Row)?.height ?? null, orientation: (metadata as Row)?.orientation ?? null };
+    const primary = photoAssets.value.find(asset => asset.primary) || photoAssets.value[0];
+    if (primary?.attachmentId) {
+      const preview: any = await http.get(`/attachments/${primary.attachmentId}/preview-url`);
+      photoPreviewUrl.value = String(preview?.url || "");
+    }
+  } catch (e: any) { photoDetail.value = null; photoAssets.value = []; error.value = e?.response?.data?.detail || e?.message || "图片元数据加载失败"; }
+  finally { photoDetailLoading.value = false; }
+}
+
+async function savePhotoMetadata() {
+  if (!photoDetail.value?.id) return;
+  photoDetailLoading.value = true; error.value = "";
+  try {
+    const result: any = await http.request("put", `/photos/${photoDetail.value.id}/metadata`, { headers: { "If-Match": `\"${photoDetail.value.version ?? 0}\"` }, data: { ...photoMetadataForm.value, captureTime: photoMetadataForm.value.captureTime || null, width: photoMetadataForm.value.width || null, height: photoMetadataForm.value.height || null, orientation: photoMetadataForm.value.orientation || null } });
+    photoDetail.value = result as Row; message.value = "图片元数据已保存并重新读取"; await load();
+  } catch (e: any) { error.value = e?.response?.status === 412 ? "图片版本已变化，请重新加载后再保存" : e?.response?.data?.detail || e?.message || "图片元数据保存失败"; }
+  finally { photoDetailLoading.value = false; }
+}
+
+async function generatePhotoThumbnail() {
+  if (!photoDetail.value?.id) return;
+  photoThumbnailLoading.value = true; error.value = ""; photoThumbnailTask.value = "";
+  try {
+    const action = photoThumbnailStatus.value === "FAILED" || photoThumbnailStatus.value === "TIMED_OUT" ? "regenerate-thumbnail" : "generate-thumbnail";
+    const task: any = await http.post(`/photos/${photoDetail.value.id}/actions/${action}`);
+    photoThumbnailTask.value = String(task?.taskId || task?.id || "");
+    if (!photoThumbnailTask.value) throw new Error("服务端未返回缩略图任务 ID");
+    for (let attempt = 0; attempt < 30; attempt += 1) {
+      const state: any = await http.get(`/background-tasks/${photoThumbnailTask.value}`);
+      const status = String(state?.status || "").toUpperCase();
+      if (["COMPLETED", "FAILED", "CANCELLED"].includes(status)) {
+        if (status !== "COMPLETED") throw new Error(state?.error?.message || "缩略图生成失败，请查看后台任务详情");
+        message.value = "缩略图生成完成";
+        await openPhoto(photoDetail.value);
+        return;
+      }
+      await new Promise(resolve => window.setTimeout(resolve, 1000));
+    }
+    throw new Error("缩略图任务仍在后台运行，请稍后刷新");
+  } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "缩略图生成失败"; }
+  finally { photoThumbnailLoading.value = false; }
+}
+
+function openOriginalPhoto() {
+  if (!photoPreviewUrl.value) { error.value = "原图当前不可预览"; return; }
+  window.open(photoPreviewUrl.value, "_blank", "noopener,noreferrer");
 }
 
 async function importMusic() {
@@ -295,7 +539,7 @@ async function playPlaylistEntry(index: number) {
   finally { playlistEntrySaving.value = false; }
 }
 
-onMounted(() => { load(); if (isMusic.value) { loadActiveSessions(); loadPlaylists(); } });
+onMounted(() => { load(); if (isMusic.value) { loadActiveSessions(); loadPlaylists(); } if (isPhotos.value) loadPhotoAlbums(); });
 </script>
 
 <template>
@@ -313,6 +557,15 @@ onMounted(() => { load(); if (isMusic.value) { loadActiveSessions(); loadPlaylis
       <el-card shadow="never" class="mb-4"><template #header><span>播放模式</span></template><div class="flex flex-wrap items-center gap-3"><el-select v-model="queueRepeatMode" class="w-36"><el-option label="不循环" value="OFF"/><el-option label="队列循环" value="QUEUE"/><el-option label="单曲循环" value="ONE"/></el-select><el-switch v-model="queueShuffleEnabled" active-text="随机播放"/><el-button type="primary" :loading="queueSaving" :disabled="!queueId" @click="saveQueuePolicy">保存模式</el-button><span class="text-xs text-[var(--el-text-color-secondary)]">使用上方 Queue 版本进行并发校验</span></div></el-card>
       <el-card shadow="never" class="mb-4"><template #header><span>可用歌词</span></template><div class="flex flex-wrap gap-2 mb-3"><el-input v-model="lyricsTrackId" placeholder="Track ID" class="w-96" clearable/><el-button type="primary" :loading="lyricsLoading" @click="loadLyrics()">加载歌词</el-button></div><el-skeleton v-if="lyricsLoading" :rows="4" animated/><el-empty v-else-if="!lyricsRows.length" description="暂无可用歌词"/><el-table v-else :data="lyricsRows" stripe><el-table-column prop="language" label="语言" width="110"/><el-table-column prop="type" label="类型" width="140"/><el-table-column prop="source" label="来源" width="140"/><el-table-column prop="provenance" label="溯源" min-width="160"/><el-table-column label="内容" min-width="320"><template #default="scope"><pre class="whitespace-pre-wrap text-sm">{{ scope.row.content || scope.row.timingData || "—" }}</pre></template></el-table-column></el-table></el-card>
     </template>
-    <template v-else><el-tabs v-model="tab"><el-tab-pane label="目录" name="catalog"/><el-tab-pane label="元数据" name="metadata"/><el-tab-pane label="播放 / 时间线" name="activity"/></el-tabs><el-card shadow="never"><template #header><div class="flex justify-between"><span>{{ title }}目录</span><el-input v-model="query" clearable placeholder="搜索标题或资源 ID" class="w-64"/></div></template><el-skeleton v-if="loading" :rows="5" animated/><el-empty v-else-if="!filtered.length" description="暂无可展示条目；其他媒体目录接口尚未接入"/><el-table v-else :data="filtered" stripe><el-table-column prop="id" label="ID" min-width="240"/><el-table-column prop="name" label="名称" min-width="200"/><el-table-column prop="status" label="状态" width="140"/><el-table-column prop="createdAt" label="创建时间" min-width="180"/></el-table><el-alert title="附件物理存储请在“附件与存储”模块管理。" type="info" show-icon :closable="false" class="mt-4"/></el-card></template>
+    <template v-else-if="isPhotos">
+      <el-alert title="先在附件与存储中创建 PHOTO Resource 并上传图片 Attachment，再在此登记图片。原图不会被复制或暴露物理路径。" type="info" show-icon :closable="false" class="mb-4" />
+      <el-card shadow="never" class="mb-4"><template #header><span>相册</span></template><el-form inline @submit.prevent="savePhotoAlbum"><el-form-item label="名称" required><el-input v-model="photoAlbumForm.name" placeholder="相册名称" class="w-56" /></el-form-item><el-form-item label="描述"><el-input v-model="photoAlbumForm.description" placeholder="可选描述" class="w-64" /></el-form-item><el-button type="primary" :loading="photoAlbumSaving" @click="savePhotoAlbum">{{ photoAlbumForm.id ? "保存修改" : "创建相册" }}</el-button><el-button v-if="photoAlbumForm.id" @click="photoAlbumForm = { id: '', name: '', description: '', version: 0 }; photoAlbumPhotos = []">新建</el-button></el-form><el-skeleton v-if="photoAlbumLoading" :rows="2" animated /><el-empty v-else-if="!photoAlbums.length" description="暂无相册" /><el-table v-else :data="photoAlbums" stripe><el-table-column prop="name" label="名称" min-width="180" /><el-table-column prop="description" label="描述" min-width="240" /><el-table-column prop="coverPhotoId" label="封面 Photo ID" min-width="240" /><el-table-column prop="version" label="版本" width="90" /><el-table-column label="操作" width="180"><template #default="scope"><el-button link type="primary" @click="editPhotoAlbum(scope.row)">编辑</el-button><el-button link type="danger" :loading="photoAlbumSaving" @click="deletePhotoAlbum(scope.row)">删除</el-button></template></el-table-column></el-table><template v-if="photoAlbumForm.id"><el-divider /><div class="flex flex-wrap gap-2 mb-3"><el-input v-model="photoAlbumPhotoId" placeholder="Photo ID" class="w-96" clearable /><el-button type="primary" :loading="photoAlbumPhotoSaving" @click="addPhotoToAlbum">添加图片</el-button><el-button :loading="photoAlbumPhotosLoading" @click="loadPhotoAlbumPhotos()">刷新图片</el-button></div><el-skeleton v-if="photoAlbumPhotosLoading" :rows="3" animated /><el-empty v-else-if="!photoAlbumPhotos.length" description="当前相册暂无图片" /><el-table v-else :data="photoAlbumPhotos" stripe><el-table-column prop="id" label="Photo ID" min-width="260" /><el-table-column prop="captureTime" label="拍摄时间" min-width="180" /><el-table-column label="顺序" width="150"><template #default="scope"><el-button link :disabled="photoAlbumPhotoSaving || scope.$index === 0" @click="movePhotoInAlbum(scope.$index, -1)">上移</el-button><el-button link :disabled="photoAlbumPhotoSaving || scope.$index === photoAlbumPhotos.length - 1" @click="movePhotoInAlbum(scope.$index, 1)">下移</el-button></template></el-table-column><el-table-column label="操作" width="220"><template #default="scope"><el-button link type="primary" :loading="photoAlbumPhotoSaving" @click="setPhotoAlbumCover(scope.row)">{{ photoAlbumForm.id && scope.row.id === photoAlbums.find(album => album.id === photoAlbumForm.id)?.coverPhotoId ? "当前封面" : "设为封面" }}</el-button><el-button link type="danger" :loading="photoAlbumPhotoSaving" @click="removePhotoFromAlbum(scope.row)">移除</el-button></template></el-table-column></el-table></template></el-card>
+      <el-card shadow="never" class="mb-4"><template #header><span>登记图片并读取元数据</span></template><el-form inline @submit.prevent="createPhoto"><el-form-item label="图片 Attachment ID" required><el-input v-model="photoForm.attachmentId" class="w-80" clearable /></el-form-item><el-form-item label="标题" required><el-input v-model="photoForm.title" class="w-56" /></el-form-item><el-form-item label="语言"><el-input v-model="photoForm.locale" class="w-32" /></el-form-item><el-button type="primary" :loading="photoSubmitting" @click="createPhoto">登记图片</el-button></el-form></el-card>
+      <el-card shadow="never"><template #header><div class="flex justify-between"><span>图片时间线</span><el-input v-model="query" clearable placeholder="搜索 Photo / Resource ID" class="w-64" /></div></template><el-skeleton v-if="loading" :rows="6" animated /><el-empty v-else-if="!filtered.length" description="暂无图片；请先上传图片附件并登记" /><el-table v-else :data="filtered" stripe @row-click="openPhoto"><el-table-column prop="id" label="Photo ID" min-width="260" /><el-table-column prop="resourceId" label="Resource ID" min-width="260" /><el-table-column prop="captureTime" label="拍摄时间" min-width="190" /><el-table-column prop="width" label="宽" width="80" /><el-table-column prop="height" label="高" width="80" /><el-table-column prop="cameraMake" label="相机厂商" min-width="140" /><el-table-column prop="cameraModel" label="相机型号" min-width="160" /><el-table-column label="操作" width="120"><template #default="scope"><el-button link type="primary" @click.stop="openPhoto(scope.row)">查看元数据</el-button></template></el-table-column></el-table></el-card>
+      <el-drawer v-model="photoDrawerVisible" title="图片元数据" size="560px"><el-skeleton v-if="photoDetailLoading" :rows="10" animated /><template v-else-if="photoDetail"><div v-if="photoPreviewUrl" class="mb-4 flex justify-center max-h-64 overflow-auto"><img :src="photoPreviewUrl" alt="图片原图预览" class="max-w-full object-contain" /></div><el-button v-if="photoPreviewUrl" class="mb-4" @click="openOriginalPhoto">打开原图</el-button><el-alert v-if="photoThumbnailStatus === 'FAILED' || photoThumbnailStatus === 'TIMED_OUT'" title="缩略图生成失败" :description="photoThumbnailError || '请查看后台任务详情后重新生成。'" type="error" show-icon :closable="false" class="mb-4" /><el-form label-position="top"><div class="grid grid-cols-2 gap-3"><el-form-item label="拍摄时间"><el-input v-model="photoMetadataForm.captureTime" placeholder="RFC 3339，可留空" /></el-form-item><el-form-item label="本地时间"><el-input v-model="photoMetadataForm.captureTimeLocal" /></el-form-item><el-form-item label="时区"><el-input v-model="photoMetadataForm.timeZone" /></el-form-item><el-form-item label="方向"><el-input-number v-model="photoMetadataForm.orientation" :min="1" :max="8" class="w-full" /></el-form-item><el-form-item label="宽"><el-input-number v-model="photoMetadataForm.width" :min="1" class="w-full" /></el-form-item><el-form-item label="高"><el-input-number v-model="photoMetadataForm.height" :min="1" class="w-full" /></el-form-item><el-form-item label="相机厂商"><el-input v-model="photoMetadataForm.cameraMake" /></el-form-item><el-form-item label="相机型号"><el-input v-model="photoMetadataForm.cameraModel" /></el-form-item><el-form-item label="镜头"><el-input v-model="photoMetadataForm.lensModel" /></el-form-item><el-form-item label="纬度"><el-input v-model="photoMetadataForm.latitude" /></el-form-item><el-form-item label="经度"><el-input v-model="photoMetadataForm.longitude" /></el-form-item></div></el-form><el-divider /><div class="text-sm mb-3">资产：{{ photoAssets.length }} 个；缩略图任务状态：{{ photoThumbnailStatus }}；原图与派生图身份分离。</div><el-table :data="photoAssets" size="small"><el-table-column prop="role" label="角色" width="150" /><el-table-column prop="availability" label="可用性" width="130" /><el-table-column prop="attachmentId" label="Attachment ID" min-width="220" /></el-table><div class="flex gap-2 mt-4"><el-button type="primary" :loading="photoDetailLoading" @click="savePhotoMetadata">保存元数据</el-button><el-button type="success" :loading="photoThumbnailLoading" @click="generatePhotoThumbnail">{{ photoThumbnailStatus === 'FAILED' || photoThumbnailStatus === 'TIMED_OUT' ? '重新生成缩略图' : '生成缩略图' }}</el-button></div><div v-if="photoThumbnailTask" class="text-xs text-[var(--el-text-color-secondary)] mt-2">后台任务：{{ photoThumbnailTask }}</div></template><el-empty v-else description="选择一张图片" /></el-drawer>
+    </template>
+    <template v-else><el-card shadow="never" class="mb-4"><template #header><span>创建游戏条目</span></template><el-form inline @submit.prevent="createGame"><el-form-item label="标题" required><el-input v-model="gameForm.title" placeholder="游戏标题" class="w-64" clearable/></el-form-item><el-form-item label="类型"><el-input v-model="gameForm.gameKind" placeholder="PC / CONSOLE" class="w-40"/></el-form-item><el-form-item label="语言"><el-input v-model="gameForm.locale" class="w-32"/></el-form-item><el-button type="primary" :loading="gameSubmitting" @click="createGame">创建游戏</el-button></el-form></el-card><el-card shadow="never" class="mb-4"><template #header><span>维护版本信息</span></template><el-form inline @submit.prevent="createGameVersion"><el-form-item label="游戏" required><el-select v-model="selectedGameId" placeholder="选择游戏" class="w-64" @change="loadGameVersions"><el-option v-for="game in rows" :key="game.id" :label="game.id" :value="game.id"/></el-select></el-form-item><el-form-item label="版本号" required><el-input v-model="gameVersionForm.versionLabel" placeholder="1.0.0" class="w-40"/></el-form-item><el-form-item label="平台"><el-select v-model="gameVersionForm.platformId" clearable placeholder="可选平台" class="w-40"><el-option v-for="platform in gamePlatforms" :key="platform.id" :label="platform.name" :value="platform.id"/></el-select></el-form-item><el-form-item label="发布日期"><el-input v-model="gameVersionForm.releaseDate" placeholder="RFC 3339，可选" class="w-52"/></el-form-item><el-button type="primary" :loading="gameVersionSubmitting" @click="createGameVersion">添加版本</el-button></el-form><el-skeleton v-if="gameVersionLoading" :rows="2" animated/><el-empty v-else-if="!gameVersions.length" description="暂无版本信息"/><el-table v-else :data="gameVersions" size="small"><el-table-column prop="versionLabel" label="版本号" width="140"/><el-table-column prop="platformId" label="平台 ID" min-width="220"/><el-table-column prop="releaseDate" label="发布日期" min-width="180"/></el-table></el-card><el-tabs v-model="tab"><el-tab-pane label="目录" name="catalog"/><el-tab-pane label="元数据" name="metadata"/><el-tab-pane label="播放 / 时间线" name="activity"/></el-tabs><el-card shadow="never"><template #header><div class="flex justify-between"><span>{{ title }}目录</span><el-input v-model="query" clearable placeholder="搜索标题或资源 ID" class="w-64"/></div></template><el-skeleton v-if="loading" :rows="5" animated/><el-empty v-else-if="!filtered.length" description="暂无可展示条目；其他媒体目录接口尚未接入"/><el-table v-else :data="filtered" stripe><el-table-column prop="id" label="ID" min-width="240"/><el-table-column prop="name" label="名称" min-width="200"/><el-table-column prop="status" label="状态" width="140"/><el-table-column prop="createdAt" label="创建时间" min-width="180"/></el-table><el-alert title="附件物理存储请在“附件与存储”模块管理。" type="info" show-icon :closable="false" class="mt-4"/></el-card></template>
+    <el-card v-if="kind === 'games'" shadow="never" class="mb-4"><template #header><span>登记游戏资料包</span></template><el-form inline @submit.prevent="createGameAsset"><el-form-item label="Attachment ID" required><el-input v-model="gameAssetForm.attachmentId" placeholder="已上传附件 UUID" class="w-72" clearable /></el-form-item><el-form-item label="绑定版本"><el-select v-model="gameAssetForm.versionId" clearable placeholder="可选版本" class="w-48"><el-option v-for="version in gameVersions" :key="version.id" :label="version.versionLabel" :value="version.id" /></el-select></el-form-item><el-form-item label="资料类别" required><el-select v-model="gameAssetForm.category" class="w-40"><el-option v-for="category in gameAssetCategories" :key="category.value" :label="category.label" :value="category.value" /></el-select></el-form-item><el-form-item label="显示名称"><el-input v-model="gameAssetForm.displayName" placeholder="例如：安装包" class="w-48" /></el-form-item><el-button type="primary" :loading="gameAssetSubmitting" @click="createGameAsset">登记资料包</el-button></el-form><el-empty v-if="!gameAssets.length" description="暂无资料包" /><el-table v-else :data="gameAssets" size="small"><el-table-column prop="displayName" label="名称" min-width="160" /><el-table-column prop="attachmentId" label="Attachment ID" min-width="230" /><el-table-column prop="versionId" label="版本 ID" min-width="220" /><el-table-column label="类别" width="120"><template #default="scope">{{ gameAssetCategories.find(category => category.value === scope.row.category)?.label || scope.row.category }}</template></el-table-column><el-table-column prop="availability" label="可用性" width="120" /></el-table></el-card>
+    <el-card v-if="kind === 'games' && gameAssets.length" shadow="never" class="mb-4"><template #header><span>下载指定资料</span></template><el-table :data="gameAssets" size="small"><el-table-column prop="displayName" label="资料" min-width="180" /><el-table-column prop="category" label="类别" width="120" /><el-table-column prop="availability" label="可用性" width="120" /><el-table-column label="操作" width="120"><template #default="scope"><el-button link type="primary" :loading="gameAssetDownloadId === String(scope.row.attachmentId)" :disabled="scope.row.availability !== 'AVAILABLE'" @click="downloadGameAsset(scope.row)">下载</el-button></template></el-table-column></el-table></el-card>
   </main>
 </template>

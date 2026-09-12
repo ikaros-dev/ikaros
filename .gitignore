@@ -2,6 +2,7 @@
 target/
 .idea/
 *.iml
-*application-local.yaml
 /.pnpm-store/
 /.idea/
+/application/src/main/resources/application-local.yaml
+.m2-repository/

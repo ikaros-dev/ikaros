@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import run.ikaros.common.ConflictException;
+import run.ikaros.common.NotFoundException;
 import reactor.core.publisher.Mono;
 
 class DefaultDriveServiceTest {
@@ -64,6 +65,75 @@ class DefaultDriveServiceTest {
         assertEquals(1, service.revisions(user, file.id()).count().block());
     }
 
+    @Test void restoresHistoricalRevisionAndAdvancesNodeVersion() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        DriveNodeView file = service.createNode(user, space.id(), new CreateDriveNodeRequest(DriveNodeType.FILE, "a.txt", null)).block();
+        DriveRevisionView first = service.createRevision(user, file.id(), new CreateDriveRevisionRequest(
+            UUID.randomUUID(), 0L, "sha256:first", "first")).block();
+        DriveRevisionView second = service.createRevision(user, file.id(), new CreateDriveRevisionRequest(
+            UUID.randomUUID(), 1L, "sha256:second", "second")).block();
+
+        DriveNodeView restored = service.restoreRevision(user, file.id(), first.revisionNo(), 2L).block();
+
+        assertEquals(first.id(), restored.currentRevisionId());
+        assertEquals(3L, restored.nodeVersion());
+        var history = service.revisions(user, file.id()).collectList().block();
+        assertEquals(second.id(), history.get(0).id());
+        assertEquals(first.id(), history.get(1).id());
+    }
+
+    @Test void historicalRevisionRestoreRejectsStaleVersionAndUnknownRevision() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        DriveNodeView file = service.createNode(user, space.id(), new CreateDriveNodeRequest(DriveNodeType.FILE, "a.txt", null)).block();
+        service.createRevision(user, file.id(), new CreateDriveRevisionRequest(UUID.randomUUID(), 0L, "sha256:first", "first")).block();
+
+        assertThrows(ConflictException.class, () -> service.restoreRevision(user, file.id(), 1L, 0L).block());
+        assertThrows(NotFoundException.class, () -> service.restoreRevision(user, file.id(), 99L, 1L).block());
+    }
+
+    @Test void revisionHistoryIsNewestFirstAndKeepsCurrentRevision() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        DriveNodeView file = service.createNode(user, space.id(), new CreateDriveNodeRequest(DriveNodeType.FILE, "a.txt", null)).block();
+        DriveRevisionView first = service.createRevision(user, file.id(), new CreateDriveRevisionRequest(
+            UUID.randomUUID(), 0L, "sha256:first", null)).block();
+        DriveRevisionView second = service.createRevision(user, file.id(), new CreateDriveRevisionRequest(
+            UUID.randomUUID(), 1L, "sha256:second", null)).block();
+
+        var history = service.revisions(user, file.id()).collectList().block();
+        assertEquals(2, history.size());
+        assertEquals(second.id(), history.get(0).id());
+        assertEquals(first.id(), history.get(1).id());
+        assertEquals(second.id(), service.node(user, file.id()).block().currentRevisionId());
+    }
+
+    @Test void reconnectResumesTwoWayBindingFromPersistedCursor() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(),
+            space.rootNodeId(), "documents", null, SyncSourceKind.DIRECTORY, SyncMode.TWO_WAY,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+        service.advanceCursor(user, binding.id(), 7).block();
+        service.setBindingEnabled(user, binding.id(), false).block();
+
+        SyncBindingView resumed = service.resumeSync(user, binding.id()).block();
+
+        assertEquals(SyncBindingState.ACTIVE, resumed.state());
+        assertEquals(true, resumed.enabled());
+        assertEquals(7, resumed.cursor());
+    }
+
+    @Test void reconnectIsIdempotentForActiveBinding() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(),
+            space.rootNodeId(), "documents", null, SyncSourceKind.DIRECTORY, SyncMode.TWO_WAY,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+
+        SyncBindingView resumed = service.resumeSync(user, binding.id()).block();
+
+        assertEquals(binding.id(), resumed.id());
+        assertEquals(binding.cursor(), resumed.cursor());
+        assertEquals(SyncBindingState.ACTIVE, resumed.state());
+    }
+
     @Test void uploadReservationIsIdempotentForSameSession() {
         DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
         UUID uploadSession = UUID.randomUUID();
@@ -79,5 +149,41 @@ class DefaultDriveServiceTest {
         DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
         BeginDriveUploadRequest request = new BeginDriveUploadRequest(UUID.randomUUID(), 100L * 1024 * 1024 * 1024 + 1);
         assertThrows(ConflictException.class, () -> service.beginUpload(user, space.id(), request).block());
+    }
+
+    @Test void cameraBackupDetectionUpsertsChangedSourceItem() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        UUID deviceId = UUID.randomUUID();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(deviceId, space.id(),
+            space.rootNodeId(), "camera-roll", "Camera Roll", SyncSourceKind.CAMERA_ROLL, SyncMode.BACKUP,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+
+        CameraBackupView discovered = service.updateCameraBackup(user, binding.id(), new CameraBackupRequest(
+            " photo-1 ", CameraBackupState.DISCOVERED, null, null, "sha256:old", null)).block();
+        CameraBackupView changed = service.updateCameraBackup(user, binding.id(), new CameraBackupRequest(
+            "photo-1", CameraBackupState.QUEUED, null, null, "sha256:new", null)).block();
+
+        assertEquals(discovered.id(), changed.id());
+        assertEquals("photo-1", changed.sourceItemId());
+        assertEquals(CameraBackupState.QUEUED, changed.state());
+        assertEquals("sha256:new", changed.contentFingerprint());
+        assertEquals(1, service.cameraBackups(user, binding.id()).count().block());
+        assertEquals(0, service.cameraBackups(user, binding.id(), true).count().block());
+        service.updateCameraBackup(user, binding.id(), new CameraBackupRequest("camera-2", CameraBackupState.ERROR,
+            null, null, "sha256:bad", "读取源文件失败")).block();
+        assertEquals(1, service.cameraBackups(user, binding.id(), true).count().block());
+        assertEquals("读取源文件失败", service.cameraBackups(user, binding.id(), true).next().block().errorMessage());
+    }
+
+    @Test void cameraBackupDetectionRejectsInvalidDowngradeAfterVerification() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(),
+            space.rootNodeId(), "camera-roll", "Camera Roll", SyncSourceKind.CAMERA_ROLL, SyncMode.BACKUP,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+        service.updateCameraBackup(user, binding.id(), new CameraBackupRequest("photo-2",
+            CameraBackupState.BACKUP_VERIFIED, null, null, "sha256:verified", null)).block();
+
+        assertThrows(ConflictException.class, () -> service.updateCameraBackup(user, binding.id(), new CameraBackupRequest(
+            "photo-2", CameraBackupState.ERROR, null, null, "sha256:broken", "upload failed")).block());
     }
 }

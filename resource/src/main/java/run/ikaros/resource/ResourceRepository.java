@@ -36,7 +36,7 @@ public interface ResourceRepository extends ReactiveCrudRepository<ResourceEntit
         select distinct r.* from resource r
         join resource_title t on t.resource_id = r.id
         where r.owner_id = :ownerId
-          and r.lifecycle = 'ACTIVE'
+          and r.lifecycle = :lifecycle
           and (:resourceType = '' or r.resource_type = :resourceType)
           and (:query = '' or t.title ilike '%' || :query || '%')
         order by r.updated_at desc

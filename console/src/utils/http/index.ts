@@ -142,6 +142,10 @@ class PureHttp {
       (error: PureHttpError) => {
         const $error = error;
         $error.isCancelRequest = Axios.isCancel($error);
+        if ($error.response?.status === 403) {
+          $error.message =
+            "操作被拒绝（403）。请确认当前账号已获得对应权限；需要二次验证的操作，请先到“身份与安全 > 认证设置”完成验证。";
+        }
         if ($error.response?.status === 401 && !window.location.pathname.startsWith("/login")) {
           removeToken();
           window.location.replace("/login");

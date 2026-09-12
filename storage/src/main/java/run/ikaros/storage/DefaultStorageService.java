@@ -190,6 +190,45 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
     }
 
     @Override
+    public Mono<AttachmentView> writeDerived(UUID ownerId, UUID resourceId, UUID sourceAttachmentId,
+                                             String fileName, String mediaType, byte[] content) {
+        if (content == null || content.length == 0 || content.length > 16 * 1024 * 1024) {
+            return Mono.error(new ConflictException("派生内容大小不合法"));
+        }
+        if (providerRegistry == null || objectProviderRegistry == null) {
+            return Mono.error(new ConflictException("Storage Provider 服务端写入能力未配置"));
+        }
+        return attachmentRepository.findById(sourceAttachmentId)
+            .filter(source -> source.resourceId().equals(resourceId) && source.deletedAt() == null)
+            .switchIfEmpty(Mono.error(new NotFoundException("来源附件不存在或无权访问")))
+            .flatMap(source -> blobRepository.findById(source.blobId())
+                .switchIfEmpty(Mono.error(new ConflictException("来源附件引用的 Blob 不存在")))
+                .flatMap(blob -> placementRepository.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
+                    .filter(placement -> placement.placementState() == PlacementState.ACTIVE)
+                    .next()
+                    .switchIfEmpty(Mono.error(new ConflictException("来源附件没有可用存储副本")))
+                    .flatMap(placement -> providerRegistry.getByKey(placement.provider())
+                        .switchIfEmpty(Mono.error(new NotFoundException("来源附件的 Storage Provider 不存在")))
+                        .flatMap(provider -> {
+                            String safeName = safeFileName(fileName);
+                            String objectKey = "derived/" + sourceAttachmentId + "/" + UUID.randomUUID() + "-" + safeName;
+                            String sha256 = sha256(content);
+                            return objectProviderRegistry.write(provider, objectKey, mediaType, content)
+                                .then(attach(ownerId, resourceId, new AttachBlobRequest(sha256, content.length,
+                                    mediaType, fileName, AttachmentKind.DERIVED, provider.providerKey(),
+                                    placement.storageTier(), objectKey)));
+                        }))));
+    }
+
+    private String sha256(byte[] content) {
+        try {
+            return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(content));
+        } catch (java.security.NoSuchAlgorithmException error) {
+            throw new IllegalStateException("SHA-256 不可用", error);
+        }
+    }
+
+    @Override
     public Mono<UploadSessionView> abortUploadSession(UUID ownerId, UUID sessionId) {
         if (uploadSessionRepository == null) {
             return Mono.error(new ConflictException("上传会话能力未配置"));

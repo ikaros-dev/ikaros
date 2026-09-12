@@ -83,6 +83,7 @@ export default {
       { path: "executions", name: "IntegrationExecutions", component: () => import("@/views/integration/index.vue"), meta: { title: "自动化执行", icon: "ep:operation" } },
       { path: "events", name: "IntegrationEvents", component: () => import("@/views/integration/index.vue"), meta: { title: "集成事件", icon: "ep:bell" } },
       { path: "sync", name: "IntegrationSync", component: () => import("@/views/integration/index.vue"), meta: { title: "同步", icon: "ep:refresh" } },
+      { path: "devices", name: "SyncDevices", component: () => import("@/views/integration/Devices.vue"), meta: { title: "同步设备", icon: "ep:mobile-phone" } },
       { path: "plugins", name: "IntegrationPlugins", component: () => import("@/views/integration/index.vue"), meta: { title: "插件", icon: "ep:cpu" } }
     ]),
     subsystem("/communications-center", "CommunicationsCenter", "沟通与审计", "ep:notification", [
@@ -135,6 +136,7 @@ export default {
       { path: "media", name: "Media", component: () => import("@/views/media/index.vue"), meta: { title: "媒体消费", icon: "ep:video-camera" } },
       { path: "media/catalog", name: "MediaCatalog", component: () => import("@/views/media/VideoCatalog.vue"), meta: { title: "视频条目", icon: "ep:collection" } },
       { path: "reading", name: "Reading", component: () => import("@/views/reading/index.vue"), meta: { title: "阅读库", icon: "ep:reading" } },
+      { path: "ebooks", name: "EbookImport", component: () => import("@/views/reading/EbookImport.vue"), meta: { title: "电子书导入", icon: "ep:document" } },
       { path: "music", name: "Music", component: () => import("@/views/media/Catalog.vue"), meta: { title: "音乐库", icon: "ep:headset" } },
       { path: "photos", name: "Photos", component: () => import("@/views/media/Catalog.vue"), meta: { title: "照片管理", icon: "ep:picture" } },
       { path: "games", name: "Games", component: () => import("@/views/media/Catalog.vue"), meta: { title: "游戏档案", icon: "ep:monitor" } }
@@ -147,7 +149,11 @@ export default {
       { path: "drive/trash", name: "DriveTrash", component: () => import("@/views/drive/Operations.vue"), meta: { title: "云盘回收站", showLink: false } },
       { path: "drive/transfers", name: "DriveTransfers", component: () => import("@/views/drive/Operations.vue"), meta: { title: "传输任务", showLink: false } },
       { path: "drive/sync", name: "DriveSync", component: () => import("@/views/drive/Operations.vue"), meta: { title: "云盘同步", showLink: false } },
-      { path: "drive/conflicts", name: "DriveConflicts", component: () => import("@/views/drive/Operations.vue"), meta: { title: "同步冲突", showLink: false } },
+      { path: "drive/device-mutations", name: "DriveDeviceMutations", component: () => import("@/views/drive/DeviceMutations.vue"), meta: { title: "设备变更上传", showLink: false } },
+      { path: "drive/devices", name: "DriveDevices", component: () => import("@/views/integration/Devices.vue"), meta: { title: "同步设备", showLink: false } },
+      { path: "drive/backup", name: "DriveBackup", component: () => import("@/views/drive/BackupBindings.vue"), meta: { title: "备份目录", showLink: false } },
+      { path: "drive/backup-files", name: "DriveBackupFiles", component: () => import("@/views/drive/BackupFiles.vue"), meta: { title: "备份文件检测", showLink: false } },
+      { path: "drive/conflicts", name: "DriveConflicts", component: () => import("@/views/drive/Conflicts.vue"), meta: { title: "同步冲突", showLink: false } },
       { path: "drive/quota", name: "DriveQuota", component: () => import("@/views/drive/Operations.vue"), meta: { title: "云盘配额", showLink: false } },
       { path: "drive/policies", name: "DrivePolicies", component: () => import("@/views/drive/Operations.vue"), meta: { title: "云盘策略", showLink: false } },
       { path: "drive/spaces", name: "DriveSpaces", component: () => import("@/views/drive/index.vue"), meta: { title: "云盘空间", showLink: false } },
@@ -158,6 +164,8 @@ export default {
       { path: "providers", name: "StorageProviders", component: () => import("@/views/storage/Tiers.vue"), meta: { title: "存储 Provider", icon: "ep:setting" } },
       { path: "archive", name: "StorageArchive", component: () => import("@/views/storage/Archive.vue"), meta: { title: "归档与恢复", icon: "ep:refresh-left" } },
       { path: "cache", name: "StorageCache", component: () => import("@/views/storage/Cache.vue"), meta: { title: "缓存与我的下载", icon: "ep:coffee-cup" } },
+      { path: "downloads", name: "StorageDownloads", component: () => import("@/views/storage/Downloads.vue"), meta: { title: "下载管理", icon: "ep:download" } },
+      { path: "cache-quota", name: "StorageCacheQuota", component: () => import("@/views/storage/CacheQuota.vue"), meta: { title: "缓存配额", icon: "ep:pie-chart" } },
       { path: "backup", name: "Backup", component: () => import("@/views/storage/Backup.vue"), meta: { title: "备份恢复", icon: "ep:files" } },
     ]),
     subsystem("/edge-acceleration", "EdgeAccelerationCenter", "边缘加速", "ep:connection", [
