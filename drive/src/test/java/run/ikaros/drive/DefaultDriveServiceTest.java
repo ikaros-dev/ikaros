@@ -77,7 +77,9 @@ class DefaultDriveServiceTest {
 
         assertEquals(first.id(), restored.currentRevisionId());
         assertEquals(3L, restored.nodeVersion());
-        assertEquals(second.id(), service.revisions(user, file.id()).collectList().block().get(1).id());
+        var history = service.revisions(user, file.id()).collectList().block();
+        assertEquals(second.id(), history.get(0).id());
+        assertEquals(first.id(), history.get(1).id());
     }
 
     @Test void historicalRevisionRestoreRejectsStaleVersionAndUnknownRevision() {
@@ -87,6 +89,21 @@ class DefaultDriveServiceTest {
 
         assertThrows(ConflictException.class, () -> service.restoreRevision(user, file.id(), 1L, 0L).block());
         assertThrows(NotFoundException.class, () -> service.restoreRevision(user, file.id(), 99L, 1L).block());
+    }
+
+    @Test void revisionHistoryIsNewestFirstAndKeepsCurrentRevision() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        DriveNodeView file = service.createNode(user, space.id(), new CreateDriveNodeRequest(DriveNodeType.FILE, "a.txt", null)).block();
+        DriveRevisionView first = service.createRevision(user, file.id(), new CreateDriveRevisionRequest(
+            UUID.randomUUID(), 0L, "sha256:first", null)).block();
+        DriveRevisionView second = service.createRevision(user, file.id(), new CreateDriveRevisionRequest(
+            UUID.randomUUID(), 1L, "sha256:second", null)).block();
+
+        var history = service.revisions(user, file.id()).collectList().block();
+        assertEquals(2, history.size());
+        assertEquals(second.id(), history.get(0).id());
+        assertEquals(first.id(), history.get(1).id());
+        assertEquals(second.id(), service.node(user, file.id()).block().currentRevisionId());
     }
 
     @Test void uploadReservationIsIdempotentForSameSession() {
