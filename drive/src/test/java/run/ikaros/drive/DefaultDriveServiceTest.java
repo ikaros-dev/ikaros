@@ -21,6 +21,37 @@ class DefaultDriveServiceTest {
         assertThrows(ConflictException.class, () -> service.rename(user, node.id(), new RenameDriveNodeRequest("x", 0)).block());
     }
 
+    @Test void createsBackupBindingForRegisteredDeviceAndDriveSpace() {
+        UUID device = UUID.randomUUID();
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Backup")).block();
+
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(
+            device, space.id(), space.rootNodeId(), "DCIM", "相机照片", SyncSourceKind.CAMERA_ROLL,
+            SyncMode.BACKUP, DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+
+        assertEquals(device, binding.deviceId());
+        assertEquals(space.id(), binding.driveSpaceId());
+        assertEquals(space.rootNodeId(), binding.remoteRootNodeId());
+        assertEquals("DCIM", binding.localScopeId());
+        assertEquals(SyncMode.BACKUP, binding.mode());
+        assertEquals(SyncBindingState.ACTIVE, binding.state());
+    }
+
+    @Test void rejectsOverlappingWritableBackupScopesOnSameDevice() {
+        UUID device = UUID.randomUUID();
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Backup")).block();
+        CreateSyncBindingRequest request = new CreateSyncBindingRequest(
+            device, space.id(), space.rootNodeId(), "DCIM", null, SyncSourceKind.DIRECTORY,
+            SyncMode.BACKUP, DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH);
+
+        service.createBinding(user, request).block();
+
+        assertThrows(ConflictException.class, () -> service.createBinding(user,
+            new CreateSyncBindingRequest(device, space.id(), space.rootNodeId(), "DCIM/2026", null,
+                SyncSourceKind.DIRECTORY, SyncMode.BACKUP, DeletePolicy.KEEP_REMOTE,
+                ConflictPolicy.PRESERVE_BOTH)).block());
+    }
+
     @Test void trashThenRestorePreservesNodeAndAdvancesGeneration() {
         DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
         DriveNodeView node = service.createNode(user, space.id(), new CreateDriveNodeRequest(DriveNodeType.FILE, "a.txt", null)).block();
