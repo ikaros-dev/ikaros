@@ -130,4 +130,28 @@ class PersistentRoomServiceTest {
     verify(rooms, never()).save(any());
     verify(memberships, never()).save(any());
   }
+
+  @Test
+  void rejectsDirectJoinForInviteOnlyRoom() {
+    UUID roomId = UUID.randomUUID();
+    when(rooms.findById(roomId)).thenReturn(Mono.just(new RoomEntity(roomId, owner, "WATCH", "RESOURCE",
+        target, "INVITE_ONLY", RoomStatus.ACTIVE, 0, 0, null, Instant.now(), Instant.now(), 0L)));
+
+    StepVerifier.create(service.join(target, roomId))
+        .expectErrorMessage("Room 需要有效邀请才能加入").verify();
+    verify(memberships, never()).save(any());
+  }
+
+  @Test
+  void allowsDirectJoinForPublicRoom() {
+    UUID roomId = UUID.randomUUID();
+    when(rooms.findById(roomId)).thenReturn(Mono.just(new RoomEntity(roomId, owner, "WATCH", "RESOURCE",
+        target, "PUBLIC", RoomStatus.ACTIVE, 0, 0, null, Instant.now(), Instant.now(), 0L)));
+    when(memberships.findByRoomIdAndPrincipalId(roomId, target)).thenReturn(Mono.empty());
+    when(memberships.save(any(RoomMembershipEntity.class)))
+        .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+    StepVerifier.create(service.join(target, roomId))
+        .assertNext(view -> assertThat(view.principalId()).isEqualTo(target)).verifyComplete();
+  }
 }
