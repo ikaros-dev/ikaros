@@ -64,6 +64,21 @@ class DefaultDriveServiceTest {
         assertEquals(1, service.revisions(user, file.id()).count().block());
     }
 
+    @Test void revisionHistoryIsNewestFirstAndKeepsCurrentRevision() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        DriveNodeView file = service.createNode(user, space.id(), new CreateDriveNodeRequest(DriveNodeType.FILE, "a.txt", null)).block();
+        DriveRevisionView first = service.createRevision(user, file.id(), new CreateDriveRevisionRequest(
+            UUID.randomUUID(), 0L, "sha256:first", null)).block();
+        DriveRevisionView second = service.createRevision(user, file.id(), new CreateDriveRevisionRequest(
+            UUID.randomUUID(), 1L, "sha256:second", null)).block();
+
+        var history = service.revisions(user, file.id()).collectList().block();
+        assertEquals(2, history.size());
+        assertEquals(second.id(), history.get(0).id());
+        assertEquals(first.id(), history.get(1).id());
+        assertEquals(second.id(), service.node(user, file.id()).block().currentRevisionId());
+    }
+
     @Test void uploadReservationIsIdempotentForSameSession() {
         DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
         UUID uploadSession = UUID.randomUUID();
