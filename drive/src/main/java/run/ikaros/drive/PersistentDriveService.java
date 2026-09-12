@@ -342,6 +342,19 @@ public class PersistentDriveService implements DriveService {
             req.remoteRevisionId(),fingerprint,req.errorMessage(),Instant.now(),existing.version()))
             .map(saved -> cameraView(saved, false, null));
     }
+    @Override public Mono<CameraBackupView> retryCameraBackup(UUID actor, UUID bindingId, UUID cameraBackupId) {
+        return bindingRepository.findById(bindingId).filter(b -> b.userId().equals(actor) && b.mode() == SyncMode.BACKUP)
+            .switchIfEmpty(Mono.error(new NotFoundException("Backup Binding 不存在")))
+            .flatMap(binding -> cameraBackupRepository.findById(cameraBackupId)
+                .filter(camera -> camera.bindingId().equals(bindingId))
+                .switchIfEmpty(Mono.error(new NotFoundException("备份文件记录不存在")))
+                .flatMap(camera -> {
+                    if (!camera.state().isFailure()) return Mono.error(new ConflictException("只有失败的备份文件可以重试"));
+                    return cameraBackupRepository.save(new CameraBackupEntity(camera.id(), bindingId, camera.sourceItemId(),
+                        CameraBackupState.QUEUED, null, null, camera.contentFingerprint(), null, Instant.now(), camera.version()));
+                }))
+            .map(saved -> cameraView(saved, false, null));
+    }
     @Override public Mono<CameraBackupScanView> scanCameraBackups(UUID actor, UUID bindingId, CameraBackupScanRequest request) {
         return bindingRepository.findById(bindingId).filter(b->b.userId().equals(actor)&&b.mode()==SyncMode.BACKUP)
             .switchIfEmpty(Mono.error(new NotFoundException("Backup Binding 不存在")))

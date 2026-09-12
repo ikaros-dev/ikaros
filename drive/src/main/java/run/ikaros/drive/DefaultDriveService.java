@@ -407,6 +407,23 @@ public class DefaultDriveService implements DriveService {
         });
     }
 
+    @Override public Mono<CameraBackupView> retryCameraBackup(UUID actorId, UUID bindingId, UUID cameraBackupId) {
+        return ownedBinding(actorId, bindingId).flatMap(binding -> {
+            if (binding.mode() != SyncMode.BACKUP) return Mono.error(new NotFoundException("Backup Binding 不存在"));
+            synchronized (cameraBackups) {
+                CameraBackup current = cameraBackups.values().stream()
+                    .filter(camera -> camera.binding().equals(bindingId) && camera.id().equals(cameraBackupId))
+                    .findFirst().orElse(null);
+                if (current == null) return Mono.error(new NotFoundException("备份文件记录不存在"));
+                if (!current.state().isFailure()) return Mono.error(new ConflictException("只有失败的备份文件可以重试"));
+                CameraBackup retried = new CameraBackup(current.id(), bindingId, current.sourceItem(), CameraBackupState.QUEUED,
+                    null, null, current.fingerprint(), null, Instant.now());
+                cameraBackups.put(bindingId + "\u0000" + current.sourceItem(), retried);
+                return Mono.just(cameraView(retried));
+            }
+        });
+    }
+
     @Override public Mono<CameraBackupScopeView> configureCameraBackupScope(UUID actorId, UUID bindingId,
         CameraBackupScopeRequest request) {
         return ownedBinding(actorId, bindingId).flatMap(binding -> {

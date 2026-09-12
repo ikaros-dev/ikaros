@@ -258,6 +258,23 @@ class DefaultDriveServiceTest {
             "photo-2", CameraBackupState.ERROR, null, null, "sha256:broken", "upload failed")).block());
     }
 
+    @Test void retriesOnlyFailedCameraBackupAndClearsFailureDetails() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Backup")).block();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(),
+            space.rootNodeId(), "DCIM", "Camera Roll", SyncSourceKind.CAMERA_ROLL, SyncMode.BACKUP,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+        CameraBackupView failed = service.updateCameraBackup(user, binding.id(), new CameraBackupRequest("photo-1",
+            CameraBackupState.ERROR, UUID.randomUUID(), UUID.randomUUID(), "sha256:photo-1", "读取原图失败")).block();
+
+        CameraBackupView retried = service.retryCameraBackup(user, binding.id(), failed.id()).block();
+
+        assertEquals(failed.id(), retried.id());
+        assertEquals(CameraBackupState.QUEUED, retried.state());
+        assertEquals("sha256:photo-1", retried.contentFingerprint());
+        assertEquals(null, retried.errorMessage());
+        assertThrows(ConflictException.class, () -> service.retryCameraBackup(user, binding.id(), retried.id()).block());
+    }
+
     @Test void cameraBackupDetectionDeduplicatesConcurrentSameFingerprint() {
         DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
         SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(),
