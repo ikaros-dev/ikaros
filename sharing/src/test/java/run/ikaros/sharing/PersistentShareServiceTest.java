@@ -199,6 +199,87 @@ class PersistentShareServiceTest {
                 .verify();
     }
 
+    @Test
+    void createsShareWithHashedPasswordAndAccessRestrictions() {
+        when(resources.requireOwned(issuer, target)).thenReturn(Mono.empty());
+        when(repository.save(any(ShareEntity.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        ShareView view = service.create(issuer, new CreateShareRequest(
+                "RESOURCE", target, ShareGranteeType.LINK_TOKEN, null, "read", null,
+                "secret", true, 2)).block();
+
+        assertThat(view.restrictions().passwordRequired()).isTrue();
+        assertThat(view.restrictions().allowDownload()).isTrue();
+        assertThat(view.restrictions().maxAccessCount()).isEqualTo(2);
+        ArgumentCaptor<ShareEntity> saved = ArgumentCaptor.forClass(ShareEntity.class);
+        verify(repository).save(saved.capture());
+        assertThat(saved.getValue().passwordDigest()).isNotEqualTo("secret");
+        assertThat(saved.getValue().passwordDigest()).isNotBlank();
+    }
+
+    @Test
+    void configuresRestrictionsOnlyForOwnedActiveShare() {
+        UUID shareId = UUID.randomUUID();
+        ShareEntity existing = entity(ShareStatus.ACTIVE, null);
+        existing = new ShareEntity(shareId, issuer, existing.targetType(), existing.targetId(),
+                existing.granteeType(), existing.granteeId(), existing.capabilities(),
+                existing.tokenDigest(), existing.expiresAt(), null, false, null, 0,
+                existing.status(), existing.createdAt(), existing.updatedAt(), existing.version());
+        when(repository.findById(shareId)).thenReturn(Mono.just(existing));
+        when(repository.save(any(ShareEntity.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        StepVerifier.create(service.configureRestrictions(issuer, shareId,
+                        new ConfigureShareRestrictionsRequest("secret", true, 3)))
+                .assertNext(view -> {
+                    assertThat(view.restrictions().passwordRequired()).isTrue();
+                    assertThat(view.restrictions().allowDownload()).isTrue();
+                    assertThat(view.restrictions().maxAccessCount()).isEqualTo(3);
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void rejectsWrongPasswordAndStopsAtMaximumAccessCount() {
+        String token = "restricted-token";
+        ShareEntity existing = new ShareEntity(UUID.randomUUID(), issuer, "RESOURCE", target,
+                ShareGranteeType.LINK_TOKEN, null, "read", digest(token), null,
+                digest("secret"), false, 1, 0, ShareStatus.ACTIVE,
+                Instant.now().minusSeconds(10), Instant.now(), 0L);
+        when(repository.findByTokenDigest(digest(token))).thenReturn(Mono.just(existing));
+        when(repository.save(any(ShareEntity.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        StepVerifier.create(service.redeem(token, "wrong"))
+                .expectErrorMessage("Share 密码错误")
+                .verify();
+        StepVerifier.create(service.redeem(token, "secret"))
+                .assertNext(view -> assertThat(view.restrictions().accessCount()).isEqualTo(1))
+                .verifyComplete();
+        when(repository.findByTokenDigest(digest(token))).thenReturn(Mono.just(
+                new ShareEntity(existing.id(), existing.issuerId(), existing.targetType(), existing.targetId(),
+                        existing.granteeType(), existing.granteeId(), existing.capabilities(), existing.tokenDigest(),
+                        existing.expiresAt(), existing.passwordDigest(), existing.allowDownload(),
+                        existing.maxAccessCount(), 1, existing.status(), existing.createdAt(), existing.updatedAt(),
+                        existing.version())));
+        StepVerifier.create(service.redeem(token, "secret"))
+                .expectErrorMessage("Share 已达到最大访问次数")
+                .verify();
+    }
+
+    @Test
+    void rejectsInvalidRestrictionValuesBeforeWriting() {
+        StepVerifier.create(service.create(issuer, new CreateShareRequest(
+                        "RESOURCE", target, ShareGranteeType.LINK_TOKEN, null, "read", null,
+                        " ", false, 1)))
+                .expectErrorMessage("Share 密码不能为空")
+                .verify();
+        StepVerifier.create(service.create(issuer, new CreateShareRequest(
+                        "RESOURCE", target, ShareGranteeType.LINK_TOKEN, null, "read", null,
+                        null, false, 0)))
+                .expectErrorMessage("Share 最大访问次数必须大于 0")
+                .verify();
+        verify(repository, org.mockito.Mockito.never()).save(any());
+    }
+
     private ShareEntity entity(ShareStatus status, Instant expiresAt) {
         return new ShareEntity(UUID.randomUUID(), issuer, "RESOURCE", target, ShareGranteeType.LINK_TOKEN,
                 null, "read", "digest", expiresAt, status, Instant.now().minusSeconds(10), Instant.now(), 0L);
