@@ -152,6 +152,34 @@ class DefaultDriveServiceTest {
         assertEquals(DriveLifecycle.ACTIVE, service.node(user, node.id()).block().lifecycle());
     }
 
+    @Test void reconnectResumesTwoWayBindingFromPersistedCursor() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(),
+            space.rootNodeId(), "documents", null, SyncSourceKind.DIRECTORY, SyncMode.TWO_WAY,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+        service.advanceCursor(user, binding.id(), 7).block();
+        service.setBindingEnabled(user, binding.id(), false).block();
+
+        SyncBindingView resumed = service.resumeSync(user, binding.id()).block();
+
+        assertEquals(SyncBindingState.ACTIVE, resumed.state());
+        assertEquals(true, resumed.enabled());
+        assertEquals(7, resumed.cursor());
+    }
+
+    @Test void reconnectIsIdempotentForActiveBinding() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(),
+            space.rootNodeId(), "documents", null, SyncSourceKind.DIRECTORY, SyncMode.TWO_WAY,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+
+        SyncBindingView resumed = service.resumeSync(user, binding.id()).block();
+
+        assertEquals(binding.id(), resumed.id());
+        assertEquals(binding.cursor(), resumed.cursor());
+        assertEquals(SyncBindingState.ACTIVE, resumed.state());
+    }
+
     @Test void uploadReservationIsIdempotentForSameSession() {
         DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
         UUID uploadSession = UUID.randomUUID();

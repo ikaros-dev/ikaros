@@ -33,7 +33,7 @@ public class DriveController {
     @PostMapping("/bindings") public Mono<SyncBindingView> createBinding(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@Valid @RequestBody CreateSyncBindingRequest request){return service.createBinding(actor,request);}
     @GetMapping("/bindings") public Flux<SyncBindingView> bindings(@RequestHeader("X-Ikaros-Actor-Id") UUID actor){return service.bindings(actor);}
     @PostMapping("/bindings/{bindingId}/pause") public Mono<SyncBindingView> pause(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID bindingId){return service.setBindingEnabled(actor,bindingId,false);}
-    @PostMapping("/bindings/{bindingId}/resume") public Mono<SyncBindingView> resume(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID bindingId){return service.resumeBackup(actor,bindingId);}
+    @PostMapping("/bindings/{bindingId}/resume") public Mono<SyncBindingView> resume(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID bindingId){return service.resumeSync(actor,bindingId);}
     @PostMapping("/conflicts") public Mono<SyncConflictView> conflict(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@Valid @RequestBody CreateSyncConflictRequest request){return service.createConflict(actor,request);}
     @GetMapping("/bindings/{bindingId}/conflicts") public Flux<SyncConflictView> conflicts(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID bindingId){return service.conflicts(actor,bindingId);}
     @PostMapping("/conflicts/{conflictId}/resolve") public Mono<SyncConflictView> resolve(@RequestHeader("X-Ikaros-Actor-Id") UUID actor,@PathVariable UUID conflictId,@RequestParam SyncConflictState state){return service.resolveConflict(actor,conflictId,state);}
