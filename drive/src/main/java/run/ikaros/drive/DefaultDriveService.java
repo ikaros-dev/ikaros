@@ -229,6 +229,21 @@ public class DefaultDriveService implements DriveService {
                 enabled ? SyncBindingState.ACTIVE : SyncBindingState.PAUSED, binding.cursor(), binding.created(), Instant.now());
                 bindings.put(bindingId, updated); return bindingView(updated); });
     }
+    @Override public Mono<SyncBindingView> resumeSync(UUID actorId, UUID bindingId) {
+        return Mono.justOrEmpty(bindings.get(bindingId)).filter(binding -> binding.user().equals(actorId))
+            .switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在")))
+            .flatMap(binding -> {
+                if (binding.state() == SyncBindingState.REVOKED)
+                    return Mono.error(new ConflictException("已撤销的同步绑定不能恢复"));
+                if (binding.enabled() && binding.state() == SyncBindingState.ACTIVE)
+                    return Mono.just(bindingView(binding));
+                Binding updated = new Binding(binding.id(), binding.user(), binding.device(), binding.space(), binding.root(),
+                    binding.scope(), binding.displayPath(), binding.sourceKind(), binding.mode(), binding.deletePolicy(),
+                    binding.conflictPolicy(), true, SyncBindingState.ACTIVE, binding.cursor(), binding.created(), Instant.now());
+                bindings.put(bindingId, updated);
+                return Mono.just(bindingView(updated));
+            });
+    }
     @Override public Mono<SyncConflictView> createConflict(UUID actorId, CreateSyncConflictRequest request) {
         return ownedBinding(actorId, request.bindingId()).flatMap(binding -> ownedNode(actorId, request.nodeId())
             .flatMap(node -> {

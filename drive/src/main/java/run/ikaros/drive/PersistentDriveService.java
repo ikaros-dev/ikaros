@@ -264,10 +264,45 @@ public class PersistentDriveService implements DriveService {
                 binding.cursor(), binding.createdAt(), Instant.now(), binding.version())))
             .map(this::bindingView);
     }
+    @Override
+    public Mono<SyncBindingView> resumeBackup(UUID actor, UUID id) {
+        return bindingRepository.findById(id)
+            .filter(binding -> binding.userId().equals(actor))
+            .switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在")))
+            .flatMap(binding -> {
+                if (binding.mode() != SyncMode.BACKUP)
+                    return Mono.error(new ConflictException("只有 BACKUP Binding 可以恢复中断备份"));
+                if (!binding.enabled())
+                    return Mono.error(new ConflictException("Backup Binding 已暂停，请先启用绑定"));
+                if (binding.state() != SyncBindingState.DEGRADED)
+                    return Mono.error(new ConflictException("Backup Binding 当前没有可恢复的中断任务"));
+                return bindingRepository.save(new SyncBindingEntity(binding.id(), binding.userId(), binding.deviceId(),
+                    binding.driveSpaceId(), binding.remoteRootNodeId(), binding.localScopeId(), binding.localDisplayPath(),
+                    binding.sourceKind(), binding.mode(), binding.deletePolicy(), binding.conflictPolicy(), true,
+                    SyncBindingState.ACTIVE, binding.cursor(), binding.createdAt(), Instant.now(), binding.version()));
+            }).map(this::bindingView);
+    }
+
+    @Override
+    public Mono<SyncBindingView> resumeSync(UUID actor, UUID id) {
+        return bindingRepository.findById(id)
+            .filter(binding -> binding.userId().equals(actor))
+            .switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在")))
+            .flatMap(binding -> {
+                if (binding.state() == SyncBindingState.REVOKED)
+                    return Mono.error(new ConflictException("已撤销的同步绑定不能恢复"));
+                if (binding.enabled() && binding.state() == SyncBindingState.ACTIVE)
+                    return Mono.just(binding);
+                return bindingRepository.save(new SyncBindingEntity(binding.id(), binding.userId(), binding.deviceId(),
+                    binding.driveSpaceId(), binding.remoteRootNodeId(), binding.localScopeId(), binding.localDisplayPath(),
+                    binding.sourceKind(), binding.mode(), binding.deletePolicy(), binding.conflictPolicy(), true,
+                    SyncBindingState.ACTIVE, binding.cursor(), binding.createdAt(), Instant.now(), binding.version()));
+            }).map(this::bindingView);
+    }
     private String normalizeScope(String value){return value.trim().replace('\\','/').replaceAll("/+","/").toLowerCase(java.util.Locale.ROOT);}
     private boolean scopesOverlap(String a,String b){return a.equals(b)||a.startsWith(b.endsWith("/")?b:b+"/")||b.startsWith(a.endsWith("/")?a:a+"/");}
     private SyncBindingView bindingView(SyncBindingEntity b){return new SyncBindingView(b.id(),b.userId(),b.deviceId(),b.driveSpaceId(),b.remoteRootNodeId(),b.localScopeId(),b.localDisplayPath(),b.sourceKind(),b.mode(),b.deletePolicy(),b.conflictPolicy(),b.enabled(),b.state(),b.cursor(),b.createdAt(),b.updatedAt());}
-    @Override public Mono<SyncConflictView> createConflict(UUID actor, CreateSyncConflictRequest req) { return bindingRepository.findById(req.bindingId()).filter(b->b.userId().equals(actor)).switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在"))).flatMap(binding->ownedNode(actor,req.nodeId()).then(Mono.defer(()->{Instant now=Instant.now();return conflictRepository.save(new SyncConflictEntity(null,req.bindingId(),req.nodeId(),req.baseRevisionId(),req.remoteRevisionId(),req.localFingerprint(),SyncConflictState.OPEN,now,null,null,null));}))).map(this::conflictView); }
+    @Override public Mono<SyncConflictView> createConflict(UUID actor, CreateSyncConflictRequest req) { return bindingRepository.findById(req.bindingId()).filter(b->b.userId().equals(actor)).switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在"))).flatMap(binding->ownedNode(actor,req.nodeId()).flatMap(node->{if(!node.driveSpaceId().equals(binding.driveSpaceId()))return Mono.error(new ConflictException("冲突节点不属于同步空间"));Instant now=Instant.now();return conflictRepository.save(new SyncConflictEntity(null,req.bindingId(),req.nodeId(),req.baseRevisionId(),req.remoteRevisionId(),req.localFingerprint(),SyncConflictState.OPEN,now,null,null,null));})).map(this::conflictView); }
     @Override public Flux<SyncConflictView> conflicts(UUID actor, UUID bindingId) { return bindingRepository.findById(bindingId).filter(b->b.userId().equals(actor)).switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在"))).flatMapMany(b->conflictRepository.findAllByBindingIdOrderByDetectedAtDesc(bindingId).take(100).map(this::conflictView)); }
     @Override public Mono<SyncConflictView> resolveConflict(UUID actor, UUID id, SyncConflictState state) { if(state!=SyncConflictState.RESOLVED&&state!=SyncConflictState.DISMISSED)return Mono.error(new ConflictException("Conflict 只能进入 RESOLVED 或 DISMISSED")); return conflictRepository.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Conflict 不存在"))).flatMap(c->bindingRepository.findById(c.bindingId()).filter(b->b.userId().equals(actor)).switchIfEmpty(Mono.error(new NotFoundException("Conflict 不存在"))).then(conflictRepository.save(new SyncConflictEntity(c.id(),c.bindingId(),c.nodeId(),c.baseRevisionId(),c.remoteRevisionId(),c.localFingerprint(),state,c.detectedAt(),Instant.now(),actor,c.version())))).map(this::conflictView); }
     private SyncConflictView conflictView(SyncConflictEntity c){return new SyncConflictView(c.id(),c.bindingId(),c.nodeId(),c.baseRevisionId(),c.remoteRevisionId(),c.localFingerprint(),c.state(),c.detectedAt(),c.resolvedAt(),c.resolvedBy());}
@@ -279,7 +314,25 @@ public class PersistentDriveService implements DriveService {
     @Override public Mono<CameraBackupView> updateCameraBackup(UUID actor, UUID bindingId, CameraBackupRequest req) { return bindingRepository.findById(bindingId).filter(b->b.userId().equals(actor)&&b.mode()==SyncMode.BACKUP).switchIfEmpty(Mono.error(new NotFoundException("Backup Binding 不存在"))).flatMap(binding->cameraBackupRepository.findByBindingIdAndSourceItemId(bindingId,req.sourceItemId())).flatMap(existing->{if(existing.state()==CameraBackupState.BACKUP_VERIFIED&&req.state()==CameraBackupState.ERROR)return Mono.error(new ConflictException("已验证备份不能降级为错误"));if(existing.state()==CameraBackupState.REMOVED_AFTER_VERIFIED_BACKUP&&req.state()!=CameraBackupState.REMOVED_AFTER_VERIFIED_BACKUP)return Mono.error(new ConflictException("已释放本地空间的备份不能重新排队"));return cameraBackupRepository.save(new CameraBackupEntity(existing.id(),bindingId,req.sourceItemId(),req.state(),req.remoteNodeId(),req.remoteRevisionId(),req.contentFingerprint(),req.errorMessage(),Instant.now(),existing.version()));}).switchIfEmpty(Mono.defer(()->cameraBackupRepository.save(new CameraBackupEntity(null,bindingId,req.sourceItemId(),req.state(),req.remoteNodeId(),req.remoteRevisionId(),req.contentFingerprint(),req.errorMessage(),Instant.now(),null)))).map(this::cameraView); }
     @Override public Flux<CameraBackupView> cameraBackups(UUID actor, UUID bindingId, boolean failuresOnly) { return bindingRepository.findById(bindingId).filter(b->b.userId().equals(actor)).switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在"))).flatMapMany(b->cameraBackupRepository.findAllByBindingIdOrderByUpdatedAtAsc(bindingId).filter(c -> !failuresOnly || c.state().isFailure()).take(100).map(this::cameraView)); }
     private CameraBackupView cameraView(CameraBackupEntity c){return new CameraBackupView(c.id(),c.bindingId(),c.sourceItemId(),c.state(),c.remoteNodeId(),c.remoteRevisionId(),c.contentFingerprint(),c.errorMessage(),c.updatedAt());}
-    @Override public Flux<SyncMutationResult> applyMutations(UUID actor, UUID bindingId, java.util.List<SyncMutationRequest> requests) { return bindingRepository.findById(bindingId).filter(b->b.userId().equals(actor)&&b.enabled()).switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在或已暂停"))).thenMany(Flux.fromIterable(requests).concatMap(request->{Mono<DriveNodeView> action=switch(request.kind()){case RENAME->rename(actor,request.nodeId(),new RenameDriveNodeRequest(request.name(),request.expectedVersion()));case MOVE->move(actor,request.nodeId(),new MoveDriveNodeRequest(request.parentId(),request.expectedVersion()));case TRASH->trash(actor,request.nodeId(),request.expectedVersion());case RESTORE->restore(actor,request.nodeId(),request.expectedVersion());};return action.map(node->new SyncMutationResult(request.operationId(),true,node,null,null)).onErrorResume(error->Mono.just(new SyncMutationResult(request.operationId(),false,null,error.getClass().getSimpleName(),error.getMessage())));})); }
+    @Override public Flux<SyncMutationResult> applyMutations(UUID actor, UUID bindingId, java.util.List<SyncMutationRequest> requests) {
+        return bindingRepository.findById(bindingId).filter(b -> b.userId().equals(actor) && b.enabled())
+            .switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在或已暂停")))
+            .flatMapMany(binding -> Flux.fromIterable(requests).concatMap(request -> {
+                if (request.kind() == SyncMutationKind.TRASH && binding.deletePolicy() != DeletePolicy.PROPAGATE) {
+                    return Mono.just(new SyncMutationResult(request.operationId(), false, null,
+                        "DELETE_POLICY_BLOCKED", "当前删除策略不允许设备删除传播到远端"));
+                }
+                Mono<DriveNodeView> action = switch (request.kind()) {
+                    case RENAME -> rename(actor, request.nodeId(), new RenameDriveNodeRequest(request.name(), request.expectedVersion()));
+                    case MOVE -> move(actor, request.nodeId(), new MoveDriveNodeRequest(request.parentId(), request.expectedVersion()));
+                    case TRASH -> trash(actor, request.nodeId(), request.expectedVersion());
+                    case RESTORE -> restore(actor, request.nodeId(), request.expectedVersion());
+                };
+                return action.map(node -> new SyncMutationResult(request.operationId(), true, node, null, null))
+                    .onErrorResume(error -> Mono.just(new SyncMutationResult(request.operationId(), false, null,
+                        error.getClass().getSimpleName(), error.getMessage())));
+            }));
+    }
     @Override public Mono<SyncBindingView> advanceCursor(UUID actor, UUID id, long cursor) { return bindingRepository.findById(id).filter(b->b.userId().equals(actor)&&b.enabled()).switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在或已暂停"))).flatMap(b->{if(cursor<b.cursor())return Mono.error(new ConflictException("Sync Cursor 不能回退"));return bindingRepository.save(new SyncBindingEntity(b.id(),b.userId(),b.deviceId(),b.driveSpaceId(),b.remoteRootNodeId(),b.localScopeId(),b.localDisplayPath(),b.sourceKind(),b.mode(),b.deletePolicy(),b.conflictPolicy(),b.enabled(),b.state(),cursor,b.createdAt(),java.time.Instant.now(),b.version()));}).map(this::bindingView); }
-    @Override public Mono<SyncBindingView> requestFullResync(UUID actor, UUID id) { return bindingRepository.findById(id).filter(b->b.userId().equals(actor)).switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在"))).flatMap(b->bindingRepository.save(new SyncBindingEntity(b.id(),b.userId(),b.deviceId(),b.driveSpaceId(),b.remoteRootNodeId(),b.localScopeId(),b.localDisplayPath(),b.sourceKind(),b.mode(),b.deletePolicy(),b.conflictPolicy(),b.enabled(),SyncBindingState.DEGRADED,0,b.createdAt(),java.time.Instant.now(),b.version()))).map(this::bindingView); }
+    @Override public Mono<SyncBindingView> requestFullResync(UUID actor, UUID id) { return bindingRepository.findById(id).filter(b->b.userId().equals(actor)).switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在"))).flatMap(b->{if(b.mode()!=SyncMode.BACKUP)return Mono.error(new ConflictException("只有 BACKUP Binding 可以执行首次备份"));if(!b.enabled())return Mono.error(new ConflictException("Backup Binding 已暂停"));return bindingRepository.save(new SyncBindingEntity(b.id(),b.userId(),b.deviceId(),b.driveSpaceId(),b.remoteRootNodeId(),b.localScopeId(),b.localDisplayPath(),b.sourceKind(),b.mode(),b.deletePolicy(),b.conflictPolicy(),b.enabled(),SyncBindingState.DEGRADED,0,b.createdAt(),java.time.Instant.now(),b.version()));}).map(this::bindingView); }
 }
