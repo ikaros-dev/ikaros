@@ -149,7 +149,6 @@ export default {
       { path: "drive/trash", name: "DriveTrash", component: () => import("@/views/drive/Operations.vue"), meta: { title: "云盘回收站", showLink: false } },
       { path: "drive/transfers", name: "DriveTransfers", component: () => import("@/views/drive/Operations.vue"), meta: { title: "传输任务", showLink: false } },
       { path: "drive/sync", name: "DriveSync", component: () => import("@/views/drive/Operations.vue"), meta: { title: "云盘同步", showLink: false } },
-      { path: "drive/server-changes", name: "DriveServerChanges", component: () => import("@/views/drive/ServerChanges.vue"), meta: { title: "服务端变更", showLink: false } },
       { path: "drive/device-mutations", name: "DriveDeviceMutations", component: () => import("@/views/drive/DeviceMutations.vue"), meta: { title: "设备变更上传", showLink: false } },
       { path: "drive/device-mutations", name: "DriveDeviceMutations", component: () => import("@/views/drive/DeviceMutations.vue"), meta: { title: "设备变更上传", showLink: false } },
       { path: "drive/devices", name: "DriveDevices", component: () => import("@/views/integration/Devices.vue"), meta: { title: "同步设备", showLink: false } },
@@ -166,6 +165,8 @@ export default {
       { path: "providers", name: "StorageProviders", component: () => import("@/views/storage/Tiers.vue"), meta: { title: "存储 Provider", icon: "ep:setting" } },
       { path: "archive", name: "StorageArchive", component: () => import("@/views/storage/Archive.vue"), meta: { title: "归档与恢复", icon: "ep:refresh-left" } },
       { path: "cache", name: "StorageCache", component: () => import("@/views/storage/Cache.vue"), meta: { title: "缓存与我的下载", icon: "ep:coffee-cup" } },
+      { path: "downloads", name: "StorageDownloads", component: () => import("@/views/storage/Downloads.vue"), meta: { title: "下载管理", icon: "ep:download" } },
+      { path: "cache-quota", name: "StorageCacheQuota", component: () => import("@/views/storage/CacheQuota.vue"), meta: { title: "缓存配额", icon: "ep:pie-chart" } },
       { path: "backup", name: "Backup", component: () => import("@/views/storage/Backup.vue"), meta: { title: "备份恢复", icon: "ep:files" } },
     ]),
     subsystem("/edge-acceleration", "EdgeAccelerationCenter", "边缘加速", "ep:connection", [
