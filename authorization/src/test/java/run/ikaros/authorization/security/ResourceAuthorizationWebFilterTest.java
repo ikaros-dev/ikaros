@@ -206,6 +206,30 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
+    void appliesResourcePermissionsToDriveRevisionAndTrashRoutes() {
+        UUID actor = UUID.randomUUID();
+        AccessControlService accessControl = mock(AccessControlService.class);
+        WebFilterChain chain = mock(WebFilterChain.class);
+
+        MockServerWebExchange denied = MockServerWebExchange.from(MockServerHttpRequest.post(
+            "/api/drive/nodes/" + UUID.randomUUID() + "/trash").build());
+        denied.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 0L, java.util.List.of("resource.read")));
+        new ResourceAuthorizationWebFilter(accessControl).filter(denied, chain).block();
+        assertEquals(403, denied.getResponse().getStatusCode().value());
+
+        MockServerWebExchange allowed = MockServerWebExchange.from(MockServerHttpRequest.get(
+            "/api/drive/nodes/" + UUID.randomUUID() + "/revisions").build());
+        allowed.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 0L, java.util.List.of("resource.read")));
+        when(accessControl.require(eq(actor), eq(run.ikaros.authentication.api.SecurityVerificationLevel.SVL_0),
+            eq(null), any())).thenReturn(Mono.empty());
+        when(chain.filter(allowed)).thenReturn(Mono.empty());
+        new ResourceAuthorizationWebFilter(accessControl).filter(allowed, chain).block();
+        verify(chain).filter(allowed);
+    }
+
+    @Test
     void rechecksCurrentResourcePermissionAfterRoleRevocation() {
         UUID actor = UUID.randomUUID();
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/resources").build());
