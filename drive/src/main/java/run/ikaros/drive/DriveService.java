@@ -27,8 +27,6 @@ public interface DriveService {
     Mono<SyncBindingView> createBinding(UUID actorId, CreateSyncBindingRequest request);
     Flux<SyncBindingView> bindings(UUID actorId);
     Mono<SyncBindingView> setBindingEnabled(UUID actorId, UUID bindingId, boolean enabled);
-    Mono<SyncBindingView> resumeBackup(UUID actorId, UUID bindingId);
-    Mono<SyncBindingView> resumeSync(UUID actorId, UUID bindingId);
     Mono<SyncConflictView> createConflict(UUID actorId, CreateSyncConflictRequest request);
     Flux<SyncConflictView> conflicts(UUID actorId, UUID bindingId);
     Mono<SyncConflictView> resolveConflict(UUID actorId, UUID conflictId, SyncConflictState state);
@@ -39,8 +37,6 @@ public interface DriveService {
     Mono<SyncBindingView> advanceCursor(UUID actorId, UUID bindingId, long cursor);
     Mono<SyncBindingView> requestFullResync(UUID actorId, UUID bindingId);
     Mono<CameraBackupView> updateCameraBackup(UUID actorId, UUID bindingId, CameraBackupRequest request);
-    Mono<CameraBackupView> retryCameraBackup(UUID actorId, UUID bindingId, UUID cameraBackupId);
-    Mono<CameraBackupScanView> scanCameraBackups(UUID actorId, UUID bindingId, CameraBackupScanRequest request);
     default Flux<CameraBackupView> cameraBackups(UUID actorId, UUID bindingId) {
         return cameraBackups(actorId, bindingId, false);
     }
