@@ -204,7 +204,8 @@ public class DefaultDriveService implements DriveService {
                 || request.mode() == SyncMode.BACKUP;
             boolean overlap = bindings.values().stream().anyMatch(binding -> binding.user().equals(actorId)
                 && binding.device().equals(request.deviceId()) && binding.enabled() && write
-                && isWrite(binding.mode()) && scopesOverlap(scope, normalizeScope(binding.scope())));
+                && isWrite(binding.mode()) && (scopesOverlap(scope, normalizeScope(binding.scope()))
+                    || CameraBackupScopes.overlaps(scope, binding.scope())));
             if (overlap) return Mono.error(new ConflictException("设备本地同步 Scope 重叠"));
             Instant now = Instant.now();
             Binding binding = new Binding(ids.next(), actorId, request.deviceId(), space.id(), request.remoteRootNodeId(),
@@ -355,18 +356,70 @@ public class DefaultDriveService implements DriveService {
             if (binding.mode() != SyncMode.BACKUP) return Mono.error(new NotFoundException("Backup Binding 不存在"));
             String source = request.sourceItemId().trim();
             String key = bindingId + "\u0000" + source;
-            CameraBackup current = cameraBackups.get(key);
-            if (current != null && current.state() == CameraBackupState.BACKUP_VERIFIED
-                && request.state() == CameraBackupState.ERROR)
-                return Mono.error(new ConflictException("已验证备份不能降级为错误"));
-            if (current != null && current.state() == CameraBackupState.REMOVED_AFTER_VERIFIED_BACKUP
-                && request.state() != CameraBackupState.REMOVED_AFTER_VERIFIED_BACKUP)
-                return Mono.error(new ConflictException("已释放本地空间的备份不能重新排队"));
-            CameraBackup updated = new CameraBackup(current == null ? ids.next() : current.id(), bindingId, source,
-                request.state(), request.remoteNodeId(), request.remoteRevisionId(), request.contentFingerprint(),
-                request.errorMessage(), Instant.now());
-            cameraBackups.put(key, updated);
-            return Mono.just(cameraView(updated));
+            String fingerprint = normalizeFingerprint(request.contentFingerprint());
+            synchronized (cameraBackups) {
+                CameraBackup current = cameraBackups.get(key);
+                if (current != null && current.state() == CameraBackupState.BACKUP_VERIFIED
+                    && request.state() == CameraBackupState.ERROR)
+                    return Mono.error(new ConflictException("已验证备份不能降级为错误"));
+                if (current != null && current.state() == CameraBackupState.REMOVED_AFTER_VERIFIED_BACKUP
+                    && request.state() != CameraBackupState.REMOVED_AFTER_VERIFIED_BACKUP)
+                    return Mono.error(new ConflictException("已释放本地空间的备份不能重新排队"));
+                if (current != null && sameFingerprint(current.fingerprint(), fingerprint)
+                    && (isUploadComplete(current.state()) || current.state() == request.state())
+                    && request.state() != CameraBackupState.ERROR)
+                    return Mono.just(cameraView(current, true, "CONTENT_FINGERPRINT_ALREADY_BACKED_UP"));
+                CameraBackup updated = new CameraBackup(current == null ? ids.next() : current.id(), bindingId, source,
+                    request.state(), request.remoteNodeId(), request.remoteRevisionId(), fingerprint,
+                    request.errorMessage(), Instant.now());
+                cameraBackups.put(key, updated);
+                return Mono.just(cameraView(updated, false, null));
+            }
+        });
+    }
+    @Override public Mono<CameraBackupScanView> scanCameraBackups(UUID actorId, UUID bindingId, CameraBackupScanRequest request) {
+        return ownedBinding(actorId, bindingId).flatMap(binding -> {
+            if (binding.mode() != SyncMode.BACKUP) return Mono.error(new NotFoundException("Backup Binding 不存在"));
+            java.util.List<CameraBackupView> discovered = new java.util.ArrayList<>();
+            java.util.List<CameraBackupView> known = new java.util.ArrayList<>();
+            synchronized (cameraBackups) {
+                for (CameraBackupScanItem item : request.items()) {
+                    String source = item.sourceItemId().trim();
+                    String fingerprint = normalizeFingerprint(item.contentFingerprint());
+                    String key = bindingId + "\u0000" + source;
+                    CameraBackup current = cameraBackups.get(key);
+                    if (current == null) {
+                        CameraBackup created = new CameraBackup(ids.next(), bindingId, source, CameraBackupState.DISCOVERED,
+                            null, null, fingerprint, null, java.time.Instant.now());
+                        cameraBackups.put(key, created);
+                        discovered.add(cameraView(created));
+                    } else if (!sameFingerprint(current.fingerprint(), fingerprint)) {
+                        CameraBackup changed = new CameraBackup(current.id(), bindingId, source, CameraBackupState.DISCOVERED,
+                            null, null, fingerprint, null, java.time.Instant.now());
+                        cameraBackups.put(key, changed);
+                        discovered.add(cameraView(changed, false, "CONTENT_FINGERPRINT_CHANGED"));
+                    } else {
+                        known.add(cameraView(current, true, "SOURCE_ITEM_AND_FINGERPRINT_ALREADY_SEEN"));
+                    }
+                }
+            }
+            return Mono.just(new CameraBackupScanView(java.util.List.copyOf(discovered), java.util.List.copyOf(known)));
+        });
+    }
+
+    @Override public Mono<CameraBackupScopeView> configureCameraBackupScope(UUID actorId, UUID bindingId,
+        CameraBackupScopeRequest request) {
+        return ownedBinding(actorId, bindingId).flatMap(binding -> {
+            if (binding.mode() != SyncMode.BACKUP || binding.sourceKind() != SyncSourceKind.CAMERA_ROLL) {
+                return Mono.error(new ConflictException("只有相机胶卷 BACKUP Binding 可以配置照片范围"));
+            }
+            String scope = CameraBackupScopes.encode(request);
+            Binding updated = new Binding(binding.id(), binding.user(), binding.device(), binding.space(), binding.root(),
+                scope, binding.displayPath(), binding.sourceKind(), binding.mode(), binding.deletePolicy(),
+                binding.conflictPolicy(), binding.enabled(), binding.state(), binding.cursor(), binding.created(), Instant.now());
+            bindings.put(bindingId, updated);
+            return Mono.just(cameraScopeView(updated, request.scopeKind(), request.scopeKind() == CameraBackupScopeKind.ALBUM
+                ? request.albumId().trim() : null));
         });
     }
     @Override public Flux<CameraBackupView> cameraBackups(UUID actorId, UUID bindingId, boolean failuresOnly) {
@@ -436,7 +489,22 @@ public class DefaultDriveService implements DriveService {
     private SyncMappingView mappingView(Mapping mapping) { return new SyncMappingView(mapping.id(), mapping.binding(),
         mapping.localItem(), mapping.remoteNode(), mapping.revision(), mapping.fingerprint(), mapping.remoteVersion(),
         mapping.state(), mapping.updated()); }
-    private CameraBackupView cameraView(CameraBackup camera) { return new CameraBackupView(camera.id(), camera.binding(),
+    private CameraBackupView cameraView(CameraBackup camera) { return cameraView(camera, false, null); }
+    private CameraBackupView cameraView(CameraBackup camera, boolean deduplicated, String reason) { return new CameraBackupView(camera.id(), camera.binding(),
         camera.sourceItem(), camera.state(), camera.remoteNode(), camera.remoteRevision(), camera.fingerprint(),
-        camera.error(), camera.updated()); }
-}
+        camera.error(), camera.updated(), deduplicated, reason); }
+    private static String normalizeFingerprint(String fingerprint) {
+        return fingerprint == null || fingerprint.isBlank() ? null : fingerprint.trim();
+    }
+    private static boolean sameFingerprint(String left, String right) {
+        return left != null && right != null && left.equals(right);
+    }
+    private static boolean isUploadComplete(CameraBackupState state) {
+        return state == CameraBackupState.UPLOAD_COMPLETE || state == CameraBackupState.BLOB_VERIFIED
+            || state == CameraBackupState.DRIVE_COMMITTED || state == CameraBackupState.BACKUP_VERIFIED
+            || state == CameraBackupState.PHOTO_PROJECTION_PENDING || state == CameraBackupState.PHOTO_PROJECTED;
+    }
+    private CameraBackupScopeView cameraScopeView(Binding binding, CameraBackupScopeKind kind, String albumId) {
+        return new CameraBackupScopeView(binding.id(), kind, albumId, binding.scope(), binding.displayPath(), binding.updated());
+    }
+    }

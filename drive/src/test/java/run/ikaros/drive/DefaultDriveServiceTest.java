@@ -258,6 +258,75 @@ class DefaultDriveServiceTest {
             "photo-2", CameraBackupState.ERROR, null, null, "sha256:broken", "upload failed")).block());
     }
 
+    @Test void cameraBackupDetectionDeduplicatesConcurrentSameFingerprint() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(),
+            space.rootNodeId(), "camera-roll", "Camera Roll", SyncSourceKind.CAMERA_ROLL, SyncMode.BACKUP,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+        CameraBackupRequest request = new CameraBackupRequest(" photo-duplicate ", CameraBackupState.QUEUED,
+            null, null, " sha256:same ", null);
+
+        var results = reactor.core.publisher.Flux.range(0, 8)
+            .flatMap(ignored -> service.updateCameraBackup(user, binding.id(), request), 8)
+            .collectList().block();
+
+        assertEquals(8, results.size());
+        assertEquals(1, service.cameraBackups(user, binding.id()).count().block());
+        assertEquals(7, results.stream().filter(CameraBackupView::deduplicated).count());
+        assertEquals(1, results.stream().filter(result -> !result.deduplicated()).count());
+        assertEquals("sha256:same", results.get(0).contentFingerprint());
+        assertEquals("CONTENT_FINGERPRINT_ALREADY_BACKED_UP", results.get(1).deduplicationReason());
+    }
+
+    @Test void cameraBackupScanTreatsChangedFingerprintAsNewContent() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(),
+            space.rootNodeId(), "camera-roll", "Camera Roll", SyncSourceKind.CAMERA_ROLL, SyncMode.BACKUP,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+        CameraBackupScanItem first = new CameraBackupScanItem("photo-scan", "sha256:first");
+
+        CameraBackupScanView created = service.scanCameraBackups(user, binding.id(), new CameraBackupScanRequest(java.util.List.of(first))).block();
+        CameraBackupScanView unchanged = service.scanCameraBackups(user, binding.id(), new CameraBackupScanRequest(java.util.List.of(first))).block();
+        CameraBackupScanView changed = service.scanCameraBackups(user, binding.id(), new CameraBackupScanRequest(
+            java.util.List.of(new CameraBackupScanItem(" photo-scan ", " sha256:second ")))).block();
+
+        assertEquals(1, created.discovered().size());
+        assertEquals(1, unchanged.known().size());
+        assertEquals(true, unchanged.known().get(0).deduplicated());
+        assertEquals(1, changed.discovered().size());
+        assertEquals("sha256:second", changed.discovered().get(0).contentFingerprint());
+        assertEquals("CONTENT_FINGERPRINT_CHANGED", changed.discovered().get(0).deduplicationReason());
+    }
+
+    @Test void cameraBackupScanReturnsOnlyPreviouslyUnseenPhotosAsDiscovered() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(),
+            space.rootNodeId(), "camera-roll", "Camera Roll", SyncSourceKind.CAMERA_ROLL, SyncMode.BACKUP,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+        service.updateCameraBackup(user, binding.id(), new CameraBackupRequest("known-photo", CameraBackupState.BACKUP_VERIFIED,
+            null, null, "sha256:known", null)).block();
+
+        CameraBackupScanView result = service.scanCameraBackups(user, binding.id(), new CameraBackupScanRequest(java.util.List.of(
+            new CameraBackupScanItem("known-photo", "sha256:known"),
+            new CameraBackupScanItem("new-photo", "sha256:new")))).block();
+
+        assertEquals(1, result.discovered().size());
+        assertEquals("new-photo", result.discovered().getFirst().sourceItemId());
+        assertEquals(1, result.known().size());
+        assertEquals(CameraBackupState.BACKUP_VERIFIED, result.known().getFirst().state());
+        assertEquals(2, service.cameraBackups(user, binding.id()).count().block());
+    }
+
+    @Test void cameraBackupScanRejectsNonBackupBinding() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(),
+            space.rootNodeId(), "documents", null, SyncSourceKind.DIRECTORY, SyncMode.TWO_WAY,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+
+        assertThrows(NotFoundException.class, () -> service.scanCameraBackups(user, binding.id(),
+            new CameraBackupScanRequest(java.util.List.of(new CameraBackupScanItem("photo", "sha256:x")))).block());
+    }
+
     @Test void resumeInterruptedBackupKeepsCursorAndActivatesBinding() {
         DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
         SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(),
