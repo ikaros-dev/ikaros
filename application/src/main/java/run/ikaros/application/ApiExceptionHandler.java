@@ -15,6 +15,7 @@ import run.ikaros.common.PreconditionFailedException;
 import run.ikaros.common.PreconditionRequiredException;
 import run.ikaros.storage.InvalidRangeException;
 import run.ikaros.storage.StorageUnavailableException;
+import run.ikaros.sharing.ShareAccessException;
 
 /**
  * 将领域异常收敛为稳定的 RFC 9457 问题响应。
@@ -31,6 +32,16 @@ public class ApiExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     public ProblemDetail handleNotFound(NotFoundException exception) {
         return problem(HttpStatus.NOT_FOUND, exception.code(), exception.getMessage());
+    }
+
+    @ExceptionHandler(ShareAccessException.class)
+    public ProblemDetail handleShareAccess(ShareAccessException exception) {
+        HttpStatus status = exception.reason() == run.ikaros.sharing.ShareAccessFailureReason.MISSING_TOKEN
+            ? HttpStatus.BAD_REQUEST : HttpStatus.NOT_FOUND;
+        ProblemDetail problem = problem(status, exception.code(), exception.getMessage());
+        problem.setProperty("reason", exception.reason().name());
+        problem.setProperty("retryable", false);
+        return problem;
     }
 
     /**

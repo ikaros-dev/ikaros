@@ -38,6 +38,10 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             || path.equals("/api/auth/logout") || path.equals("/api/logout")) {
             return chain.filter(exchange);
         }
+        // A share token is the credential for this public endpoint; it must not
+        // require a separate account JWT before the sharing service can explain
+        // why the token is invalid, revoked, or expired.
+        if (path.equals("/api/shares/redeem")) return chain.filter(exchange);
         AuthenticatedPrincipal jwtPrincipal = exchange.getAttribute(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE);
         if (jwtPrincipal == null) return reject(exchange, HttpStatus.UNAUTHORIZED);
         if (path.equals("/api/me/actions/invalidate-tokens")) return chain.filter(exchange);

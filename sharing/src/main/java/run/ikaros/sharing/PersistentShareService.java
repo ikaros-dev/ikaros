@@ -51,8 +51,48 @@ public class PersistentShareService implements ShareService {
     return ownership.then(Mono.defer(() -> repository.save(entity))).map(share -> withToken(view(share), token));
   }
   public Flux<ShareView> list(UUID issuer) { return repository.findAllByIssuerIdOrderByCreatedAtDesc(issuer).take(100).map(this::view); }
+  public Mono<ShareView> setExpiration(UUID issuer, UUID id, SetShareExpirationRequest request) {
+    if (request == null || request.expiresAt() == null) {
+      return Mono.error(new IllegalArgumentException("Share 过期时间不能为空"));
+    }
+    if (!request.expiresAt().isAfter(Instant.now())) {
+      return Mono.error(new IllegalArgumentException("Share 过期时间必须在未来"));
+    }
+    return repository.findById(id)
+        .filter(share -> share.issuerId().equals(issuer))
+        .switchIfEmpty(Mono.error(new NotFoundException("Share 不存在或无权操作")))
+        .flatMap(share -> {
+          if (share.status() != ShareStatus.ACTIVE) {
+            return Mono.error(new IllegalStateException("当前 Share 不可设置有效期"));
+          }
+          return repository.save(new ShareEntity(share.id(), share.issuerId(), share.targetType(),
+              share.targetId(), share.granteeType(), share.granteeId(), share.capabilities(),
+              share.tokenDigest(), request.expiresAt(), share.status(), share.createdAt(),
+              Instant.now(), share.version()));
+        })
+        .map(this::view);
+  }
   public Mono<ShareView> revoke(UUID issuer, UUID id) { return repository.findById(id).filter(share -> share.issuerId().equals(issuer)).switchIfEmpty(Mono.error(new NotFoundException("Share 不存在或无权操作"))).flatMap(share -> repository.save(new ShareEntity(share.id(), share.issuerId(), share.targetType(), share.targetId(), share.granteeType(), share.granteeId(), share.capabilities(), share.tokenDigest(), share.expiresAt(), ShareStatus.REVOKED, share.createdAt(), Instant.now(), share.version()))).map(this::view); }
-  public Mono<ShareView> redeem(String token) { if (token == null || token.isBlank()) return Mono.error(new IllegalArgumentException("Share Token 不能为空")); return repository.findByTokenDigest(digest(token)).switchIfEmpty(Mono.error(new NotFoundException("Share Token 无效"))).flatMap(share -> { if (share.status() != ShareStatus.ACTIVE) return Mono.error(new NotFoundException("Share 已撤销")); if (share.expiresAt() != null && !share.expiresAt().isAfter(Instant.now())) return Mono.error(new NotFoundException("Share 已过期")); return Mono.just(view(share)); }); }
+  public Mono<ShareView> redeem(String token) {
+    if (token == null || token.isBlank()) {
+      return Mono.error(new ShareAccessException(ShareAccessFailureReason.MISSING_TOKEN, "请输入分享令牌"));
+    }
+    return repository.findByTokenDigest(digest(token))
+        .switchIfEmpty(Mono.error(new ShareAccessException(
+            ShareAccessFailureReason.INVALID_TOKEN, "分享链接无效或已失效")))
+        .flatMap(share -> {
+          if (share.status() == ShareStatus.REVOKED) {
+            return Mono.error(new ShareAccessException(ShareAccessFailureReason.REVOKED, "分享链接已撤销"));
+          }
+          if (share.expiresAt() != null && !share.expiresAt().isAfter(Instant.now())) {
+            return Mono.error(new ShareAccessException(ShareAccessFailureReason.EXPIRED, "分享链接已过期"));
+          }
+          if (share.status() != ShareStatus.ACTIVE) {
+            return Mono.error(new ShareAccessException(ShareAccessFailureReason.INVALID_TOKEN, "分享链接不可用"));
+          }
+          return Mono.just(view(share));
+        });
+  }
   private String digest(String token) { try { return Base64.getUrlEncoder().withoutPadding().encodeToString(MessageDigest.getInstance("SHA-256").digest(token.getBytes(StandardCharsets.UTF_8))); } catch (NoSuchAlgorithmException e) { throw new IllegalStateException(e); } }
   private ShareView view(ShareEntity share) { return new ShareView(share.id(), share.issuerId(), share.targetType(), share.targetId(), share.granteeType(), share.granteeId(), share.capabilities(), share.expiresAt(), share.status(), share.createdAt(), null); }
   private ShareView withToken(ShareView share, String token) { return new ShareView(share.id(), share.issuerId(), share.targetType(), share.targetId(), share.granteeType(), share.granteeId(), share.capabilities(), share.expiresAt(), share.status(), share.createdAt(), token); }

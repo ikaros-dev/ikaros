@@ -125,6 +125,19 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
+    void letsShareRedeemExplainTokenFailureWithoutAccountToken() {
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(
+            "/api/shares/redeem?token=invalid").build());
+        WebFilterChain chain = mock(WebFilterChain.class);
+        when(chain.filter(exchange)).thenReturn(Mono.empty());
+
+        new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
+
+        verify(chain).filter(exchange);
+        assertEquals(null, exchange.getResponse().getStatusCode());
+    }
+
+    @Test
     void letsDeliveryGrantContentReachGrantAuthorizationWithoutToken() {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
             "/api/attachments/" + UUID.randomUUID() + "/content")

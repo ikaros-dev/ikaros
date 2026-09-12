@@ -6,6 +6,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -77,6 +80,37 @@ class PersistentShareServiceTest {
     }
 
     @Test
+    void updatesExpiryOnlyForOwnedActiveShare() {
+        UUID shareId = UUID.randomUUID();
+        Instant createdAt = Instant.now().minusSeconds(10);
+        ShareEntity existing = new ShareEntity(shareId, issuer, "RESOURCE", target,
+                ShareGranteeType.LINK_TOKEN, null, "read", "digest", null,
+                ShareStatus.ACTIVE, createdAt, createdAt, 0L);
+        Instant expiresAt = Instant.now().plusSeconds(3600);
+        when(repository.findById(shareId)).thenReturn(Mono.just(existing));
+        when(repository.save(any(ShareEntity.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        StepVerifier.create(service.setExpiration(issuer, shareId, new SetShareExpirationRequest(expiresAt)))
+                .assertNext(view -> assertThat(view.expiresAt()).isEqualTo(expiresAt))
+                .verifyComplete();
+
+        ArgumentCaptor<ShareEntity> saved = ArgumentCaptor.forClass(ShareEntity.class);
+        verify(repository).save(saved.capture());
+        assertThat(saved.getValue().expiresAt()).isEqualTo(expiresAt);
+        assertThat(saved.getValue().tokenDigest()).isEqualTo(existing.tokenDigest());
+    }
+
+    @Test
+    void rejectsPastExpiryBeforeReadingOrWriting() {
+        StepVerifier.create(service.setExpiration(issuer, UUID.randomUUID(),
+                        new SetShareExpirationRequest(Instant.now().minusSeconds(1))))
+                .expectErrorMessage("Share 过期时间必须在未来")
+                .verify();
+        verify(repository, org.mockito.Mockito.never()).findById(org.mockito.ArgumentMatchers.any(UUID.class));
+        verify(repository, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
     void rejectsUnsupportedTargetAndPastExpiryBeforeWriting() {
         StepVerifier.create(service.create(issuer, new CreateShareRequest(
                         "ATTACHMENT", target, ShareGranteeType.LINK_TOKEN, null, "read", null)))
@@ -87,5 +121,60 @@ class PersistentShareServiceTest {
                 .expectErrorMessage("Share 过期时间必须在未来")
                 .verify();
         verify(repository, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
+    void reportsStableReasonForInvalidTokenWithoutEchoingSecret() {
+        String token = "invalid-secret";
+        when(repository.findByTokenDigest(digest(token))).thenReturn(Mono.empty());
+
+        StepVerifier.create(service.redeem(token))
+                .expectErrorSatisfies(error -> {
+                    assertThat(error).isInstanceOf(ShareAccessException.class);
+                    ShareAccessException access = (ShareAccessException) error;
+                    assertThat(access.reason()).isEqualTo(ShareAccessFailureReason.INVALID_TOKEN);
+                    assertThat(access.code()).isEqualTo("share.access.invalid_token");
+                    assertThat(access.getMessage()).doesNotContain(token);
+                })
+                .verify();
+    }
+
+    @Test
+    void reportsRevokedAndExpiredReasons() {
+        String revokedToken = "revoked-secret";
+        String expiredToken = "expired-secret";
+        when(repository.findByTokenDigest(digest(revokedToken))).thenReturn(Mono.just(entity(ShareStatus.REVOKED, null)));
+        when(repository.findByTokenDigest(digest(expiredToken))).thenReturn(Mono.just(entity(ShareStatus.ACTIVE, Instant.now().minusSeconds(1))));
+
+        StepVerifier.create(service.redeem(revokedToken))
+                .expectErrorSatisfies(error -> assertThat(((ShareAccessException) error).reason())
+                        .isEqualTo(ShareAccessFailureReason.REVOKED))
+                .verify();
+        StepVerifier.create(service.redeem(expiredToken))
+                .expectErrorSatisfies(error -> assertThat(((ShareAccessException) error).reason())
+                        .isEqualTo(ShareAccessFailureReason.EXPIRED))
+                .verify();
+    }
+
+    @Test
+    void reportsMissingTokenAsClientInputFailure() {
+        StepVerifier.create(service.redeem(" "))
+                .expectErrorSatisfies(error -> assertThat(((ShareAccessException) error).reason())
+                        .isEqualTo(ShareAccessFailureReason.MISSING_TOKEN))
+                .verify();
+    }
+
+    private ShareEntity entity(ShareStatus status, Instant expiresAt) {
+        return new ShareEntity(UUID.randomUUID(), issuer, "RESOURCE", target, ShareGranteeType.LINK_TOKEN,
+                null, "read", "digest", expiresAt, status, Instant.now().minusSeconds(10), Instant.now(), 0L);
+    }
+
+    private static String digest(String value) {
+        try {
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(MessageDigest.getInstance("SHA-256")
+                    .digest(value.getBytes(StandardCharsets.UTF_8)));
+        } catch (Exception error) {
+            throw new AssertionError(error);
+        }
     }
 }
