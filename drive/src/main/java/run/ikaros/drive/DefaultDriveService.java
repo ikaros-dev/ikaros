@@ -323,7 +323,7 @@ public class DefaultDriveService implements DriveService {
             .map(this::cameraView));
     }
     private Mono<DriveNodeView> changeLifecycle(UUID actor, UUID id, long expected, DriveLifecycle target) {
-        return ownedNode(actor,id).flatMap(node -> { checkVersion(node, expected); if (node.lifecycle()==DriveLifecycle.PURGED) return Mono.error(new ConflictException("已永久删除的节点不能恢复"));
+        return ownedNode(actor,id).flatMap(node -> { checkVersion(node, expected); if (node.lifecycle()==DriveLifecycle.PURGED) return Mono.error(new ConflictException("已永久删除的节点不能恢复")); if (target == DriveLifecycle.ACTIVE && node.lifecycle() != DriveLifecycle.TRASHED) return Mono.error(new ConflictException("节点不在回收站中"));
             Instant now = Instant.now(); Node changed = new Node(node.id(),node.space(),node.parent(),node.type(),node.name(),node.normalized(),target,node.revision(),node.version()+1,node.created(),now); nodes.put(id,changed); advance(spaces.get(node.space()));
             DriveMutationKind kind = target == DriveLifecycle.TRASHED ? DriveMutationKind.NODE_TRASHED : DriveMutationKind.NODE_RESTORED;
             recordChange(node.space(), node.id(), kind, changed.version(), null);
