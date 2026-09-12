@@ -10,6 +10,7 @@ const selected = ref<Photo | null>(null);
 const assets = ref<Asset[]>([]);
 const attachment = ref<Photo | null>(null);
 const previewUrl = ref("");
+const photoDrawer = ref(false);
 const loading = ref(false);
 const saving = ref(false);
 const detailLoading = ref(false);
@@ -39,6 +40,7 @@ async function load() {
 
 async function openPhoto(photo: Photo) {
   selected.value = photo;
+  photoDrawer.value = true;
   assets.value = [];
   attachment.value = null;
   previewUrl.value = "";
@@ -69,7 +71,7 @@ async function createPhoto() {
   error.value = "";
   message.value = "";
   try {
-    const created = await http.post<Photo>("/photos", {
+    const created = await http.post("/photos", {
       data: {
         title: form.value.title.trim(),
         attachmentId: form.value.attachmentId.trim(),
@@ -117,7 +119,7 @@ onMounted(load);
       </el-card>
     </div>
 
-    <el-drawer v-model="selected" title="照片详情" size="560px">
+    <el-drawer v-model="photoDrawer" title="照片详情" size="560px">
       <el-skeleton v-if="detailLoading" :rows="8" animated />
       <template v-else-if="selected">
         <div v-if="previewUrl" class="rounded bg-black p-2 mb-5 flex justify-center"><img :src="previewUrl" alt="原图预览" class="max-h-[45vh] max-w-full object-contain" /></div>

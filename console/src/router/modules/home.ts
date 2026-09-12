@@ -137,7 +137,7 @@ export default {
       { path: "reading", name: "Reading", component: () => import("@/views/reading/index.vue"), meta: { title: "阅读库", icon: "ep:reading" } },
       { path: "ebooks", name: "EbookImport", component: () => import("@/views/reading/EbookImport.vue"), meta: { title: "电子书导入", icon: "ep:document" } },
       { path: "music", name: "Music", component: () => import("@/views/media/Catalog.vue"), meta: { title: "音乐库", icon: "ep:headset" } },
-      { path: "photos", name: "Photos", component: () => import("@/views/media/Photos.vue"), meta: { title: "照片管理", icon: "ep:picture" } },
+      { path: "photos", name: "Photos", component: () => import("@/views/media/Catalog.vue"), meta: { title: "照片管理", icon: "ep:picture" } },
       { path: "games", name: "Games", component: () => import("@/views/media/Catalog.vue"), meta: { title: "游戏档案", icon: "ep:monitor" } }
     ]),
     subsystem("/storage-center", "StorageCenter", "存储与云盘", "ep:box", [

@@ -1683,3 +1683,9 @@
 - 实现：复用 Photo 模块现有 `POST /api/photos`、`GET /api/photos/timeline`、`GET /api/photos/{photoId}/assets` 与 Attachment 元数据/预览授权接口；创建前由服务端校验 Attachment 归属和可用状态。
 - Console：`/content-center/photos` 已从占位 Catalog 页切换为真实照片管理页；支持使用已上传 Attachment 创建 Photo、加载时间线、读取 Photo Asset 与 Attachment 元数据，并使用 `preview-url` 展示授权原图。
 - 验证：Console `pnpm typecheck` 通过；`mvn -s .mvn-local-settings.xml -pl photo -am package "-Dmaven.test.skip=true"` 通过。完整 Photo 测试需清理旧的 `target` 测试产物，但本机 Maven clean 插件下载受网络策略阻断，未将旧产物错误当作当前源码测试结果。
+
+## B10 图片浏览与派生图（父 issue）
+- 整体验收：B10-01 至 B10-05 已逐项接入 Photo/Storage/Operations API 与 Console `/content-center/photos` 页面，覆盖图片登记、元数据读取/编辑、原图授权预览、缩略图生成、失败状态和失败重试。
+- 不变量：原始 Attachment 与 `THUMBNAIL` Derived Attachment 分离；缩略图在后台任务中生成，失败或重试不会修改原图；原图仍通过 Attachment 权限和预览授权链访问。
+- 验证：Photo 测试 3/3；`mvn -s .mvn-local-settings.xml -pl photo -am test` BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` 通过。GitHub issue 评论/关闭仍待 gh 认证恢复后同步。
+- 主要提交：`d093475a`、`d4393f97`、`e14523c3`、`98562972`、`e2e1abe4`、`e05f7ea5`。
