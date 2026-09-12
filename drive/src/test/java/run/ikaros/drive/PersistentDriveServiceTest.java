@@ -104,4 +104,53 @@ class PersistentDriveServiceTest {
 
         assertThrows(ConflictException.class, () -> service.requestFullResync(actor, bindingId).block());
     }
+
+    @Test
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    void resumeInterruptedBackupActivatesPersistentBindingWithoutResettingCursor() {
+        SyncBindingRepository bindings = mock(SyncBindingRepository.class);
+        UUID actor = UUID.randomUUID();
+        UUID bindingId = UUID.randomUUID();
+        Instant now = Instant.now();
+        SyncBindingEntity binding = new SyncBindingEntity(bindingId, actor, UUID.randomUUID(), UUID.randomUUID(),
+            UUID.randomUUID(), "camera-roll", "/Pictures", SyncSourceKind.DIRECTORY, SyncMode.BACKUP,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH, true, SyncBindingState.DEGRADED, 7,
+            now, now, 3L);
+        when(bindings.findById(bindingId)).thenReturn(Mono.just(binding));
+        when(bindings.save(any(SyncBindingEntity.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        PersistentDriveService service = new PersistentDriveService(mock(DriveSpaceRepository.class), mock(DriveNodeRepository.class),
+            mock(DriveFileRevisionRepository.class), mock(DriveChangeRepository.class), mock(DriveQuotaRepository.class),
+            mock(DriveQuotaReservationRepository.class), bindings, mock(SyncConflictRepository.class),
+            mock(DeviceTrustQuery.class), mock(SyncMappingRepository.class), mock(DriveTombstoneRepository.class),
+            mock(CameraBackupRepository.class), mock(TransactionalOperator.class), mock(UuidV7Generator.class));
+
+        SyncBindingView resumed = service.resumeBackup(actor, bindingId).block();
+
+        assertEquals(SyncBindingState.ACTIVE, resumed.state());
+        assertEquals(7, resumed.cursor());
+        assertEquals(true, resumed.enabled());
+    }
+
+    @Test
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    void resumeInterruptedBackupRejectsActivePersistentBinding() {
+        SyncBindingRepository bindings = mock(SyncBindingRepository.class);
+        UUID actor = UUID.randomUUID();
+        UUID bindingId = UUID.randomUUID();
+        Instant now = Instant.now();
+        SyncBindingEntity binding = new SyncBindingEntity(bindingId, actor, UUID.randomUUID(), UUID.randomUUID(),
+            UUID.randomUUID(), "documents", null, SyncSourceKind.DIRECTORY, SyncMode.TWO_WAY,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH, true, SyncBindingState.ACTIVE, 0,
+            now, now, 1L);
+        when(bindings.findById(bindingId)).thenReturn(Mono.just(binding));
+
+        PersistentDriveService service = new PersistentDriveService(mock(DriveSpaceRepository.class), mock(DriveNodeRepository.class),
+            mock(DriveFileRevisionRepository.class), mock(DriveChangeRepository.class), mock(DriveQuotaRepository.class),
+            mock(DriveQuotaReservationRepository.class), bindings, mock(SyncConflictRepository.class),
+            mock(DeviceTrustQuery.class), mock(SyncMappingRepository.class), mock(DriveTombstoneRepository.class),
+            mock(CameraBackupRepository.class), mock(TransactionalOperator.class), mock(UuidV7Generator.class));
+
+        assertThrows(ConflictException.class, () -> service.resumeBackup(actor, bindingId).block());
+    }
 }

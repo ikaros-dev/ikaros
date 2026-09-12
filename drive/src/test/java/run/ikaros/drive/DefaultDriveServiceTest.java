@@ -209,4 +209,29 @@ class DefaultDriveServiceTest {
         assertThrows(ConflictException.class, () -> service.updateCameraBackup(user, binding.id(), new CameraBackupRequest(
             "photo-2", CameraBackupState.ERROR, null, null, "sha256:broken", "upload failed")).block());
     }
+
+    @Test void resumeInterruptedBackupKeepsCursorAndActivatesBinding() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(),
+            space.rootNodeId(), "camera-roll", "Camera Roll", SyncSourceKind.DIRECTORY, SyncMode.BACKUP,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+        service.advanceCursor(user, binding.id(), 42).block();
+        service.requestFullResync(user, binding.id()).block();
+
+        SyncBindingView resumed = service.resumeBackup(user, binding.id()).block();
+
+        assertEquals(SyncBindingState.ACTIVE, resumed.state());
+        assertEquals(0, resumed.cursor());
+        assertEquals(binding.id(), resumed.id());
+        assertEquals(true, resumed.enabled());
+    }
+
+    @Test void resumeInterruptedBackupRejectsActiveBinding() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(),
+            space.rootNodeId(), "documents", null, SyncSourceKind.DIRECTORY, SyncMode.BACKUP,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+
+        assertThrows(ConflictException.class, () -> service.resumeBackup(user, binding.id()).block());
+    }
 }

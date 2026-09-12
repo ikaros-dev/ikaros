@@ -9,6 +9,7 @@ const bindings = ref<Row[]>([]);
 const loading = ref(false);
 const saving = ref(false);
 const startingBinding = ref(false);
+const resumingBinding = ref(false);
 const selectedBindingId = ref("");
 const error = ref("");
 const message = ref("");
@@ -90,19 +91,44 @@ async function startInitialBackup() {
   }
 }
 
+async function resumeInterruptedBackup() {
+  if (!selectedBindingId.value) {
+    error.value = "请选择备份配置";
+    return;
+  }
+  const binding = bindings.value.find(item => String(item.id) === selectedBindingId.value);
+  if (String(binding?.state) !== "DEGRADED") {
+    error.value = "当前绑定没有可恢复的中断备份";
+    return;
+  }
+  resumingBinding.value = true;
+  error.value = "";
+  message.value = "";
+  try {
+    await http.post(`/drive/bindings/${selectedBindingId.value}/resume`);
+    message.value = "中断备份已恢复，绑定重新进入活动状态";
+    await load();
+  } catch (errorValue) {
+    error.value = detail(errorValue, "中断备份恢复失败");
+  } finally {
+    resumingBinding.value = false;
+  }
+}
+
 onMounted(load);
 </script>
 
 <template>
   <el-card shadow="never" class="mx-4 mt-4">
-    <template #header><span>执行首次备份</span></template>
+    <template #header><span>备份操作</span></template>
     <div class="flex flex-wrap gap-3 items-center">
       <el-select v-model="selectedBindingId" placeholder="选择备份配置" class="w-96">
         <el-option v-for="binding in bindings.filter(item => item.mode === 'BACKUP')" :key="binding.id" :label="`${binding.localDisplayPath || binding.localScopeId} → ${binding.driveSpaceId}`" :value="binding.id" />
       </el-select>
       <el-button type="primary" :loading="startingBinding" @click="startInitialBackup">提交首次备份</el-button>
+      <el-button :loading="resumingBinding" :disabled="bindings.find(item => String(item.id) === selectedBindingId)?.state !== 'DEGRADED'" @click="resumeInterruptedBackup">恢复中断备份</el-button>
     </div>
-    <p class="mt-3 text-sm text-[var(--el-text-color-secondary)]">提交后由同步流程执行扫描和上传；页面只展示持久化 binding 状态。</p>
+    <p class="mt-3 text-sm text-[var(--el-text-color-secondary)]">首次备份从头扫描；恢复操作保留当前游标，从上次中断位置继续。</p>
   </el-card>
   <main class="p-4 md:p-6">
     <div class="flex items-start justify-between gap-4 mb-6"><div><h1 class="text-2xl font-semibold">备份目录</h1><p class="mt-1 text-[var(--el-text-color-secondary)]">将已登记设备的本地 Scope 配置为单向备份到指定 Drive Space。</p></div><el-button :loading="loading" @click="load">刷新</el-button></div>

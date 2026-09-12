@@ -269,6 +269,21 @@ public class DefaultDriveService implements DriveService {
                 request.lastSeenRemoteVersion(), request.state() == null ? SyncMappingState.ACTIVE : request.state(), Instant.now());
             mappings.put(key, updated);
             return Mono.just(mappingView(updated));
+            });
+    }
+    @Override public Mono<SyncBindingView> resumeBackup(UUID actorId, UUID bindingId) {
+        return ownedBinding(actorId, bindingId).flatMap(binding -> {
+            if (binding.mode() != SyncMode.BACKUP)
+                return Mono.error(new ConflictException("只有 BACKUP Binding 可以恢复中断备份"));
+            if (!binding.enabled())
+                return Mono.error(new ConflictException("Backup Binding 已暂停，请先启用绑定"));
+            if (binding.state() != SyncBindingState.DEGRADED)
+                return Mono.error(new ConflictException("Backup Binding 当前没有可恢复的中断任务"));
+            Binding updated = new Binding(binding.id(), binding.user(), binding.device(), binding.space(), binding.root(),
+                binding.scope(), binding.displayPath(), binding.sourceKind(), binding.mode(), binding.deletePolicy(),
+                binding.conflictPolicy(), true, SyncBindingState.ACTIVE, binding.cursor(), binding.created(), Instant.now());
+            bindings.put(bindingId, updated);
+            return Mono.just(bindingView(updated));
         });
     }
     @Override public Flux<SyncMappingView> mappings(UUID actorId, UUID bindingId) {

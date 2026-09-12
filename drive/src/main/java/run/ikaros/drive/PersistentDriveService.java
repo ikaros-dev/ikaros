@@ -264,6 +264,24 @@ public class PersistentDriveService implements DriveService {
                 binding.cursor(), binding.createdAt(), Instant.now(), binding.version())))
             .map(this::bindingView);
     }
+    @Override
+    public Mono<SyncBindingView> resumeBackup(UUID actor, UUID id) {
+        return bindingRepository.findById(id)
+            .filter(binding -> binding.userId().equals(actor))
+            .switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在")))
+            .flatMap(binding -> {
+                if (binding.mode() != SyncMode.BACKUP)
+                    return Mono.error(new ConflictException("只有 BACKUP Binding 可以恢复中断备份"));
+                if (!binding.enabled())
+                    return Mono.error(new ConflictException("Backup Binding 已暂停，请先启用绑定"));
+                if (binding.state() != SyncBindingState.DEGRADED)
+                    return Mono.error(new ConflictException("Backup Binding 当前没有可恢复的中断任务"));
+                return bindingRepository.save(new SyncBindingEntity(binding.id(), binding.userId(), binding.deviceId(),
+                    binding.driveSpaceId(), binding.remoteRootNodeId(), binding.localScopeId(), binding.localDisplayPath(),
+                    binding.sourceKind(), binding.mode(), binding.deletePolicy(), binding.conflictPolicy(), true,
+                    SyncBindingState.ACTIVE, binding.cursor(), binding.createdAt(), Instant.now(), binding.version()));
+            }).map(this::bindingView);
+    }
     private String normalizeScope(String value){return value.trim().replace('\\','/').replaceAll("/+","/").toLowerCase(java.util.Locale.ROOT);}
     private boolean scopesOverlap(String a,String b){return a.equals(b)||a.startsWith(b.endsWith("/")?b:b+"/")||b.startsWith(a.endsWith("/")?a:a+"/");}
     private SyncBindingView bindingView(SyncBindingEntity b){return new SyncBindingView(b.id(),b.userId(),b.deviceId(),b.driveSpaceId(),b.remoteRootNodeId(),b.localScopeId(),b.localDisplayPath(),b.sourceKind(),b.mode(),b.deletePolicy(),b.conflictPolicy(),b.enabled(),b.state(),b.cursor(),b.createdAt(),b.updatedAt());}

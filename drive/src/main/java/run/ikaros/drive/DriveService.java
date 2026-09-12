@@ -27,6 +27,7 @@ public interface DriveService {
     Mono<SyncBindingView> createBinding(UUID actorId, CreateSyncBindingRequest request);
     Flux<SyncBindingView> bindings(UUID actorId);
     Mono<SyncBindingView> setBindingEnabled(UUID actorId, UUID bindingId, boolean enabled);
+    Mono<SyncBindingView> resumeBackup(UUID actorId, UUID bindingId);
     Mono<SyncConflictView> createConflict(UUID actorId, CreateSyncConflictRequest request);
     Flux<SyncConflictView> conflicts(UUID actorId, UUID bindingId);
     Mono<SyncConflictView> resolveConflict(UUID actorId, UUID conflictId, SyncConflictState state);
