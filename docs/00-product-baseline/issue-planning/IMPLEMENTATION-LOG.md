@@ -1677,3 +1677,9 @@
 ## B01 视频与剧集管理（父 issue）
 - 整体验收：B01-01 至 B01-05 已逐项完成本地核验/审计，覆盖视频条目创建、剧集顺序、播放附件、字幕/封面和附件可用状态；Console `/media/video` 已提供对应真实 API 操作入口。
 - 验证证据：`PersistentMediaCatalogServiceTest` 4/4、`PersistentMediaReleaseServiceTest` 2/2、`PersistentMediaTechnicalMetadataServiceTest` 2/2；Console 视频页 API 对接已审计。
+
+## B10-01 上传并读取图片元数据
+- 日期：2026-09-12
+- 实现：复用 Photo 模块现有 `POST /api/photos`、`GET /api/photos/timeline`、`GET /api/photos/{photoId}/assets` 与 Attachment 元数据/预览授权接口；创建前由服务端校验 Attachment 归属和可用状态。
+- Console：`/content-center/photos` 已从占位 Catalog 页切换为真实照片管理页；支持使用已上传 Attachment 创建 Photo、加载时间线、读取 Photo Asset 与 Attachment 元数据，并使用 `preview-url` 展示授权原图。
+- 验证：Console `pnpm typecheck` 通过；`mvn -s .mvn-local-settings.xml -pl photo -am package "-Dmaven.test.skip=true"` 通过。完整 Photo 测试需清理旧的 `target` 测试产物，但本机 Maven clean 插件下载受网络策略阻断，未将旧产物错误当作当前源码测试结果。
