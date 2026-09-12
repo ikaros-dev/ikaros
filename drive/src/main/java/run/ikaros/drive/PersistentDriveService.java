@@ -311,10 +311,72 @@ public class PersistentDriveService implements DriveService {
     private SyncMappingView mappingView(SyncMappingEntity m){return new SyncMappingView(m.id(),m.bindingId(),m.localItemId(),m.remoteNodeId(),m.lastSyncedRevisionId(),m.lastSyncedFingerprint(),m.lastSeenRemoteVersion(),m.state(),m.updatedAt());}
     @Override public Flux<DriveTombstoneView> tombstones(UUID actor, UUID sid, long afterSequence) { return ownedSpace(actor,sid).flatMapMany(s->tombstoneRepository.findAllByDriveSpaceIdAndSequenceGreaterThanOrderBySequenceAsc(sid,afterSequence).take(100).map(this::tombstoneView)); }
     private DriveTombstoneView tombstoneView(DriveTombstoneEntity t){return new DriveTombstoneView(t.id(),t.driveSpaceId(),t.nodeId(),t.sequence(),t.nodeVersion(),t.lifecycle(),t.previousParentId(),t.previousName(),t.deletedAt(),t.retentionDeadline());}
-    @Override public Mono<CameraBackupView> updateCameraBackup(UUID actor, UUID bindingId, CameraBackupRequest req) { return bindingRepository.findById(bindingId).filter(b->b.userId().equals(actor)&&b.mode()==SyncMode.BACKUP).switchIfEmpty(Mono.error(new NotFoundException("Backup Binding 不存在"))).flatMap(binding->cameraBackupRepository.findByBindingIdAndSourceItemId(bindingId,req.sourceItemId())).flatMap(existing->{if(existing.state()==CameraBackupState.BACKUP_VERIFIED&&req.state()==CameraBackupState.ERROR)return Mono.error(new ConflictException("已验证备份不能降级为错误"));if(existing.state()==CameraBackupState.REMOVED_AFTER_VERIFIED_BACKUP&&req.state()!=CameraBackupState.REMOVED_AFTER_VERIFIED_BACKUP)return Mono.error(new ConflictException("已释放本地空间的备份不能重新排队"));return cameraBackupRepository.save(new CameraBackupEntity(existing.id(),bindingId,req.sourceItemId(),req.state(),req.remoteNodeId(),req.remoteRevisionId(),req.contentFingerprint(),req.errorMessage(),Instant.now(),existing.version()));}).switchIfEmpty(Mono.defer(()->cameraBackupRepository.save(new CameraBackupEntity(null,bindingId,req.sourceItemId(),req.state(),req.remoteNodeId(),req.remoteRevisionId(),req.contentFingerprint(),req.errorMessage(),Instant.now(),null)))).map(this::cameraView); }
+    @Override public Mono<CameraBackupView> updateCameraBackup(UUID actor, UUID bindingId, CameraBackupRequest req) {
+        String source = req.sourceItemId().trim();
+        String fingerprint = normalizeFingerprint(req.contentFingerprint());
+        return bindingRepository.findById(bindingId).filter(b->b.userId().equals(actor)&&b.mode()==SyncMode.BACKUP)
+            .switchIfEmpty(Mono.error(new NotFoundException("Backup Binding 不存在")))
+            .flatMap(binding -> cameraBackupRepository.findByBindingIdAndSourceItemId(bindingId, source)
+                .flatMap(existing -> updateExistingCameraBackup(bindingId, source, fingerprint, req, existing))
+                .switchIfEmpty(Mono.defer(() -> cameraBackupRepository.save(new CameraBackupEntity(null, bindingId, source,
+                    req.state(), req.remoteNodeId(), req.remoteRevisionId(), fingerprint, req.errorMessage(), Instant.now(), null))
+                    .map(saved -> cameraView(saved, false, null)))));
+    }
+    private Mono<CameraBackupView> updateExistingCameraBackup(UUID bindingId, String source, String fingerprint,
+        CameraBackupRequest req, CameraBackupEntity existing) {
+        if (existing.state()==CameraBackupState.BACKUP_VERIFIED&&req.state()==CameraBackupState.ERROR)
+            return Mono.error(new ConflictException("已验证备份不能降级为错误"));
+        if (existing.state()==CameraBackupState.REMOVED_AFTER_VERIFIED_BACKUP&&req.state()!=CameraBackupState.REMOVED_AFTER_VERIFIED_BACKUP)
+            return Mono.error(new ConflictException("已释放本地空间的备份不能重新排队"));
+        if (sameFingerprint(existing.contentFingerprint(), fingerprint)
+            && (isUploadComplete(existing.state()) || existing.state() == req.state())
+            && req.state() != CameraBackupState.ERROR)
+            return Mono.just(cameraView(existing, true, "CONTENT_FINGERPRINT_ALREADY_BACKED_UP"));
+        return cameraBackupRepository.save(new CameraBackupEntity(existing.id(),bindingId,source,req.state(),req.remoteNodeId(),
+            req.remoteRevisionId(),fingerprint,req.errorMessage(),Instant.now(),existing.version()))
+            .map(saved -> cameraView(saved, false, null));
+    }
+    @Override public Mono<CameraBackupScanView> scanCameraBackups(UUID actor, UUID bindingId, CameraBackupScanRequest request) {
+        return bindingRepository.findById(bindingId).filter(b->b.userId().equals(actor)&&b.mode()==SyncMode.BACKUP)
+            .switchIfEmpty(Mono.error(new NotFoundException("Backup Binding 不存在")))
+            .flatMap(binding -> Flux.fromIterable(request.items()).concatMap(item -> {
+                String source = item.sourceItemId().trim();
+                String fingerprint = normalizeFingerprint(item.contentFingerprint());
+                return cameraBackupRepository.findByBindingIdAndSourceItemId(bindingId, source)
+                    .flatMap(existing -> {
+                        if (sameFingerprint(existing.contentFingerprint(), fingerprint))
+                            return Mono.just(new ScanEntry(cameraView(existing, true, "SOURCE_ITEM_AND_FINGERPRINT_ALREADY_SEEN"), false));
+                        return cameraBackupRepository.save(new CameraBackupEntity(existing.id(), bindingId, source,
+                            CameraBackupState.DISCOVERED, null, null, fingerprint, null, Instant.now(), existing.version()))
+                            .map(changed -> new ScanEntry(cameraView(changed, false, "CONTENT_FINGERPRINT_CHANGED"), true));
+                    })
+                    .switchIfEmpty(Mono.defer(() -> cameraBackupRepository.save(new CameraBackupEntity(null, bindingId, source,
+                        CameraBackupState.DISCOVERED, null, null, fingerprint, null, Instant.now(), null))
+                        .map(created -> new ScanEntry(cameraView(created, false, null), true))));
+            }).collectList().map(entries -> new CameraBackupScanView(entries.stream().filter(ScanEntry::discovered).map(ScanEntry::view).toList(),
+                entries.stream().filter(e -> !e.discovered()).map(ScanEntry::view).toList())));
+    }
+    private record ScanEntry(CameraBackupView view, boolean discovered) {}
+    @Override public Mono<CameraBackupView> retryCameraBackup(UUID actor, UUID bindingId, UUID cameraBackupId) {
+        return bindingRepository.findById(bindingId).filter(b -> b.userId().equals(actor) && b.mode() == SyncMode.BACKUP)
+            .switchIfEmpty(Mono.error(new NotFoundException("Backup Binding 不存在")))
+            .flatMap(binding -> cameraBackupRepository.findById(cameraBackupId)
+                .filter(camera -> camera.bindingId().equals(bindingId))
+                .switchIfEmpty(Mono.error(new NotFoundException("备份文件记录不存在")))
+                .flatMap(camera -> {
+                    if (!camera.state().isFailure()) return Mono.error(new ConflictException("只有失败的备份文件可以重试"));
+                    return cameraBackupRepository.save(new CameraBackupEntity(camera.id(), bindingId, camera.sourceItemId(),
+                        CameraBackupState.QUEUED, null, null, camera.contentFingerprint(), null, Instant.now(), camera.version()));
+                }))
+            .map(saved -> cameraView(saved, false, null));
+    }
     @Override public Mono<CameraBackupScopeView> configureCameraBackupScope(UUID actor, UUID bindingId, CameraBackupScopeRequest req) { return bindingRepository.findById(bindingId).filter(b->b.userId().equals(actor)).switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在"))).flatMap(binding->{if(binding.mode()!=SyncMode.BACKUP||binding.sourceKind()!=SyncSourceKind.CAMERA_ROLL)return Mono.error(new ConflictException("只有相机胶卷 BACKUP Binding 可以配置照片范围"));String scope=CameraBackupScopes.encode(req);return bindingRepository.save(new SyncBindingEntity(binding.id(),binding.userId(),binding.deviceId(),binding.driveSpaceId(),binding.remoteRootNodeId(),scope,binding.localDisplayPath(),binding.sourceKind(),binding.mode(),binding.deletePolicy(),binding.conflictPolicy(),binding.enabled(),binding.state(),binding.cursor(),binding.createdAt(),Instant.now(),binding.version())).map(saved->new CameraBackupScopeView(saved.id(),req.scopeKind(),req.scopeKind()==CameraBackupScopeKind.ALBUM?req.albumId().trim():null,saved.localScopeId(),saved.localDisplayPath(),saved.updatedAt()));}); }
     @Override public Flux<CameraBackupView> cameraBackups(UUID actor, UUID bindingId, boolean failuresOnly) { return bindingRepository.findById(bindingId).filter(b->b.userId().equals(actor)).switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在"))).flatMapMany(b->cameraBackupRepository.findAllByBindingIdOrderByUpdatedAtAsc(bindingId).filter(c -> !failuresOnly || c.state().isFailure()).take(100).map(this::cameraView)); }
-    private CameraBackupView cameraView(CameraBackupEntity c){return new CameraBackupView(c.id(),c.bindingId(),c.sourceItemId(),c.state(),c.remoteNodeId(),c.remoteRevisionId(),c.contentFingerprint(),c.errorMessage(),c.updatedAt());}
+    private CameraBackupView cameraView(CameraBackupEntity c){return cameraView(c, false, null);}
+    private CameraBackupView cameraView(CameraBackupEntity c, boolean deduplicated, String reason){return new CameraBackupView(c.id(),c.bindingId(),c.sourceItemId(),c.state(),c.remoteNodeId(),c.remoteRevisionId(),c.contentFingerprint(),c.errorMessage(),c.updatedAt(),deduplicated,reason);}
+    private static String normalizeFingerprint(String fingerprint){return fingerprint==null||fingerprint.isBlank()?null:fingerprint.trim();}
+    private static boolean sameFingerprint(String left,String right){return left!=null&&right!=null&&left.equals(right);}
+    private static boolean isUploadComplete(CameraBackupState state){return state==CameraBackupState.UPLOAD_COMPLETE||state==CameraBackupState.BLOB_VERIFIED||state==CameraBackupState.DRIVE_COMMITTED||state==CameraBackupState.BACKUP_VERIFIED||state==CameraBackupState.PHOTO_PROJECTION_PENDING||state==CameraBackupState.PHOTO_PROJECTED;}
     @Override public Flux<SyncMutationResult> applyMutations(UUID actor, UUID bindingId, java.util.List<SyncMutationRequest> requests) {
         return bindingRepository.findById(bindingId).filter(b -> b.userId().equals(actor) && b.enabled())
             .switchIfEmpty(Mono.error(new NotFoundException("Sync Binding 不存在或已暂停")))
