@@ -204,7 +204,8 @@ public class DefaultDriveService implements DriveService {
                 || request.mode() == SyncMode.BACKUP;
             boolean overlap = bindings.values().stream().anyMatch(binding -> binding.user().equals(actorId)
                 && binding.device().equals(request.deviceId()) && binding.enabled() && write
-                && isWrite(binding.mode()) && scopesOverlap(scope, normalizeScope(binding.scope())));
+                && isWrite(binding.mode()) && (scopesOverlap(scope, normalizeScope(binding.scope()))
+                    || CameraBackupScopes.overlaps(scope, binding.scope())));
             if (overlap) return Mono.error(new ConflictException("设备本地同步 Scope 重叠"));
             Instant now = Instant.now();
             Binding binding = new Binding(ids.next(), actorId, request.deviceId(), space.id(), request.remoteRootNodeId(),
@@ -352,6 +353,22 @@ public class DefaultDriveService implements DriveService {
         return ownedBinding(actorId, bindingId).flatMapMany(binding -> Flux.fromIterable(cameraBackups.values())
             .filter(camera -> camera.binding().equals(binding.id()) && (!failuresOnly || camera.state().isFailure())).sort(java.util.Comparator.comparing(CameraBackup::updated))
             .map(this::cameraView));
+    }
+    @Override public Mono<CameraBackupScopeView> configureCameraBackupScope(UUID actorId, UUID bindingId,
+        CameraBackupScopeRequest request) {
+        return ownedBinding(actorId, bindingId).flatMap(binding -> {
+            if (binding.mode() != SyncMode.BACKUP || binding.sourceKind() != SyncSourceKind.CAMERA_ROLL) {
+                return Mono.error(new ConflictException("只有相机胶卷 BACKUP Binding 可以配置照片范围"));
+            }
+            String scope = CameraBackupScopes.encode(request);
+            Binding updated = new Binding(binding.id(), binding.user(), binding.device(), binding.space(), binding.root(),
+                scope, binding.displayPath(), binding.sourceKind(), binding.mode(), binding.deletePolicy(),
+                binding.conflictPolicy(), binding.enabled(), binding.state(), binding.cursor(), binding.created(), Instant.now());
+            bindings.put(bindingId, updated);
+            return Mono.just(new CameraBackupScopeView(updated.id(), request.scopeKind(),
+                request.scopeKind() == CameraBackupScopeKind.ALBUM ? request.albumId().trim() : null,
+                updated.scope(), updated.displayPath(), updated.updated()));
+        });
     }
     private Mono<DriveNodeView> changeLifecycle(UUID actor, UUID id, long expected, DriveLifecycle target) {
         return ownedNode(actor,id).flatMap(node -> { checkVersion(node, expected); if (node.lifecycle()==DriveLifecycle.PURGED) return Mono.error(new ConflictException("已永久删除的节点不能恢复"));
