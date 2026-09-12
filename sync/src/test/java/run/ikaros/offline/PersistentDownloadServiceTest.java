@@ -19,6 +19,7 @@ import run.ikaros.sync.api.DeviceTrustQuery;
 @ExtendWith(MockitoExtension.class)
 class PersistentDownloadServiceTest {
     @Mock DownloadIntentRepository repository;
+    @Mock OfflineCacheEntryRepository cacheEntries;
     @Mock DeviceTrustQuery devices;
 
     @Test
@@ -29,6 +30,9 @@ class PersistentDownloadServiceTest {
         UUID attachmentId = UUID.randomUUID();
         UUID downloadId = UUID.randomUUID();
         when(devices.isUsable(userId, deviceId)).thenReturn(Mono.just(true));
+        when(cacheEntries.findFirstByUserIdAndDeviceIdAndResourceIdAndAttachmentIdAndState(
+            userId, deviceId, resourceId, attachmentId, CacheEntryState.ACTIVE))
+            .thenReturn(Mono.empty());
         when(repository.save(any(DownloadIntentEntity.class))).thenAnswer(invocation -> {
             DownloadIntentEntity request = invocation.getArgument(0);
             return Mono.just(new DownloadIntentEntity(downloadId, request.userId(), request.deviceId(),
@@ -37,7 +41,7 @@ class PersistentDownloadServiceTest {
                 request.updatedAt(), 0L));
         });
 
-        StepVerifier.create(new PersistentDownloadService(repository, devices).create(userId,
+        StepVerifier.create(new PersistentDownloadService(repository, cacheEntries, devices).create(userId,
                 new CreateDownloadRequest(deviceId, resourceId, attachmentId, OfflineCopyKind.DOWNLOAD)))
             .assertNext(view -> {
                 assertThat(view.id()).isEqualTo(downloadId);
@@ -59,7 +63,7 @@ class PersistentDownloadServiceTest {
         UUID deviceId = UUID.randomUUID();
         when(devices.isUsable(userId, deviceId)).thenReturn(Mono.just(false));
 
-        StepVerifier.create(new PersistentDownloadService(repository, devices).create(userId,
+        StepVerifier.create(new PersistentDownloadService(repository, cacheEntries, devices).create(userId,
                 new CreateDownloadRequest(deviceId, UUID.randomUUID(), null, null)))
             .expectErrorMessage("Device 不存在或已撤销")
             .verify();
@@ -78,7 +82,7 @@ class PersistentDownloadServiceTest {
         when(repository.save(any(DownloadIntentEntity.class))).thenAnswer(invocation ->
             Mono.just(invocation.getArgument(0)));
 
-        StepVerifier.create(new PersistentDownloadService(repository, devices).remove(userId, intentId))
+        StepVerifier.create(new PersistentDownloadService(repository, cacheEntries, devices).remove(userId, intentId))
             .assertNext(view -> {
                 assertThat(view.id()).isEqualTo(intentId);
                 assertThat(view.resourceId()).isEqualTo(resourceId);
@@ -101,9 +105,36 @@ class PersistentDownloadServiceTest {
             Instant.now(), Instant.now(), 0L);
         when(repository.findById(intentId)).thenReturn(Mono.just(existing));
 
-        StepVerifier.create(new PersistentDownloadService(repository, devices).remove(otherUserId, intentId))
+        StepVerifier.create(new PersistentDownloadService(repository, cacheEntries, devices).remove(otherUserId, intentId))
             .expectErrorMessage("Download 不存在")
             .verify();
         verify(repository, never()).save(any(DownloadIntentEntity.class));
+    }
+
+    @Test
+    void reusesActiveCacheForExplicitDownload() {
+        UUID userId = UUID.randomUUID();
+        UUID deviceId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        UUID attachmentId = UUID.randomUUID();
+        UUID downloadId = UUID.randomUUID();
+        when(devices.isUsable(userId, deviceId)).thenReturn(Mono.just(true));
+        when(cacheEntries.findFirstByUserIdAndDeviceIdAndResourceIdAndAttachmentIdAndState(
+            userId, deviceId, resourceId, attachmentId, CacheEntryState.ACTIVE))
+            .thenReturn(Mono.just(new OfflineCacheEntryEntity(UUID.randomUUID(), userId, deviceId,
+                resourceId, attachmentId, 42L, "sha256:test", CacheEntryState.ACTIVE,
+                Instant.now(), Instant.now(), Instant.now(), 0L)));
+        when(repository.save(any(DownloadIntentEntity.class))).thenAnswer(invocation -> {
+            DownloadIntentEntity request = invocation.getArgument(0);
+            return Mono.just(new DownloadIntentEntity(downloadId, request.userId(), request.deviceId(),
+                request.resourceId(), request.attachmentId(), request.kind(), request.state(),
+                request.failureReason(), request.manifestVersion(), request.createdAt(),
+                request.updatedAt(), 0L));
+        });
+
+        StepVerifier.create(new PersistentDownloadService(repository, cacheEntries, devices).create(userId,
+                new CreateDownloadRequest(deviceId, resourceId, attachmentId, OfflineCopyKind.DOWNLOAD)))
+            .assertNext(view -> assertThat(view.state()).isEqualTo(DownloadState.COMPLETED))
+            .verifyComplete();
     }
 }

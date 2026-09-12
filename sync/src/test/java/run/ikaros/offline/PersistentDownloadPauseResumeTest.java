@@ -17,6 +17,7 @@ import run.ikaros.sync.api.DeviceTrustQuery;
 @ExtendWith(MockitoExtension.class)
 class PersistentDownloadPauseResumeTest {
     @Mock DownloadIntentRepository repository;
+    @Mock OfflineCacheEntryRepository cacheEntries;
     @Mock DeviceTrustQuery devices;
 
     @Test
@@ -27,7 +28,7 @@ class PersistentDownloadPauseResumeTest {
         when(repository.findById(intentId)).thenReturn(Mono.just(current));
         when(repository.save(any(DownloadIntentEntity.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
-        StepVerifier.create(new PersistentDownloadService(repository, devices).updateState(
+        StepVerifier.create(new PersistentDownloadService(repository, cacheEntries, devices).updateState(
                 userId, intentId, new UpdateDownloadStateRequest(DownloadState.PAUSED, null)))
             .assertNext(view -> assertThat(view.state()).isEqualTo(DownloadState.PAUSED))
             .verifyComplete();
@@ -41,7 +42,7 @@ class PersistentDownloadPauseResumeTest {
         when(repository.findById(intentId)).thenReturn(Mono.just(current));
         when(repository.save(any(DownloadIntentEntity.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
-        StepVerifier.create(new PersistentDownloadService(repository, devices).updateState(
+        StepVerifier.create(new PersistentDownloadService(repository, cacheEntries, devices).updateState(
                 userId, intentId, new UpdateDownloadStateRequest(DownloadState.DOWNLOADING, null)))
             .assertNext(view -> assertThat(view.state()).isEqualTo(DownloadState.DOWNLOADING))
             .verifyComplete();
@@ -53,7 +54,7 @@ class PersistentDownloadPauseResumeTest {
         UUID intentId = UUID.randomUUID();
         when(repository.findById(intentId)).thenReturn(Mono.just(task(intentId, userId, DownloadState.REMOVED)));
 
-        StepVerifier.create(new PersistentDownloadService(repository, devices).updateState(
+        StepVerifier.create(new PersistentDownloadService(repository, cacheEntries, devices).updateState(
                 userId, intentId, new UpdateDownloadStateRequest(DownloadState.DOWNLOADING, null)))
             .expectErrorMessage("Download 状态迁移不合法")
             .verify();
