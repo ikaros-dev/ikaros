@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -153,6 +154,40 @@ class PersistentShareServiceTest {
         StepVerifier.create(service.redeem(expiredToken))
                 .expectErrorSatisfies(error -> assertThat(((ShareAccessException) error).reason())
                         .isEqualTo(ShareAccessFailureReason.EXPIRED))
+                .verify();
+    }
+
+    @Test
+    void deniesRevisitingTokenAfterOwnerRevokesShare() {
+        UUID shareId = UUID.randomUUID();
+        String token = "revoke-and-revisit";
+        AtomicReference<ShareEntity> current = new AtomicReference<>(new ShareEntity(
+                shareId, issuer, "RESOURCE", target, ShareGranteeType.LINK_TOKEN, null, "read",
+                digest(token), null, ShareStatus.ACTIVE, Instant.now().minusSeconds(10),
+                Instant.now().minusSeconds(10), 0L));
+        when(repository.findById(shareId)).thenAnswer(invocation -> Mono.just(current.get()));
+        when(repository.findByTokenDigest(digest(token))).thenAnswer(invocation -> Mono.just(current.get()));
+        when(repository.save(any(ShareEntity.class))).thenAnswer(invocation -> {
+            ShareEntity saved = invocation.getArgument(0);
+            current.set(saved);
+            return Mono.just(saved);
+        });
+
+        StepVerifier.create(service.redeem(token))
+                .assertNext(view -> assertThat(view.status()).isEqualTo(ShareStatus.ACTIVE))
+                .verifyComplete();
+
+        StepVerifier.create(service.revoke(issuer, shareId))
+                .assertNext(view -> assertThat(view.status()).isEqualTo(ShareStatus.REVOKED))
+                .verifyComplete();
+
+        StepVerifier.create(service.redeem(token))
+                .expectErrorSatisfies(error -> {
+                    assertThat(error).isInstanceOf(ShareAccessException.class);
+                    ShareAccessException access = (ShareAccessException) error;
+                    assertThat(access.reason()).isEqualTo(ShareAccessFailureReason.REVOKED);
+                    assertThat(access.code()).isEqualTo("share.access.revoked");
+                })
                 .verify();
     }
 
