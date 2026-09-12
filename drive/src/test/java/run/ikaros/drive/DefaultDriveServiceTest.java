@@ -78,6 +78,18 @@ class DefaultDriveServiceTest {
         assertThrows(ConflictException.class, () -> service.restore(user, node.id(), 0).block());
         assertEquals(TombstoneLifecycle.TRASHED, service.tombstones(user, space.id(), 0).collectList().block().get(0).lifecycle());
         assertEquals(1, trashed.nodeVersion());
+
+    @Test void restoreFallsBackToRootWhenOriginalParentIsUnavailable() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        DriveNodeView folder = service.createNode(user, space.id(), new CreateDriveNodeRequest(DriveNodeType.FOLDER, "old", null)).block();
+        DriveNodeView file = service.createNode(user, space.id(), new CreateDriveNodeRequest(DriveNodeType.FILE, "a.txt", folder.id())).block();
+        DriveNodeView trashedFile = service.trash(user, file.id(), 0).block();
+        service.trash(user, folder.id(), 0).block();
+
+        DriveNodeView restored = service.restore(user, file.id(), trashedFile.nodeVersion()).block();
+
+        assertEquals(space.rootNodeId(), restored.parentId());
+        assertEquals(DriveLifecycle.ACTIVE, restored.lifecycle());
     }
 
     @Test void moveAndRevisionArePublishedToChangeLog() {
