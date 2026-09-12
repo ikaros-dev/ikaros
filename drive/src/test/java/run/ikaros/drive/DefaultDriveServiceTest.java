@@ -239,4 +239,39 @@ class DefaultDriveServiceTest {
 
         assertThrows(ConflictException.class, () -> service.resumeBackup(user, binding.id()).block());
     }
+
+    @Test void preservesConflictCopyWithBothRevisionReferences() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Sync")).block();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), space.id(),
+            space.rootNodeId(), "documents", null, SyncSourceKind.DIRECTORY, SyncMode.TWO_WAY,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+        DriveNodeView node = service.createNode(user, space.id(), new CreateDriveNodeRequest(DriveNodeType.FILE, "note.txt", null)).block();
+        UUID base = UUID.randomUUID();
+        UUID remote = UUID.randomUUID();
+
+        SyncConflictView conflict = service.createConflict(user, new CreateSyncConflictRequest(
+            binding.id(), node.id(), base, remote, "sha256:local")).block();
+
+        assertEquals(SyncConflictState.OPEN, conflict.state());
+        assertEquals(base, conflict.baseRevisionId());
+        assertEquals(remote, conflict.remoteRevisionId());
+        assertEquals("sha256:local", conflict.localFingerprint());
+        assertEquals(conflict.id(), service.conflicts(user, binding.id()).next().block().id());
+
+        SyncConflictView resolved = service.resolveConflict(user, conflict.id(), SyncConflictState.RESOLVED).block();
+        assertEquals(SyncConflictState.RESOLVED, resolved.state());
+        assertEquals(user, resolved.resolvedBy());
+    }
+
+    @Test void rejectsConflictNodeOutsideBindingSpace() {
+        DriveSpaceView syncSpace = service.createSpace(user, new CreateDriveSpaceRequest("Sync")).block();
+        DriveSpaceView otherSpace = service.createSpace(user, new CreateDriveSpaceRequest("Other")).block();
+        SyncBindingView binding = service.createBinding(user, new CreateSyncBindingRequest(UUID.randomUUID(), syncSpace.id(),
+            syncSpace.rootNodeId(), "documents", null, SyncSourceKind.DIRECTORY, SyncMode.TWO_WAY,
+            DeletePolicy.KEEP_REMOTE, ConflictPolicy.PRESERVE_BOTH)).block();
+        DriveNodeView foreignNode = service.createNode(user, otherSpace.id(), new CreateDriveNodeRequest(DriveNodeType.FILE, "foreign.txt", null)).block();
+
+        assertThrows(ConflictException.class, () -> service.createConflict(user,
+            new CreateSyncConflictRequest(binding.id(), foreignNode.id(), null, null, "sha256:foreign")).block());
+    }
 }
