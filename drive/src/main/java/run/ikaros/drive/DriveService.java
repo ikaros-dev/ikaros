@@ -38,5 +38,8 @@ public interface DriveService {
     Mono<SyncBindingView> advanceCursor(UUID actorId, UUID bindingId, long cursor);
     Mono<SyncBindingView> requestFullResync(UUID actorId, UUID bindingId);
     Mono<CameraBackupView> updateCameraBackup(UUID actorId, UUID bindingId, CameraBackupRequest request);
-    Flux<CameraBackupView> cameraBackups(UUID actorId, UUID bindingId);
+    default Flux<CameraBackupView> cameraBackups(UUID actorId, UUID bindingId) {
+        return cameraBackups(actorId, bindingId, false);
+    }
+    Flux<CameraBackupView> cameraBackups(UUID actorId, UUID bindingId, boolean failuresOnly);
 }

@@ -196,6 +196,11 @@ class DefaultDriveServiceTest {
         assertEquals(CameraBackupState.QUEUED, changed.state());
         assertEquals("sha256:new", changed.contentFingerprint());
         assertEquals(1, service.cameraBackups(user, binding.id()).count().block());
+        assertEquals(0, service.cameraBackups(user, binding.id(), true).count().block());
+        service.updateCameraBackup(user, binding.id(), new CameraBackupRequest("camera-2", CameraBackupState.ERROR,
+            null, null, "sha256:bad", "读取源文件失败")).block();
+        assertEquals(1, service.cameraBackups(user, binding.id(), true).count().block());
+        assertEquals("读取源文件失败", service.cameraBackups(user, binding.id(), true).next().block().errorMessage());
     }
 
     @Test void cameraBackupDetectionRejectsInvalidDowngradeAfterVerification() {
