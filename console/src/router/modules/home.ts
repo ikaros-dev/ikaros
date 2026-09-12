@@ -150,7 +150,6 @@ export default {
       { path: "drive/transfers", name: "DriveTransfers", component: () => import("@/views/drive/Operations.vue"), meta: { title: "传输任务", showLink: false } },
       { path: "drive/sync", name: "DriveSync", component: () => import("@/views/drive/Operations.vue"), meta: { title: "云盘同步", showLink: false } },
       { path: "drive/device-mutations", name: "DriveDeviceMutations", component: () => import("@/views/drive/DeviceMutations.vue"), meta: { title: "设备变更上传", showLink: false } },
-      { path: "drive/device-mutations", name: "DriveDeviceMutations", component: () => import("@/views/drive/DeviceMutations.vue"), meta: { title: "设备变更上传", showLink: false } },
       { path: "drive/devices", name: "DriveDevices", component: () => import("@/views/integration/Devices.vue"), meta: { title: "同步设备", showLink: false } },
       { path: "drive/backup", name: "DriveBackup", component: () => import("@/views/drive/BackupBindings.vue"), meta: { title: "备份目录", showLink: false } },
       { path: "drive/backup-files", name: "DriveBackupFiles", component: () => import("@/views/drive/BackupFiles.vue"), meta: { title: "备份文件检测", showLink: false } },
