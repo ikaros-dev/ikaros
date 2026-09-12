@@ -35,3 +35,57 @@
 .html-weakness {
   filter: invert(80%);
 }
+
+/* Content consumption dialogs keep media and reading surfaces usable on phones. */
+@media screen and (max-width: 767px) {
+  .el-dialog {
+    --el-dialog-width: calc(100vw - 24px) !important;
+    width: calc(100vw - 24px) !important;
+    margin: 12px auto !important;
+  }
+
+  .el-dialog__body {
+    max-height: calc(100vh - 150px);
+    overflow: auto;
+  }
+
+  .el-dialog video,
+  .el-dialog iframe {
+    max-height: 58vh;
+  }
+
+  .content-consumption-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .content-consumption-controls > *,
+  .content-consumption-controls .el-select,
+  .content-consumption-controls .el-input,
+  .content-consumption-controls .el-button {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .content-consumption-media,
+  .content-preview-media {
+    max-height: 58vh !important;
+  }
+
+  .content-reader-navigation {
+    gap: 0.75rem;
+  }
+
+  .content-reader-navigation .el-button {
+    min-width: 5.25rem;
+  }
+
+  .content-reader-viewport {
+    padding: 0.5rem !important;
+    overflow-x: auto;
+  }
+
+  .content-reader-image {
+    max-width: calc(100vw - 56px);
+  }
+}
