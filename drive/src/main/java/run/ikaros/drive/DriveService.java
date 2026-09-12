@@ -17,6 +17,7 @@ public interface DriveService {
     Mono<DriveNodeView> trash(UUID actorId, UUID nodeId, long expectedVersion);
     Mono<DriveNodeView> restore(UUID actorId, UUID nodeId, long expectedVersion);
     Mono<DriveRevisionView> createRevision(UUID actorId, UUID nodeId, CreateDriveRevisionRequest request);
+    Mono<DriveNodeView> restoreRevision(UUID actorId, UUID nodeId, long revisionNo, long expectedNodeVersion);
     Flux<DriveRevisionView> revisions(UUID actorId, UUID nodeId);
     Flux<DriveChangeView> changes(UUID actorId, UUID spaceId, long afterSequence);
     Mono<DriveQuotaView> quota(UUID actorId, UUID spaceId);

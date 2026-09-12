@@ -121,6 +121,22 @@ public class PersistentDriveService implements DriveService {
         }));
     }
     @Override public Flux<DriveRevisionView> revisions(UUID actor, UUID id) { return ownedNode(actor,id).flatMapMany(n->revisions.findAllByFileNodeIdOrderByRevisionNoDesc(id).take(100).map(this::view)); }
+    @Override public Mono<DriveNodeView> restoreRevision(UUID actor, UUID id, long revisionNo, long expectedNodeVersion) {
+        return transactionalOperator.transactional(ownedNode(actor, id).flatMap(node -> {
+            if (node.nodeType() != DriveNodeType.FILE) return Mono.error(new ConflictException("只有文件节点可以恢复版本"));
+            check(node.nodeVersion(), expectedNodeVersion);
+            return revisions.findByFileNodeIdAndRevisionNo(id, revisionNo)
+                .switchIfEmpty(Mono.error(new NotFoundException("文件版本不存在")))
+                .flatMap(revision -> {
+                    DriveNodeEntity changed = new DriveNodeEntity(node.id(), node.driveSpaceId(), node.parentId(), node.nodeType(),
+                        node.name(), node.normalizedName(), node.lifecycle(), revision.id(), node.createdBy(), node.createdAt(),
+                        Instant.now(), node.trashedAt(), node.nodeVersion() + 1, node.version());
+                    return nodes.save(changed).flatMap(saved -> ownedSpace(actor, saved.driveSpaceId())
+                        .flatMap(space -> record(space, saved, DriveMutationKind.CONTENT_REVISION_CREATED, revision.id())
+                            .thenReturn(view(saved))));
+                });
+        }));
+    }
     @Override public Flux<DriveChangeView> changes(UUID actor, UUID sid, long afterSequence) { return ownedSpace(actor,sid).flatMapMany(s->changes.findAllByDriveSpaceIdAndSequenceGreaterThanOrderBySequenceAsc(sid,afterSequence).take(100).map(this::changeView)); }
     @Override public Mono<DriveQuotaView> quota(UUID actor, UUID sid) { return ownedSpace(actor,sid).then(quotaRepository.findById(sid).switchIfEmpty(Mono.error(new NotFoundException("Quota 不存在"))).map(q->new DriveQuotaView(sid,q.limitBytes(),q.usedBytes(),q.reservedBytes(),q.limitBytes()-q.usedBytes()-q.reservedBytes()))); }
     @Override

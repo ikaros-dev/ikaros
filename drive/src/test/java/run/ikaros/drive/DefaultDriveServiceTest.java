@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import run.ikaros.common.ConflictException;
+import run.ikaros.common.NotFoundException;
 import reactor.core.publisher.Mono;
 
 class DefaultDriveServiceTest {
@@ -62,6 +63,30 @@ class DefaultDriveServiceTest {
         DriveRevisionView retry = service.createRevision(user, file.id(), request).block();
         assertEquals(first.id(), retry.id());
         assertEquals(1, service.revisions(user, file.id()).count().block());
+    }
+
+    @Test void restoresHistoricalRevisionAndAdvancesNodeVersion() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        DriveNodeView file = service.createNode(user, space.id(), new CreateDriveNodeRequest(DriveNodeType.FILE, "a.txt", null)).block();
+        DriveRevisionView first = service.createRevision(user, file.id(), new CreateDriveRevisionRequest(
+            UUID.randomUUID(), 0L, "sha256:first", "first")).block();
+        DriveRevisionView second = service.createRevision(user, file.id(), new CreateDriveRevisionRequest(
+            UUID.randomUUID(), 1L, "sha256:second", "second")).block();
+
+        DriveNodeView restored = service.restoreRevision(user, file.id(), first.revisionNo(), 2L).block();
+
+        assertEquals(first.id(), restored.currentRevisionId());
+        assertEquals(3L, restored.nodeVersion());
+        assertEquals(second.id(), service.revisions(user, file.id()).collectList().block().get(1).id());
+    }
+
+    @Test void historicalRevisionRestoreRejectsStaleVersionAndUnknownRevision() {
+        DriveSpaceView space = service.createSpace(user, new CreateDriveSpaceRequest("Personal")).block();
+        DriveNodeView file = service.createNode(user, space.id(), new CreateDriveNodeRequest(DriveNodeType.FILE, "a.txt", null)).block();
+        service.createRevision(user, file.id(), new CreateDriveRevisionRequest(UUID.randomUUID(), 0L, "sha256:first", "first")).block();
+
+        assertThrows(ConflictException.class, () -> service.restoreRevision(user, file.id(), 1L, 0L).block());
+        assertThrows(NotFoundException.class, () -> service.restoreRevision(user, file.id(), 99L, 1L).block());
     }
 
     @Test void uploadReservationIsIdempotentForSameSession() {
