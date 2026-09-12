@@ -5,5 +5,5 @@ export default {
   path: "/reading/ebooks",
   name: "EbookImportLegacy",
   redirect: "/content-center/ebooks",
-  meta: { showLink: false }
+  meta: { title: "电子书导入", showLink: false }
 } satisfies RouteRecordRaw;
