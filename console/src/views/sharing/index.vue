@@ -1,11 +1,64 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { http } from "@/utils/http";
+
 type Row = Record<string, any>;
-const tab = ref("shares"); const shares = ref<Row[]>([]); const loading = ref(false); const saving = ref(false); const error = ref(""); const message = ref(""); const createdToken = ref(""); const dialog = ref(false); const form = ref({ targetType: "RESOURCE", targetId: "", granteeType: "LINK_TOKEN", granteeId: "", capabilities: "read", expiresAt: "" });
-async function load() { loading.value = true; error.value = ""; try { const result = await http.get<unknown, unknown>("/shares"); shares.value = Array.isArray(result) ? result as Row[] : []; } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "分享列表加载失败"; } finally { loading.value = false; } }
-async function revoke(row: Row) { if (!row.id || !window.confirm("确认撤销该分享链接吗？")) return; try { await http.post(`/shares/${row.id}/actions/revoke`); await load(); } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "撤销分享失败"; } }
-async function createShare() { if (!form.value.targetId.trim() || !form.value.capabilities.trim()) { error.value = "目标、能力不能为空"; return; } if (form.value.granteeType === "USER" && !form.value.granteeId.trim()) { error.value = "用户分享必须填写用户 ID"; return; } saving.value = true; error.value = ""; message.value = ""; createdToken.value = ""; try { const result: any = await http.post("/shares", { data: { targetType: form.value.targetType, targetId: form.value.targetId.trim(), granteeType: form.value.granteeType, granteeId: form.value.granteeId.trim() || undefined, capabilities: form.value.capabilities.trim(), expiresAt: form.value.expiresAt ? new Date(form.value.expiresAt).toISOString() : undefined } }); createdToken.value = String(result?.token || ""); message.value = createdToken.value ? "分享已创建；令牌只在本次创建结果中返回，请立即保存。" : "分享已创建"; dialog.value = false; form.value = { targetType: "RESOURCE", targetId: "", granteeType: "LINK_TOKEN", granteeId: "", capabilities: "read", expiresAt: "" }; await load(); } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "创建分享失败；请确认目标存在且当前账号拥有访问权限"; } finally { saving.value = false; } }
+const tab = ref("shares");
+const shares = ref<Row[]>([]);
+const loading = ref(false);
+const saving = ref(false);
+const error = ref("");
+const message = ref("");
+const createdToken = ref("");
+const dialog = ref(false);
+const expiryDialog = ref(false);
+const expiryRow = ref<Row | null>(null);
+const expiryValue = ref("");
+const form = ref({ targetType: "RESOURCE", targetId: "", granteeType: "LINK_TOKEN", granteeId: "", capabilities: "read", expiresAt: "" });
+
+async function load() {
+  loading.value = true; error.value = "";
+  try { const result = await http.get<unknown, unknown>("/shares"); shares.value = Array.isArray(result) ? result as Row[] : []; }
+  catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "分享列表加载失败"; }
+  finally { loading.value = false; }
+}
+async function revoke(row: Row) {
+  if (!row.id || !window.confirm("确认撤销该分享链接吗？")) return;
+  try { await http.post(`/shares/${row.id}/actions/revoke`); await load(); }
+  catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "撤销分享失败"; }
+}
+function openExpiry(row: Row) {
+  expiryRow.value = row; expiryValue.value = row.expiresAt ? new Date(row.expiresAt).toISOString() : ""; error.value = ""; expiryDialog.value = true;
+}
+async function setExpiry() {
+  if (!expiryRow.value?.id || !expiryValue.value) { error.value = "请选择未来的过期时间"; return; }
+  const expiresAt = new Date(expiryValue.value);
+  if (Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) { error.value = "过期时间必须在未来"; return; }
+  saving.value = true; error.value = "";
+  try { await http.request("patch", `/shares/${expiryRow.value.id}/expiration`, { data: { expiresAt: expiresAt.toISOString() } }); message.value = "分享有效期已更新"; expiryDialog.value = false; await load(); }
+  catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "设置有效期失败"; }
+  finally { saving.value = false; }
+}
+async function createShare() {
+  if (!form.value.targetId.trim() || !form.value.capabilities.trim()) { error.value = "目标、能力不能为空"; return; }
+  if (form.value.granteeType === "USER" && !form.value.granteeId.trim()) { error.value = "用户分享必须填写用户 ID"; return; }
+  saving.value = true; error.value = ""; message.value = ""; createdToken.value = "";
+  try {
+    const result: any = await http.post("/shares", { data: { targetType: form.value.targetType, targetId: form.value.targetId.trim(), granteeType: form.value.granteeType, granteeId: form.value.granteeId.trim() || undefined, capabilities: form.value.capabilities.trim(), expiresAt: form.value.expiresAt ? new Date(form.value.expiresAt).toISOString() : undefined } });
+    createdToken.value = String(result?.token || ""); message.value = createdToken.value ? "分享已创建；令牌只在本次创建结果中返回，请立即保存。" : "分享已创建"; dialog.value = false;
+    form.value = { targetType: "RESOURCE", targetId: "", granteeType: "LINK_TOKEN", granteeId: "", capabilities: "read", expiresAt: "" }; await load();
+  } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "创建分享失败；请确认目标存在且当前账号拥有访问权限"; }
+  finally { saving.value = false; }
+}
 onMounted(load);
 </script>
-<template><main class="p-4 md:p-6"><div class="flex justify-between items-start mb-6"><div><h1 class="text-2xl font-semibold">分享与协作</h1><p class="mt-1 text-[var(--el-text-color-secondary)]">管理真实 Share Grant；Room 与实时协作将在后续能力完成后开放。</p></div><div class="flex gap-2"><el-button type="primary" @click="dialog = true">创建分享</el-button><el-button :loading="loading" @click="load">刷新</el-button></div></div><el-alert v-if="error" :title="error" type="error" show-icon :closable="false" class="mb-4"/><el-alert v-if="message" :title="message" type="success" show-icon :closable="false" class="mb-4"/><el-alert v-if="createdToken" :title="`本次分享令牌：${createdToken}`" type="warning" show-icon :closable="false" class="mb-4"/><el-card shadow="never"><el-tabs v-model="tab"><el-tab-pane label="分享链接" name="shares"><el-skeleton v-if="loading" :rows="5" animated/><el-empty v-else-if="!shares.length" description="暂无分享"/><el-table v-else :data="shares" stripe><el-table-column prop="targetType" label="目标类型" width="130"/><el-table-column prop="targetId" label="目标 ID" min-width="300"/><el-table-column prop="granteeType" label="授予方式" width="140"/><el-table-column prop="capabilities" label="能力" min-width="160"/><el-table-column prop="expiresAt" label="过期时间" min-width="190"/><el-table-column prop="status" label="状态" width="120"/><el-table-column prop="createdAt" label="创建时间" min-width="190"/><el-table-column label="操作" width="100"><template #default="{ row }"><el-button link type="danger" :disabled="row.status !== 'ACTIVE'" @click="revoke(row)">撤销</el-button></template></el-table-column></el-table></el-tab-pane><el-tab-pane label="Room / 协作" name="rooms"><el-empty description="Room 成员与实时协作属于后续 C02/C03/C04 issue，当前没有对应后端契约。"/><el-alert title="当前页面不会请求不存在的 Room API，也不会伪造成员或同步状态。" type="info" :closable="false" show-icon/></el-tab-pane></el-tabs></el-card><el-dialog v-model="dialog" title="创建分享" width="560px"><el-form label-position="top"><el-form-item label="目标类型" required><el-select v-model="form.targetType" class="w-full"><el-option label="Resource" value="RESOURCE"/><el-option label="Collection" value="COLLECTION"/></el-select></el-form-item><el-form-item label="目标 ID" required><el-input v-model="form.targetId" placeholder="Resource / Collection UUID" clearable/></el-form-item><el-form-item label="授予方式" required><el-select v-model="form.granteeType" class="w-full"><el-option label="链接令牌" value="LINK_TOKEN"/><el-option label="指定用户" value="USER"/><el-option label="访客会话" value="GUEST_SESSION"/></el-select></el-form-item><el-form-item v-if="form.granteeType === 'USER'" label="用户 ID" required><el-input v-model="form.granteeId" placeholder="User UUID" clearable/></el-form-item><el-form-item label="能力" required><el-input v-model="form.capabilities" placeholder="例如 read 或 read,download"/></el-form-item><el-form-item label="过期时间" required><el-date-picker v-model="form.expiresAt" type="datetime" class="w-full"/></el-form-item></el-form><template #footer><el-button @click="dialog = false">取消</el-button><el-button type="primary" :loading="saving" @click="createShare">创建</el-button></template></el-dialog></main></template>
+
+<template>
+  <main class="p-4 md:p-6">
+    <div class="flex justify-between items-start mb-6"><div><h1 class="text-2xl font-semibold">分享与协作</h1><p class="mt-1 text-[var(--el-text-color-secondary)]">管理真实 Share Grant；Room 与实时协作将在后续能力完成后开放。</p></div><div class="flex gap-2"><el-button type="primary" @click="dialog = true">创建分享</el-button><el-button :loading="loading" @click="load">刷新</el-button></div></div>
+    <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" class="mb-4" /><el-alert v-if="message" :title="message" type="success" show-icon :closable="false" class="mb-4" /><el-alert v-if="createdToken" :title="`本次分享令牌：${createdToken}`" type="warning" show-icon :closable="false" class="mb-4" />
+    <el-card shadow="never"><el-tabs v-model="tab"><el-tab-pane label="分享链接" name="shares"><el-skeleton v-if="loading" :rows="5" animated /><el-empty v-else-if="!shares.length" description="暂无分享" /><el-table v-else :data="shares" stripe><el-table-column prop="targetType" label="目标类型" width="130" /><el-table-column prop="targetId" label="目标 ID" min-width="300" /><el-table-column prop="granteeType" label="授予方式" width="140" /><el-table-column prop="capabilities" label="能力" min-width="160" /><el-table-column prop="expiresAt" label="过期时间" min-width="190" /><el-table-column prop="status" label="状态" width="120" /><el-table-column prop="createdAt" label="创建时间" min-width="190" /><el-table-column label="操作" width="190"><template #default="{ row }"><el-button link :disabled="row.status !== 'ACTIVE'" @click="openExpiry(row)">设置有效期</el-button><el-button link type="danger" :disabled="row.status !== 'ACTIVE'" @click="revoke(row)">撤销</el-button></template></el-table-column></el-table></el-tab-pane><el-tab-pane label="Room / 协作" name="rooms"><el-empty description="Room 成员与实时协作属于后续 C02/C03/C04 issue，当前没有对应后端契约。" /><el-alert title="当前页面不会请求不存在的 Room API，也不会伪造成员或同步状态。" type="info" :closable="false" show-icon /></el-tab-pane></el-tabs></el-card>
+    <el-dialog v-model="dialog" title="创建分享" width="560px"><el-form label-position="top"><el-form-item label="目标类型" required><el-select v-model="form.targetType" class="w-full"><el-option label="Resource" value="RESOURCE" /><el-option label="Collection" value="COLLECTION" /></el-select></el-form-item><el-form-item label="目标 ID" required><el-input v-model="form.targetId" placeholder="Resource / Collection UUID" clearable /></el-form-item><el-form-item label="授予方式" required><el-select v-model="form.granteeType" class="w-full"><el-option label="链接令牌" value="LINK_TOKEN" /><el-option label="指定用户" value="USER" /><el-option label="访客会话" value="GUEST_SESSION" /></el-select></el-form-item><el-form-item v-if="form.granteeType === 'USER'" label="用户 ID" required><el-input v-model="form.granteeId" placeholder="User UUID" clearable /></el-form-item><el-form-item label="能力" required><el-input v-model="form.capabilities" placeholder="例如 read 或 read,download" /></el-form-item><el-form-item label="过期时间"><el-date-picker v-model="form.expiresAt" type="datetime" class="w-full" /></el-form-item></el-form><template #footer><el-button @click="dialog = false">取消</el-button><el-button type="primary" :loading="saving" @click="createShare">创建</el-button></template></el-dialog>
+    <el-dialog v-model="expiryDialog" title="设置分享有效期" width="420px"><el-form label-position="top"><el-form-item label="新的过期时间" required><el-date-picker v-model="expiryValue" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss.SSSZ" class="w-full" /></el-form-item></el-form><template #footer><el-button @click="expiryDialog = false">取消</el-button><el-button type="primary" :loading="saving" @click="setExpiry">保存</el-button></template></el-dialog>
+  </main>
+</template>
