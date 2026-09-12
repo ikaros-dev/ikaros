@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.ConflictException;
 import run.ikaros.resource.api.CollectionOwnershipQuery;
 import run.ikaros.resource.api.ResourceOwnershipQuery;
 
@@ -72,7 +73,21 @@ public class PersistentShareService implements ShareService {
         })
         .map(this::view);
   }
-  public Mono<ShareView> revoke(UUID issuer, UUID id) { return repository.findById(id).filter(share -> share.issuerId().equals(issuer)).switchIfEmpty(Mono.error(new NotFoundException("Share 不存在或无权操作"))).flatMap(share -> repository.save(new ShareEntity(share.id(), share.issuerId(), share.targetType(), share.targetId(), share.granteeType(), share.granteeId(), share.capabilities(), share.tokenDigest(), share.expiresAt(), ShareStatus.REVOKED, share.createdAt(), Instant.now(), share.version()))).map(this::view); }
+  public Mono<ShareView> revoke(UUID issuer, UUID id) {
+    return repository.findById(id)
+        .filter(share -> share.issuerId().equals(issuer))
+        .switchIfEmpty(Mono.error(new NotFoundException("Share 不存在或无权操作")))
+        .flatMap(share -> {
+          if (share.status() != ShareStatus.ACTIVE) {
+            return Mono.error(new ConflictException("share.not_active", "当前 Share 已不可撤销"));
+          }
+          return repository.save(new ShareEntity(share.id(), share.issuerId(), share.targetType(),
+              share.targetId(), share.granteeType(), share.granteeId(), share.capabilities(),
+              share.tokenDigest(), share.expiresAt(), ShareStatus.REVOKED, share.createdAt(),
+              Instant.now(), share.version()));
+        })
+        .map(this::view);
+  }
   public Mono<ShareView> redeem(String token) {
     if (token == null || token.isBlank()) {
       return Mono.error(new ShareAccessException(ShareAccessFailureReason.MISSING_TOKEN, "请输入分享令牌"));
