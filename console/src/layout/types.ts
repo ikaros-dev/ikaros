@@ -1,5 +1,11 @@
 import type { FunctionalComponent } from "vue";
-export const routerArrays: Array<RouteConfigs> = [];
+export const routerArrays: Array<RouteConfigs> = [
+  {
+    path: "/overview",
+    name: "Overview",
+    meta: { title: "Overview", fixedTag: true }
+  }
+];
 
 export type routeMetaType = {
   title?: string;
@@ -7,6 +13,7 @@ export type routeMetaType = {
   showLink?: boolean;
   showParent?: boolean;
   savedPosition?: boolean;
+  fixedTag?: boolean;
   auths?: Array<string>;
 };
 

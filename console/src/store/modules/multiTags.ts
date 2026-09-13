@@ -15,24 +15,30 @@ import {
 import { usePermissionStoreHook } from "./permission";
 
 export const useMultiTagsStore = defineStore("pure-multiTags", {
-  state: () => ({
-    // 存储标签页信息（路由信息）
-    multiTags: storageLocal().getItem<StorageConfigs>(
+  state: () => {
+    const cached = storageLocal().getItem<StorageConfigs>(
       `${responsiveStorageNameSpace()}configure`
-    )?.multiTagsCache
+    )?.multiTagsCache;
+    const storedTags: any[] = cached
       ? storageLocal().getItem<StorageConfigs>(
           `${responsiveStorageNameSpace()}tags`
-        )
-      : ([
-          ...routerArrays,
-          ...usePermissionStoreHook().flatteningRoutes.filter(
-            v => v?.meta?.fixedTag
-          )
-        ] as any),
-    multiTagsCache: storageLocal().getItem<StorageConfigs>(
-      `${responsiveStorageNameSpace()}configure`
-    )?.multiTagsCache
-  }),
+        ) as any[] || []
+      : [];
+    const tags = [...routerArrays, ...storedTags].filter(
+      (tag, index, all) =>
+        all.findIndex(
+          item =>
+            item?.path === tag?.path &&
+            isEqual(item?.query, tag?.query) &&
+            isEqual(item?.params, tag?.params)
+        ) === index
+    );
+    return {
+      // 存储标签页信息（路由信息）
+      multiTags: (cached ? tags : routerArrays) as any,
+      multiTagsCache: cached
+    };
+  },
   getters: {
     getMultiTagsCache(state) {
       return state.multiTagsCache;
