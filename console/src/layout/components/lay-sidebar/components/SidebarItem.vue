@@ -124,8 +124,32 @@ function resolvePath(routePath) {
 </script>
 
 <template>
+  <el-menu-item-group
+    v-if="item.meta?.menuGroup && !isParameterizedRoute"
+    class="sidebar-menu-group"
+  >
+    <template #title>
+      <ReText
+        :tippyProps="{
+          offset: [0, -10],
+          theme: tooltipEffect
+        }"
+        class="sidebar-menu-label"
+      >
+        {{ transformI18n(item.meta.title) }}
+      </ReText>
+    </template>
+    <sidebar-item
+      v-for="child in item.children"
+      :key="child.path"
+      :is-nest="true"
+      :item="child"
+      :base-path="resolvePath(child.path)"
+      class="nest-menu"
+    />
+  </el-menu-item-group>
   <SidebarLinkItem
-    v-if="
+    v-else-if="
       !isParameterizedRoute &&
       hasOneShowingChild(item.children, item) &&
       (!onlyOneChild.children || onlyOneChild.noShowingChildren)

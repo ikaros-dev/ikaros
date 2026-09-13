@@ -48,3 +48,9 @@ test("Parameterized routes stay out of the Sidebar", () => {
   assert.match(home, /showLink: false/);
   assert.match(home, /activePath/);
 });
+
+test("System directories render as flat non-clickable menu groups", () => {
+  assert.match(home, /meta: \{ title, icon, showParent: true, menuGroup: true \}/);
+  assert.match(sidebar, /el-menu-item-group/);
+  assert.match(sidebar, /item\.meta\?\.menuGroup/);
+});

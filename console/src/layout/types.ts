@@ -67,6 +67,7 @@ export type menuType = {
     title?: string;
     rank?: number;
     showParent?: boolean;
+    menuGroup?: boolean;
     extraIcon?: string;
   };
   showTooltip?: boolean;

@@ -59,7 +59,7 @@ function directory(
     name,
     component: WorkspaceView,
     redirect,
-    meta: { title, icon, showParent: true },
+    meta: { title, icon, showParent: true, menuGroup: true },
     children
   };
 }
