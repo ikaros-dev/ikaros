@@ -60,18 +60,7 @@
 
 ### App / 多端交互
 
-[`app-interaction/`](./app-interaction/) 描述用户侧 App 的信息架构和交互，包括：
-
-- 登录、账户、应用 Shell、首页与统一搜索；
-- Resource Library；
-- Personal Drive、文件访问、目录备份与设备同步；
-- 视频、阅读、音乐、图片、游戏等内容消费 / 归档；
-- 文档、文章、普通 Note 与创作；
-- 分享、Room 与协作；
-- Offline / Download / Device Sync；
-- AI、Analytics、Automation；
-- Productivity、Finance、Password Manager、Private Notes；
-- Notification 等多端能力。
+[`app-interaction/`](./app-interaction/) 描述用户侧 App 的信息架构和交互，包括登录、账户、应用 Shell、Resource Library、Drive、媒体消费、文档创作、分享、Offline、AI、Analytics、Automation、Productivity、Finance 和安全数据产品。
 
 入口：[`app-interaction/README.md`](./app-interaction/README.md)
 
@@ -79,22 +68,27 @@ Personal Drive 独立交互规格：[`app-interaction/drive/personal-drive-file-
 
 ### CMS / Web Console 交互
 
-[`cms-console-interaction/`](./cms-console-interaction/) 描述 CMS / Web Console 的管理端交互，包括：
+[`cms-console-interaction/`](./cms-console-interaction/) 描述 Web Console 的最终态管理交互。当前 V2 按从零重构处理，不以旧菜单或旧 Route 为兼容约束。
 
-- Workbench；
-- 身份与安全；
-- Attachment / Storage；
-- Personal Drive、同步状态与管理入口；
-- 内容创作与内容管理；
-- AI、Analytics、Integration / Automation；
-- 平台配置、通知、审计与系统运维；
-- Secure Domain 管理入口。
+Console 一级工作区固定为：
 
-入口：[`cms-console-interaction/README.md`](./cms-console-interaction/README.md)
+- **Overview**：Attention 与正在进行的工作；
+- **Library**：统一 Resource 浏览、搜索和 canonical Resource Detail；
+- **Add Content**：来源、预览、确认和导入；
+- **Activity**：所有长期后台工作；
+- **Storage**：Overview、Providers、Policy、Archive & Restore、Maintenance、Backup；
+- **Apps**：Drive、Documents、Media、Planning、Finance、Private Notes、Passwords、AI、Sharing、Analytics、Automation 等可选产品；
+- **System**：Access、Audit、Integrations、Notifications、Settings、Health、Diagnostics。
 
-Personal Drive 独立管理规格：[`cms-console-interaction/personal-drive/README.md`](./cms-console-interaction/personal-drive/README.md)
+关键设计文件：
 
-CMS 路由与权限矩阵：[`cms-console-interaction/route-permission-matrix.md`](./cms-console-interaction/route-permission-matrix.md)
+- [`cms-console-interaction/README.md`](./cms-console-interaction/README.md) — 通用 Console 交互规范；
+- [`cms-console-interaction/Console-Information-Architecture-and-Product-Journey-Contract.md`](./cms-console-interaction/Console-Information-Architecture-and-Product-Journey-Contract.md) — canonical IA；
+- [`cms-console-interaction/Console-Product-Journey-Acceptance-Contract.md`](./cms-console-interaction/Console-Product-Journey-Acceptance-Contract.md) — Golden Path / Product Journey Acceptance；
+- [`cms-console-interaction/route-permission-matrix.md`](./cms-console-interaction/route-permission-matrix.md) — canonical Route / Permission Matrix；
+- [`cms-console-interaction/personal-drive/README.md`](./cms-console-interaction/personal-drive/README.md) — Drive App 管理规格。
+
+`cms-console-interaction/*` 的历史目录名只表示领域文档容器，不代表全局 Sidebar 分组。
 
 ### 原型
 
@@ -106,81 +100,75 @@ CMS 路由与权限矩阵：[`cms-console-interaction/route-permission-matrix.md
 
 | 能力 | PRD / 系统概要 | 服务端详细设计 | App 交互 | CMS 交互 | 当前状态 |
 |---|---|---|---|---|---|
-| Resource / Collection / Relation / User State | ✅ | ✅ `Core-Resource-Library-Subsystem-Design.md` | ✅ | 部分 | 核心契约已覆盖 |
-| Content Ingestion / Import / Metadata Sync | ✅ | ✅ `Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md` | 间接 | 部分 | 核心契约已覆盖 |
-| Attachment / Blob / Storage | ✅ | ✅ `Attachment-Blob-Storage-Subsystem-Design.md` | 间接 | ✅ | 核心契约已覆盖 |
-| Personal Drive / File Sync / Camera Backup | ✅ | ✅ 主设计 + P0 Semantics | ✅ `app-interaction/drive/personal-drive-file-sync.md` | ✅ `cms-console-interaction/personal-drive/README.md` + Route / Permission Matrix | 产品、系统、服务端与 App / CMS 交互均已覆盖；根导航与权限索引已同步 |
-| Sharing / Collaboration / Room | ✅ | ✅ `Sharing-Collaboration-Room-Subsystem-Design.md` | ✅ | 部分 | 核心契约已覆盖 |
-| Offline Cache / Device Sync | ✅ 系统原则 | ✅ `Offline-Cache-Device-Synchronization-Subsystem-Design.md` | ✅ | 不适用 | 核心契约已覆盖 |
-| Content Creation / Revision / Collaborative Document | ✅ | ✅ `Content-Creation-Revision-Collaborative-Document-Subsystem-Design.md` | ✅ | ✅ | 核心契约已覆盖 |
-| 视频 / 动画 / 影视专业领域 | ✅ | ✅ `Media-Video-Anime-Playback-Subsystem-Design.md` | ✅ | 部分 | 核心契约已覆盖 |
-| 漫画 / 小说 / Ebook | ✅ | ✅ `Reading-Comic-Novel-Ebook-Subsystem-Design.md` | ✅ | 部分 | 核心契约已覆盖 |
-| 音乐 | ✅ | ✅ `Music-Library-Playback-Queue-Subsystem-Design.md` | ✅ | 部分 | 核心契约已覆盖 |
-| 图片 / 相册 | ✅ | ✅ `Photo-Album-Image-Asset-Subsystem-Design.md` | ✅ | 部分 | 核心契约已覆盖 |
-| 游戏 / 数字资产 | ✅ | ✅ `Game-Digital-Asset-Archive-Subsystem-Design.md` | ✅ | 部分 | 核心契约已覆盖 |
-| 身份 / 授权 / Crypto | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
-| Secure Data 基础 | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
-| Background Task / Scheduler | ✅ | ✅ | 间接 | 运维入口 | 已覆盖 |
-| Plugin / Integration / Automation | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
-| Notification | ✅ | 核心能力已由 Platform Administration & Operations 设计覆盖 | ✅ | ✅ | 基础已覆盖；复杂度增长时再拆专项文档 |
-| AI Intelligence | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
-| AI Persona | ✅ | ✅ | ✅ | 间接 | 已覆盖 |
-| Analytics / Statistics | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
-| Productivity | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
-| Personal Finance | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
-| Password Manager | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
-| Private Notes | ✅ | ✅ | ✅ | ✅ | 已覆盖 |
-| Search / Discovery | ✅ | ✅ `Search-Discovery-Subsystem-Design.md` | ✅ | 部分 | 增量投影、权限、重建与失败恢复契约已覆盖 |
-| Backup / Restore / Data Portability | ✅ | ✅ `Backup-Restore-Data-Portability-Subsystem-Design.md` | 间接 | 运维入口 | 恢复点、校验、恢复、保留与迁移契约已覆盖 |
+| Resource / Collection / Relation / User State | ✅ | ✅ Core Resource | ✅ | ✅ Library / Resource Detail | 核心契约已覆盖 |
+| Content Ingestion / Import / Metadata Sync | ✅ | ✅ Ingestion / Metadata | 间接 | ✅ Add Content + Resource Metadata | 核心契约已覆盖 |
+| Attachment / Blob / Storage | ✅ | ✅ Storage | 间接 | ✅ Storage Workspace | 核心契约已覆盖 |
+| Personal Drive / File Sync / Camera Backup | ✅ | ✅ 主设计 + P0 Semantics | ✅ | ✅ Apps / Drive | 产品、系统、服务端与交互均已覆盖 |
+| Sharing / Collaboration / Room | ✅ | ✅ Sharing | ✅ | ✅ Apps / Sharing | 核心契约已覆盖 |
+| Offline Cache / Device Sync | ✅ | ✅ Offline / Sync | ✅ | Apps / Drive / Media 适用入口 | 核心契约已覆盖 |
+| Content Creation / Revision / Collaborative Document | ✅ | ✅ Document | ✅ | ✅ Apps / Documents | 核心契约已覆盖 |
+| 视频 / 动画 / 影视专业领域 | ✅ | ✅ Media | ✅ | Library + Apps / Media | 核心契约已覆盖 |
+| 漫画 / 小说 / Ebook | ✅ | ✅ Reading | ✅ | Library / 专业 App 适用入口 | 核心契约已覆盖 |
+| 音乐 | ✅ | ✅ Music | ✅ | Library + Apps / Media | 核心契约已覆盖 |
+| 图片 / 相册 | ✅ | ✅ Photo | ✅ | Library / 专业 App 适用入口 | 核心契约已覆盖 |
+| 游戏 / 数字资产 | ✅ | ✅ Game | ✅ | Library / 专业 App 适用入口 | 核心契约已覆盖 |
+| 身份 / 授权 / Crypto | ✅ | ✅ | ✅ | ✅ System / Access | 已覆盖 |
+| Secure Data 基础 | ✅ | ✅ | ✅ | ✅ Apps 安全域 | 已覆盖 |
+| Background Task / Scheduler | ✅ | ✅ | 间接 | ✅ Unified Activity | 已覆盖 |
+| Plugin / Integration / Automation | ✅ | ✅ | ✅ | ✅ System / Integrations + Apps / Automation | 已覆盖 |
+| Notification | ✅ | Platform Administration | ✅ | ✅ System / Notifications + Account Preferences | 已覆盖 |
+| AI Intelligence / Persona | ✅ | ✅ | ✅ | ✅ Apps / AI | 已覆盖 |
+| Analytics / Statistics | ✅ | ✅ | ✅ | ✅ Apps / Analytics | 已覆盖 |
+| Productivity | ✅ | ✅ | ✅ | ✅ Apps / Planning | 已覆盖 |
+| Personal Finance | ✅ | ✅ | ✅ | ✅ Apps / Finance | 已覆盖 |
+| Password Manager | ✅ | ✅ | ✅ | ✅ Apps / Passwords | 已覆盖 |
+| Private Notes | ✅ | ✅ | ✅ | ✅ Apps / Private Notes | 已覆盖 |
+| Search / Discovery | ✅ | ✅ Search | ✅ | ✅ Library Search / Global Search | 已覆盖 |
+| Backup / Restore / Data Portability | ✅ | ✅ Backup / Restore | 间接 | ✅ Storage / Backup + Activity | 已覆盖 |
 
 ### 3.1 覆盖结论
 
-按当前 PRD、System Overview、App Interaction、CMS Interaction 与已合入专项设计进行交叉检查后：
+1. 当前 P0 核心领域均已有服务端设计基线。
+2. Console 已增加 canonical IA 与 Product Journey Acceptance，不再把“能力页面存在”视为产品完成。
+3. Personal Drive 继续保持 **Platform ADMIN ≠ Drive File READ**，Drive 内容读取、运维诊断和 Storage 管理互相分离。
+4. Background Task / Scheduler 的工程模型通过统一 Activity 暴露，不再为每个子系统创建任务中心。
+5. Storage 的 Provider、Policy、Archive & Restore、Maintenance 已在 Console 设计中分层。
 
-1. **未发现仍然缺少服务端领域契约、且会阻塞 V2 核心编码的大型 P0 领域。**
-2. Search / Discovery 原本只有分散在 System Overview 与 Core Resource 中的投影原则；现已补充独立的索引、权限、Generation Rebuild 与失败恢复契约。
-3. Backup / Restore / Data Portability 原本只有系统级原则；现已补充 Restore Point、Manifest、Verification、Restore Activation、Retention 与 Export / Import 契约。
-4. Personal Drive / File Synchronization 已完成 PRD、System Overview、主设计、P0 Semantics、App 独立交互规格、CMS 独立管理规格，以及 App / CMS 根导航与 CMS Route / Permission Matrix 的索引同步；当前不再存在“交互待补”的覆盖缺口。
-5. Personal Drive 的权限索引继续保持 **Platform ADMIN ≠ Drive File READ**，并将 Drive 内容读取与运维诊断、Quota / Policy、Attachment / Storage 管理分离。
-
-以下方向已经有足够的系统级 / 领域级边界，只有在实际复杂度出现时再拆专项设计更合适：
+以下方向只有在实际复杂度出现时再拆专项设计：
 
 - Notification Delivery Provider / Template Runtime；
-- Advanced Search Ranking / Personalized Recommendation；
+- Advanced Search Ranking / Recommendation；
 - WebRTC / Large-scale Realtime Gateway；
-- Large-scale CRDT / Collaborative Editing Runtime；
-- Multi-node Transcode Worker / Hardware Acceleration Scheduler；
+- Large-scale CRDT Runtime；
+- Multi-node Transcode Scheduler；
 - Resource Merge / Split / Entity Resolution；
 - Advanced Metadata Provider Mapping；
-- Device Installation Projection / Game Launcher Integration；
-- Photo Face / Object Organization（需要额外隐私设计）。
+- Device Installation Projection；
+- Photo Face / Object Organization。
 
 ---
 
 ## 4. 关键跨领域边界
 
-本轮补齐后，后续实现尤其应保持以下边界：
-
-1. **Resource ≠ Attachment ≠ Blob**：逻辑内容身份、可关联内容对象和实际字节身份分离。
-2. **Drive Node / Path ≠ Attachment / Blob**：用户文件树与文件版本是组织及历史语义，不把路径重新变成内容身份。
-3. **Download ≠ Cache ≠ Server Replica**：显式离线副本、可淘汰缓存和服务端存储副本分离。
-4. **Working Copy ≠ Revision ≠ Publication**：编辑态、不可变历史和已发布版本分离。
-5. **Media Release ≠ Playback Variant**：源版本与播放清晰度 / 转码方案分离。
-6. **Playlist ≠ Playback Queue**：长期集合与当前播放上下文分离。
-7. **Reading Locator ≠ Pixel Offset**：跨设备阅读位置使用逻辑定位。
-8. **Photo Original ≠ Preview / Thumbnail**：用户原始内容和可重建派生内容分离。
-9. **Game Asset Available ≠ Installed**：服务器存在安装包不代表任何设备已安装。
-10. **Share / Room ≠ Resource ACL**：授权入口、协作上下文和目标对象最终权限分离。
-11. **Sync Runtime ≠ Domain Conflict Resolver**：同步负责可靠传播，领域负责业务合并。
-12. **Search / Analytics / AI Projection ≠ Business Truth**：派生数据可重建，不反向成为业务真相源。
-13. **Backup / Restore ≠ Export / Import**：灾难恢复保存实例恢复语义，数据迁移保存开放、版本化和可合并语义。
-14. **Backup Success ≠ Restore Verified**：任务成功、恢复点发布、完整性验证和真实恢复演练必须分开表达。
+1. **Resource ≠ Attachment ≠ Blob**：逻辑内容身份、关联内容对象和实际字节身份分离。
+2. **Drive Node / Path ≠ Attachment / Blob**：用户文件树和文件版本不把路径重新变成内容身份。
+3. **Download ≠ Cache ≠ Server Replica**。
+4. **Working Copy ≠ Revision ≠ Publication**。
+5. **Media Release ≠ Playback Variant**。
+6. **Playlist ≠ Playback Queue**。
+7. **Reading Locator ≠ Pixel Offset**。
+8. **Photo Original ≠ Preview / Thumbnail**。
+9. **Game Asset Available ≠ Installed**。
+10. **Share / Room ≠ Resource ACL**。
+11. **Sync Runtime ≠ Domain Conflict Resolver**。
+12. **Search / Analytics / AI Projection ≠ Business Truth**。
+13. **Backup / Restore ≠ Export / Import**。
+14. **Backup Success ≠ Restore Verified**。
+15. **Capability Acceptance ≠ Console Product Journey Acceptance**。
 
 ---
 
 ## 5. 文档一致性规则
-
-新增或修改 V2 设计时应遵守以下优先级：
 
 ```text
 Product Requirements Document
@@ -198,135 +186,47 @@ Prototype / Implementation
 
 发生冲突时：
 
-1. 先确认是否是产品需求发生变化；
-2. 系统级原则必须先在 System Overview 中统一；
-3. 数据库与 API 的跨域规则不得由单个子系统自行覆盖；
-4. 子系统负责定义自己的领域所有权、不变量、Command / Event 和失败语义；
-5. 交互文档通过公开能力实现体验，不反向制造隐藏业务通道；
-6. Prototype 只能验证交互，不自动成为接口和数据模型约束；
-7. 如果详细设计新增了 PRD / System Overview 尚未定义的新产品域，必须在覆盖矩阵明确标记，不能因为“已有详细设计”就默认产品范围已经批准。
+1. 先确认产品需求是否变化；
+2. 系统级原则先在 System Overview 统一；
+3. 数据库与 API 跨域规则不得由单个子系统自行覆盖；
+4. 子系统负责领域所有权、不变量、Command / Event 和失败语义；
+5. 交互文档通过公开能力实现体验，不制造隐藏业务通道；
+6. Prototype 只验证交互；
+7. 详细设计新增产品域时必须在覆盖矩阵明确标记；
+8. **Console 全局 IA 变化必须先修改 Console IA 契约，功能 Issue 不得自行新增一级导航。**
 
 ---
 
 ## 6. 新增子系统设计的最低内容要求
 
-为避免设计文档只描述“功能清单”，新的服务端子系统设计至少应包含：
+新的服务端子系统设计至少包含：
 
 - 目标、范围与非目标；
 - 领域所有权和核心实体；
-- 必须长期成立的不变量；
+- 不变量；
 - 生命周期 / 状态机；
 - 数据库关键约束；
-- Command / Query / Event 契约；
+- Command / Query / Event；
 - 权限、隐私与审计；
 - 幂等、并发、一致性与失败恢复；
 - Background Task / Automation / Plugin 集成；
-- 与 Search / Analytics / AI 的投影边界；
+- Search / Analytics / AI 投影边界；
 - 典型流程；
 - 可观测性；
 - 测试和验收基线。
 
-对于实时功能还应补充：
-
-- HTTP / WebSocket / SSE / WebRTC 的职责边界；
-- reconnect / replay / sequence / presence 语义；
-- 服务端权威状态与客户端临时状态的区别；
-- 实时连接中的权限撤销传播。
-
-对于创作 / Revision 功能还应补充：
-
-- Working Copy 与正式 Revision 分离；
-- Revision 不可变；
-- Restore 产生新 Revision；
-- autosave / revision checkpoint 策略；
-- Publication 固定 Revision；
-- Comment / Annotation Anchor；
-- Merge / Conflict；
-- realtime operation 与持久 Revision 的边界。
-
-对于媒体功能还应补充：
-
-- Work / Season / Episode 专业结构；
-- Release / Source Version 与 Playback Variant 分离；
-- Probe / Track / Subtitle；
-- Direct Play / Direct Stream / Transcode；
-- Derived Attachment 与 Transcode Profile；
-- Playback Session / Progress / History；
-- Progress 乱序合并；
-- Room 权威播放状态与个人 Progress 分离。
-
-对于导入 / 同步功能还应补充：
-
-- Source 与 Credential 边界；
-- Scan / Candidate / Match / Plan / Run 分层；
-- Dry Run / Preview；
-- Checkpoint / Retry / Cancel；
-- 幂等和去重；
-- 外部来源删除与内部生命周期分离；
-- Metadata Provenance 与人工修改优先级。
-
-对于离线功能还应补充：
-
-- Download / Cache / Server Replica 分离；
-- Device Registration / Revocation；
-- Pending Mutation ID；
-- 服务端 Sync Cursor / Change Feed；
-- Tombstone Retention / Full Resync；
-- 冲突路由到目标领域；
-- 本地加密；
-- 权限撤销传播；
-- Secure Domain 密文同步。
-
-对于 Personal Drive / 文件同步功能还应补充：
-
-- Drive Node / Path 与 Attachment / Blob 身份分离；
-- File Revision 不可变与覆盖写语义；
-- Trash / Restore / Permanent Delete 与 Blob GC 分离；
-- Sync Binding、Local Item Mapping 与稳定服务端 Cursor；
-- 单向 Backup 与双向 Sync 的删除传播边界；
-- Conflict Copy 与禁止静默丢数据；
-- Camera Backup 与 Photo Projection 的状态分离；
-- Quota、Tombstone、Atomic Save 与失败恢复。
-
-对于搜索功能还应补充：
-
-- Search Document 与稳定文档身份；
-- Source Version / Projector Version；
-- 权限候选过滤与最终权威授权分离；
-- 增量索引、Dead Letter 与 Reconciliation；
-- Full Rebuild / Generation 切换；
-- Facet / Suggestion 的信息泄露边界；
-- Search Engine 故障时业务写入降级；
-- Semantic / Embedding 的可选能力与敏感数据边界。
-
-对于备份 / 恢复功能还应补充：
-
-- Restore Point 与不可变 Manifest；
-- PostgreSQL + Blob 的一致恢复语义；
-- Full / Incremental Chain；
-- Verification 与 Restore Drill；
-- Restore Preflight / Activation；
-- Retention / Pin / Safe Prune；
-- Secure Material 独立保护；
-- Backup / Restore 与 Export / Import 分离。
+实时、创作、媒体、导入同步、离线、Drive、搜索和备份等领域继续遵守各专项设计已经定义的最低契约要求。
 
 ---
 
 ## 7. 后续文档策略
 
-当前阶段不再建议为了“看起来完整”继续批量拆分设计文档。
+当前阶段不为“看起来完整”继续无边界拆文档。后续优先：
 
-Personal Drive 的产品、系统、服务端、App / CMS 交互，以及根导航 / Route Permission Matrix 的索引治理已经完成。本 PR 当前不继续进入 Database Schema、API 或 Command / Event 实现映射。
-
-下一步更有价值的是在后续独立步骤进入实现前设计审查：
-
-1. 持续校验 Personal Drive App / CMS 入口、Deep Link 与权限矩阵是否与独立交互规格保持一致，避免后续新增页面重新并入 Attachment / Storage 或弱化 `Platform ADMIN ≠ Drive File READ`；
-2. 从 P0 范围提取实际模块 / Package Ownership；
-3. 将领域不变量映射为 PostgreSQL Constraint / Transaction Boundary；
+1. 保持 Console canonical IA、Route Matrix 与各领域交互文档一致；
+2. 将 P0 领域映射到模块 / Package Ownership；
+3. 将不变量映射为 PostgreSQL Constraint / Transaction Boundary；
 4. 将 Command / Query / Event 映射为 API 与内部接口；
-5. 为跨域事件建立契约版本与 Outbox / Consumer 幂等策略；
-6. 为每个子系统生成首批 `r2dbc-migrate` Schema / Migration 设计；
-7. 建立 V2 implementation roadmap 与依赖图；
-8. 只有当某个实现问题超出现有设计边界时，再新增专项设计。
-
-这样可以避免文档继续横向膨胀，却迟迟不进入可验证的工程实现。
+5. 建立事件契约版本和 Outbox / Consumer 幂等策略；
+6. 建立 Schema / Migration 和实施依赖图；
+7. 只有实现问题超出现有设计边界时再新增专项设计。

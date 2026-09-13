@@ -1,337 +1,224 @@
 # Ikaros V2 CMS Console 交互规格
 
-> 状态：草案
+> 状态：设计基线。
 >
-> 本目录是 Ikaros V2 CMS Console 页面结构与交互行为的实现基线。`docs/v2/prototypes/draft` 下的 HTML/JS 原型仅作为探索阶段的历史参考，不再作为主要交互设计依据。
+> 本目录定义 Ikaros V2 Web Console 的最终交互设计。V2 当前按从零重构处理，文档不承担旧菜单、旧路由或旧页面结构兼容。
 
-## 1. 文档目的
+## 1. 设计基线
 
-本规格不依赖视觉原型图，直接使用 Markdown 描述 CMS Console。前端实现应能够从本目录文档中明确推导出：每个页面区域放置什么内容、展示哪些字段、使用哪一种 Material Design 3 组件、用户操作组件后发生什么，以及加载、空数据、错误、无权限、校验失败、并发冲突、危险操作和后台任务等状态如何表现。
+Console 必须同时遵循：
 
-Console 遵循 V2 PRD 的核心原则：以 Resource 为中心的信息架构、Attachment 与 Blob 分离、HTTP-first、用户人工元数据优先、明确的生命周期语义、可组合权限以及清晰的子系统边界。
+- Resource-centric：Resource 是逻辑内容身份，但 UI 优先使用动画、电影、剧集、漫画、歌曲、文档等业务语言；
+- Attachment / Blob 分离：业务内容、内容身份和物理存储位置不得混为一层；
+- HTTP-first：Console 是公开能力的一个客户端，不形成只能由官方前端触发的隐藏业务逻辑；
+- User-owned Metadata：人工确认数据优先，外部同步不得静默覆盖；
+- Task as infrastructure：后台任务是执行机制，不是全局信息架构；
+- Attention-first：管理端首先帮助用户发现和解决问题，而不是展示数据库对象数量。
+
+全局 IA 以 [`Console-Information-Architecture-and-Product-Journey-Contract.md`](./Console-Information-Architecture-and-Product-Journey-Contract.md) 为准，产品完成门槛以 [`Console-Product-Journey-Acceptance-Contract.md`](./Console-Product-Journey-Acceptance-Contract.md) 为准。
 
 ## 2. 全局视觉与组件语言
 
-Console 全局统一使用 **Material Design 3（M3）**。
-
-- 以桌面端后台管理体验为主要优化目标，同时提供平板和移动端响应式降级。
-- 优先使用 M3 Navigation Drawer、Top App Bar、Card、Data Table、Tab、Chip、Button、Icon Button、Menu、Dialog、Bottom Sheet、Snackbar、Tooltip、Text Field、Select、Switch、Checkbox、Radio Button、Progress Indicator、Banner、Empty State 等标准组件。
-- 当 M3 已有能够表达某种状态的组件时，不为单独子系统发明新的私有组件样式。
-- 高信息密度页面允许使用紧凑密度，但可点击区域不得小于 44×44 CSS px。
-- 主操作使用 Filled Button；次级操作使用 Filled Tonal Button 或 Outlined Button；低强调操作使用 Text Button 或 Icon Button。
-- 删除、永久清理、撤销权限、轮换密钥、终止会话、覆盖恢复等可能造成不可逆后果的操作使用 Error 色，并必须经过确认。
-
-## 3. 应用整体壳层
-
-### 3.1 左侧常驻导航抽屉
-
-桌面端展开宽度为 280 px。较窄桌面可以折叠为 Navigation Rail；平板和移动端使用 Modal Navigation Drawer。
-
-从上到下分为以下区域：
-
-1. **产品标识区**
-   - Ikaros 标识。
-   - 文本 `Ikaros Console`。
-   - 可选环境 Chip，例如 `生产环境`、`预发布`、`本地`。
-   - 点击产品标识进入 `/console/dashboard`。
-2. **全局快捷操作区**
-   - 搜索按钮：打开全局搜索。
-   - `新建` 按钮：当前用户至少拥有一种可创建对象权限时显示，打开全局创建菜单。
-   - 支持文件导入的部署可在 `新建` 旁显示 `导入`，或将导入入口放入创建菜单底部。
-3. **子系统导航分组**
-   - 侧栏业务菜单按子系统分组。
-   - **新的浏览器/会话状态下，所有子系统菜单默认收起。**
-   - 点击分组标题只切换当前分组的展开/收起状态。
-   - 分组展开状态按“用户 + 浏览器”保存在本地，后续访问时恢复。
-   - 通过深链接直接进入某个页面时，自动展开该页面所属分组，使当前菜单项可见。
-   - 展开一个分组时不自动关闭其他分组，允许多个分组同时展开。
-   - 分组标题包含图标、名称和展开箭头。除非子系统文档特别声明，否则分组标题本身不对应页面。
-   - 当前页面使用 M3 Navigation Active Indicator 标记。
-   - 无权限的菜单项不渲染；用户直接访问无权限 URL 时展示统一 403 页面。
-4. **底部工具区**
-   - 文档入口。
-   - 主题快捷入口：跟随系统 / 浅色 / 深色。
-   - 当前用户头像与菜单。
-
-> `authentication-entry/` 属于登录前全局入口，不显示在侧栏；`user-preferences/` 从头像菜单进入，不创建新的侧栏业务分组。
-
-### 3.2 顶部应用栏
-
-高度根据页面信息密度采用 M3 的 Medium 或 Compact 桌面规范。
-
-左侧区域：
-- 可选 Navigation Drawer / Rail 切换按钮。
-- 面包屑：存在详情层级时使用 `子系统 / 页面 / 详情`。
-
-中间自适应区域：
-- 页面 H1 默认放在页面正文标题区，不在 Top App Bar 中重复显示。
-
-右侧区域：
-- 后台任务图标，并显示正在运行的任务数量。
-- 通知图标，并显示未读 Badge。
-- 当前页面存在对应子系统文档时显示帮助图标。
-- 用户头像。
-
-交互规则：
-- 点击后台任务图标打开右侧 Drawer，展示正在运行和最近完成的后台任务；点击任务后，在存在业务详情页时跳转到所属子系统详情。
-- 点击通知图标打开通知预览；点击 `查看全部` 进入完整通知中心。
-- 头像菜单固定包含：`个人资料`、`偏好设置`、`安全与会话`、`主题`、`语言`、`退出登录`；权限不足时只隐藏需要额外能力的管理入口，不隐藏当前用户自己的基础设置。
-
-## 4. 标准页面结构
-
-除非子系统页面明确覆盖，页面区域按以下顺序排列：
-
-1. **面包屑区域**。
-2. **页面标题区**：H1、职责说明、可选状态 Chip、主/次操作。
-3. **上下文 / KPI 卡片区**：需要快速了解状态的页面才显示。
-4. **搜索 / 筛选工具栏**。
-5. **主内容区域**：Data Table、Card、Editor、Chart、Calendar、Kanban、Tree 或详情 Grid 等。
-6. **分页 / 无限加载控制区**。
-7. **上下文 Drawer 或 Dialog**：用于不应丢失当前列表上下文的新建、编辑和查看流程。
+Console 使用 Material Design 3 作为设计语言。
 
-## 5. 通用组件交互规则
-
-### 5.1 搜索框
+- 桌面后台体验优先，同时提供平板和移动响应式降级；
+- 使用 Navigation Drawer / Rail、Top App Bar、Card、Data Table、Tabs、Chip、Button、Menu、Dialog、Side Sheet、Snackbar、Tooltip、Text Field、Select、Progress Indicator、Banner 和 Empty State；
+- 高信息密度页面可采用紧凑密度，但交互目标不得小于 44×44 CSS px；
+- 主操作使用 Filled Button；次级操作使用 Filled Tonal / Outlined；低强调操作使用 Text / Icon Button；
+- 高风险操作使用 Error 语义并经过确认；
+- 状态不能只依赖颜色表达。
 
-- 左侧显示搜索图标；存在输入内容时右侧显示清空按钮。
-- Enter 立即执行搜索。
-- 服务端列表启用实时搜索时使用 300 ms Debounce；未启用实时搜索时使用 Enter 或显式 `搜索` 按钮。
-- 除解密后的私密查询外，可分享的列表搜索条件同步到 URL Query 参数。
-- 清空搜索后直接恢复未搜索列表，不进行整页刷新。
+## 3. 应用壳层
 
-### 5.2 Filter Chip 与高级筛选
+### 3.1 一级 Navigation Drawer
 
-- 高频筛选项使用 Filter Chip。
-- `更多筛选` 打开右侧 Side Sheet，放置 Select、日期时间范围、数值范围和 Switch 等低频条件。
-- 已启用高级筛选数量通过 Badge 显示。
-- `重置` 恢复该页面文档定义的默认条件。
-- 需要支持复制链接/浏览器返回的筛选状态应同步到 URL Query 参数。
-
-### 5.3 Data Table
-
-- 表格纵向滚动时表头保持 Sticky。
-- 可排序列点击表头时按“升序 → 降序 → 默认/无排序”循环。
-- 只有存在批量操作时才展示行选择 Checkbox。
-- 选择至少一行后显示批量操作栏。
-- 行点击可以打开详情，但不得干扰文本选择；始终保留显式 Overflow Menu。
-- Overflow Menu 根据当前行状态和用户权限动态展示操作。
-- 宽表格必须支持水平滚动；不得在没有响应式替代方案时静默隐藏列。
-- 页面明确支持时，可以把用户自定义列、密度和排序状态保存在用户偏好中。
+桌面端一级导航固定为：
 
-### 5.4 表单
+1. Overview；
+2. Library；
+3. Add Content；
+4. Activity；
+5. Storage；
+6. Apps；
+7. System。
 
-- 必填字段必须使用语义和文字/符号明确表达，不能只依赖颜色。
-- 字段级校验在 Blur 时执行；提交时执行完整校验。
-- 服务端字段校验错误尽可能回填到对应字段，同时在表单顶部显示错误汇总 Banner。
-- `保存` 仅在提交不可能完成或请求进行中时禁用。
-- 页面、Drawer 或 Dialog 中存在未保存修改时，离开前弹出确认。
-- Secret 字段默认遮罩，保存后不得由前端再次展示明文，除非后端明确支持安全读取流程。
-- 修改实体时必须携带后端定义的版本/ETag/并发控制信息，冲突按 5.11 处理。
+不得把后端子系统、Task 类型、Provider 类型或单个插件模块直接提升为一级入口。
 
-### 5.5 Dialog 与 Side Sheet
+Apps 与 System 内部可以出现二级导航，但它们属于各自工作区，不是新的全局分组。
 
-- 短表单和集中确认使用 Dialog。
-- 需要保留当前列表上下文的中等复杂度新建/编辑/查看操作使用右侧 Side Sheet / Drawer。
-- Resource 复杂编辑器、文档编辑器、权限矩阵、自动化规则构建器和安全恢复流程使用独立完整页面。
+### 3.2 Top App Bar
 
-### 5.6 操作反馈
+包含：
 
-- 轻量成功操作：Snackbar；可撤销操作可附带 `撤销`。
-- 校验失败：字段内错误 + 顶部错误汇总。
-- 后台操作：显示 Progress Indicator，同时写入后台任务中心；允许用户离开当前页面。
-- 阻塞操作：只有在用户离开会造成不安全状态时才使用 Modal Progress。
-- Error Snackbar 仅在重试具有幂等性或明确安全时显示 `重试`。
+- 当前工作区 / 页面 Breadcrumb；
+- 全局搜索入口；
+- Activity 状态入口，可显示 Running / Failed Badge；
+- 通知入口；
+- 当前用户头像菜单。
 
-### 5.7 加载、空数据和错误状态
+头像菜单固定包含个人资料、偏好、当前账号安全、主题/语言和退出。账号页面不进入 Sidebar。
 
-每一个主页面都必须实现：
+### 3.3 Canonical routes
 
-- 首次加载 Skeleton，尽量保持最终页面的大致布局。
-- 后续刷新时保留已有数据，只显示刷新指示。
-- 真正无数据时显示 Empty State；有创建/导入权限时提供相关主操作。
-- 筛选后无结果时显示独立状态和 `清除筛选`。
-- 可恢复错误提供 `重试`。
-- 401 表示认证失效，进入重新登录/会话恢复流程；不得误显示为 403。
-- 403 页面说明缺失的能力/权限，并提供返回入口。
-- 404 详情状态用于实体已不存在或当前策略要求隐藏实体存在性的场景。
-- 409/412 等并发冲突进入 5.11 的冲突处理流程。
+全局 canonical route tree 见 IA 契约和 [`route-permission-matrix.md`](./route-permission-matrix.md)。当前设计不要求旧路由 redirect 或 alias。
 
-### 5.8 危险操作确认
+## 4. 七个核心工作区
 
-确认 Dialog 必须包含：准确实体名称/数量、操作后果、是否可恢复、必要的依赖影响，以及直接描述动作的危险按钮。
+### Overview
 
-不可逆高风险操作按子系统要求增加输入实体名称/`DELETE`、Step-up Verification 或重新认证。
+展示 Attention、异常和正在进行的工作。Unknown 不得渲染成 Healthy。
 
-### 5.9 全局创建与导入
+### Library
 
-#### 全局创建菜单
+统一 Resource 浏览、搜索、类型视图、Collection、Tag、Lifecycle、Availability 和 canonical Resource Detail。
 
-`新建` 使用 M3 Menu / 大型可搜索 Popover。默认分区：
+### Add Content
 
-- **内容**：Resource、Collection、文章/文档等。
-- **计划**：任务、项目、时间块、目标等。
-- **业务对象**：当前部署启用且允许从全局入口创建的其他对象。
-- **插件扩展**：插件声明的创建入口。
+用“来源 → 预览 → 确认 → 执行”表达导入，不暴露 Source / Scan / Plan / Run 作为普通用户步骤。
 
-规则：
-- 只展示当前用户具备 `create` 能力且当前部署启用的对象类型。
-- 顶部展示 `最近使用`，最多 5 项；第一次使用时不显示空的最近区域。
-- Resource 创建入口先显示 Resource 类型选择器，再进入对应编辑器；不得先创建一个字段不足的空 Resource。
-- 创建成功后默认进入新实体详情；短表单可提供 `创建并继续`、`创建并打开` 两种完成动作。
-- 插件创建项必须显示插件来源，不能伪装为 Core 类型。
+### Activity
 
-#### 全局导入
+统一 Import、Restore、Sync、Backup、Download、AI、Automation、Index rebuild 等长期后台工作。Attempt / Worker / Lease 只在 Advanced 中显示。
 
-导入入口先选择来源：`本地文件`、`服务器/NAS 路径`、`已配置连接器`、`批量元数据` 等实际支持的来源。
+### Storage
 
-所有导入统一经过：来源选择 → 内容预览 → 类型/映射识别 → 重复项策略 → 校验 → 影响摘要 → 开始导入。
+分为 Overview、Providers、Policy、Archive & Restore、Maintenance、Backup。Provider 配置、Tier Policy、GC 和 Placement Repair 不得混在一屏。
 
-- 小文件上传显示当前进度；大规模扫描/导入转为后台任务。
-- 拖拽文件到 Console 时只在页面声明可接收导入的 Drop Zone 中触发；全局任意位置不得自动上传。
-- 识别到现有 Resource/Blob 时先展示“复用/关联/新建”的结果预览，不能静默产生重复数据。
-- 导入失败必须保留失败原因和可重试范围。
+### Apps
 
-### 5.10 全局实体选择器
+承载 Drive、Documents、Media、Planning、Finance、Private Notes、Passwords、AI、Sharing、Analytics、Automation 等可选业务产品。
 
-Resource、Attachment、Collection、Tag、User、Storage Backend、Model、Persona 等跨页面选择统一采用同一交互骨架。
+### System
 
-选择器结构：
-1. 标题 + 当前选择数量。
-2. 搜索框。
-3. 高频类型/状态 Filter Chip。
-4. 结果列表/表格。
-5. 已选区域，多选时固定可见。
-6. `取消` / `确认选择` 操作区。
+承载 Access、Audit、Integrations、Notifications、Settings、Health 和 Diagnostics。
 
-通用规则：
-- 单选点击结果即可高亮，是否立即关闭由调用页面声明；危险场景必须再确认。
-- 多选保持已选项，即使搜索/翻页后该项不在当前结果中。
-- 支持键盘上下移动、Space 选择、Enter 确认。
-- 搜索采用服务端分页；不得为选择器一次加载全部实体。
-- 已归档、不可用、无权限或已删除引用使用明确 Disabled/状态说明。
-- 当前用户无权读取的实体不得仅通过 ID 泄露名称。
-- 调用场景允许时提供 `新建…`，创建完成后返回选择器并自动选中新对象。
-- 私密域选择器不得把解密后的搜索词写入 URL、遥测或普通浏览器缓存。
+## 5. 标准页面结构
 
-### 5.11 并发修改、实时更新与数据一致性
-
-#### 编辑冲突
-
-当保存返回版本冲突时，不覆盖服务端新版本。页面显示固定 Conflict Banner，并提供：
-
-- `查看差异`：打开 Side Sheet / Diff Page，展示“我打开时的版本 / 当前服务端版本 / 我的未保存修改”。
-- `重新加载最新版本`：丢弃当前修改前必须确认，并支持先 `复制我的修改`。
-- `基于最新版本继续编辑`：后端/字段模型允许合并时，将本地变更重新应用到最新版本并标记潜在冲突字段。
-- `覆盖保存`：仅后端策略明确允许、用户拥有对应高风险权限时显示，并再次确认。
+默认页面按以下顺序组织：
 
-不得把 409 Conflict 当成普通保存失败只显示 Snackbar。
-
-#### 实时更新
-
-使用 SSE/WebSocket/轮询获得实体变化时：
-- 用户未编辑：允许更新只读区域，并使用轻量 `数据已更新` 提示。
-- 用户正在编辑：不得把远端数据直接写入正在编辑的字段；显示 `此记录已在其他位置更新` Banner。
-- 列表自动刷新不得清除搜索、筛选、分页、选择、滚动位置和已展开行。
-- 实体被删除/回收时，详情页显示状态 Banner；有未保存内容时先允许复制/导出草稿。
-
-#### 乐观操作
-
-收藏、标记已读、低风险开关等可乐观更新；服务器失败时回滚并提示。涉及余额、权限、安全、密钥、归档迁移、发布状态等操作必须等待服务端确认后再展示最终状态。
-
-### 5.12 页面状态与用户偏好持久化
-
-- URL 可表达的业务筛选优先放 URL，不只保存在内存。
-- 纯展示偏好（表格密度、列显示、菜单展开、默认视图）按用户保存；详见 `user-preferences/`。
-- 退出登录后清理当前用户的敏感临时状态，但普通显示偏好可以保留到再次登录同一用户时恢复。
-- 不得在 LocalStorage 中保存 Access Token、密码、解密私密内容或其他高敏感 Secret。
-
-## 6. 响应式规则
-
-- ≥ 1280 px：常驻展开 Navigation Drawer，多栏页面布局。
-- 960–1279 px：Navigation Rail 或紧凑 Drawer；按需要折叠两栏布局。
-- 600–959 px：Modal Drawer；表格允许水平滚动；详情侧栏改为全宽 Sheet。
-- < 600 px：单栏布局；标题区操作纵向堆叠或收入 Overflow Menu；复杂表格只有在明确设计替代视图时才切换。
-- 移动端保持功能可用，但 Console 的主要优化目标仍是桌面端。
-
-## 7. 可访问性与键盘交互
-
-- Tab 顺序遵循视觉阅读顺序。
-- 所有仅图标操作必须具有 Tooltip 和 Accessible Name。
-- Dialog 打开后锁定焦点范围，关闭时恢复到触发元素。
-- 非危险临时界面可用 Esc 关闭；保存/高风险流程执行中不得通过 Esc 意外中断。
-- 简单表单 Enter 提交；编辑器按页面说明可使用 Ctrl/Cmd+Enter 提交。
-- 状态必须同时使用文字表达，不能只依赖颜色。
-- 关键图表必须提供文字摘要或数据表替代。
-
-## 8. 信息架构与规格目录
-
-### 8.1 登录前与用户级全局页面
-
-| 区域 | 目录 | 页面 | 入口 |
-|---|---|---|---|
-| 登录与初始化 | `authentication-entry/` | 首次初始化、登录、Email OTP / Step-up、账号恢复、会话失效 | 登录前路由，不进入侧栏 |
-| 个人中心与偏好 | `user-preferences/` | 个人资料、外观语言、地区时间、Console 偏好、个人通知、个人会话入口 | 头像菜单，不进入侧栏 |
-
-### 8.2 侧栏子系统
-
-| 子系统 | 目录 | 页面 |
-|---|---|---|
-| 工作台 | `workbench/` | 概览、全局搜索、我的活动与收藏 |
-| 内容与创作 | `content-creation/` | 统一资源库、集合/标签/关系、文章与文档、媒体消费、分享与协作 |
-| 个人网盘 | `personal-drive/` | 文件空间、Revision / Trash、传输与同步、冲突处理、配额与策略；作为独立业务子系统，不归入 Attachment / Storage |
-| 附件与存储 | `attachment-storage/` | 附件与 Blob、持久化存储层、缓存与我的下载、归档/恢复/回收站、备份与恢复 |
-| 效率与计划 | `productivity-planning/` | 收集箱与今天、项目与任务、日历与时间块、目标与 OKR、习惯/专注/复盘 |
-| 个人记账 | `personal-finance/` | 账本总览、账户、交易、预算与周期账、对账与导入 |
-| 私密笔记 | `private-notes/` | 保险库、版本与同步冲突、恢复与导出 |
-| 密码管理 | `password-manager/` | 密码保险库、生成器与条目编辑、健康与安全发送、设备与访问 |
-| AI 智能 | `ai-intelligence/` | 助手、模型与提供方、人格、上下文/隐私/记忆、作业/Trace/用量 |
-| 数据分析 | `data-analytics/` | 个人概览、内容分析、存储分析、效率分析、系统历史、指标目录、报表与重建 |
-| 集成与自动化 | `integration-automation/` | 自动化规则、执行记录与 Trace、事件与失败队列、导入与同步、插件与连接器 |
-| 身份与安全 | `identity-security/` | 用户与角色、权限矩阵、活跃会话、认证/密钥/恢复 |
-| 平台配置 | `platform-configuration/` | 参数、字典、菜单 |
-| 沟通与审计 | `communications-audit/` | 公告、通知中心与投递、审计与安全事件 |
-| 系统运维 | `system-operations/` | 系统健康与告警、定时任务、后台任务 |
-
-## 9. 路由、菜单与权限规则
-
-完整实施矩阵见 [`route-permission-matrix.md`](./route-permission-matrix.md)。
-
-全局规则：
-- 前端路由可见性、侧栏菜单可见性、页面内按钮可用性是三层不同控制。
-- 没有页面查看权限：侧栏不显示该菜单；直接访问显示 403 或按安全策略隐藏实体存在性。
-- 有查看权限但没有创建/修改/删除权限：页面正常展示，只隐藏或禁用相应操作并在需要时解释原因。
-- 高风险动作除 Permission 外，还必须满足后端要求的 Step-up Verification / SVL。
-- **后端 Authorization 永远是安全边界。前端隐藏菜单或按钮只用于 UX，不能代替服务端鉴权。**
-- **Platform ADMIN / 平台管理能力不自动授予 `Drive File READ`。** Drive 运维、Quota、Policy、Transfer / Sync 诊断权限与用户文件名、路径、缩略图、预览、下载等内容读取权限必须分别判断。
-- 插件注册页面、菜单或操作时必须声明对应 Capability；插件无法通过前端配置绕过后端权限。
-- Capability 的最终 canonical key 以安全子系统设计/后端实现为准；交互文档使用的 key 必须建立显式映射，不允许不同页面自行创造同义权限名。
-
-## 10. 跨子系统深链接规则
-
-- Resource 引用进入“内容与创作”的 Resource 详情。
-- Drive Space / Node / File Revision / Sync Binding / Conflict 引用进入“个人网盘”对应详情；没有目标 Drive 内容读取权限时，只允许进入该用户有权查看的安全诊断视图，不得通过 Deep Link 泄露文件名、Path、Thumbnail 或 Content。
-- Attachment / Blob 引用进入“附件与存储”详情；Drive File Detail 可深链接到其 Attachment / Blob 摘要，Attachment / Storage 也可在有 Drive 读取权限时反向进入对应 Drive File，但两端不得跨域直接修改对方状态。
-- Device Sync Runtime / Background Task 可深链接到 Drive Binding / Conflict；同步运行时诊断不能替代 Personal Drive 的业务冲突处理页面。
-- Drive 的 Photo / Media / Document Projection 可深链接到对应专业子系统；投影页不能据此取得额外 Drive File READ 权限。
-- 用户/会话引用在有权限时进入“身份与安全”详情。
-- Task、Execution、后台任务等引用优先进入任务所属业务子系统。
-- 审计记录可以链接关联业务实体，但不得展示当前用户无权读取的字段。
-- 私密笔记和密码管理的 URL Query、分析事件、浏览器历史标题和通知预览中不得出现解密后的标题或内容。
-- 用户级偏好和个人资料从头像菜单进入，不为其展开侧栏业务分组。
-
-## 11. 子系统规格文档约定
-
-每个子系统文档从以下维度定义页面：
-
-- 路由和访问能力。
-- 页面目标与默认状态。
-- 标题区操作。
-- 精确的页面区域和组件类型。
-- 可见字段、表格列和卡片。
-- 组件级交互逻辑。
-- 新建、编辑和详情流程。
-- 校验、并发和危险操作规则。
-- 加载、空数据、错误和权限状态。
-- 跨子系统导航。
-
-当根文档和子系统文档存在冲突时，子系统文档只对该页面的特定行为具有更高优先级；全局安全、可访问性、认证和权限规则仍然有效。
+1. Breadcrumb；
+2. 页面标题、职责说明、状态和主/次操作；
+3. 必要时的 Attention / Context 卡片；
+4. 搜索和筛选；
+5. 主内容区域；
+6. 分页或加载更多；
+7. Context Drawer / Dialog / Side Sheet。
+
+KPI 卡片只有在数据真实、有用户决策价值且存在明确目标页面时才使用。
+
+## 6. 搜索与筛选
+
+- Enter 执行搜索；实时搜索采用合理 Debounce；
+- 可分享的筛选状态同步到 URL Query，私密解密内容除外；
+- 高频条件使用 Filter Chip，低频条件进入更多筛选；
+- 清空筛选恢复未筛选结果，不整页刷新；
+- Library 全局搜索只返回当前用户有权读取的实体。
+
+## 7. Data Table
+
+- 表头可 Sticky；
+- 可排序列使用统一排序循环；
+- 只有存在批量操作时显示行选择；
+- 行点击可以进入详情，但始终保留显式 Overflow Menu；
+- 宽表格支持水平滚动，不得静默隐藏关键列；
+- 行操作根据实体状态和权限动态展示；
+- 内部 ID 不作为默认首列，除非页面属于 Advanced Diagnostics。
+
+## 8. 表单与并发
+
+- 必填字段使用文字或符号明确标识；
+- Blur 执行字段级校验，提交执行完整校验；
+- 服务端字段错误回填到字段并显示错误摘要；
+- Secret 保存后默认只展示已配置/遮罩状态；
+- 未保存修改离开前确认；
+- 修改实体携带版本/ETag 等并发信息；
+- 409/412 不得只显示普通 Snackbar，应进入明确冲突流程。
+
+冲突流程至少提供：查看差异、重新加载、基于最新版本继续编辑；只有后端允许且权限满足时才出现覆盖动作。
+
+## 9. 加载、空状态与错误
+
+每个主页面都必须实现：
+
+- 首次加载 Skeleton；
+- 后续刷新保留现有内容；
+- 真正无数据 Empty State；
+- 筛选后无结果状态；
+- 可恢复错误的 Retry；
+- 401 进入认证恢复；
+- 403 解释权限不足；
+- 404 用于目标不存在或策略要求隐藏存在性；
+- Unknown 与 Healthy 分离。
+
+单个 Overview Widget 失败不得导致整个页面失败，但该区域必须显示失败或未知。
+
+## 10. 后台工作
+
+所有非瞬时操作应进入统一 Activity，例如：导入、归档、恢复、Integrity Verify、Repair、Backup、Export、同步、AI 作业和自动化执行。
+
+业务页面发起操作后：
+
+- 立即显示提交结果；
+- 提供 `查看 Activity`；
+- 允许用户离开当前页面；
+- Activity 完成后可以返回原业务对象；
+- 失败时提供业务错误摘要和安全重试入口。
+
+不得为每个子系统创建自己的后台任务中心。
+
+## 11. 危险操作
+
+确认 Dialog 必须包含：
+
+- 实体名称或数量；
+- 实际后果；
+- 是否可恢复；
+- 依赖影响；
+- 直接描述动作的危险按钮。
+
+永久清理、覆盖恢复、密钥操作、权限撤销等可以要求 Step-up Verification 或输入实体名。
+
+## 12. Resource / Attachment / Blob 用户语言
+
+主界面优先展示业务内容和 Availability。
+
+Resource ID、Attachment ID、Blob ID、Checksum、Placement、Replica、Provider Key 等进入 Advanced / Diagnostics。需要排障时可以完整展示，但不得成为日常完成任务的必经路径。
+
+## 13. 跨工作区跳转
+
+- Overview Attention 优先进入业务对象详情；
+- Library Resource 可以进入 Storage 状态摘要，但不直接修改物理 Placement；
+- Storage Maintenance 可以链接 Resource，但重新执行目标权限；
+- Apps 发起的长期工作统一进入 Activity；
+- System Audit 可以链接业务对象，但不得越权展示字段；
+- Drive、Private Notes、Passwords 等敏感域继续执行各自的内容读取和解锁边界。
+
+## 14. Apps 与 System 文档归属
+
+本目录中的历史子目录继续作为领域交互文档容器，但不代表一级 Sidebar 分组：
+
+- `content-creation/` → Library 与部分 Apps；
+- `attachment-storage/` → Storage；
+- `personal-drive/`、`productivity-planning/`、`personal-finance/`、`private-notes/`、`password-manager/`、`ai-intelligence/`、`data-analytics/` → Apps；
+- `identity-security/`、`platform-configuration/`、`communications-audit/`、`system-operations/` → System；
+- `integration-automation/` → Apps/Automation + System/Integrations；
+- `authentication-entry/` → 登录前全局入口；
+- `user-preferences/` → 头像菜单；
+- `workbench/` → Overview 和全局搜索规则。
+
+目录名称不等于产品导航名称。
+
+## 15. 响应式与可访问性
+
+- ≥1280 px：展开 Drawer，多栏布局；
+- 960–1279 px：Rail 或紧凑 Drawer；
+- 600–959 px：Modal Drawer；
+- <600 px：单栏布局，复杂操作收入 Overflow；
+- Tab 顺序遵循视觉顺序；
+- Icon-only 操作必须有 Tooltip 和 Accessible Name；
+- Dialog 管理焦点范围；
+- 关键图表提供文字摘要或数据表替代。
+
+## 16. 设计完成要求
+
+任何 Console 功能都必须同时满足页面级交互规则、权限/安全边界和适用 Golden Path。不能用“接口已存在”“按钮能调用”“页面已创建”替代产品完成。
