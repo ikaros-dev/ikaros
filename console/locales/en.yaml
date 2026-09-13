@@ -152,6 +152,86 @@ login:
   pureUsernameReg: Please enter username
   purePassWordReg: Please enter password
   purePassWordRuleReg: The password format should be any combination of 8-18 digits
+  usernamePlaceholder: Username (email not supported)
+  noAccount: Don't have an account?
+  registerNow: Register now
+  createAccount: Create account
+  username: Username
+  displayName: Display name
+  email: Email
+  password: Password
+  confirmPassword: Confirm password
+  usernamePlaceholderExample: e.g. chivehao
+  usernameHint: Use only letters, numbers, underscores, dots, and hyphens; email addresses are not allowed.
+  register: Register
+  backToLogin: Back to login
+  validEmail: Please enter a valid email
+  passwordLength: Password must be 8-128 characters
+  confirmPasswordMismatch: Passwords do not match
+  registerSuccess: Registration successful. Please sign in.
+  registerFail: Registration failed. Check the input and try again.
+  accountRecovery: Account recovery
+  recoveryVerification: Recovery verification
+  resetPassword: Reset password
+  recoveryRequestDescription: Enter your registered email and we will send a one-time recovery code.
+  recoveryVerifyDescription: Enter the verification code sent to your email.
+  recoveryResetDescription: Set a new password, then sign in again.
+  passwordResetSuccess: Password reset. Please return to sign in.
+  verificationCode: Verification code
+  newPassword: New password
+  confirmNewPassword: Confirm new password
+  recoveryCodeSent: If the email exists, the verification code will be sent there.
+  sendVerificationCode: Send verification code
+  verifyAndContinue: Verify and continue
+  confirmReset: Confirm reset
+setup:
+  environmentCheck: Environment check
+  createInitialAdmin: Create initial administrator
+  securityAndRecovery: Security and recovery
+  basicPreferences: Basic preferences
+  confirmInitialization: Confirm initialization
+  title: Initialize Ikaros
+  description: Complete the first deployment setup to continue to the sign-in page.
+  environmentReady: Environment check passed
+  checkEnvironment: Click Next to check service readiness
+  initialAdminUsername: Initial administrator username
+  optional: Optional
+  serverPolicy: Determined by server policy
+  jwtPolicy: JWT policy
+  defaultLanguage: Default language
+  simplifiedChinese: Simplified Chinese
+  defaultTimezone: Default timezone
+  theme: Theme
+  followSystem: Follow system
+  light: Light
+  dark: Dark
+  initializationSummary: Confirm initialization summary
+  passwordNotStored: Plaintext will not be displayed or stored
+  confirmConfiguration: I confirm the configuration above
+  previousStep: Previous
+  finishInitialization: Finish initialization
+  nextStep: Next
+  serviceNotReady: Service is not ready. Check the application and database.
+  cannotReadReadiness: Unable to read service readiness
+  adminCreated: Initial administrator created. Please sign in.
+  adminCreateFailed: Failed to initialize administrator. Check the input and try again.
+errors:
+  serverError: Sorry, the server encountered an error.
+  notFound: Sorry, the page you requested does not exist.
+  accessDenied: Sorry, you do not have access to this page.
+  backHome: Back to home
+layout:
+  offline: You are currently offline
+  offlineDescription: Locally saved content will not be lost; refresh and continue syncing after the network is restored.
+  networkRestored: Network restored. Refresh the page to continue syncing.
+  chinese: Simplified Chinese
+  profile: Profile
+  preferences: Preferences
+  notifications: Notification settings
+  security: Account security
+  sessions: Login sessions
+  apiTokens: API tokens
+  logout: Sign out
 menuDescriptions:
   dashboard: Summarize attention items, ongoing work, and resource and storage status as the entry point to each workspace.
   resourceLibrary: Browse, search, and manage Ikaros resources and open resource details.

@@ -6,7 +6,7 @@ export default [
     path: "/setup",
     name: "Setup",
     component: () => import("@/views/setup/index.vue"),
-    meta: { title: "初始化 Ikaros", showLink: false }
+    meta: { title: $t("setup.title"), showLink: false }
   },
   {
     path: "/login",
@@ -21,12 +21,32 @@ export default [
     path: "/register",
     name: "Register",
     component: () => import("@/views/login/register.vue"),
-    meta: { title: "注册", showLink: false }
+    meta: { title: $t("login.register"), showLink: false }
   },
-  { path: "/login/verify", name: "LoginVerify", component: () => import("@/views/login/Recovery.vue"), meta: { title: "登录验证", showLink: false } },
-  { path: "/login/recovery", name: "LoginRecovery", component: () => import("@/views/login/Recovery.vue"), meta: { title: "账号恢复", showLink: false } },
-  { path: "/login/recovery/verify", name: "LoginRecoveryVerify", component: () => import("@/views/login/Recovery.vue"), meta: { title: "恢复验证", showLink: false } },
-  { path: "/login/recovery/reset", name: "LoginRecoveryReset", component: () => import("@/views/login/Recovery.vue"), meta: { title: "重设密码", showLink: false } },
+  {
+    path: "/login/verify",
+    name: "LoginVerify",
+    component: () => import("@/views/login/Recovery.vue"),
+    meta: { title: $t("login.recoveryVerification"), showLink: false }
+  },
+  {
+    path: "/login/recovery",
+    name: "LoginRecovery",
+    component: () => import("@/views/login/Recovery.vue"),
+    meta: { title: $t("login.accountRecovery"), showLink: false }
+  },
+  {
+    path: "/login/recovery/verify",
+    name: "LoginRecoveryVerify",
+    component: () => import("@/views/login/Recovery.vue"),
+    meta: { title: $t("login.recoveryVerification"), showLink: false }
+  },
+  {
+    path: "/login/recovery/reset",
+    name: "LoginRecoveryReset",
+    component: () => import("@/views/login/Recovery.vue"),
+    meta: { title: $t("login.resetPassword"), showLink: false }
+  },
   // 全屏403（无权访问）页面
   {
     path: "/access-denied",

@@ -64,9 +64,12 @@ const onLogin = async (formEl: FormInstance | undefined) => {
             // 获取后端路由
             await initRouter();
             disabled.value = true;
-            const target = typeof route.query.redirect === "string" && route.query.redirect.startsWith("/") && !route.query.redirect.startsWith("//")
-              ? route.query.redirect
-              : getTopMenu(true)?.path || "/dashboard";
+            const target =
+              typeof route.query.redirect === "string" &&
+              route.query.redirect.startsWith("/") &&
+              !route.query.redirect.startsWith("//")
+                ? route.query.redirect
+                : getTopMenu(true)?.path || "/dashboard";
             await router.replace(target);
             message(t("login.pureLoginSuccess"), { type: "success" });
           } else {
@@ -75,7 +78,10 @@ const onLogin = async (formEl: FormInstance | undefined) => {
         })
         .catch((e: any) => {
           message(
-            e?.response?.data?.detail || e?.response?.data?.message || e?.message || t("login.pureLoginFail"),
+            e?.response?.data?.detail ||
+              e?.response?.data?.message ||
+              e?.message ||
+              t("login.pureLoginFail"),
             { type: "error" }
           );
         })
@@ -129,7 +135,7 @@ useEventListener(document, "keydown", ({ code }) => {
                 class="check-zh"
                 :icon="Check"
               />
-              简体中文
+              {{ t("layout.chinese") }}
             </el-dropdown-item>
             <el-dropdown-item
               :style="getDropdownItemStyle(locale, 'en')"
@@ -176,7 +182,7 @@ useEventListener(document, "keydown", ({ code }) => {
                 <el-input
                   v-model="ruleForm.username"
                   clearable
-                  placeholder="用户名（不支持邮箱）"
+                  :placeholder="t('login.usernamePlaceholder')"
                   :prefix-icon="useRenderIcon(User)"
                 />
               </el-form-item>
@@ -206,8 +212,12 @@ useEventListener(document, "keydown", ({ code }) => {
                 {{ t("login.pureLogin") }}
               </el-button>
             </Motion>
-            <div class="text-center mt-3 text-sm text-[var(--el-text-color-secondary)]">
-              还没有账号？<router-link class="text-primary" to="/register">立即注册</router-link>
+            <div
+              class="text-center mt-3 text-sm text-[var(--el-text-color-secondary)]"
+            >
+              {{ t("login.noAccount") }}<router-link class="text-primary" to="/register"
+                >{{ t("login.registerNow") }}</router-link
+              >
             </div>
           </el-form>
         </div>

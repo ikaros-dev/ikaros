@@ -34,11 +34,11 @@ test("Resource and System menus follow the documented hierarchy", () => {
     /page\(\s*"library",\s*"ResourceLibrary"/,
     /page\(\s*"add",\s*"AddResource"/,
     /page\(\s*"activity",\s*"ActivityCenter"/,
-    /directory\("access", "SystemAccess", "menus\.accessControl"/,
-    /directory\("integrations", "SystemIntegrations", "menus\.integrations"/,
-    /directory\("communications", "SystemCommunications", "menus\.communications"/,
-    /directory\("settings", "SystemSettings", "menus\.platformSettings"/,
-    /directory\("operations", "SystemOperations", "menus\.operations"/
+    /directory\(\s*"access",\s*"SystemAccess",\s*"menus\.accessControl"/,
+    /directory\(\s*"integrations",\s*"SystemIntegrations",\s*"menus\.integrations"/,
+    /directory\(\s*"communications",\s*"SystemCommunications",\s*"menus\.communications"/,
+    /directory\(\s*"settings",\s*"SystemSettings",\s*"menus\.platformSettings"/,
+    /directory\(\s*"operations",\s*"SystemOperations",\s*"menus\.operations"/
   ]) assert.match(home, fragment);
 });
 

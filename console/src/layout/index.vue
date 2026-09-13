@@ -39,7 +39,8 @@ const networkOnline = ref(navigator.onLine);
 const networkNotice = ref("");
 function updateNetworkStatus() {
   const online = navigator.onLine;
-  if (online && !networkOnline.value) networkNotice.value = "网络已恢复，可刷新页面继续同步。";
+  if (online && !networkOnline.value)
+    networkNotice.value = t("layout.networkRestored");
   networkOnline.value = online;
 }
 const { isDark } = useDark();
@@ -196,8 +197,22 @@ const LayHeader = defineComponent({
         pureSetting.hiddenSideBar ? 'main-hidden' : ''
       ]"
     >
-      <el-alert v-if="!networkOnline" title="当前处于离线状态" description="页面不会丢失本地已保存内容；网络恢复后可重新刷新并继续同步。" type="warning" show-icon :closable="false" />
-      <el-alert v-else-if="networkNotice" :title="networkNotice" type="success" show-icon closable @close="networkNotice = ''" />
+      <el-alert
+        v-if="!networkOnline"
+        :title="t('layout.offline')"
+        :description="t('layout.offlineDescription')"
+        type="warning"
+        show-icon
+        :closable="false"
+      />
+      <el-alert
+        v-else-if="networkNotice"
+        :title="networkNotice"
+        type="success"
+        show-icon
+        closable
+        @close="networkNotice = ''"
+      />
       <div v-if="set.fixedHeader">
         <LayHeader />
         <!-- 主体内容 -->

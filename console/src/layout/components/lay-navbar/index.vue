@@ -66,7 +66,7 @@ const { t, locale, translationCh, translationEn } = useTranslationLang();
                 class="check-zh"
                 :icon="Check"
               />
-              简体中文
+              {{ t("layout.chinese") }}
             </el-dropdown-item>
             <el-dropdown-item
               :style="getDropdownItemStyle(locale, 'en')"
@@ -92,22 +92,30 @@ const { t, locale, translationCh, translationEn } = useTranslationLang();
           <el-dropdown-menu class="logout">
             <el-dropdown-item @click="$router.push('/account/profile')">
               <IconifyIconOffline :icon="User" style="margin: 5px" />
-              个人资料
+              {{ t("layout.profile") }}
             </el-dropdown-item>
-            <el-dropdown-item @click="$router.push('/account/preferences')">偏好设置</el-dropdown-item>
-            <el-dropdown-item @click="$router.push('/account/notifications')">通知设置</el-dropdown-item>
+            <el-dropdown-item @click="$router.push('/account/preferences')"
+              >{{ t("layout.preferences") }}</el-dropdown-item
+            >
+            <el-dropdown-item @click="$router.push('/account/notifications')"
+              >{{ t("layout.notifications") }}</el-dropdown-item
+            >
             <el-dropdown-item @click="$router.push('/account/security')">
               <IconifyIconOffline :icon="Shield" style="margin: 5px" />
-              账户安全
+              {{ t("layout.security") }}
             </el-dropdown-item>
-            <el-dropdown-item @click="$router.push('/account/sessions')">登录会话</el-dropdown-item>
-            <el-dropdown-item @click="$router.push('/account/api-tokens')">API 令牌</el-dropdown-item>
+            <el-dropdown-item @click="$router.push('/account/sessions')"
+              >{{ t("layout.sessions") }}</el-dropdown-item
+            >
+            <el-dropdown-item @click="$router.push('/account/api-tokens')"
+              >{{ t("layout.apiTokens") }}</el-dropdown-item
+            >
             <el-dropdown-item divided @click="logout">
               <IconifyIconOffline
                 :icon="LogoutCircleRLine"
                 style="margin: 5px"
               />
-              退出登录
+              {{ t("layout.logout") }}
             </el-dropdown-item>
           </el-dropdown-menu>
         </template>

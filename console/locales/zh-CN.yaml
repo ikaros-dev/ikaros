@@ -152,6 +152,86 @@ login:
   pureUsernameReg: 请输入账号
   purePassWordReg: 请输入密码
   purePassWordRuleReg: 密码格式应为8-18位数字、字母、符号的任意两种组合
+  usernamePlaceholder: 用户名（不支持邮箱）
+  noAccount: 还没有账号？
+  registerNow: 立即注册
+  createAccount: 创建账号
+  username: 用户名
+  displayName: 显示名称
+  email: 邮箱
+  password: 密码
+  confirmPassword: 确认密码
+  usernamePlaceholderExample: 如 chivehao
+  usernameHint: 只能使用字母、数字、下划线、点和连字符，不能填写邮箱地址。
+  register: 注册
+  backToLogin: 返回登录
+  validEmail: 请输入有效邮箱
+  passwordLength: 密码长度需为 8-128 位
+  confirmPasswordMismatch: 两次密码不一致
+  registerSuccess: 注册成功，请登录
+  registerFail: 注册失败，请检查输入后重试
+  accountRecovery: 账号恢复
+  recoveryVerification: 恢复验证
+  resetPassword: 重设密码
+  recoveryRequestDescription: 输入注册邮箱，我们会发送一次性恢复验证码。
+  recoveryVerifyDescription: 请输入发送到邮箱的验证码。
+  recoveryResetDescription: 设置新的登录密码，提交后请重新登录。
+  passwordResetSuccess: 密码已重设，请返回登录
+  verificationCode: 验证码
+  newPassword: 新密码
+  confirmNewPassword: 确认新密码
+  recoveryCodeSent: 如果邮箱存在，验证码将发送到该邮箱
+  sendVerificationCode: 发送验证码
+  verifyAndContinue: 验证并继续
+  confirmReset: 确认重设
+setup:
+  environmentCheck: 环境检查
+  createInitialAdmin: 创建初始管理员
+  securityAndRecovery: 安全与恢复
+  basicPreferences: 基础偏好
+  confirmInitialization: 确认初始化
+  title: 初始化 Ikaros
+  description: 完成首次部署配置后即可进入登录页。
+  environmentReady: 环境检查通过
+  checkEnvironment: 点击下一步检查服务就绪状态
+  initialAdminUsername: 初始管理员用户名
+  optional: 可选
+  serverPolicy: 由服务端策略决定
+  jwtPolicy: JWT 策略
+  defaultLanguage: 默认语言
+  simplifiedChinese: 简体中文
+  defaultTimezone: 默认时区
+  theme: 主题
+  followSystem: 跟随系统
+  light: 浅色
+  dark: 深色
+  initializationSummary: 请确认初始化摘要
+  passwordNotStored: 不会展示或保存明文
+  confirmConfiguration: 我已确认以上配置
+  previousStep: 上一步
+  finishInitialization: 完成初始化
+  nextStep: 下一步
+  serviceNotReady: 服务尚未就绪，请检查 application 和数据库
+  cannotReadReadiness: 无法读取服务就绪状态
+  adminCreated: 初始管理员创建成功，请登录
+  adminCreateFailed: 初始化管理员失败，请检查输入后重试
+errors:
+  serverError: 抱歉，服务器出错了
+  notFound: 抱歉，你访问的页面不存在
+  accessDenied: 抱歉，你无权访问该页面
+  backHome: 返回首页
+layout:
+  offline: 当前处于离线状态
+  offlineDescription: 页面不会丢失本地已保存内容；网络恢复后可重新刷新并继续同步。
+  networkRestored: 网络已恢复，可刷新页面继续同步。
+  chinese: 简体中文
+  profile: 个人资料
+  preferences: 偏好设置
+  notifications: 通知设置
+  security: 账户安全
+  sessions: 登录会话
+  apiTokens: API 令牌
+  logout: 退出登录
 menuDescriptions:
   dashboard: 汇总需要关注的事项、正在执行的工作、资源与存储状态，作为进入各工作域的起点。
   resourceLibrary: 统一浏览、检索和管理 Ikaros 中的资源，并进入资源详情。
