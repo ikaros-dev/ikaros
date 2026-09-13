@@ -1,6 +1,6 @@
 # Passwords App — CMS Console 交互规格
 
-> Passwords 是 Apps 下的高敏感业务产品。Secret 值不得进入普通 URL、日志、Analytics、通知预览、审计描述或通用搜索结果。
+> Passwords 是“应用”下的高敏感业务产品。Secret 值不得进入普通 URL、日志、Analytics、通知预览、审计描述或通用搜索结果。
 
 ## 1. App Entry
 
@@ -29,7 +29,7 @@ Base Route：`/apps/passwords`
 
 `/apps/passwords/health` 展示弱密码、重复使用、过期或其他已实现安全指标。指标只服务当前有权访问的数据，不通过统计泄露其他用户条目。
 
-需要批量扫描的长期工作进入 `/activity`。
+需要批量扫描的长期工作进入“资源 / 活动中心”（`/resources/activity`）。
 
 ## 5. Devices / Access
 
@@ -41,7 +41,8 @@ Base Route：`/apps/passwords`
 
 ## 7. 验收
 
-- Passwords 只从 Apps 进入；
+- Passwords 只从“应用”进入；
 - Secret 不出现在普通日志、URL 或通用搜索；
-- 长期安全扫描进入 `/activity`；
+- 长期安全扫描进入 `/resources/activity`；
+- 不再使用旧 `/activity` 作为 canonical 活动中心路由；
 - 不再存在全局一级 Password Center 或历史 `/console/password*` 设计路由。

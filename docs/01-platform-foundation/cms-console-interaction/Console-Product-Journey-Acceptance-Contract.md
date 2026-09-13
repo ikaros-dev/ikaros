@@ -22,51 +22,53 @@
 
 Task Attempt、Worker、Lease、Blob Placement 等实现对象只能在必要的 Advanced / Diagnostics 区域出现。
 
-## 3. GP01 首次配置并导入内容
+用户可见菜单使用中文名称；Golden Path 描述界面路径时使用“仪表盘 / 资源 / 存储 / 应用 / 系统”等产品语言，并使用与菜单层级一致的 canonical route。
 
-路径：`Dashboard → Storage/Providers → Add Content → Preview → Confirm → Activity → Library`
+## 3. GP01 首次配置并导入资源
+
+路径：`仪表盘 (/dashboard) → 存储 / 存储提供方 (/storage/providers) → 资源 / 添加资源 (/resources/add) → 预览 → 确认 → 资源 / 活动中心 (/resources/activity) → 资源 / 资源库 (/resources/library)`
 
 - [ ] 没有可用存储后端时明确说明阻塞原因并提供配置入口。
-- [ ] Provider 配置后执行真实健康探测；Unknown 不得显示为正常。
-- [ ] Add Content 通过来源、预览、重复项策略和确认完成，不直接操作 Source/Scan/Plan/Run。
-- [ ] 长任务进入 Activity，离开 Add Content 后仍可观察。
-- [ ] 成功后可从 Activity 进入新 Resource，且 Library 可检索。
+- [ ] 存储提供方配置后执行真实健康探测；Unknown 不得显示为正常。
+- [ ] 添加资源通过来源、预览、重复项策略和确认完成，不直接操作 Source/Scan/Plan/Run。
+- [ ] 长任务进入活动中心，离开添加资源后仍可观察。
+- [ ] 成功后可从活动中心进入新 Resource，且资源库可检索。
 - [ ] 部分失败时列出业务失败项并允许安全重试。
 
 ## 4. GP02 导入失败并恢复
 
-路径：`Dashboard Attention → Activity Detail → Retry → Library/Resource`
+路径：`仪表盘 Attention → 资源 / 活动中心 / 详情 (/resources/activity/:activityId) → 重试 → 资源库 / Resource Detail (/resources/library/:resourceId)`
 
-- [ ] 导入失败进入 Dashboard Attention。
+- [ ] 导入失败进入仪表盘 Attention。
 - [ ] 主文案使用业务动作和业务对象，不只显示 Task ID。
-- [ ] Activity Detail 展示错误摘要、关联对象和下一步。
+- [ ] 活动详情展示错误摘要、关联对象和下一步。
 - [ ] 重试不重复创建已成功对象。
-- [ ] 成功后 Attention 收敛，并可在 Library 验证。
+- [ ] 成功后 Attention 收敛，并可在资源库验证。
 - [ ] Worker/Attempt/Lease 只出现在 Advanced。
 
-## 5. GP03 内容不可用并恢复
+## 5. GP03 资源不可用并恢复
 
-路径：`Library → Resource Detail → 内容项 → Availability → Restore/Repair → Activity → 返回内容项`
+路径：`资源 / 资源库 (/resources/library) → Resource Detail (/resources/library/:resourceId) → 资源项 → Availability → Restore/Repair → 活动中心 (/resources/activity) → 返回资源项`
 
-- [ ] 内容项使用 Available、Cached、Remote、Processing、Restoring、Missing、Corrupted 等可理解状态。
+- [ ] 资源项使用 Available、Cached、Remote、Processing、Restoring、Missing、Corrupted 等可理解状态。
 - [ ] 问题解释从剧集、章节、曲目、图片等业务对象出发。
-- [ ] 只有归档副本时明确说明内容已保存但需要恢复。
-- [ ] Restore/Repair 进入 Activity。
-- [ ] 完成后原内容项变为可访问状态。
+- [ ] 只有归档副本时明确说明资源已保存但需要恢复。
+- [ ] Restore/Repair 进入活动中心。
+- [ ] 完成后原资源项变为可访问状态。
 - [ ] Blob/Placement/Replica 只在高级诊断中出现。
 
 ## 6. GP04 存储后端异常处理
 
-路径：`Dashboard Attention → Storage/Providers → Provider Detail → Probe/Update → Verify`
+路径：`仪表盘 Attention → 存储 / 存储提供方 (/storage/providers) → Provider Detail (/storage/providers/:providerId) → Probe/Update → Verify`
 
 - [ ] 探测失败产生 Attention；未探测显示 Unknown。
-- [ ] Providers 页面聚焦连接、容量、健康、凭据状态和启停。
+- [ ] 存储提供方页面聚焦连接、容量、健康、凭据状态和启停。
 - [ ] 配置修复后重新探测，真实成功后才清除 Attention。
 - [ ] 日常修复不要求用户理解 Placement。
 
 ## 7. GP05 元数据冲突处理
 
-路径：`Dashboard/Resource Attention → Resource Detail/Metadata → Compare → Accept/Keep → Verify`
+路径：`仪表盘 / Resource Attention → Resource Detail (/resources/library/:resourceId) / Metadata → Compare → Accept/Keep → Verify`
 
 - [ ] 外部同步不静默覆盖人工确认值。
 - [ ] 冲突视图显示当前值、候选值、来源和必要时间信息。
@@ -76,61 +78,77 @@ Task Attempt、Worker、Lease、Blob Placement 等实现对象只能在必要的
 
 ## 8. GP06 统一观察后台工作
 
-- [ ] 导入、恢复、同步、备份、下载、AI、自动化等长任务进入统一 Activity。
-- [ ] Activity 支持按类型、状态、关联对象筛选。
-- [ ] 支持的取消或重试动作在统一详情提供。
+- [ ] 导入、恢复、同步、备份、下载、AI、自动化等长任务进入统一活动中心 `/resources/activity`。
+- [ ] 活动中心支持按类型、状态、关联对象筛选。
+- [ ] 支持的取消或重试动作在统一详情 `/resources/activity/:activityId` 提供。
 - [ ] 从业务页面发起的任务有返回业务对象入口。
 - [ ] Execution Attempt 是 Advanced 信息，不是独立导航入口。
 
-## 9. GP07 Storage 分层
+## 9. GP07 存储分层
 
-- [ ] Storage Overview 展示真实层级分布、容量和异常；数据缺失显示 Unknown。
-- [ ] Provider 与 Policy 分离。
-- [ ] Archive & Restore 与 Maintenance 分离。
-- [ ] 策略导致的迁移和恢复进入 Activity。
-- [ ] GC、Replica、Placement、Integrity 进入 Advanced Maintenance。
+- [ ] `/storage` 只作为目录根 redirect，不渲染存储概览页面。
+- [ ] 存储概览使用独立 route `/storage/overview`。
+- [ ] 存储提供方 `/storage/providers` 与存储策略 `/storage/policy` 分离。
+- [ ] 归档管理 `/storage/archive`、备份管理 `/storage/backup`、存储维护 `/storage/maintenance` 职责分离。
+- [ ] 策略导致的迁移和恢复进入 `/resources/activity`。
+- [ ] GC、Replica、Placement、Integrity 进入存储维护的高级区域。
 
 ## 10. GP08 权限变化后的体验
 
-路径：`System/Access → 修改角色或权限 → 目标用户刷新 → 导航和直接 URL 验证`
+路径：`系统 / 访问控制 / 角色与权限 (/system/access/roles-permissions) → 修改角色或权限 → 目标用户刷新 → 导航和直接 URL 验证`
 
 - [ ] 无访问能力的入口不显示，服务端访问控制仍然生效。
 - [ ] 直接访问无权限 canonical URL 得到一致拒绝语义。
-- [ ] 当前用户 Profile/Preferences 基础入口不因管理权限不足而消失。
+- [ ] 当前用户个人资料 / 偏好设置基础入口不因管理权限不足而消失。
 - [ ] 权限撤销后缓存导航和页面访问及时收敛。
-- [ ] Audit 可查询对应管理操作。
+- [ ] 审计日志 `/system/communications/audit` 可查询对应管理操作。
 
 ## 11. GP09 Canonical IA 一致性
 
 当前 V2 不验证旧路由兼容，而验证最终态是否彻底收敛：
 
-- [ ] Sidebar 仅有 Dashboard、Library、Add Content、Activity、Storage、Apps、System。
-- [ ] Router 不再把历史 `*-center` 或旧 `/console/*` 结构作为产品路由。
-- [ ] 各设计文档使用同一 canonical route tree。
-- [ ] 各业务 App 只能从 Apps 进入；平台治理只能从 System 进入。
-- [ ] 不存在 AI Task、Operations Task、Import Task 等平级任务入口；都进入 Activity。
-- [ ] 自动化 Router 测试覆盖 canonical routes、权限和导航归属。
+- [ ] Sidebar 一级节点仅有仪表盘、资源、存储、应用、系统。
+- [ ] 资源分组固定包含资源库、添加资源、活动中心，分别映射 `/resources/library`、`/resources/add`、`/resources/activity`。
+- [ ] `/resources` 只作为一级目录根 redirect，不渲染业务页面。
+- [ ] 存储分组包含存储概览、存储提供方、存储策略、归档管理、备份管理、存储维护；概览使用 `/storage/overview`。
+- [ ] `/storage`、`/apps`、`/system` 等目录根不复用任何子页面组件。
+- [ ] 应用中心使用 `/apps/overview`；业务 App 使用 `/apps/<app>/**`。
+- [ ] 系统按访问控制、集成、通知与审计、平台配置、运维形成二级目录；三级页面使用 `/system/<group>/<page>`。
+- [ ] Router 不再注册 `/library`、`/add`、`/activity` 作为 canonical 产品路由，也不恢复历史 `*-center` 或旧 `/console/*` 产品路由。
+- [ ] 各设计文档使用同一 canonical route tree 和中文菜单显示名称。
+- [ ] 不存在 AI Task、Operations Task、Import Task 等平级任务入口；都进入活动中心。
+- [ ] 自动化 Router 测试覆盖 canonical routes、权限、菜单层级和目录 redirect。
 
-## 12. Issue 与 PR 要求
+## 12. GP10 页面与路由一一对应
+
+- [ ] 每个 Sidebar 页面只有一个 canonical route。
+- [ ] 二级菜单页面使用二层 route；三级菜单页面使用三层 route。
+- [ ] 目录节点不直接渲染默认子页面，只允许 redirect。
+- [ ] Resource Detail、Activity Detail、Provider Detail 等参数化详情页面不进入 Sidebar。
+- [ ] 页面内 Tab 不因为视觉分区自动生成新 route；只有需要独立 deep link、权限或生命周期时才建立 route。
+
+## 13. Issue 与 PR 要求
 
 涉及 Console 的 Issue/PR 必须写明：
 
 - 关联 Golden Path；
 - 覆盖旅程哪一段；
 - 是否引入新的用户概念；
+- 是否改变菜单层级或 canonical route；
 - 成功、失败、无权限和后台进度验证；
 - 是否仍暴露内部实现词汇，如是说明原因。
 
 功能 Issue 默认不得引入新的全局一级导航。
 
-## 13. Console IA Reset 完成门槛
+## 14. Console IA Reset 完成门槛
 
 - [ ] GP01～GP05 全部通过。
-- [ ] GP06 Unified Activity 落地。
+- [ ] GP06 Unified Activity 落地，并以“活动中心”作为用户可见名称。
 - [ ] GP07 Storage 分层落地。
 - [ ] GP08 权限体验通过。
 - [ ] GP09 canonical IA 一致性通过。
-- [ ] Dashboard 不存在无真实数据支撑的 Healthy 状态。
+- [ ] GP10 页面与 route 一一对应通过。
+- [ ] 仪表盘不存在无真实数据支撑的 Healthy 状态。
 - [ ] 默认 Sidebar 不随后端子系统数量增长。
 - [ ] 核心旅程具有自动化 E2E 或可重复端到端验收脚本。
 

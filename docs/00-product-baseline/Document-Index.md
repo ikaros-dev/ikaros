@@ -70,20 +70,40 @@ Personal Drive 独立交互规格：[`app-interaction/drive/personal-drive-file-
 
 [`cms-console-interaction/`](./cms-console-interaction/) 描述 Web Console 的最终态管理交互。当前 V2 按从零重构处理，不以旧菜单或旧 Route 为兼容约束。
 
-Console 一级工作区固定为：
+Console 用户可见 Sidebar 一级节点固定为：
 
-- **Dashboard**：Attention 与正在进行的工作；
-- **Library**：统一 Resource 浏览、搜索和 canonical Resource Detail；
-- **Add Content**：来源、预览、确认和导入；
-- **Activity**：所有长期后台工作；
-- **Storage**：Overview、Providers、Policy、Archive & Restore、Maintenance、Backup；
-- **Apps**：Drive、Documents、Media、Planning、Finance、Private Notes、Passwords、AI、Sharing、Analytics、Automation 等可选产品；
-- **System**：Access、Audit、Integrations、Notifications、Settings、Health、Diagnostics。
+- **仪表盘**：Attention 与正在进行的工作；
+- **资源**：资源库、添加资源、活动中心；
+- **存储**：存储概览、存储提供方、存储策略、归档管理、备份管理、存储维护；
+- **应用**：应用中心、云盘、文档、媒体、计划、财务、私密笔记、密码库、AI、分享、数据分析、自动化和插件应用；
+- **系统**：访问控制、集成、通知与审计、平台配置、运维。
+
+菜单层级与 canonical route 层级一一对应：
+
+```text
+仪表盘                          /dashboard
+资源                            /resources/*
+  资源库                        /resources/library
+  添加资源                      /resources/add
+  活动中心                      /resources/activity
+存储                            /storage/*
+  存储概览                      /storage/overview
+应用                            /apps/*
+  应用中心                      /apps/overview
+系统                            /system/*
+  访问控制                      /system/access/*
+  集成                          /system/integrations/*
+  通知与审计                    /system/communications/*
+  平台配置                      /system/settings/*
+  运维                          /system/operations/*
+```
+
+目录根只负责组织和 redirect，不渲染业务页面。二级菜单页面必须使用二层 route，三级菜单页面必须使用三层 route；一个页面只有一个 canonical route。
 
 关键设计文件：
 
 - [`cms-console-interaction/README.md`](./cms-console-interaction/README.md) — 通用 Console 交互规范；
-- [`cms-console-interaction/Console-Information-Architecture-and-Product-Journey-Contract.md`](./cms-console-interaction/Console-Information-Architecture-and-Product-Journey-Contract.md) — canonical IA；
+- [`cms-console-interaction/Console-Information-Architecture-and-Product-Journey-Contract.md`](./cms-console-interaction/Console-Information-Architecture-and-Product-Journey-Contract.md) — canonical IA、菜单层级与 route tree；
 - [`cms-console-interaction/Console-Product-Journey-Acceptance-Contract.md`](./cms-console-interaction/Console-Product-Journey-Acceptance-Contract.md) — Golden Path / Product Journey Acceptance；
 - [`cms-console-interaction/route-permission-matrix.md`](./cms-console-interaction/route-permission-matrix.md) — canonical Route / Permission Matrix；
 - [`cms-console-interaction/personal-drive/README.md`](./cms-console-interaction/personal-drive/README.md) — Drive App 管理规格。
@@ -100,39 +120,39 @@ Console 一级工作区固定为：
 
 | 能力 | PRD / 系统概要 | 服务端详细设计 | App 交互 | CMS 交互 | 当前状态 |
 |---|---|---|---|---|---|
-| Resource / Collection / Relation / User State | ✅ | ✅ Core Resource | ✅ | ✅ Library / Resource Detail | 核心契约已覆盖 |
-| Content Ingestion / Import / Metadata Sync | ✅ | ✅ Ingestion / Metadata | 间接 | ✅ Add Content + Resource Metadata | 核心契约已覆盖 |
-| Attachment / Blob / Storage | ✅ | ✅ Storage | 间接 | ✅ Storage Workspace | 核心契约已覆盖 |
-| Personal Drive / File Sync / Camera Backup | ✅ | ✅ 主设计 + P0 Semantics | ✅ | ✅ Apps / Drive | 产品、系统、服务端与交互均已覆盖 |
-| Sharing / Collaboration / Room | ✅ | ✅ Sharing | ✅ | ✅ Apps / Sharing | 核心契约已覆盖 |
-| Offline Cache / Device Sync | ✅ | ✅ Offline / Sync | ✅ | Apps / Drive / Media 适用入口 | 核心契约已覆盖 |
-| Content Creation / Revision / Collaborative Document | ✅ | ✅ Document | ✅ | ✅ Apps / Documents | 核心契约已覆盖 |
-| 视频 / 动画 / 影视专业领域 | ✅ | ✅ Media | ✅ | Library + Apps / Media | 核心契约已覆盖 |
-| 漫画 / 小说 / Ebook | ✅ | ✅ Reading | ✅ | Library / 专业 App 适用入口 | 核心契约已覆盖 |
-| 音乐 | ✅ | ✅ Music | ✅ | Library + Apps / Media | 核心契约已覆盖 |
-| 图片 / 相册 | ✅ | ✅ Photo | ✅ | Library / 专业 App 适用入口 | 核心契约已覆盖 |
-| 游戏 / 数字资产 | ✅ | ✅ Game | ✅ | Library / 专业 App 适用入口 | 核心契约已覆盖 |
-| 身份 / 授权 / Crypto | ✅ | ✅ | ✅ | ✅ System / Access | 已覆盖 |
-| Secure Data 基础 | ✅ | ✅ | ✅ | ✅ Apps 安全域 | 已覆盖 |
-| Background Task / Scheduler | ✅ | ✅ | 间接 | ✅ Unified Activity | 已覆盖 |
-| Plugin / Integration / Automation | ✅ | ✅ | ✅ | ✅ System / Integrations + Apps / Automation | 已覆盖 |
-| Notification | ✅ | Platform Administration | ✅ | ✅ System / Notifications + Account Preferences | 已覆盖 |
-| AI Intelligence / Persona | ✅ | ✅ | ✅ | ✅ Apps / AI | 已覆盖 |
-| Analytics / Statistics | ✅ | ✅ | ✅ | ✅ Apps / Analytics | 已覆盖 |
-| Productivity | ✅ | ✅ | ✅ | ✅ Apps / Planning | 已覆盖 |
-| Personal Finance | ✅ | ✅ | ✅ | ✅ Apps / Finance | 已覆盖 |
-| Password Manager | ✅ | ✅ | ✅ | ✅ Apps / Passwords | 已覆盖 |
-| Private Notes | ✅ | ✅ | ✅ | ✅ Apps / Private Notes | 已覆盖 |
-| Search / Discovery | ✅ | ✅ Search | ✅ | ✅ Library Search / Global Search | 已覆盖 |
-| Backup / Restore / Data Portability | ✅ | ✅ Backup / Restore | 间接 | ✅ Storage / Backup + Activity | 已覆盖 |
+| Resource / Collection / Relation / User State | ✅ | ✅ Core Resource | ✅ | ✅ 资源库 / Resource Detail | 核心契约已覆盖 |
+| Content Ingestion / Import / Metadata Sync | ✅ | ✅ Ingestion / Metadata | 间接 | ✅ 添加资源 + Resource Metadata | 核心契约已覆盖 |
+| Attachment / Blob / Storage | ✅ | ✅ Storage | 间接 | ✅ 存储 | 核心契约已覆盖 |
+| Personal Drive / File Sync / Camera Backup | ✅ | ✅ 主设计 + P0 Semantics | ✅ | ✅ 应用 / 云盘 | 产品、系统、服务端与交互均已覆盖 |
+| Sharing / Collaboration / Room | ✅ | ✅ Sharing | ✅ | ✅ 应用 / 分享 | 核心契约已覆盖 |
+| Offline Cache / Device Sync | ✅ | ✅ Offline / Sync | ✅ | 应用 / 云盘 / 媒体适用入口 | 核心契约已覆盖 |
+| Content Creation / Revision / Collaborative Document | ✅ | ✅ Document | ✅ | ✅ 应用 / 文档 | 核心契约已覆盖 |
+| 视频 / 动画 / 影视专业领域 | ✅ | ✅ Media | ✅ | 资源库 + 应用 / 媒体 | 核心契约已覆盖 |
+| 漫画 / 小说 / Ebook | ✅ | ✅ Reading | ✅ | 资源库 / 专业 App 适用入口 | 核心契约已覆盖 |
+| 音乐 | ✅ | ✅ Music | ✅ | 资源库 + 应用 / 媒体 | 核心契约已覆盖 |
+| 图片 / 相册 | ✅ | ✅ Photo | ✅ | 资源库 / 专业 App 适用入口 | 核心契约已覆盖 |
+| 游戏 / 数字资产 | ✅ | ✅ Game | ✅ | 资源库 / 专业 App 适用入口 | 核心契约已覆盖 |
+| 身份 / 授权 / Crypto | ✅ | ✅ | ✅ | ✅ 系统 / 访问控制 | 已覆盖 |
+| Secure Data 基础 | ✅ | ✅ | ✅ | ✅ 应用安全域 | 已覆盖 |
+| Background Task / Scheduler | ✅ | ✅ | 间接 | ✅ 资源 / 活动中心 | 已覆盖 |
+| Plugin / Integration / Automation | ✅ | ✅ | ✅ | ✅ 系统 / 集成 + 应用 / 自动化 | 已覆盖 |
+| Notification | ✅ | Platform Administration | ✅ | ✅ 系统 / 通知中心 + 账号偏好 | 已覆盖 |
+| AI Intelligence / Persona | ✅ | ✅ | ✅ | ✅ 应用 / AI | 已覆盖 |
+| Analytics / Statistics | ✅ | ✅ | ✅ | ✅ 应用 / 数据分析 | 已覆盖 |
+| Productivity | ✅ | ✅ | ✅ | ✅ 应用 / 计划 | 已覆盖 |
+| Personal Finance | ✅ | ✅ | ✅ | ✅ 应用 / 财务 | 已覆盖 |
+| Password Manager | ✅ | ✅ | ✅ | ✅ 应用 / 密码库 | 已覆盖 |
+| Private Notes | ✅ | ✅ | ✅ | ✅ 应用 / 私密笔记 | 已覆盖 |
+| Search / Discovery | ✅ | ✅ Search | ✅ | ✅ 资源库搜索 / 全局搜索 | 已覆盖 |
+| Backup / Restore / Data Portability | ✅ | ✅ Backup / Restore | 间接 | ✅ 存储 / 备份管理 + 活动中心 | 已覆盖 |
 
 ### 3.1 覆盖结论
 
 1. 当前 P0 核心领域均已有服务端设计基线。
 2. Console 已增加 canonical IA 与 Product Journey Acceptance，不再把“能力页面存在”视为产品完成。
 3. Personal Drive 继续保持 **Platform ADMIN ≠ Drive File READ**，Drive 内容读取、运维诊断和 Storage 管理互相分离。
-4. Background Task / Scheduler 的工程模型通过统一 Activity 暴露，不再为每个子系统创建任务中心。
-5. Storage 的 Provider、Policy、Archive & Restore、Maintenance 已在 Console 设计中分层。
+4. Background Task / Scheduler 的工程模型通过统一活动中心暴露，不再为每个子系统创建任务中心。
+5. 存储的提供方、策略、归档管理、备份管理、存储维护已在 Console 设计中分层。
 
 以下方向只有在实际复杂度出现时再拆专项设计：
 
@@ -193,7 +213,7 @@ Prototype / Implementation
 5. 交互文档通过公开能力实现体验，不制造隐藏业务通道；
 6. Prototype 只验证交互；
 7. 详细设计新增产品域时必须在覆盖矩阵明确标记；
-8. **Console 全局 IA 变化必须先修改 Console IA 契约，功能 Issue 不得自行新增一级导航。**
+8. **Console 全局 IA 或 canonical route tree 变化必须先修改 Console IA 契约，功能 Issue 不得自行新增一级导航或旁路路由。**
 
 ---
 

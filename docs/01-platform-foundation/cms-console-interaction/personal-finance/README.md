@@ -1,6 +1,6 @@
 # Finance App — CMS Console 交互规格
 
-> Finance 是 Apps 下的私密业务产品，不是全局一级工作区。
+> Finance 是“应用”下的私密业务产品，不是全局一级工作区。
 
 ## 1. App Entry
 
@@ -42,7 +42,7 @@ Base Route：`/apps/finance`
 
 `/apps/finance/reconcile` 使用来源选择、预览、字段映射、重复识别、确认和结果流程。
 
-大批量导入或重算属于长期工作时统一进入 `/activity`，Finance 页面只保留业务上下文摘要。
+大批量导入或重算属于长期工作时统一进入“资源 / 活动中心”（`/resources/activity`），Finance 页面只保留业务上下文摘要。
 
 ## 7. Analytics 与权限
 
@@ -50,8 +50,9 @@ Analytics App 只有同时拥有相应 Finance Scope 时才可以聚合 Finance 
 
 ## 8. 验收
 
-- Finance 只从 Apps 进入；
+- Finance 只从“应用”进入；
 - App 按启用状态和权限显示；
 - 私密业务字段不进入普通 Telemetry；
-- 长期导入/重算工作进入 `/activity`；
+- 长期导入 / 重算工作进入 `/resources/activity`；
+- 不再使用旧 `/activity` 作为 canonical 活动中心路由；
 - 不再设计全局一级 Finance Center 或历史 `/console/finance/*` 路由。

@@ -2,9 +2,11 @@
 
 > Attachment / Blob / Placement 仍是核心存储模型，但默认 Console 以“数据是否安全、在哪里、如何恢复”为主语。Blob 级操作进入 Advanced Maintenance。
 
+`/storage` 是一级目录根，只负责组织和 redirect，不渲染存储概览页面。
+
 ## 1. Storage Overview
 
-**Route：** `/storage`
+**Route：** `/storage/overview`
 
 ### 1.1 目标
 
@@ -13,7 +15,7 @@
 - 持久化数据分布在哪些层级；
 - 当前容量和增长；
 - 哪些 Provider 异常；
-- 有多少内容正在恢复；
+- 有多少资源正在恢复；
 - 是否存在 Integrity / Replica 风险。
 
 ### 1.2 主要区域
@@ -34,16 +36,7 @@ Cache 必须与持久化 Storage 区分。
 
 Provider 页面只负责真实存储后端配置和健康。
 
-列表字段：
-
-- 名称；
-- Provider 类型；
-- Endpoint / Bucket / Region 等安全摘要；
-- Capacity / Used；
-- Health；
-- Credential configured state；
-- Enabled state；
-- Last probe。
+列表字段：名称、Provider 类型、Endpoint / Bucket / Region 等安全摘要、Capacity / Used、Health、Credential configured state、Enabled state、Last probe。
 
 操作：Add Provider、Probe、Update Credentials、Enable/Disable。
 
@@ -57,7 +50,7 @@ Tabs：Overview、Capacity、Health、Activity、Advanced。
 
 **Route：** `/storage/policy`
 
-负责内容生命周期和 Placement 目标策略，而不是 Provider 连接信息。
+负责资源生命周期和 Placement 目标策略，而不是 Provider 连接信息。
 
 规则可以包含：
 
@@ -75,17 +68,17 @@ Tabs：Overview、Capacity、Health、Activity、Advanced。
 
 **Route：** `/storage/archive`
 
-Tabs：Archived Content、Restore Queue、Archive Activity。
+Tabs：Archived Resource、Restore Queue、Archive Activity。
 
-### Archived Content
+### Archived Resource
 
-以 Resource / 业务内容为主：标题、类型、归档时间、所在层级、逻辑大小、Availability、操作。
+以 Resource / 业务资源为主：标题、类型、归档时间、所在层级、逻辑大小、Availability、操作。
 
-Restore Dialog 展示目标层级、预计字节数、受影响内容和异步语义。
+Restore Dialog 展示目标层级、预计字节数、受影响资源和异步语义。
 
 ### Restore Queue
 
-队列状态必须同时进入全局 `/activity`。此页面是 Storage 业务视图，不创建另一套任务状态模型。
+队列状态必须同时进入“资源 / 活动中心”（`/resources/activity`）。此页面是 Storage 业务视图，不创建另一套任务状态模型。
 
 ## 5. Maintenance
 
@@ -108,7 +101,7 @@ Restore Dialog 展示目标层级、预计字节数、受影响内容和异步�
 
 ### 5.2 Integrity
 
-Integrity Verify 创建长期后台工作并进入 `/activity`。失败使用 Error 级别，并可以回到相关 Resource / Attachment 查看业务影响。
+Integrity Verify 创建长期后台工作并进入 `/resources/activity`。失败使用 Error 级别，并可以回到相关 `/resources/library/:resourceId` 查看业务影响。
 
 ### 5.3 GC
 
@@ -116,7 +109,7 @@ GC 必须明确引用、保留期和物理删除后果。普通 Resource 删除�
 
 ### 5.4 Replica / Placement
 
-显示 Placement、Tier、Provider、状态、最近校验和修复动作。Repair/Promote 进入 `/activity`。
+显示 Placement、Tier、Provider、状态、最近校验和修复动作。Repair/Promote 进入 `/resources/activity`。
 
 ## 6. Backup
 
@@ -128,19 +121,19 @@ GC 必须明确引用、保留期和物理删除后果。普通 Resource 删除�
 
 Restore 使用完整向导：选择 Backup → 校验 → 范围 → 冲突策略 → 影响确认 → 必要时 Step-up → 启动。
 
-Backup/Restore 的执行状态统一进入 `/activity`。
+Backup/Restore 的执行状态统一进入 `/resources/activity`。
 
 ## 7. Cache 与客户端下载
 
 Cache 是加速层，不是持久化 Storage Tier。
 
-服务端 Cache 可以作为 Storage Overview 的二级页面或 Maintenance 子视图；客户端下载属于 Offline / Media / Drive 等业务 App 的用户体验，不创建新的一级 Storage 导航。
+服务端 Cache 可以作为存储概览的页面内区域或 Maintenance 子视图；客户端下载属于 Offline / Media / Drive 等业务 App 的用户体验，不创建新的一级 Storage 导航。
 
 淘汰 Cache 必须明确不会删除持久化原始数据。
 
 ## 8. Resource 与 Storage 的跨域规则
 
-- Resource Detail 默认展示 Availability 和简单 Storage 摘要；
+- Resource Detail `/resources/library/:resourceId` 默认展示 Availability 和简单 Storage 摘要；
 - 需要技术排障时进入 `/storage/maintenance`；
 - Storage → Resource deep link 重新检查 `resource.read`；
 - Storage 管理权限不自动授予 Drive 私有文件内容读取；
@@ -148,7 +141,7 @@ Cache 是加速层，不是持久化 Storage Tier。
 
 ## 9. 后台工作
 
-Migration、Archive、Restore、Verify、Repair、GC、Backup 等长期操作全部进入全局 `/activity`。
+Migration、Archive、Restore、Verify、Repair、GC、Backup 等长期操作全部进入 `/resources/activity`。
 
 Storage 页面可以显示当前业务上下文的任务摘要，但不得定义独立“后台任务中心”。
 
@@ -160,9 +153,10 @@ Attachment ID、Blob ID、Checksum、Placement、Replica、Object Key 等只在 
 
 ## 11. 验收
 
-- `/storage` 不再同时承担 Provider 配置和 Blob GC；
-- Provider / Policy / Archive & Restore / Maintenance / Backup 职责独立；
+- `/storage` 只作为目录根 redirect，不渲染业务页面；
+- 存储概览只使用 `/storage/overview`；
+- Provider / Policy / Archive & Restore / Maintenance / Backup 职责独立并分别使用二层路由；
 - Unknown 不显示为 Healthy；
-- Resource 问题可以从业务对象发起 Restore/Repair；
-- 所有长期 Storage 工作统一进入 `/activity`；
-- 不再使用历史 `/console/storage/*` 或 `storage-center` 路由作为设计基线。
+- Resource 问题可以从 `/resources/library/:resourceId` 发起 Restore/Repair；
+- 所有长期 Storage 工作统一进入 `/resources/activity`；
+- 不再使用旧 `/activity` 或历史 `/console/storage/*`、`storage-center` 路由作为设计基线。

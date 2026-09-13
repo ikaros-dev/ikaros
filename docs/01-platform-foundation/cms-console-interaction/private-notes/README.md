@@ -1,6 +1,6 @@
 # Private Notes App — CMS Console 交互规格
 
-> Private Notes 是 Apps 下的受保护业务产品。解锁状态、内容读取和导出继续遵守私密域安全边界。
+> Private Notes 是“应用”下的受保护业务产品。解锁状态、内容读取和导出继续遵守私密域安全边界。
 
 ## 1. App Entry
 
@@ -24,7 +24,7 @@ Base Route：`/apps/private-notes`
 
 `/apps/private-notes/conflicts` 展示版本与同步冲突。冲突解决必须明确保留哪一侧、是否生成新版本以及是否存在数据覆盖影响。
 
-长期同步或恢复动作进入全局 `/activity`。
+长期同步或恢复动作进入“资源 / 活动中心”（`/resources/activity`）。
 
 ## 4. Recovery
 
@@ -38,7 +38,8 @@ Base Route：`/apps/private-notes`
 
 ## 6. 验收
 
-- Private Notes 只从 Apps 进入；
+- Private Notes 只从“应用”进入；
 - 未解锁状态不泄露解密信息；
-- Sync/Recovery 长任务进入 `/activity`；
+- Sync/Recovery 长任务进入 `/resources/activity`；
+- 不再使用旧 `/activity` 作为 canonical 活动中心路由；
 - 不再存在全局一级 Private Notes Center 或历史 `/console/private-notes/*` 设计路由。
