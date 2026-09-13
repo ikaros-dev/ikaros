@@ -52,8 +52,8 @@ if (!touchesConsole) {
 }
 
 const requirements = [
-  ["Golden Path 关联", /Golden Path[\s\S]{0,180}GP0[1-9]/i],
-  ["旅程覆盖段落", /旅程覆盖|Journey coverage/i],
+  ["Golden Path 关联", /(Golden Path|用户主流程)[\s\S]{0,180}GP0[1-9]/i],
+  ["旅程覆盖段落", /旅程覆盖|覆盖的操作过程|Journey coverage/i],
   ["用户概念说明", /用户概念|user concept/i],
   ["成功验证", /成功.*验证|success.*verification/i],
   ["失败验证", /失败.*验证|failure.*verification/i],
