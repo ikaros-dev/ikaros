@@ -78,7 +78,7 @@ test("the product contract and manual script cover GP01-GP09", async () => {
 
 test("GP09 keeps the seven canonical workspaces and route ownership", () => {
   const workspaces = [
-    ["/overview", "Overview", "dashboard.read"],
+    ["/dashboard", "Dashboard", "dashboard.read"],
     ["/library", "Library", "resource.read"],
     ["/add", "AddContent", "ingestion.read"],
     ["/activity", "Activity", "activity.read"],
@@ -128,7 +128,7 @@ test("GP02 and GP06 keep failed work observable and retryable", () => {
   hasAll(
     dashboard,
     [/需要关注/, /后台工作失败/, /查看工作/, /\/activity\//],
-    "GP02 Overview attention"
+    "GP02 Dashboard attention"
   );
   hasAll(
     activity,
@@ -202,7 +202,7 @@ test("GP04 makes provider health an explicit unknown-to-verified flow", () => {
   hasAll(
     dashboard,
     [/Storage 摘要/, /Storage 状态未知/, /Provider 异常/],
-    "GP04 Overview attention"
+    "GP04 Dashboard attention"
   );
 });
 

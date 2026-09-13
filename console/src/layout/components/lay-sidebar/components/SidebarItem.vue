@@ -39,6 +39,10 @@ const props = defineProps({
   }
 });
 
+const isParameterizedRoute = computed(() =>
+  /(^|\/)\:[^/]+/.test(props.item?.path ?? "")
+);
+
 const getNoDropdownStyle = computed((): CSSProperties => {
   return {
     width: "100%",
@@ -122,6 +126,7 @@ function resolvePath(routePath) {
 <template>
   <SidebarLinkItem
     v-if="
+      !isParameterizedRoute &&
       hasOneShowingChild(item.children, item) &&
       (!onlyOneChild.children || onlyOneChild.noShowingChildren)
     "
@@ -164,7 +169,7 @@ function resolvePath(routePath) {
     </el-menu-item>
   </SidebarLinkItem>
   <el-sub-menu
-    v-else
+    v-else-if="!isParameterizedRoute"
     ref="subMenu"
     teleported
     :index="resolvePath(item.path)"

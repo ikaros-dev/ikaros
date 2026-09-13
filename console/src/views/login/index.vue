@@ -59,22 +59,25 @@ const onLogin = async (formEl: FormInstance | undefined) => {
           username: ruleForm.username,
           password: ruleForm.password
         })
-        .then(res => {
+        .then(async res => {
           if (res.success) {
             // 获取后端路由
-            return initRouter().then(() => {
-              disabled.value = true;
-              const target = typeof route.query.redirect === "string" && route.query.redirect.startsWith("/") && !route.query.redirect.startsWith("//") ? route.query.redirect : getTopMenu(true).path;
-              router
-                .push(target)
-                .then(() => {
-                  message(t("login.pureLoginSuccess"), { type: "success" });
-                })
-                .finally(() => (disabled.value = false));
-            });
+            await initRouter();
+            disabled.value = true;
+            const target = typeof route.query.redirect === "string" && route.query.redirect.startsWith("/") && !route.query.redirect.startsWith("//")
+              ? route.query.redirect
+              : getTopMenu(true)?.path || "/dashboard";
+            await router.replace(target);
+            message(t("login.pureLoginSuccess"), { type: "success" });
           } else {
             message(t("login.pureLoginFail"), { type: "error" });
           }
+        })
+        .catch((e: any) => {
+          message(
+            e?.response?.data?.detail || e?.response?.data?.message || e?.message || t("login.pureLoginFail"),
+            { type: "error" }
+          );
         })
         .finally(() => (loading.value = false));
     }

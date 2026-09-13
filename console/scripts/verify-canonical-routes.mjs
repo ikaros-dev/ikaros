@@ -14,7 +14,7 @@ const entrySources = await Promise.all([
 ].map(path => readFile(fileURLToPath(new URL(path, import.meta.url)), "utf8")));
 
 const workspaces = [
-  ["Overview", "/overview", "dashboard.read"],
+  ["Dashboard", "/dashboard", "dashboard.read"],
   ["Library", "/library", "resource.read"],
   ["AddContent", "/add", "ingestion.read"],
   ["Activity", "/activity", "activity.read"],
@@ -42,7 +42,7 @@ assert.match(entrySources[2], /"\/activity"/);
 assert.match(entrySources[2], /"\/system\/notifications"/);
 assert.match(entrySources[2], /"\/storage\/providers"/);
 assert.match(entrySources[3], /`\/apps\/drive\/nodes\/\$\{row\.id\}`/);
-assert.match(homeRoute, /redirect:\s*"\/overview"/);
+assert.match(homeRoute, /redirect:\s*"\/dashboard"/);
 assert.match(homeRoute, /page\("search",\s*"LibrarySearch"/);
 assert.match(homeRoute, /page\("maintenance",\s*"StorageMaintenance"/);
 assert.match(homeRoute, /page\("diagnostics",\s*"SystemDiagnostics"/);

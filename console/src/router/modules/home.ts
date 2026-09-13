@@ -1,7 +1,7 @@
 const Layout = () => import("@/layout/index.vue");
 const WorkspaceView = () => import("@/layout/components/WorkspaceView.vue");
 const ModulePage = () => import("@/views/modules/ModulePage.vue");
-const OverviewPage = () => import("@/views/dashboard/index.vue");
+const DashboardPage = () => import("@/views/dashboard/index.vue");
 const LibraryPage = () => import("@/views/resources/index.vue");
 const AddContentPage = () => import("@/views/ingestion/index.vue");
 const ActivityPage = () => import("@/views/workbench/Activity.vue");
@@ -10,7 +10,7 @@ const AppsPage = () => import("@/views/apps/index.vue");
 type WorkspaceOptions = { title: string; icon: string; capability: string };
 
 const workspaceRanks: Record<string, number> = {
-  Overview: 10,
+  Dashboard: 10,
   Library: 20,
   AddContent: 30,
   Activity: 40,
@@ -64,11 +64,11 @@ export default {
   path: "/",
   name: "IkarosConsole",
   component: Layout,
-  redirect: "/overview",
+  redirect: "/dashboard",
   meta: { title: "Ikaros Console", icon: "ep:menu" },
   children: [
-    workspace("/overview", "Overview", { title: "Overview", icon: "ep:data-analysis", capability: "dashboard.read" }, [
-      page("", "OverviewHome", "Overview", OverviewPage, "dashboard.read", "ep:data-analysis")
+    workspace("/dashboard", "Dashboard", { title: "Dashboard", icon: "ep:data-analysis", capability: "dashboard.read" }, [
+      page("", "DashboardHome", "Dashboard", DashboardPage, "dashboard.read", "ep:data-analysis")
     ]),
     workspace("/library", "Library", { title: "Library", icon: "ep:files", capability: "resource.read" }, [
       page("", "LibraryHome", "Library", LibraryPage, "resource.read", "ep:files"),
