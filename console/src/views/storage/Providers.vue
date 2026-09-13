@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import { http } from "@/utils/http";
+type Row = Record<string, any>;
+const rows = ref<Row[]>([]); const loading = ref(false); const error = ref("");
+const health = (row: Row) => row.health?.status || row.healthStatus || "Unknown";
+async function load() { loading.value = true; error.value = ""; try { const result = await http.get<unknown, unknown>("/storage/providers"); rows.value = Array.isArray(result) ? result as Row[] : []; } catch (e: any) { error.value = e?.response?.data?.detail || "Provider 状态加载失败"; } finally { loading.value = false; } }
+async function probe(row: Row) { if (!row.id) return; try { row.health = await http.post(`/storage/providers/${row.id}/probe`); } catch { error.value = "Provider 探测失败；健康状态为 Unknown，请进入 Maintenance 诊断。"; } }
+onMounted(load);
+</script>
+<template><main class="p-4 md:p-6"><div class="flex justify-between items-start mb-6"><div><h1 class="text-2xl font-semibold">Storage Providers</h1><p class="mt-1 text-[var(--el-text-color-secondary)]">仅管理真实存储后端配置、容量和健康状态。</p></div><el-button :loading="loading" @click="load">刷新</el-button></div><el-alert v-if="error" :title="error" type="warning" show-icon :closable="false" class="mb-4"/><el-card shadow="never"><el-empty v-if="!rows.length && !loading" description="暂无 Provider"/><el-table v-else :data="rows" stripe><el-table-column prop="providerKey" label="名称" min-width="190"/><el-table-column prop="providerType" label="类型" width="150"/><el-table-column prop="tier" label="Tier" width="120"/><el-table-column label="Health" width="130"><template #default="{ row }"><el-tag :type="String(health(row)).toUpperCase() === 'HEALTHY' ? 'success' : 'warning'">{{ health(row) }}</el-tag></template></el-table-column><el-table-column label="Credential" width="150"><template #default="{ row }">{{ row.credentialConfigured || row.secretReference ? 'Configured' : 'Unknown' }}</template></el-table-column><el-table-column prop="capacityBytes" label="Capacity" width="140"/><el-table-column prop="usedBytes" label="Used" width="140"/><el-table-column prop="checkedAt" label="Last probe" min-width="180"/><el-table-column label="操作" width="100"><template #default="{ row }"><el-button link @click="probe(row)">Probe</el-button></template></el-table-column></el-table></el-card></main></template>
