@@ -35,6 +35,9 @@ const refreshValue = ref("");
 const refreshSourceId = ref("");
 const syncMessage = ref("");
 const syncSourceForm = ref({ providerKey: "", displayName: "", credentialReference: "", refreshSchedule: "MANUAL" });
+const step = ref(0);
+const selectedSource = ref<Row | null>(null);
+const selectedPreview = ref<Row | null>(null);
 const sourceTypeLabels: Record<string, string> = { LOCAL_FILESYSTEM: "本地文件系统", NAS_MOUNT: "NAS 挂载", OBJECT_STORAGE: "对象存储", MANUAL_UPLOAD: "手动上传", REMOTE_URL: "远程 URL", PROVIDER_COLLECTION: "Provider 集合", PLUGIN_SOURCE: "插件来源" };
 function sourceTypeLabel(type: unknown) { return sourceTypeLabels[String(type)] || String(type || "未知"); }
 const filteredSources = computed(() => sources.value.filter(row => !query.value || JSON.stringify(row).toLowerCase().includes(query.value.toLowerCase())));
@@ -96,6 +99,28 @@ async function openRun(run: Row) { selectedRun.value = run; try { const result =
 async function cancelRun(run: Row) { if (!run.id || !window.confirm("确认取消该导入运行？已完成项目将保留。")) return; try { await http.request("delete", `/ingestion/runs/${run.id}`); await load(); } catch (e: any) { error.value = e?.response?.data?.detail || "取消导入失败"; } }
 async function retry(item: Row) { if (!selectedRun.value?.id || !item.id) return; try { await http.post(`/ingestion/runs/${selectedRun.value.id}/items/${item.id}/retry`); await openRun(selectedRun.value); } catch (e: any) { error.value = e?.response?.data?.detail || "重试失败"; } }
 watch(tab, load); onMounted(load);
+function chooseSource(source: Row) { selectedSource.value = source; step.value = 1; }
+async function scanSelectedSource() {
+  if (!selectedSource.value) return;
+  await startScan(selectedSource.value);
+  step.value = 2;
+}
+async function choosePreview(scan: Row) {
+  selectedPreview.value = scan;
+  selectedScan.value = scan;
+  await openScan(scan);
+  step.value = 2;
+}
+async function preparePlan() {
+  await generatePlan();
+  if (plan.value) step.value = 3;
+}
+async function confirmImport() {
+  await approvePlan();
+  if (plan.value?.status && String(plan.value.status).toUpperCase() !== "APPROVED") return;
+  await startImport();
+  step.value = 4;
+}
 async function saveSource() { if (!sourceForm.value.displayName.trim() || !sourceForm.value.rootReference.trim()) { error.value = "请填写来源名称和根位置"; return; } savingSource.value = true; error.value = ""; try { await http.post("/ingestion/sources", { data: { ...sourceForm.value, scanPolicy: {} } }); sourceDialog.value = false; sourceForm.value = { type: "LOCAL_FILESYSTEM", displayName: "", rootReference: "", credentialReference: "" }; await load(); } catch (e: any) { error.value = e?.response?.data?.detail || "创建导入来源失败"; } finally { savingSource.value = false; } }
 async function toggleSource(source: Row) { try { if (source.status === "DISABLED" || source.enabled === false) await http.post(`/ingestion/sources/${source.id}/enable`); else { if (!window.confirm("确认停用该导入来源？")) return; await http.request("delete", `/ingestion/sources/${source.id}`); } await load(); } catch (e: any) { error.value = e?.response?.data?.detail || "更新来源状态失败"; } }
 async function startScan(source: Row) { const id = String(source.id || ""); if (!id || scanningSources.value.has(id)) return; const next = new Set(scanningSources.value); next.add(id); scanningSources.value = next; try { await http.post(`/ingestion/sources/${id}/scans`, { data: { trigger: "console" } }); tab.value = "preview"; await load(); } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "扫描任务提交失败"; } finally { const done = new Set(scanningSources.value); done.delete(id); scanningSources.value = done; } }
@@ -115,7 +140,17 @@ async function detectMetadataUpdate() {
 </script>
 
 <template>
-  <main class="p-4 md:p-6">
+  <main v-if="step >= 0" class="p-4 md:p-6">
+    <div class="flex justify-between items-start mb-6"><div><h1 class="text-2xl font-semibold">Add Content</h1><p class="mt-1 text-[var(--el-text-color-secondary)]">从来源选择开始，预览识别结果，确认后在 Activity 查看导入进度。</p></div><el-button :loading="loading" @click="load">刷新</el-button></div>
+    <el-steps :active="step" finish-status="success" class="mb-8"><el-step title="选择来源" description="选择已配置的内容来源"/><el-step title="扫描或上传" description="发现可添加的内容"/><el-step title="预览识别" description="检查重复项和映射"/><el-step title="确认导入" description="提交后台处理"/><el-step title="Activity" description="观察进度并回到 Library"/></el-steps>
+    <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" class="mb-4"/>
+    <el-card v-if="step === 0" shadow="never"><template #header><span class="font-medium">选择内容来源</span></template><el-skeleton v-if="loading" :rows="5" animated/><el-empty v-else-if="!filteredSources.length" description="暂无可用来源，请先配置一个内容来源"/><el-table v-else :data="filteredSources" stripe><el-table-column prop="displayName" label="来源" min-width="220"/><el-table-column label="类型" width="180"><template #default="{ row }">{{ sourceTypeLabel(row.type) }}</template></el-table-column><el-table-column prop="healthStatus" label="可用性" width="140"/><el-table-column label="操作" width="120"><template #default="{ row }"><el-button type="primary" link :disabled="row.status === 'DISABLED' || row.enabled === false" @click="chooseSource(row)">选择</el-button></template></el-table-column></el-table></el-card>
+    <el-card v-else-if="step === 1" shadow="never"><template #header><span class="font-medium">扫描或上传</span></template><el-descriptions :column="1" border><el-descriptions-item label="来源">{{ selectedSource?.displayName }}</el-descriptions-item><el-descriptions-item label="类型">{{ sourceTypeLabel(selectedSource?.type) }}</el-descriptions-item><el-descriptions-item label="位置">{{ selectedSource?.rootReference || "—" }}</el-descriptions-item></el-descriptions><div class="flex gap-2 mt-5"><el-button @click="step = 0">返回选择来源</el-button><el-button type="primary" :loading="loading" @click="scanSelectedSource">开始扫描</el-button></div></el-card>
+    <el-card v-else-if="step === 2" shadow="never"><template #header><div class="flex justify-between items-center"><span class="font-medium">预览识别结果</span><el-button @click="step = 1">返回来源</el-button></div></template><el-skeleton v-if="loading" :rows="5" animated/><el-empty v-else-if="!scans.length" description="暂无扫描结果，请重新扫描来源"/><el-table v-else :data="scans" stripe @row-click="choosePreview"><el-table-column prop="createdAt" label="发现时间" min-width="180"/><el-table-column prop="status" label="状态" width="140"/><el-table-column prop="itemCount" label="发现内容数" width="130"/><el-table-column label="操作" width="120"><template #default="{ row }"><el-button link type="primary" @click.stop="choosePreview(row)">查看预览</el-button></template></el-table-column></el-table><div v-if="selectedPreview" class="mt-5"><div class="font-medium mb-3">已选择扫描结果</div><el-table v-if="candidates.length" :data="candidates" stripe><el-table-column prop="title" label="内容" min-width="240"/><el-table-column prop="type" label="类型" width="140"/><el-table-column prop="matchStatus" label="重复/映射" width="160"/><el-table-column prop="confidence" label="识别置信度" width="140"/></el-table><el-empty v-else description="该扫描没有可预览内容"/><el-button class="mt-4" type="primary" :loading="planBusy" :disabled="!candidates.length" @click="preparePlan">检查重复项和映射</el-button></div></el-card>
+    <el-card v-else-if="step === 3" shadow="never"><template #header><div class="flex justify-between items-center"><span class="font-medium">重复项和映射</span><el-button @click="step = 2">返回预览</el-button></div></template><el-alert title="请确认每一项的处理方式；已存在的内容不会因重试而重复创建。" type="info" :closable="false" class="mb-4"/><el-empty v-if="!planItems.length" description="暂无需要确认的内容"/><el-table v-else :data="planItems" stripe><el-table-column prop="title" label="内容" min-width="240"/><el-table-column prop="action" label="处理方式" width="160"/><el-table-column prop="targetId" label="映射内容" min-width="240"/><el-table-column prop="reason" label="说明" min-width="220"/></el-table><div class="flex gap-2 mt-5"><el-button @click="step = 2">返回预览</el-button><el-button type="primary" :loading="planBusy" :disabled="!plan" @click="confirmImport">确认并开始导入</el-button></div></el-card>
+    <el-card v-else shadow="never"><el-result icon="success" title="导入已提交" sub-title="导入在后台执行，稍后可在 Activity 查看进度和失败项。"><template #extra><div class="flex justify-center gap-3"><el-button type="primary" @click="$router.push('/activity')">查看 Activity</el-button><el-button @click="$router.push('/library')">打开 Library</el-button></div></template></el-result></el-card>
+  </main>
+  <main v-if="step < 0" class="p-4 md:p-6">
     <div class="flex justify-between items-start mb-6"><div><h1 class="text-2xl font-semibold">内容导入</h1><p class="mt-1 text-[var(--el-text-color-secondary)]">管理导入来源、扫描任务和失败项目；导入过程由后台任务执行。</p></div><div class="flex gap-2"><el-button v-if="tab === 'sources'" type="primary" @click="sourceDialog = true">添加来源</el-button><el-button v-if="tab === 'sync'" type="primary" @click="syncSourceDialog = true">添加同步来源</el-button><el-button :loading="loading" @click="load">刷新</el-button></div></div>
     <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" class="mb-4"/>
     <el-tabs v-model="tab"><el-tab-pane label="来源" name="sources"/><el-tab-pane label="元数据同步" name="sync"/><el-tab-pane label="扫描预览" name="preview"/><el-tab-pane label="导入任务" name="scans"/><el-tab-pane label="失败项目" name="failed"/></el-tabs>
