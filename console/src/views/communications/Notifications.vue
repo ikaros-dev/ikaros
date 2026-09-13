@@ -54,7 +54,7 @@ function openRelated(row: Notification) {
   if (row.taskId) {
     router.push({ path: "/operations-center/jobs", query: { taskId: row.taskId } });
   } else if (row.resourceId) {
-    router.push(`/resource-center/library/${row.resourceId}`);
+    router.push(`/library/${row.resourceId}`);
   }
 }
 

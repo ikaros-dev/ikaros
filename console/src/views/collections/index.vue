@@ -49,7 +49,7 @@ async function createCollection() {
   catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "集合创建失败"; }
   finally { saving.value = false; }
 }
-function openDetail(item: Collection) { router.push({ path: "/resource-center/collections", query: { id: item.id } }); }
+function openDetail(item: Collection) { router.push({ path: "/library/collections", query: { id: item.id } }); }
 function beginEdit(item: Collection) { editing.value = item; editForm.value = { name: item.name, description: item.description || "" }; editDialog.value = true; }
 function editSelected() { const item = items.value.find(value => value.id === editTargetId.value); if (item) beginEdit(item); }
 async function loadMembers() { if (!editTargetId.value) { members.value = []; orderText.value = ""; return; } memberLoading.value = true; try { const result = await http.get<unknown, unknown>(`/collections/${editTargetId.value}/resources`); members.value = Array.isArray(result) ? result as { resourceId: string; position: number }[] : []; orderText.value = members.value.map(item => item.resourceId).join(","); } catch (e: any) { error.value = e?.response?.data?.detail || e?.message || "集合成员加载失败"; } finally { memberLoading.value = false; } }
