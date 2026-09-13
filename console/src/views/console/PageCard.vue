@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute } from "vue-router";
+import { useI18n } from "vue-i18n";
 
 const route = useRoute();
-const title = computed(() => String(route.meta.title ?? ""));
-const subtitle = computed(() => String(route.meta.description ?? ""));
+const { t } = useI18n();
+const title = computed(() => t(String(route.meta.title ?? "")));
+const subtitle = computed(() => t(String(route.meta.description ?? "")));
 </script>
 
 <template>
