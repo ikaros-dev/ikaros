@@ -47,6 +47,53 @@ R2DBC URL: r2dbc:postgresql://localhost:5432/ikaros
 
 主配置文件是 `src/main/resources/application.yaml`，默认 HTTP 端口为 `10000`。本地私有配置使用未提交的 `src/main/resources/application-local.yaml`，该文件按需创建。
 
+### 本地运行环境变量
+
+启动后端时至少需要配置以下数据库和 JWT 环境变量。使用 `local` profile 时，数据库连接和 JWT 配置也可以写入本地配置文件；环境变量优先级更高。
+
+| 环境变量 | 必需 | 说明 | 本地示例 |
+| --- | --- | --- | --- |
+| `IKAROS_R2DBC_URL` | 是 | PostgreSQL R2DBC 地址 | `r2dbc:postgresql://localhost:5432/ikaros` |
+| `IKAROS_DB_USERNAME` | 是 | 数据库用户名 | `ikaros` |
+| `IKAROS_DB_PASSWORD` | 是 | 数据库密码 | `openpostgresql` |
+| `IKAROS_JWT_ISSUER` | 是 | JWT issuer | `ikaros` |
+| `IKAROS_JWT_SECRET` | 是 | JWT 签名密钥，至少 32 个字符的随机值 | 本地随机生成值 |
+| `IKAROS_JWT_ACCESS_TOKEN_TTL` | 是 | Access Token 有效期 | `PT15M` |
+| `IKAROS_JWT_REFRESH_TOKEN_TTL` | 是 | Refresh Token 有效期 | `P30D` |
+| `IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEY` | 使用存储凭据时必需 | 32 字节 Base64 密钥，用于加密 Storage Provider 凭据 | 本地随机生成值 |
+| `IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEY_VERSION` | 否 | 当前存储凭据加密密钥版本 | `v1` |
+
+### `application-local.yaml` 示例
+
+文件必须放在以下指定目录，文件名也必须保持为 `application-local.yaml`：
+
+```text
+application/src/main/resources/application-local.yaml
+```
+
+示例内容如下。请将两个 `REPLACE_ME` 值替换为本地随机生成的密钥；JWT Secret 至少 32 个字符，Storage 加密密钥必须是 32 字节的 Base64 字符串。
+
+```yaml
+spring:
+  r2dbc:
+    url: ${IKAROS_R2DBC_URL:r2dbc:postgresql://localhost:5432/ikaros}
+    username: ${IKAROS_DB_USERNAME:ikaros}
+    password: ${IKAROS_DB_PASSWORD:openpostgresql}
+
+ikaros:
+  storage:
+    credential-encryption-key: ${IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEY:REPLACE_ME_WITH_32_BYTE_BASE64_KEY}
+    credential-encryption-key-version: ${IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEY_VERSION:v1}
+  security:
+    jwt:
+      issuer: ${IKAROS_JWT_ISSUER:ikaros}
+      secret: ${IKAROS_JWT_SECRET:REPLACE_ME_WITH_A_RANDOM_SECRET_AT_LEAST_32_CHARACTERS}
+      access-token-ttl: ${IKAROS_JWT_ACCESS_TOKEN_TTL:PT15M}
+      refresh-token-ttl: ${IKAROS_JWT_REFRESH_TOKEN_TTL:P30D}
+```
+
+`application-local.yaml` 仅用于本机开发，包含的密钥和密码只应存在于本地，不会被 Git 提交到仓库；该文件已加入 `.gitignore`。共享或生产环境应通过环境变量或部署平台的 Secret Management 注入密钥，不要把真实密钥写入文档或受版本控制的配置文件。
+
 ```shell
 mvn -pl application -am package -DskipTests
 java -jar application/target/application-2.0.0-SNAPSHOT.jar --spring.profiles.active=local
@@ -61,7 +108,7 @@ IntelliJ IDEA 运行配置：主类 `run.ikaros.IkarosApplication`，Active prof
 - Swagger UI：`http://localhost:10000/swagger-ui.html`
 - 就绪检查：`http://localhost:10000/api/health/ready`
 
-存储 Provider 的凭据使用加密密钥保护。开发环境建议配置 `IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEY`；共享环境还必须覆盖 `IKAROS_JWT_SECRET`，不要使用默认密钥。
+存储 Provider 的凭据使用加密密钥保护。配置本地 Storage Provider 凭据前，必须提供 `IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEY`；共享环境还必须覆盖 `IKAROS_JWT_SECRET`，不要使用本地默认值。
 
 ## 前端开发
 
