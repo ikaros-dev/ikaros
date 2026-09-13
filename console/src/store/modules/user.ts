@@ -12,7 +12,7 @@ import {
   type RefreshTokenResult,
   getLogin,
   refreshTokenApi,
-  logoutApi,
+  logoutApi
 } from "@/api/user";
 import { useMultiTagsStoreHook } from "./multiTags";
 import { type DataInfo, setToken, removeToken, userKey } from "@/utils/auth";

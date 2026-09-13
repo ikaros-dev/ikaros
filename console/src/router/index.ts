@@ -63,9 +63,11 @@ const initConstantRoutes: Array<RouteRecordRaw> = cloneDeep(constantRoutes);
 
 /** 用于渲染菜单，保持原始层级 */
 export const constantMenus: Array<RouteComponent> = ascending(
-  routes.flat(Infinity).flatMap((route: RouteRecordRaw) =>
-    route.path === "/" ? (route.children ?? []) : [route]
-  )
+  routes
+    .flat(Infinity)
+    .flatMap((route: RouteRecordRaw) =>
+      route.path === "/" ? (route.children ?? []) : [route]
+    )
 ).concat(...remainingRouter);
 
 /** 不参与菜单的路由 */
@@ -113,7 +115,15 @@ export function resetRouter() {
 }
 
 /** 路由白名单 */
-const whiteList = ["/login", "/login/verify", "/login/recovery", "/login/recovery/verify", "/login/recovery/reset", "/register", "/setup"];
+const whiteList = [
+  "/login",
+  "/login/verify",
+  "/login/recovery",
+  "/login/recovery/verify",
+  "/login/recovery/reset",
+  "/register",
+  "/setup"
+];
 
 const { VITE_HIDE_HOME } = import.meta.env;
 
@@ -167,7 +177,8 @@ router.beforeEach((to: ToRouteType, _from, next) => {
       // 刷新
       if (
         usePermissionStoreHook().wholeMenus.length === 0 &&
-        to.path !== "/login" && to.path !== "/setup" &&
+        to.path !== "/login" &&
+        to.path !== "/setup" &&
         to.path !== "/register"
       ) {
         initRouter().then((router: Router) => {
