@@ -2,7 +2,7 @@ import type { FunctionalComponent } from "vue";
 export const routerArrays: Array<RouteConfigs> = [
   {
     path: "/dashboard",
-    name: "Dashboard",
+    name: "DashboardHome",
     meta: { title: "menus.dashboard", fixedTag: true }
   }
 ];

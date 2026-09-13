@@ -9,7 +9,7 @@ const zhLocale = await readFile(new URL("../locales/zh-CN.yaml", import.meta.url
 const enLocale = await readFile(new URL("../locales/en.yaml", import.meta.url), "utf8");
 
 test("Dashboard is the fixed localized home tab", () => {
-  assert.match(layoutTypes, /path: "\/dashboard"[\s\S]*name: "Dashboard"[\s\S]*title: "menus\.dashboard"[\s\S]*fixedTag: true/);
+  assert.match(layoutTypes, /path: "\/dashboard"[\s\S]*name: "DashboardHome"[\s\S]*title: "menus\.dashboard"[\s\S]*fixedTag: true/);
 });
 
 test("Console uses five localized top-level workspaces", () => {
