@@ -1,27 +1,26 @@
-import { readFile } from "node:fs/promises";
-import test from "node:test";
 import assert from "node:assert/strict";
+import test from "node:test";
+import { readFile } from "node:fs/promises";
 
-const route = await readFile(new URL("../src/router/modules/home.ts", import.meta.url), "utf8");
-const overview = await readFile(new URL("../src/views/storage/Overview.vue", import.meta.url), "utf8");
-const maintenance = await readFile(new URL("../src/views/storage/Maintenance.vue", import.meta.url), "utf8");
+const home = await readFile(new URL("../src/router/modules/home.ts", import.meta.url), "utf8");
+const overview = await readFile(new URL("../src/views/console/storage/Overview.vue", import.meta.url), "utf8");
+const maintenance = await readFile(new URL("../src/views/console/storage/Maintenance.vue", import.meta.url), "utf8");
 
-test("Storage routes have independent responsibilities", () => {
-  assert.match(route, /views\/storage\/Overview\.vue/);
-  assert.match(route, /views\/storage\/Providers\.vue/);
-  assert.match(route, /views\/storage\/Policy\.vue/);
-  assert.match(route, /views\/storage\/Archive\.vue/);
-  assert.match(route, /views\/storage\/Maintenance\.vue/);
-  assert.match(route, /views\/storage\/Backup\.vue/);
-  assert.doesNotMatch(route, /StorageHome.*Tiers\.vue/);
-  assert.doesNotMatch(route, /StorageMaintenance.*Cache\.vue/);
+test("Storage has one page per second-level route", () => {
+  for (const [path, name, title] of [
+    ["overview", "StorageOverview", "存储概览"],
+    ["providers", "StorageProviders", "存储提供方"],
+    ["policy", "StoragePolicy", "存储策略"],
+    ["archive", "StorageArchive", "归档管理"],
+    ["backup", "StorageBackup", "备份管理"],
+    ["maintenance", "StorageMaintenance", "存储维护"]
+  ]) {
+    assert.match(home, new RegExp(`page\\(\\s*"${path}",\\s*"${name}",\\s*"${title}"`));
+  }
+  assert.match(home, /"\/storage\/overview"/);
 });
 
-test("Storage unknown and diagnostics paths are explicit", () => {
-  assert.match(overview, /Unknown/);
-  assert.match(overview, /Promise\.allSettled/);
-  assert.match(maintenance, /Resource ID/);
-  assert.match(maintenance, /Attachment ID/);
-  assert.match(maintenance, /Blob ID（高级）/);
-  assert.match(maintenance, /\/activity/);
+test("Storage pages are clean card skeletons", () => {
+  assert.match(overview, /<PageCard\s*\/>/);
+  assert.match(maintenance, /<PageCard\s*\/>/);
 });

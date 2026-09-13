@@ -1,1 +1,7 @@
-<template><main class="p-4 md:p-6"><div class="mb-6"><h1 class="text-2xl font-semibold">Security</h1><p class="mt-1 text-[var(--el-text-color-secondary)]">管理当前账号的会话与安全状态。</p></div><el-card shadow="never"><el-empty description="账号安全状态由服务端安全策略提供" /></el-card></main></template>
+<script setup lang="ts">
+import PageCard from "@/views/console/PageCard.vue";
+</script>
+
+<template>
+  <PageCard />
+</template>

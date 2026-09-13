@@ -49,9 +49,7 @@ const { t, locale, translationCh, translationEn } = useTranslationLang();
     <LayNavMix v-if="layout === 'mix'" />
 
     <div v-if="layout === 'vertical'" class="vertical-header-right">
-      <!-- 菜单搜索 -->
       <LaySearch id="header-search" />
-      <!-- 国际化 -->
       <el-dropdown id="header-translation" trigger="click">
         <GlobalizationIcon
           class="navbar-bg-hover w-[40px] h-[48px] p-[11px] cursor-pointer outline-hidden"
@@ -83,11 +81,8 @@ const { t, locale, translationCh, translationEn } = useTranslationLang();
           </el-dropdown-menu>
         </template>
       </el-dropdown>
-      <!-- 全屏 -->
       <LaySidebarFullScreen id="full-screen" />
-      <!-- 消息通知 -->
       <LayNotice id="header-notice" />
-      <!-- 退出登录 -->
       <el-dropdown trigger="click">
         <span class="el-dropdown-link navbar-bg-hover select-none">
           <img :src="userAvatar" :style="avatarsStyle" />
@@ -95,15 +90,24 @@ const { t, locale, translationCh, translationEn } = useTranslationLang();
         </span>
         <template #dropdown>
           <el-dropdown-menu class="logout">
-            <el-dropdown-item @click="$router.push('/account/profile')"><IconifyIconOffline :icon="User" style="margin: 5px" />Profile</el-dropdown-item>
-            <el-dropdown-item @click="$router.push('/account/preferences')">Preferences</el-dropdown-item>
-            <el-dropdown-item @click="$router.push('/account/security')"><IconifyIconOffline :icon="Shield" style="margin: 5px" />Security</el-dropdown-item>
+            <el-dropdown-item @click="$router.push('/account/profile')">
+              <IconifyIconOffline :icon="User" style="margin: 5px" />
+              个人资料
+            </el-dropdown-item>
+            <el-dropdown-item @click="$router.push('/account/preferences')">偏好设置</el-dropdown-item>
+            <el-dropdown-item @click="$router.push('/account/notifications')">通知设置</el-dropdown-item>
+            <el-dropdown-item @click="$router.push('/account/security')">
+              <IconifyIconOffline :icon="Shield" style="margin: 5px" />
+              账户安全
+            </el-dropdown-item>
+            <el-dropdown-item @click="$router.push('/account/sessions')">登录会话</el-dropdown-item>
+            <el-dropdown-item @click="$router.push('/account/api-tokens')">API 令牌</el-dropdown-item>
             <el-dropdown-item divided @click="logout">
               <IconifyIconOffline
                 :icon="LogoutCircleRLine"
                 style="margin: 5px"
               />
-              {{ t("buttons.pureLoginOut") }}
+              退出登录
             </el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -184,7 +188,7 @@ const { t, locale, translationCh, translationEn } = useTranslationLang();
 }
 
 .logout {
-  width: 120px;
+  width: 140px;
 
   ::v-deep(.el-dropdown-menu__item) {
     display: inline-flex;
