@@ -263,7 +263,7 @@
                 <executions>
                     <execution>
                         <id>aggregate-owner-migrations</id>
-                        <phase>prepare-package</phase>
+                        <phase>process-resources</phase>
                         <goals><goal>copy-resources</goal></goals>
                         <configuration>
                             <outputDirectory>${project.build.outputDirectory}/db/migration</outputDirectory>
