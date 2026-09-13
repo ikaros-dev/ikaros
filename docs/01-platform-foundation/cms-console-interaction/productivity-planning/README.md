@@ -1,161 +1,74 @@
-# 效率与计划 — CMS Console 交互规格
+# Planning App — CMS Console 交互规格
 
-## 1. 收集箱与今天
+> Planning 是 Apps 下的可选业务产品，不是全局一级工作区。
 
-**路由：** `/console/planning/today`
+## 1. App Entry
 
-### 页面标题区
-- 标题：`收集箱与今天`。
-- 主操作：`添加任务`。
-- 次操作：`规划今天`。
-- 日期控件默认选中今天；左右箭头切换前一天/后一天。
+**Base Route：** `/apps/planning`
 
-### 页面布局
+Canonical routes：
 
-桌面端双栏：左侧约 40% 为收集箱，右侧约 60% 为今天；移动端依次纵向排列“收集箱 → 今天”。
+```text
+/apps/planning
+/apps/planning/today
+/apps/planning/projects
+/apps/planning/calendar
+/apps/planning/goals
+/apps/planning/focus
+```
 
-### 收集箱面板
+只在当前部署启用 Planning 且用户拥有至少一个 `planning.*` 读取能力时出现在 Apps。
 
-任务行包含：
-- 完成 Checkbox；
-- 任务标题；
-- 可选来源/关联 Resource Chip；
-- 收集时间；
-- 紧急/重要标识；
-- Overflow。
+## 2. Home / Today
 
-行内交互：
-- 勾选 Checkbox 完成任务，并显示带 `撤销` 的 Snackbar。
-- 点击标题打开任务详情 Side Sheet。
-- 点击 `规划` 或拖拽任务到“今天”区域；只有用户需要明确排入日程时才要求选择时间块。
+`/apps/planning` 默认进入用户最有价值的 Planning Home；可以直接呈现 Today，而不是再增加“生产力与计划中心”。
 
-顶部 Quick Capture 输入框按 Enter 创建任务。可选自然语言解析可以建议日期/项目，但必须先预览解析后的字段，不能静默写入隐藏属性。
+Today 展示：收集箱、今日任务、逾期、优先级、计划时间块和完成进度。
 
-### 今天面板
+主操作：新建任务、快速收集。任务完成采用乐观更新，失败时回滚。
 
-分区：`已逾期`、`已安排`、`未安排`、`已完成`；其中 `已完成` 默认收起。
+## 3. Projects
 
-任务行字段：状态、标题、项目、安排时间、截止时间、预计时长、实际/专注时长、关联 Resource、优先级/重要/紧急标识。
+**Route：** `/apps/planning/projects`
 
-拖拽到不同分区时只修改对应的安排/状态字段。若拖放产生时间冲突，打开冲突处理 Sheet，提供 `保留两者`、`移动`、`取消`。
+项目列表展示名称、状态、Owner、任务进度、最近更新时间。项目详情承载任务、里程碑、相关 Resource / Document 和 Activity。
 
-## 2. 项目与任务
+长期导入、批量重建等后台工作进入全局 `/activity`，普通任务本身属于 Planning 业务对象，不进入全局 Activity。
 
-**路由：** `/console/planning/projects`
+## 4. Calendar
 
-左侧 Project 导航：全部任务、进行中项目、Someday、已归档。每个项目行显示名称和未完成任务数量。
+**Route：** `/apps/planning/calendar`
 
-主区域标题显示当前 Project 名称、状态 Chip、所有者、进度。操作：添加任务、编辑项目、Overflow。
+按日/周/月查看 Time Block、Task Deadline 和明确支持的外部日历投影。
 
-支持视图：列表、看板，以及后端支持时的 Timeline。每个 Project 单独保存用户最近使用的视图。
+拖拽改期前后保持可撤销或明确保存反馈；跨时区展示遵循当前用户地区/时间偏好。
 
-### 任务列表列
-- 状态 Checkbox；
-- 标题；
-- 多用户场景下的 Assignee/Owner；
-- 重要/紧急；
-- 安排时间；
-- 截止时间；
-- 预计时长；
-- 关联 Resource；
-- 更新时间；
-- 操作。
+## 5. Goals
 
-### 任务详情 Side Sheet
+**Route：** `/apps/planning/goals`
 
-分区：
-- 标题与状态；
-- Project；
-- 描述；
-- Assignee/Owner；
-- 优先级/重要/紧急；
-- 安排时间与截止时间；
-- 预计时长与实际时长；
-- 关联 Resource/Collection；
-- Checklist/Subtask；
-- Tag；
-- 支持时的活动/评论。
+展示 Goal / OKR、进度、Owner、周期和关联 Project。进度来源必须可解释，不能用虚构 KPI 填充。
 
-普通状态切换立即保存；存在业务校验的状态迁移必须等待服务端确认。`删除任务` 放入 Overflow，并明确说明删除任务不会影响关联 Resource。
+## 6. Focus
 
-### Project 编辑器
+**Route：** `/apps/planning/focus`
 
-字段：名称（必填）、描述、状态、开始日期、目标日期、颜色/图标、默认 Collection/Resource 关联、支持时的成员/权限。
+用于 Focus Session、习惯或复盘等已实现能力。没有后端契约的模块不因为规划存在就显示空页面。
 
-归档 Project 保留任务和历史。删除必须展示依赖摘要。
+## 7. Resource / Document 关联
 
-## 3. 日历与时间块
+Planning 可以关联 Library Resource 和 Documents App，但不得复制 Resource 身份。点击关联内容进入 `/library/:resourceId` 或对应 App 页面，并重新执行目标权限。
 
-**路由：** `/console/planning/calendar`
+## 8. Notifications / Activity
 
-### 标题区控制
+普通 Planning 事件留在 App 内。只有真实异步长任务进入全局 `/activity`。
 
-`今天`、前/后日期箭头、日期范围文本、视图 Segmented Control（`日`、`周`、`月`）、`新建时间块`。
+系统通知策略属于 `/system/notifications`；当前用户 Planning 提醒偏好属于 App 或 `/account/notifications`。
 
-### 日历 Canvas
+## 9. 验收
 
-日/周视图展示时间 Grid；月视图展示紧凑的任务/事件摘要。
-
-时间块显示：标题、时间范围、关联任务/项目图标、冲突标识、完成/专注状态。
-
-交互：
-- 点击空白时间段打开创建 Sheet，并预填开始时间。
-- 拖拽时间块移动时间；拖动 Resize Handle 修改时长。
-- 服务端保存前显示临时 Ghost 位置。
-- 冲突需要视觉标识；策略定义为 Hard Conflict 时必须确认。
-- 点击时间块打开详情 Popover/Sheet。
-
-新建/编辑字段：标题、开始/结束时间、时区、关联 Task、关联 Resource、重复规则、提醒、备注。结束时间必须晚于开始时间。重复规则编辑器预览后续若干次发生时间。
-
-## 4. 目标与 OKR
-
-**路由：** `/console/planning/goals`
-
-Tabs：`目标`、`OKR`、`归档`。
-
-目标卡片展示标题、周期、进度、信心/状态、关联项目/任务、所有者。支持按周期、状态、所有者筛选。
-
-目标详情：
-- 摘要卡片；
-- 进度图；
-- Milestone/Key Result；
-- 关联 Project/Task；
-- Check-in 历史。
-
-创建目标字段：标题、描述、衡量方式（`手工`、`任务完成度`、`数值`）、数值型目标的起始/当前/目标值、周期、所有者、关联实体。
-
-OKR 的 Key Result 行显示目标、当前值、单位、进度、最近 Check-in。`Check in` Dialog 输入当前值、信心、备注；历史默认不可修改，管理员修正必须产生审计记录。
-
-## 5. 习惯、专注与复盘
-
-**路由：** `/console/planning/focus`
-
-Tabs：`习惯`、`专注记录`、`复盘`。
-
-### 习惯
-
-表格/卡片字段：习惯名称、频率、当前连续天数、完成率、今天状态、下次到期、操作。
-
-习惯编辑器：名称、频率、目标次数、提醒、开始/结束日期、关联目标。完成今天的习惯时支持 `撤销`；连续天数在服务端确认后更新。
-
-### 专注记录
-
-只有客户端/服务端架构支持可靠的权威 Session 状态时，顶部才提供计时器和 Session 控制。
-
-字段：关联任务、计划时长、模式、中断备注。
-
-历史表格：Task、计划时长、实际时长、开始、结束、中断次数、结果。
-
-### 复盘
-
-周期选择：每日、每周、每月。
-
-页面组合只读摘要卡片：完成任务、计划 vs 实际时间、逾期结转、习惯、目标进度、值得关注的活动。
-
-可编辑字段：成果、阻碍、备注、下一周期优先事项。保存后创建有版本的 Review Record，历史周期可回看。
-
-## 通用状态
-- 时间/日期存在歧义时必须展示时区。
-- 只有可逆低风险字段可以使用乐观更新；安排冲突和关键状态迁移等待服务端确认。
-- 已完成项允许隐藏，但不能静默删除。
-- Calendar/Planning 的筛选条件应可写入 URL，使用户能够收藏特定视图。
+- Planning 只从 Apps 进入；
+- 未启用或无权限时不显示 App；
+- 不再存在全局一级 Planning Center；
+- 普通 Task 与系统后台 Activity 语义分离；
+- 所有路由使用 `/apps/planning/**`。
