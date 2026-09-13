@@ -18,7 +18,7 @@ Unknown、未探测和请求失败不得显示为 Healthy。
 
 ### 1.1 Attention
 
-关键 Health Failure 可以进入 `/overview` Attention。Overview 跳转到 `/system/health` 或更接近业务对象的页面。
+关键 Health Failure 可以进入 `/dashboard` Attention。Dashboard 跳转到 `/system/health` 或更接近业务对象的页面。
 
 ### 1.2 Auto Refresh
 

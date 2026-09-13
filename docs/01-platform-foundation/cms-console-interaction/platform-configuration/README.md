@@ -34,7 +34,7 @@ Secret 不返回明文，保存后只展示已配置状态。
 
 ## 4. Navigation
 
-Console 一级导航由 IA 契约固定，不提供“平台菜单”页面让管理员任意编辑 Overview / Library / Add Content / Activity / Storage / Apps / System。
+Console 一级导航由 IA 契约固定，不提供“平台菜单”页面让管理员任意编辑 Dashboard / Library / Add Content / Activity / Storage / Apps / System。
 
 插件和 App 的可见性来自启用状态、Capability 和注册契约，而不是手工编辑全局菜单树。
 

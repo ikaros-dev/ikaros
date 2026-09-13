@@ -40,7 +40,7 @@ Audit Deep Link 进入目标业务对象时重新执行目标权限；`audit.rea
 
 ## 5. Delivery Failures
 
-投递失败可以产生 Overview Attention。用户看到 Channel、目标 Scope、错误摘要和下一步；内部 Attempt 信息进入 Advanced。
+投递失败可以产生 Dashboard Attention。用户看到 Channel、目标 Scope、错误摘要和下一步；内部 Attempt 信息进入 Advanced。
 
 ## 6. 验收
 

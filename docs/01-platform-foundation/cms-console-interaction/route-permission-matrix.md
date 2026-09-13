@@ -37,13 +37,13 @@
 | 个人通知 | `/account/notifications` | 头像菜单 | `account.notification.read` | `account.notification.update` |
 | 当前账号安全 | `/account/security` | 头像菜单 | `account.security.read` | `account.security.update` |
 
-## 3. Overview
+## 3. Dashboard
 
 | 页面 | Route | 最小能力 | 规则 |
 |---|---|---|---|
-| Overview | `/overview` | `dashboard.read` | Widget 只显示调用者有权看到的摘要；卡片动作重新检查目标能力 |
+| Dashboard | `/dashboard` | `dashboard.read` | Widget 只显示调用者有权看到的摘要；卡片动作重新检查目标能力 |
 
-Overview 可以聚合 Storage、Activity、Metadata、Backup、Sync 等状态，但聚合权限不授予目标对象额外读取能力。
+Dashboard 可以聚合 Storage、Activity、Metadata、Backup、Sync 等状态，但聚合权限不授予目标对象额外读取能力。
 
 ## 4. Library
 

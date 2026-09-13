@@ -34,7 +34,7 @@ Console 使用 Material Design 3 作为设计语言。
 
 桌面端一级导航固定为：
 
-1. Overview；
+1. Dashboard；
 2. Library；
 3. Add Content；
 4. Activity；
@@ -64,7 +64,7 @@ Apps 与 System 内部可以出现二级导航，但它们属于各自工作区�
 
 ## 4. 七个核心工作区
 
-### Overview
+### Dashboard
 
 展示 Attention、异常和正在进行的工作。Unknown 不得渲染成 Healthy。
 
@@ -150,7 +150,7 @@ KPI 卡片只有在数据真实、有用户决策价值且存在明确目标页�
 - 404 用于目标不存在或策略要求隐藏存在性；
 - Unknown 与 Healthy 分离。
 
-单个 Overview Widget 失败不得导致整个页面失败，但该区域必须显示失败或未知。
+单个 Dashboard Widget 失败不得导致整个页面失败，但该区域必须显示失败或未知。
 
 ## 10. 后台工作
 
@@ -186,7 +186,7 @@ Resource ID、Attachment ID、Blob ID、Checksum、Placement、Replica、Provide
 
 ## 13. 跨工作区跳转
 
-- Overview Attention 优先进入业务对象详情；
+- Dashboard Attention 优先进入业务对象详情；
 - Library Resource 可以进入 Storage 状态摘要，但不直接修改物理 Placement；
 - Storage Maintenance 可以链接 Resource，但重新执行目标权限；
 - Apps 发起的长期工作统一进入 Activity；
@@ -204,7 +204,7 @@ Resource ID、Attachment ID、Blob ID、Checksum、Placement、Replica、Provide
 - `integration-automation/` → Apps/Automation + System/Integrations；
 - `authentication-entry/` → 登录前全局入口；
 - `user-preferences/` → 头像菜单；
-- `workbench/` → Overview 和全局搜索规则。
+- `workbench/` → Dashboard 和全局搜索规则。
 
 目录名称不等于产品导航名称。
 

@@ -11,7 +11,7 @@
 /recovery/**
 ```
 
-认证成功后的默认目标是用户原本请求的 canonical route；没有目标时进入 `/overview`。
+认证成功后的默认目标是用户原本请求的 canonical route；没有目标时进入 `/dashboard`。
 
 ## 2. First Setup
 
@@ -22,7 +22,7 @@
 - 创建初始管理员；
 - 必要基础配置；
 - 明确完成状态；
-- 完成后进入登录或已认证 `/overview`。
+- 完成后进入登录或已认证 `/dashboard`。
 
 初始化状态必须由后端一次性约束，不能只依赖前端隐藏入口。
 
@@ -55,7 +55,7 @@
 
 ## 8. 验收
 
-- 登录后默认进入 `/overview`；
+- 登录后默认进入 `/dashboard`；
 - 深链接恢复使用 canonical routes；
 - Setup 只在未初始化状态可用；
 - Login / Step-up / Recovery 状态语义明确；

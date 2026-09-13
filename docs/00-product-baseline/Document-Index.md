@@ -72,7 +72,7 @@ Personal Drive 独立交互规格：[`app-interaction/drive/personal-drive-file-
 
 Console 一级工作区固定为：
 
-- **Overview**：Attention 与正在进行的工作；
+- **Dashboard**：Attention 与正在进行的工作；
 - **Library**：统一 Resource 浏览、搜索和 canonical Resource Detail；
 - **Add Content**：来源、预览、确认和导入；
 - **Activity**：所有长期后台工作；

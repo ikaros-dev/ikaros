@@ -24,7 +24,7 @@ Task Attempt、Worker、Lease、Blob Placement 等实现对象只能在必要的
 
 ## 3. GP01 首次配置并导入内容
 
-路径：`Overview → Storage/Providers → Add Content → Preview → Confirm → Activity → Library`
+路径：`Dashboard → Storage/Providers → Add Content → Preview → Confirm → Activity → Library`
 
 - [ ] 没有可用存储后端时明确说明阻塞原因并提供配置入口。
 - [ ] Provider 配置后执行真实健康探测；Unknown 不得显示为正常。
@@ -35,9 +35,9 @@ Task Attempt、Worker、Lease、Blob Placement 等实现对象只能在必要的
 
 ## 4. GP02 导入失败并恢复
 
-路径：`Overview Attention → Activity Detail → Retry → Library/Resource`
+路径：`Dashboard Attention → Activity Detail → Retry → Library/Resource`
 
-- [ ] 导入失败进入 Overview Attention。
+- [ ] 导入失败进入 Dashboard Attention。
 - [ ] 主文案使用业务动作和业务对象，不只显示 Task ID。
 - [ ] Activity Detail 展示错误摘要、关联对象和下一步。
 - [ ] 重试不重复创建已成功对象。
@@ -57,7 +57,7 @@ Task Attempt、Worker、Lease、Blob Placement 等实现对象只能在必要的
 
 ## 6. GP04 存储后端异常处理
 
-路径：`Overview Attention → Storage/Providers → Provider Detail → Probe/Update → Verify`
+路径：`Dashboard Attention → Storage/Providers → Provider Detail → Probe/Update → Verify`
 
 - [ ] 探测失败产生 Attention；未探测显示 Unknown。
 - [ ] Providers 页面聚焦连接、容量、健康、凭据状态和启停。
@@ -66,7 +66,7 @@ Task Attempt、Worker、Lease、Blob Placement 等实现对象只能在必要的
 
 ## 7. GP05 元数据冲突处理
 
-路径：`Overview/Resource Attention → Resource Detail/Metadata → Compare → Accept/Keep → Verify`
+路径：`Dashboard/Resource Attention → Resource Detail/Metadata → Compare → Accept/Keep → Verify`
 
 - [ ] 外部同步不静默覆盖人工确认值。
 - [ ] 冲突视图显示当前值、候选值、来源和必要时间信息。
@@ -104,7 +104,7 @@ Task Attempt、Worker、Lease、Blob Placement 等实现对象只能在必要的
 
 当前 V2 不验证旧路由兼容，而验证最终态是否彻底收敛：
 
-- [ ] Sidebar 仅有 Overview、Library、Add Content、Activity、Storage、Apps、System。
+- [ ] Sidebar 仅有 Dashboard、Library、Add Content、Activity、Storage、Apps、System。
 - [ ] Router 不再把历史 `*-center` 或旧 `/console/*` 结构作为产品路由。
 - [ ] 各设计文档使用同一 canonical route tree。
 - [ ] 各业务 App 只能从 Apps 进入；平台治理只能从 System 进入。
@@ -130,7 +130,7 @@ Task Attempt、Worker、Lease、Blob Placement 等实现对象只能在必要的
 - [ ] GP07 Storage 分层落地。
 - [ ] GP08 权限体验通过。
 - [ ] GP09 canonical IA 一致性通过。
-- [ ] Overview 不存在无真实数据支撑的 Healthy 状态。
+- [ ] Dashboard 不存在无真实数据支撑的 Healthy 状态。
 - [ ] 默认 Sidebar 不随后端子系统数量增长。
 - [ ] 核心旅程具有自动化 E2E 或可重复端到端验收脚本。
 

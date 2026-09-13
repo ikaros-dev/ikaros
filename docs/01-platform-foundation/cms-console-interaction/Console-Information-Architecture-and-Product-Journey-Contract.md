@@ -14,7 +14,7 @@ Console 面向用户任务，而不是后端模块。后端继续保持 Resource
 
 | 入口 | Canonical route | 职责 |
 |---|---|---|
-| Overview | `/overview` | Attention、异常和正在进行的工作 |
+| Dashboard | `/dashboard` | Attention、异常和正在进行的工作 |
 | Library | `/library` | 内容浏览、搜索和 Resource 管理 |
 | Add Content | `/add` | 上传、扫描、识别、确认导入 |
 | Activity | `/activity` | 所有长期后台工作 |
@@ -29,7 +29,7 @@ Profile、Preferences 和当前账号 Security 从头像菜单进入。
 ## 3. Canonical route tree
 
 ```text
-/overview
+/dashboard
 /library
 /library/:resourceId
 /library/collections
@@ -72,9 +72,9 @@ Profile、Preferences 和当前账号 Security 从头像菜单进入。
 
 当前设计不定义旧 route alias、redirect 或兼容页。实现发现历史 route 时直接收敛到以上最终结构。未来若进入稳定版本后需要兼容，另行建立版本化迁移契约。
 
-## 4. Overview
+## 4. Dashboard
 
-Overview 必须 Attention-first，而不是 KPI-first。优先展示：导入失败、内容不可用、Storage Provider 异常、元数据冲突、备份或同步失败、需要人工动作的后台工作。
+Dashboard 必须 Attention-first，而不是 KPI-first。优先展示：导入失败、内容不可用、Storage Provider 异常、元数据冲突、备份或同步失败、需要人工动作的后台工作。
 
 Unknown、未探测、请求失败或数据缺失不得显示为 Healthy。每条 Attention 优先进入最接近业务对象的详情页。
 
@@ -150,6 +150,7 @@ A/B/C/R 等能力 Issue 负责领域能力，不负责自行扩张全局 IA。�
 ## 13. 完成标准
 
 - Sidebar 固定为七个一级工作区；
+- Dashboard 是默认入口并承担 Attention-first 总览；
 - Library 是内容主入口；
 - Resource Detail 是内容调查起点；
 - Add Content 不暴露 Ingestion 状态机；
