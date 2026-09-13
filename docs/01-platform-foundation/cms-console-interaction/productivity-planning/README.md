@@ -1,6 +1,6 @@
 # Planning App — CMS Console 交互规格
 
-> Planning 是 Apps 下的可选业务产品，不是全局一级工作区。
+> Planning 是“应用”下的可选业务产品，不是全局一级工作区。
 
 ## 1. App Entry
 
@@ -17,7 +17,7 @@ Canonical routes：
 /apps/planning/focus
 ```
 
-只在当前部署启用 Planning 且用户拥有至少一个 `planning.*` 读取能力时出现在 Apps。
+只在当前部署启用 Planning 且用户拥有至少一个 `planning.*` 读取能力时出现在“应用”。
 
 ## 2. Home / Today
 
@@ -33,7 +33,7 @@ Today 展示：收集箱、今日任务、逾期、优先级、计划时间块�
 
 项目列表展示名称、状态、Owner、任务进度、最近更新时间。项目详情承载任务、里程碑、相关 Resource / Document 和 Activity。
 
-长期导入、批量重建等后台工作进入全局 `/activity`，普通任务本身属于 Planning 业务对象，不进入全局 Activity。
+长期导入、批量重建等后台工作进入“资源 / 活动中心”（`/resources/activity`），普通任务本身属于 Planning 业务对象，不进入全局活动中心。
 
 ## 4. Calendar
 
@@ -57,18 +57,21 @@ Today 展示：收集箱、今日任务、逾期、优先级、计划时间块�
 
 ## 7. Resource / Document 关联
 
-Planning 可以关联 Library Resource 和 Documents App，但不得复制 Resource 身份。点击关联内容进入 `/library/:resourceId` 或对应 App 页面，并重新执行目标权限。
+Planning 可以关联资源库 Resource 和 Documents App，但不得复制 Resource 身份。点击关联 Resource 进入 `/resources/library/:resourceId` 或对应 App 页面，并重新执行目标权限。
 
 ## 8. Notifications / Activity
 
-普通 Planning 事件留在 App 内。只有真实异步长任务进入全局 `/activity`。
+普通 Planning 事件留在 App 内。只有真实异步长任务进入 `/resources/activity`。
 
-系统通知策略属于 `/system/notifications`；当前用户 Planning 提醒偏好属于 App 或 `/account/notifications`。
+系统通知策略属于“系统 / 通知与审计 / 通知中心”（`/system/communications/notifications`）；当前用户 Planning 提醒偏好属于 App 或 `/account/notifications`。
 
 ## 9. 验收
 
-- Planning 只从 Apps 进入；
+- Planning 只从“应用”进入；
 - 未启用或无权限时不显示 App；
 - 不再存在全局一级 Planning Center；
 - 普通 Task 与系统后台 Activity 语义分离；
-- 所有路由使用 `/apps/planning/**`。
+- 长任务统一进入 `/resources/activity`；
+- Resource deep link 使用 `/resources/library/:resourceId`；
+- 系统通知治理使用 `/system/communications/notifications`；
+- 所有 Planning 路由使用 `/apps/planning/**`。

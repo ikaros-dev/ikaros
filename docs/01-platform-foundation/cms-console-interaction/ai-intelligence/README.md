@@ -1,6 +1,6 @@
 # AI App — CMS Console 交互规格
 
-> AI 是 Apps 下的可选产品能力，不是全局一级工作区。AI 长任务统一进入全局 Activity。
+> AI 是“应用”下的可选产品能力，不是全局一级工作区。AI 长任务统一进入“资源 / 活动中心”。
 
 ## 1. App Entry
 
@@ -26,7 +26,7 @@ Base Route：`/apps/ai`
 
 `/apps/ai/models` 管理用户可选择或平台允许暴露的模型能力。
 
-平台级 Provider Credential、全局 Endpoint 和系统级启停属于 `/system/integrations` 或 `/system/settings`；AI App 只展示当前用户可使用的模型和必要业务配置。
+平台级 Provider Credential、全局 Endpoint 和系统级启停属于“系统 / 集成 / 外部集成”（`/system/integrations/external`）或“系统 / 平台配置 / 系统参数”（`/system/settings/parameters`）；AI App 只展示当前用户可使用的模型和必要业务配置。
 
 ## 4. Personas
 
@@ -46,12 +46,13 @@ Base Route：`/apps/ai`
 
 不再设计独立 AI Jobs / AI Task Center。
 
-需要异步处理的 AI 工作注册到 `/activity`，Activity 行显示业务动作、关联 Resource/Document、状态和进度。模型内部 Trace、Attempt、Request ID 等进入 Activity Advanced 或 System Diagnostics。
+需要异步处理的 AI 工作注册到 `/resources/activity`，活动中心行显示业务动作、关联 Resource/Document、状态和进度。模型内部 Trace、Attempt、Request ID 等进入活动中心 Advanced 或“系统 / 运维 / 系统诊断”（`/system/operations/diagnostics`）。
 
 ## 8. 验收
 
-- AI 只从 Apps 进入；
+- AI 只从“应用”进入；
 - AI 权限不扩大业务对象权限；
 - 平台 Provider 配置与用户 AI App 分离；
-- AI 长任务只通过全局 Activity 观察；
+- AI 长任务只通过 `/resources/activity` 观察；
+- 不再使用旧 `/activity`、`/system/integrations`、`/system/settings`、`/system/diagnostics` 作为对应页面的 canonical 路由；
 - 不再存在全局一级 AI Center 或历史 `/ai-center/*` 设计路由。

@@ -1,6 +1,6 @@
 # Personal Drive App — CMS Console 交互规格
 
-> Personal Drive 是 Apps 下的独立业务产品。它不并入 Storage，也不成为全局一级 Sidebar Entry。
+> Personal Drive 是“应用”下的独立业务产品。它不并入 Storage，也不成为全局一级 Sidebar Entry。
 >
 > 管理 Drive 文件不等于管理 Blob；管理 Sync Binding 不等于管理 Storage Provider。
 
@@ -29,24 +29,11 @@ Canonical routes：
 
 Drive 治理能力与文件内容读取必须分别判断。
 
-只有运维权限、没有目标文件读取权限时，可以展示：
+只有运维权限、没有目标文件读取权限时，可以展示：Space / Owner 安全摘要、Logical Usage、Node Count、Sync / Conflict / Transfer 数量、Error Category、Health。
 
-- Space / Owner 安全摘要；
-- Logical Usage；
-- Node Count；
-- Sync / Conflict / Transfer 数量；
-- Error Category；
-- Health。
+不得展示：私有文件名、Folder Path、Thumbnail / Preview、File Content、客户端 Local Path。
 
-不得展示：
-
-- 私有文件名；
-- Folder Path；
-- Thumbnail / Preview；
-- File Content；
-- 客户端 Local Path。
-
-Deep Link 不能扩权。从 Activity、Storage、Audit、Media 等进入 Drive 后重新执行 Drive Capability + ACL / Scope 判定。
+Deep Link 不能扩权。从活动中心、Storage、Audit、Media 等进入 Drive 后重新执行 Drive Capability + ACL / Scope 判定。
 
 ## 3. Drive Home
 
@@ -54,14 +41,7 @@ Deep Link 不能扩权。从 Activity、Storage、Audit、Media 等进入 Drive 
 
 展示当前有权访问的 Drive Space 和文件浏览器。
 
-主要区域：
-
-- Space Selector；
-- Folder Tree / Breadcrumb；
-- File / Folder Table；
-- Detail Side Pane；
-- Logical Usage / Quota；
-- Sync / Conflict Attention。
+主要区域：Space Selector、Folder Tree / Breadcrumb、File / Folder Table、Detail Side Pane、Logical Usage / Quota、Sync / Conflict Attention。
 
 主操作：上传文件、新建文件夹。更多入口：Transfer、Sync、Trash、Settings。
 
@@ -111,7 +91,7 @@ Permanent Delete 必须明确：Drive Node / Revision 将被永久清理，但 B
 
 展示上传、下载、Device Backup、Sync 等传输状态。
 
-长期传输同时注册到全局 `/activity`。Drive Transfers 页面是 Drive 业务视图，不建立另一套后台任务中心。
+长期传输同时注册到“资源 / 活动中心”（`/resources/activity`）。Drive Transfers 页面是 Drive 业务视图，不建立另一套后台任务中心。
 
 没有 `drive.file.read` 时，运维视图只显示安全摘要和技术状态，不显示文件名、路径、预览。
 
@@ -143,13 +123,13 @@ Quota 使用逻辑空间，不得与 Storage 去重后的物理 Used 混为一�
 
 Storage Provider、Placement、Blob GC 等配置不进入 Drive Settings。
 
-## 12. 与 Library / Storage / Activity 的关系
+## 12. 与资源库 / Storage / 活动中心的关系
 
 - Drive File 可以投影成 Document、Photo、Media 等专业 Resource，但投影不产生新的文件身份；
-- Library/Resource Deep Link 到 Drive 时重新检查 Drive 权限；
+- `/resources/library/:resourceId` Deep Link 到 Drive 时重新检查 Drive 权限；
 - Drive File 可查看 Storage Summary，需要技术排障时进入 `/storage/maintenance`；
-- 上传、同步、备份、恢复等长期工作统一进入 `/activity`；
-- Drive 用户业务 Activity 可以保留在 File/Binding Detail，不占用全局 Activity 的含义。
+- 上传、同步、备份、恢复等长期工作统一进入 `/resources/activity`；
+- Drive 用户业务 Activity 可以保留在 File/Binding Detail，不占用全局活动中心的含义。
 
 ## 13. 验收
 
@@ -158,6 +138,8 @@ Storage Provider、Placement、Blob GC 等配置不进入 Drive Settings。
 - Path 不是稳定身份；
 - Revision Restore 创建新 Revision；
 - Trash Permanent Delete 不承诺立即释放全部物理空间；
-- Transfer/Sync 长期工作与全局 Activity 状态一致；
+- Transfer/Sync 长期工作与 `/resources/activity` 状态一致；
 - Drive 与 Storage 的配置边界清楚；
+- Resource deep link 使用 `/resources/library/:resourceId`；
+- 不再使用旧 `/activity`、`/library/:resourceId` 作为 canonical Console 路由；
 - 不再以历史独立一级“个人网盘”分组或 `/console/drive/*` 作为设计基线。

@@ -1,28 +1,28 @@
-# Library、内容与创作 — CMS Console 交互规格
+# 资源库、资源与创作 — CMS Console 交互规格
 
-> Resource 是统一逻辑内容身份。Console 中内容管理的主入口固定为 Library；Documents、Media、Sharing 等专业体验属于 Apps，但必须引用同一 Resource 身份。
+> Resource 是统一逻辑内容身份。Console 中 Resource 管理的用户入口固定为“资源 / 资源库”；Documents、Media、Sharing 等专业体验属于“应用”，但必须引用同一 Resource 身份。
 
-## 1. Library
+## 1. 资源库（Library）
 
-**Route：** `/library`
+**Route：** `/resources/library`
 
 ### 1.1 页面目标
 
 统一浏览和管理动画、电影、剧集、视频、漫画、章节、小说、音乐、图片、文章、文档、游戏等 Resource。
 
-不再设计“资源中心”和“内容与媒体中心”两个平级入口。
+不再设计“资源中心”“内容”“内容与媒体中心”等平级入口。“资源”是一级目录，资源库是其二级页面。
 
 ### 1.2 标题区
 
-- H1：`Library`；
-- 主操作：`Add Content`，进入 `/add`；
-- 次操作：`创建 Resource`，只在确实需要手工创建且有权限时显示。
+- H1：`资源库`；
+- 主操作：`添加资源`，进入 `/resources/add`；
+- 次操作：`创建资源`，只在确实需要手工创建且有权限时显示。
 
 ### 1.3 筛选
 
 支持：
 
-- 内容类型；
+- 资源类型；
 - Availability；
 - Lifecycle；
 - Collection；
@@ -36,17 +36,17 @@
 
 ### 1.4 列表 / Grid
 
-默认展示业务标题、封面/类型图标、内容类型、Availability、Lifecycle、Collection/Tag 摘要、进度和更新时间。
+默认展示业务标题、封面/类型图标、资源类型、Availability、Lifecycle、Collection/Tag 摘要、进度和更新时间。
 
 内部 Resource ID 不作为默认主列。复制内部 ID 等操作进入 Overflow / Advanced。
 
-点击条目进入 `/library/:resourceId`。
+点击条目进入 `/resources/library/:resourceId`。
 
 ## 2. Canonical Resource Detail
 
-**Route：** `/library/:resourceId`
+**Route：** `/resources/library/:resourceId`
 
-Resource Detail 是内容调查和内容级操作的 canonical 起点。
+Resource Detail 是资源调查和资源级操作的 canonical 起点。
 
 ### 2.1 Header
 
@@ -65,7 +65,7 @@ Resource Detail 是内容调查和内容级操作的 canonical 起点。
 按适用性显示：
 
 - Overview；
-- Episodes / Chapters / Tracks / Pages 等类型专属内容结构；
+- Episodes / Chapters / Tracks / Pages 等类型专属业务结构；
 - Metadata；
 - Files；
 - Relations；
@@ -73,11 +73,13 @@ Resource Detail 是内容调查和内容级操作的 canonical 起点。
 - Activity；
 - Advanced。
 
-### 2.3 内容结构与 Availability
+这些 Tab 默认属于同一 Resource Detail 页面；只有需要独立 deep link、权限或生命周期时才建立子路由。
+
+### 2.3 资源结构与 Availability
 
 剧集、章节、曲目等每项直接展示业务可用状态：Available、Cached、Remote、Processing、Restoring、Missing、Corrupted。
 
-点击异常状态时解释原因和下一步，例如“当前只有归档副本，可发起恢复”。Restore / Repair 进入全局 `/activity`。
+点击异常状态时解释原因和下一步，例如“当前只有归档副本，可发起恢复”。Restore / Repair 进入 `/resources/activity`。
 
 ### 2.4 Metadata
 
@@ -97,54 +99,47 @@ Advanced 中才展示 Attachment ID、Blob ID、Checksum、Replica、Placement �
 
 ## 3. Collections
 
-**Route：** `/library/collections`
+**Route：** `/resources/library/collections`
 
 支持手动 Collection 和动态 Collection。
 
 列表展示名称、类型、Resource 数量、所有者/可见性和更新时间。动态规则使用字段/操作符/值组合，并提供预览命中结果。
 
-Collection 详情中的 Resource 点击回到 `/library/:resourceId`。
+Collection 详情中的 Resource 点击回到 `/resources/library/:resourceId`。
 
 ## 4. Search
 
-**Route：** `/library/search`
+**Route：** `/resources/library/search`
 
 搜索只返回调用者有权读取的 Resource 和 Collection。支持关键词、类型、Availability、Lifecycle、Tag、Collection、Source 等条件。
 
 搜索结果使用业务标题和类型，不使用内部 ID 作为主要识别方式。
 
-## 5. Documents App
+## 5. 文档应用（Documents）
 
 **Base Route：** `/apps/documents`
 
-Documents 是专业创作体验，不再作为 Library 的平级一级菜单。
+文档是专业创作体验，不再作为资源库的平级一级菜单。
 
-能力包括：
+能力包括：文档/文章列表、Working Copy 编辑、Revision / Diff、Publish / Unpublish、Attachment 插入、冲突恢复。
 
-- 文档/文章列表；
-- Working Copy 编辑；
-- Revision / Diff；
-- Publish / Unpublish；
-- Attachment 插入；
-- 冲突恢复。
+文档对应的逻辑 Resource 仍可从资源库的 Resource Detail 进入专业编辑器。
 
-文档对应的逻辑内容仍可从 Library Resource Detail 进入专业编辑器。
-
-## 6. Media App
+## 6. 媒体应用（Media）
 
 **Base Route：** `/apps/media`
 
-Media 承载专业消费体验，例如继续播放、播放历史、队列和播放器设置。Media 不创建另一套内容身份；点击内容必须能够回到同一 `/library/:resourceId`。
+媒体承载专业消费体验，例如继续播放、播放历史、队列和播放器设置。媒体应用不创建另一套 Resource 身份；点击资源必须能够回到同一 `/resources/library/:resourceId`。
 
-用户消费历史不占用全局 `/activity`。全局 Activity 只表示后台长期工作。
+用户消费历史不占用 `/resources/activity`。活动中心只表示后台长期工作。
 
-## 7. Sharing App
+## 7. 分享应用（Sharing）
 
 **Base Route：** `/apps/sharing`
 
 承载 Share Link、Room、Watch/Listen 等协作体验。
 
-Share / Room 不修改底层 Resource 身份。需要长期异步处理的操作仍进入全局 `/activity`。
+Share / Room 不修改底层 Resource 身份。需要长期异步处理的操作仍进入 `/resources/activity`。
 
 ## 8. 生命周期与危险操作
 
@@ -153,24 +148,19 @@ Resource 必须区分 Active、Archived、Trash 和永久清理。
 - Archive/Trash 是业务生命周期动作；
 - 永久清理必须使用高风险确认；
 - 移除 Resource 与 Attachment 的关系不等于物理删除 Blob；
-- 物理 GC 属于 Storage Maintenance。
+- 物理 GC 属于存储维护。
 
 ## 9. Advanced 规则
 
-以下内容默认只在 Advanced / Diagnostics：
-
-- Resource ID；
-- Attachment ID / Blob ID；
-- Checksum；
-- Placement / Replica；
-- 内部 Metadata Candidate ID；
-- Task ID / Attempt。
+以下内容默认只在 Advanced / Diagnostics：Resource ID、Attachment ID / Blob ID、Checksum、Placement / Replica、内部 Metadata Candidate ID、Task ID / Attempt。
 
 ## 10. 验收
 
-- 所有内容管理从 `/library` 进入；
-- Resource Detail 可以完成问题理解和下一步操作；
-- Documents / Media / Sharing 只作为 Apps 专业体验；
-- Add Content 入口统一到 `/add`；
-- 长任务统一进入 `/activity`；
-- 不再使用历史 `/console/resources`、`resource-center` 或 `content-center` 作为设计路由。
+- 所有 Resource 浏览和管理从“资源 / 资源库”（`/resources/library`）进入；
+- Resource Detail 使用 `/resources/library/:resourceId`；
+- 文档 / 媒体 / 分享只作为“应用”下的专业体验；
+- 添加资源入口统一到 `/resources/add`；
+- 长任务统一进入“资源 / 活动中心”（`/resources/activity`）；
+- `/resources` 仅作为一级目录根，不渲染资源库页面；
+- 不再使用“内容”作为 Console 一级业务域名称；
+- 不再使用历史 `/library`、`/add`、`/activity`、`/console/resources`、`resource-center` 或 `content-center` 作为 canonical 设计路由。
