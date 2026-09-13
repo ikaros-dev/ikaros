@@ -38,7 +38,7 @@ Restore Failure 应：
 
 - 更新 Activity 为失败；
 - 在对应 Resource / Storage 业务视图产生可理解状态；
-- 必要时产生 Overview Attention；
+- 必要时产生 Dashboard Attention；
 - 提供下一步，例如 Retry、选择其他 Provider、进入 Maintenance。
 
 不得只显示内部 Task ID。

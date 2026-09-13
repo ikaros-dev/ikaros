@@ -42,7 +42,7 @@ CDN、Purge、Failover、Origin、Budget、Provider routing 等高级分发运�
 
 ## 5. Failure / Failover
 
-Delivery Failure 优先反映到业务对象 Availability 和 Overview Attention。
+Delivery Failure 优先反映到业务对象 Availability 和 Dashboard Attention。
 
 Maintenance 页面可以展示 Provider、Route、Failover、Request ID 等技术字段。业务 Resource 页面只展示可理解的影响和下一步。
 

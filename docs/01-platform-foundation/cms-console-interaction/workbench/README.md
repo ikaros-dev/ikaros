@@ -1,16 +1,16 @@
-# Overview 与全局工作台 — CMS Console 交互规格
+# Dashboard 与全局工作台 — CMS Console 交互规格
 
-> 本文只定义 Overview 和全局搜索。后台长期工作统一由 `/activity` 承载；收藏、消费进度和 Resource 业务活动回到 Library / Resource 语境，不再占用全局 Activity 路由。
+> 本文只定义 Dashboard 和全局搜索。后台长期工作统一由 `/activity` 承载；收藏、消费进度和 Resource 业务活动回到 Library / Resource 语境，不再占用全局 Activity 路由。
 
-## 1. Overview
+## 1. Dashboard
 
-**Route：** `/overview`
+**Route：** `/dashboard`
 
-Overview 是 Console 默认入口，目标是回答“现在有什么需要我处理”和“Ikaros 正在做什么”。
+Dashboard 是 Console 默认入口，目标是回答“现在有什么需要我处理”和“Ikaros 正在做什么”。
 
 ### 1.1 页面标题
 
-- H1：`Overview` / `概览`；
+- H1：`Dashboard` / `仪表盘`；
 - 副标题：当前环境和最近成功刷新时间；
 - 操作：刷新、必要时的显示偏好；
 - 不提供与核心任务无关的“为了填满页面”的 KPI。
@@ -121,9 +121,9 @@ Private Notes、Passwords、Finance、Drive 等继续遵守各自数据敏感性
 
 ## 4. 验收
 
-- Overview 无虚假 Healthy；
+- Dashboard 无虚假 Healthy；
 - Attention 能进入业务对象；
 - In Progress 与 `/activity` 状态一致；
 - Storage / Library 摘要可以直接应用目标筛选；
 - 全局搜索不越权；
-- 不再存在 `/console/dashboard` 或把 `/activity` 定义为收藏历史的设计要求。
+- 不再存在历史 `/console/dashboard` 或把 `/activity` 定义为收藏历史的设计要求。

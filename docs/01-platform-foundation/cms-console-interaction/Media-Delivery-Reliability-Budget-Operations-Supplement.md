@@ -30,7 +30,7 @@ Budget 视图展示真实流量、预算阈值、当前消耗和预测（仅在�
 
 没有配置预算时显示 Not configured，不用绿色正常状态代替。
 
-达到阈值后可以产生 Overview Attention，并链接到 Storage Maintenance 对应视图。
+达到阈值后可以产生 Dashboard Attention，并链接到 Storage Maintenance 对应视图。
 
 ## 4. Purge
 
