@@ -12,6 +12,8 @@ import GlobalizationIcon from "@/assets/svg/globalization.svg?component";
 import LogoutCircleRLine from "~icons/ri/logout-circle-r-line";
 import Setting from "~icons/ri/settings-3-line";
 import Check from "~icons/ep/check";
+import User from "~icons/ri/user-line";
+import Shield from "~icons/ri/shield-keyhole-line";
 
 const {
   layout,
@@ -93,7 +95,10 @@ const { t, locale, translationCh, translationEn } = useTranslationLang();
         </span>
         <template #dropdown>
           <el-dropdown-menu class="logout">
-            <el-dropdown-item @click="logout">
+            <el-dropdown-item @click="$router.push('/account/profile')"><IconifyIconOffline :icon="User" style="margin: 5px" />Profile</el-dropdown-item>
+            <el-dropdown-item @click="$router.push('/account/preferences')">Preferences</el-dropdown-item>
+            <el-dropdown-item @click="$router.push('/account/security')"><IconifyIconOffline :icon="Shield" style="margin: 5px" />Security</el-dropdown-item>
+            <el-dropdown-item divided @click="logout">
               <IconifyIconOffline
                 :icon="LogoutCircleRLine"
                 style="margin: 5px"

@@ -104,6 +104,14 @@ body:
         ``` ``` blocks or inside a collapsable details tag if it's too long:
         <details><summary>x.log</summary> lots of stuff </details>
 
+  - type: textarea
+    id: consoleGoldenPath
+    attributes:
+      label: Console Golden Path
+      description: For Console bugs, link GP01-GP09 and describe the covered journey, user concept, success/failure/unauthorized/background-progress evidence, and any internal terms. Write N/A if this does not touch Console.
+    validations:
+      required: true
+
   - type: markdown
     attributes:
       value: "Thanks for completing our form!"
