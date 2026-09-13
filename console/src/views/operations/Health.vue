@@ -50,7 +50,7 @@ async function load() {
 }
 
 function openAction(name: string) {
-  const path = name === "Background Task Queue" ? "/operations-center/tasks" : name === "Durable Event Delivery" ? "/communications-center/notifications" : name.startsWith("Storage /") ? "/storage-center/providers" : "";
+  const path = name === "Background Task Queue" ? "/activity" : name === "Durable Event Delivery" ? "/system/notifications" : name.startsWith("Storage /") ? "/storage/providers" : "";
   if (path) router.push(path);
 }
 

@@ -6,6 +6,12 @@ const homeRoute = await readFile(
   fileURLToPath(new URL("../src/router/modules/home.ts", import.meta.url)),
   "utf8"
 );
+const entrySources = await Promise.all([
+  "../src/views/attachments/index.vue",
+  "../src/views/communications/Notifications.vue",
+  "../src/views/operations/Health.vue",
+  "../src/views/drive/index.vue"
+].map(path => readFile(fileURLToPath(new URL(path, import.meta.url)), "utf8")));
 
 const workspaces = [
   ["Overview", "/overview", "dashboard.read"],
@@ -26,6 +32,16 @@ for (const [name, path, capability] of workspaces) {
 }
 
 assert.equal(/subsystem\(|-center/.test(homeRoute), false);
+for (const source of [homeRoute, ...entrySources]) {
+  assert.doesNotMatch(source, /(?:resource|operations|communications|storage)-center/);
+}
+assert.doesNotMatch(homeRoute, /reading\/ebooks|EbookImportLegacy|redirect:\s*"\/add"/);
+assert.match(entrySources[0], /`\/library\/\$\{selected\.resourceId\}`/);
+assert.match(entrySources[1], /`\/activity\/\$\{row\.taskId\}`/);
+assert.match(entrySources[2], /"\/activity"/);
+assert.match(entrySources[2], /"\/system\/notifications"/);
+assert.match(entrySources[2], /"\/storage\/providers"/);
+assert.match(entrySources[3], /`\/apps\/drive\/nodes\/\$\{row\.id\}`/);
 assert.match(homeRoute, /redirect:\s*"\/overview"/);
 assert.match(homeRoute, /page\("search",\s*"LibrarySearch"/);
 assert.match(homeRoute, /page\("maintenance",\s*"StorageMaintenance"/);
