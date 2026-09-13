@@ -6,6 +6,7 @@ const home = await readFile(new URL("../src/router/modules/home.ts", import.meta
 const apps = await readFile(new URL("../src/views/apps/index.vue", import.meta.url), "utf8");
 const navbar = await readFile(new URL("../src/layout/components/lay-navbar/index.vue", import.meta.url), "utf8");
 const routerUtils = await readFile(new URL("../src/router/utils.ts", import.meta.url), "utf8");
+const sidebarItem = await readFile(new URL("../src/layout/components/lay-sidebar/components/SidebarItem.vue", import.meta.url), "utf8");
 
 test("Apps and System remain the aggregation workspaces", () => {
   assert.match(home, /workspace\("\/apps",\s*"Apps"/);
@@ -27,4 +28,9 @@ test("Account routes are hidden from the sidebar and exposed by the avatar menu"
   assert.match(navbar, /\/account\/profile/);
   assert.match(navbar, /\/account\/preferences/);
   assert.match(navbar, /\/account\/security/);
+});
+
+test("Sidebar does not render links for routes with required parameters", () => {
+  assert.match(sidebarItem, /isParameterizedRoute/);
+  assert.match(sidebarItem, /!isParameterizedRoute/);
 });
