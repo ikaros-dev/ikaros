@@ -15,6 +15,7 @@
     "test:navigation": "node --test scripts/navigation-contract.test.mjs",
     "test:routes": "node scripts/verify-canonical-routes.mjs",
     "test:storage": "node --test scripts/storage-contract.test.mjs",
+    "test:golden-path": "node --test scripts/golden-path-contract.test.mjs scripts/verify-console-golden-path-metadata.test.mjs",
     "typecheck": "tsc --noEmit && vue-tsc --noEmit --skipLibCheck",
     "clean:cache": "rimraf .eslintcache && rimraf pnpm-lock.yaml && rimraf node_modules && pnpm store prune && pnpm install",
     "lint:eslint": "eslint --cache --max-warnings 0  \"{src,mock,build}/**/*.{vue,js,ts,tsx}\" --fix",

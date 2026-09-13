@@ -1,0 +1,33 @@
+name: Console Golden Path
+
+on:
+  pull_request:
+    branches:
+      - main
+      - "release-*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    name: Golden Path contract and metadata gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: console/.nvmrc
+
+      - name: Run GP01-GP09 contract checks
+        working-directory: console
+        run: node --test scripts/golden-path-contract.test.mjs scripts/verify-console-golden-path-metadata.test.mjs
+
+      - name: Verify Console PR Golden Path metadata
+        run: node console/scripts/verify-console-golden-path-metadata.mjs --event-file "$GITHUB_EVENT_PATH" --base-sha "${{ github.event.pull_request.base.sha }}" --head-sha "${{ github.event.pull_request.head.sha }}"

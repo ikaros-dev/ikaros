@@ -30,3 +30,14 @@
      ==== 🆕 Remove this line WHEN AND ONLY WHEN you're adding a new feature, follow the checklist 👆 ==== -->
 - [ ] Update the [`CHANGES` log](https://github.com/ikaros-dev/ikaros/blob/develop/CHANGELOG.MD).
 - [ ] If this pull request closes/resolves/fixes an existing issue, replace the issue number. Closes #<issue number>.
+
+<!-- Required for Console or Console-contract changes. Use N/A only when this PR does not touch Console. -->
+### Console Golden Path
+- Golden Path 关联：<GP01-GP09 或 N/A>
+- 旅程覆盖：<入口、加载/空状态、成功、失败、无权限、后台进度、恢复/重试、最终业务结果中的适用段落>
+- 新的用户概念：<无，或说明新增概念>
+- 成功验证：<真实用户结果和证据>
+- 失败验证：<真实失败状态和恢复/重试证据>
+- 无权限验证：<直接 canonical URL 与导航收敛证据，或 N/A>
+- 后台进度验证：<Activity 观察证据，或 N/A>
+- 内部实现词汇：<是否仍暴露；若是说明原因和 Advanced 边界>

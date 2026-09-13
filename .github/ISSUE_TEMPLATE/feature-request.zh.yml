@@ -44,6 +44,14 @@ body:
       label: 相关的Issues
       description: 目前是否有与此新功能有关的 issue, 您可以填写 `#数字` 或者URL 方便我们快速定位到这个issue
 
+  - type: textarea
+    id: consoleGoldenPath
+    attributes:
+      label: Console Golden Path
+      description: 涉及 Console 时请填写 GP01-GP09、覆盖旅程、新用户概念、成功/失败/无权限/后台进度验证及内部实现词汇；不涉及 Console 请填写 N/A。
+    validations:
+      required: true
+
   - type: markdown
     attributes:
       value: "感谢您填写这个表单！因为有您的贡献，项目才能越来越好。"

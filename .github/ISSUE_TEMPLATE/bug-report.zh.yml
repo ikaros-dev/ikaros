@@ -109,6 +109,14 @@ body:
         
         如果日志内容太长，可以用这个格式包裹起来：<details><summary>x.log</summary> 很长的日志内容</details>
 
+  - type: textarea
+    id: consoleGoldenPath
+    attributes:
+      label: Console Golden Path
+      description: 涉及 Console 的问题请填写 GP01-GP09、覆盖旅程、用户概念、成功/失败/无权限/后台进度验证及内部实现词汇；不涉及 Console 请填写 N/A。
+    validations:
+      required: true
+
 
   - type: markdown
     attributes:
