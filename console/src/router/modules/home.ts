@@ -83,12 +83,12 @@ export default {
       page(":activityId", "ActivityDetail", "Activity Detail", ActivityPage, "activity.read")
     ]),
     workspace("/storage", "Storage", { title: "Storage", icon: "ep:box", capability: "storage.read" }, [
-      page("", "StorageHome", "Storage", () => import("@/views/storage/Tiers.vue"), "storage.read", "ep:box"),
-      page("providers", "StorageProviders", "Storage Providers", () => import("@/views/storage/Tiers.vue"), "storage.provider.read", "ep:setting"),
-      page("providers/:providerId", "StorageProviderDetail", "Storage Provider Detail", () => import("@/views/storage/Tiers.vue"), "storage.provider.read"),
-      page("policy", "StoragePolicy", "Storage Policy", () => import("@/views/storage/Tiers.vue"), "storage.policy.read"),
+      page("", "StorageHome", "Storage", () => import("@/views/storage/Overview.vue"), "storage.read", "ep:box"),
+      page("providers", "StorageProviders", "Storage Providers", () => import("@/views/storage/Providers.vue"), "storage.provider.read", "ep:setting"),
+      page("providers/:providerId", "StorageProviderDetail", "Storage Provider Detail", () => import("@/views/storage/Providers.vue"), "storage.provider.read"),
+      page("policy", "StoragePolicy", "Storage Policy", () => import("@/views/storage/Policy.vue"), "storage.policy.read"),
       page("archive", "StorageArchive", "Archive & Restore", () => import("@/views/storage/Archive.vue"), "storage.archive.read", "ep:refresh-left"),
-      page("maintenance", "StorageMaintenance", "Storage Maintenance", () => import("@/views/storage/Cache.vue"), "storage.maintenance.read", "ep:tools"),
+      page("maintenance", "StorageMaintenance", "Storage Maintenance", () => import("@/views/storage/Maintenance.vue"), "storage.maintenance.read", "ep:tools"),
       page("backup", "StorageBackup", "Backup", () => import("@/views/storage/Backup.vue"), "backup.read", "ep:files")
     ]),
     workspace("/apps", "Apps", { title: "Apps", icon: "ep:grid", capability: "app.read" }, [
