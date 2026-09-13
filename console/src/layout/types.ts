@@ -2,8 +2,8 @@ import type { FunctionalComponent } from "vue";
 export const routerArrays: Array<RouteConfigs> = [
   {
     path: "/dashboard",
-    name: "Dashboard",
-    meta: { title: "Dashboard", fixedTag: true }
+    name: "DashboardHome",
+    meta: { title: "menus.dashboard", fixedTag: true }
   }
 ];
 
@@ -67,6 +67,7 @@ export type menuType = {
     title?: string;
     rank?: number;
     showParent?: boolean;
+    menuGroup?: boolean;
     extraIcon?: string;
   };
   showTooltip?: boolean;

@@ -33,6 +33,8 @@ declare global {
     showLink?: boolean;
     /** 是否显示父级菜单 `可选` */
     showParent?: boolean;
+    /** 是否以不可点击的平铺分组标题展示子菜单 `可选` */
+    menuGroup?: boolean;
     /** 页面级别权限设置 `可选` */
     roles?: Array<string>;
     /** 按钮级别权限设置 `可选` */

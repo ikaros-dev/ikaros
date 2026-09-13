@@ -37,9 +37,10 @@
 }
 
 /* Content consumption dialogs keep media and reading surfaces usable on phones. */
-@media screen and (max-width: 767px) {
+@media screen and (width <= 767px) {
   .el-dialog {
     --el-dialog-width: calc(100vw - 24px) !important;
+
     width: calc(100vw - 24px) !important;
     margin: 12px auto !important;
   }
@@ -55,8 +56,8 @@
   }
 
   .content-consumption-controls {
-    align-items: stretch;
     flex-direction: column;
+    align-items: stretch;
   }
 
   .content-consumption-controls > *,

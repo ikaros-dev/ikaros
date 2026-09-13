@@ -74,7 +74,12 @@ class PureHttp {
         const grant = getVerificationGrant();
         if (grant) config.headers["X-Ikaros-Verification-Grant"] = grant;
         /** 请求白名单，放置一些不需要`token`的接口（通过设置请求白名单，防止`token`过期后再请求造成的死循环问题） */
-        const whiteList = ["/auth/register", "/auth/login", "/auth/refresh-token", "/login"];
+        const whiteList = [
+          "/auth/register",
+          "/auth/login",
+          "/auth/refresh-token",
+          "/login"
+        ];
         return whiteList.some(url => config.url.endsWith(url))
           ? config
           : new Promise(resolve => {
@@ -102,14 +107,14 @@ class PureHttp {
                       });
                   }
                   resolve(PureHttp.retryOriginalRequest(config));
-              } else {
-                config.headers["Authorization"] = formatToken(
-                  data.accessToken
-                );
-                if (data.actorId) {
-                  config.headers["X-Ikaros-Actor-Id"] = data.actorId;
-                }
-                resolve(config);
+                } else {
+                  config.headers["Authorization"] = formatToken(
+                    data.accessToken
+                  );
+                  if (data.actorId) {
+                    config.headers["X-Ikaros-Actor-Id"] = data.actorId;
+                  }
+                  resolve(config);
                 }
               } else {
                 resolve(config);
@@ -146,7 +151,10 @@ class PureHttp {
           $error.message =
             "操作被拒绝（403）。请确认当前账号已获得对应权限；需要二次验证的操作，请先到“身份与安全 > 认证设置”完成验证。";
         }
-        if ($error.response?.status === 401 && !window.location.pathname.startsWith("/login")) {
+        if (
+          $error.response?.status === 401 &&
+          !window.location.pathname.startsWith("/login")
+        ) {
           removeToken();
           window.location.replace("/login");
         }

@@ -29,7 +29,8 @@ export const usePermissionStore = defineStore("pure-permission", {
         filterTree(ascending(this.constantMenus.concat(routes)))
       );
       // 根路由仅负责承载布局，不作为后台菜单展示。
-      this.wholeMenus = menus[0]?.path === "/" ? menus[0].children ?? [] : menus;
+      this.wholeMenus =
+        menus[0]?.path === "/" ? (menus[0].children ?? []) : menus;
       this.flatteningRoutes = formatFlatteningRoutes(
         this.constantMenus.concat(routes) as any
       );

@@ -4,8 +4,15 @@ import { readFile } from "node:fs/promises";
 
 const home = await readFile(new URL("../src/router/modules/home.ts", import.meta.url), "utf8");
 const sidebar = await readFile(new URL("../src/layout/components/lay-sidebar/components/SidebarItem.vue", import.meta.url), "utf8");
+const layoutTypes = await readFile(new URL("../src/layout/types.ts", import.meta.url), "utf8");
+const zhLocale = await readFile(new URL("../locales/zh-CN.yaml", import.meta.url), "utf8");
+const enLocale = await readFile(new URL("../locales/en.yaml", import.meta.url), "utf8");
 
-test("Console uses five Chinese top-level workspaces", () => {
+test("Dashboard is the fixed localized home tab", () => {
+  assert.match(layoutTypes, /path: "\/dashboard"[\s\S]*name: "DashboardHome"[\s\S]*title: "menus\.dashboard"[\s\S]*fixedTag: true/);
+});
+
+test("Console uses five localized top-level workspaces", () => {
   const matches = [...home.matchAll(/workspace\(\s*"([^"]+)",\s*"([^"]+)"/g)].map(match => [match[1], match[2]]);
   assert.deepEqual(matches, [
     ["/dashboard", "Dashboard"],
@@ -14,21 +21,32 @@ test("Console uses five Chinese top-level workspaces", () => {
     ["/apps", "Apps"],
     ["/system", "System"]
   ]);
-  for (const title of ["仪表盘", "资源", "存储", "应用", "系统"]) assert.ok(home.includes(`title: "${title}"`));
+  for (const key of ["dashboard", "resources", "storage", "apps", "system"]) {
+    assert.ok(home.includes(`title: "menus.${key}"`));
+    assert.match(zhLocale, new RegExp(`^  ${key}: `, "m"));
+    assert.match(enLocale, new RegExp(`^  ${key}: `, "m"));
+  }
   assert.doesNotMatch(home, /workspace\(\s*"\/(library|add|activity)"/);
 });
 
 test("Resource and System menus follow the documented hierarchy", () => {
   for (const fragment of [
-    '"library",\n          "ResourceLibrary"',
-    '"add",\n          "AddResource"',
-    '"activity",\n          "ActivityCenter"',
-    'directory("access", "SystemAccess", "访问控制"',
-    'directory("integrations", "SystemIntegrations", "集成"',
-    'directory("communications", "SystemCommunications", "通知与审计"',
-    'directory("settings", "SystemSettings", "平台配置"',
-    'directory("operations", "SystemOperations", "运维"'
-  ]) assert.ok(home.includes(fragment));
+    /page\(\s*"library",\s*"ResourceLibrary"/,
+    /page\(\s*"add",\s*"AddResource"/,
+    /page\(\s*"activity",\s*"ActivityCenter"/,
+    /directory\(\s*"access",\s*"SystemAccess",\s*"menus\.accessControl"/,
+    /directory\(\s*"integrations",\s*"SystemIntegrations",\s*"menus\.integrations"/,
+    /directory\(\s*"communications",\s*"SystemCommunications",\s*"menus\.communications"/,
+    /directory\(\s*"settings",\s*"SystemSettings",\s*"menus\.platformSettings"/,
+    /directory\(\s*"operations",\s*"SystemOperations",\s*"menus\.operations"/
+  ]) assert.match(home, fragment);
+});
+
+test("Menu page titles and descriptions use localized resources", () => {
+  assert.match(home, /title: "menus\.[a-zA-Z]+"/);
+  assert.match(home, /"menuDescriptions\.[a-zA-Z]+"/);
+  assert.match(zhLocale, /^menuDescriptions:/m);
+  assert.match(enLocale, /^menuDescriptions:/m);
 });
 
 test("Directory roots redirect to canonical child pages", () => {
@@ -42,4 +60,10 @@ test("Parameterized routes stay out of the Sidebar", () => {
   assert.match(sidebar, /!isParameterizedRoute/);
   assert.match(home, /showLink: false/);
   assert.match(home, /activePath/);
+});
+
+test("System directories render as flat non-clickable menu groups", () => {
+  assert.match(home, /meta: \{ title, icon, showParent: true, menuGroup: true \}/);
+  assert.match(sidebar, /el-menu-item-group/);
+  assert.match(sidebar, /item\.meta\?\.menuGroup/);
 });

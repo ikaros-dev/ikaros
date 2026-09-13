@@ -52,13 +52,16 @@ if (!touchesConsole) {
 }
 
 const requirements = [
-  ["Golden Path 关联", /Golden Path[\s\S]{0,180}GP0[1-9]/i],
-  ["旅程覆盖段落", /旅程覆盖|Journey coverage/i],
+  [
+    "Golden Path 关联",
+    /Golden Path[\s\S]{0,180}GP0[1-9]|用户主流程\s*(?:\r?\n\s*){0,2}(?!<)(?!不适用)[^\r\n]+/i
+  ],
+  ["旅程覆盖段落", /旅程覆盖|覆盖的操作过程|Journey coverage/i],
   ["用户概念说明", /用户概念|user concept/i],
   ["成功验证", /成功.*验证|success.*verification/i],
   ["失败验证", /失败.*验证|failure.*verification/i],
   ["无权限验证", /无权限.*验证|unauthori[sz]ed.*verification/i],
-  ["后台进度验证", /后台进度.*验证|background progress.*verification/i],
+  ["后台进度验证", /后台进度.*验证|异步进度.*验证|background progress.*verification/i],
   ["内部实现词汇说明", /内部实现词汇|internal implementation terms/i]
 ];
 const missing = requirements

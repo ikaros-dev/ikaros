@@ -265,7 +265,7 @@ A/B/C/R 等能力 Issue 负责领域能力，不负责自行扩张全局 IA。�
 - 资源页面统一位于 `/resources/**`；
 - 存储页面统一位于 `/storage/**`，概览使用 `/storage/overview`；
 - 应用中心使用 `/apps/overview`，业务 App 位于 `/apps/<app>/**`；
-- System 的三级菜单页面与 `/system/<group>/<page>` 对齐；
+- System 的三级菜单页面与 `/system/<group>/<page>` 对齐；Sidebar 以不可点击分组标题平铺展示三级页面，不渲染为可展开的父子菜单；
 - 仪表盘是默认入口并承担 Attention-first 总览；
 - 活动中心是后台工作唯一用户入口；
 - 账号入口归头像菜单；

@@ -5,10 +5,13 @@ import { readFile } from "node:fs/promises";
 const home = await readFile(new URL("../src/router/modules/home.ts", import.meta.url), "utf8");
 const page = await readFile(new URL("../src/views/console/Dashboard.vue", import.meta.url), "utf8");
 const card = await readFile(new URL("../src/views/console/PageCard.vue", import.meta.url), "utf8");
+const zhLocale = await readFile(new URL("../locales/zh-CN.yaml", import.meta.url), "utf8");
 
 test("Dashboard is a standalone canonical page", () => {
   assert.match(home, /workspace\(\s*"\/dashboard",\s*"Dashboard"/);
-  assert.match(home, /"DashboardHome"[\s\S]*?"仪表盘"[\s\S]*?汇总需要关注的事项/);
+  assert.match(home, /"DashboardHome"[\s\S]*?"menus\.dashboard"[\s\S]*?"menuDescriptions\.dashboard"/);
+  assert.match(zhLocale, /^  dashboard: 仪表盘$/m);
+  assert.match(zhLocale, /^  dashboard: 汇总需要关注的事项/m);
 });
 
 test("Dashboard uses the minimal page-card skeleton", () => {

@@ -106,6 +106,7 @@ Console 用户可见 Sidebar 一级节点固定为：
 - [`cms-console-interaction/Console-Information-Architecture-and-Product-Journey-Contract.md`](./cms-console-interaction/Console-Information-Architecture-and-Product-Journey-Contract.md) — canonical IA、菜单层级与 route tree；
 - [`cms-console-interaction/Console-Product-Journey-Acceptance-Contract.md`](./cms-console-interaction/Console-Product-Journey-Acceptance-Contract.md) — Golden Path / Product Journey Acceptance；
 - [`cms-console-interaction/route-permission-matrix.md`](./cms-console-interaction/route-permission-matrix.md) — canonical Route / Permission Matrix；
+- [`database/Migration-Version-Policy.md`](./database/Migration-Version-Policy.md) — Migration 文件归属、命名、UTC+8 版本生成与全局单调序列契约；
 - [`cms-console-interaction/personal-drive/README.md`](./cms-console-interaction/personal-drive/README.md) — Drive App 管理规格。
 
 `cms-console-interaction/*` 的历史目录名只表示领域文档容器，不代表全局 Sidebar 分组。
