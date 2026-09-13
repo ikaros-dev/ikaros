@@ -5,6 +5,7 @@ const OverviewPage = () => import("@/views/dashboard/index.vue");
 const LibraryPage = () => import("@/views/resources/index.vue");
 const AddContentPage = () => import("@/views/ingestion/index.vue");
 const ActivityPage = () => import("@/views/workbench/Activity.vue");
+const AppsPage = () => import("@/views/apps/index.vue");
 
 type WorkspaceOptions = { title: string; icon: string; capability: string };
 
@@ -36,7 +37,7 @@ const page = (path: string, name: string, title: string, component: any, capabil
 });
 
 const app = (path: string, name: string, title: string, component: any, capability: string) =>
-  page(path, name, title, component, capability, "ep:grid");
+  ({ ...page(path, name, title, component, capability, "ep:grid"), meta: { title, icon: "ep:grid", capability, app: true, enabled: true, source: "core" } });
 
 const applicationPages = [
   app("drive", "Drive", "Drive", () => import("@/views/drive/index.vue"), "drive.space.read"),
@@ -92,7 +93,7 @@ export default {
       page("backup", "StorageBackup", "Backup", () => import("@/views/storage/Backup.vue"), "backup.read", "ep:files")
     ]),
     workspace("/apps", "Apps", { title: "Apps", icon: "ep:grid", capability: "app.read" }, [
-      page("", "AppsHome", "Apps", ModulePage, "app.read", "ep:grid"),
+      page("", "AppsHome", "Apps", AppsPage, "app.read", "ep:grid"),
       ...applicationPages
     ]),
     workspace("/system", "System", { title: "System", icon: "ep:setting", capability: "system.read" }, [
@@ -108,6 +109,18 @@ export default {
       page("settings", "SystemSettings", "Settings", () => import("@/views/platform/Parameters.vue"), "platform.read", "ep:setting"),
       page("health", "SystemHealth", "Health", () => import("@/views/operations/Health.vue"), "system.health.read", "ep:monitor"),
       page("diagnostics", "SystemDiagnostics", "Diagnostics", () => import("@/views/operations/Background.vue"), "system.diagnostics.read", "ep:warning")
-    ])
+    ]),
+    {
+      path: "/account",
+      name: "Account",
+      component: WorkspaceView,
+      meta: { title: "Account", showLink: false },
+      children: [
+        page("profile", "AccountProfile", "Profile", () => import("@/views/account/Profile.vue"), "account.self.read"),
+        page("preferences", "AccountPreferences", "Preferences", () => import("@/views/account/Preferences.vue"), "account.preference.read"),
+        page("notifications", "AccountNotifications", "Notifications", () => import("@/views/communications/Notifications.vue"), "account.notification.read"),
+        page("security", "AccountSecurity", "Security", () => import("@/views/account/Security.vue"), "account.security.read")
+      ]
+    }
   ]
 } satisfies RouteConfigsTable;

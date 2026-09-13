@@ -31,5 +31,13 @@ assert.match(homeRoute, /page\("search",\s*"LibrarySearch"/);
 assert.match(homeRoute, /page\("maintenance",\s*"StorageMaintenance"/);
 assert.match(homeRoute, /page\("diagnostics",\s*"SystemDiagnostics"/);
 assert.match(homeRoute, /page\("drive\/nodes\/:nodeId"/);
+assert.match(homeRoute, /AppsPage/);
+assert.match(homeRoute, /app: true/);
+assert.match(homeRoute, /source: "core"/);
+assert.match(homeRoute, /path: "\/account"/);
+assert.match(homeRoute, /showLink: false/);
+assert.match(homeRoute, /AccountProfile/);
+assert.match(homeRoute, /AccountPreferences/);
+assert.match(homeRoute, /AccountSecurity/);
 
 console.log("canonical console route assertions passed");

@@ -84,13 +84,19 @@ function isOneOfArray(a: Array<string>, b: Array<string>) {
 function filterNoPermissionTree(data: RouteComponent[]) {
   const currentRoles =
     storageLocal().getItem<DataInfo<number>>(userKey)?.roles ?? [];
-  const newTree = cloneDeep(data).filter((v: any) =>
-    isOneOfArray(v.meta?.roles, currentRoles)
-  );
-  newTree.forEach(
-    (v: any) => v.children && (v.children = filterNoPermissionTree(v.children))
-  );
-  return filterChildrenTree(newTree);
+  const permissions = storageLocal().getItem<DataInfo<number>>(userKey)?.permissions ?? [];
+  const filter = (routes: any[]): any[] => cloneDeep(routes)
+    .filter((route: any) => isOneOfArray(route.meta?.roles, currentRoles))
+    .map((route: any) => ({ ...route, children: route.children ? filter(route.children) : undefined }))
+    .filter((route: any) => {
+      if (route.meta?.enabled === false) return false;
+      const capability = route.meta?.capability;
+      const allowed = !capability || permissions.includes("*:*:*") || permissions.includes(capability);
+      // Workspace visibility is derived from visible children; parent metadata
+      // must not hide an accessible App/System child.
+      return route.children ? route.children.length > 0 : allowed;
+    });
+  return filter(data);
 }
 
 /** 通过指定 `key` 获取父级路径集合，默认 `key` 为 `path` */
