@@ -12,7 +12,6 @@ import {
   storageLocal,
   responsiveStorageNameSpace
 } from "../utils";
-import { usePermissionStoreHook } from "./permission";
 
 export const useMultiTagsStore = defineStore("pure-multiTags", {
   state: () => {
@@ -20,9 +19,9 @@ export const useMultiTagsStore = defineStore("pure-multiTags", {
       `${responsiveStorageNameSpace()}configure`
     )?.multiTagsCache;
     const storedTags: any[] = cached
-      ? storageLocal().getItem<StorageConfigs>(
+      ? (storageLocal().getItem<StorageConfigs>(
           `${responsiveStorageNameSpace()}tags`
-        ) as any[] || []
+        ) as any[]) || []
       : [];
     const tags = [...routerArrays, ...storedTags].filter(
       (tag, index, all) =>

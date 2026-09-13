@@ -45,8 +45,10 @@ function ascending(arr: any[]) {
   });
   return arr.sort(
     (a: { meta: { rank: number } }, b: { meta: { rank: number } }) => {
-      return (a?.meta?.rank ?? Number.MAX_SAFE_INTEGER) -
-        (b?.meta?.rank ?? Number.MAX_SAFE_INTEGER);
+      return (
+        (a?.meta?.rank ?? Number.MAX_SAFE_INTEGER) -
+        (b?.meta?.rank ?? Number.MAX_SAFE_INTEGER)
+      );
     }
   );
 }
@@ -56,15 +58,6 @@ function filterTree(data: RouteComponent[]) {
   const newTree = cloneDeep(data).filter(
     (v: { meta: { showLink: boolean } }) => v.meta?.showLink !== false
   );
-  newTree.forEach(
-    (v: { children }) => v.children && (v.children = filterTree(v.children))
-  );
-  return newTree;
-}
-
-/** 过滤children长度为0的的目录，当目录下没有菜单时，会过滤此目录，目录没有赋予roles权限，当目录下只要有一个菜单有显示权限，那么此目录就会显示 */
-function filterChildrenTree(data: RouteComponent[]) {
-  const newTree = cloneDeep(data).filter((v: any) => v?.children?.length !== 0);
   newTree.forEach(
     (v: { children }) => v.children && (v.children = filterTree(v.children))
   );
@@ -84,18 +77,26 @@ function isOneOfArray(a: Array<string>, b: Array<string>) {
 function filterNoPermissionTree(data: RouteComponent[]) {
   const currentRoles =
     storageLocal().getItem<DataInfo<number>>(userKey)?.roles ?? [];
-  const permissions = storageLocal().getItem<DataInfo<number>>(userKey)?.permissions ?? [];
-  const filter = (routes: any[]): any[] => cloneDeep(routes)
-    .filter((route: any) => isOneOfArray(route.meta?.roles, currentRoles))
-    .map((route: any) => ({ ...route, children: route.children ? filter(route.children) : undefined }))
-    .filter((route: any) => {
-      if (route.meta?.enabled === false) return false;
-      const capability = route.meta?.capability;
-      const allowed = !capability || permissions.includes("*:*:*") || permissions.includes(capability);
-      // Workspace visibility is derived from visible children; parent metadata
-      // must not hide an accessible App/System child.
-      return route.children ? route.children.length > 0 : allowed;
-    });
+  const permissions =
+    storageLocal().getItem<DataInfo<number>>(userKey)?.permissions ?? [];
+  const filter = (routes: any[]): any[] =>
+    cloneDeep(routes)
+      .filter((route: any) => isOneOfArray(route.meta?.roles, currentRoles))
+      .map((route: any) => ({
+        ...route,
+        children: route.children ? filter(route.children) : undefined
+      }))
+      .filter((route: any) => {
+        if (route.meta?.enabled === false) return false;
+        const capability = route.meta?.capability;
+        const allowed =
+          !capability ||
+          permissions.includes("*:*:*") ||
+          permissions.includes(capability);
+        // Workspace visibility is derived from visible children; parent metadata
+        // must not hide an accessible App/System child.
+        return route.children ? route.children.length > 0 : allowed;
+      });
   return filter(data);
 }
 
