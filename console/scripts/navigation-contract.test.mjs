@@ -36,13 +36,13 @@ test("Sidebar does not render links for routes with required parameters", () => 
   assert.match(sidebarItem, /!isParameterizedRoute/);
 });
 
-test("Console keeps the seven canonical workspaces and Overview as the fixed home tab", () => {
-  assert.match(home, /workspace\("\/overview", "Overview"/);
+test("Console keeps the seven canonical workspaces and Dashboard as the fixed home tab", () => {
+  assert.match(home, /workspace\("\/dashboard", "Dashboard"/);
   assert.match(home, /workspace\("\/library", "Library"/);
   assert.match(home, /workspace\("\/add", "AddContent"/);
   assert.match(home, /workspace\("\/activity", "Activity"/);
   assert.match(home, /workspace\("\/storage", "Storage"/);
   assert.match(home, /workspace\("\/apps", "Apps"/);
   assert.match(home, /workspace\("\/system", "System"/);
-  assert.match(layoutTypes, /path: "\/overview"[\s\S]*fixedTag: true/);
+  assert.match(layoutTypes, /path: "\/dashboard"[\s\S]*fixedTag: true/);
 });

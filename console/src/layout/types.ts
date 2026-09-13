@@ -1,9 +1,9 @@
 import type { FunctionalComponent } from "vue";
 export const routerArrays: Array<RouteConfigs> = [
   {
-    path: "/overview",
-    name: "Overview",
-    meta: { title: "Overview", fixedTag: true }
+    path: "/dashboard",
+    name: "Dashboard",
+    meta: { title: "Dashboard", fixedTag: true }
   }
 ];
 

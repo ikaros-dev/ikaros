@@ -15,9 +15,9 @@
 
 ## GP01
 
-路径：`Overview → Storage/Providers → Add Content → Preview → Confirm → Activity → Library`
+路径：`Dashboard → Storage/Providers → Add Content → Preview → Confirm → Activity → Library`
 
-- [ ] Overview 首次加载能看到真实 Provider 状态；没有可用后端时显示阻塞原因和“配置存储”入口。
+- [ ] Dashboard 首次加载能看到真实 Provider 状态；没有可用后端时显示阻塞原因和“配置存储”入口。
 - [ ] 验证加载 skeleton、真实空 Provider/source 状态和 API 失败提示；Unknown 不得显示为健康。
 - [ ] 配置真实 Provider 后点击 Probe，只有真实成功才显示 Healthy。
 - [ ] 从 Add Content 选择真实来源，完成扫描/上传、预览识别、重复项和映射处理，再确认导入。
@@ -27,9 +27,9 @@
 
 ## GP02
 
-路径：`Overview Attention → Activity Detail → Retry → Library/Resource`
+路径：`Dashboard Attention → Activity Detail → Retry → Library/Resource`
 
-- [ ] 让一个真实导入进入失败状态，确认 Overview Attention 出现业务动作和业务对象文案，而不是只显示 Task ID。
+- [ ] 让一个真实导入进入失败状态，确认 Dashboard Attention 出现业务动作和业务对象文案，而不是只显示 Task ID。
 - [ ] 打开 Activity Detail，确认有错误摘要、关联对象、下一步和 Advanced 区域。
 - [ ] 点击 Retry，确认已成功的对象保持一份，失败项重新进入 Activity；不要刷新后仅凭 HTTP 202 判定成功。
 - [ ] 重试完成后回到 Library/Resource 验证最终对象和内容，而不是只验证 Activity 状态。
@@ -46,16 +46,16 @@
 
 ## GP04
 
-路径：`Overview Attention → Storage/Providers → Provider Detail → Probe/Update → Verify`
+路径：`Dashboard Attention → Storage/Providers → Provider Detail → Probe/Update → Verify`
 
-- [ ] 未探测 Provider 显示 Unknown；真实探测失败产生 Overview Attention 和用户可理解的下一步。
+- [ ] 未探测 Provider 显示 Unknown；真实探测失败产生 Dashboard Attention 和用户可理解的下一步。
 - [ ] Providers 聚焦连接、容量、健康、凭据状态和启停，不要求用户理解 Placement。
 - [ ] 修复真实连接配置并重新 Probe；只有真实成功后 Attention 才消失，失败仍保持 Unknown/异常。
 - [ ] 在 Provider Detail/Verify 记录最终健康状态和最近探测时间。
 
 ## GP05
 
-路径：`Overview/Resource Attention → Resource Detail/Metadata → Compare → Accept/Keep → Verify`
+路径：`Dashboard/Resource Attention → Resource Detail/Metadata → Compare → Accept/Keep → Verify`
 
 - [ ] 使用真实同步来源产生一个与人工确认值不同的候选值；验证人工值不会被静默覆盖。
 - [ ] 冲突视图同时显示当前值、候选值、来源和必要时间信息；Candidate ID/Sync Run ID 只在 Advanced 展示。
@@ -88,7 +88,7 @@
 
 ## GP09
 
-- [ ] Sidebar 只有 Overview、Library、Add Content、Activity、Storage、Apps、System 七个一级工作区。
+- [ ] Sidebar 只有 Dashboard、Library、Add Content、Activity、Storage、Apps、System 七个一级工作区。
 - [ ] 逐一从七个入口进入页面，确认 canonical route 归属：内容在 Library，应用在 Apps，平台治理在 System，后台工作在 Activity。
 - [ ] 直接访问历史 `*-center` 或 `/console/*` 地址，确认它们未注册为产品路由；不验收旧路由兼容。
 - [ ] 确认不存在 AI Task、Operations Task、Import Task 等平级任务入口。

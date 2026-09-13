@@ -66,7 +66,7 @@ const onLogin = async (formEl: FormInstance | undefined) => {
             disabled.value = true;
             const target = typeof route.query.redirect === "string" && route.query.redirect.startsWith("/") && !route.query.redirect.startsWith("//")
               ? route.query.redirect
-              : getTopMenu(true)?.path || "/overview";
+              : getTopMenu(true)?.path || "/dashboard";
             await router.replace(target);
             message(t("login.pureLoginSuccess"), { type: "success" });
           } else {
