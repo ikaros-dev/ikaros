@@ -61,6 +61,69 @@ panel:
   pureHiddenFooter: Hidden Footer
   pureMultiTagsCache: MultiTags Cache
 menus:
+  dashboard: Dashboard
+  resources: Resources
+  resourceLibrary: Resource Library
+  resourceDetail: Resource Detail
+  resourceCollections: Collections
+  resourceSearch: Resource Search
+  addResource: Add Resource
+  activityCenter: Activity Center
+  activityDetail: Activity Detail
+  storage: Storage
+  storageOverview: Storage Overview
+  storageProviders: Storage Providers
+  storageProviderDetail: Storage Provider Detail
+  storagePolicy: Storage Policy
+  archiveManagement: Archive Management
+  backupManagement: Backup Management
+  storageMaintenance: Storage Maintenance
+  apps: Apps
+  appsOverview: App Center
+  drive: Drive
+  driveNodeDetail: Drive File Detail
+  driveTransfers: Drive Transfers
+  driveSync: Drive Sync
+  driveConflicts: Drive Conflicts
+  driveTrash: Drive Trash
+  driveSettings: Drive Settings
+  documents: Documents
+  documentEditor: Document Editor
+  media: Media
+  planning: Planning
+  finance: Finance
+  privateNotes: Private Notes
+  passwords: Passwords
+  ai: AI
+  sharing: Sharing
+  analytics: Analytics
+  automation: Automation
+  pluginApps: Plugin Apps
+  pluginApp: Plugin App Page
+  system: System
+  accessControl: Access Control
+  userManagement: User Management
+  rolesPermissions: Roles & Permissions
+  authentication: Authentication
+  integrations: Integrations
+  pluginManagement: Plugin Management
+  externalIntegrations: External Integrations
+  eventDelivery: Event Delivery
+  communications: Notifications & Audit
+  notifications: Notification Center
+  auditLog: Audit Log
+  platformSettings: Platform Settings
+  systemParameters: System Parameters
+  operations: Operations
+  systemHealth: System Health
+  systemDiagnostics: System Diagnostics
+  account: Account
+  profile: Profile
+  preferences: Preferences
+  accountNotifications: Notification Settings
+  accountSecurity: Account Security
+  sessions: Sessions
+  apiTokens: API Tokens
   pureHome: Home
   pureLogin: Login
   pureAbnormal: Abnormal Page
@@ -89,3 +152,57 @@ login:
   pureUsernameReg: Please enter username
   purePassWordReg: Please enter password
   purePassWordRuleReg: The password format should be any combination of 8-18 digits
+menuDescriptions:
+  dashboard: Summarize attention items, ongoing work, and resource and storage status as the entry point to each workspace.
+  resourceLibrary: Browse, search, and manage Ikaros resources and open resource details.
+  resourceDetail: View a resource's basic information, files, metadata, relations, status, and related activity.
+  resourceCollections: Manage resource collections and the organization of resources within them.
+  resourceSearch: Search across resources and quickly locate targets with filters.
+  addResource: Add resources from local storage, NAS, object storage, remote URLs, or plugin sources and start an import.
+  activityCenter: View background work for imports, storage, metadata, backups, downloads, AI, and automation.
+  activityDetail: View the status, progress, result, errors, and execution details of a background job.
+  storageOverview: View storage capacity, tier distribution, Provider status, recovery status, and attention items.
+  storageProviders: Configure and manage storage providers, credentials, capacity, tiers, and health.
+  storageProviderDetail: View and maintain an individual storage provider's configuration, capacity, and runtime status.
+  storagePolicy: Configure lifecycle, retention, replicas, and migration policies across storage tiers.
+  archiveManagement: Manage archived resources, restore requests, restore budgets, and pending cleanup.
+  backupManagement: Manage backups and restore points and view verification and publication status.
+  storageMaintenance: Handle integrity checks, Blob, Placement, GC, Delivery, and advanced storage diagnostics.
+  appsOverview: View enabled core and plugin apps and open the corresponding product.
+  drive: Browse and manage personal files, folders, spaces, and Drive operations.
+  driveNodeDetail: View versions, storage, sharing, sync, and activity for a file or folder.
+  driveTransfers: View the status of uploads, downloads, and other Drive transfers.
+  driveSync: Manage device-to-Drive synchronization relationships and status.
+  driveConflicts: View and resolve file conflicts produced during synchronization.
+  driveTrash: View deleted Drive objects and restore or permanently delete them.
+  driveSettings: Manage Drive quotas, policies, backup bindings, and product settings.
+  documents: Create, organize, and manage documents.
+  documentEditor: Edit a document's content, versions, and publication status.
+  media: Browse and play video and audio resources and manage media experiences.
+  planning: Manage projects, tasks, plans, and schedules.
+  finance: Manage accounts, transactions, budgets, reconciliation, and personal finance data.
+  privateNotes: Manage private notes and sync status with enhanced privacy protection.
+  passwords: Manage password entries, security status, device access, and password health.
+  ai: Access AI conversations, content assistance, models, and intelligent capabilities.
+  sharing: Manage resource sharing, access scope, links, and sharing status.
+  analytics: View analytics and reports for resources, storage, apps, and usage.
+  automation: Configure automation rules, triggers, actions, and execution results.
+  pluginApps: View app entries provided by plugins and open enabled plugin apps.
+  pluginApp: Host an independent app page provided by a plugin; business content is implemented by that plugin.
+  userManagement: Manage platform users, account status, role assignments, and session governance.
+  rolesPermissions: Manage roles, the permission catalog, and role-permission mappings.
+  authentication: Configure platform login, Step-up, recovery, and authentication policies.
+  pluginManagement: Manage plugin installation, enablement, upgrades, permissions, and lifecycle.
+  externalIntegrations: Manage Connectors, Metadata Sources, Webhooks, and other external platform connections.
+  eventDelivery: View event delivery status, retries, and platform event chains.
+  notifications: Manage system notification rules, channels, templates, and delivery policies.
+  auditLog: Query platform audit events and trace users, systems, and high-risk operations.
+  systemParameters: Manage platform-level system parameters and their effective scope.
+  systemHealth: View the health of the application, database, tasks, events, and storage.
+  systemDiagnostics: Provide low-level diagnostics and troubleshooting entry points for operators.
+  profile: Manage the current account's avatar, display name, language, and basic profile.
+  preferences: Manage the current account's interface, language, timezone, and usage preferences.
+  accountNotifications: Manage which notifications the current account receives and its notification preferences.
+  accountSecurity: Manage the current account's password, recovery methods, and security status.
+  sessions: View the current account's login sessions and revoke sessions when needed.
+  apiTokens: Manage API tokens created by the current account, including scope and lifecycle.
