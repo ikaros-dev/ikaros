@@ -61,7 +61,7 @@ const requirements = [
   ["成功验证", /成功.*验证|success.*verification/i],
   ["失败验证", /失败.*验证|failure.*verification/i],
   ["无权限验证", /无权限.*验证|unauthori[sz]ed.*verification/i],
-  ["后台进度验证", /后台进度.*验证|background progress.*verification/i],
+  ["后台进度验证", /后台进度.*验证|异步进度.*验证|background progress.*verification/i],
   ["内部实现词汇说明", /内部实现词汇|internal implementation terms/i]
 ];
 const missing = requirements
