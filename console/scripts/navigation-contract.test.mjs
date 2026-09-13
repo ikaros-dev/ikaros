@@ -4,6 +4,11 @@ import { readFile } from "node:fs/promises";
 
 const home = await readFile(new URL("../src/router/modules/home.ts", import.meta.url), "utf8");
 const sidebar = await readFile(new URL("../src/layout/components/lay-sidebar/components/SidebarItem.vue", import.meta.url), "utf8");
+const layoutTypes = await readFile(new URL("../src/layout/types.ts", import.meta.url), "utf8");
+
+test("Dashboard is the fixed Chinese home tab", () => {
+  assert.match(layoutTypes, /path: "\/dashboard"[\s\S]*name: "Dashboard"[\s\S]*title: "仪表盘"[\s\S]*fixedTag: true/);
+});
 
 test("Console uses five Chinese top-level workspaces", () => {
   const matches = [...home.matchAll(/workspace\(\s*"([^"]+)",\s*"([^"]+)"/g)].map(match => [match[1], match[2]]);
@@ -20,15 +25,15 @@ test("Console uses five Chinese top-level workspaces", () => {
 
 test("Resource and System menus follow the documented hierarchy", () => {
   for (const fragment of [
-    '"library",\n          "ResourceLibrary"',
-    '"add",\n          "AddResource"',
-    '"activity",\n          "ActivityCenter"',
-    'directory("access", "SystemAccess", "访问控制"',
-    'directory("integrations", "SystemIntegrations", "集成"',
-    'directory("communications", "SystemCommunications", "通知与审计"',
-    'directory("settings", "SystemSettings", "平台配置"',
-    'directory("operations", "SystemOperations", "运维"'
-  ]) assert.ok(home.includes(fragment));
+    /page\(\s*"library",\s*"ResourceLibrary"/,
+    /page\(\s*"add",\s*"AddResource"/,
+    /page\(\s*"activity",\s*"ActivityCenter"/,
+    /directory\("access", "SystemAccess", "访问控制"/,
+    /directory\("integrations", "SystemIntegrations", "集成"/,
+    /directory\("communications", "SystemCommunications", "通知与审计"/,
+    /directory\("settings", "SystemSettings", "平台配置"/,
+    /directory\("operations", "SystemOperations", "运维"/
+  ]) assert.match(home, fragment);
 });
 
 test("Directory roots redirect to canonical child pages", () => {

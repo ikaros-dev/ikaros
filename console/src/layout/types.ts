@@ -3,7 +3,7 @@ export const routerArrays: Array<RouteConfigs> = [
   {
     path: "/dashboard",
     name: "Dashboard",
-    meta: { title: "Dashboard", fixedTag: true }
+    meta: { title: "仪表盘", fixedTag: true }
   }
 ];
 
