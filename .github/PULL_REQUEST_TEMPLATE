@@ -32,12 +32,28 @@
 - [ ] If this pull request closes/resolves/fixes an existing issue, replace the issue number. Closes #<issue number>.
 
 <!-- Required for Console or Console-contract changes. Use N/A only when this PR does not touch Console. -->
-### Console Golden Path
-- Golden Path 关联：<GP01-GP09 或 N/A>
-- 旅程覆盖：<入口、加载/空状态、成功、失败、无权限、后台进度、恢复/重试、最终业务结果中的适用段落>
-- 新的用户概念：<无，或说明新增概念>
-- 成功验证：<真实用户结果和证据>
-- 失败验证：<真实失败状态和恢复/重试证据>
-- 无权限验证：<直接 canonical URL 与导航收敛证据，或 N/A>
-- 后台进度验证：<Activity 观察证据，或 N/A>
-- 内部实现词汇：<是否仍暴露；若是说明原因和 Advanced 边界>
+### Console Golden Path Metadata
+
+#### Golden Path 关联
+<填写 GP01-GP09；非 Console 变更填写 N/A>
+
+#### 旅程覆盖段落
+<说明本 PR 覆盖的入口、加载/空状态、成功、失败、无权限、后台进度、恢复/重试和最终业务结果段落>
+
+#### 用户概念说明
+<说明新增或调整的用户概念；没有新增概念填写“无”>
+
+#### 成功验证
+<填写真实用户结果和验证证据>
+
+#### 失败验证
+<填写真实失败状态以及恢复/重试验证证据>
+
+#### 无权限验证
+<填写直接 canonical URL 与导航收敛验证证据；不适用填写 N/A>
+
+#### 后台进度验证
+<填写 Activity 观察验证证据；不适用填写 N/A>
+
+#### 内部实现词汇说明
+<说明用户界面是否暴露内部实现词汇；若暴露，说明原因和 Advanced 边界>
