@@ -100,7 +100,12 @@ public class DefaultRoleService implements RoleService {
 
     @Override
     public Mono<RoleView> replacePermissions(UUID actorId, UUID roleId, ReplaceRolePermissionsRequest request) {
-        List<String> desired = request.permissions().stream().map(PlatformPermission::key).distinct().sorted().toList();
+        List<String> desired = request.permissions().stream()
+            .map(PlatformPermission::fromKey)
+            .map(PlatformPermission::key)
+            .distinct()
+            .sorted()
+            .toList();
         return requiredRole(roleId)
             .flatMap(role -> permissionRepository.findAllByRoleId(roleId).map(RolePermissionEntity::permissionKey)
                 .sort().collectList().flatMap(current -> {

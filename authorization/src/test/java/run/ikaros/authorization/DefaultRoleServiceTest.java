@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -106,6 +107,30 @@ class DefaultRoleServiceTest {
             .assertNext(view -> assertThat(view.permissions()).containsExactly("system.user.manage"))
             .verifyComplete();
         verify(permissionRepository).save(any(RolePermissionEntity.class));
+    }
+
+    @Test
+    void replacesPermissionsUsingRegisteredRoutePermissionKeys() {
+        UUID actorId = UUID.randomUUID();
+        UUID roleId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformRoleEntity role = new PlatformRoleEntity(roleId, "CONSOLE_READER", "控制台查看者", null,
+            false, now, now, 0L);
+        when(roleRepository.findById(roleId)).thenReturn(Mono.just(role));
+        when(permissionRepository.findAllByRoleId(roleId)).thenReturn(Flux.empty(), Flux.just(
+            new RolePermissionEntity(UUID.randomUUID(), roleId, "user.read", now, 0L)));
+        when(permissionRepository.deleteAllByRoleId(roleId)).thenReturn(Mono.empty());
+        when(permissionRepository.save(any())).thenReturn(Mono.just(new RolePermissionEntity(
+            UUID.randomUUID(), roleId, "user.read", now, 0L)));
+        when(auditService.record(eq(actorId), eq("identity.role.permission.replace"), eq("ROLE"), eq(roleId), eq("{}")))
+            .thenReturn(Mono.empty());
+
+        ReplaceRolePermissionsRequest request = new ReplaceRolePermissionsRequest(
+            List.of("user.read"));
+
+        StepVerifier.create(service.replacePermissions(actorId, roleId, request))
+            .assertNext(view -> assertThat(view.permissions()).containsExactly("user.read"))
+            .verifyComplete();
     }
 
     @Test
