@@ -54,6 +54,7 @@ roleManagement:
   builtIn: Built-in
   custom: Custom
   permissions: Permissions
+  morePermissions: "+{count} more"
   actions: Actions
   create: Add Role
   createTitle: Add Role

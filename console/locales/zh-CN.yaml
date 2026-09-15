@@ -54,6 +54,7 @@ roleManagement:
   builtIn: 内置角色
   custom: 自定义角色
   permissions: 权限
+  morePermissions: 还有 {count} 项
   actions: 操作
   create: 新增角色
   createTitle: 新增角色

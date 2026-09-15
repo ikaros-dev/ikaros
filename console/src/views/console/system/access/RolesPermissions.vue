@@ -207,8 +207,11 @@ onMounted(loadRoles);
       <el-table-column :label="t('roleManagement.permissions')" min-width="300">
         <template #default="{ row }">
           <el-space wrap>
-            <el-tag v-for="permission in row.permissions" :key="permission" size="small">
+            <el-tag v-for="permission in row.permissions.slice(0, 2)" :key="permission" size="small">
               {{ permissionLabel(permission) }}
+            </el-tag>
+            <el-tag v-if="row.permissions.length > 2" size="small" type="info">
+              {{ t("roleManagement.morePermissions", { count: row.permissions.length - 2 }) }}
             </el-tag>
             <span v-if="!row.permissions.length">{{ t("roleManagement.empty") }}</span>
           </el-space>
