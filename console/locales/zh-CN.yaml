@@ -31,9 +31,9 @@ userManagement:
   deleteSuccess: 用户已删除
   deleteFailed: 删除用户失败
   verificationTitle: 二次验证
-  verificationDescription: 验证码已发送到当前账号绑定的邮箱，请输入 6 位验证码后继续删除。
+  verificationDescription: 验证码已发送到当前账号绑定的邮箱，请输入 6 位验证码后继续操作。
   verificationPlaceholder: 请输入 6 位验证码
-  verificationConfirm: 验证并删除
+  verificationConfirm: 验证并继续
   never: 从未
   empty: 暂无
   search: 查询

@@ -10,7 +10,8 @@ import {
   listManagedUsers,
   verifyStepUpChallenge,
   type ManagedUser,
-  type ManagedUserStatus
+  type ManagedUserStatus,
+  type CreateManagedUserRequest
 } from "@/api/user";
 import {
   clearVerificationGrant,
@@ -34,8 +35,9 @@ const verificationCode = ref("");
 const verificationChallengeId = ref("");
 const pendingDeleteUser = ref<ManagedUser | null>(null);
 const createVisible = ref(false);
-const createLoading = ref(false);
 const createForm = reactive({ username: "", displayName: "", email: "" });
+const pendingCreateRequest = ref<CreateManagedUserRequest | null>(null);
+const verificationAction = ref<"create" | "delete" | null>(null);
 const detailVisible = ref(false);
 const detailLoading = ref(false);
 const detailUser = ref<ManagedUser | null>(null);
@@ -91,20 +93,31 @@ const openCreate = () => {
 
 const submitCreate = async () => {
   if (!createForm.username.trim() || !createForm.displayName.trim()) return;
-  createLoading.value = true;
+  pendingCreateRequest.value = {
+    username: createForm.username.trim(),
+    displayName: createForm.displayName.trim(),
+    email: createForm.email.trim() || undefined
+  };
+  verificationAction.value = "create";
+  createVisible.value = false;
   try {
-    await createManagedUser({
-      username: createForm.username.trim(),
-      displayName: createForm.displayName.trim(),
-      email: createForm.email.trim() || undefined
-    });
-    createVisible.value = false;
-    ElMessage.success(t("userManagement.createSuccess"));
-    await loadUsers();
+    await requestVerification();
   } catch {
+    pendingCreateRequest.value = null;
+    verificationAction.value = null;
     ElMessage.error(t("userManagement.createFailed"));
+  }
+};
+
+const requestVerification = async () => {
+  verificationLoading.value = true;
+  try {
+    const challenge = await issueStepUpChallenge();
+    verificationChallengeId.value = challenge.id;
+    verificationCode.value = "";
+    verificationVisible.value = true;
   } finally {
-    createLoading.value = false;
+    verificationLoading.value = false;
   }
 };
 
@@ -134,15 +147,8 @@ const removeUser = async (user: ManagedUser) => {
       }
     );
     pendingDeleteUser.value = user;
-    verificationLoading.value = true;
-    try {
-      const challenge = await issueStepUpChallenge();
-      verificationChallengeId.value = challenge.id;
-      verificationCode.value = "";
-      verificationVisible.value = true;
-    } finally {
-      verificationLoading.value = false;
-    }
+    verificationAction.value = "delete";
+    await requestVerification();
   } catch (error) {
     if (error !== "cancel" && error !== "close") {
       ElMessage.error(t("userManagement.deleteFailed"));
@@ -150,11 +156,11 @@ const removeUser = async (user: ManagedUser) => {
   }
 };
 
-const verifyAndDelete = async () => {
+const verifyAndExecute = async () => {
   if (!verificationChallengeId.value || !/^\d{6}$/.test(verificationCode.value))
     return;
-  const user = pendingDeleteUser.value;
-  if (!user) return;
+  const action = verificationAction.value;
+  if (!action) return;
   verificationLoading.value = true;
   try {
     const result = await verifyStepUpChallenge(
@@ -162,15 +168,21 @@ const verifyAndDelete = async () => {
       verificationCode.value
     );
     setVerificationGrant(result.verificationGrant);
-    await deleteManagedUser(user.id);
+    if (action === "delete" && pendingDeleteUser.value) {
+      await deleteManagedUser(pendingDeleteUser.value.id);
+    } else if (action === "create" && pendingCreateRequest.value) {
+      await createManagedUser(pendingCreateRequest.value);
+    }
     clearVerificationGrant();
     verificationVisible.value = false;
     pendingDeleteUser.value = null;
-    ElMessage.success(t("userManagement.deleteSuccess"));
+    pendingCreateRequest.value = null;
+    verificationAction.value = null;
+    ElMessage.success(t(action === "delete" ? "userManagement.deleteSuccess" : "userManagement.createSuccess"));
     await loadUsers();
   } catch {
     clearVerificationGrant();
-    ElMessage.error(t("userManagement.deleteFailed"));
+    ElMessage.error(t(action === "delete" ? "userManagement.deleteFailed" : "userManagement.createFailed"));
   } finally {
     verificationLoading.value = false;
   }
@@ -395,7 +407,7 @@ onMounted(loadUsers);
         maxlength="6"
         inputmode="numeric"
         :placeholder="t('userManagement.verificationPlaceholder')"
-        @keyup.enter="verifyAndDelete"
+        @keyup.enter="verifyAndExecute"
       />
       <template #footer>
         <el-button @click="verificationVisible = false">{{
@@ -405,7 +417,7 @@ onMounted(loadUsers);
           type="primary"
           :loading="verificationLoading"
           :disabled="!/^\d{6}$/.test(verificationCode)"
-          @click="verifyAndDelete"
+          @click="verifyAndExecute"
         >
           {{ t("userManagement.verificationConfirm") }}
         </el-button>
