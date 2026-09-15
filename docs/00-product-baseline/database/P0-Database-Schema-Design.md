@@ -15,7 +15,7 @@
 >
 > 本文档开始锁定 P0 的物理 Schema、Table、Column、Constraint 与关键 Index 名称。实现若需要偏离本文档，必须先修改本文档或通过明确 ADR 记录偏离原因，不能由 Repository 实现静默产生另一套数据库事实。
 >
-> Identity 登录认证采用无状态 JWT。数据库不持久化 Login Session / Security Session、Access Token / Refresh Token Digest、单设备登录状态或 `last_seen` 会话记录；用户级提前失效旧 JWT 通过 `identity.user_account.security_version` 完成。
+> Identity 登录认证采用无状态 JWT。数据库不持久化 Login Session / Security Session、Access Token / Refresh Token Digest、单设备登录状态或 `last_seen` 会话记录；用户级提前失效旧 JWT 通过 `platform_user.security_version` 完成。
 
 ---
 
@@ -704,7 +704,7 @@ CHECK attempt_no >= 1
 
 # Part E — Identity / Authorization Schema
 
-## 20. `identity.user_account`
+## 20. `platform_user`
 
 | Column | Type | Null |
 |---|---|---:|
@@ -818,7 +818,7 @@ role_id uuid not null
 created_at timestamptz not null
 created_by_user_id uuid null
 PRIMARY KEY(user_id, role_id)
-FK user_id -> identity.user_account(id) ON DELETE RESTRICT
+FK user_id -> platform_user(id) ON DELETE RESTRICT
 FK role_id -> identity.role(id) ON DELETE RESTRICT
 ```
 
@@ -852,7 +852,7 @@ signature
 issuer / audience（启用时）
 exp / nbf / iat
 subject = user_id
-security_version == identity.user_account.security_version
+security_version == platform_user.security_version
 user status allows authentication
 ```
 
@@ -863,7 +863,7 @@ user status allows authentication
 需要让目标用户全部旧 Token 提前失效时，执行 `identity.invalidate-user-tokens`，在事务中提升：
 
 ```text
-identity.user_account.security_version
+platform_user.security_version
 ```
 
 并发布 `authentication.user.tokens-invalidated`。
