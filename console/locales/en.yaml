@@ -1,3 +1,29 @@
+userManagement:
+  username: Username
+  usernamePlaceholder: Enter username
+  displayName: Display Name
+  email: Email
+  status: Status
+  statusPlaceholder: Select status
+  statuses:
+    PENDING: Pending
+    ACTIVE: Active
+    DISABLED: Disabled
+    LOCKED: Locked
+  roles: Roles
+  createdAt: Created At
+  lastLoginAt: Last Login
+  actions: Actions
+  delete: Delete
+  deleteTitle: Delete User
+  deleteConfirm: Are you sure you want to delete user "{username}"?
+  deleteSuccess: User deleted
+  deleteFailed: Failed to delete user
+  never: Never
+  empty: Empty
+  search: Search
+  reset: Reset
+
 buttons:
   pureLoginOut: LoginOut
   pureLogin: Login

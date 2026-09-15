@@ -1,3 +1,29 @@
+userManagement:
+  username: 用户名
+  usernamePlaceholder: 请输入用户名
+  displayName: 昵称
+  email: 邮箱
+  status: 状态
+  statusPlaceholder: 请选择状态
+  statuses:
+    PENDING: 待激活
+    ACTIVE: 正常
+    DISABLED: 已禁用
+    LOCKED: 已锁定
+  roles: 角色
+  createdAt: 创建时间
+  lastLoginAt: 最近登录
+  actions: 操作
+  delete: 删除
+  deleteTitle: 删除用户
+  deleteConfirm: 确定删除用户“{username}”吗？
+  deleteSuccess: 用户已删除
+  deleteFailed: 删除用户失败
+  never: 从未
+  empty: 暂无
+  search: 查询
+  reset: 重置
+
 buttons:
   pureLoginOut: 退出系统
   pureLogin: 登录
