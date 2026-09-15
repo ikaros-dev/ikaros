@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
  */
 public interface StepUpVerificationService {
     /**
-     * 为指定活跃用户发起 Email OTP Step-up 挑战。
+     * 为指定活跃用户发起 Email OTP Step-up 挑战；命中同账号最近成功验证的复用窗口时直接返回新的 Grant。
      *
      * @param userId 当前用户标识
      * @return 挑战摘要

@@ -1,6 +1,10 @@
 package run.ikaros.authentication.verification;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
@@ -9,6 +13,7 @@ import run.ikaros.authentication.JwtTokenService;
 import run.ikaros.authentication.PlatformUserEntity;
 import run.ikaros.authentication.PlatformUserRepository;
 import run.ikaros.authentication.UserStatus;
+import run.ikaros.authentication.api.SecurityVerificationLevel;
 
 /**
  * 默认 Step-up 协调服务，强制验证码用途与验证目标完全匹配。
@@ -19,6 +24,7 @@ public class DefaultStepUpVerificationService implements StepUpVerificationServi
     private final EmailOtpVerificationProvider emailOtpProvider;
     private final VerificationChallengeRepository challengeRepository;
     private final JwtTokenService tokens;
+    private final Duration reuseWindow;
 
     /**
      * 创建 Step-up 协调服务。
@@ -32,15 +38,44 @@ public class DefaultStepUpVerificationService implements StepUpVerificationServi
                                             EmailOtpVerificationProvider emailOtpProvider,
                                             VerificationChallengeRepository challengeRepository,
                                             JwtTokenService tokens) {
+        this(userRepository, emailOtpProvider, challengeRepository, tokens, Duration.ofHours(4));
+    }
+
+    @Autowired
+    public DefaultStepUpVerificationService(PlatformUserRepository userRepository,
+                                            EmailOtpVerificationProvider emailOtpProvider,
+                                            VerificationChallengeRepository challengeRepository,
+                                            JwtTokenService tokens,
+                                            @Value("${ikaros.security.verification.email.reuse-window:PT4H}")
+                                            Duration reuseWindow) {
         this.userRepository = userRepository;
         this.emailOtpProvider = emailOtpProvider;
         this.challengeRepository = challengeRepository;
         this.tokens = tokens;
+        this.reuseWindow = reuseWindow;
     }
 
     @Override
     public Mono<VerificationChallengeView> issueEmailOtp(UUID userId) {
-        return emailOtpProvider.issue(userId, new IssueVerificationRequest(VerificationPurpose.LOGIN_STEP_UP, null));
+        Instant now = Instant.now();
+        if (reuseWindow.isZero() || reuseWindow.isNegative()) {
+            return emailOtpProvider.issue(userId, new IssueVerificationRequest(VerificationPurpose.LOGIN_STEP_UP, null));
+        }
+        return userRepository.findById(userId)
+            .filter(user -> user.status() == UserStatus.ACTIVE)
+            .switchIfEmpty(Mono.error(new NotFoundException("用户不存在或已停用")))
+            .flatMap(user -> challengeRepository
+                .findFirstByUserIdAndPurposeAndStatusAndConsumedAtAfterOrderByConsumedAtDesc(
+                    userId, VerificationPurpose.LOGIN_STEP_UP, VerificationChallengeStatus.VERIFIED,
+                    now.minus(reuseWindow))
+                .map(challenge -> new VerificationChallengeView(null, VerificationMethod.EMAIL_OTP,
+                    VerificationPurpose.LOGIN_STEP_UP, challenge.consumedAt().plus(reuseWindow),
+                    VerificationChallengeStatus.VERIFIED,
+                    tokens.issueVerificationGrant(user.id(), user.securityVersion(), VerificationPurpose.LOGIN_STEP_UP,
+                        null, SecurityVerificationLevel.SVL_1.value(), challenge.consumedAt(),
+                        challenge.consumedAt().plus(reuseWindow))))
+                .switchIfEmpty(Mono.defer(() -> emailOtpProvider.issue(userId,
+                    new IssueVerificationRequest(VerificationPurpose.LOGIN_STEP_UP, null)))));
     }
 
     @Override

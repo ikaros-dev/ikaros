@@ -36,6 +36,7 @@ ikaros:
         from: ${IKAROS_SECURITY_EMAIL_FROM:}
         api-key: ${IKAROS_SECURITY_EMAIL_API_KEY:}
         log-code: ${IKAROS_SECURITY_EMAIL_LOG_CODE:false}
+        reuse-window: ${IKAROS_SECURITY_EMAIL_REUSE_WINDOW:PT4H}
     jwt:
       issuer: ${IKAROS_JWT_ISSUER:ikaros}
       secret: ${IKAROS_JWT_SECRET:}

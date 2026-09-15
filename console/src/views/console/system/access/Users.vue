@@ -119,6 +119,11 @@ const requestVerification = async () => {
   verificationLoading.value = true;
   try {
     const challenge = await issueStepUpChallenge();
+    if (challenge.verificationGrant) {
+      setVerificationGrant(challenge.verificationGrant);
+      await verifyAndExecute(challenge.verificationGrant);
+      return;
+    }
     verificationChallengeId.value = challenge.id;
     verificationCode.value = "";
     verificationVisible.value = true;
@@ -193,17 +198,22 @@ const removeUser = async (user: ManagedUser) => {
   }
 };
 
-const verifyAndExecute = async () => {
-  if (!verificationChallengeId.value || !/^\d{6}$/.test(verificationCode.value))
+const verifyAndExecute = async (reusedGrant?: string) => {
+  if (
+    (!reusedGrant && !verificationChallengeId.value) ||
+    (!reusedGrant && !/^\d{6}$/.test(verificationCode.value))
+  )
     return;
   const action = verificationAction.value;
   if (!action) return;
   verificationLoading.value = true;
   try {
-    const result = await verifyStepUpChallenge(
-      verificationChallengeId.value,
-      verificationCode.value
-    );
+    const result = reusedGrant
+      ? { verificationGrant: reusedGrant }
+      : await verifyStepUpChallenge(
+          verificationChallengeId.value,
+          verificationCode.value
+        );
     setVerificationGrant(result.verificationGrant);
     if (action === "delete" && pendingDeleteUser.value) {
       await deleteManagedUser(pendingDeleteUser.value.id);
@@ -503,7 +513,7 @@ onMounted(loadUsers);
         maxlength="6"
         inputmode="numeric"
         :placeholder="t('userManagement.verificationPlaceholder')"
-        @keyup.enter="verifyAndExecute"
+        @keyup.enter="() => verifyAndExecute()"
       />
       <template #footer>
         <el-button @click="verificationVisible = false">{{
@@ -513,7 +523,7 @@ onMounted(loadUsers);
           type="primary"
           :loading="verificationLoading"
           :disabled="!/^\d{6}$/.test(verificationCode)"
-          @click="verifyAndExecute"
+          @click="() => verifyAndExecute()"
         >
           {{ t("userManagement.verificationConfirm") }}
         </el-button>

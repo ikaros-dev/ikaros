@@ -6,6 +6,7 @@ export type VerificationChallenge = {
   purpose: string;
   expiresAt: string;
   status: string;
+  verificationGrant?: string | null;
 };
 
 export type VerificationResult = {

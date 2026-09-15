@@ -21,6 +21,7 @@
 6. 用户级提前失效通过提升 `security_version` 完成。请求认证必须校验 Token 中的版本与当前用户版本一致，并校验用户状态。
 7. Step-up 成功后签发短期、Purpose-bound 的增强 JWT / Verification Grant，不创建或更新登录 Session。
 8. 普通 Logout 由客户端删除本地 Token 与 Credential Cache 完成；服务端不产生登录 Session 变更。
+9. 同一账号最近一次成功完成 `LOGIN_STEP_UP` 的时间，在可配置复用窗口内（默认 4 小时）可直接换发新的短期 Verification Grant；复用不跨账号、不跨用途，并继续校验当前 `security_version`。
 
 ## Token Claim 最小要求
 
@@ -72,4 +73,5 @@ exp
 - Access / Refresh JWT 与 Step-up Grant 均产生唯一 `jti`；
 - `security_version` 变化后旧 Access / Refresh JWT 均无法继续使用；
 - Step-up Grant 校验 `purpose`、目标、SVL 与有效期；
+- Step-up 复用窗口只依据同账号最近成功验证的 `consumed_at`，窗口外必须重新发起 OTP；
 - 普通 Logout 不修改认证持久化状态。

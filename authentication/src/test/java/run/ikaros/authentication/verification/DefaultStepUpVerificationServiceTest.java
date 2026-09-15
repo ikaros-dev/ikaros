@@ -43,11 +43,40 @@ class DefaultStepUpVerificationServiceTest {
         Instant now = Instant.now();
         VerificationChallengeView view = new VerificationChallengeView(UUID.randomUUID(), VerificationMethod.EMAIL_OTP,
             VerificationPurpose.LOGIN_STEP_UP, now.plusSeconds(300), VerificationChallengeStatus.ISSUED);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, now, now, null, 2L, 0L)));
+        when(challengeRepository.findFirstByUserIdAndPurposeAndStatusAndConsumedAtAfterOrderByConsumedAtDesc(
+            eq(userId), eq(VerificationPurpose.LOGIN_STEP_UP), eq(VerificationChallengeStatus.VERIFIED), any()))
+            .thenReturn(Mono.empty());
         when(otpProvider.issue(eq(userId), any())).thenReturn(Mono.just(view));
 
         StepVerifier.create(service.issueEmailOtp(userId)).expectNext(view).verifyComplete();
         verify(otpProvider).issue(userId, new IssueVerificationRequest(VerificationPurpose.LOGIN_STEP_UP,
             null));
+    }
+
+    @Test
+    void reusesRecentSuccessfulEmailOtpWithoutIssuingAnotherChallenge() {
+        UUID userId = UUID.randomUUID();
+        Instant verifiedAt = Instant.now().minusSeconds(60);
+        PlatformUserEntity user = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
+            UserStatus.ACTIVE, verifiedAt, verifiedAt, null, 2L, 0L);
+        VerificationChallengeEntity recent = new VerificationChallengeEntity(UUID.randomUUID(), userId,
+            VerificationMethod.EMAIL_OTP, VerificationPurpose.LOGIN_STEP_UP, null, "digest", verifiedAt,
+            verifiedAt.plusSeconds(300), 0, 5, verifiedAt, VerificationChallengeStatus.VERIFIED, 0L);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(user));
+        when(challengeRepository.findFirstByUserIdAndPurposeAndStatusAndConsumedAtAfterOrderByConsumedAtDesc(
+            eq(userId), eq(VerificationPurpose.LOGIN_STEP_UP), eq(VerificationChallengeStatus.VERIFIED), any()))
+            .thenReturn(Mono.just(recent));
+
+        StepVerifier.create(service.issueEmailOtp(userId))
+            .assertNext(view -> {
+                assertThat(view.id()).isNull();
+                assertThat(view.status()).isEqualTo(VerificationChallengeStatus.VERIFIED);
+                assertThat(view.verificationGrant()).isNotBlank();
+            })
+            .verifyComplete();
+        org.mockito.Mockito.verifyNoInteractions(otpProvider);
     }
 
     @Test

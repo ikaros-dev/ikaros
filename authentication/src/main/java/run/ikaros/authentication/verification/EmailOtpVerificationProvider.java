@@ -162,6 +162,6 @@ public class EmailOtpVerificationProvider implements VerificationProvider {
 
     private VerificationChallengeView toView(VerificationChallengeEntity challenge) {
         return new VerificationChallengeView(challenge.id(), challenge.method(), challenge.purpose(), challenge.expiresAt(),
-            challenge.status());
+            challenge.status(), null);
     }
 }
