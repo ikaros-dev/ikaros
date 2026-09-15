@@ -96,6 +96,48 @@ roleManagement:
     storage_restore_read: 查看媒体恢复
     storage_restore_manage: 管理媒体恢复
     ingestion_source_manage: 管理导入来源
+    account_self_read: 查看个人资料
+    account_preference_read: 查看个人偏好
+    account_notification_read: 查看个人通知设置
+    account_security_read: 查看账户安全
+    user_read: 查看用户管理
+    role_read: 查看角色与权限
+    security_authentication_read: 查看身份认证配置
+    integration_read: 查看平台集成
+    notification_read: 查看通知中心
+    audit_read: 查看审计日志
+    platform_read: 查看系统参数
+    system_health_read: 查看系统健康
+    system_diagnostics_read: 查看系统诊断
+    collection_read: 查看资源集合
+    search_use: 使用资源搜索
+    storage_policy_read: 查看存储策略
+    storage_archive_read: 查看归档管理
+    storage_maintenance_read: 查看存储维护
+    backup_read: 查看备份管理
+    drive_space_read: 查看云盘空间
+    drive_file_read: 查看云盘文件
+    drive_transfer_read: 查看云盘传输
+    drive_sync_read: 查看云盘同步
+    drive_conflict_read: 查看云盘冲突
+    drive_trash_read: 查看云盘回收站
+    drive_settings_read: 查看云盘设置
+    document_read: 查看文档
+    media_read: 查看媒体
+    planning_read: 查看计划
+    finance_read: 查看个人财务
+    private_note_read: 查看私密笔记
+    password_read: 查看密码库
+    ai_read: 查看 AI 应用
+    share_read: 查看分享
+    analytics_read: 查看数据分析
+    automation_read: 查看自动化
+    dashboard_read: 查看仪表盘
+    ingestion_read: 查看内容导入
+    activity_read: 查看活动中心
+    storage_read: 查看存储
+    app_read: 查看应用
+    system_read: 查看系统
 
 buttons:
   pureLoginOut: 退出系统
