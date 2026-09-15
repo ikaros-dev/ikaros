@@ -19,6 +19,7 @@ import {
   clearVerificationGrant,
   setVerificationGrant
 } from "@/utils/verificationGrant";
+import { getHttpErrorMessage } from "@/utils/http";
 import PageCard from "@/views/console/PageCard.vue";
 
 const { t, locale } = useI18n();
@@ -107,10 +108,10 @@ const submitCreate = async () => {
   createVisible.value = false;
   try {
     await requestVerification();
-  } catch {
+  } catch (error) {
     pendingCreateRequest.value = null;
     verificationAction.value = null;
-    ElMessage.error(t("userManagement.createFailed"));
+    ElMessage.error(getHttpErrorMessage(error, t("userManagement.createFailed")));
   }
 };
 
@@ -132,8 +133,8 @@ const openDetail = async (user: ManagedUser) => {
   detailLoading.value = true;
   try {
     detailUser.value = await getManagedUser(user.id);
-  } catch {
-    ElMessage.error(t("userManagement.detailFailed"));
+  } catch (error) {
+    ElMessage.error(getHttpErrorMessage(error, t("userManagement.detailFailed")));
     detailVisible.value = false;
   } finally {
     detailLoading.value = false;
@@ -164,10 +165,10 @@ const submitUpdate = async () => {
   editVisible.value = false;
   try {
     await requestVerification();
-  } catch {
+  } catch (error) {
     pendingUpdateRequest.value = null;
     verificationAction.value = null;
-    ElMessage.error(t("userManagement.updateFailed"));
+    ElMessage.error(getHttpErrorMessage(error, t("userManagement.updateFailed")));
   }
 };
 
@@ -187,7 +188,7 @@ const removeUser = async (user: ManagedUser) => {
     await requestVerification();
   } catch (error) {
     if (error !== "cancel" && error !== "close") {
-      ElMessage.error(t("userManagement.deleteFailed"));
+      ElMessage.error(getHttpErrorMessage(error, t("userManagement.deleteFailed")));
     }
   }
 };
@@ -225,15 +226,20 @@ const verifyAndExecute = async () => {
           : "userManagement.updateSuccess"
     ));
     await loadUsers();
-  } catch {
+  } catch (error) {
     clearVerificationGrant();
-    ElMessage.error(t(
-      action === "delete"
-        ? "userManagement.deleteFailed"
-        : action === "create"
-          ? "userManagement.createFailed"
-          : "userManagement.updateFailed"
-    ));
+    ElMessage.error(
+      getHttpErrorMessage(
+        error,
+        t(
+          action === "delete"
+            ? "userManagement.deleteFailed"
+            : action === "create"
+              ? "userManagement.createFailed"
+              : "userManagement.updateFailed"
+        )
+      )
+    );
   } finally {
     verificationLoading.value = false;
   }
