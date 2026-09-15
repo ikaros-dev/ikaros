@@ -44,6 +44,58 @@ userManagement:
   search: Search
   reset: Reset
 
+roleManagement:
+  code: Role Code
+  codePlaceholder: Enter role code
+  name: Role Name
+  namePlaceholder: Enter role name
+  description: Description
+  type: Type
+  builtIn: Built-in
+  custom: Custom
+  permissions: Permissions
+  actions: Actions
+  create: Add Role
+  createTitle: Add Role
+  createConfirm: Create
+  createSuccess: Role created
+  createFailed: Failed to create role
+  detail: Details
+  detailTitle: Role Details
+  edit: Edit Permissions
+  editTitle: Edit Role Permissions
+  save: Save
+  updateTitle: Save Role Permissions
+  updateConfirm: Save the current role permissions?
+  updateSuccess: Role permissions updated
+  updateFailed: Failed to update role permissions
+  loadFailed: Failed to load roles
+  search: Search
+  reset: Reset
+  empty: Empty
+  permissionNames:
+    system_user_read: View Users
+    system_user_manage: Manage Users
+    system_role_read: View Roles
+    system_role_manage: Manage Roles
+    system_session_read: View Sessions
+    system_session_manage: Manage Sessions
+    system_audit_read: View Audit
+    resource_read: Read Resources
+    resource_write: Edit Resources
+    resource_delete: Delete Resources
+    resource_download: Download Resources
+    resource_share: Share Resources
+    storage_provider_read: View Storage Providers
+    storage_provider_manage: Manage Storage Providers
+    storage_delivery_read: View Delivery Providers
+    storage_delivery_manage: Manage Delivery Providers
+    storage_tiering_manage: Manage Storage Tiering
+    storage_restore_request: Request Media Restore
+    storage_restore_read: View Media Restore
+    storage_restore_manage: Manage Media Restore
+    ingestion_source_manage: Manage Ingestion Sources
+
 buttons:
   pureLoginOut: LoginOut
   pureLogin: Login
