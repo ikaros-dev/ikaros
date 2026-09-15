@@ -21,10 +21,18 @@ public record PlatformUserEntity(
     @Column("updated_at") Instant updatedAt,
     @Column("last_login_at") Instant lastLoginAt,
     @Column("security_version") long securityVersion,
-    @Version Long version
+    @Version Long version,
+    @Column("is_del") int isDel
 ) {
     public PlatformUserEntity(UUID id, String username, String displayName, String email, UserStatus status,
                               Instant createdAt, Instant updatedAt, Instant lastLoginAt, Long version) {
-        this(id, username, displayName, email, status, createdAt, updatedAt, lastLoginAt, 0L, version);
+        this(id, username, displayName, email, status, createdAt, updatedAt, lastLoginAt, 0L, version, 0);
+    }
+
+    public PlatformUserEntity(UUID id, String username, String displayName, String email, UserStatus status,
+                              Instant createdAt, Instant updatedAt, Instant lastLoginAt, long securityVersion,
+                              Long version) {
+        this(id, username, displayName, email, status, createdAt, updatedAt, lastLoginAt, securityVersion, version,
+            0);
     }
 }

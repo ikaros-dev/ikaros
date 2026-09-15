@@ -96,6 +96,45 @@ class DefaultUserServiceTest {
     }
 
     @Test
+    void softDeletesUserAndInvalidatesExistingTokens() {
+        UUID actorId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity current = new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, now, now, null, 4L, 2L);
+        PlatformUserEntity deleted = new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.DEACTIVATED, now, now, null, 5L, 3L, 1);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(current));
+        when(userRepository.save(any())).thenReturn(Mono.just(deleted));
+        when(auditService.record(eq(actorId), eq("identity.user.delete"), eq("USER"), eq(userId), eq("{}")))
+            .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.delete(actorId, userId))
+            .verifyComplete();
+
+        verify(userRepository).save(argThat(user -> user.status() == UserStatus.DEACTIVATED
+            && user.securityVersion() == 5L && user.isDel() == 1));
+        verify(auditService).record(actorId, "identity.user.delete", "USER", userId, "{}");
+    }
+
+    @Test
+    void neverReturnsSoftDeletedUsers() {
+        Instant now = Instant.now();
+        PlatformUserEntity visible = new PlatformUserEntity(UUID.randomUUID(), "alice", "Alice", null,
+            UserStatus.ACTIVE, now.plusSeconds(1), now, null, 0L);
+        PlatformUserEntity deleted = new PlatformUserEntity(UUID.randomUUID(), "bob", "Bob", null,
+            UserStatus.ACTIVE, now, now, null, 0L, null, 1);
+        when(userRepository.findAll()).thenReturn(Flux.just(deleted, visible));
+
+        StepVerifier.create(service.list(null, null, 0, 20))
+            .assertNext(result -> {
+                assertThat(result.total()).isEqualTo(1);
+                assertThat(result.items()).extracting(UserView::username).containsExactly("alice");
+            })
+            .verifyComplete();
+    }
+
+    @Test
     void invalidatesAllUserTokensByAtomicallyIncreasingSecurityVersion() {
         UUID actorId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();

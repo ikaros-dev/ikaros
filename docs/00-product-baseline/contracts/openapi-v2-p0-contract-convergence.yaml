@@ -141,6 +141,14 @@ paths:
       x-ikaros-contract-id: identity.get-user
       responses:
         '200': { description: 用户, content: { application/json: { schema: { $ref: './openapi-v2-p0.yaml#/components/schemas/User' } } } }
+    delete:
+      operationId: deleteUser
+      x-ikaros-contract-id: identity.delete-user
+      responses:
+        '204': { description: 用户已软删除，状态变为 DEACTIVATED，历史数据保留 }
+        '401': { description: 未认证 }
+        '403': { description: 无权执行用户删除或未完成二次验证 }
+        '404': { description: 用户不存在 }
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer }

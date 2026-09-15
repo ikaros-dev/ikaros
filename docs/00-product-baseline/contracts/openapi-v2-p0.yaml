@@ -2651,7 +2651,7 @@ components:
         display_name: { type: [string, 'null'] }
         status:
           type: string
-          enum: [ACTIVE, DISABLED, LOCKED, DELETED]
+          enum: [PENDING, ACTIVE, DISABLED, LOCKED, DEACTIVATED]
         security_version: { type: integer, format: int64 }
         version: { type: integer, format: int64 }
         created_at: { type: string, format: date-time }

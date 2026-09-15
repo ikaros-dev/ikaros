@@ -2,6 +2,7 @@ package run.ikaros.authentication;
 
 import java.util.UUID;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import org.springframework.data.r2dbc.repository.Query;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -9,6 +10,13 @@ import reactor.core.publisher.Mono;
  * 平台用户身份的响应式持久化入口。
  */
 public interface PlatformUserRepository extends ReactiveCrudRepository<PlatformUserEntity, UUID> {
+    @Override
+    @Query("select * from platform_user where id = :id and is_del = 0")
+    Mono<PlatformUserEntity> findById(UUID id);
+
+    @Override
+    @Query("select * from platform_user where is_del = 0")
+    Flux<PlatformUserEntity> findAll();
     /**
      * 按用户状态与用户名查找用户。
      *
@@ -24,5 +32,6 @@ public interface PlatformUserRepository extends ReactiveCrudRepository<PlatformU
      * @param username 用户名
      * @return 对应用户
      */
+    @Query("select * from platform_user where username = :username and is_del = 0")
     Mono<PlatformUserEntity> findByUsername(String username);
 }

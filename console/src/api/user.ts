@@ -77,3 +77,37 @@ export const refreshTokenApi = (data?: object) => {
 };
 
 export const logoutApi = () => http.request<void>("post", "/auth/logout");
+
+export type ManagedUserStatus =
+  | "PENDING"
+  | "ACTIVE"
+  | "DISABLED"
+  | "LOCKED";
+
+export type ManagedUser = {
+  id: string;
+  username: string;
+  displayName: string;
+  email: string | null;
+  status: ManagedUserStatus;
+  roleCodes: string[];
+  createdAt: string;
+  lastLoginAt: string | null;
+};
+
+export type ManagedUserPage = {
+  items: ManagedUser[];
+  total: number;
+  page: number;
+  size: number;
+};
+
+export const listManagedUsers = (params: {
+  query?: string;
+  status?: ManagedUserStatus;
+  page: number;
+  size: number;
+}) => http.request<ManagedUserPage>("get", "/admin/users", { params });
+
+export const deleteManagedUser = (userId: string) =>
+  http.request<void>("delete", `/admin/users/${userId}`);

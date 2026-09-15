@@ -718,15 +718,21 @@ CHECK attempt_no >= 1
 | `password_hash` | text | YES |
 | `security_version` | bigint | NO |
 | `version` | bigint | NO |
+| `is_del` | smallint | NO |
 | `created_at` | timestamptz | NO |
 | `updated_at` | timestamptz | NO |
 
 ```text
 UNIQUE(normalized_username)
 UNIQUE(normalized_email) WHERE normalized_email IS NOT NULL
-CHECK status in ('ACTIVE','DISABLED','LOCKED','DELETED')
+CHECK status in ('PENDING','ACTIVE','DISABLED','LOCKED','DEACTIVATED')
 CHECK security_version >= 0
+CHECK is_del in (0, 1)
 ```
+
+`is_del` is a required soft-delete marker with only two values: `0` (visible)
+and `1` (soft-deleted). Application-layer reads of `platform_user` must filter
+`is_del = 0`; rows with `is_del = 1` remain database-only history.
 
 只保存现代密码哈希结果，不保存密码明文、可逆密码或日志副本。
 

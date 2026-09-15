@@ -359,6 +359,15 @@ Payload 与 attached 相同 identity key。
 
 同上。
 
+### `authentication.user.deactivated@1`
+
+```json
+{
+  "user_id": "uuid",
+  "security_version": 2
+}
+```
+
 ### `authorization.role.created@1`
 
 ```json

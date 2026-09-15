@@ -40,6 +40,15 @@ public interface UserService {
      */
     Mono<UserView> changeStatus(UUID actorId, UUID userId, UserStatus status);
 
+    /**
+     * 软删除用户并使其既有令牌失效。
+     *
+     * @param actorId 执行删除的管理主体
+     * @param userId 目标用户
+     * @return 删除完成信号
+     */
+    Mono<Void> delete(UUID actorId, UUID userId);
+
     Mono<TokenInvalidationView> invalidateTokens(UUID actorId, UUID userId);
 
 }
