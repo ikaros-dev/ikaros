@@ -134,7 +134,7 @@ onMounted(loadUsers);
       <el-form-item :label="t('userManagement.status')">
         <el-select
           v-model="form.status"
-          class="w-48"
+          class="user-status-select"
           clearable
           :placeholder="t('userManagement.statusPlaceholder')"
         >
@@ -225,3 +225,9 @@ onMounted(loadUsers);
     </el-dialog>
   </PageCard>
 </template>
+
+<style scoped>
+.user-status-select {
+  width: 160px;
+}
+</style>
