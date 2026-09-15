@@ -228,6 +228,6 @@ onMounted(loadUsers);
 
 <style scoped>
 .user-status-select {
-  width: 160px;
+  width: 100px;
 }
 </style>
