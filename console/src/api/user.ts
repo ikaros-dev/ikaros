@@ -1,5 +1,17 @@
 import { http } from "@/utils/http";
 
+export type VerificationChallenge = {
+  id: string;
+  method: "EMAIL_OTP";
+  purpose: string;
+  expiresAt: string;
+  status: string;
+};
+
+export type VerificationResult = {
+  verificationGrant: string;
+};
+
 export type UserResult = {
   success: boolean;
   data: {
@@ -77,6 +89,14 @@ export const refreshTokenApi = (data?: object) => {
 };
 
 export const logoutApi = () => http.request<void>("post", "/auth/logout");
+
+export const issueStepUpChallenge = () =>
+  http.request<VerificationChallenge>("post", "/security/step-up");
+
+export const verifyStepUpChallenge = (challengeId: string, code: string) =>
+  http.request<VerificationResult>("post", `/security/step-up/${challengeId}/verify`, {
+    data: { code }
+  });
 
 export type ManagedUserStatus =
   | "PENDING"

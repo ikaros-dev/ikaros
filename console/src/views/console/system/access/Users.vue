@@ -4,10 +4,13 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { useI18n } from "vue-i18n";
 import {
   deleteManagedUser,
+  issueStepUpChallenge,
   listManagedUsers,
+  verifyStepUpChallenge,
   type ManagedUser,
   type ManagedUserStatus
 } from "@/api/user";
+import { clearVerificationGrant, setVerificationGrant } from "@/utils/verificationGrant";
 import PageCard from "@/views/console/PageCard.vue";
 
 const { t, locale } = useI18n();
@@ -20,6 +23,11 @@ const form = reactive<{ query: string; status: "" | ManagedUserStatus }>({
   query: "",
   status: ""
 });
+const verificationVisible = ref(false);
+const verificationLoading = ref(false);
+const verificationCode = ref("");
+const verificationChallengeId = ref("");
+const pendingDeleteUser = ref<ManagedUser | null>(null);
 
 const statusOptions: ManagedUserStatus[] = [
   "PENDING",
@@ -70,13 +78,42 @@ const removeUser = async (user: ManagedUser) => {
       t("userManagement.deleteTitle"),
       { type: "warning", confirmButtonText: t("buttons.pureConfirm"), cancelButtonText: t("buttons.pureClose") }
     );
-    await deleteManagedUser(user.id);
-    ElMessage.success(t("userManagement.deleteSuccess"));
-    await loadUsers();
+    pendingDeleteUser.value = user;
+    verificationLoading.value = true;
+    try {
+      const challenge = await issueStepUpChallenge();
+      verificationChallengeId.value = challenge.id;
+      verificationCode.value = "";
+      verificationVisible.value = true;
+    } finally {
+      verificationLoading.value = false;
+    }
   } catch (error) {
     if (error !== "cancel" && error !== "close") {
       ElMessage.error(t("userManagement.deleteFailed"));
     }
+  }
+};
+
+const verifyAndDelete = async () => {
+  if (!verificationChallengeId.value || !/^\d{6}$/.test(verificationCode.value)) return;
+  const user = pendingDeleteUser.value;
+  if (!user) return;
+  verificationLoading.value = true;
+  try {
+    const result = await verifyStepUpChallenge(verificationChallengeId.value, verificationCode.value);
+    setVerificationGrant(result.verificationGrant);
+    await deleteManagedUser(user.id);
+    clearVerificationGrant();
+    verificationVisible.value = false;
+    pendingDeleteUser.value = null;
+    ElMessage.success(t("userManagement.deleteSuccess"));
+    await loadUsers();
+  } catch {
+    clearVerificationGrant();
+    ElMessage.error(t("userManagement.deleteFailed"));
+  } finally {
+    verificationLoading.value = false;
   }
 };
 
@@ -153,5 +190,33 @@ onMounted(loadUsers);
         @current-change="loadUsers"
       />
     </div>
+    <el-dialog
+      v-model="verificationVisible"
+      :title="t('userManagement.verificationTitle')"
+      width="420px"
+      :close-on-click-modal="false"
+    >
+      <p class="mb-4 text-[var(--el-text-color-secondary)]">
+        {{ t("userManagement.verificationDescription") }}
+      </p>
+      <el-input
+        v-model="verificationCode"
+        maxlength="6"
+        inputmode="numeric"
+        :placeholder="t('userManagement.verificationPlaceholder')"
+        @keyup.enter="verifyAndDelete"
+      />
+      <template #footer>
+        <el-button @click="verificationVisible = false">{{ t("buttons.pureClose") }}</el-button>
+        <el-button
+          type="primary"
+          :loading="verificationLoading"
+          :disabled="!/^\d{6}$/.test(verificationCode)"
+          @click="verifyAndDelete"
+        >
+          {{ t("userManagement.verificationConfirm") }}
+        </el-button>
+      </template>
+    </el-dialog>
   </PageCard>
 </template>

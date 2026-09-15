@@ -19,6 +19,10 @@ userManagement:
   deleteConfirm: Are you sure you want to delete user "{username}"?
   deleteSuccess: User deleted
   deleteFailed: Failed to delete user
+  verificationTitle: Additional Verification
+  verificationDescription: A code was sent to the email bound to your account. Enter the 6-digit code to continue deleting the user.
+  verificationPlaceholder: Enter the 6-digit code
+  verificationConfirm: Verify and Delete
   never: Never
   empty: Empty
   search: Search

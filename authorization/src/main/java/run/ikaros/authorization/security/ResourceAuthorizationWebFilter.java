@@ -129,8 +129,10 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             || permission == PlatformPermission.STORAGE_TIERING_MANAGE
             || permission == PlatformPermission.STORAGE_RESTORE_MANAGE
             || permission == PlatformPermission.INGESTION_SOURCE_MANAGE;
-        return new SecurityPolicy("resource.http", permission,
-            highRisk ? SecurityVerificationLevel.SVL_2 : SecurityVerificationLevel.SVL_0, highRisk);
+        SecurityVerificationLevel minimumSvl = permission == PlatformPermission.SYSTEM_USER_MANAGE
+            ? SecurityVerificationLevel.SVL_1
+            : highRisk ? SecurityVerificationLevel.SVL_2 : SecurityVerificationLevel.SVL_0;
+        return new SecurityPolicy("resource.http", permission, minimumSvl, highRisk);
     }
 
     private boolean hasDeliveryGrant(ServerWebExchange exchange) {
