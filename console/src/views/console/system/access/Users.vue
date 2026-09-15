@@ -132,7 +132,12 @@ onMounted(loadUsers);
         />
       </el-form-item>
       <el-form-item :label="t('userManagement.status')">
-        <el-select v-model="form.status" clearable :placeholder="t('userManagement.statusPlaceholder')">
+        <el-select
+          v-model="form.status"
+          class="w-48"
+          clearable
+          :placeholder="t('userManagement.statusPlaceholder')"
+        >
           <el-option
             v-for="status in statusOptions"
             :key="status"
