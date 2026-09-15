@@ -568,6 +568,8 @@ Verification Grant 只证明一次短期提升验证，不延长普通 Access JW
 
 需要 SVL-2 的高风险动作可使用 Email OTP、SMS OTP 或更高等级验证；当前后台管理统一使用 Email OTP。
 
+`storage.provider.manage` 是需要更高保障等级的例外权限：当 `ikaros.security.verification.sms.enabled=false`（默认）时，运行时最低要求降为 SVL-2，以便当前仅配置 Email OTP 的实例管理存储 Provider；当 SMS OTP 启用时，保持 SVL-3。SMS 的 Noop 控制台打印实现不视为已启用的短信通道。
+
 ### 8.3 Verification 有独立有效期
 
 高等级验证不能无限有效。

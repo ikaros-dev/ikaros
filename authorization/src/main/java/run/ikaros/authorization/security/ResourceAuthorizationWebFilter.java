@@ -6,6 +6,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
@@ -22,9 +24,18 @@ import run.ikaros.authorization.api.PlatformPermission;
 @Order(Ordered.LOWEST_PRECEDENCE)
 public class ResourceAuthorizationWebFilter implements WebFilter {
     private final AccessControlService accessControl;
+    private final boolean smsOtpEnabled;
 
     public ResourceAuthorizationWebFilter(AccessControlService accessControl) {
+        this(accessControl, false);
+    }
+
+    @Autowired
+    public ResourceAuthorizationWebFilter(AccessControlService accessControl,
+                                          @Value("${ikaros.security.verification.sms.enabled:false}")
+                                          boolean smsOtpEnabled) {
         this.accessControl = accessControl;
+        this.smsOtpEnabled = smsOtpEnabled;
     }
 
     @Override
@@ -132,7 +143,9 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             || permission == PlatformPermission.STORAGE_TIERING_MANAGE
             || permission == PlatformPermission.STORAGE_RESTORE_MANAGE
             || permission == PlatformPermission.INGESTION_SOURCE_MANAGE;
-        SecurityVerificationLevel minimumSvl = permission == PlatformPermission.SYSTEM_USER_MANAGE
+        SecurityVerificationLevel minimumSvl = permission == PlatformPermission.STORAGE_PROVIDER_MANAGE
+            ? (smsOtpEnabled ? SecurityVerificationLevel.SVL_3 : SecurityVerificationLevel.SVL_2)
+            : permission == PlatformPermission.SYSTEM_USER_MANAGE
             ? SecurityVerificationLevel.SVL_1
             : highRisk ? SecurityVerificationLevel.SVL_2 : SecurityVerificationLevel.SVL_0;
         return new SecurityPolicy("resource.http", permission, minimumSvl, highRisk);

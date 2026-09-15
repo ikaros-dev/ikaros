@@ -644,7 +644,7 @@ Security Policy
 
 命中复用窗口时，响应仍不得包含 OTP、OTP Digest 或认证邮箱；客户端使用响应中的 `verification_grant` 继续执行原操作。未命中窗口时，响应返回普通挑战摘要，客户端必须完成 OTP 验证后再使用返回的 Grant。
 
-复用只适用于同一账号、同一验证方式和 `LOGIN_STEP_UP` 用途，且新的 Grant 仍必须校验主体、`security_version`、`purpose`、`target_reference`（适用时）、SVL 与 `exp`。短信 Noop 模式由配置控制，当前开发默认输出验证码到服务端控制台；生产环境不得使用 Noop 投递。
+复用只适用于同一账号、同一验证方式和 `LOGIN_STEP_UP` 用途，且新的 Grant 仍必须校验主体、`security_version`、`purpose`、`target_reference`（适用时）、SVL 与 `exp`。SMS 是否启用由 `ikaros.security.verification.sms.enabled` 控制，默认关闭；短信 Noop 模式仅用于开发并输出验证码到服务端控制台，生产环境不得使用 Noop 投递。
 
 ### 11.4 Anti-enumeration
 
