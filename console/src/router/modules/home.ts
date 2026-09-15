@@ -469,7 +469,7 @@ export default {
               "menus.userManagement",
               "menuDescriptions.userManagement",
               () => import("@/views/console/system/access/Users.vue"),
-              "user.read",
+              "system.user.read",
               { icon: "ep:user" }
             ),
             page(

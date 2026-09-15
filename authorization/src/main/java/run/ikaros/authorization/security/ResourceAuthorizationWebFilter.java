@@ -46,7 +46,7 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
         if (jwtPrincipal == null) return reject(exchange, HttpStatus.UNAUTHORIZED);
         if (path.equals("/api/me/actions/invalidate-tokens")) return chain.filter(exchange);
         PlatformPermission permission = permission(exchange.getRequest().getMethod().name(), path);
-        if (!jwtPrincipal.permissions().contains(permission.key())) return reject(exchange, HttpStatus.FORBIDDEN);
+        if (!hasPermission(jwtPrincipal, permission)) return reject(exchange, HttpStatus.FORBIDDEN);
         SecurityPolicy securityPolicy = policy(permission);
         Mono<Void> currentAuthorization = accessControl.require(jwtPrincipal.actorId(),
             jwtPrincipal.verificationLevel(), jwtPrincipal.verificationExpiresAt(), securityPolicy);
@@ -63,6 +63,12 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             || permission == PlatformPermission.RESOURCE_DELETE
             || permission == PlatformPermission.RESOURCE_DOWNLOAD
             || permission == PlatformPermission.RESOURCE_SHARE;
+    }
+
+    private boolean hasPermission(AuthenticatedPrincipal principal, PlatformPermission required) {
+        if (principal.permissions().contains(required.key())) return true;
+        return required == PlatformPermission.SYSTEM_USER_READ
+            && principal.permissions().contains(PlatformPermission.SYSTEM_USER_MANAGE.key());
     }
 
     private PlatformPermission permission(String method, String path) {
