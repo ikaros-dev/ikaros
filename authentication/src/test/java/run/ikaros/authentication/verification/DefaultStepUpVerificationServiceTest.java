@@ -90,7 +90,7 @@ class DefaultStepUpVerificationServiceTest {
             VerificationMethod.EMAIL_OTP, VerificationPurpose.LOGIN_STEP_UP, null, "digest", now,
             now.plusSeconds(300), 0, 5, null, VerificationChallengeStatus.ISSUED, 0L);
         VerificationResult result = new VerificationResult(challengeId, VerificationMethod.EMAIL_OTP,
-            SecurityVerificationLevel.SVL_1, userId, now, now.plusSeconds(300));
+            SecurityVerificationLevel.SVL_2, userId, now, now.plusSeconds(300));
         when(challengeRepository.findById(challengeId)).thenReturn(Mono.just(challenge));
         when(userRepository.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
             UserStatus.ACTIVE, now, now, null, 2L, 0L)));
@@ -105,7 +105,7 @@ class DefaultStepUpVerificationServiceTest {
                     java.time.Duration.ofDays(30)).verifyVerificationGrant(actual.verificationGrant());
                 assertThat(claims.userId()).isEqualTo(userId);
                 assertThat(claims.purpose()).isEqualTo(VerificationPurpose.LOGIN_STEP_UP);
-                assertThat(claims.achievedSvl()).isEqualTo(SecurityVerificationLevel.SVL_1.value());
+                assertThat(claims.achievedSvl()).isEqualTo(SecurityVerificationLevel.SVL_2.value());
                 assertThat(claims.expiresAt()).isAfter(claims.verifiedAt());
             })
             .verifyComplete();

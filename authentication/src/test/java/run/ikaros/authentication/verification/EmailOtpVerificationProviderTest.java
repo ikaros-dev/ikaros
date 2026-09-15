@@ -133,7 +133,7 @@ class EmailOtpVerificationProviderTest {
             eq(challengeId), eq("{}"))).thenReturn(Mono.empty());
 
         StepVerifier.create(provider.verify(userId, challengeId, new VerifyOtpRequest("123456")))
-            .assertNext(result -> assertThat(result.achievedSvl()).isEqualTo(SecurityVerificationLevel.SVL_1))
+            .assertNext(result -> assertThat(result.achievedSvl()).isEqualTo(SecurityVerificationLevel.SVL_2))
             .verifyComplete();
     }
 

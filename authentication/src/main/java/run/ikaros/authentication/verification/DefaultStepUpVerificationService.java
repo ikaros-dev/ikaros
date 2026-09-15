@@ -61,7 +61,7 @@ public class DefaultStepUpVerificationService implements StepUpVerificationServi
     @Override
     public Mono<VerificationChallengeView> issueEmailOtp(UUID userId) {
         return issueOtp(userId, emailOtpProvider, VerificationMethod.EMAIL_OTP,
-            SecurityVerificationLevel.SVL_1);
+            SecurityVerificationLevel.SVL_2);
     }
 
     @Override

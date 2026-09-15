@@ -181,8 +181,8 @@ Crypto Runtime
 
 | SVL | 验证方式 | 状态 | 相对等级 |
 |---|---|---|---|
-| SVL-1 | Email OTP | V2 初期实现 | 最低 |
-| SVL-2 | SMS OTP | 规划 | 高于 Email |
+| SVL-1 | 操作策略最低要求 | V2 操作策略 | 最低 |
+| SVL-2 | Email OTP / SMS OTP | V2 初期实现 | 高于 SVL-1 |
 | SVL-3 | Identity Document Verification | 规划 | 高于 SMS |
 | SVL-4 | Face Identity Verification | 规划 | 最高 |
 
@@ -193,9 +193,9 @@ SVL-4 Face
    >
 SVL-3 Identity Document
    >
-SVL-2 SMS
+SVL-2 Email / SMS
    >
-SVL-1 Email
+SVL-1 操作策略最低要求
 ```
 
 不同操作定义：
@@ -227,7 +227,7 @@ required_verification_level
 当前阶段只实现：
 
 ```text
-SVL-1 = EMAIL_OTP
+Email OTP = SVL-2（具体操作仍按策略要求 SVL-1 或 SVL-2）
 ```
 
 短信、身份证和人脸认证只保留：
@@ -524,7 +524,7 @@ P0 验证等级映射如下：
 
 | 验证方式 | 达到等级 | 当前投递状态 |
 |---|---|---|
-| Email OTP | SVL-1 | 可接入邮件投递或本地 Noop 日志 |
+| Email OTP | SVL-2 | 可接入邮件投递或本地 Noop 日志 |
 | SMS OTP | SVL-2 | 当前使用本地 Noop 日志，短信网关待接入 |
 
 Security Subsystem 签发短期、Purpose-bound 的验证结果，例如：
@@ -566,7 +566,7 @@ Verification Grant 只证明一次短期提升验证，不延长普通 Access JW
 
 复用窗口不改变目标 Command 的 Permission、SVL、Freshness 或最终确认要求；窗口外必须重新发起 OTP。
 
-需要 SVL-2 的高风险动作必须使用 SMS OTP 或更高等级验证；Email OTP 不能满足 SVL-2。
+需要 SVL-2 的高风险动作可使用 Email OTP、SMS OTP 或更高等级验证；当前后台管理统一使用 Email OTP。
 
 ### 8.3 Verification 有独立有效期
 
@@ -1472,7 +1472,7 @@ Cryptographic Recovery
 当前 V2 先实现：
 
 ```text
-EMAIL_OTP / SVL-1
+EMAIL_OTP / SVL-2
 ```
 
 其他认证方式保留架构，不提前增加实现复杂度。

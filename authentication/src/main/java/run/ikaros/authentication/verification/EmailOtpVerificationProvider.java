@@ -90,7 +90,7 @@ public class EmailOtpVerificationProvider implements VerificationProvider {
                 return challengeRepository.save(verified)
                     .then(auditService.record(userId, "security.verification.succeed", "VERIFICATION_CHALLENGE",
                         challengeId, "{}"))
-                    .thenReturn(new VerificationResult(challengeId, method(), SecurityVerificationLevel.SVL_1, userId,
+                    .thenReturn(new VerificationResult(challengeId, method(), SecurityVerificationLevel.SVL_2, userId,
                         now, now.plus(VERIFICATION_TTL)));
             }
             return failedAttempt(challenge, userId);

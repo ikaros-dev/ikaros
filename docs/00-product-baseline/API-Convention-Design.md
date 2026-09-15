@@ -640,7 +640,7 @@ Security Policy
 
 ### 11.4 Step-up Challenge 复用
 
-`POST /api/security/step-up` 发起 Email `LOGIN_STEP_UP` 时，服务端可以在同一账号最近一次 Email OTP 成功验证仍处于复用窗口内的情况下直接返回新的 SVL-1 `Verification Grant`，而不再次发送 OTP。SMS Step-up 使用对应的 `/api/security/step-up/sms` 入口并签发 SVL-2 Grant。复用窗口默认 4 小时，由应用配置决定。
+`POST /api/security/step-up` 发起 Email `LOGIN_STEP_UP` 时，服务端可以在同一账号最近一次 Email OTP 成功验证仍处于复用窗口内的情况下直接返回新的 SVL-2 `Verification Grant`，而不再次发送 OTP。SMS Step-up 使用对应的 `/api/security/step-up/sms` 入口并签发 SVL-2 Grant。复用窗口默认 4 小时，由应用配置决定。
 
 命中复用窗口时，响应仍不得包含 OTP、OTP Digest 或认证邮箱；客户端使用响应中的 `verification_grant` 继续执行原操作。未命中窗口时，响应返回普通挑战摘要，客户端必须完成 OTP 验证后再使用返回的 Grant。
 

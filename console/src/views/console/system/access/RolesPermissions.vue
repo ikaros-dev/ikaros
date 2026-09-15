@@ -178,7 +178,7 @@ const submitCreate = async () => {
 };
 
 const requestVerification = async () => {
-  await stepUp.request("SMS_OTP", verifyAndExecute);
+  await stepUp.request("EMAIL_OTP", verifyAndExecute);
 };
 
 const executePermissionsUpdate = async () => {
