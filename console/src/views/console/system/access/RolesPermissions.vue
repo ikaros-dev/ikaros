@@ -150,8 +150,17 @@ const openCreate = () => {
   createVisible.value = true;
 };
 
+const normalizeRoleCode = () => {
+  createForm.code = createForm.code.toUpperCase().replace(/[^A-Z0-9_]/g, "");
+};
+
 const submitCreate = async () => {
+  normalizeRoleCode();
   if (!createForm.code.trim() || !createForm.name.trim()) return;
+  if (!/^[A-Z][A-Z0-9_]*$/.test(createForm.code.trim())) {
+    ElMessage.warning(t("roleManagement.codeInvalid"));
+    return;
+  }
   pendingCreateRequest.value = {
     code: createForm.code.trim(),
     name: createForm.name.trim(),
@@ -327,7 +336,12 @@ onMounted(loadRoles);
     <el-dialog v-model="createVisible" :title="t('roleManagement.createTitle')" width="520px">
       <el-form label-width="90px">
         <el-form-item :label="t('roleManagement.code')" required>
-          <el-input v-model="createForm.code" :placeholder="t('roleManagement.codePlaceholder')" />
+          <el-input
+            v-model="createForm.code"
+            maxlength="96"
+            :placeholder="t('roleManagement.codePlaceholder')"
+            @input="normalizeRoleCode"
+          />
         </el-form-item>
         <el-form-item :label="t('roleManagement.name')" required>
           <el-input v-model="createForm.name" :placeholder="t('roleManagement.namePlaceholder')" />

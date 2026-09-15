@@ -46,7 +46,8 @@ userManagement:
 
 roleManagement:
   code: 角色编码
-  codePlaceholder: 请输入角色编码
+  codePlaceholder: 大写字母开头，只能包含大写字母、数字和下划线
+  codeInvalid: 角色编码必须以大写字母开头，只能包含大写字母、数字和下划线
   name: 角色名称
   namePlaceholder: 请输入角色名称
   description: 描述

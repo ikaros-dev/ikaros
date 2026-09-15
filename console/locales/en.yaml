@@ -46,7 +46,8 @@ userManagement:
 
 roleManagement:
   code: Role Code
-  codePlaceholder: Enter role code
+  codePlaceholder: Start with uppercase letters; use uppercase letters, digits, and underscores
+  codeInvalid: Role code must start with an uppercase letter and contain only uppercase letters, digits, and underscores
   name: Role Name
   namePlaceholder: Enter role name
   description: Description
