@@ -133,7 +133,7 @@ const requestVerification = async () => {
 };
 
 const requestRoleVerification = async () => {
-  await stepUp.request("SMS_OTP", verifyAndExecute);
+  await stepUp.request("EMAIL_OTP", verifyAndExecute);
 };
 
 const openDetail = async (user: ManagedUser) => {
