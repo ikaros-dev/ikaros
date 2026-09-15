@@ -140,11 +140,18 @@ export type CreateManagedUserRequest = {
   email?: string;
 };
 
+export type UpdateManagedUserRequest = CreateManagedUserRequest & {
+  status: ManagedUserStatus;
+};
+
 export const createManagedUser = (data: CreateManagedUserRequest) =>
   http.request<ManagedUser>("post", "/admin/users", { data });
 
 export const getManagedUser = (userId: string) =>
   http.request<ManagedUser>("get", `/admin/users/${userId}`);
+
+export const updateManagedUser = (userId: string, data: UpdateManagedUserRequest) =>
+  http.request<ManagedUser>("put", `/admin/users/${userId}`, { data });
 
 export const deleteManagedUser = (userId: string) =>
   http.request<void>("delete", `/admin/users/${userId}`);

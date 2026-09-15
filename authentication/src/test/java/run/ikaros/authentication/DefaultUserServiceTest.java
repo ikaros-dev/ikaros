@@ -135,6 +135,34 @@ class DefaultUserServiceTest {
     }
 
     @Test
+    void updatesUserProfileAndStatus() {
+        UUID actorId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity current = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
+            UserStatus.ACTIVE, now, now, null, 1L, 2L);
+        PlatformUserEntity updated = new PlatformUserEntity(userId, "alice2", "Alice Two", "alice2@example.com",
+            UserStatus.DISABLED, now, now.plusSeconds(1), null, 2L, 3L);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(current));
+        when(userRepository.save(any())).thenReturn(Mono.just(updated));
+        when(auditService.record(eq(actorId), eq("identity.user.update"), eq("USER"), eq(userId), eq("{}")))
+            .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.update(actorId, userId,
+                new UpdateUserRequest("alice2", "Alice Two", "Alice2@Example.COM", UserStatus.DISABLED)))
+            .assertNext(user -> {
+                assertThat(user.username()).isEqualTo("alice2");
+                assertThat(user.displayName()).isEqualTo("Alice Two");
+                assertThat(user.email()).isEqualTo("alice2@example.com");
+                assertThat(user.status()).isEqualTo(UserStatus.DISABLED);
+            })
+            .verifyComplete();
+        verify(userRepository).save(argThat(user -> user.securityVersion() == 2L
+            && user.status() == UserStatus.DISABLED));
+        verify(auditService).record(actorId, "identity.user.update", "USER", userId, "{}");
+    }
+
+    @Test
     void invalidatesAllUserTokensByAtomicallyIncreasingSecurityVersion() {
         UUID actorId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();

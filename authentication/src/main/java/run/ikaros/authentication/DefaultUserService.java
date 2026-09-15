@@ -75,6 +75,22 @@ public class DefaultUserService implements UserService {
     }
 
     @Override
+    public Mono<UserView> update(UUID actorId, UUID userId, UpdateUserRequest request) {
+        return requiredUser(userId).flatMap(user -> {
+            UserStatus status = request.status();
+            PlatformUserEntity updated = new PlatformUserEntity(user.id(), request.username().trim(),
+                request.displayName().trim(), normalizeEmail(request.email()), status, user.createdAt(), Instant.now(),
+                user.lastLoginAt(), status == user.status() ? user.securityVersion() : user.securityVersion() + 1,
+                user.version(), user.isDel());
+            return userRepository.save(updated)
+                .onErrorMap(DuplicateKeyException.class, exception -> new ConflictException("用户名或邮箱已存在"))
+                .flatMap(saved -> emitStatusChanged(saved)
+                    .then(auditService.record(actorId, "identity.user.update", "USER", userId, "{}"))
+                    .then(toView(saved)));
+        });
+    }
+
+    @Override
     public Mono<PageResponse<UserView>> list(UserStatus status, String query, int page, int size) {
         if (page < 0 || size < 1 || size > MAX_PAGE_SIZE) {
             return Mono.error(new IllegalArgumentException("分页参数不合法"));

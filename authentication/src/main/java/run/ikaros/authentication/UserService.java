@@ -19,6 +19,8 @@ public interface UserService {
 
     Mono<UserView> get(UUID userId);
 
+    Mono<UserView> update(UUID actorId, UUID userId, UpdateUserRequest request);
+
     /**
      * 分页查询平台用户。
      *

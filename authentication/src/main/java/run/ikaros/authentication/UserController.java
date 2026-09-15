@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -95,6 +96,22 @@ public class UserController {
     @GetMapping("/{userId}")
     public Mono<UserView> get(@PathVariable UUID userId) {
         return userService.get(userId);
+    }
+
+    @Operation(summary = "更新平台用户", description = "更新用户名、昵称、邮箱和生命周期状态。")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "用户更新成功"),
+        @ApiResponse(responseCode = "400", description = "用户资料不合法", content = @Content),
+        @ApiResponse(responseCode = "404", description = "用户不存在", content = @Content),
+        @ApiResponse(responseCode = "409", description = "用户名或邮箱已存在", content = @Content)
+    })
+    @PutMapping("/{userId}")
+    public Mono<UserView> update(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID userId,
+        @Valid @RequestBody UpdateUserRequest request
+    ) {
+        return userService.update(actorId, userId, request);
     }
 
     /**

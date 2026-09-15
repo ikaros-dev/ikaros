@@ -11,7 +11,9 @@ import {
   verifyStepUpChallenge,
   type ManagedUser,
   type ManagedUserStatus,
-  type CreateManagedUserRequest
+  type CreateManagedUserRequest,
+  type UpdateManagedUserRequest,
+  updateManagedUser
 } from "@/api/user";
 import {
   clearVerificationGrant,
@@ -37,7 +39,10 @@ const pendingDeleteUser = ref<ManagedUser | null>(null);
 const createVisible = ref(false);
 const createForm = reactive({ username: "", displayName: "", email: "" });
 const pendingCreateRequest = ref<CreateManagedUserRequest | null>(null);
-const verificationAction = ref<"create" | "delete" | null>(null);
+const pendingUpdateRequest = ref<{ userId: string; data: UpdateManagedUserRequest } | null>(null);
+const verificationAction = ref<"create" | "delete" | "update" | null>(null);
+const editVisible = ref(false);
+const editForm = reactive({ userId: "", username: "", displayName: "", email: "", status: "PENDING" as ManagedUserStatus });
 const detailVisible = ref(false);
 const detailLoading = ref(false);
 const detailUser = ref<ManagedUser | null>(null);
@@ -135,6 +140,37 @@ const openDetail = async (user: ManagedUser) => {
   }
 };
 
+const openEdit = (user: ManagedUser) => {
+  editForm.userId = user.id;
+  editForm.username = user.username;
+  editForm.displayName = user.displayName;
+  editForm.email = user.email || "";
+  editForm.status = user.status;
+  editVisible.value = true;
+};
+
+const submitUpdate = async () => {
+  if (!editForm.userId || !editForm.username.trim() || !editForm.displayName.trim()) return;
+  pendingUpdateRequest.value = {
+    userId: editForm.userId,
+    data: {
+      username: editForm.username.trim(),
+      displayName: editForm.displayName.trim(),
+      email: editForm.email.trim() || undefined,
+      status: editForm.status
+    }
+  };
+  verificationAction.value = "update";
+  editVisible.value = false;
+  try {
+    await requestVerification();
+  } catch {
+    pendingUpdateRequest.value = null;
+    verificationAction.value = null;
+    ElMessage.error(t("userManagement.updateFailed"));
+  }
+};
+
 const removeUser = async (user: ManagedUser) => {
   try {
     await ElMessageBox.confirm(
@@ -172,17 +208,32 @@ const verifyAndExecute = async () => {
       await deleteManagedUser(pendingDeleteUser.value.id);
     } else if (action === "create" && pendingCreateRequest.value) {
       await createManagedUser(pendingCreateRequest.value);
+    } else if (action === "update" && pendingUpdateRequest.value) {
+      await updateManagedUser(pendingUpdateRequest.value.userId, pendingUpdateRequest.value.data);
     }
     clearVerificationGrant();
     verificationVisible.value = false;
     pendingDeleteUser.value = null;
     pendingCreateRequest.value = null;
+    pendingUpdateRequest.value = null;
     verificationAction.value = null;
-    ElMessage.success(t(action === "delete" ? "userManagement.deleteSuccess" : "userManagement.createSuccess"));
+    ElMessage.success(t(
+      action === "delete"
+        ? "userManagement.deleteSuccess"
+        : action === "create"
+          ? "userManagement.createSuccess"
+          : "userManagement.updateSuccess"
+    ));
     await loadUsers();
   } catch {
     clearVerificationGrant();
-    ElMessage.error(t(action === "delete" ? "userManagement.deleteFailed" : "userManagement.createFailed"));
+    ElMessage.error(t(
+      action === "delete"
+        ? "userManagement.deleteFailed"
+        : action === "create"
+          ? "userManagement.createFailed"
+          : "userManagement.updateFailed"
+    ));
   } finally {
     verificationLoading.value = false;
   }
@@ -286,9 +337,12 @@ onMounted(loadUsers);
       <el-table-column
         fixed="right"
         :label="t('userManagement.actions')"
-        width="150"
+        width="190"
       >
         <template #default="scope">
+          <el-button link type="primary" @click="openEdit(scope.row)">
+            {{ t("userManagement.edit") }}
+          </el-button>
           <el-button link type="primary" @click="openDetail(scope.row)">
             {{ t("userManagement.detail") }}
           </el-button>
@@ -344,13 +398,49 @@ onMounted(loadUsers);
         }}</el-button>
         <el-button
           type="primary"
-          :loading="createLoading"
           :disabled="
             !createForm.username.trim() || !createForm.displayName.trim()
           "
           @click="submitCreate"
         >
           {{ t("userManagement.createConfirm") }}
+        </el-button>
+      </template>
+    </el-dialog>
+    <el-dialog
+      v-model="editVisible"
+      :title="t('userManagement.editTitle')"
+      width="480px"
+    >
+      <el-form :model="editForm" label-width="80px" @submit.prevent="submitUpdate">
+        <el-form-item :label="t('userManagement.username')" required>
+          <el-input v-model="editForm.username" :placeholder="t('userManagement.usernamePlaceholder')" />
+        </el-form-item>
+        <el-form-item :label="t('userManagement.displayName')" required>
+          <el-input v-model="editForm.displayName" :placeholder="t('userManagement.displayNamePlaceholder')" />
+        </el-form-item>
+        <el-form-item :label="t('userManagement.email')">
+          <el-input v-model="editForm.email" :placeholder="t('userManagement.emailPlaceholder')" />
+        </el-form-item>
+        <el-form-item :label="t('userManagement.status')" required>
+          <el-select v-model="editForm.status" class="user-status-select">
+            <el-option
+              v-for="status in statusOptions"
+              :key="status"
+              :label="t(`userManagement.statuses.${status}`)"
+              :value="status"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editVisible = false">{{ t("buttons.pureClose") }}</el-button>
+        <el-button
+          type="primary"
+          :disabled="!editForm.username.trim() || !editForm.displayName.trim()"
+          @click="submitUpdate"
+        >
+          {{ t("userManagement.updateConfirm") }}
         </el-button>
       </template>
     </el-dialog>

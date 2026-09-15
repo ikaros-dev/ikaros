@@ -25,6 +25,11 @@ userManagement:
   detail: Details
   detailTitle: User Details
   detailFailed: Failed to load user details
+  edit: Edit
+  editTitle: Edit User
+  updateConfirm: Save
+  updateSuccess: User updated
+  updateFailed: Failed to update user
   delete: Delete
   deleteTitle: Delete User
   deleteConfirm: Are you sure you want to delete user "{username}"?
