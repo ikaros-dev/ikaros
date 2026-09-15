@@ -35,6 +35,7 @@ ikaros:
         endpoint: ${IKAROS_SECURITY_EMAIL_ENDPOINT:}
         from: ${IKAROS_SECURITY_EMAIL_FROM:}
         api-key: ${IKAROS_SECURITY_EMAIL_API_KEY:}
+        log-code: ${IKAROS_SECURITY_EMAIL_LOG_CODE:false}
     jwt:
       issuer: ${IKAROS_JWT_ISSUER:ikaros}
       secret: ${IKAROS_JWT_SECRET:}
