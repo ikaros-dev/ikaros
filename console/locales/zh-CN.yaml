@@ -18,6 +18,17 @@ userManagement:
   rolesTitle: 用户角色
   rolesFailed: 获取用户角色失败
   rolesEmpty: 暂无角色
+  roleCode: 角色编码
+  roleAdd: 新增角色
+  roleAddTitle: 为用户新增角色
+  roleSelectPlaceholder: 请选择角色
+  roleAllAssigned: 该用户已拥有全部角色
+  roleAddConfirm: 添加
+  roleDeleteTitle: 删除用户角色
+  roleDeleteConfirm: 确定移除用户“{username}”的角色“{role}”吗？
+  roleAssignSuccess: 用户角色添加成功
+  roleRevokeSuccess: 用户角色已移除
+  roleUpdateFailed: 用户角色更新失败
   createdAt: 创建时间
   lastLoginAt: 最近登录
   actions: 操作

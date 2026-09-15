@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useI18n } from "vue-i18n";
 import {
@@ -13,6 +13,12 @@ import {
   type UpdateManagedUserRequest,
   updateManagedUser
 } from "@/api/user";
+import {
+  assignUserRole,
+  listManagedRoles,
+  revokeUserRole,
+  type ManagedRole
+} from "@/api/role";
 import { useStepUpVerification } from "@/composables/useStepUpVerification";
 import {
   clearVerificationGrant,
@@ -40,7 +46,7 @@ const createVisible = ref(false);
 const createForm = reactive({ username: "", displayName: "", email: "" });
 const pendingCreateRequest = ref<CreateManagedUserRequest | null>(null);
 const pendingUpdateRequest = ref<{ userId: string; data: UpdateManagedUserRequest } | null>(null);
-const verificationAction = ref<"create" | "delete" | "update" | null>(null);
+const verificationAction = ref<"create" | "delete" | "update" | "assignRole" | "revokeRole" | null>(null);
 const editVisible = ref(false);
 const editForm = reactive({ userId: "", username: "", displayName: "", email: "", status: "PENDING" as ManagedUserStatus });
 const detailVisible = ref(false);
@@ -49,6 +55,11 @@ const detailUser = ref<ManagedUser | null>(null);
 const rolesVisible = ref(false);
 const rolesLoading = ref(false);
 const rolesUser = ref<ManagedUser | null>(null);
+const roleAddVisible = ref(false);
+const roleAddLoading = ref(false);
+const managedRoles = ref<ManagedRole[]>([]);
+const selectedRoleId = ref("");
+const pendingRoleId = ref("");
 
 const statusOptions: ManagedUserStatus[] = [
   "PENDING",
@@ -121,6 +132,10 @@ const requestVerification = async () => {
   await stepUp.request("EMAIL_OTP", verifyAndExecute);
 };
 
+const requestRoleVerification = async () => {
+  await stepUp.request("SMS_OTP", verifyAndExecute);
+};
+
 const openDetail = async (user: ManagedUser) => {
   detailUser.value = user;
   detailVisible.value = true;
@@ -140,12 +155,82 @@ const openRoles = async (user: ManagedUser) => {
   rolesVisible.value = true;
   rolesLoading.value = true;
   try {
-    rolesUser.value = await getManagedUser(user.id);
+    [rolesUser.value, managedRoles.value] = await Promise.all([
+      getManagedUser(user.id),
+      listManagedRoles()
+    ]);
   } catch (error) {
     ElMessage.error(getHttpErrorMessage(error, t("userManagement.rolesFailed")));
     rolesVisible.value = false;
   } finally {
     rolesLoading.value = false;
+  }
+};
+
+const refreshRolesUser = async () => {
+  if (!rolesUser.value) return;
+  rolesUser.value = await getManagedUser(rolesUser.value.id);
+};
+
+const openRoleAdd = async () => {
+  roleAddVisible.value = true;
+  roleAddLoading.value = true;
+  selectedRoleId.value = "";
+  try {
+    managedRoles.value = await listManagedRoles();
+  } catch (error) {
+    roleAddVisible.value = false;
+    ElMessage.error(getHttpErrorMessage(error, t("userManagement.rolesFailed")));
+  } finally {
+    roleAddLoading.value = false;
+  }
+};
+
+const availableRoles = computed(() => {
+  const assigned = new Set(rolesUser.value?.roleCodes || []);
+  return managedRoles.value.filter(role => !assigned.has(role.code));
+});
+
+const submitRoleAdd = async () => {
+  if (!rolesUser.value || !selectedRoleId.value) return;
+  pendingRoleId.value = selectedRoleId.value;
+  verificationAction.value = "assignRole";
+  roleAddVisible.value = false;
+  try {
+    await requestRoleVerification();
+  } catch (error) {
+    pendingRoleId.value = "";
+    verificationAction.value = null;
+    ElMessage.error(getHttpErrorMessage(error, t("userManagement.roleUpdateFailed")));
+  }
+};
+
+const removeRole = async (roleCode: string) => {
+  if (!rolesUser.value) return;
+  const role = managedRoles.value.find(item => item.code === roleCode);
+  if (!role) return;
+  try {
+    await ElMessageBox.confirm(
+      t("userManagement.roleDeleteConfirm", {
+        username: rolesUser.value.username,
+        role: role.name
+      }),
+      t("userManagement.roleDeleteTitle"),
+      {
+        type: "warning",
+        confirmButtonText: t("buttons.pureConfirm"),
+        cancelButtonText: t("buttons.pureClose")
+      }
+    );
+    pendingRoleId.value = role.id;
+    verificationAction.value = "revokeRole";
+    await requestRoleVerification();
+  } catch (error) {
+    if (error !== "cancel" && error !== "close") {
+      pendingRoleId.value = "";
+      verificationAction.value = null;
+      ElMessage.error(getHttpErrorMessage(error, t("userManagement.roleUpdateFailed")));
+    }
   }
 };
 
@@ -217,19 +302,31 @@ const verifyAndExecute = async (reusedGrant?: string) => {
       await createManagedUser(pendingCreateRequest.value);
     } else if (action === "update" && pendingUpdateRequest.value) {
       await updateManagedUser(pendingUpdateRequest.value.userId, pendingUpdateRequest.value.data);
+    } else if (action === "assignRole" && rolesUser.value && pendingRoleId.value) {
+      await assignUserRole(rolesUser.value.id, pendingRoleId.value);
+    } else if (action === "revokeRole" && rolesUser.value && pendingRoleId.value) {
+      await revokeUserRole(rolesUser.value.id, pendingRoleId.value);
     }
     clearVerificationGrant();
     stepUp.close();
     pendingDeleteUser.value = null;
     pendingCreateRequest.value = null;
     pendingUpdateRequest.value = null;
+    pendingRoleId.value = "";
     verificationAction.value = null;
+    if (action === "assignRole" || action === "revokeRole") {
+      await refreshRolesUser();
+    }
     ElMessage.success(t(
       action === "delete"
         ? "userManagement.deleteSuccess"
         : action === "create"
           ? "userManagement.createSuccess"
-          : "userManagement.updateSuccess"
+          : action === "assignRole"
+            ? "userManagement.roleAssignSuccess"
+            : action === "revokeRole"
+              ? "userManagement.roleRevokeSuccess"
+              : "userManagement.updateSuccess"
     ));
     await loadUsers();
   } catch (error) {
@@ -241,8 +338,10 @@ const verifyAndExecute = async (reusedGrant?: string) => {
           action === "delete"
             ? "userManagement.deleteFailed"
             : action === "create"
-              ? "userManagement.createFailed"
-              : "userManagement.updateFailed"
+            ? "userManagement.createFailed"
+              : action === "assignRole" || action === "revokeRole"
+                ? "userManagement.roleUpdateFailed"
+                : "userManagement.updateFailed"
         )
       )
     );
@@ -347,7 +446,7 @@ onMounted(loadUsers);
       <el-table-column
         fixed="right"
         :label="t('userManagement.actions')"
-        width="260"
+        width="310"
       >
         <template #default="scope">
           <el-button link type="primary" @click="openRoles(scope.row)">
@@ -431,14 +530,54 @@ onMounted(loadUsers);
         <div class="mb-4 text-[var(--el-text-color-secondary)]">
           {{ rolesUser.username }}
         </div>
-        <el-space v-if="rolesUser.roleCodes.length" wrap>
-          <el-tag v-for="role in rolesUser.roleCodes" :key="role" size="large">
-            {{ role }}
-          </el-tag>
-        </el-space>
+        <div class="mb-4">
+          <el-button type="primary" @click="openRoleAdd">
+            {{ t("userManagement.roleAdd") }}
+          </el-button>
+        </div>
+        <el-table v-if="rolesUser.roleCodes.length" :data="rolesUser.roleCodes.map(code => ({ code }))" border>
+          <el-table-column prop="code" :label="t('userManagement.roleCode')" />
+          <el-table-column :label="t('userManagement.actions')" width="90" fixed="right">
+            <template #default="scope">
+              <el-button link type="danger" @click="removeRole(scope.row.code)">
+                {{ t("userManagement.delete") }}
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
         <el-empty v-else :description="t('userManagement.rolesEmpty')" />
       </template>
     </el-drawer>
+    <el-dialog
+      v-model="roleAddVisible"
+      :title="t('userManagement.roleAddTitle')"
+      width="420px"
+    >
+      <el-skeleton v-if="roleAddLoading" :rows="3" animated />
+      <el-form v-else label-width="80px">
+        <el-form-item :label="t('userManagement.roleCode')" required>
+          <el-select
+            v-model="selectedRoleId"
+            class="w-full"
+            :placeholder="t('userManagement.roleSelectPlaceholder')"
+          >
+            <el-option
+              v-for="role in availableRoles"
+              :key="role.id"
+              :label="`${role.code} - ${role.name}`"
+              :value="role.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-empty v-if="!availableRoles.length" :description="t('userManagement.roleAllAssigned')" />
+      </el-form>
+      <template #footer>
+        <el-button @click="roleAddVisible = false">{{ t("buttons.pureClose") }}</el-button>
+        <el-button type="primary" :disabled="!selectedRoleId" @click="submitRoleAdd">
+          {{ t("userManagement.roleAddConfirm") }}
+        </el-button>
+      </template>
+    </el-dialog>
     <el-dialog
       v-model="editVisible"
       :title="t('userManagement.editTitle')"

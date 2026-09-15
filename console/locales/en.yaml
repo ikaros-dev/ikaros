@@ -18,6 +18,17 @@ userManagement:
   rolesTitle: User Roles
   rolesFailed: Failed to load user roles
   rolesEmpty: No roles
+  roleCode: Role Code
+  roleAdd: Add Role
+  roleAddTitle: Add Role to User
+  roleSelectPlaceholder: Select a role
+  roleAllAssigned: User already has all roles
+  roleAddConfirm: Add
+  roleDeleteTitle: Remove User Role
+  roleDeleteConfirm: Remove role "{role}" from user "{username}"?
+  roleAssignSuccess: User role added
+  roleRevokeSuccess: User role removed
+  roleUpdateFailed: Failed to update user roles
   createdAt: Created At
   lastLoginAt: Last Login
   actions: Actions

@@ -29,3 +29,9 @@ export const replaceManagedRolePermissions = (
   roleId: string,
   data: ReplaceRolePermissionsRequest
 ) => http.request<ManagedRole>("put", `/admin/roles/${roleId}/permissions`, { data });
+
+export const assignUserRole = (userId: string, roleId: string) =>
+  http.request<void>("post", `/admin/roles/users/${userId}/roles/${roleId}`);
+
+export const revokeUserRole = (userId: string, roleId: string) =>
+  http.request<void>("post", `/admin/roles/users/${userId}/roles/${roleId}/actions/revoke`);
