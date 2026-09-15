@@ -46,6 +46,9 @@ const editForm = reactive({ userId: "", username: "", displayName: "", email: ""
 const detailVisible = ref(false);
 const detailLoading = ref(false);
 const detailUser = ref<ManagedUser | null>(null);
+const rolesVisible = ref(false);
+const rolesLoading = ref(false);
+const rolesUser = ref<ManagedUser | null>(null);
 
 const statusOptions: ManagedUserStatus[] = [
   "PENDING",
@@ -129,6 +132,20 @@ const openDetail = async (user: ManagedUser) => {
     detailVisible.value = false;
   } finally {
     detailLoading.value = false;
+  }
+};
+
+const openRoles = async (user: ManagedUser) => {
+  rolesUser.value = user;
+  rolesVisible.value = true;
+  rolesLoading.value = true;
+  try {
+    rolesUser.value = await getManagedUser(user.id);
+  } catch (error) {
+    ElMessage.error(getHttpErrorMessage(error, t("userManagement.rolesFailed")));
+    rolesVisible.value = false;
+  } finally {
+    rolesLoading.value = false;
   }
 };
 
@@ -330,9 +347,12 @@ onMounted(loadUsers);
       <el-table-column
         fixed="right"
         :label="t('userManagement.actions')"
-        width="190"
+        width="260"
       >
         <template #default="scope">
+          <el-button link type="primary" @click="openRoles(scope.row)">
+            {{ t("userManagement.rolesButton") }}
+          </el-button>
           <el-button link type="primary" @click="openEdit(scope.row)">
             {{ t("userManagement.edit") }}
           </el-button>
@@ -400,6 +420,25 @@ onMounted(loadUsers);
         </el-button>
       </template>
     </el-dialog>
+    <el-drawer
+      v-model="rolesVisible"
+      :title="t('userManagement.rolesTitle')"
+      direction="rtl"
+      size="420px"
+    >
+      <el-skeleton v-if="rolesLoading" :rows="4" animated />
+      <template v-else-if="rolesUser">
+        <div class="mb-4 text-[var(--el-text-color-secondary)]">
+          {{ rolesUser.username }}
+        </div>
+        <el-space v-if="rolesUser.roleCodes.length" wrap>
+          <el-tag v-for="role in rolesUser.roleCodes" :key="role" size="large">
+            {{ role }}
+          </el-tag>
+        </el-space>
+        <el-empty v-else :description="t('userManagement.rolesEmpty')" />
+      </template>
+    </el-drawer>
     <el-dialog
       v-model="editVisible"
       :title="t('userManagement.editTitle')"

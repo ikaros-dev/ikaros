@@ -14,6 +14,10 @@ userManagement:
     LOCKED: Locked
     DEACTIVATED: Deleted
   roles: Roles
+  rolesButton: Roles
+  rolesTitle: User Roles
+  rolesFailed: Failed to load user roles
+  rolesEmpty: No roles
   createdAt: Created At
   lastLoginAt: Last Login
   actions: Actions

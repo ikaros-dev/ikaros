@@ -14,6 +14,10 @@ userManagement:
     LOCKED: 已锁定
     DEACTIVATED: 已删除
   roles: 角色
+  rolesButton: 角色
+  rolesTitle: 用户角色
+  rolesFailed: 获取用户角色失败
+  rolesEmpty: 暂无角色
   createdAt: 创建时间
   lastLoginAt: 最近登录
   actions: 操作
