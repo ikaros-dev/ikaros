@@ -94,15 +94,20 @@ export const issueStepUpChallenge = () =>
   http.request<VerificationChallenge>("post", "/security/step-up");
 
 export const verifyStepUpChallenge = (challengeId: string, code: string) =>
-  http.request<VerificationResult>("post", `/security/step-up/${challengeId}/verify`, {
-    data: { code }
-  });
+  http.request<VerificationResult>(
+    "post",
+    `/security/step-up/${challengeId}/verify`,
+    {
+      data: { code }
+    }
+  );
 
 export type ManagedUserStatus =
   | "PENDING"
   | "ACTIVE"
   | "DISABLED"
-  | "LOCKED";
+  | "LOCKED"
+  | "DEACTIVATED";
 
 export type ManagedUser = {
   id: string;
@@ -128,6 +133,18 @@ export const listManagedUsers = (params: {
   page: number;
   size: number;
 }) => http.request<ManagedUserPage>("get", "/admin/users", { params });
+
+export type CreateManagedUserRequest = {
+  username: string;
+  displayName: string;
+  email?: string;
+};
+
+export const createManagedUser = (data: CreateManagedUserRequest) =>
+  http.request<ManagedUser>("post", "/admin/users", { data });
+
+export const getManagedUser = (userId: string) =>
+  http.request<ManagedUser>("get", `/admin/users/${userId}`);
 
 export const deleteManagedUser = (userId: string) =>
   http.request<void>("delete", `/admin/users/${userId}`);

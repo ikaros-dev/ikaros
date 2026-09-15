@@ -1,8 +1,10 @@
 userManagement:
   username: Username
   usernamePlaceholder: Enter username
+  displayNamePlaceholder: Enter display name
   displayName: Display Name
   email: Email
+  emailPlaceholder: Enter email
   status: Status
   statusPlaceholder: Select status
   statuses:
@@ -10,10 +12,19 @@ userManagement:
     ACTIVE: Active
     DISABLED: Disabled
     LOCKED: Locked
+    DEACTIVATED: Deleted
   roles: Roles
   createdAt: Created At
   lastLoginAt: Last Login
   actions: Actions
+  create: Add User
+  createTitle: Add User
+  createConfirm: Create
+  createSuccess: User created
+  createFailed: Failed to create user
+  detail: Details
+  detailTitle: User Details
+  detailFailed: Failed to load user details
   delete: Delete
   deleteTitle: Delete User
   deleteConfirm: Are you sure you want to delete user "{username}"?

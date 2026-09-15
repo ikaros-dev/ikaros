@@ -3,14 +3,19 @@ import { onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useI18n } from "vue-i18n";
 import {
+  createManagedUser,
   deleteManagedUser,
+  getManagedUser,
   issueStepUpChallenge,
   listManagedUsers,
   verifyStepUpChallenge,
   type ManagedUser,
   type ManagedUserStatus
 } from "@/api/user";
-import { clearVerificationGrant, setVerificationGrant } from "@/utils/verificationGrant";
+import {
+  clearVerificationGrant,
+  setVerificationGrant
+} from "@/utils/verificationGrant";
 import PageCard from "@/views/console/PageCard.vue";
 
 const { t, locale } = useI18n();
@@ -28,6 +33,12 @@ const verificationLoading = ref(false);
 const verificationCode = ref("");
 const verificationChallengeId = ref("");
 const pendingDeleteUser = ref<ManagedUser | null>(null);
+const createVisible = ref(false);
+const createLoading = ref(false);
+const createForm = reactive({ username: "", displayName: "", email: "" });
+const detailVisible = ref(false);
+const detailLoading = ref(false);
+const detailUser = ref<ManagedUser | null>(null);
 
 const statusOptions: ManagedUserStatus[] = [
   "PENDING",
@@ -71,12 +82,56 @@ const reset = () => {
   search();
 };
 
+const openCreate = () => {
+  createForm.username = "";
+  createForm.displayName = "";
+  createForm.email = "";
+  createVisible.value = true;
+};
+
+const submitCreate = async () => {
+  if (!createForm.username.trim() || !createForm.displayName.trim()) return;
+  createLoading.value = true;
+  try {
+    await createManagedUser({
+      username: createForm.username.trim(),
+      displayName: createForm.displayName.trim(),
+      email: createForm.email.trim() || undefined
+    });
+    createVisible.value = false;
+    ElMessage.success(t("userManagement.createSuccess"));
+    await loadUsers();
+  } catch {
+    ElMessage.error(t("userManagement.createFailed"));
+  } finally {
+    createLoading.value = false;
+  }
+};
+
+const openDetail = async (user: ManagedUser) => {
+  detailUser.value = user;
+  detailVisible.value = true;
+  detailLoading.value = true;
+  try {
+    detailUser.value = await getManagedUser(user.id);
+  } catch {
+    ElMessage.error(t("userManagement.detailFailed"));
+    detailVisible.value = false;
+  } finally {
+    detailLoading.value = false;
+  }
+};
+
 const removeUser = async (user: ManagedUser) => {
   try {
     await ElMessageBox.confirm(
       t("userManagement.deleteConfirm", { username: user.username }),
       t("userManagement.deleteTitle"),
-      { type: "warning", confirmButtonText: t("buttons.pureConfirm"), cancelButtonText: t("buttons.pureClose") }
+      {
+        type: "warning",
+        confirmButtonText: t("buttons.pureConfirm"),
+        cancelButtonText: t("buttons.pureClose")
+      }
     );
     pendingDeleteUser.value = user;
     verificationLoading.value = true;
@@ -96,12 +151,16 @@ const removeUser = async (user: ManagedUser) => {
 };
 
 const verifyAndDelete = async () => {
-  if (!verificationChallengeId.value || !/^\d{6}$/.test(verificationCode.value)) return;
+  if (!verificationChallengeId.value || !/^\d{6}$/.test(verificationCode.value))
+    return;
   const user = pendingDeleteUser.value;
   if (!user) return;
   verificationLoading.value = true;
   try {
-    const result = await verifyStepUpChallenge(verificationChallengeId.value, verificationCode.value);
+    const result = await verifyStepUpChallenge(
+      verificationChallengeId.value,
+      verificationCode.value
+    );
     setVerificationGrant(result.verificationGrant);
     await deleteManagedUser(user.id);
     clearVerificationGrant();
@@ -147,16 +206,44 @@ onMounted(loadUsers);
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="search">{{ t("userManagement.search") }}</el-button>
+        <el-button type="primary" @click="search">{{
+          t("userManagement.search")
+        }}</el-button>
         <el-button @click="reset">{{ t("userManagement.reset") }}</el-button>
       </el-form-item>
     </el-form>
 
-    <el-table class="mt-2" v-loading="loading" :data="users" row-key="id" border>
-      <el-table-column prop="username" :label="t('userManagement.username')" min-width="150" />
-      <el-table-column prop="displayName" :label="t('userManagement.displayName')" min-width="150" />
-      <el-table-column prop="email" :label="t('userManagement.email')" min-width="210">
-        <template #default="scope">{{ scope.row.email || t("userManagement.empty") }}</template>
+    <div class="mt-2">
+      <el-button type="primary" @click="openCreate">{{
+        t("userManagement.create")
+      }}</el-button>
+    </div>
+
+    <el-table
+      v-loading="loading"
+      class="mt-2"
+      :data="users"
+      row-key="id"
+      border
+    >
+      <el-table-column
+        prop="username"
+        :label="t('userManagement.username')"
+        min-width="150"
+      />
+      <el-table-column
+        prop="displayName"
+        :label="t('userManagement.displayName')"
+        min-width="150"
+      />
+      <el-table-column
+        prop="email"
+        :label="t('userManagement.email')"
+        min-width="210"
+      >
+        <template #default="scope">{{
+          scope.row.email || t("userManagement.empty")
+        }}</template>
       </el-table-column>
       <el-table-column :label="t('userManagement.status')" width="130">
         <template #default="scope">
@@ -167,17 +254,32 @@ onMounted(loadUsers);
       </el-table-column>
       <el-table-column :label="t('userManagement.roles')" min-width="180">
         <template #default="scope">
-          {{ scope.row.roleCodes.length ? scope.row.roleCodes.join(", ") : t("userManagement.empty") }}
+          {{
+            scope.row.roleCodes.length
+              ? scope.row.roleCodes.join(", ")
+              : t("userManagement.empty")
+          }}
         </template>
       </el-table-column>
       <el-table-column :label="t('userManagement.createdAt')" min-width="180">
-        <template #default="scope">{{ formatDate(scope.row.createdAt) }}</template>
+        <template #default="scope">{{
+          formatDate(scope.row.createdAt)
+        }}</template>
       </el-table-column>
       <el-table-column :label="t('userManagement.lastLoginAt')" min-width="180">
-        <template #default="scope">{{ formatDate(scope.row.lastLoginAt) }}</template>
+        <template #default="scope">{{
+          formatDate(scope.row.lastLoginAt)
+        }}</template>
       </el-table-column>
-      <el-table-column fixed="right" :label="t('userManagement.actions')" width="100">
+      <el-table-column
+        fixed="right"
+        :label="t('userManagement.actions')"
+        width="150"
+      >
         <template #default="scope">
+          <el-button link type="primary" @click="openDetail(scope.row)">
+            {{ t("userManagement.detail") }}
+          </el-button>
           <el-button link type="danger" @click="removeUser(scope.row)">
             {{ t("userManagement.delete") }}
           </el-button>
@@ -196,6 +298,90 @@ onMounted(loadUsers);
       />
     </div>
     <el-dialog
+      v-model="createVisible"
+      :title="t('userManagement.createTitle')"
+      width="480px"
+    >
+      <el-form
+        :model="createForm"
+        label-width="80px"
+        @submit.prevent="submitCreate"
+      >
+        <el-form-item :label="t('userManagement.username')" required>
+          <el-input
+            v-model="createForm.username"
+            :placeholder="t('userManagement.usernamePlaceholder')"
+          />
+        </el-form-item>
+        <el-form-item :label="t('userManagement.displayName')" required>
+          <el-input
+            v-model="createForm.displayName"
+            :placeholder="t('userManagement.displayNamePlaceholder')"
+          />
+        </el-form-item>
+        <el-form-item :label="t('userManagement.email')">
+          <el-input
+            v-model="createForm.email"
+            :placeholder="t('userManagement.emailPlaceholder')"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="createVisible = false">{{
+          t("buttons.pureClose")
+        }}</el-button>
+        <el-button
+          type="primary"
+          :loading="createLoading"
+          :disabled="
+            !createForm.username.trim() || !createForm.displayName.trim()
+          "
+          @click="submitCreate"
+        >
+          {{ t("userManagement.createConfirm") }}
+        </el-button>
+      </template>
+    </el-dialog>
+    <el-dialog
+      v-model="detailVisible"
+      :title="t('userManagement.detailTitle')"
+      width="520px"
+    >
+      <el-skeleton v-if="detailLoading" :rows="5" animated />
+      <el-descriptions v-else-if="detailUser" :column="1" border>
+        <el-descriptions-item :label="t('userManagement.username')">{{
+          detailUser.username
+        }}</el-descriptions-item>
+        <el-descriptions-item :label="t('userManagement.displayName')">{{
+          detailUser.displayName
+        }}</el-descriptions-item>
+        <el-descriptions-item :label="t('userManagement.email')">{{
+          detailUser.email || t("userManagement.empty")
+        }}</el-descriptions-item>
+        <el-descriptions-item :label="t('userManagement.status')">
+          {{ t(`userManagement.statuses.${detailUser.status}`) }}
+        </el-descriptions-item>
+        <el-descriptions-item :label="t('userManagement.roles')">
+          {{
+            detailUser.roleCodes.length
+              ? detailUser.roleCodes.join(", ")
+              : t("userManagement.empty")
+          }}
+        </el-descriptions-item>
+        <el-descriptions-item :label="t('userManagement.createdAt')">{{
+          formatDate(detailUser.createdAt)
+        }}</el-descriptions-item>
+        <el-descriptions-item :label="t('userManagement.lastLoginAt')">{{
+          formatDate(detailUser.lastLoginAt)
+        }}</el-descriptions-item>
+      </el-descriptions>
+      <template #footer>
+        <el-button @click="detailVisible = false">{{
+          t("buttons.pureClose")
+        }}</el-button>
+      </template>
+    </el-dialog>
+    <el-dialog
       v-model="verificationVisible"
       :title="t('userManagement.verificationTitle')"
       width="420px"
@@ -212,7 +398,9 @@ onMounted(loadUsers);
         @keyup.enter="verifyAndDelete"
       />
       <template #footer>
-        <el-button @click="verificationVisible = false">{{ t("buttons.pureClose") }}</el-button>
+        <el-button @click="verificationVisible = false">{{
+          t("buttons.pureClose")
+        }}</el-button>
         <el-button
           type="primary"
           :loading="verificationLoading"

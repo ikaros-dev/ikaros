@@ -1,8 +1,10 @@
 userManagement:
   username: 用户名
   usernamePlaceholder: 请输入用户名
+  displayNamePlaceholder: 请输入昵称
   displayName: 昵称
   email: 邮箱
+  emailPlaceholder: 请输入邮箱
   status: 状态
   statusPlaceholder: 请选择状态
   statuses:
@@ -10,10 +12,19 @@ userManagement:
     ACTIVE: 正常
     DISABLED: 已禁用
     LOCKED: 已锁定
+    DEACTIVATED: 已删除
   roles: 角色
   createdAt: 创建时间
   lastLoginAt: 最近登录
   actions: 操作
+  create: 新增用户
+  createTitle: 新增用户
+  createConfirm: 创建
+  createSuccess: 用户创建成功
+  createFailed: 用户创建失败
+  detail: 详情
+  detailTitle: 用户详情
+  detailFailed: 获取用户详情失败
   delete: 删除
   deleteTitle: 删除用户
   deleteConfirm: 确定删除用户“{username}”吗？
