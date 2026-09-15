@@ -6,6 +6,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
@@ -22,9 +24,18 @@ import run.ikaros.authorization.api.PlatformPermission;
 @Order(Ordered.LOWEST_PRECEDENCE)
 public class ResourceAuthorizationWebFilter implements WebFilter {
     private final AccessControlService accessControl;
+    private final boolean smsOtpEnabled;
 
     public ResourceAuthorizationWebFilter(AccessControlService accessControl) {
+        this(accessControl, false);
+    }
+
+    @Autowired
+    public ResourceAuthorizationWebFilter(AccessControlService accessControl,
+                                          @Value("${ikaros.security.verification.sms.enabled:false}")
+                                          boolean smsOtpEnabled) {
         this.accessControl = accessControl;
+        this.smsOtpEnabled = smsOtpEnabled;
     }
 
     @Override
@@ -44,9 +55,12 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
         if (path.equals("/api/shares/redeem")) return chain.filter(exchange);
         AuthenticatedPrincipal jwtPrincipal = exchange.getAttribute(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE);
         if (jwtPrincipal == null) return reject(exchange, HttpStatus.UNAUTHORIZED);
+        if (path.startsWith("/api/security/step-up") || path.startsWith("/api/security/verification-challenges")) {
+            return chain.filter(exchange);
+        }
         if (path.equals("/api/me/actions/invalidate-tokens")) return chain.filter(exchange);
         PlatformPermission permission = permission(exchange.getRequest().getMethod().name(), path);
-        if (!jwtPrincipal.permissions().contains(permission.key())) return reject(exchange, HttpStatus.FORBIDDEN);
+        if (!hasPermission(jwtPrincipal, permission)) return reject(exchange, HttpStatus.FORBIDDEN);
         SecurityPolicy securityPolicy = policy(permission);
         Mono<Void> currentAuthorization = accessControl.require(jwtPrincipal.actorId(),
             jwtPrincipal.verificationLevel(), jwtPrincipal.verificationExpiresAt(), securityPolicy);
@@ -63,6 +77,12 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             || permission == PlatformPermission.RESOURCE_DELETE
             || permission == PlatformPermission.RESOURCE_DOWNLOAD
             || permission == PlatformPermission.RESOURCE_SHARE;
+    }
+
+    private boolean hasPermission(AuthenticatedPrincipal principal, PlatformPermission required) {
+        if (principal.permissions().contains(required.key())) return true;
+        return required == PlatformPermission.SYSTEM_USER_READ
+            && principal.permissions().contains(PlatformPermission.SYSTEM_USER_MANAGE.key());
     }
 
     private PlatformPermission permission(String method, String path) {
@@ -123,8 +143,12 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             || permission == PlatformPermission.STORAGE_TIERING_MANAGE
             || permission == PlatformPermission.STORAGE_RESTORE_MANAGE
             || permission == PlatformPermission.INGESTION_SOURCE_MANAGE;
-        return new SecurityPolicy("resource.http", permission,
-            highRisk ? SecurityVerificationLevel.SVL_2 : SecurityVerificationLevel.SVL_0, highRisk);
+        SecurityVerificationLevel minimumSvl = permission == PlatformPermission.STORAGE_PROVIDER_MANAGE
+            ? (smsOtpEnabled ? SecurityVerificationLevel.SVL_3 : SecurityVerificationLevel.SVL_2)
+            : permission == PlatformPermission.SYSTEM_USER_MANAGE
+            ? SecurityVerificationLevel.SVL_1
+            : highRisk ? SecurityVerificationLevel.SVL_2 : SecurityVerificationLevel.SVL_0;
+        return new SecurityPolicy("resource.http", permission, minimumSvl, highRisk);
     }
 
     private boolean hasDeliveryGrant(ServerWebExchange exchange) {

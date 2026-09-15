@@ -52,6 +52,12 @@ class IdentityControllerTest {
         client.get().uri("/api/users?status=PENDING&query=ali").exchange().expectStatus().isOk();
         client.post().uri("/api/users/{userId}/status/{status}", userId, UserStatus.ACTIVE)
             .header("X-Ikaros-Actor-Id", actorId.toString()).exchange().expectStatus().isOk();
+        when(userService.update(any(), any(), any())).thenReturn(Mono.just(user));
+        client.put().uri("/api/users/{userId}", userId)
+            .header("X-Ikaros-Actor-Id", actorId.toString())
+            .bodyValue(Map.of("username", "alice", "displayName", "Alice", "email", "alice@example.com",
+                "status", "ACTIVE"))
+            .exchange().expectStatus().isOk();
     }
 
     @Test

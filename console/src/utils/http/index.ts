@@ -147,9 +147,17 @@ class PureHttp {
       (error: PureHttpError) => {
         const $error = error;
         $error.isCancelRequest = Axios.isCancel($error);
+        const detail =
+          typeof ($error.response?.data as { detail?: unknown })?.detail ===
+          "string"
+            ? ($error.response?.data as { detail: string }).detail
+            : "";
         if ($error.response?.status === 403) {
           $error.message =
+            detail ||
             "操作被拒绝（403）。请确认当前账号已获得对应权限；需要二次验证的操作，请先到“身份与安全 > 认证设置”完成验证。";
+        } else if (detail) {
+          $error.message = detail;
         }
         if (
           $error.response?.status === 401 &&
@@ -211,3 +219,15 @@ class PureHttp {
 }
 
 export const http = new PureHttp();
+
+export const getHttpErrorMessage = (error: unknown, fallback: string): string => {
+  const responseData = (error as PureHttpError)?.response?.data as
+    | { detail?: unknown }
+    | undefined;
+  if (typeof responseData?.detail === "string" && responseData.detail.trim()) {
+    return responseData.detail;
+  }
+  if ((error as PureHttpError)?.response) return fallback;
+  const message = (error as PureHttpError)?.message;
+  return typeof message === "string" && message.trim() ? message : fallback;
+};

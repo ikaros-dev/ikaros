@@ -13,10 +13,57 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.WebFilterChain;
 import run.ikaros.authorization.AccessControlService;
+import run.ikaros.authorization.SecurityPolicy;
+import run.ikaros.authorization.api.PlatformPermission;
 import run.ikaros.authentication.api.AuthenticatedPrincipal;
+import run.ikaros.authentication.api.SecurityVerificationLevel;
 import reactor.core.publisher.Mono;
 
 class ResourceAuthorizationWebFilterTest {
+    @Test
+    void lowersStorageProviderManageToSvl2WhenSmsIsDisabled() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(
+            "/api/storage/providers").build());
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 2L,
+                java.util.List.of(PlatformPermission.STORAGE_PROVIDER_MANAGE.key()),
+                SecurityVerificationLevel.SVL_2, null, null, null));
+        WebFilterChain chain = mock(WebFilterChain.class);
+        when(chain.filter(exchange)).thenReturn(Mono.empty());
+        AccessControlService accessControl = mock(AccessControlService.class);
+        when(accessControl.require(eq(actor), eq(SecurityVerificationLevel.SVL_2), eq(null), any()))
+            .thenReturn(Mono.empty());
+
+        new ResourceAuthorizationWebFilter(accessControl).filter(exchange, chain).block();
+
+        verify(accessControl).require(eq(actor), eq(SecurityVerificationLevel.SVL_2), eq(null),
+            argThat(policy -> policy.permission() == PlatformPermission.STORAGE_PROVIDER_MANAGE));
+        verify(chain).filter(exchange);
+    }
+
+    @Test
+    void keepsStorageProviderManageAtSvl3WhenSmsIsEnabled() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(
+            "/api/storage/providers").build());
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 3L,
+                java.util.List.of(PlatformPermission.STORAGE_PROVIDER_MANAGE.key()),
+                SecurityVerificationLevel.SVL_3, null, null, null));
+        WebFilterChain chain = mock(WebFilterChain.class);
+        when(chain.filter(exchange)).thenReturn(Mono.empty());
+        AccessControlService accessControl = mock(AccessControlService.class);
+        when(accessControl.require(eq(actor), eq(SecurityVerificationLevel.SVL_3), eq(null), any()))
+            .thenReturn(Mono.empty());
+
+        new ResourceAuthorizationWebFilter(accessControl, true).filter(exchange, chain).block();
+
+        verify(accessControl).require(eq(actor), eq(SecurityVerificationLevel.SVL_3), eq(null),
+            argThat(policy -> policy.permission() == PlatformPermission.STORAGE_PROVIDER_MANAGE));
+        verify(chain).filter(exchange);
+    }
+
     @Test
     void rejectsResourceRequestWithoutToken() {
         UUID actor = UUID.randomUUID();
@@ -100,6 +147,20 @@ class ResourceAuthorizationWebFilterTest {
         new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
 
         assertEquals(401, exchange.getResponse().getStatusCode().value());
+    }
+
+    @Test
+    void allowsUserReadWithUserManagePermission() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/admin/users").build());
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 0L, java.util.List.of("system.user.manage")));
+        WebFilterChain chain = mock(WebFilterChain.class);
+        when(chain.filter(exchange)).thenReturn(Mono.empty());
+
+        new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
+
+        verify(chain).filter(exchange);
     }
 
     @Test

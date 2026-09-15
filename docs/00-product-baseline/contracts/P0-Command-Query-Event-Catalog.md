@@ -305,6 +305,7 @@ Attachment Content Query 必须支持 HTTP Range，并在返回内容前重新�
 | `identity.create-user` | `identity.user.manage` | policy | `authentication.user.created` |
 | `identity.disable-user` | `identity.user.manage` | REQUIRED for privileged targets | `authentication.user.disabled` |
 | `identity.enable-user` | `identity.user.manage` | policy | `authentication.user.enabled` |
+| `identity.delete-user` | `identity.user.manage` | REQUIRED | `authentication.user.deactivated` |
 | `identity.create-role` | `identity.role.manage` | policy | `authorization.role.created` |
 | `identity.replace-role-permissions` | `identity.role.manage` | REQUIRED | `authorization.role.permissions-replaced` |
 | `identity.assign-role` | `identity.role.manage` | policy | `authorization.user.role-assigned` |
@@ -462,6 +463,7 @@ Error Event 只包含可安全公开的 classification / summary，不复制 sta
 | `authentication.user.created` | 1 | `user_id` |
 | `authentication.user.disabled` | 1 | `user_id, security_version` |
 | `authentication.user.enabled` | 1 | `user_id, security_version` |
+| `authentication.user.deactivated` | 1 | `user_id, security_version` |
 | `authorization.role.created` | 1 | `role_id, role_key` |
 | `authorization.role.permissions-replaced` | 1 | `role_id, permission_keys[]` |
 | `authorization.user.role-assigned` | 1 | `user_id, role_id` |
@@ -493,6 +495,7 @@ Error Event 只包含可安全公开的 classification / summary，不复制 sta
 | `storage.provider.*` | Storage | Operations projection | Audit/Analytics |
 | `operations.background-task.*` | Operations | none | Notification, Analytics |
 | `authentication.user.disabled` | Authentication | token/security-version invalidation | Audit, Notification |
+| `authentication.user.deactivated` | Authentication | token/security-version invalidation | Audit, Notification |
 | `authentication.user.tokens-invalidated` | Authentication | authorization/token acceptance cache invalidation | Audit, Notification |
 | `authorization.role.permissions-replaced` | Authorization | authorization cache invalidation | Audit |
 

@@ -1,3 +1,164 @@
+userManagement:
+  username: 用户名
+  usernamePlaceholder: 请输入用户名
+  displayNamePlaceholder: 请输入昵称
+  displayName: 昵称
+  email: 邮箱
+  emailPlaceholder: 请输入邮箱
+  status: 状态
+  statusPlaceholder: 请选择状态
+  statuses:
+    PENDING: 待激活
+    ACTIVE: 正常
+    DISABLED: 已禁用
+    LOCKED: 已锁定
+    DEACTIVATED: 已删除
+  roles: 角色
+  rolesButton: 角色
+  rolesTitle: 用户角色
+  rolesFailed: 获取用户角色失败
+  rolesEmpty: 暂无角色
+  roleCode: 角色编码
+  roleAdd: 新增角色
+  roleAddTitle: 为用户新增角色
+  roleSelectPlaceholder: 请选择角色
+  roleAllAssigned: 该用户已拥有全部角色
+  roleAddConfirm: 添加
+  roleDeleteTitle: 删除用户角色
+  roleDeleteConfirm: 确定移除用户“{username}”的角色“{role}”吗？
+  roleAssignSuccess: 用户角色添加成功
+  roleRevokeSuccess: 用户角色已移除
+  roleUpdateFailed: 用户角色更新失败
+  createdAt: 创建时间
+  lastLoginAt: 最近登录
+  actions: 操作
+  create: 新增用户
+  createTitle: 新增用户
+  createConfirm: 创建
+  createSuccess: 用户创建成功
+  createFailed: 用户创建失败
+  detail: 详情
+  detailTitle: 用户详情
+  detailFailed: 获取用户详情失败
+  edit: 修改
+  editTitle: 修改用户
+  updateConfirm: 保存
+  updateSuccess: 用户更新成功
+  updateFailed: 用户更新失败
+  delete: 删除
+  deleteTitle: 删除用户
+  deleteConfirm: 确定删除用户“{username}”吗？
+  deleteSuccess: 用户已删除
+  deleteFailed: 删除用户失败
+  verificationTitle: 二次验证
+  verificationDescription: 验证码已发送到当前账号绑定的邮箱，请输入 6 位验证码后继续操作。
+  verificationPlaceholder: 请输入 6 位验证码
+  verificationConfirm: 验证并继续
+  never: 从未
+  empty: 暂无
+  search: 查询
+  reset: 重置
+
+roleManagement:
+  code: 角色编码
+  codePlaceholder: 大写字母开头，只能包含大写字母、数字和下划线
+  codeInvalid: 角色编码必须以大写字母开头，只能包含大写字母、数字和下划线
+  name: 角色名称
+  namePlaceholder: 请输入角色名称
+  description: 描述
+  type: 类型
+  builtIn: 内置角色
+  custom: 自定义角色
+  permissions: 权限
+  morePermissions: 还有 {count} 项
+  actions: 操作
+  create: 新增角色
+  createTitle: 新增角色
+  createConfirm: 创建
+  createSuccess: 角色创建成功
+  createFailed: 角色创建失败
+  detail: 详情
+  detailTitle: 角色详情
+  edit: 修改权限
+  editTitle: 修改角色权限
+  save: 保存
+  updateTitle: 保存角色权限
+  updateConfirm: 确定保存当前角色的权限配置吗？
+  updateSuccess: 角色权限更新成功
+  updateFailed: 角色权限更新失败
+  loadFailed: 获取角色列表失败
+  verificationTitle: 邮箱验证
+  verificationDescription: 验证码已发送到当前账号绑定的邮箱，请输入 6 位验证码后继续操作。
+  verificationPlaceholder: 请输入 6 位验证码
+  verificationConfirm: 验证并继续
+  search: 查询
+  reset: 重置
+  empty: 暂无
+  permissionNames:
+    system_user_read: 查看用户
+    system_user_manage: 管理用户
+    system_role_read: 查看角色
+    system_role_manage: 管理角色
+    system_session_read: 查看会话
+    system_session_manage: 管理会话
+    system_audit_read: 查看审计
+    resource_read: 读取资源
+    resource_write: 编辑资源
+    resource_delete: 删除资源
+    resource_download: 下载资源
+    resource_share: 分享资源
+    storage_provider_read: 查看存储 Provider
+    storage_provider_manage: 管理存储 Provider
+    storage_delivery_read: 查看 Delivery Provider
+    storage_delivery_manage: 管理 Delivery Provider
+    storage_tiering_manage: 管理存储分层
+    storage_restore_request: 请求媒体恢复
+    storage_restore_read: 查看媒体恢复
+    storage_restore_manage: 管理媒体恢复
+    ingestion_source_manage: 管理导入来源
+    account_self_read: 查看个人资料
+    account_preference_read: 查看个人偏好
+    account_notification_read: 查看个人通知设置
+    account_security_read: 查看账户安全
+    user_read: 查看用户管理
+    role_read: 查看角色与权限
+    security_authentication_read: 查看身份认证配置
+    integration_read: 查看平台集成
+    notification_read: 查看通知中心
+    audit_read: 查看审计日志
+    platform_read: 查看系统参数
+    system_health_read: 查看系统健康
+    system_diagnostics_read: 查看系统诊断
+    collection_read: 查看资源集合
+    search_use: 使用资源搜索
+    storage_policy_read: 查看存储策略
+    storage_archive_read: 查看归档管理
+    storage_maintenance_read: 查看存储维护
+    backup_read: 查看备份管理
+    drive_space_read: 查看云盘空间
+    drive_file_read: 查看云盘文件
+    drive_transfer_read: 查看云盘传输
+    drive_sync_read: 查看云盘同步
+    drive_conflict_read: 查看云盘冲突
+    drive_trash_read: 查看云盘回收站
+    drive_settings_read: 查看云盘设置
+    document_read: 查看文档
+    media_read: 查看媒体
+    planning_read: 查看计划
+    finance_read: 查看个人财务
+    private_note_read: 查看私密笔记
+    password_read: 查看密码库
+    ai_read: 查看 AI 应用
+    share_read: 查看分享
+    analytics_read: 查看数据分析
+    automation_read: 查看自动化
+    dashboard_read: 查看仪表盘
+    ingestion_read: 查看内容导入
+    activity_read: 查看活动中心
+    storage_read: 查看存储
+    app_read: 查看应用
+    system_read: 查看系统
+
 buttons:
   pureLoginOut: 退出系统
   pureLogin: 登录

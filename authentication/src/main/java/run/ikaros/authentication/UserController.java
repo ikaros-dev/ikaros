@@ -14,8 +14,10 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -96,6 +98,22 @@ public class UserController {
         return userService.get(userId);
     }
 
+    @Operation(summary = "更新平台用户", description = "更新用户名、昵称、邮箱和生命周期状态。")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "用户更新成功"),
+        @ApiResponse(responseCode = "400", description = "用户资料不合法", content = @Content),
+        @ApiResponse(responseCode = "404", description = "用户不存在", content = @Content),
+        @ApiResponse(responseCode = "409", description = "用户名或邮箱已存在", content = @Content)
+    })
+    @PutMapping("/{userId}")
+    public Mono<UserView> update(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID userId,
+        @Valid @RequestBody UpdateUserRequest request
+    ) {
+        return userService.update(actorId, userId, request);
+    }
+
     /**
      * 修改指定用户的生命周期状态。
      *
@@ -117,6 +135,27 @@ public class UserController {
         @PathVariable UserStatus status
     ) {
         return userService.changeStatus(actorId, userId, status);
+    }
+
+    /**
+     * 软删除指定用户。
+     *
+     * @param actorId 当前管理主体
+     * @param userId 目标用户
+     * @return 无响应体
+     */
+    @Operation(summary = "软删除平台用户", description = "将用户状态改为 DEACTIVATED，保留历史数据并使既有 JWT 失效。")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "用户已软删除"),
+        @ApiResponse(responseCode = "404", description = "用户不存在", content = @Content)
+    })
+    @DeleteMapping("/{userId}")
+    public Mono<ResponseEntity<Void>> delete(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID userId
+    ) {
+        return userService.delete(actorId, userId)
+            .thenReturn(ResponseEntity.noContent().build());
     }
 
     @PostMapping("/{userId}/actions/invalidate-tokens")

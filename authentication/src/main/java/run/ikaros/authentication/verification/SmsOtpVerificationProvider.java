@@ -5,50 +5,33 @@ import java.time.Instant;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import run.ikaros.operations.api.AuditService;
-import run.ikaros.common.ConflictException;
-import run.ikaros.common.NotFoundException;
 import run.ikaros.authentication.PlatformUserRepository;
 import run.ikaros.authentication.UserStatus;
 import run.ikaros.authentication.api.SecurityVerificationLevel;
+import run.ikaros.common.ConflictException;
+import run.ikaros.common.NotFoundException;
+import run.ikaros.operations.api.AuditService;
 
-/**
- * Email OTP Provider，负责短时挑战、一次性验证、失败锁定和发起频率限制。
- */
+/** SMS OTP Provider；当前通过 Noop 投递器输出开发验证码，并签发 SVL-2。 */
 @Service
-public class EmailOtpVerificationProvider implements VerificationProvider {
-    /** OTP 有效期。 */
+public class SmsOtpVerificationProvider implements VerificationProvider {
     private static final Duration OTP_TTL = Duration.ofMinutes(5);
-    /** 单个用户的挑战频率窗口。 */
     private static final Duration ISSUE_WINDOW = Duration.ofMinutes(10);
-    /** 单个用户在频率窗口内最大挑战数。 */
     private static final long MAX_ISSUES_PER_WINDOW = 3;
-    /** 单个挑战允许的最大验证次数。 */
     private static final int MAX_ATTEMPTS = 5;
-    /** 验证结果对 Step-up 的保证有效期。 */
     private static final Duration VERIFICATION_TTL = Duration.ofMinutes(5);
 
     private final PlatformUserRepository userRepository;
     private final VerificationChallengeRepository challengeRepository;
     private final OtpCodeGenerator codeGenerator;
     private final OtpHasher otpHasher;
-    private final EmailOtpDelivery delivery;
+    private final SmsOtpDelivery delivery;
     private final AuditService auditService;
 
-    /**
-     * 创建 Email OTP Provider。
-     *
-     * @param userRepository 用户仓储
-     * @param challengeRepository 挑战仓储
-     * @param codeGenerator OTP 生成器
-     * @param otpHasher OTP 摘要器
-     * @param delivery 专用邮件投递端口
-     * @param auditService 审计服务
-     */
-    public EmailOtpVerificationProvider(PlatformUserRepository userRepository,
-                                        VerificationChallengeRepository challengeRepository,
-                                        OtpCodeGenerator codeGenerator, OtpHasher otpHasher,
-                                        EmailOtpDelivery delivery, AuditService auditService) {
+    public SmsOtpVerificationProvider(PlatformUserRepository userRepository,
+                                      VerificationChallengeRepository challengeRepository,
+                                      OtpCodeGenerator codeGenerator, OtpHasher otpHasher,
+                                      SmsOtpDelivery delivery, AuditService auditService) {
         this.userRepository = userRepository;
         this.challengeRepository = challengeRepository;
         this.codeGenerator = codeGenerator;
@@ -59,13 +42,13 @@ public class EmailOtpVerificationProvider implements VerificationProvider {
 
     @Override
     public VerificationMethod method() {
-        return VerificationMethod.EMAIL_OTP;
+        return VerificationMethod.SMS_OTP;
     }
 
     @Override
     public Mono<VerificationChallengeView> issue(UUID userId, IssueVerificationRequest request) {
         Instant now = Instant.now();
-        return activeEmailUser(userId)
+        return activeUser(userId)
             .then(challengeRepository.countByUserIdAndIssuedAtAfter(userId, now.minus(ISSUE_WINDOW)))
             .flatMap(count -> count >= MAX_ISSUES_PER_WINDOW
                 ? Mono.error(new ConflictException("验证码发送过于频繁，请稍后重试"))
@@ -79,9 +62,7 @@ public class EmailOtpVerificationProvider implements VerificationProvider {
             if (challenge.status() != VerificationChallengeStatus.ISSUED) {
                 return Mono.error(new ConflictException("验证码挑战当前不可验证"));
             }
-            if (!challenge.expiresAt().isAfter(now)) {
-                return expire(challenge, userId);
-            }
+            if (!challenge.expiresAt().isAfter(now)) return expire(challenge, userId);
             if (otpHasher.matches(request.code(), challenge.otpDigest())) {
                 VerificationChallengeEntity verified = new VerificationChallengeEntity(challenge.id(), challenge.userId(),
                     challenge.method(), challenge.purpose(), challenge.targetReference(), challenge.otpDigest(),
@@ -90,8 +71,8 @@ public class EmailOtpVerificationProvider implements VerificationProvider {
                 return challengeRepository.save(verified)
                     .then(auditService.record(userId, "security.verification.succeed", "VERIFICATION_CHALLENGE",
                         challengeId, "{}"))
-                    .thenReturn(new VerificationResult(challengeId, method(), SecurityVerificationLevel.SVL_2, userId,
-                        now, now.plus(VERIFICATION_TTL)));
+                    .thenReturn(new VerificationResult(challengeId, method(), SecurityVerificationLevel.SVL_2,
+                        userId, now, now.plus(VERIFICATION_TTL)));
             }
             return failedAttempt(challenge, userId);
         });
@@ -100,9 +81,7 @@ public class EmailOtpVerificationProvider implements VerificationProvider {
     @Override
     public Mono<Void> cancel(UUID userId, UUID challengeId) {
         return ownedChallenge(userId, challengeId).flatMap(challenge -> {
-            if (challenge.status() != VerificationChallengeStatus.ISSUED) {
-                return Mono.empty();
-            }
+            if (challenge.status() != VerificationChallengeStatus.ISSUED) return Mono.empty();
             VerificationChallengeEntity cancelled = new VerificationChallengeEntity(challenge.id(), challenge.userId(),
                 challenge.method(), challenge.purpose(), challenge.targetReference(), challenge.otpDigest(),
                 challenge.issuedAt(), challenge.expiresAt(), challenge.attemptCount(), challenge.maxAttempts(), null,
@@ -121,7 +100,8 @@ public class EmailOtpVerificationProvider implements VerificationProvider {
             .flatMap(saved -> delivery.deliver(userId, code, request.purpose())
                 .then(auditService.record(userId, "security.verification.issue", "VERIFICATION_CHALLENGE", saved.id(),
                     "{}"))
-                .thenReturn(toView(saved)));
+                .thenReturn(new VerificationChallengeView(saved.id(), saved.method(), saved.purpose(), saved.expiresAt(),
+                    saved.status(), null)));
     }
 
     private Mono<VerificationResult> expire(VerificationChallengeEntity challenge, UUID userId) {
@@ -129,8 +109,7 @@ public class EmailOtpVerificationProvider implements VerificationProvider {
             challenge.method(), challenge.purpose(), challenge.targetReference(), challenge.otpDigest(), challenge.issuedAt(),
             challenge.expiresAt(), challenge.attemptCount(), challenge.maxAttempts(), null,
             VerificationChallengeStatus.EXPIRED, challenge.version());
-        return challengeRepository.save(expired)
-            .then(Mono.error(new ConflictException("验证码已过期")));
+        return challengeRepository.save(expired).then(Mono.error(new ConflictException("验证码已过期")));
     }
 
     private Mono<VerificationResult> failedAttempt(VerificationChallengeEntity challenge, UUID userId) {
@@ -141,27 +120,19 @@ public class EmailOtpVerificationProvider implements VerificationProvider {
             challenge.method(), challenge.purpose(), challenge.targetReference(), challenge.otpDigest(), challenge.issuedAt(),
             challenge.expiresAt(), attempts, challenge.maxAttempts(), null, status, challenge.version());
         return challengeRepository.save(updated)
-            .then(auditService.record(userId, "security.verification.failed", "VERIFICATION_CHALLENGE", challenge.id(),
-                "{}"))
+            .then(auditService.record(userId, "security.verification.failed", "VERIFICATION_CHALLENGE", challenge.id(), "{}"))
             .then(Mono.error(new ConflictException(status == VerificationChallengeStatus.LOCKED
                 ? "验证码错误次数过多，挑战已锁定" : "验证码错误")));
     }
 
-    private Mono<Void> activeEmailUser(UUID userId) {
-        return userRepository.findById(userId)
-            .filter(user -> user.status() == UserStatus.ACTIVE && user.email() != null)
-            .switchIfEmpty(Mono.error(new NotFoundException("用户不存在或未配置可验证邮箱")))
-            .then();
+    private Mono<Void> activeUser(UUID userId) {
+        return userRepository.findById(userId).filter(user -> user.status() == UserStatus.ACTIVE)
+            .switchIfEmpty(Mono.error(new NotFoundException("用户不存在或已停用"))).then();
     }
 
     private Mono<VerificationChallengeEntity> ownedChallenge(UUID userId, UUID challengeId) {
         return challengeRepository.findById(challengeId)
             .filter(challenge -> challenge.userId().equals(userId) && challenge.method() == method())
             .switchIfEmpty(Mono.error(new NotFoundException("验证挑战不存在")));
-    }
-
-    private VerificationChallengeView toView(VerificationChallengeEntity challenge) {
-        return new VerificationChallengeView(challenge.id(), challenge.method(), challenge.purpose(), challenge.expiresAt(),
-            challenge.status(), null);
     }
 }

@@ -75,12 +75,29 @@ public class DefaultUserService implements UserService {
     }
 
     @Override
+    public Mono<UserView> update(UUID actorId, UUID userId, UpdateUserRequest request) {
+        return requiredUser(userId).flatMap(user -> {
+            UserStatus status = request.status();
+            PlatformUserEntity updated = new PlatformUserEntity(user.id(), request.username().trim(),
+                request.displayName().trim(), normalizeEmail(request.email()), status, user.createdAt(), Instant.now(),
+                user.lastLoginAt(), status == user.status() ? user.securityVersion() : user.securityVersion() + 1,
+                user.version(), user.isDel());
+            return userRepository.save(updated)
+                .onErrorMap(DuplicateKeyException.class, exception -> new ConflictException("用户名或邮箱已存在"))
+                .flatMap(saved -> emitStatusChanged(saved)
+                    .then(auditService.record(actorId, "identity.user.update", "USER", userId, "{}"))
+                    .then(toView(saved)));
+        });
+    }
+
+    @Override
     public Mono<PageResponse<UserView>> list(UserStatus status, String query, int page, int size) {
         if (page < 0 || size < 1 || size > MAX_PAGE_SIZE) {
             return Mono.error(new IllegalArgumentException("分页参数不合法"));
         }
         String keyword = query == null ? "" : query.trim();
         return userRepository.findAll()
+            .filter(user -> user.isDel() == 0)
             .filter(user -> status == null || user.status() == status)
             .filter(user -> keyword.isEmpty() || user.username().toLowerCase().contains(keyword.toLowerCase()))
             .sort(Comparator.comparing(PlatformUserEntity::createdAt).reversed())
@@ -103,6 +120,20 @@ public class DefaultUserService implements UserService {
                     .then(auditService.record(actorId, "identity.user.status.change", "USER", userId, "{}"))
                     .then(toView(saved)));
         });
+    }
+
+    @Override
+    public Mono<Void> delete(UUID actorId, UUID userId) {
+        Mono<Void> operation = requiredUser(userId).flatMap(user -> {
+            if (user.status() == UserStatus.DEACTIVATED) return Mono.empty();
+            PlatformUserEntity deleted = new PlatformUserEntity(user.id(), user.username(), user.displayName(), user.email(),
+                UserStatus.DEACTIVATED, user.createdAt(), Instant.now(), user.lastLoginAt(),
+                user.securityVersion() + 1, user.version(), 1);
+            return userRepository.save(deleted)
+                .flatMap(saved -> emitUserDeactivated(saved)
+                    .then(auditService.record(actorId, "identity.user.delete", "USER", userId, "{}")));
+        });
+        return transaction == null ? operation : operation.as(transaction::transactional);
     }
 
     @Override
@@ -142,6 +173,14 @@ public class DefaultUserService implements UserService {
         if (eventService == null) return Mono.empty();
         return eventService.append(new EventAppendRequest("authentication.user.created", 1, "authentication", "user", user.id(),
             "{\"user_id\":\"" + user.id() + "\"}")).then();
+    }
+
+    private Mono<Void> emitUserDeactivated(PlatformUserEntity user) {
+        if (eventService == null) return Mono.empty();
+        return eventService.append(new EventAppendRequest("authentication.user.deactivated", 1,
+            "authentication", "user", user.id(),
+            "{\"user_id\":\"" + user.id() + "\",\"security_version\":"
+                + user.securityVersion() + "}")).then();
     }
 
 
