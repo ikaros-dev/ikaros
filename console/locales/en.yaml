@@ -71,6 +71,10 @@ roleManagement:
   updateSuccess: Role permissions updated
   updateFailed: Failed to update role permissions
   loadFailed: Failed to load roles
+  verificationTitle: SMS Verification
+  verificationDescription: The code is printed in the backend console. Enter the 6-digit code to continue.
+  verificationPlaceholder: Enter the 6-digit code
+  verificationConfirm: Verify and Continue
   search: Search
   reset: Reset
   empty: Empty

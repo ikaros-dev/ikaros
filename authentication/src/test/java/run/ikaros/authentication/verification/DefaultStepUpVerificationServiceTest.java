@@ -45,8 +45,9 @@ class DefaultStepUpVerificationServiceTest {
             VerificationPurpose.LOGIN_STEP_UP, now.plusSeconds(300), VerificationChallengeStatus.ISSUED);
         when(userRepository.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
             UserStatus.ACTIVE, now, now, null, 2L, 0L)));
-        when(challengeRepository.findFirstByUserIdAndPurposeAndStatusAndConsumedAtAfterOrderByConsumedAtDesc(
-            eq(userId), eq(VerificationPurpose.LOGIN_STEP_UP), eq(VerificationChallengeStatus.VERIFIED), any()))
+        when(challengeRepository.findFirstByUserIdAndMethodAndPurposeAndStatusAndConsumedAtAfterOrderByConsumedAtDesc(
+            eq(userId), eq(VerificationMethod.EMAIL_OTP), eq(VerificationPurpose.LOGIN_STEP_UP),
+            eq(VerificationChallengeStatus.VERIFIED), any()))
             .thenReturn(Mono.empty());
         when(otpProvider.issue(eq(userId), any())).thenReturn(Mono.just(view));
 
@@ -65,8 +66,9 @@ class DefaultStepUpVerificationServiceTest {
             VerificationMethod.EMAIL_OTP, VerificationPurpose.LOGIN_STEP_UP, null, "digest", verifiedAt,
             verifiedAt.plusSeconds(300), 0, 5, verifiedAt, VerificationChallengeStatus.VERIFIED, 0L);
         when(userRepository.findById(userId)).thenReturn(Mono.just(user));
-        when(challengeRepository.findFirstByUserIdAndPurposeAndStatusAndConsumedAtAfterOrderByConsumedAtDesc(
-            eq(userId), eq(VerificationPurpose.LOGIN_STEP_UP), eq(VerificationChallengeStatus.VERIFIED), any()))
+        when(challengeRepository.findFirstByUserIdAndMethodAndPurposeAndStatusAndConsumedAtAfterOrderByConsumedAtDesc(
+            eq(userId), eq(VerificationMethod.EMAIL_OTP), eq(VerificationPurpose.LOGIN_STEP_UP),
+            eq(VerificationChallengeStatus.VERIFIED), any()))
             .thenReturn(Mono.just(recent));
 
         StepVerifier.create(service.issueEmailOtp(userId))

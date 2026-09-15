@@ -15,6 +15,9 @@ public interface StepUpVerificationService {
      */
     Mono<VerificationChallengeView> issueEmailOtp(UUID userId);
 
+    /** 为指定活跃用户发起 SMS OTP Step-up 挑战并达到 SVL-2。 */
+    Mono<VerificationChallengeView> issueSmsOtp(UUID userId);
+
     /**
      * 验证挑战并为当前用户签发短期 Step-up Verification Grant。
      *
@@ -25,6 +28,9 @@ public interface StepUpVerificationService {
      */
     Mono<VerificationResult> verifyEmailOtp(UUID userId, UUID challengeId, VerifyOtpRequest request);
 
+    /** 验证 SMS OTP 并为当前用户签发 SVL-2 Step-up Grant。 */
+    Mono<VerificationResult> verifySmsOtp(UUID userId, UUID challengeId, VerifyOtpRequest request);
+
     /**
      * 取消当前用户仍未使用的 Step-up 挑战。
      *
@@ -33,4 +39,7 @@ public interface StepUpVerificationService {
      * @return 完成信号
      */
     Mono<Void> cancelEmailOtp(UUID userId, UUID challengeId);
+
+    /** 取消当前用户仍未使用的 SMS OTP 挑战。 */
+    Mono<Void> cancelSmsOtp(UUID userId, UUID challengeId);
 }

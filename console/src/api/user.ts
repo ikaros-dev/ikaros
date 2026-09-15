@@ -2,12 +2,14 @@ import { http } from "@/utils/http";
 
 export type VerificationChallenge = {
   id: string;
-  method: "EMAIL_OTP";
+  method: VerificationMethod;
   purpose: string;
   expiresAt: string;
   status: string;
   verificationGrant?: string | null;
 };
+
+export type VerificationMethod = "EMAIL_OTP" | "SMS_OTP";
 
 export type VerificationResult = {
   verificationGrant: string;
@@ -91,13 +93,20 @@ export const refreshTokenApi = (data?: object) => {
 
 export const logoutApi = () => http.request<void>("post", "/auth/logout");
 
-export const issueStepUpChallenge = () =>
-  http.request<VerificationChallenge>("post", "/security/step-up");
+export const issueStepUpChallenge = (method: VerificationMethod = "EMAIL_OTP") =>
+  http.request<VerificationChallenge>(
+    "post",
+    method === "SMS_OTP" ? "/security/step-up/sms" : "/security/step-up"
+  );
 
-export const verifyStepUpChallenge = (challengeId: string, code: string) =>
+export const verifyStepUpChallenge = (
+  challengeId: string,
+  code: string,
+  method: VerificationMethod = "EMAIL_OTP"
+) =>
   http.request<VerificationResult>(
     "post",
-    `/security/step-up/${challengeId}/verify`,
+    `${method === "SMS_OTP" ? "/security/step-up/sms" : "/security/step-up"}/${challengeId}/verify`,
     {
       data: { code }
     }

@@ -71,6 +71,10 @@ roleManagement:
   updateSuccess: 角色权限更新成功
   updateFailed: 角色权限更新失败
   loadFailed: 获取角色列表失败
+  verificationTitle: 短信验证
+  verificationDescription: 验证码已输出到后端控制台，请输入 6 位验证码后继续操作。
+  verificationPlaceholder: 请输入 6 位验证码
+  verificationConfirm: 验证并继续
   search: 查询
   reset: 重置
   empty: 暂无

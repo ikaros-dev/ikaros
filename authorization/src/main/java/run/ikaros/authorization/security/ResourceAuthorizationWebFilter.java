@@ -44,6 +44,9 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
         if (path.equals("/api/shares/redeem")) return chain.filter(exchange);
         AuthenticatedPrincipal jwtPrincipal = exchange.getAttribute(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE);
         if (jwtPrincipal == null) return reject(exchange, HttpStatus.UNAUTHORIZED);
+        if (path.startsWith("/api/security/step-up") || path.startsWith("/api/security/verification-challenges")) {
+            return chain.filter(exchange);
+        }
         if (path.equals("/api/me/actions/invalidate-tokens")) return chain.filter(exchange);
         PlatformPermission permission = permission(exchange.getRequest().getMethod().name(), path);
         if (!hasPermission(jwtPrincipal, permission)) return reject(exchange, HttpStatus.FORBIDDEN);

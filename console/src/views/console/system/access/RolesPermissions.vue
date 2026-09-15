@@ -9,7 +9,12 @@ import {
   type CreateRoleRequest,
   type ManagedRole
 } from "@/api/role";
+import { useStepUpVerification } from "@/composables/useStepUpVerification";
 import { getHttpErrorMessage } from "@/utils/http";
+import {
+  clearVerificationGrant,
+  setVerificationGrant
+} from "@/utils/verificationGrant";
 import PageCard from "@/views/console/PageCard.vue";
 
 const { t } = useI18n();
@@ -22,6 +27,12 @@ const createVisible = ref(false);
 const detailVisible = ref(false);
 const editVisible = ref(false);
 const selectedRole = ref<ManagedRole | null>(null);
+const stepUp = useStepUpVerification();
+const verificationVisible = stepUp.visible;
+const verificationLoading = stepUp.loading;
+const verificationCode = stepUp.code;
+const pendingAction = ref<"create" | "update" | null>(null);
+const pendingCreateRequest = ref<CreateRoleRequest | null>(null);
 const createForm = reactive<CreateRoleRequest>({ code: "", name: "", description: "" });
 const editPermissions = ref<string[]>([]);
 
@@ -141,17 +152,82 @@ const openCreate = () => {
 
 const submitCreate = async () => {
   if (!createForm.code.trim() || !createForm.name.trim()) return;
+  pendingCreateRequest.value = {
+    code: createForm.code.trim(),
+    name: createForm.name.trim(),
+    description: createForm.description?.trim() || undefined
+  };
+  pendingAction.value = "create";
+  createVisible.value = false;
   try {
-    await createManagedRole({
-      code: createForm.code.trim(),
-      name: createForm.name.trim(),
-      description: createForm.description?.trim() || undefined
-    });
-    createVisible.value = false;
-    ElMessage.success(t("roleManagement.createSuccess"));
+    await requestVerification();
+  } catch (error) {
+    pendingCreateRequest.value = null;
+    pendingAction.value = null;
+    ElMessage.error(getHttpErrorMessage(error, t("roleManagement.createFailed")));
+  }
+};
+
+const requestVerification = async () => {
+  await stepUp.request("SMS_OTP", verifyAndExecute);
+};
+
+const executePermissionsUpdate = async () => {
+  if (!selectedRole.value) return;
+  await replaceManagedRolePermissions(selectedRole.value.id, {
+    permissions: editPermissions.value
+  });
+};
+
+const verifyAndExecute = async (reusedGrant?: string) => {
+  const action = pendingAction.value;
+  if (!action || (!reusedGrant && (!stepUp.challengeId.value || !/^\d{6}$/.test(stepUp.code.value)))) return;
+  try {
+    const grant = reusedGrant || (await stepUp.verify());
+    if (!grant) return;
+    setVerificationGrant(grant);
+    if (action === "create" && pendingCreateRequest.value) {
+      await createManagedRole(pendingCreateRequest.value);
+    } else if (action === "update") {
+      await executePermissionsUpdate();
+    }
+    clearVerificationGrant();
+    stepUp.close();
+    pendingCreateRequest.value = null;
+    pendingAction.value = null;
+    ElMessage.success(t(action === "create" ? "roleManagement.createSuccess" : "roleManagement.updateSuccess"));
     await loadRoles();
   } catch (error) {
-    ElMessage.error(getHttpErrorMessage(error, t("roleManagement.createFailed")));
+    clearVerificationGrant();
+    ElMessage.error(
+      getHttpErrorMessage(
+        error,
+        t(action === "create" ? "roleManagement.createFailed" : "roleManagement.updateFailed")
+      )
+    );
+  }
+};
+
+const submitPermissions = async () => {
+  if (!selectedRole.value) return;
+  try {
+    await ElMessageBox.confirm(
+      t("roleManagement.updateConfirm"),
+      t("roleManagement.updateTitle"),
+      {
+        type: "warning",
+        confirmButtonText: t("buttons.pureConfirm"),
+        cancelButtonText: t("buttons.pureClose")
+      }
+    );
+    pendingAction.value = "update";
+    editVisible.value = false;
+    await requestVerification();
+  } catch (error) {
+    if (error !== "cancel" && error !== "close") {
+      pendingAction.value = null;
+      ElMessage.error(getHttpErrorMessage(error, t("roleManagement.updateFailed")));
+    }
   }
 };
 
@@ -166,38 +242,6 @@ const openEdit = (role: ManagedRole) => {
   editVisible.value = true;
 };
 
-const submitPermissions = async () => {
-  if (!selectedRole.value) return;
-  try {
-    await replaceManagedRolePermissions(selectedRole.value.id, {
-      permissions: editPermissions.value
-    });
-    editVisible.value = false;
-    ElMessage.success(t("roleManagement.updateSuccess"));
-    await loadRoles();
-  } catch (error) {
-    ElMessage.error(getHttpErrorMessage(error, t("roleManagement.updateFailed")));
-  }
-};
-
-const confirmEdit = async () => {
-  try {
-    await ElMessageBox.confirm(
-      t("roleManagement.updateConfirm"),
-      t("roleManagement.updateTitle"),
-      {
-        type: "warning",
-        confirmButtonText: t("buttons.pureConfirm"),
-        cancelButtonText: t("buttons.pureClose")
-      }
-    );
-    await submitPermissions();
-  } catch (error) {
-    if (error !== "cancel" && error !== "close") {
-      ElMessage.error(getHttpErrorMessage(error, t("roleManagement.updateFailed")));
-    }
-  }
-};
 
 onMounted(loadRoles);
 </script>
@@ -332,7 +376,30 @@ onMounted(loadRoles);
       </el-form>
       <template #footer>
         <el-button @click="editVisible = false">{{ t("buttons.pureClose") }}</el-button>
-        <el-button type="primary" @click="confirmEdit">{{ t("roleManagement.save") }}</el-button>
+        <el-button type="primary" @click="submitPermissions">{{ t("roleManagement.save") }}</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="verificationVisible" :title="t('roleManagement.verificationTitle')" width="460px">
+      <p class="mb-4 text-[var(--el-text-color-secondary)]">
+        {{ t("roleManagement.verificationDescription") }}
+      </p>
+      <el-input
+        v-model="verificationCode"
+        maxlength="6"
+        :placeholder="t('roleManagement.verificationPlaceholder')"
+        @keyup.enter="() => verifyAndExecute()"
+      />
+      <template #footer>
+        <el-button @click="stepUp.close()">{{ t("buttons.pureClose") }}</el-button>
+        <el-button
+          type="primary"
+          :loading="verificationLoading"
+          :disabled="!/^\d{6}$/.test(verificationCode)"
+          @click="() => verifyAndExecute()"
+        >
+          {{ t("roleManagement.verificationConfirm") }}
+        </el-button>
       </template>
     </el-dialog>
   </PageCard>

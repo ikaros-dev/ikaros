@@ -9,6 +9,10 @@ import reactor.core.publisher.Mono;
  * 验证挑战的响应式持久化入口。
  */
 public interface VerificationChallengeRepository extends ReactiveCrudRepository<VerificationChallengeEntity, UUID> {
+    Mono<VerificationChallengeEntity> findFirstByUserIdAndMethodAndPurposeAndStatusAndConsumedAtAfterOrderByConsumedAtDesc(
+        UUID userId, VerificationMethod method, VerificationPurpose purpose, VerificationChallengeStatus status,
+        Instant consumedAtAfter);
+
     Mono<VerificationChallengeEntity> findFirstByUserIdAndPurposeAndStatusAndConsumedAtAfterOrderByConsumedAtDesc(
         UUID userId, VerificationPurpose purpose, VerificationChallengeStatus status, Instant consumedAtAfter);
 

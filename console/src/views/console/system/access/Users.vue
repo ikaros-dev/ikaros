@@ -6,15 +6,14 @@ import {
   createManagedUser,
   deleteManagedUser,
   getManagedUser,
-  issueStepUpChallenge,
   listManagedUsers,
-  verifyStepUpChallenge,
   type ManagedUser,
   type ManagedUserStatus,
   type CreateManagedUserRequest,
   type UpdateManagedUserRequest,
   updateManagedUser
 } from "@/api/user";
+import { useStepUpVerification } from "@/composables/useStepUpVerification";
 import {
   clearVerificationGrant,
   setVerificationGrant
@@ -32,10 +31,10 @@ const form = reactive<{ query: string; status: "" | ManagedUserStatus }>({
   query: "",
   status: ""
 });
-const verificationVisible = ref(false);
-const verificationLoading = ref(false);
-const verificationCode = ref("");
-const verificationChallengeId = ref("");
+const stepUp = useStepUpVerification();
+const verificationVisible = stepUp.visible;
+const verificationLoading = stepUp.loading;
+const verificationCode = stepUp.code;
 const pendingDeleteUser = ref<ManagedUser | null>(null);
 const createVisible = ref(false);
 const createForm = reactive({ username: "", displayName: "", email: "" });
@@ -116,20 +115,7 @@ const submitCreate = async () => {
 };
 
 const requestVerification = async () => {
-  verificationLoading.value = true;
-  try {
-    const challenge = await issueStepUpChallenge();
-    if (challenge.verificationGrant) {
-      setVerificationGrant(challenge.verificationGrant);
-      await verifyAndExecute(challenge.verificationGrant);
-      return;
-    }
-    verificationChallengeId.value = challenge.id;
-    verificationCode.value = "";
-    verificationVisible.value = true;
-  } finally {
-    verificationLoading.value = false;
-  }
+  await stepUp.request("EMAIL_OTP", verifyAndExecute);
 };
 
 const openDetail = async (user: ManagedUser) => {
@@ -199,21 +185,14 @@ const removeUser = async (user: ManagedUser) => {
 };
 
 const verifyAndExecute = async (reusedGrant?: string) => {
-  if (
-    (!reusedGrant && !verificationChallengeId.value) ||
-    (!reusedGrant && !/^\d{6}$/.test(verificationCode.value))
-  )
-    return;
+  if (!reusedGrant && (!stepUp.challengeId.value || !/^\d{6}$/.test(stepUp.code.value))) return;
   const action = verificationAction.value;
   if (!action) return;
-  verificationLoading.value = true;
   try {
     const result = reusedGrant
       ? { verificationGrant: reusedGrant }
-      : await verifyStepUpChallenge(
-          verificationChallengeId.value,
-          verificationCode.value
-        );
+      : { verificationGrant: await stepUp.verify() };
+    if (!result.verificationGrant) return;
     setVerificationGrant(result.verificationGrant);
     if (action === "delete" && pendingDeleteUser.value) {
       await deleteManagedUser(pendingDeleteUser.value.id);
@@ -223,7 +202,7 @@ const verifyAndExecute = async (reusedGrant?: string) => {
       await updateManagedUser(pendingUpdateRequest.value.userId, pendingUpdateRequest.value.data);
     }
     clearVerificationGrant();
-    verificationVisible.value = false;
+    stepUp.close();
     pendingDeleteUser.value = null;
     pendingCreateRequest.value = null;
     pendingUpdateRequest.value = null;
@@ -250,8 +229,6 @@ const verifyAndExecute = async (reusedGrant?: string) => {
         )
       )
     );
-  } finally {
-    verificationLoading.value = false;
   }
 };
 
@@ -516,7 +493,7 @@ onMounted(loadUsers);
         @keyup.enter="() => verifyAndExecute()"
       />
       <template #footer>
-        <el-button @click="verificationVisible = false">{{
+        <el-button @click="stepUp.close()">{{
           t("buttons.pureClose")
         }}</el-button>
         <el-button
