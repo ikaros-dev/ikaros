@@ -7,6 +7,10 @@ const sidebar = await readFile(new URL("../src/layout/components/lay-sidebar/com
 const layoutTypes = await readFile(new URL("../src/layout/types.ts", import.meta.url), "utf8");
 const zhLocale = await readFile(new URL("../locales/zh-CN.yaml", import.meta.url), "utf8");
 const enLocale = await readFile(new URL("../locales/en.yaml", import.meta.url), "utf8");
+const permissionStore = await readFile(new URL("../src/store/modules/permission.ts", import.meta.url), "utf8");
+const verticalSidebar = await readFile(new URL("../src/layout/components/lay-sidebar/NavVertical.vue", import.meta.url), "utf8");
+const horizontalSidebar = await readFile(new URL("../src/layout/components/lay-sidebar/NavHorizontal.vue", import.meta.url), "utf8");
+const mixSidebar = await readFile(new URL("../src/layout/components/lay-sidebar/NavMix.vue", import.meta.url), "utf8");
 
 test("Dashboard is the fixed localized home tab", () => {
   assert.match(layoutTypes, /path: "\/dashboard"[\s\S]*name: "DashboardHome"[\s\S]*title: "menus\.dashboard"[\s\S]*fixedTag: true/);
@@ -58,6 +62,15 @@ test("Permission-filtered menu entry points declare their canonical capabilities
     home,
     /"SystemUsers"[\s\S]*?\n\s*"user\.read"/
   );
+});
+
+test("Empty permission-filtered menus stop loading after initialization", () => {
+  assert.match(permissionStore, /menusReady: false/);
+  assert.match(permissionStore, /this\.menusReady = true/);
+  assert.match(permissionStore, /this\.menusReady = false/);
+  for (const sidebar of [verticalSidebar, horizontalSidebar, mixSidebar]) {
+    assert.match(sidebar, /menusReady/);
+  }
 });
 
 test("Directory roots redirect to canonical child pages", () => {

@@ -17,6 +17,8 @@ export const usePermissionStore = defineStore("pure-permission", {
     constantMenus,
     // 整体路由生成的菜单（静态、动态）
     wholeMenus: [],
+    // 菜单权限过滤是否已完成；空菜单也属于已完成状态
+    menusReady: false,
     // 整体路由（一维数组格式）
     flatteningRoutes: [],
     // 缓存页面keepAlive
@@ -31,6 +33,7 @@ export const usePermissionStore = defineStore("pure-permission", {
       // 根路由仅负责承载布局，不作为后台菜单展示。
       this.wholeMenus =
         menus[0]?.path === "/" ? (menus[0].children ?? []) : menus;
+      this.menusReady = true;
       this.flatteningRoutes = formatFlatteningRoutes(
         this.constantMenus.concat(routes) as any
       );
@@ -68,6 +71,7 @@ export const usePermissionStore = defineStore("pure-permission", {
     /** 清空缓存页面 */
     clearAllCachePage() {
       this.wholeMenus = [];
+      this.menusReady = false;
       this.cachePageList = [];
     }
   }

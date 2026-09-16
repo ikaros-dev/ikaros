@@ -55,7 +55,7 @@ onMounted(() => {
 
 <template>
   <div
-    v-loading="usePermissionStoreHook().wholeMenus.length === 0"
+    v-loading="!usePermissionStoreHook().menusReady"
     class="horizontal-header"
   >
     <div v-if="showLogo" class="horizontal-header-left" @click="backTopMenu">
