@@ -6,7 +6,7 @@ userManagement:
   email: Email
   emailPlaceholder: Enter email
   password: Initial Password
-  passwordPlaceholder: Enter at least 8 characters
+  passwordPlaceholder: Enter 8-18 characters using at least two of digits, letters, and symbols
   status: Status
   statusPlaceholder: Select status
   statuses:

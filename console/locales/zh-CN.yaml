@@ -6,7 +6,7 @@ userManagement:
   email: 邮箱
   emailPlaceholder: 请输入邮箱
   password: 初始密码
-  passwordPlaceholder: 请输入至少 8 位密码
+  passwordPlaceholder: 请输入 8-18 位且包含数字、字母、符号中至少两类的密码
   status: 状态
   statusPlaceholder: 请选择状态
   statuses:

@@ -27,6 +27,7 @@ import {
 } from "@/utils/verificationGrant";
 import { getHttpErrorMessage } from "@/utils/http";
 import { getToken } from "@/utils/auth";
+import { REGEXP_PWD } from "@/views/login/utils/rule";
 import PageCard from "@/views/console/PageCard.vue";
 
 const { t, locale } = useI18n();
@@ -47,6 +48,7 @@ const verificationCode = stepUp.code;
 const pendingDeleteUser = ref<ManagedUser | null>(null);
 const createVisible = ref(false);
 const createForm = reactive({ username: "", displayName: "", email: "", password: "" });
+const createPasswordValid = computed(() => REGEXP_PWD.test(createForm.password));
 const pendingCreateRequest = ref<CreateManagedUserRequest | null>(null);
 const pendingUpdateRequest = ref<{ userId: string; data: UpdateManagedUserRequest } | null>(null);
 const verificationAction = ref<"create" | "delete" | "update" | "assignRole" | "revokeRole" | null>(null);
@@ -115,7 +117,7 @@ const openCreate = () => {
 };
 
 const submitCreate = async () => {
-  if (!createForm.username.trim() || !createForm.displayName.trim() || createForm.password.length < 8) return;
+  if (!createForm.username.trim() || !createForm.displayName.trim() || !createPasswordValid.value) return;
   pendingCreateRequest.value = {
     username: createForm.username.trim(),
     displayName: createForm.displayName.trim(),
@@ -522,7 +524,15 @@ onMounted(loadUsers);
             :placeholder="t('userManagement.emailPlaceholder')"
           />
         </el-form-item>
-        <el-form-item :label="t('userManagement.password')" required>
+        <el-form-item
+          :label="t('userManagement.password')"
+          required
+          :error="
+            createForm.password && !createPasswordValid
+              ? t('login.purePassWordRuleReg')
+              : undefined
+          "
+        >
           <el-input
             v-model="createForm.password"
             type="password"
@@ -538,7 +548,7 @@ onMounted(loadUsers);
         <el-button
           type="primary"
           :disabled="
-            !createForm.username.trim() || !createForm.displayName.trim() || createForm.password.length < 8
+            !createForm.username.trim() || !createForm.displayName.trim() || !createPasswordValid
           "
           @click="submitCreate"
         >
