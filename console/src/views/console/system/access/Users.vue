@@ -732,8 +732,8 @@ onMounted(loadUsers);
 .user-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  justify-items: start;
   row-gap: 4px;
+  justify-items: start;
 }
 
 .user-actions .el-button + .el-button {
