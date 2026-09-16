@@ -447,7 +447,7 @@ onMounted(loadUsers);
       <el-table-column
         fixed="right"
         :label="t('userManagement.actions')"
-        width="220"
+        width="250"
       >
         <template #default="scope">
           <el-button :icon="User" link type="primary" @click="openRoles(scope.row)">
