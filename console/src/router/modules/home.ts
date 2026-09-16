@@ -14,6 +14,8 @@ type PageOptions = {
   activePath?: string;
 };
 
+type Capability = string | string[];
+
 const workspaceRanks: Record<string, number> = {
   Dashboard: 10,
   Resources: 20,
@@ -70,7 +72,7 @@ function page(
   title: string,
   description: string,
   component: any,
-  capability?: string,
+  capability?: Capability,
   options: PageOptions = {}
 ) {
   return {
@@ -469,7 +471,7 @@ export default {
               "menus.userManagement",
               "menuDescriptions.userManagement",
               () => import("@/views/console/system/access/Users.vue"),
-              "user.read",
+              ["user.read", "system.user.read"],
               { icon: "ep:user" }
             ),
             page(
@@ -479,7 +481,7 @@ export default {
               "menuDescriptions.rolesPermissions",
               () =>
                 import("@/views/console/system/access/RolesPermissions.vue"),
-              "role.read",
+              ["role.read", "system.role.read"],
               { icon: "ep:key" }
             ),
             page(

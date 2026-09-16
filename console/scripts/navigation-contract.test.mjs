@@ -60,7 +60,11 @@ test("Permission-filtered menu entry points declare their canonical capabilities
   );
   assert.match(
     home,
-    /"SystemUsers"[\s\S]*?\n\s*"user\.read"/
+    /"SystemUsers"[\s\S]*?\n\s*\["user\.read", "system\.user\.read"\]/
+  );
+  assert.match(
+    home,
+    /"SystemRolesPermissions"[\s\S]*?\n\s*\["role\.read", "system\.role\.read"\]/
   );
 });
 
