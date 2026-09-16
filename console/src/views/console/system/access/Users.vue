@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { Delete, Edit, User, View } from "@element-plus/icons-vue";
 import { useI18n } from "vue-i18n";
 import {
   createManagedUser,
@@ -449,16 +450,16 @@ onMounted(loadUsers);
         width="220"
       >
         <template #default="scope">
-          <el-button link type="primary" @click="openRoles(scope.row)">
+          <el-button :icon="User" link type="primary" @click="openRoles(scope.row)">
             {{ t("userManagement.rolesButton") }}
           </el-button>
-          <el-button link type="primary" @click="openEdit(scope.row)">
+          <el-button :icon="Edit" link type="primary" @click="openEdit(scope.row)">
             {{ t("userManagement.edit") }}
           </el-button>
-          <el-button link type="primary" @click="openDetail(scope.row)">
+          <el-button :icon="View" link type="primary" @click="openDetail(scope.row)">
             {{ t("userManagement.detail") }}
           </el-button>
-          <el-button link type="danger" @click="removeUser(scope.row)">
+          <el-button :icon="Delete" link type="danger" @click="removeUser(scope.row)">
             {{ t("userManagement.delete") }}
           </el-button>
         </template>
