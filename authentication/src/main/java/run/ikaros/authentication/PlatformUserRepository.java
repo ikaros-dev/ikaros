@@ -34,4 +34,7 @@ public interface PlatformUserRepository extends ReactiveCrudRepository<PlatformU
      */
     @Query("select * from platform_user where username = :username and is_del = 0")
     Mono<PlatformUserEntity> findByUsername(String username);
+
+    @Query("select * from platform_user where lower(username) = lower(:username)")
+    Mono<PlatformUserEntity> findIncludingDeletedByUsername(String username);
 }

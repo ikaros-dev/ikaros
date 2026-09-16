@@ -38,6 +38,7 @@ class DefaultUserServiceTest {
         when(roleMembershipQuery.roleCodesFor(any())).thenReturn(Mono.just(List.of()));
         auditService = mock(AuditService.class);
         credentialRepository = mock(PasswordCredentialRepository.class);
+        when(userRepository.findIncludingDeletedByUsername(any())).thenReturn(Mono.empty());
         service = new DefaultUserService(userRepository, roleMembershipQuery, auditService, null, null,
             credentialRepository);
     }
@@ -101,6 +102,39 @@ class DefaultUserServiceTest {
             .assertNext(view -> assertThat(view.status()).isEqualTo(UserStatus.LOCKED))
             .verifyComplete();
         verify(auditService).record(actorId, "identity.user.status.change", "USER", userId, "{}");
+    }
+
+    @Test
+    void restoresSoftDeletedUserAndReplacesProfileAndPassword() {
+        UUID actorId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity deleted = new PlatformUserEntity(userId, "alice", "Old Alice", "old@example.com",
+            UserStatus.DEACTIVATED, now.minusSeconds(100), now.minusSeconds(10), null, 4L, 2L, 1);
+        PlatformUserEntity restored = new PlatformUserEntity(userId, "alice", "New Alice", "new@example.com",
+            UserStatus.ACTIVE, deleted.createdAt(), now, null, 5L, 3L, 0);
+        PasswordCredentialEntity oldCredential = new PasswordCredentialEntity(UUID.randomUUID(), userId,
+            "old-hash", deleted.createdAt(), deleted.updatedAt(), 1L);
+        when(userRepository.findIncludingDeletedByUsername("alice")).thenReturn(Mono.just(deleted));
+        when(userRepository.save(any())).thenReturn(Mono.just(restored));
+        when(credentialRepository.findByUserId(userId)).thenReturn(Mono.just(oldCredential));
+        when(credentialRepository.save(any())).thenReturn(Mono.just(oldCredential));
+        when(auditService.record(eq(actorId), eq("identity.user.restore"), eq("USER"), eq(userId), eq("{}")))
+            .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.create(actorId,
+                new CreateUserRequest("alice", "New Alice", "New@Example.COM", "new password")))
+            .assertNext(user -> {
+                assertThat(user.status()).isEqualTo(UserStatus.ACTIVE);
+                assertThat(user.displayName()).isEqualTo("New Alice");
+                assertThat(user.email()).isEqualTo("new@example.com");
+            })
+            .verifyComplete();
+        verify(userRepository).save(argThat(user -> user.isDel() == 0
+            && user.status() == UserStatus.ACTIVE && user.securityVersion() == 5L));
+        verify(credentialRepository).save(argThat(credential -> credential.id().equals(oldCredential.id())
+            && credential.passwordHash().startsWith("pbkdf2-sha256$")
+            && !credential.passwordHash().equals("new password")));
     }
 
     @Test

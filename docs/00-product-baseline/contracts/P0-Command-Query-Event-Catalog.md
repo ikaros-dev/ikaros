@@ -314,6 +314,8 @@ Attachment Content Query 必须支持 HTTP Range，并在返回内容前重新�
 
 `identity.create-user` 必须接收初始密码。创建成功后用户状态为 `ACTIVE`，用户可以立即使用用户名和初始密码登录；密码只写入 `password_credential.password_hash`，不得进入 UserView、事件、审计或日志。用户资料更新 Command 不接收密码，密码变更应通过独立的凭据变更流程实现。
 
+如果用户名只命中一条 `is_del = 1` 的历史用户，`identity.create-user` 必须恢复该用户原记录，将 `is_del` 设为 `0`，覆盖昵称、邮箱和密码，并将状态设为 `ACTIVE`；不创建重复用户。若用户名属于未删除用户，或恢复时邮箱与其他未删除用户冲突，返回冲突错误。
+
 用户管理的资料/状态更新与软删除 Command 禁止目标用户等于当前执行主体；当前用户只能查看自身信息或执行明确允许的自助安全操作。
 
 `identity.invalidate-user-tokens` 不枚举或撤销某个服务端 Session。它原子提升目标用户的 `security_version`；后续请求中，携带旧 `security_version` 的 JWT 被拒绝。

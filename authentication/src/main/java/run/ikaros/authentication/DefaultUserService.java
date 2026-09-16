@@ -68,8 +68,17 @@ public class DefaultUserService implements UserService {
 
     @Override
     public Mono<UserView> create(UUID actorId, CreateUserRequest request) {
+        String username = request.username().trim();
         Instant now = Instant.now();
-        PlatformUserEntity user = new PlatformUserEntity(null, request.username().trim(), request.displayName().trim(),
+        return userRepository.findIncludingDeletedByUsername(username)
+            .flatMap(existing -> existing.isDel() == 1
+                ? restore(existing, request, actorId, now)
+                : Mono.error(new ConflictException("用户名已存在")))
+            .switchIfEmpty(createNew(actorId, request, username, now));
+    }
+
+    private Mono<UserView> createNew(UUID actorId, CreateUserRequest request, String username, Instant now) {
+        PlatformUserEntity user = new PlatformUserEntity(null, username, request.displayName().trim(),
             normalizeEmail(request.email()), UserStatus.ACTIVE, now, now, null, 0L, null);
         Mono<UserView> operation = userRepository.save(user)
             .onErrorMap(DuplicateKeyException.class, exception -> new ConflictException("用户名或邮箱已存在"))
@@ -155,6 +164,29 @@ public class DefaultUserService implements UserService {
                     .then(auditService.record(actorId, "identity.user.delete", "USER", userId, "{}")));
         });
         return transaction == null ? operation : operation.as(transaction::transactional);
+    }
+
+    private Mono<UserView> restore(PlatformUserEntity existing, CreateUserRequest request, UUID actorId, Instant now) {
+        PlatformUserEntity restored = new PlatformUserEntity(existing.id(), existing.username(),
+            request.displayName().trim(), normalizeEmail(request.email()), UserStatus.ACTIVE,
+            existing.createdAt(), now, existing.lastLoginAt(), existing.securityVersion() + 1,
+            existing.version(), 0);
+        Mono<UserView> operation = userRepository.save(restored)
+            .onErrorMap(DuplicateKeyException.class, exception -> new ConflictException("用户名或邮箱已存在"))
+            .flatMap(saved -> replacePassword(saved.id(), request.password(), now)
+                .then(emitUserCreated(saved))
+                .then(auditService.record(actorId, "identity.user.restore", "USER", saved.id(), "{}"))
+                .then(toView(saved)));
+        return transaction == null ? operation : operation.as(transaction::transactional);
+    }
+
+    private Mono<Void> replacePassword(UUID userId, String password, Instant now) {
+        return credentialRepository.findByUserId(userId)
+            .flatMap(existing -> credentialRepository.save(new PasswordCredentialEntity(existing.id(), userId,
+                PasswordHashService.hash(password), existing.createdAt(), now, existing.version())))
+            .switchIfEmpty(Mono.defer(() -> credentialRepository.save(new PasswordCredentialEntity(null, userId,
+                PasswordHashService.hash(password), now, now, null))))
+            .then();
     }
 
     @Override
