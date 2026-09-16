@@ -447,21 +447,23 @@ onMounted(loadUsers);
       <el-table-column
         fixed="right"
         :label="t('userManagement.actions')"
-        width="250"
+        width="190"
       >
         <template #default="scope">
-          <el-button :icon="User" link type="primary" @click="openRoles(scope.row)">
-            {{ t("userManagement.rolesButton") }}
-          </el-button>
-          <el-button :icon="Edit" link type="primary" @click="openEdit(scope.row)">
-            {{ t("userManagement.edit") }}
-          </el-button>
-          <el-button :icon="View" link type="primary" @click="openDetail(scope.row)">
-            {{ t("userManagement.detail") }}
-          </el-button>
-          <el-button :icon="Delete" link type="danger" @click="removeUser(scope.row)">
-            {{ t("userManagement.delete") }}
-          </el-button>
+          <div class="user-actions">
+            <el-button :icon="User" link type="primary" @click="openRoles(scope.row)">
+              {{ t("userManagement.rolesButton") }}
+            </el-button>
+            <el-button :icon="Edit" link type="primary" @click="openEdit(scope.row)">
+              {{ t("userManagement.edit") }}
+            </el-button>
+            <el-button :icon="View" link type="primary" @click="openDetail(scope.row)">
+              {{ t("userManagement.detail") }}
+            </el-button>
+            <el-button :icon="Delete" link type="danger" @click="removeUser(scope.row)">
+              {{ t("userManagement.delete") }}
+            </el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -691,5 +693,16 @@ onMounted(loadUsers);
 <style scoped>
 .user-status-select {
   width: 100px;
+}
+
+.user-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  justify-items: start;
+  row-gap: 4px;
+}
+
+.user-actions .el-button + .el-button {
+  margin-left: 0;
 }
 </style>
