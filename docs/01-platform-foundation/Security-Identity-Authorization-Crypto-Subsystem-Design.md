@@ -177,6 +177,8 @@ Crypto Runtime
 
 管理员创建用户时必须同时提供初始密码。创建 Command 将用户状态设为 `ACTIVE`，因此用户可以立即通过用户名和密码登录；编辑用户资料不包含密码字段。初始密码只用于生成 `password_credential.password_hash`，不得出现在 API 响应、事件、审计记录或日志中。
 
+用户管理的资料/状态更新与软删除不得作用于当前登录用户；该约束必须由 Application 层执行，不能只依赖控制台隐藏按钮。
+
 为避免与外部标准中的 AAL / IAL 概念直接混淆，Ikaros 内部定义：
 
 **SVL（Security Verification Level）**。

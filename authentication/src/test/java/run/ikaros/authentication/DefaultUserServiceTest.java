@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.authorization.api.RoleMembershipQuery;
 import run.ikaros.operations.api.AuditService;
+import run.ikaros.common.ForbiddenException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -167,6 +168,27 @@ class DefaultUserServiceTest {
         verify(userRepository).save(argThat(user -> user.securityVersion() == 2L
             && user.status() == UserStatus.DISABLED));
         verify(auditService).record(actorId, "identity.user.update", "USER", userId, "{}");
+    }
+
+    @Test
+    void rejectsUpdatingCurrentUser() {
+        UUID actorId = UUID.randomUUID();
+
+        StepVerifier.create(service.update(actorId, actorId,
+                new UpdateUserRequest("alice", "Alice", "alice@example.com", UserStatus.ACTIVE)))
+            .expectError(ForbiddenException.class)
+            .verify();
+        verify(userRepository, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
+    void rejectsDeletingCurrentUser() {
+        UUID actorId = UUID.randomUUID();
+
+        StepVerifier.create(service.delete(actorId, actorId))
+            .expectError(ForbiddenException.class)
+            .verify();
+        verify(userRepository, org.mockito.Mockito.never()).save(any());
     }
 
     @Test

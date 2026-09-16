@@ -26,9 +26,11 @@ import {
   setVerificationGrant
 } from "@/utils/verificationGrant";
 import { getHttpErrorMessage } from "@/utils/http";
+import { getToken } from "@/utils/auth";
 import PageCard from "@/views/console/PageCard.vue";
 
 const { t, locale } = useI18n();
+const currentActorId = computed(() => getToken()?.actorId ?? "");
 const loading = ref(false);
 const users = ref<ManagedUser[]>([]);
 const total = ref(0);
@@ -456,13 +458,25 @@ onMounted(loadUsers);
             <el-button :icon="User" link type="primary" @click="openRoles(scope.row)">
               {{ t("userManagement.rolesButton") }}
             </el-button>
-            <el-button :icon="Edit" link type="primary" @click="openEdit(scope.row)">
+            <el-button
+              v-if="scope.row.id !== currentActorId"
+              :icon="Edit"
+              link
+              type="primary"
+              @click="openEdit(scope.row)"
+            >
               {{ t("userManagement.edit") }}
             </el-button>
             <el-button :icon="View" link type="primary" @click="openDetail(scope.row)">
               {{ t("userManagement.detail") }}
             </el-button>
-            <el-button :icon="Delete" link type="danger" @click="removeUser(scope.row)">
+            <el-button
+              v-if="scope.row.id !== currentActorId"
+              :icon="Delete"
+              link
+              type="danger"
+              @click="removeUser(scope.row)"
+            >
               {{ t("userManagement.delete") }}
             </el-button>
           </div>

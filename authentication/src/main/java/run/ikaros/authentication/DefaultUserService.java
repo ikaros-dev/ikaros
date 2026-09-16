@@ -10,6 +10,7 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.ConflictException;
+import run.ikaros.common.ForbiddenException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;
 import run.ikaros.integration.api.DurableEventPublisher;
@@ -87,6 +88,9 @@ public class DefaultUserService implements UserService {
 
     @Override
     public Mono<UserView> update(UUID actorId, UUID userId, UpdateUserRequest request) {
+        if (actorId.equals(userId)) {
+            return Mono.error(new ForbiddenException("不允许修改当前登录用户"));
+        }
         return requiredUser(userId).flatMap(user -> {
             UserStatus status = request.status();
             PlatformUserEntity updated = new PlatformUserEntity(user.id(), request.username().trim(),
@@ -122,6 +126,9 @@ public class DefaultUserService implements UserService {
 
     @Override
     public Mono<UserView> changeStatus(UUID actorId, UUID userId, UserStatus status) {
+        if (actorId.equals(userId)) {
+            return Mono.error(new ForbiddenException("不允许修改当前登录用户"));
+        }
         return requiredUser(userId).flatMap(user -> {
             PlatformUserEntity changed = new PlatformUserEntity(user.id(), user.username(), user.displayName(), user.email(),
                 status, user.createdAt(), Instant.now(), user.lastLoginAt(),
@@ -135,6 +142,9 @@ public class DefaultUserService implements UserService {
 
     @Override
     public Mono<Void> delete(UUID actorId, UUID userId) {
+        if (actorId.equals(userId)) {
+            return Mono.error(new ForbiddenException("不允许删除当前登录用户"));
+        }
         Mono<Void> operation = requiredUser(userId).flatMap(user -> {
             if (user.status() == UserStatus.DEACTIVATED) return Mono.empty();
             PlatformUserEntity deleted = new PlatformUserEntity(user.id(), user.username(), user.displayName(), user.email(),
