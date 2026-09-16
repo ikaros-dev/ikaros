@@ -148,9 +148,13 @@ export type CreateManagedUserRequest = {
   username: string;
   displayName: string;
   email?: string;
+  password: string;
 };
 
-export type UpdateManagedUserRequest = CreateManagedUserRequest & {
+export type UpdateManagedUserRequest = {
+  username: string;
+  displayName: string;
+  email?: string;
   status: ManagedUserStatus;
 };
 

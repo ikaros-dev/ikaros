@@ -23,6 +23,7 @@ import run.ikaros.authorization.api.RoleMembershipQuery;
 public class DefaultUserService implements UserService {
     private static final int MAX_PAGE_SIZE = 100;
     private final PlatformUserRepository userRepository;
+    private final PasswordCredentialRepository credentialRepository;
     private final RoleMembershipQuery roleMembershipQuery;
     private final AuditService auditService;
     private final DurableEventPublisher eventService;
@@ -37,20 +38,27 @@ public class DefaultUserService implements UserService {
      */
     public DefaultUserService(PlatformUserRepository userRepository, RoleMembershipQuery roleMembershipQuery,
                               AuditService auditService) {
-        this(userRepository, roleMembershipQuery, auditService, null, null);
+        this(userRepository, roleMembershipQuery, auditService, null, null, null);
     }
 
-    @Autowired
     public DefaultUserService(PlatformUserRepository userRepository, RoleMembershipQuery roleMembershipQuery,
                               AuditService auditService,
                               DurableEventPublisher eventService) {
-        this(userRepository, roleMembershipQuery, auditService, eventService, null);
+        this(userRepository, roleMembershipQuery, auditService, eventService, null, null);
     }
 
     public DefaultUserService(PlatformUserRepository userRepository, RoleMembershipQuery roleMembershipQuery,
                               AuditService auditService, DurableEventPublisher eventService,
                               TransactionalOperator transaction) {
+        this(userRepository, roleMembershipQuery, auditService, eventService, transaction, null);
+    }
+
+    @Autowired
+    public DefaultUserService(PlatformUserRepository userRepository, RoleMembershipQuery roleMembershipQuery,
+                              AuditService auditService, DurableEventPublisher eventService,
+                              TransactionalOperator transaction, PasswordCredentialRepository credentialRepository) {
         this.userRepository = userRepository;
+        this.credentialRepository = credentialRepository;
         this.roleMembershipQuery = roleMembershipQuery;
         this.auditService = auditService;
         this.eventService = eventService;
@@ -61,12 +69,15 @@ public class DefaultUserService implements UserService {
     public Mono<UserView> create(UUID actorId, CreateUserRequest request) {
         Instant now = Instant.now();
         PlatformUserEntity user = new PlatformUserEntity(null, request.username().trim(), request.displayName().trim(),
-            normalizeEmail(request.email()), UserStatus.PENDING, now, now, null, 0L, null);
-        return userRepository.save(user)
+            normalizeEmail(request.email()), UserStatus.ACTIVE, now, now, null, 0L, null);
+        Mono<UserView> operation = userRepository.save(user)
             .onErrorMap(DuplicateKeyException.class, exception -> new ConflictException("用户名或邮箱已存在"))
-            .flatMap(saved -> emitUserCreated(saved)
+            .flatMap(saved -> credentialRepository.save(new PasswordCredentialEntity(null, saved.id(),
+                    PasswordHashService.hash(request.password()), now, now, null))
+                .then(emitUserCreated(saved))
                 .then(auditService.record(actorId, "identity.user.create", "USER", saved.id(), "{}"))
                 .then(toView(saved)));
+        return transaction == null ? operation : operation.as(transaction::transactional);
     }
 
     @Override

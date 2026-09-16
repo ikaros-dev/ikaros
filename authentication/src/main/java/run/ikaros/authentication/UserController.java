@@ -45,14 +45,14 @@ public class UserController {
     }
 
     /**
-     * 创建一个待激活的平台用户。
+     * 创建一个可登录的平台用户。
      *
      * @param actorId 当前管理主体
      * @param request 用户资料
      * @return 新建用户视图
      */
-    @Operation(summary = "创建平台用户", description = "创建不包含密码或令牌的新平台用户。"
-        + "新用户初始状态为 PENDING，后续认证 Provider 与激活流程才能启用其认证能力。")
+    @Operation(summary = "创建平台用户", description = "创建包含初始密码凭据、可直接登录的新平台用户。"
+        + "密码只以哈希形式保存，不会出现在响应、事件或审计记录中。")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "用户创建成功"),
         @ApiResponse(responseCode = "400", description = "用户资料或管理主体不合法", content = @Content),

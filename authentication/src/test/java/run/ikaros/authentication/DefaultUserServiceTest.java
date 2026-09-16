@@ -27,6 +27,7 @@ class DefaultUserServiceTest {
     private PlatformUserRepository userRepository;
     private RoleMembershipQuery roleMembershipQuery;
     private AuditService auditService;
+    private PasswordCredentialRepository credentialRepository;
     private DefaultUserService service;
 
     @BeforeEach
@@ -35,26 +36,32 @@ class DefaultUserServiceTest {
         roleMembershipQuery = mock(RoleMembershipQuery.class);
         when(roleMembershipQuery.roleCodesFor(any())).thenReturn(Mono.just(List.of()));
         auditService = mock(AuditService.class);
-        service = new DefaultUserService(userRepository, roleMembershipQuery, auditService);
+        credentialRepository = mock(PasswordCredentialRepository.class);
+        service = new DefaultUserService(userRepository, roleMembershipQuery, auditService, null, null,
+            credentialRepository);
     }
 
     @Test
-    void createsPendingUserAndWritesAuditEvent() {
+    void createsActiveUserWithPasswordAndWritesAuditEvent() {
         UUID actorId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         Instant now = Instant.now();
         PlatformUserEntity saved = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
-            UserStatus.PENDING, now, now, null, 0L);
+            UserStatus.ACTIVE, now, now, null, 0L);
         when(userRepository.save(any())).thenReturn(Mono.just(saved));
+        when(credentialRepository.save(any())).thenReturn(Mono.just(mock(PasswordCredentialEntity.class)));
         when(auditService.record(eq(actorId), eq("identity.user.create"), eq("USER"), eq(userId), eq("{}")))
             .thenReturn(Mono.empty());
 
-        StepVerifier.create(service.create(actorId, new CreateUserRequest("alice", "Alice", "Alice@Example.COM")))
+        StepVerifier.create(service.create(actorId,
+                new CreateUserRequest("alice", "Alice", "Alice@Example.COM", "correct horse")))
             .assertNext(user -> {
-                assertThat(user.status()).isEqualTo(UserStatus.PENDING);
+                assertThat(user.status()).isEqualTo(UserStatus.ACTIVE);
                 assertThat(user.email()).isEqualTo("alice@example.com");
             })
             .verifyComplete();
+        verify(credentialRepository).save(argThat(credential -> credential.passwordHash().startsWith("pbkdf2-sha256$")
+            && !credential.passwordHash().equals("correct horse")));
         verify(auditService).record(actorId, "identity.user.create", "USER", userId, "{}");
     }
 
@@ -64,7 +71,7 @@ class DefaultUserServiceTest {
         PlatformUserEntity active = new PlatformUserEntity(UUID.randomUUID(), "alice", "Alice", null,
             UserStatus.ACTIVE, now.plusSeconds(1), now, null, 0L);
         PlatformUserEntity pending = new PlatformUserEntity(UUID.randomUUID(), "bob", "Bob", null,
-            UserStatus.PENDING, now, now, null, 0L);
+            UserStatus.ACTIVE, now, now, null, 0L);
         when(userRepository.findAll()).thenReturn(Flux.just(pending, active));
 
         StepVerifier.create(service.list(UserStatus.ACTIVE, "ali", 0, 20))
@@ -234,7 +241,7 @@ class DefaultUserServiceTest {
         Instant now = Instant.now();
         DurableEventPublisher events = mock(DurableEventPublisher.class);
         PlatformUserEntity created = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
-            UserStatus.PENDING, now, now, null, 0L);
+            UserStatus.ACTIVE, now, now, null, 0L);
         PlatformUserEntity disabled = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
             UserStatus.DISABLED, now, now, null, 1L);
         PlatformUserEntity enabled = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
@@ -245,11 +252,14 @@ class DefaultUserServiceTest {
             .thenReturn(Mono.empty());
         when(auditService.record(any(), any(String.class), eq("USER"), eq(userId), eq("{}")))
             .thenReturn(Mono.empty());
-        DefaultUserService eventService = new DefaultUserService(userRepository, roleMembershipQuery, auditService, events);
+        PasswordCredentialRepository eventCredentials = mock(PasswordCredentialRepository.class);
+        when(eventCredentials.save(any())).thenReturn(Mono.just(mock(PasswordCredentialEntity.class)));
+        DefaultUserService eventService = new DefaultUserService(userRepository, roleMembershipQuery, auditService,
+            events, null, eventCredentials);
 
         StepVerifier.create(eventService.create(actorId,
-                new CreateUserRequest("alice", "Alice", "alice@example.com")))
-            .assertNext(view -> assertThat(view.status()).isEqualTo(UserStatus.PENDING)).verifyComplete();
+                new CreateUserRequest("alice", "Alice", "alice@example.com", "correct horse")))
+            .assertNext(view -> assertThat(view.status()).isEqualTo(UserStatus.ACTIVE)).verifyComplete();
         StepVerifier.create(eventService.changeStatus(actorId, userId, UserStatus.DISABLED)).expectNextCount(1).verifyComplete();
         StepVerifier.create(eventService.changeStatus(actorId, userId, UserStatus.ACTIVE)).expectNextCount(1).verifyComplete();
         verify(events).append(argThat(request -> request.eventType().equals("authentication.user.created")

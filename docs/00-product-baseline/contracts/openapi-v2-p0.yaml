@@ -2666,15 +2666,17 @@ components:
         next_cursor: { type: [string, 'null'] }
     CreateUserRequest:
       type: object
-      required: [username]
+      required: [username, display_name, password]
       properties:
         username: { type: string, minLength: 1 }
         email: { type: [string, 'null'], format: email }
-        display_name: { type: [string, 'null'] }
-        initial_password:
-          type: [string, 'null']
+        display_name: { type: string, minLength: 1, maxLength: 128 }
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
           writeOnly: true
-          description: Accepted only over authenticated TLS; never persisted or logged in plaintext.
+          description: Initial password accepted only over authenticated TLS; never persisted or logged in plaintext.
     Role:
       type: object
       required: [id, code, name, built_in, permissions]

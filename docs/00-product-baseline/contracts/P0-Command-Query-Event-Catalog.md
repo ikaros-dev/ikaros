@@ -312,6 +312,8 @@ Attachment Content Query 必须支持 HTTP Range，并在返回内容前重新�
 | `identity.remove-role` | `identity.role.manage` | policy | `authorization.user.role-removed` |
 | `identity.invalidate-user-tokens` | current user or `identity.user.manage` | REQUIRED | `authentication.user.tokens-invalidated` |
 
+`identity.create-user` 必须接收初始密码。创建成功后用户状态为 `ACTIVE`，用户可以立即使用用户名和初始密码登录；密码只写入 `password_credential.password_hash`，不得进入 UserView、事件、审计或日志。用户资料更新 Command 不接收密码，密码变更应通过独立的凭据变更流程实现。
+
 `identity.invalidate-user-tokens` 不枚举或撤销某个服务端 Session。它原子提升目标用户的 `security_version`；后续请求中，携带旧 `security_version` 的 JWT 被拒绝。
 
 当前设备普通 Logout 不是服务端 Command，只清除客户端本地 Token / Credential Cache。

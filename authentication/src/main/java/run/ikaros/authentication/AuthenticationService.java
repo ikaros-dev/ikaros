@@ -1,12 +1,7 @@
 package run.ikaros.authentication;
 
-import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.UUID;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -19,8 +14,6 @@ import run.ikaros.common.NotFoundException;
 
 @Service
 public class AuthenticationService {
-    private static final int ITERATIONS = 120000;
-    private static final int KEY_BITS = 256;
     private final PlatformUserRepository users;
     private final PasswordCredentialRepository credentials;
     private final UserService userService;
@@ -28,7 +21,6 @@ public class AuthenticationService {
     private final InitialRoleAssigner initialRoleAssigner;
     private final PermissionSnapshotQuery permissionSnapshotQuery;
     private final TransactionalOperator transaction;
-    private final SecureRandom random = new SecureRandom();
 
     public AuthenticationService(PlatformUserRepository users, PasswordCredentialRepository credentials,
                                   UserService userService, JwtTokenService tokens,
@@ -56,7 +48,8 @@ public class AuthenticationService {
         Mono<PlatformUserEntity> persisted = users.save(new PlatformUserEntity(null, username, request.displayName().trim(), email,
                 UserStatus.ACTIVE, now, now, null, 0L, null))
             .onErrorMap(DuplicateKeyException.class, e -> new ConflictException("用户名或邮箱已存在"))
-            .flatMap(user -> credentials.save(new PasswordCredentialEntity(null, user.id(), hash(request.password()), now, now, null))
+                .flatMap(user -> credentials.save(new PasswordCredentialEntity(null, user.id(),
+                    PasswordHashService.hash(request.password()), now, now, null))
                 .then(assignAdminIfFirstUser(user)).thenReturn(user));
         return persisted.as(transaction::transactional)
             .flatMap(this::issue);
@@ -65,7 +58,7 @@ public class AuthenticationService {
     public Mono<AuthenticationView> login(LoginRequest request) {
         return users.findByUsername(request.username().trim())
             .flatMap(user -> credentials.findByUserId(user.id())
-                .filter(credential -> matches(request.password(), credential.passwordHash()))
+                .filter(credential -> PasswordHashService.matches(request.password(), credential.passwordHash()))
                 .switchIfEmpty(Mono.error(new NotFoundException("用户名或密码错误")))
                 .thenReturn(user))
             .filter(user -> user.status() == UserStatus.ACTIVE)
@@ -106,32 +99,4 @@ public class AuthenticationService {
             });
     }
 
-    private String hash(String password) {
-        byte[] salt = new byte[16];
-        random.nextBytes(salt);
-        try {
-            return "pbkdf2-sha256$" + ITERATIONS + "$" + b64(salt) + "$" + b64(derive(password.toCharArray(), salt));
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    private boolean matches(String password, String stored) {
-        try {
-            String[] parts = stored.split("\\$", 4);
-            return parts.length == 4 && MessageDigest.isEqual(derive(password.toCharArray(),
-                Base64.getUrlDecoder().decode(parts[2])), Base64.getUrlDecoder().decode(parts[3]));
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private byte[] derive(char[] password, byte[] salt) throws Exception {
-        return SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-            .generateSecret(new PBEKeySpec(password, salt, ITERATIONS, KEY_BITS)).getEncoded();
-    }
-
-    private String b64(byte[] value) {
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(value);
-    }
 }

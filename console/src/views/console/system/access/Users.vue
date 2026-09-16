@@ -44,7 +44,7 @@ const verificationLoading = stepUp.loading;
 const verificationCode = stepUp.code;
 const pendingDeleteUser = ref<ManagedUser | null>(null);
 const createVisible = ref(false);
-const createForm = reactive({ username: "", displayName: "", email: "" });
+const createForm = reactive({ username: "", displayName: "", email: "", password: "" });
 const pendingCreateRequest = ref<CreateManagedUserRequest | null>(null);
 const pendingUpdateRequest = ref<{ userId: string; data: UpdateManagedUserRequest } | null>(null);
 const verificationAction = ref<"create" | "delete" | "update" | "assignRole" | "revokeRole" | null>(null);
@@ -108,15 +108,17 @@ const openCreate = () => {
   createForm.username = "";
   createForm.displayName = "";
   createForm.email = "";
+  createForm.password = "";
   createVisible.value = true;
 };
 
 const submitCreate = async () => {
-  if (!createForm.username.trim() || !createForm.displayName.trim()) return;
+  if (!createForm.username.trim() || !createForm.displayName.trim() || createForm.password.length < 8) return;
   pendingCreateRequest.value = {
     username: createForm.username.trim(),
     displayName: createForm.displayName.trim(),
-    email: createForm.email.trim() || undefined
+    email: createForm.email.trim() || undefined,
+    password: createForm.password
   };
   verificationAction.value = "create";
   createVisible.value = false;
@@ -506,6 +508,14 @@ onMounted(loadUsers);
             :placeholder="t('userManagement.emailPlaceholder')"
           />
         </el-form-item>
+        <el-form-item :label="t('userManagement.password')" required>
+          <el-input
+            v-model="createForm.password"
+            type="password"
+            show-password
+            :placeholder="t('userManagement.passwordPlaceholder')"
+          />
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="createVisible = false">{{
@@ -514,7 +524,7 @@ onMounted(loadUsers);
         <el-button
           type="primary"
           :disabled="
-            !createForm.username.trim() || !createForm.displayName.trim()
+            !createForm.username.trim() || !createForm.displayName.trim() || createForm.password.length < 8
           "
           @click="submitCreate"
         >

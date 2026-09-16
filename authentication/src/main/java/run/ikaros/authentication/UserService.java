@@ -9,7 +9,7 @@ import run.ikaros.common.PageResponse;
  */
 public interface UserService {
     /**
-     * 创建待激活的平台用户。
+     * 创建可登录的平台用户及其初始密码凭据。
      *
      * @param actorId 执行创建的管理主体
      * @param request 用户资料

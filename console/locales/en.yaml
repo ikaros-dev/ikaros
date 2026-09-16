@@ -5,6 +5,8 @@ userManagement:
   displayName: Display Name
   email: Email
   emailPlaceholder: Enter email
+  password: Initial Password
+  passwordPlaceholder: Enter at least 8 characters
   status: Status
   statusPlaceholder: Select status
   statuses:

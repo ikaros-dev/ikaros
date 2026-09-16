@@ -173,6 +173,10 @@ Crypto Runtime
 
 ## 3. Security Verification Level
 
+### 3.1 管理员创建用户的初始登录凭据
+
+管理员创建用户时必须同时提供初始密码。创建 Command 将用户状态设为 `ACTIVE`，因此用户可以立即通过用户名和密码登录；编辑用户资料不包含密码字段。初始密码只用于生成 `password_credential.password_hash`，不得出现在 API 响应、事件、审计记录或日志中。
+
 为避免与外部标准中的 AAL / IAL 概念直接混淆，Ikaros 内部定义：
 
 **SVL（Security Verification Level）**。
