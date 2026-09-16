@@ -81,8 +81,10 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
 
     private boolean hasPermission(AuthenticatedPrincipal principal, PlatformPermission required) {
         if (principal.permissions().contains(required.key())) return true;
-        return required == PlatformPermission.SYSTEM_USER_READ
-            && principal.permissions().contains(PlatformPermission.SYSTEM_USER_MANAGE.key());
+        return (required == PlatformPermission.SYSTEM_USER_READ
+                && principal.permissions().contains(PlatformPermission.SYSTEM_USER_MANAGE.key()))
+            || (required == PlatformPermission.SYSTEM_ROLE_READ
+                && principal.permissions().contains(PlatformPermission.SYSTEM_ROLE_MANAGE.key()));
     }
 
     private PlatformPermission permission(String method, String path) {

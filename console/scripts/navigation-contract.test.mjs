@@ -82,6 +82,11 @@ test("Empty permission-filtered menus do not create an invalid top-menu tag", ()
   assert.match(routerUtils, /if \(tag && topMenu\) useMultiTagsStoreHook\(\)\.handleTags/);
 });
 
+test("Management permissions expose their corresponding administration menus", () => {
+  assert.match(routerUtils, /capability === "system\.user\.read"[\s\S]*system\.user\.manage/);
+  assert.match(routerUtils, /capability === "system\.role\.read"[\s\S]*system\.role\.manage/);
+});
+
 test("Directory roots redirect to canonical child pages", () => {
   for (const target of ["/resources/library", "/storage/overview", "/apps/overview", "/system/access/users"]) {
     assert.ok(home.includes(`"${target}"`));

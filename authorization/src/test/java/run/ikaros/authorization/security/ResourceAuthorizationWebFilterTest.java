@@ -164,6 +164,20 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
+    void allowsRoleReadWithRoleManagePermission() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/admin/roles").build());
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 0L, java.util.List.of("system.role.manage")));
+        WebFilterChain chain = mock(WebFilterChain.class);
+        when(chain.filter(exchange)).thenReturn(Mono.empty());
+
+        new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
+
+        verify(chain).filter(exchange);
+    }
+
+    @Test
     void rejectsBackupAdministrationWithoutToken() {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
             "/api/admin/backup/restore-points").build());
