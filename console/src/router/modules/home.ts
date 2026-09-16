@@ -274,7 +274,7 @@ export default {
           "menus.appsOverview",
           "menuDescriptions.appsOverview",
           () => import("@/views/console/apps/Overview.vue"),
-          undefined,
+          "app.read",
           { icon: "ep:grid" }
         ),
         page(
@@ -469,7 +469,7 @@ export default {
               "menus.userManagement",
               "menuDescriptions.userManagement",
               () => import("@/views/console/system/access/Users.vue"),
-              "system.user.read",
+              "user.read",
               { icon: "ep:user" }
             ),
             page(

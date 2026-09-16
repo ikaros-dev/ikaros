@@ -49,6 +49,17 @@ test("Menu page titles and descriptions use localized resources", () => {
   assert.match(enLocale, /^menuDescriptions:/m);
 });
 
+test("Permission-filtered menu entry points declare their canonical capabilities", () => {
+  assert.match(
+    home,
+    /"AppsOverview"[\s\S]*?\n\s*"app\.read"/
+  );
+  assert.match(
+    home,
+    /"SystemUsers"[\s\S]*?\n\s*"user\.read"/
+  );
+});
+
 test("Directory roots redirect to canonical child pages", () => {
   for (const target of ["/resources/library", "/storage/overview", "/apps/overview", "/system/access/users"]) {
     assert.ok(home.includes(`"${target}"`));
