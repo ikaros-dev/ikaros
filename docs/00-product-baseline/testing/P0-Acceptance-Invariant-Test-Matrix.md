@@ -271,6 +271,8 @@ P0-ARCH-001 ~ P0-ARCH-010 = PASS
 | `P0-ID-014` | Authentication / Authorization / Step-up 可独立失败 | SECURITY | separate fixtures verify distinct error semantics |
 | `P0-ID-015` | Verification Grant 必须校验 `purpose`、`target_reference`（适用时）、`exp` 与目标 SVL | SECURITY/E2E | wrong purpose/target, expired grant or insufficient SVL rejected |
 | `P0-ID-016` | `jti` 只用于 Token / Grant 追踪，不形成服务端 Session 或撤销黑名单 | SECURITY/DB | schema/log scan finds no persisted token identifier blacklist or login session state |
+| `P0-ID-017` | `LOGIN_STEP_UP` 在同账号最近成功验证的配置窗口内可换发 Grant，窗口外必须重新 OTP | SECURITY/UNIT/E2E | recent verified challenge returns a new Grant without issuing OTP; expired window issues a new challenge; different user/purpose cannot reuse |
+| `P0-ID-018` | Email OTP 与 SMS OTP 均达到 SVL-2；不同验证方式不得交叉复用 Grant | SECURITY/UNIT/E2E | email and SMS results contain SVL-2; either grant satisfies an SVL-1 policy; reuse query is method-bound |
 
 ---
 

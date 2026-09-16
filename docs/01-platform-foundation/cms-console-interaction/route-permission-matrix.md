@@ -169,8 +169,8 @@ Sidebar 的 System 菜单采用“平铺分组”表现：访问控制、集成�
 
 | 页面 | Route | 最小能力 | 写操作 |
 |---|---|---|---|
-| 用户管理 | `/system/access/users` | `user.read` | `user.manage` |
-| 角色与权限 | `/system/access/roles-permissions` | `role.read` 或 `permission.read` | `role.manage` / `permission.manage` |
+| 用户管理 | `/system/access/users` | `system.user.read` | `system.user.manage` |
+| 角色与权限 | `/system/access/roles-permissions` | `system.role.read` | `system.role.manage` |
 | 身份认证 | `/system/access/authentication` | `security.authentication.read` | policy/security actions |
 
 “角色与权限”是一个菜单页面；若页面内部继续拆 Role / Permission Tab，则使用同一 canonical route，通过 Tab state 表达，不再制造两个 Sidebar 页面。

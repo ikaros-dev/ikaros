@@ -1,5 +1,20 @@
 import { http } from "@/utils/http";
 
+export type VerificationChallenge = {
+  id: string;
+  method: VerificationMethod;
+  purpose: string;
+  expiresAt: string;
+  status: string;
+  verificationGrant?: string | null;
+};
+
+export type VerificationMethod = "EMAIL_OTP" | "SMS_OTP";
+
+export type VerificationResult = {
+  verificationGrant: string;
+};
+
 export type UserResult = {
   success: boolean;
   data: {
@@ -77,3 +92,80 @@ export const refreshTokenApi = (data?: object) => {
 };
 
 export const logoutApi = () => http.request<void>("post", "/auth/logout");
+
+export const issueStepUpChallenge = (method: VerificationMethod = "EMAIL_OTP") =>
+  http.request<VerificationChallenge>(
+    "post",
+    method === "SMS_OTP" ? "/security/step-up/sms" : "/security/step-up"
+  );
+
+export const verifyStepUpChallenge = (
+  challengeId: string,
+  code: string,
+  method: VerificationMethod = "EMAIL_OTP"
+) =>
+  http.request<VerificationResult>(
+    "post",
+    `${method === "SMS_OTP" ? "/security/step-up/sms" : "/security/step-up"}/${challengeId}/verify`,
+    {
+      data: { code }
+    }
+  );
+
+export type ManagedUserStatus =
+  | "PENDING"
+  | "ACTIVE"
+  | "DISABLED"
+  | "LOCKED"
+  | "DEACTIVATED";
+
+export type ManagedUser = {
+  id: string;
+  username: string;
+  displayName: string;
+  email: string | null;
+  status: ManagedUserStatus;
+  roleCodes: string[];
+  createdAt: string;
+  lastLoginAt: string | null;
+};
+
+export type ManagedUserPage = {
+  items: ManagedUser[];
+  total: number;
+  page: number;
+  size: number;
+};
+
+export const listManagedUsers = (params: {
+  query?: string;
+  status?: ManagedUserStatus;
+  page: number;
+  size: number;
+}) => http.request<ManagedUserPage>("get", "/admin/users", { params });
+
+export type CreateManagedUserRequest = {
+  username: string;
+  displayName: string;
+  email?: string;
+  password: string;
+};
+
+export type UpdateManagedUserRequest = {
+  username: string;
+  displayName: string;
+  email?: string;
+  status: ManagedUserStatus;
+};
+
+export const createManagedUser = (data: CreateManagedUserRequest) =>
+  http.request<ManagedUser>("post", "/admin/users", { data });
+
+export const getManagedUser = (userId: string) =>
+  http.request<ManagedUser>("get", `/admin/users/${userId}`);
+
+export const updateManagedUser = (userId: string, data: UpdateManagedUserRequest) =>
+  http.request<ManagedUser>("put", `/admin/users/${userId}`, { data });
+
+export const deleteManagedUser = (userId: string) =>
+  http.request<void>("delete", `/admin/users/${userId}`);

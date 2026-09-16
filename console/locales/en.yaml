@@ -1,3 +1,166 @@
+userManagement:
+  username: Username
+  usernamePlaceholder: Enter username
+  displayNamePlaceholder: Enter display name
+  displayName: Display Name
+  email: Email
+  emailPlaceholder: Enter email
+  password: Initial Password
+  passwordPlaceholder: Enter 8-18 characters using at least two of digits, letters, and symbols
+  status: Status
+  statusPlaceholder: Select status
+  statuses:
+    PENDING: Pending
+    ACTIVE: Active
+    DISABLED: Disabled
+    LOCKED: Locked
+    DEACTIVATED: Deleted
+  roles: Roles
+  rolesButton: Roles
+  rolesTitle: User Roles
+  rolesFailed: Failed to load user roles
+  rolesEmpty: No roles
+  roleCode: Role Code
+  roleAdd: Add Role
+  roleAddTitle: Add Role to User
+  roleSelectPlaceholder: Select a role
+  roleAllAssigned: User already has all roles
+  roleAddConfirm: Add
+  roleDeleteTitle: Remove User Role
+  roleDeleteConfirm: Remove role "{role}" from user "{username}"?
+  roleAssignSuccess: User role added
+  roleRevokeSuccess: User role removed
+  roleUpdateFailed: Failed to update user roles
+  createdAt: Created At
+  lastLoginAt: Last Login
+  actions: Actions
+  create: Add User
+  createTitle: Add User
+  createConfirm: Create
+  createSuccess: User created
+  createFailed: Failed to create user
+  detail: Details
+  detailTitle: User Details
+  detailFailed: Failed to load user details
+  edit: Edit
+  editTitle: Edit User
+  updateConfirm: Save
+  updateSuccess: User updated
+  updateFailed: Failed to update user
+  delete: Delete
+  deleteTitle: Delete User
+  deleteConfirm: Are you sure you want to delete user "{username}"?
+  deleteSuccess: User deleted
+  deleteFailed: Failed to delete user
+  verificationTitle: Additional Verification
+  verificationDescription: A code was sent to the email bound to your account. Enter the 6-digit code to continue.
+  verificationPlaceholder: Enter the 6-digit code
+  verificationConfirm: Verify and Continue
+  never: Never
+  empty: Empty
+  search: Search
+  reset: Reset
+
+roleManagement:
+  code: Role Code
+  codePlaceholder: Start with uppercase letters; use uppercase letters, digits, and underscores
+  codeInvalid: Role code must start with an uppercase letter and contain only uppercase letters, digits, and underscores
+  name: Role Name
+  namePlaceholder: Enter role name
+  description: Description
+  type: Type
+  builtIn: Built-in
+  custom: Custom
+  permissions: Permissions
+  morePermissions: "+{count} more"
+  actions: Actions
+  create: Add Role
+  createTitle: Add Role
+  createConfirm: Create
+  createSuccess: Role created
+  createFailed: Failed to create role
+  detail: Details
+  detailTitle: Role Details
+  edit: Edit Permissions
+  editTitle: Edit Role Permissions
+  save: Save
+  updateTitle: Save Role Permissions
+  updateConfirm: Save the current role permissions?
+  updateSuccess: Role permissions updated
+  updateFailed: Failed to update role permissions
+  loadFailed: Failed to load roles
+  verificationTitle: Email Verification
+  verificationDescription: A code was sent to the email bound to your account. Enter the 6-digit code to continue.
+  verificationPlaceholder: Enter the 6-digit code
+  verificationConfirm: Verify and Continue
+  search: Search
+  reset: Reset
+  empty: Empty
+  permissionNames:
+    system_user_read: View Users
+    system_user_manage: Manage Users
+    system_role_read: View Roles
+    system_role_manage: Manage Roles
+    system_session_read: View Sessions
+    system_session_manage: Manage Sessions
+    system_audit_read: View Audit
+    resource_read: Read Resources
+    resource_write: Edit Resources
+    resource_delete: Delete Resources
+    resource_download: Download Resources
+    resource_share: Share Resources
+    storage_provider_read: View Storage Providers
+    storage_provider_manage: Manage Storage Providers
+    storage_delivery_read: View Delivery Providers
+    storage_delivery_manage: Manage Delivery Providers
+    storage_tiering_manage: Manage Storage Tiering
+    storage_restore_request: Request Media Restore
+    storage_restore_read: View Media Restore
+    storage_restore_manage: Manage Media Restore
+    ingestion_source_manage: Manage Ingestion Sources
+    account_self_read: View Profile
+    account_preference_read: View Preferences
+    account_notification_read: View Notification Settings
+    account_security_read: View Account Security
+    user_read: View User Management
+    role_read: View Roles & Permissions
+    security_authentication_read: View Authentication Settings
+    integration_read: View Integrations
+    notification_read: View Notifications
+    audit_read: View Audit Log
+    platform_read: View Platform Settings
+    system_health_read: View System Health
+    system_diagnostics_read: View System Diagnostics
+    collection_read: View Resource Collections
+    search_use: Use Resource Search
+    storage_policy_read: View Storage Policy
+    storage_archive_read: View Archive Management
+    storage_maintenance_read: View Storage Maintenance
+    backup_read: View Backups
+    drive_space_read: View Drive Space
+    drive_file_read: View Drive Files
+    drive_transfer_read: View Drive Transfers
+    drive_sync_read: View Drive Sync
+    drive_conflict_read: View Drive Conflicts
+    drive_trash_read: View Drive Trash
+    drive_settings_read: View Drive Settings
+    document_read: View Documents
+    media_read: View Media
+    planning_read: View Planning
+    finance_read: View Personal Finance
+    private_note_read: View Private Notes
+    password_read: View Password Vault
+    ai_read: View AI Apps
+    share_read: View Sharing
+    analytics_read: View Analytics
+    automation_read: View Automation
+    dashboard_read: View Dashboard
+    ingestion_read: View Content Ingestion
+    activity_read: View Activity Center
+    storage_read: View Storage
+    app_read: View Apps
+    system_read: View System
+
 buttons:
   pureLoginOut: LoginOut
   pureLogin: Login

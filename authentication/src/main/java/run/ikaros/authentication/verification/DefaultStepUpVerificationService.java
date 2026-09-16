@@ -1,6 +1,10 @@
 package run.ikaros.authentication.verification;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
@@ -9,6 +13,7 @@ import run.ikaros.authentication.JwtTokenService;
 import run.ikaros.authentication.PlatformUserEntity;
 import run.ikaros.authentication.PlatformUserRepository;
 import run.ikaros.authentication.UserStatus;
+import run.ikaros.authentication.api.SecurityVerificationLevel;
 
 /**
  * 默认 Step-up 协调服务，强制验证码用途与验证目标完全匹配。
@@ -17,8 +22,10 @@ import run.ikaros.authentication.UserStatus;
 public class DefaultStepUpVerificationService implements StepUpVerificationService {
     private final PlatformUserRepository userRepository;
     private final EmailOtpVerificationProvider emailOtpProvider;
+    private final SmsOtpVerificationProvider smsOtpProvider;
     private final VerificationChallengeRepository challengeRepository;
     private final JwtTokenService tokens;
+    private final Duration reuseWindow;
 
     /**
      * 创建 Step-up 协调服务。
@@ -32,24 +39,80 @@ public class DefaultStepUpVerificationService implements StepUpVerificationServi
                                             EmailOtpVerificationProvider emailOtpProvider,
                                             VerificationChallengeRepository challengeRepository,
                                             JwtTokenService tokens) {
+        this(userRepository, emailOtpProvider, null, challengeRepository, tokens, Duration.ofHours(4));
+    }
+
+    @Autowired
+    public DefaultStepUpVerificationService(PlatformUserRepository userRepository,
+                                            EmailOtpVerificationProvider emailOtpProvider,
+                                            SmsOtpVerificationProvider smsOtpProvider,
+                                            VerificationChallengeRepository challengeRepository,
+                                            JwtTokenService tokens,
+                                            @Value("${ikaros.security.verification.email.reuse-window:PT4H}")
+                                            Duration reuseWindow) {
         this.userRepository = userRepository;
         this.emailOtpProvider = emailOtpProvider;
+        this.smsOtpProvider = smsOtpProvider;
         this.challengeRepository = challengeRepository;
         this.tokens = tokens;
+        this.reuseWindow = reuseWindow;
     }
 
     @Override
     public Mono<VerificationChallengeView> issueEmailOtp(UUID userId) {
-        return emailOtpProvider.issue(userId, new IssueVerificationRequest(VerificationPurpose.LOGIN_STEP_UP, null));
+        return issueOtp(userId, emailOtpProvider, VerificationMethod.EMAIL_OTP,
+            SecurityVerificationLevel.SVL_2);
+    }
+
+    @Override
+    public Mono<VerificationChallengeView> issueSmsOtp(UUID userId) {
+        return issueOtp(userId, smsOtpProvider, VerificationMethod.SMS_OTP,
+            SecurityVerificationLevel.SVL_2);
+    }
+
+    private Mono<VerificationChallengeView> issueOtp(UUID userId, VerificationProvider provider,
+                                                     VerificationMethod method,
+                                                     SecurityVerificationLevel achievedSvl) {
+        if (provider == null) return Mono.error(new IllegalStateException("短信验证码服务不可用"));
+        Instant now = Instant.now();
+        if (reuseWindow.isZero() || reuseWindow.isNegative()) {
+            return provider.issue(userId, new IssueVerificationRequest(VerificationPurpose.LOGIN_STEP_UP, null));
+        }
+        return userRepository.findById(userId)
+            .filter(user -> user.status() == UserStatus.ACTIVE)
+            .switchIfEmpty(Mono.error(new NotFoundException("用户不存在或已停用")))
+            .flatMap(user -> challengeRepository
+                .findFirstByUserIdAndMethodAndPurposeAndStatusAndConsumedAtAfterOrderByConsumedAtDesc(
+                    userId, method, VerificationPurpose.LOGIN_STEP_UP, VerificationChallengeStatus.VERIFIED,
+                    now.minus(reuseWindow))
+                .map(challenge -> new VerificationChallengeView(null, method,
+                    VerificationPurpose.LOGIN_STEP_UP, challenge.consumedAt().plus(reuseWindow),
+                    VerificationChallengeStatus.VERIFIED,
+                    tokens.issueVerificationGrant(user.id(), user.securityVersion(), VerificationPurpose.LOGIN_STEP_UP,
+                        null, achievedSvl.value(), challenge.consumedAt(),
+                        challenge.consumedAt().plus(reuseWindow))))
+                .switchIfEmpty(Mono.defer(() -> provider.issue(userId,
+                    new IssueVerificationRequest(VerificationPurpose.LOGIN_STEP_UP, null)))));
     }
 
     @Override
     public Mono<VerificationResult> verifyEmailOtp(UUID userId, UUID challengeId, VerifyOtpRequest request) {
+        return verifyOtp(userId, challengeId, request, emailOtpProvider);
+    }
+
+    @Override
+    public Mono<VerificationResult> verifySmsOtp(UUID userId, UUID challengeId, VerifyOtpRequest request) {
+        return verifyOtp(userId, challengeId, request, smsOtpProvider);
+    }
+
+    private Mono<VerificationResult> verifyOtp(UUID userId, UUID challengeId, VerifyOtpRequest request,
+                                               VerificationProvider provider) {
+        if (provider == null) return Mono.error(new IllegalStateException("短信验证码服务不可用"));
         return boundStepUpChallenge(userId, challengeId)
             .then(Mono.defer(() -> userRepository.findById(userId))
                 .filter(user -> user.status() == UserStatus.ACTIVE)
                 .switchIfEmpty(Mono.error(new NotFoundException("用户不存在或已停用")))
-                .flatMap(user -> emailOtpProvider.verify(userId, challengeId, request)
+                .flatMap(user -> provider.verify(userId, challengeId, request)
                     .map(result -> {
                         String grant = tokens.issueVerificationGrant(user.id(), user.securityVersion(),
                             VerificationPurpose.LOGIN_STEP_UP, null, result.achievedSvl().value(),
@@ -63,6 +126,13 @@ public class DefaultStepUpVerificationService implements StepUpVerificationServi
     public Mono<Void> cancelEmailOtp(UUID userId, UUID challengeId) {
         return boundStepUpChallenge(userId, challengeId)
             .then(emailOtpProvider.cancel(userId, challengeId));
+    }
+
+    @Override
+    public Mono<Void> cancelSmsOtp(UUID userId, UUID challengeId) {
+        if (smsOtpProvider == null) return Mono.error(new IllegalStateException("短信验证码服务不可用"));
+        return boundStepUpChallenge(userId, challengeId)
+            .then(smsOtpProvider.cancel(userId, challengeId));
     }
 
     private Mono<Void> boundStepUpChallenge(UUID userId, UUID challengeId) {

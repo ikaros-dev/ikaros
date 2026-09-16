@@ -274,7 +274,7 @@ export default {
           "menus.appsOverview",
           "menuDescriptions.appsOverview",
           () => import("@/views/console/apps/Overview.vue"),
-          undefined,
+          "app.read",
           { icon: "ep:grid" }
         ),
         page(
@@ -469,7 +469,7 @@ export default {
               "menus.userManagement",
               "menuDescriptions.userManagement",
               () => import("@/views/console/system/access/Users.vue"),
-              "user.read",
+              "system.user.read",
               { icon: "ep:user" }
             ),
             page(
@@ -479,7 +479,7 @@ export default {
               "menuDescriptions.rolesPermissions",
               () =>
                 import("@/views/console/system/access/RolesPermissions.vue"),
-              "role.read",
+              "system.role.read",
               { icon: "ep:key" }
             ),
             page(

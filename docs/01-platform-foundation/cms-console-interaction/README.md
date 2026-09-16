@@ -24,10 +24,17 @@ Console 使用 Material Design 3 作为设计语言。
 
 - 桌面后台体验优先，同时提供平板和移动响应式降级；
 - 使用 Navigation Drawer / Rail、Top App Bar、Card、Data Table、Tabs、Chip、Button、Menu、Dialog、Side Sheet、Snackbar、Tooltip、Text Field、Select、Progress Indicator、Banner 和 Empty State；
+- 按钮允许增加图标；按钮同时包含文字和图标时，图标优先放在文字左侧；
 - 高信息密度页面可采用紧凑密度，但交互目标不得小于 44×44 CSS px；
 - 主操作使用 Filled Button；次级操作使用 Filled Tonal / Outlined；低强调操作使用 Text / Icon Button；
 - 高风险操作使用 Error 语义并经过确认；
 - 状态不能只依赖颜色表达。
+
+### 2.1 组件选型约束
+
+- 优先使用已经过市场验证、维护稳定且符合现有设计语言的组件方案；
+- 若需要更换既有组件方案，必须先向产品负责人说明原因、影响和备选方案，并在获得确认后实施；
+- 未经确认，不得因个人偏好或局部便利替换全局组件方案。
 
 ## 3. 应用壳层
 

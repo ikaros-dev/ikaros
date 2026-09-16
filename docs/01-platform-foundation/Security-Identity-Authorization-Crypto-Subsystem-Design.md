@@ -173,6 +173,14 @@ Crypto Runtime
 
 ## 3. Security Verification Level
 
+### 3.1 管理员创建用户的初始登录凭据
+
+管理员创建用户时必须同时提供初始密码。创建 Command 将用户状态设为 `ACTIVE`，因此用户可以立即通过用户名和密码登录；编辑用户资料不包含密码字段。初始密码只用于生成 `password_credential.password_hash`，不得出现在 API 响应、事件、审计记录或日志中。
+
+若创建请求命中同名软删除用户，系统恢复原用户记录并覆盖昵称、邮箱及密码，不创建新的身份记录；若命中活动用户或邮箱唯一性冲突，则拒绝创建。
+
+用户管理的资料/状态更新与软删除不得作用于当前登录用户；该约束必须由 Application 层执行，不能只依赖控制台隐藏按钮。
+
 为避免与外部标准中的 AAL / IAL 概念直接混淆，Ikaros 内部定义：
 
 **SVL（Security Verification Level）**。
@@ -181,8 +189,8 @@ Crypto Runtime
 
 | SVL | 验证方式 | 状态 | 相对等级 |
 |---|---|---|---|
-| SVL-1 | Email OTP | V2 初期实现 | 最低 |
-| SVL-2 | SMS OTP | 规划 | 高于 Email |
+| SVL-1 | 操作策略最低要求 | V2 操作策略 | 最低 |
+| SVL-2 | Email OTP / SMS OTP | V2 初期实现 | 高于 SVL-1 |
 | SVL-3 | Identity Document Verification | 规划 | 高于 SMS |
 | SVL-4 | Face Identity Verification | 规划 | 最高 |
 
@@ -193,9 +201,9 @@ SVL-4 Face
    >
 SVL-3 Identity Document
    >
-SVL-2 SMS
+SVL-2 Email / SMS
    >
-SVL-1 Email
+SVL-1 操作策略最低要求
 ```
 
 不同操作定义：
@@ -227,7 +235,7 @@ required_verification_level
 当前阶段只实现：
 
 ```text
-SVL-1 = EMAIL_OTP
+Email OTP = SVL-2（具体操作仍按策略要求 SVL-1 或 SVL-2）
 ```
 
 短信、身份证和人脸认证只保留：
@@ -520,6 +528,13 @@ all JWTs carrying previous security_version become invalid
 
 完成 Email OTP / SMS / Identity / Face Verification 后，不修改某个服务端 Session 的 `current_svl`。
 
+P0 验证等级映射如下：
+
+| 验证方式 | 达到等级 | 当前投递状态 |
+|---|---|---|
+| Email OTP | SVL-2 | 可接入邮件投递或本地 Noop 日志 |
+| SMS OTP | SVL-2 | 当前使用本地 Noop 日志，短信网关待接入 |
+
 Security Subsystem 签发短期、Purpose-bound 的验证结果，例如：
 
 ```text
@@ -549,6 +564,19 @@ AND Security Policy
 ```
 
 Verification Grant 只证明一次短期提升验证，不延长普通 Access JWT 生命周期，也不形成服务端登录 Session。
+
+对于 `LOGIN_STEP_UP`，Security Subsystem 可以依据最近一次成功验证的 `consumed_at` 提供账号级复用窗口。窗口默认 4 小时，并由应用配置覆盖；窗口内只换发新的短期 Grant，不重新发送或验证 OTP。复用必须同时满足：
+
+- 主体为同一用户；
+- 用途仍为 `LOGIN_STEP_UP`；
+- 最近一次成功验证仍处于复用窗口内；
+- 当前用户 `security_version` 与 Grant 一致。
+
+复用窗口不改变目标 Command 的 Permission、SVL、Freshness 或最终确认要求；窗口外必须重新发起 OTP。
+
+需要 SVL-2 的高风险动作可使用 Email OTP、SMS OTP 或更高等级验证；当前后台管理统一使用 Email OTP。
+
+`storage.provider.manage` 是需要更高保障等级的例外权限：当 `ikaros.security.verification.sms.enabled=false`（默认）时，运行时最低要求降为 SVL-2，以便当前仅配置 Email OTP 的实例管理存储 Provider；当 SMS OTP 启用时，保持 SVL-3。Noop 只是 SMS 的投递实现，是否启用该策略由上述显式配置控制；生产环境仍不得使用 Noop 投递。
 
 ### 8.3 Verification 有独立有效期
 
@@ -1454,7 +1482,7 @@ Cryptographic Recovery
 当前 V2 先实现：
 
 ```text
-EMAIL_OTP / SVL-1
+EMAIL_OTP / SVL-2
 ```
 
 其他认证方式保留架构，不提前增加实现复杂度。

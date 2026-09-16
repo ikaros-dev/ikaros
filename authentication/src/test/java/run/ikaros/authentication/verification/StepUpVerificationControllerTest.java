@@ -34,7 +34,7 @@ class StepUpVerificationControllerTest {
             VerificationMethod.EMAIL_OTP, VerificationPurpose.LOGIN_STEP_UP, now.plusSeconds(300),
             VerificationChallengeStatus.ISSUED)));
         when(stepUpService.verifyEmailOtp(any(), any(), any())).thenReturn(Mono.just(new VerificationResult(
-            challengeId, VerificationMethod.EMAIL_OTP, SecurityVerificationLevel.SVL_1, userId, now,
+            challengeId, VerificationMethod.EMAIL_OTP, SecurityVerificationLevel.SVL_2, userId, now,
             now.plusSeconds(300))));
 
         client.post().uri("/api/security/step-up")

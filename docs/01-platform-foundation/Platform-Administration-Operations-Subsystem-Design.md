@@ -232,7 +232,7 @@ User 表示 Ikaros 平台中的用户身份。
 - DISABLED
 - LOCKED
 - PENDING
-- DELETED / DEACTIVATED
+- DEACTIVATED
 
 具体实现可以进一步细化。
 
@@ -457,9 +457,9 @@ Subsystem Health 表示某个系统组件在某一时刻的健康状态。
 
 ### FR-USER-09 用户删除
 
-删除用户应有明确生命周期语义。
+删除用户采用软删除语义，将用户状态改为 `DEACTIVATED` 并提升 `security_version`，使此前签发的 JWT 失效。
 
-不能因为删除 User 而立即破坏其创建的 Resource、Revision、Audit Log 等历史数据。
+不能因为删除 User 而立即破坏其创建的 Resource、Revision、Audit Log 等历史数据；用户记录保留用于历史追溯。
 
 需要在后续 IAM / Ownership 设计中明确资源归属转移与匿名化策略。
 

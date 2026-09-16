@@ -35,6 +35,12 @@ ikaros:
         endpoint: ${IKAROS_SECURITY_EMAIL_ENDPOINT:}
         from: ${IKAROS_SECURITY_EMAIL_FROM:}
         api-key: ${IKAROS_SECURITY_EMAIL_API_KEY:}
+        log-code: ${IKAROS_SECURITY_EMAIL_LOG_CODE:false}
+        reuse-window: ${IKAROS_SECURITY_EMAIL_REUSE_WINDOW:PT4H}
+      sms:
+        enabled: ${IKAROS_SECURITY_SMS_ENABLED:false}
+        delivery: ${IKAROS_SECURITY_SMS_DELIVERY:NOOP}
+        log-code: ${IKAROS_SECURITY_SMS_LOG_CODE:true}
     jwt:
       issuer: ${IKAROS_JWT_ISSUER:ikaros}
       secret: ${IKAROS_JWT_SECRET:}

@@ -20,7 +20,7 @@ test("every routed Console page resolves to a page-card component", async () => 
   for (const alias of imports) {
     const relative = alias.replace("@/views/", "../src/views/");
     const source = await readFile(new URL(relative, import.meta.url), "utf8");
-    assert.match(source, /<PageCard\s*\/>/, `${alias} must use PageCard`);
+    assert.match(source, /<PageCard(?:\s*\/\s*>|\s*>)/, `${alias} must use PageCard`);
   }
 });
 

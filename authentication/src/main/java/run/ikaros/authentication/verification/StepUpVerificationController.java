@@ -41,7 +41,8 @@ public class StepUpVerificationController {
      * @param userId 当前认证用户标识
      * @return 挑战摘要
      */
-    @Operation(summary = "发起增强验证", description = "为当前用户创建 LOGIN_STEP_UP 用途的 Email OTP 挑战。"
+    @Operation(summary = "发起增强验证", description = "为当前用户创建 LOGIN_STEP_UP 用途的 Email OTP 挑战；"
+        + "若同账号最近一次成功验证仍在配置的复用窗口内，则直接返回新的 Verification Grant。"
         + "该挑战不能用于重置密钥或任何其他安全操作。")
     @ApiResponses({
         @ApiResponse(responseCode = "202", description = "Step-up 挑战已创建"),

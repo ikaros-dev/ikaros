@@ -92,7 +92,11 @@ function filterNoPermissionTree(data: RouteComponent[]) {
         const allowed =
           !capability ||
           permissions.includes("*:*:*") ||
-          permissions.includes(capability);
+          permissions.includes(capability) ||
+          (capability === "system.user.read" &&
+            permissions.includes("system.user.manage")) ||
+          (capability === "system.role.read" &&
+            permissions.includes("system.role.manage"));
         // Workspace visibility is derived from visible children; parent metadata
         // must not hide an accessible App/System child.
         return route.children ? route.children.length > 0 : allowed;
@@ -370,9 +374,9 @@ function handleTopMenu(route) {
 }
 
 /** 获取所有菜单中的第一个菜单（顶级菜单）*/
-function getTopMenu(tag = false): menuType {
+function getTopMenu(tag = false): menuType | undefined {
   const topMenu = handleTopMenu(usePermissionStoreHook().wholeMenus[0]);
-  tag && useMultiTagsStoreHook().handleTags("push", topMenu);
+  if (tag && topMenu) useMultiTagsStoreHook().handleTags("push", topMenu);
   return topMenu;
 }
 

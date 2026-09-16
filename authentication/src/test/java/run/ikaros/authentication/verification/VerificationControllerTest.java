@@ -34,7 +34,7 @@ class VerificationControllerTest {
             VerificationMethod.EMAIL_OTP, VerificationPurpose.LOGIN_STEP_UP, now.plusSeconds(300),
             VerificationChallengeStatus.ISSUED)));
         when(provider.verify(any(), any(), any())).thenReturn(Mono.just(new VerificationResult(challengeId,
-            VerificationMethod.EMAIL_OTP, SecurityVerificationLevel.SVL_1, userId, now, now.plusSeconds(300))));
+            VerificationMethod.EMAIL_OTP, SecurityVerificationLevel.SVL_2, userId, now, now.plusSeconds(300))));
         when(provider.cancel(userId, challengeId)).thenReturn(Mono.empty());
 
         client.post().uri("/api/security/verification-challenges").header("X-Ikaros-Actor-Id", userId.toString())

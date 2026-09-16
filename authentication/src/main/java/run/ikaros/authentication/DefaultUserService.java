@@ -10,6 +10,7 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.ConflictException;
+import run.ikaros.common.ForbiddenException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.common.PageResponse;
 import run.ikaros.integration.api.DurableEventPublisher;
@@ -23,6 +24,7 @@ import run.ikaros.authorization.api.RoleMembershipQuery;
 public class DefaultUserService implements UserService {
     private static final int MAX_PAGE_SIZE = 100;
     private final PlatformUserRepository userRepository;
+    private final PasswordCredentialRepository credentialRepository;
     private final RoleMembershipQuery roleMembershipQuery;
     private final AuditService auditService;
     private final DurableEventPublisher eventService;
@@ -37,20 +39,27 @@ public class DefaultUserService implements UserService {
      */
     public DefaultUserService(PlatformUserRepository userRepository, RoleMembershipQuery roleMembershipQuery,
                               AuditService auditService) {
-        this(userRepository, roleMembershipQuery, auditService, null, null);
+        this(userRepository, roleMembershipQuery, auditService, null, null, null);
     }
 
-    @Autowired
     public DefaultUserService(PlatformUserRepository userRepository, RoleMembershipQuery roleMembershipQuery,
                               AuditService auditService,
                               DurableEventPublisher eventService) {
-        this(userRepository, roleMembershipQuery, auditService, eventService, null);
+        this(userRepository, roleMembershipQuery, auditService, eventService, null, null);
     }
 
     public DefaultUserService(PlatformUserRepository userRepository, RoleMembershipQuery roleMembershipQuery,
                               AuditService auditService, DurableEventPublisher eventService,
                               TransactionalOperator transaction) {
+        this(userRepository, roleMembershipQuery, auditService, eventService, transaction, null);
+    }
+
+    @Autowired
+    public DefaultUserService(PlatformUserRepository userRepository, RoleMembershipQuery roleMembershipQuery,
+                              AuditService auditService, DurableEventPublisher eventService,
+                              TransactionalOperator transaction, PasswordCredentialRepository credentialRepository) {
         this.userRepository = userRepository;
+        this.credentialRepository = credentialRepository;
         this.roleMembershipQuery = roleMembershipQuery;
         this.auditService = auditService;
         this.eventService = eventService;
@@ -59,19 +68,50 @@ public class DefaultUserService implements UserService {
 
     @Override
     public Mono<UserView> create(UUID actorId, CreateUserRequest request) {
+        String username = request.username().trim();
         Instant now = Instant.now();
-        PlatformUserEntity user = new PlatformUserEntity(null, request.username().trim(), request.displayName().trim(),
-            normalizeEmail(request.email()), UserStatus.PENDING, now, now, null, 0L, null);
-        return userRepository.save(user)
+        return userRepository.findIncludingDeletedByUsername(username)
+            .flatMap(existing -> existing.isDel() == 1
+                ? restore(existing, request, actorId, now)
+                : Mono.error(new ConflictException("用户名已存在")))
+            .switchIfEmpty(createNew(actorId, request, username, now));
+    }
+
+    private Mono<UserView> createNew(UUID actorId, CreateUserRequest request, String username, Instant now) {
+        PlatformUserEntity user = new PlatformUserEntity(null, username, request.displayName().trim(),
+            normalizeEmail(request.email()), UserStatus.ACTIVE, now, now, null, 0L, null);
+        Mono<UserView> operation = userRepository.save(user)
             .onErrorMap(DuplicateKeyException.class, exception -> new ConflictException("用户名或邮箱已存在"))
-            .flatMap(saved -> emitUserCreated(saved)
+            .flatMap(saved -> credentialRepository.save(new PasswordCredentialEntity(null, saved.id(),
+                    PasswordHashService.hash(request.password()), now, now, null))
+                .then(emitUserCreated(saved))
                 .then(auditService.record(actorId, "identity.user.create", "USER", saved.id(), "{}"))
                 .then(toView(saved)));
+        return transaction == null ? operation : operation.as(transaction::transactional);
     }
 
     @Override
     public Mono<UserView> get(UUID userId) {
         return requiredUser(userId).flatMap(this::toView);
+    }
+
+    @Override
+    public Mono<UserView> update(UUID actorId, UUID userId, UpdateUserRequest request) {
+        if (actorId.equals(userId)) {
+            return Mono.error(new ForbiddenException("不允许修改当前登录用户"));
+        }
+        return requiredUser(userId).flatMap(user -> {
+            UserStatus status = request.status();
+            PlatformUserEntity updated = new PlatformUserEntity(user.id(), request.username().trim(),
+                request.displayName().trim(), normalizeEmail(request.email()), status, user.createdAt(), Instant.now(),
+                user.lastLoginAt(), status == user.status() ? user.securityVersion() : user.securityVersion() + 1,
+                user.version(), user.isDel());
+            return userRepository.save(updated)
+                .onErrorMap(DuplicateKeyException.class, exception -> new ConflictException("用户名或邮箱已存在"))
+                .flatMap(saved -> emitStatusChanged(saved)
+                    .then(auditService.record(actorId, "identity.user.update", "USER", userId, "{}"))
+                    .then(toView(saved)));
+        });
     }
 
     @Override
@@ -81,6 +121,7 @@ public class DefaultUserService implements UserService {
         }
         String keyword = query == null ? "" : query.trim();
         return userRepository.findAll()
+            .filter(user -> user.isDel() == 0)
             .filter(user -> status == null || user.status() == status)
             .filter(user -> keyword.isEmpty() || user.username().toLowerCase().contains(keyword.toLowerCase()))
             .sort(Comparator.comparing(PlatformUserEntity::createdAt).reversed())
@@ -94,6 +135,9 @@ public class DefaultUserService implements UserService {
 
     @Override
     public Mono<UserView> changeStatus(UUID actorId, UUID userId, UserStatus status) {
+        if (actorId.equals(userId)) {
+            return Mono.error(new ForbiddenException("不允许修改当前登录用户"));
+        }
         return requiredUser(userId).flatMap(user -> {
             PlatformUserEntity changed = new PlatformUserEntity(user.id(), user.username(), user.displayName(), user.email(),
                 status, user.createdAt(), Instant.now(), user.lastLoginAt(),
@@ -103,6 +147,46 @@ public class DefaultUserService implements UserService {
                     .then(auditService.record(actorId, "identity.user.status.change", "USER", userId, "{}"))
                     .then(toView(saved)));
         });
+    }
+
+    @Override
+    public Mono<Void> delete(UUID actorId, UUID userId) {
+        if (actorId.equals(userId)) {
+            return Mono.error(new ForbiddenException("不允许删除当前登录用户"));
+        }
+        Mono<Void> operation = requiredUser(userId).flatMap(user -> {
+            if (user.status() == UserStatus.DEACTIVATED) return Mono.empty();
+            PlatformUserEntity deleted = new PlatformUserEntity(user.id(), user.username(), user.displayName(), user.email(),
+                UserStatus.DEACTIVATED, user.createdAt(), Instant.now(), user.lastLoginAt(),
+                user.securityVersion() + 1, user.version(), 1);
+            return userRepository.save(deleted)
+                .flatMap(saved -> emitUserDeactivated(saved)
+                    .then(auditService.record(actorId, "identity.user.delete", "USER", userId, "{}")));
+        });
+        return transaction == null ? operation : operation.as(transaction::transactional);
+    }
+
+    private Mono<UserView> restore(PlatformUserEntity existing, CreateUserRequest request, UUID actorId, Instant now) {
+        PlatformUserEntity restored = new PlatformUserEntity(existing.id(), existing.username(),
+            request.displayName().trim(), normalizeEmail(request.email()), UserStatus.ACTIVE,
+            existing.createdAt(), now, existing.lastLoginAt(), existing.securityVersion() + 1,
+            existing.version(), 0);
+        Mono<UserView> operation = userRepository.save(restored)
+            .onErrorMap(DuplicateKeyException.class, exception -> new ConflictException("用户名或邮箱已存在"))
+            .flatMap(saved -> replacePassword(saved.id(), request.password(), now)
+                .then(emitUserCreated(saved))
+                .then(auditService.record(actorId, "identity.user.restore", "USER", saved.id(), "{}"))
+                .then(toView(saved)));
+        return transaction == null ? operation : operation.as(transaction::transactional);
+    }
+
+    private Mono<Void> replacePassword(UUID userId, String password, Instant now) {
+        return credentialRepository.findByUserId(userId)
+            .flatMap(existing -> credentialRepository.save(new PasswordCredentialEntity(existing.id(), userId,
+                PasswordHashService.hash(password), existing.createdAt(), now, existing.version())))
+            .switchIfEmpty(Mono.defer(() -> credentialRepository.save(new PasswordCredentialEntity(null, userId,
+                PasswordHashService.hash(password), now, now, null))))
+            .then();
     }
 
     @Override
@@ -142,6 +226,14 @@ public class DefaultUserService implements UserService {
         if (eventService == null) return Mono.empty();
         return eventService.append(new EventAppendRequest("authentication.user.created", 1, "authentication", "user", user.id(),
             "{\"user_id\":\"" + user.id() + "\"}")).then();
+    }
+
+    private Mono<Void> emitUserDeactivated(PlatformUserEntity user) {
+        if (eventService == null) return Mono.empty();
+        return eventService.append(new EventAppendRequest("authentication.user.deactivated", 1,
+            "authentication", "user", user.id(),
+            "{\"user_id\":\"" + user.id() + "\",\"security_version\":"
+                + user.securityVersion() + "}")).then();
     }
 
 

@@ -63,7 +63,7 @@ watch(
 <template>
   <div
     v-if="device !== 'mobile'"
-    v-loading="usePermissionStoreHook().wholeMenus.length === 0"
+    v-loading="!usePermissionStoreHook().menusReady"
     class="horizontal-header"
   >
     <el-menu

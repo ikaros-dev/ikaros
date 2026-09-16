@@ -43,11 +43,42 @@ class DefaultStepUpVerificationServiceTest {
         Instant now = Instant.now();
         VerificationChallengeView view = new VerificationChallengeView(UUID.randomUUID(), VerificationMethod.EMAIL_OTP,
             VerificationPurpose.LOGIN_STEP_UP, now.plusSeconds(300), VerificationChallengeStatus.ISSUED);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, now, now, null, 2L, 0L)));
+        when(challengeRepository.findFirstByUserIdAndMethodAndPurposeAndStatusAndConsumedAtAfterOrderByConsumedAtDesc(
+            eq(userId), eq(VerificationMethod.EMAIL_OTP), eq(VerificationPurpose.LOGIN_STEP_UP),
+            eq(VerificationChallengeStatus.VERIFIED), any()))
+            .thenReturn(Mono.empty());
         when(otpProvider.issue(eq(userId), any())).thenReturn(Mono.just(view));
 
         StepVerifier.create(service.issueEmailOtp(userId)).expectNext(view).verifyComplete();
         verify(otpProvider).issue(userId, new IssueVerificationRequest(VerificationPurpose.LOGIN_STEP_UP,
             null));
+    }
+
+    @Test
+    void reusesRecentSuccessfulEmailOtpWithoutIssuingAnotherChallenge() {
+        UUID userId = UUID.randomUUID();
+        Instant verifiedAt = Instant.now().minusSeconds(60);
+        PlatformUserEntity user = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
+            UserStatus.ACTIVE, verifiedAt, verifiedAt, null, 2L, 0L);
+        VerificationChallengeEntity recent = new VerificationChallengeEntity(UUID.randomUUID(), userId,
+            VerificationMethod.EMAIL_OTP, VerificationPurpose.LOGIN_STEP_UP, null, "digest", verifiedAt,
+            verifiedAt.plusSeconds(300), 0, 5, verifiedAt, VerificationChallengeStatus.VERIFIED, 0L);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(user));
+        when(challengeRepository.findFirstByUserIdAndMethodAndPurposeAndStatusAndConsumedAtAfterOrderByConsumedAtDesc(
+            eq(userId), eq(VerificationMethod.EMAIL_OTP), eq(VerificationPurpose.LOGIN_STEP_UP),
+            eq(VerificationChallengeStatus.VERIFIED), any()))
+            .thenReturn(Mono.just(recent));
+
+        StepVerifier.create(service.issueEmailOtp(userId))
+            .assertNext(view -> {
+                assertThat(view.id()).isNull();
+                assertThat(view.status()).isEqualTo(VerificationChallengeStatus.VERIFIED);
+                assertThat(view.verificationGrant()).isNotBlank();
+            })
+            .verifyComplete();
+        org.mockito.Mockito.verifyNoInteractions(otpProvider);
     }
 
     @Test
@@ -59,7 +90,7 @@ class DefaultStepUpVerificationServiceTest {
             VerificationMethod.EMAIL_OTP, VerificationPurpose.LOGIN_STEP_UP, null, "digest", now,
             now.plusSeconds(300), 0, 5, null, VerificationChallengeStatus.ISSUED, 0L);
         VerificationResult result = new VerificationResult(challengeId, VerificationMethod.EMAIL_OTP,
-            SecurityVerificationLevel.SVL_1, userId, now, now.plusSeconds(300));
+            SecurityVerificationLevel.SVL_2, userId, now, now.plusSeconds(300));
         when(challengeRepository.findById(challengeId)).thenReturn(Mono.just(challenge));
         when(userRepository.findById(userId)).thenReturn(Mono.just(new PlatformUserEntity(userId, "alice", "Alice", null,
             UserStatus.ACTIVE, now, now, null, 2L, 0L)));
@@ -74,7 +105,7 @@ class DefaultStepUpVerificationServiceTest {
                     java.time.Duration.ofDays(30)).verifyVerificationGrant(actual.verificationGrant());
                 assertThat(claims.userId()).isEqualTo(userId);
                 assertThat(claims.purpose()).isEqualTo(VerificationPurpose.LOGIN_STEP_UP);
-                assertThat(claims.achievedSvl()).isEqualTo(SecurityVerificationLevel.SVL_1.value());
+                assertThat(claims.achievedSvl()).isEqualTo(SecurityVerificationLevel.SVL_2.value());
                 assertThat(claims.expiresAt()).isAfter(claims.verifiedAt());
             })
             .verifyComplete();

@@ -38,7 +38,9 @@ const menuData = computed(() => {
 });
 
 const loading = computed(() =>
-  pureApp.layout === "mix" ? false : menuData.value.length === 0 ? true : false
+  pureApp.layout === "mix"
+    ? false
+    : !usePermissionStoreHook().menusReady
 );
 
 const defaultActive = computed(() =>

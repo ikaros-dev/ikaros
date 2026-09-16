@@ -305,11 +305,18 @@ Attachment Content Query 必须支持 HTTP Range，并在返回内容前重新�
 | `identity.create-user` | `identity.user.manage` | policy | `authentication.user.created` |
 | `identity.disable-user` | `identity.user.manage` | REQUIRED for privileged targets | `authentication.user.disabled` |
 | `identity.enable-user` | `identity.user.manage` | policy | `authentication.user.enabled` |
+| `identity.delete-user` | `identity.user.manage` | REQUIRED | `authentication.user.deactivated` |
 | `identity.create-role` | `identity.role.manage` | policy | `authorization.role.created` |
 | `identity.replace-role-permissions` | `identity.role.manage` | REQUIRED | `authorization.role.permissions-replaced` |
 | `identity.assign-role` | `identity.role.manage` | policy | `authorization.user.role-assigned` |
 | `identity.remove-role` | `identity.role.manage` | policy | `authorization.user.role-removed` |
 | `identity.invalidate-user-tokens` | current user or `identity.user.manage` | REQUIRED | `authentication.user.tokens-invalidated` |
+
+`identity.create-user` 必须接收初始密码。创建成功后用户状态为 `ACTIVE`，用户可以立即使用用户名和初始密码登录；密码只写入 `password_credential.password_hash`，不得进入 UserView、事件、审计或日志。用户资料更新 Command 不接收密码，密码变更应通过独立的凭据变更流程实现。
+
+如果用户名只命中一条 `is_del = 1` 的历史用户，`identity.create-user` 必须恢复该用户原记录，将 `is_del` 设为 `0`，覆盖昵称、邮箱和密码，并将状态设为 `ACTIVE`；不创建重复用户。若用户名属于未删除用户，或恢复时邮箱与其他未删除用户冲突，返回冲突错误。
+
+用户管理的资料/状态更新与软删除 Command 禁止目标用户等于当前执行主体；当前用户只能查看自身信息或执行明确允许的自助安全操作。
 
 `identity.invalidate-user-tokens` 不枚举或撤销某个服务端 Session。它原子提升目标用户的 `security_version`；后续请求中，携带旧 `security_version` 的 JWT 被拒绝。
 
@@ -326,10 +333,10 @@ P0 不提供任意 HTTP CRUD 修改 `permission_registry` 的能力。
 | Query ID | Permission | HTTP |
 |---|---|---|
 | `identity.get-current-user` | authenticated | `GET /me` |
-| `identity.list-users` | `identity.user.read` | `GET /admin/users` |
-| `identity.get-user` | self or `identity.user.read` | `GET /admin/users/{user_id}` |
-| `identity.list-roles` | `identity.user.read` | `GET /admin/roles` |
-| `identity.list-permissions` | `identity.user.read` | `GET /admin/permissions` |
+| `identity.list-users` | `system.user.read` | `GET /admin/users` |
+| `identity.get-user` | self or `system.user.read` | `GET /admin/users/{user_id}` |
+| `identity.list-roles` | `system.role.read` | `GET /admin/roles` |
+| `identity.list-permissions` | `system.role.read` | `GET /admin/permissions` |
 
 P0 不提供 `identity.list-sessions`。JWT 登录没有服务端 Session 列表可查询。
 
@@ -462,6 +469,7 @@ Error Event 只包含可安全公开的 classification / summary，不复制 sta
 | `authentication.user.created` | 1 | `user_id` |
 | `authentication.user.disabled` | 1 | `user_id, security_version` |
 | `authentication.user.enabled` | 1 | `user_id, security_version` |
+| `authentication.user.deactivated` | 1 | `user_id, security_version` |
 | `authorization.role.created` | 1 | `role_id, role_key` |
 | `authorization.role.permissions-replaced` | 1 | `role_id, permission_keys[]` |
 | `authorization.user.role-assigned` | 1 | `user_id, role_id` |
@@ -493,6 +501,7 @@ Error Event 只包含可安全公开的 classification / summary，不复制 sta
 | `storage.provider.*` | Storage | Operations projection | Audit/Analytics |
 | `operations.background-task.*` | Operations | none | Notification, Analytics |
 | `authentication.user.disabled` | Authentication | token/security-version invalidation | Audit, Notification |
+| `authentication.user.deactivated` | Authentication | token/security-version invalidation | Audit, Notification |
 | `authentication.user.tokens-invalidated` | Authentication | authorization/token acceptance cache invalidation | Audit, Notification |
 | `authorization.role.permissions-replaced` | Authorization | authorization cache invalidation | Audit |
 

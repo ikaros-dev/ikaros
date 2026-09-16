@@ -52,6 +52,7 @@
     "url": "https://github.com/chivehao"
   },
   "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
     "@pureadmin/descriptions": "^1.2.1",
     "@pureadmin/table": "^3.3.0",
     "@pureadmin/utils": "^2.6.2",
@@ -90,7 +91,6 @@
     "@iconify/vue": "4.2.0",
     "@intlify/unplugin-vue-i18n": "^11.0.1",
     "@tailwindcss/vite": "^4.1.16",
-    "@vue/compiler-sfc": "^3.5.22",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^20.19.23",
     "@types/nprogress": "^0.2.3",
@@ -99,6 +99,7 @@
     "@types/sortablejs": "^1.15.9",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vitejs/plugin-vue-jsx": "^5.1.1",
+    "@vue/compiler-sfc": "^3.5.22",
     "boxen": "^8.0.1",
     "code-inspector-plugin": "^1.2.10",
     "css-tree": "2.3.1",
