@@ -89,15 +89,10 @@ function filterNoPermissionTree(data: RouteComponent[]) {
       .filter((route: any) => {
         if (route.meta?.enabled === false) return false;
         const capability = route.meta?.capability;
-        const requiredCapabilities = Array.isArray(capability)
-          ? capability
-          : capability
-            ? [capability]
-            : [];
         const allowed =
-          requiredCapabilities.length === 0 ||
+          !capability ||
           permissions.includes("*:*:*") ||
-          requiredCapabilities.some(required => permissions.includes(required));
+          permissions.includes(capability);
         // Workspace visibility is derived from visible children; parent metadata
         // must not hide an accessible App/System child.
         return route.children ? route.children.length > 0 : allowed;

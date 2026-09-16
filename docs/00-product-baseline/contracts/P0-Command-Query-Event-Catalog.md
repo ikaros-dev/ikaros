@@ -333,10 +333,10 @@ P0 不提供任意 HTTP CRUD 修改 `permission_registry` 的能力。
 | Query ID | Permission | HTTP |
 |---|---|---|
 | `identity.get-current-user` | authenticated | `GET /me` |
-| `identity.list-users` | `identity.user.read` | `GET /admin/users` |
-| `identity.get-user` | self or `identity.user.read` | `GET /admin/users/{user_id}` |
-| `identity.list-roles` | `identity.user.read` | `GET /admin/roles` |
-| `identity.list-permissions` | `identity.user.read` | `GET /admin/permissions` |
+| `identity.list-users` | `system.user.read` | `GET /admin/users` |
+| `identity.get-user` | self or `system.user.read` | `GET /admin/users/{user_id}` |
+| `identity.list-roles` | `system.role.read` | `GET /admin/roles` |
+| `identity.list-permissions` | `system.role.read` | `GET /admin/permissions` |
 
 P0 不提供 `identity.list-sessions`。JWT 登录没有服务端 Session 列表可查询。
 

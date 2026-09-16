@@ -62,8 +62,6 @@ const permissionKeys = [
   "account.preference.read",
   "account.notification.read",
   "account.security.read",
-  "user.read",
-  "role.read",
   "security.authentication.read",
   "integration.read",
   "notification.read",
