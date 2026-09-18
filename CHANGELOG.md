@@ -4,6 +4,11 @@
 
 # 2.0.0-beta-2
 
+- 统一操作审计事件契约：支持 USER / ADMIN / SYSTEM 主体、SUCCESS / FAILURE / DENIED 结果、风险等级、请求关联上下文与版本化详情
+- `audit_event` 增加结果、风险等级和详情版本约束；历史审计记录保持 `UNKNOWN`，并完成 PostgreSQL Migration 升级验证
+- 审计详情改为递归脱敏，新增嵌套敏感字段保护，并修复请求上下文下可能重复写入审计事件的问题
+- 确定 `audit.read` 为审计日志读取的正式权限键，`system.audit.read` 仅保留迁移期兼容语义
+
 # 2.0.0-beta-1
 
 - 注册和登录
