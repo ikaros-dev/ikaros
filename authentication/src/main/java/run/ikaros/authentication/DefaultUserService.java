@@ -9,6 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import run.ikaros.operations.api.AuditService;
+import run.ikaros.operations.api.AuditActorType;
+import run.ikaros.operations.api.AuditEventCommand;
+import run.ikaros.operations.api.AuditResult;
+import run.ikaros.operations.api.AuditRiskLevel;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.ForbiddenException;
 import run.ikaros.common.NotFoundException;
@@ -197,11 +201,20 @@ public class DefaultUserService implements UserService {
                 user.securityVersion() + 1, user.version());
             return userRepository.save(invalidated).flatMap(saved ->
                 emitTokensInvalidated(saved)
-                    .then(auditService.record(actorId, "identity.user.tokens.invalidate", "USER", saved.id(),
-                        "{\"security_version\":" + saved.securityVersion() + "}"))
+                    .then(recordTokenInvalidation(actorId, saved))
                     .thenReturn(new TokenInvalidationView(saved.id(), saved.securityVersion())));
         });
         return transaction == null ? operation : operation.as(transaction::transactional);
+    }
+
+    private Mono<Void> recordTokenInvalidation(UUID actorId, PlatformUserEntity user) {
+        String details = "{\"security_version\":" + user.securityVersion() + "}";
+        if (!actorId.equals(user.id())) {
+            return auditService.record(actorId, "identity.user.tokens.invalidate", "USER", user.id(), details);
+        }
+        return auditService.record(new AuditEventCommand(AuditActorType.USER, actorId,
+            "identity.user.tokens.invalidate", "USER", user.id(), AuditResult.SUCCESS, AuditRiskLevel.SENSITIVE,
+            details, 1, null));
     }
 
     private Mono<Void> emitTokensInvalidated(PlatformUserEntity user) {

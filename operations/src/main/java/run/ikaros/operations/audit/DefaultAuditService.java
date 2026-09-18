@@ -126,7 +126,8 @@ public class DefaultAuditService implements AuditService {
         Objects.requireNonNull(command.actorType(), "审计主体类型不能为空");
         Objects.requireNonNull(command.result(), "审计结果不能为空");
         Objects.requireNonNull(command.riskLevel(), "审计风险等级不能为空");
-        if (command.actorType() == AuditActorType.SYSTEM ? command.actorId() != null : command.actorId() == null) {
+        if ((command.actorType() == AuditActorType.SYSTEM || command.actorType() == AuditActorType.ANONYMOUS)
+            ? command.actorId() != null : command.actorId() == null) {
             throw new IllegalArgumentException("审计主体与 actorId 不匹配");
         }
         if (command.result() == AuditResult.UNKNOWN || command.riskLevel() == AuditRiskLevel.UNKNOWN) {

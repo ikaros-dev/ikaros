@@ -4,5 +4,6 @@ package run.ikaros.operations.api;
 public enum AuditActorType {
     USER,
     ADMIN,
+    ANONYMOUS,
     SYSTEM
 }

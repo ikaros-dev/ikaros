@@ -21,6 +21,7 @@ import run.ikaros.operations.api.AuditService;
 import run.ikaros.common.ForbiddenException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
+import run.ikaros.operations.api.AuditEventCommand;
 import org.springframework.transaction.reactive.TransactionalOperator;
 
 /** 验证平台用户服务的创建、查询与状态规则。 */
@@ -252,6 +253,28 @@ class DefaultUserServiceTest {
         verify(events).append(argThat(request -> request.eventType().equals("authentication.user.tokens-invalidated")
             && request.payloadJson().contains("\"security_version\":5")
             && !request.payloadJson().contains("token")));
+    }
+
+    @Test
+    void recordsOwnTokenInvalidationAsSensitiveUserSecurityOperation() {
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity current = new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, now, now, null, 4L, 2L);
+        PlatformUserEntity saved = new PlatformUserEntity(userId, "alice", "Alice", null,
+            UserStatus.ACTIVE, now, now, null, 5L, 3L);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(current));
+        when(userRepository.save(any())).thenReturn(Mono.just(saved));
+        when(auditService.record(any(AuditEventCommand.class))).thenReturn(Mono.empty());
+
+        StepVerifier.create(service.invalidateTokens(userId, userId))
+            .assertNext(result -> assertThat(result.securityVersion()).isEqualTo(5L))
+            .verifyComplete();
+
+        verify(auditService).record(org.mockito.ArgumentMatchers.argThat(event ->
+            event.actorType() == run.ikaros.operations.api.AuditActorType.USER
+                && event.riskLevel() == run.ikaros.operations.api.AuditRiskLevel.SENSITIVE
+                && event.result() == run.ikaros.operations.api.AuditResult.SUCCESS));
     }
 
     @Test

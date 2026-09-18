@@ -169,7 +169,7 @@ Audit Log 关注“谁在什么时候对什么执行了什么操作，结果如�
 
 审计事实由 `operations` Owner 的单一 `audit_event` 保存。公共写入契约必须包含：
 
-- `actor_type` 为 `USER`、`ADMIN` 或 `SYSTEM`；`SYSTEM` 不得伪造 `actor_id`，`ADMIN` 必须在操作发生时写入该主体语义；
+- `actor_type` 为 `USER`、`ADMIN`、`ANONYMOUS` 或 `SYSTEM`；`ANONYMOUS` 仅用于无法映射到用户 UUID 的未认证尝试，`ANONYMOUS` 和 `SYSTEM` 不得伪造 `actor_id`，`ADMIN` 必须在操作发生时写入该主体语义；
 - 小写点分 `action`、大写下划线 `target_type`、可选 `target_id`；
 - `result` 为 `SUCCESS`、`FAILURE` 或 `DENIED`，`risk_level` 为 `NORMAL`、`SENSITIVE` 或 `HIGH`；
 - `request_id`、`correlation_id` 与版本化 JSON 对象 `details`。详情写入前和读取前均须脱敏，不得保存密码、Token、OTP、Verification Grant、Authorization、Secret 或 Credential；

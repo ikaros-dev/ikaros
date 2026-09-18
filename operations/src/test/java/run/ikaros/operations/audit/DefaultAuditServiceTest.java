@@ -59,6 +59,22 @@ class DefaultAuditServiceTest {
     }
 
     @Test
+    void recordsAnonymousAuthenticationFailureWithoutActorId() {
+        AuditEventRepository repository = mock(AuditEventRepository.class);
+        when(repository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        DefaultAuditService service = new DefaultAuditService(repository);
+
+        StepVerifier.create(service.record(new AuditEventCommand(
+            AuditActorType.ANONYMOUS, null, "authentication.login", "AUTHENTICATION", null,
+            AuditResult.FAILURE, AuditRiskLevel.SENSITIVE, "{\"subject_hint\":\"unknown\"}", 1, null
+        ))).verifyComplete();
+
+        verify(repository).save(org.mockito.ArgumentMatchers.argThat(event ->
+            "ANONYMOUS".equals(event.actorType()) && event.actorId() == null
+                && "FAILURE".equals(event.result()) && "SENSITIVE".equals(event.riskLevel())));
+    }
+
+    @Test
     void redactsSensitiveDetailsBeforePersistence() {
         AuditEventRepository repository = mock(AuditEventRepository.class);
         when(repository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
