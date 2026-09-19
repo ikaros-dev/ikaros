@@ -17,7 +17,7 @@
 
 ## 1. 产品愿景
 
-Ikaros V2 的目标不再只是管理 ACGMN 条目与本地媒体文件，而是成为一个围绕个人数字内容构建的统一平台。
+Ikaros V2 的目标不再只是管理 ACGMN 条目与本地媒体文件，而是成为一个可承载独立业务应用的自托管个人数字平台。Platform 负责资源、存储、身份、安全、事件、任务、通知、审计等基础能力；Anime、Photos、Drive、Accounting 等专业业务由独立 Server App 提供，并可由独立 Client App 访问。
 
 用户可以在同一个系统中完成数字内容的：
 
@@ -28,7 +28,8 @@ Ikaros V2 的目标不再只是管理 ACGMN 条目与本地媒体文件，而是
 - **协作**：与受信任的用户共同编辑文档、一起观看视频、一起听音乐或围绕资源交流。
 - **分享**：以可控、可撤销、有时效的方式将内容临时分享给朋友。
 - **保存**：统一处理 Blob 的存储、去重、校验、分层、缓存、备份、归档与恢复。
-- **扩展**：通过插件接入新的内容源、元数据源、存储、自动化、播放器或第三方服务。
+- **应用**：按需安装、启用、禁用和卸载 Anime、Photos、Drive、Accounting 等 Server App，并由独立客户端访问其公开业务 API。
+- **扩展**：通过插件接入新的内容源、元数据源、存储、自动化 Provider、Parser 或第三方服务；插件不再承担完整业务应用的产品语义。
 
 Ikaros V2 最终应表现为一个可自托管、数据自主、能力可组合的 **Personal Digital Content Platform**。
 
@@ -56,21 +57,43 @@ V2 不要求兼容 V1 的内部实现。
 
 V1 仅用于回答“用户过去需要什么”和“哪些实践已经被证明存在价值”。
 
-### 2.2 Resource-centric
+### 2.2 Resource-centric，但不是 Entity-centric
 
-系统中的逻辑内容以 **Resource（资源）** 为统一身份基础。
+跨应用的**逻辑内容对象**以 **Resource（资源）** 作为统一身份基础。
 
-动画作品、剧集、电影、漫画、章节、小说、歌曲、专辑、图片集、文章、笔记、文档、游戏、归档包等都可以拥有统一的 Resource 身份，但不同类型仍应保留自己的业务语义和专属能力。
+动画作品、剧集、电影、漫画、章节、小说、歌曲、专辑、图片集、文章、文档、游戏、归档包等内容对象可以拥有 Resource 身份，并使用 Attachment、Collection、Tag、Relation、Search、Share 等平台能力。
 
-“统一 Resource”不等于把所有业务字段压缩为一组通用 JSON 数据。
+但不是所有 Server App Domain Entity 都必须成为 Resource。例如 Ledger、Account、Transaction、Budget 等记账领域对象可以完全由 Accounting App 拥有，仅在需要关联票据、账单 PDF 等内容时引用 Resource / Attachment。
+
+“统一 Resource”不等于把所有业务字段压缩为一组通用 JSON 数据，也不等于要求所有业务实体继承统一资源模型。
 
 ### 2.3 HTTP-first / HTTP-native
 
 系统能力应优先通过稳定、可组合、可被第三方调用的 HTTP 接口提供。
 
-HTTP 是客户端、插件、自动化工具与外部集成访问 Ikaros 的主要接口。
+专业 Client App 优先调用对应 Server App 的 Public App API；Server App 再通过 Platform API / Capability 使用 Resource、Attachment、Task 等基础能力。普通业务客户端不应直接拼装 Platform Domain API 来重新实现服务端业务规则。
+
+插件、自动化工具、管理客户端与外部集成也必须通过各自公开契约访问 Ikaros，不得依赖隐藏内部通道。
 
 对于实时协作、房间状态同步等不适合传统请求响应模型的功能，可以使用 WebSocket、SSE、WebRTC 等更合适的协议，但不能因此形成只能被特定官方客户端使用的封闭能力。
+
+### 2.3.1 Platform / Server App / Client App
+
+V2 的应用模型遵循：
+
+```text
+Client App
+    ↓ Public App API
+Server App
+    ↓ Platform API / Capability
+Ikaros Platform
+```
+
+官方 Ikaros 移动客户端主要负责 Instance 管理、认证、快速授权、Device / Session 和必要的平台管理，不作为承载所有专业业务的超级 App。Anime、Photos、Drive、Accounting、Reading 等业务可以分别拥有独立移动端 / 桌面端 Client App。
+
+Server App 与 Client App 的安装、版本和生命周期独立。第一方与第三方 App 均不得绕过公开授权和 Owner Boundary。
+
+完整决策见 `adr/ADR-005-platform-server-app-client-app-architecture.md`。
 
 ### 2.4 Composable Capabilities
 
