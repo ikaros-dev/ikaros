@@ -3,6 +3,7 @@ package run.ikaros.appruntime;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -74,7 +75,8 @@ class DefaultAppRuntimeServiceTest {
             .expectNext(installed)
             .verifyComplete();
 
-        verify(store).replaceScopes(request.appId(), request.scopes(), org.mockito.ArgumentMatchers.any(Instant.class));
+        verify(store).replaceScopes(eq(request.appId()), eq(request.scopes()),
+            org.mockito.ArgumentMatchers.any(Instant.class));
         verify(events).append(org.mockito.ArgumentMatchers.argThat(
             event -> "app-runtime.app.installed".equals(event.eventType())
                 && "app-runtime".equals(event.producerSubsystem())
