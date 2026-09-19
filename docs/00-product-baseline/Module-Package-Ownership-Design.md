@@ -45,6 +45,8 @@ ikaros
 ├── common
 ├── integration-api
 ├── integration
+├── app-runtime-api
+├── app-runtime
 ├── authentication-api
 ├── authentication
 ├── authorization-api
@@ -76,6 +78,13 @@ ikaros
 ```
 
 P0 以上述内容作为**逻辑模块拓扑**，统一由根 `pom.xml` 聚合为 Maven Multi-Module。每个业务或平台能力默认拆成 `<business-name>-api` 与不带后缀的业务实现模块。`application` 是唯一 Composition Root，`test-support` 只提供测试基础设施。所有模块共享根 POM 的项目版本，不声明独立模块版本。详细构建决策见 `adr/ADR-001-maven-multi-module.md`。
+
+上述拓扑是 Maven / Java 的当前逻辑边界，不代表所有模块都属于 Platform Foundation。依据 `adr/ADR-005-platform-server-app-client-app-architecture.md`：
+
+- `common`、`authentication`、`authorization`、`resource`、`storage`、`integration`、`operations`、`app-runtime` 等属于 Platform；
+- `media`、`reading`、`music`、`photo`、`drive`、`finance` 等专业业务模块按目标架构视为第一方 **Server App Owner**；
+- 第一阶段这些 Server App 可以继续随根 Maven Multi-Module 构建并由同一 Composition Root 装载，但不得因此获得 Platform 内部访问特权；
+- Client App 是仓库/发布形态上的独立软件产品，不属于 Server App Maven Module 的运行时组成。
 
 当前包归属决议：
 
@@ -299,10 +308,14 @@ Authorization 拥有：
 - Security Policy；
 - Access Control；
 - Resource Authorization；
+- AppAuthorizationGrant 与 Grant Scope；
+- Client / Device 级 Grant revoke / version；
 
 Authentication 和 Authorization 均可依赖 `common-api` 的 `PrincipalContext`，但不得依赖 `PrincipalContexts` 的实现细节。
 
 Authentication 在注册、登录和刷新 Token 时通过 `authorization-api` 的 `PermissionSnapshotQuery` 获取权限快照；用户视图中的角色编码通过 `RoleMembershipQuery` 获取。它不得直接访问 Authorization 实现模块、Role / Permission / Binding Entity 或 Repository。已签发 Access JWT 的权限快照在 Token 有效期内保持不变，权限变更不隐式提升 `security_version`。完整决策见 `adr/ADR-004-authentication-authorization-permission-snapshot.md`。
+
+面向 Server App 的 Token 签发还必须通过 `authorization-api` 获取 AppAuthorizationGrant Snapshot。Authentication 不直接访问 Grant Repository；App Runtime 只拥有 Client Registration / Scope Definition，Authorization 才拥有实际 User → Client → App 授权关系。Client / Device 级撤销遵循 `adr/ADR-006-app-client-authorization-grant-token-binding.md`。
 
 其他领域可以依赖 Security API，但不得直接读写 Security persistence。
 
@@ -319,7 +332,26 @@ Authentication 在注册、登录和刷新 Token 时通过 `authorization-api` �
 
 业务模块只注册 Task Handler 或提交 Task，不直接修改 Task 表。
 
-### 4.5 `platform.plugin`
+### 4.5 `platform.app-runtime`
+
+拥有：
+
+- App Definition / App Registry；
+- Server App identity；
+- App Installation / Lifecycle；
+- App Version / Compatibility；
+- App Permission Declaration / Grant；
+- App Dependency；
+- App-owned Migration State；
+- Client Registration metadata；
+- App Scope registration；
+- Server App discovery / availability。
+
+App Runtime 不拥有 Anime、Photos、Drive、Accounting 等专业业务数据；它只拥有“应用如何被识别、安装、获得 Platform Permission、声明 Client Scope、启停和发现”的平台事实。User 对 Client 的实际 Scope Grant 属于 Authorization，不属于 App Runtime。
+
+第一方 Server App 与第三方 Server App 均不得因为来源不同而绕过 Authorization、Owner Boundary 或 Platform Capability。
+
+### 4.6 `platform.plugin`
 
 拥有：
 
@@ -330,9 +362,9 @@ Authentication 在注册、登录和刷新 Token 时通过 `authorization-api` �
 - Extension Registry；
 - Plugin Configuration Reference。
 
-插件通过公开 Extension / Capability 与业务领域交互。
+Plugin 用于 Metadata Provider、Importer、Storage Provider、Parser、Automation Extension 等扩展场景。完整业务应用不再以 Plugin 作为产品级抽象；Server App 使用 `platform.app-runtime` 契约。
 
-### 4.6 `platform.operations`
+### 4.7 `platform.operations`
 
 拥有：
 
@@ -348,6 +380,8 @@ Operations 不因为拥有管理 UI 就拥有其他领域的业务数据。
 ---
 
 ## 5. 业务所有权地图
+
+本节中的 Media、Reading、Music、Photo、Drive、Finance 等专业模块，在目标架构中属于第一方 Server App。其“唯一拥有的核心状态”即对应 App-owned Data。Platform 不因这些 App 与 Server 同进程运行而取得其专业业务所有权。
 
 | 模块 | 唯一拥有的核心状态 | 不拥有 |
 |---|---|---|

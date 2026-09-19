@@ -10,6 +10,8 @@
 > 本文档定义 Ikaros V2 插件运行时、插件包、Manifest、权限、扩展点、兼容性、生命周期、配置、Secret、迁移、前端扩展与故障隔离。
 >
 > 插件是 V2 的主要扩展机制之一，但插件不是拥有任意 Server 内部访问权的“动态模块”。插件只能通过稳定 Plugin API、Capability、Command、Event 和明确 Extension Point 与平台协作。
+>
+> 自 ADR-005 起，Plugin 不再承担 Anime、Photos、Drive、Accounting 等完整业务应用的产品级抽象。完整业务使用 Server App / Client App / App Runtime 模型；Plugin 继续用于 Provider、Importer、Parser、Storage Provider、Automation Extension 等扩展场景。App Runtime 设计见 `App-Runtime-Identity-Client-Architecture-Design.md`。
 
 ---
 
@@ -18,6 +20,7 @@
 插件系统需要同时满足：
 
 - 支持 Metadata Provider、Importer、Storage Provider、Notification Provider、Automation、AI Provider、Parser、Search Enricher 等扩展；
+- 明确 Plugin 与 Server App 的边界，避免把完整业务应用重新包装成“插件”；
 - 不把插件变成任意数据库访问后门；
 - 插件权限可声明、可审计、可撤销；
 - 插件安装、升级、禁用、卸载有明确生命周期；
@@ -654,6 +657,24 @@ Secret 和高敏感 payload 禁止写日志。
 10. 升级失败是否可恢复；
 11. Runtime failure 是否会拖垮 Server；
 12. 前端扩展是否清楚标识来源。
+
+---
+
+## 24.1 与 App Runtime 的复用边界
+
+App Runtime 可以复用本设计已经成熟的机制，包括：
+
+- Manifest；
+- Compatibility；
+- Permission Review；
+- install / enable / disable / upgrade / uninstall；
+- App-owned / Plugin-owned Migration；
+- Configuration；
+- Secret Reference；
+- Background Task Integration；
+- Failure Isolation。
+
+但 App Runtime 还必须额外解决 Server App Identity、Client Registration、Client Scope、Public App API、App Discovery 和 Client Authorization。不得仅把 `plugin_id` 改名为 `app_id` 就视为完成平台化。
 
 ---
 

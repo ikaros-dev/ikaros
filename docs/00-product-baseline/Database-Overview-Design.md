@@ -243,6 +243,7 @@ V2 初期采用模块化单体并共享一个 PostgreSQL，但每一份业务数
 | Storage | Attachment、Blob、Placement/Replica、Derived Attachment、完整性与恢复状态 | 普通业务真相 + 内容元数据 |
 | Integration | Durable Event / Outbox、跨领域 Generic Relation、Automation Rule/Run、消费幂等记录、Integration Trace 元数据 | 平台联动真相/执行状态 |
 | Identity / Security | User Identity、Role、Permission Registry、Role Binding、Verification Challenge、Security Policy、KeyRing / KeyVersion / WrappedKeySnapshot / RecoveryOperation | 身份、安全真相；部分高敏感 |
+| App Runtime | App Definition、Installation、Client Registration、App Scope Definition、Server App Platform Permission Grant、Dependency、App Migration State | 平台应用注册与运行状态真相 |
 | Administration / Operations | Application Parameter、Dictionary、Menu、Announcement、Notification 元数据、Audit、Login Log、Security Event、Scheduled Job、Job Run、Health History、Alert | 平台管理与运维真相/历史 |
 | Productivity / Planning | Task、Project、Goal、OKR、Milestone、Calendar、Time Block、Reminder、Habit、Focus、Review | 普通业务真相 |
 | Personal Finance / Accounting | Ledger、Account、Transaction、Split、Category、Payee、Budget、Scheduled Transaction、Reconciliation、Exchange Rate | Sensitive 普通业务真相，不默认 E2EE |
@@ -252,7 +253,41 @@ V2 初期采用模块化单体并共享一个 PostgreSQL，但每一份业务数
 | Search | Search Projection、Index Checkpoint、Rebuild State | 派生数据 |
 | AI Intelligence | Provider/Model Registry、Prompt Definition/Version、Conversation Policy、AI Artifact 元数据、Agent Run、Usage、Embedding 状态 | 配置/执行真相 + 派生数据 |
 | AI Persona | Persona、Persona Version、Scenario Profile、User Preference、Conversation Persona Snapshot | AI 配置真相 |
-| Plugin | Plugin Registry、Capability/Permission Declaration、Plugin-owned Configuration Reference | 平台配置真相 |
+| Plugin Extension Runtime | Plugin Registry、Extension Point、Provider/Importer/Parser/Storage Provider 声明、Plugin-owned Configuration Reference | 平台扩展配置真相；不拥有完整专业业务 |
+
+### 5.3.1 Server App-owned Schema
+
+依据 ADR-005，Anime、Photos、Drive、Accounting、Reading、Music 等专业业务属于 Server App Owner，而不是 Platform App Runtime。
+
+因此：
+
+```text
+app_runtime.*
+```
+
+只能保存“这个 App 是谁、是否安装/启用、获得什么 Platform Permission、有哪些 Client / Scope / Dependency、Migration 到什么状态”等平台事实。
+
+专业业务表必须位于对应 App-owned Schema / Namespace，例如：
+
+```text
+app_anime.*
+app_accounting.*
+app_photos.*
+```
+
+具体物理 Schema 名在目标 App 进入实现前冻结，但以下原则立即生效：
+
+- App Runtime 不保存 Anime / Transaction / Photo 等业务实体；
+- 一个 Server App 不得通过 Migration 修改其他 App 或 Platform Owner Schema；
+- 其他 App 不能通过跨 Schema SQL 读取 App-owned Data；
+- 跨 App 集成通过 Public App API / Capability / Event；
+- App 卸载时 App-owned Data 与 Platform Resource / Attachment 的生命周期分别处理。
+
+### 5.3.2 AppAuthorizationGrant 所有权
+
+`AppAuthorizationGrant` 属于 Authorization，而不是 App Runtime。App Runtime 拥有 Client Registration 与 Scope Definition；Authorization 保存某 User 对某 Client → Server App 的实际 Grant，并通过公开 Capability 读取注册与 Scope 元数据。
+
+这避免 App Runtime 同时成为授权规则所有者。
 
 ### 5.4 管理界面不等于数据库所有者
 
@@ -1442,7 +1477,9 @@ PRD 目标至少覆盖十万级 Resource，更大规模 Attachment / Event / Act
 
 ```text
 Database Schema Version
-API Version
+Platform API Version
+Server App Public API Version
+Server App Package Version
 Plugin API Version
 Event Contract Version
 Export Format Version
@@ -1496,6 +1533,8 @@ VALIDATION_REQUIRED
 - 管理员临时手工改表后不形成 Migration。
 
 ### 24.2 每个 Owner 拥有自己的 Migration
+
+Server App 同样是数据库 Owner。其 Migration 只能修改自己的 App-owned Schema；App Runtime 只记录/协调 App Migration State，不替 Server App 执行跨 Owner DDL。
 
 Migration 必须能追溯：
 

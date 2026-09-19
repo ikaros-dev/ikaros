@@ -150,7 +150,8 @@ Server 是默认 Composition Root，负责：
 - Outbox Dispatch（单机模式）；
 - Background Task Execution（单机模式）；
 - Health / Metrics / Management；
-- Plugin Runtime；
+- App Runtime / App Registry；
+- Plugin Extension Runtime；
 - Static Console Hosting（若部署形态选择同进程提供）。
 
 ### 3.4 Worker 职责
@@ -163,9 +164,17 @@ Worker 不暴露普通业务 HTTP API，主要负责 Claim Background Task、长
 
 ### 4.1 原则
 
-V2 P0 使用仓库根 `pom.xml` 聚合的 **Maven Multi-Module** 构建，不迁移到 Gradle。
+V2 P0 使用仓库根 `pom.xml` 聚合的 **Maven Multi-Module** 构建，不迁移到 Gradle。模块化单体仍运行在单一 Server 进程中，但通过 Maven 子模块、Java Package Ownership、显式 Spring 组装和 Architecture Test 共同形成真实边界。
 
-模块化单体的边界通过构建子模块、Java Package 和以下机制共同强制：
+每个业务或平台能力默认拆为公开契约模块和业务实现模块：
+
+```text
+<business-name>-api  -> <business-name>
+```
+
+其中 `-api` 只包含稳定跨模块契约，业务名模块包含 Domain、Application、Adapter、Persistence 和配置实现。
+
+模块边界通过以下机制共同强制：
 
 - Maven 子模块依赖方向；
 - Java Package Ownership；
@@ -178,75 +187,65 @@ V2 P0 使用仓库根 `pom.xml` 聚合的 **Maven Multi-Module** 构建，不迁
 
 ### 4.2 P0 推荐结构
 
-Maven 工程按逻辑模块和公开契约表达模块边界：
+Maven 工程按逻辑模块和公开契约表达边界：
 
 ```text
 ikaros
 ├── pom.xml
 ├── application
-├── test-support
 ├── common-api
 ├── common
-│   ├── integration-api
-│   ├── integration
-│   ├── authentication-api
-│   ├── authentication
-│   ├── authorization-api
-│   ├── authorization
-│   ├── task-api
-│   ├── task
-│   ├── operations-api
-│   ├── operations
-│   ├── plugin-api
-│   └── plugin
-└── modules
-    ├── resource-api
-    ├── resource
-    ├── storage-api
-    ├── storage
-    ├── ingestion-api
-    ├── ingestion
-    ├── drive-api
-    ├── drive
-    ├── sync-api
-    ├── sync
-    ├── sharing-api
-    ├── sharing
-    ├── search-api
-    ├── search
-    ├── backup-api
-    ├── backup
-    ├── media-api
-    ├── media
-    ├── reading-api
-    ├── reading
-    ├── music-api
-    ├── music
-    ├── photo-api
-    ├── photo
-    ├── document-api
-    ├── document
-    ├── game-api
-    ├── game
-    ├── productivity-api
-    ├── productivity
-    ├── finance-api
-    ├── finance
-    ├── private-notes-api
-    ├── private-notes
-    ├── password-manager-api
-    └── password-manager
+├── integration-api
+├── integration
+├── app-runtime-api
+├── app-runtime
+├── authentication-api
+├── authentication
+├── authorization-api
+├── authorization
+├── operations-api
+├── operations
+├── plugin
+├── resource-api
+├── resource
+├── storage-api
+├── storage
+├── ingestion
+├── drive
+├── sync-api
+├── sync
+├── sharing
+├── search
+├── backup
+├── media-api
+├── media
+├── reading
+├── music
+├── photo
+├── document
+├── game
+├── planning
+├── finance
+├── private-notes
+└── password-manager
 ```
 
 目录名是推荐布局，不是要求一次性重排现有源码的迁移任务；真正强制的是 Owner、依赖方向与自动化边界检查。
 
+上述 Maven Module 不等于产品层“Platform 内置所有业务”。依据 ADR-005：
+
+- `common`、`authentication`、`authorization`、`operations`、`integration`、`resource`、`storage`、`app-runtime` 等属于 Platform；
+- `media`、`reading`、`music`、`photo`、`drive`、`finance`、`planning` 等专业模块按目标架构作为第一方 Server App Owner；
+- 第一阶段 Server App 可以继续作为 Maven Module 与 Server 同进程构建，但必须通过 App Runtime 注册、生命周期、Permission 和公开契约约束；
+- Client App 不属于该 Server Maven 拓扑，独立构建和发布。
+
 ### 4.3 API / Implementation 分离
 
-`<module>-api` Maven module 只允许包含稳定跨模块契约，例如 Command / Query Contract、Capability Interface、Public Result DTO、Public Error、Permission Key、Event Contract Reference，以及真正属于公开契约的 ID / Value Object。
+`<module>.api` package 只允许包含稳定跨模块契约，例如 Command / Query Contract、Capability Interface、Public Result DTO、Public Error、Permission Key、Event Contract Reference，以及真正属于公开契约的 ID / Value Object。
 
-`<module>-api` 不应依赖 Spring WebFlux、R2DBC Driver、PostgreSQL Client、Redis Client、Storage SDK、ORM / Repository 或模块内部 Entity。
+`<module>.api` 不应依赖 Spring WebFlux、R2DBC Driver、PostgreSQL Client、Redis Client、Storage SDK、ORM / Repository 或模块内部 Entity。
 
-不带 `-api` 后缀的业务模块负责 Application Handler、Domain Model、Persistence Adapter、Infrastructure Adapter、Web Adapter（若 endpoint 由领域拥有）以及 Module Spring Configuration；其内部继续按 `api / application / domain / adapter / persistence / config` 分层。
+`<module>.application / domain / adapter / persistence / config` 属于模块实现，负责 Application Handler、Domain Model、Persistence Adapter、Infrastructure Adapter、Web Adapter（若 endpoint 由领域拥有）以及 Module Spring Configuration。
 
 ### 4.4 依赖方向
 
@@ -375,7 +374,7 @@ Domain 层不要求使用 `@Component`、`@Service`。Application / Adapter 可�
 
 ### 6.4 Auto Configuration
 
-平台级、可独立启停的基础能力可以使用 Auto Configuration，例如 Redis Cache Adapter、S3 Storage Adapter、Observability Exporter、Plugin Runtime Adapter。业务领域本身不应大量依赖 Classpath Magic 自动发现。
+平台级、可独立启停的基础能力可以使用 Auto Configuration，例如 Redis Cache Adapter、S3 Storage Adapter、Observability Exporter、App Runtime Adapter、Plugin Extension Runtime Adapter。Server App 的注册与装载必须进入明确 App Registry / Module Configuration，不应依赖 Classpath Magic 猜测应用身份、权限和 Public API。
 
 ---
 
@@ -518,7 +517,7 @@ HTTP 请求负责提交任务，不负责长期占用连接执行整个 Pipeline
 
 ## 10. Reactor Context 与 Request Context
 
-统一 Execution Context 至少包含 request_id、trace_id、principal_id、必要的 session / client 信息、correlation_id、causation_id，以及业务需要时的 application timezone context。
+统一 Execution Context 至少包含 request_id、trace_id、principal_id、必要的 token / client 信息、correlation_id、causation_id，以及业务需要时的 application timezone context。
 
 HTTP 层将 Security / Request 信息转换为显式 Application Execution Context。禁止 Domain 深层代码依赖 ThreadLocal 获取当前用户。
 
@@ -586,7 +585,7 @@ V2 统一基于 R2DBC Reactive Transaction。建议由 Platform 提供统一 `Re
 resource.*   owned by Resource
 storage.*    owned by Storage
 security.*   owned by Security
-platform.*   owned by Platform Foundation
+common.*   owned by Common
 ```
 
 具体 Schema 名以 Database Design 为准。
@@ -973,9 +972,11 @@ Credential -> Principal
 Principal + Action + Resource Context -> Allow / Deny
 ```
 
+Authentication 在签发 Access JWT 时通过 `authorization-api` 获取权限快照；Authentication 只能依赖 Authorization 的公开 Capability，不得依赖 Authorization 实现或 Persistence。权限快照在 JWT 有效期内保持不变，角色/权限变更不自动提升 `security_version`；需要立即失效时使用用户级 Token 失效语义。具体契约见 `adr/ADR-004-authentication-authorization-permission-snapshot.md`。
+
 ### 21.2 Application 层必须再次拥有授权边界
 
-Controller 的 Security Rule 只能作为第一道门。真正的业务 Command 仍必须执行授权判断，因为同一个 Application API 可能来自 HTTP、Automation、Plugin、Background Task、Internal Command 或 Realtime Channel。
+Controller 的 Security Rule 只能作为第一道门。真正的业务 Command 仍必须执行授权判断，因为同一个 Application API 可能来自 HTTP Client App、Server App、Automation、Plugin、Background Task、Internal Command 或 Realtime Channel。Server App Public API 还必须校验 client_id、audience、AppAuthorizationGrant 与 App Scope。
 
 ### 21.3 Security Context
 
@@ -1052,7 +1053,7 @@ V2 统一观测 Logs、Metrics、Traces。
 
 ### 24.3 Metrics
 
-Micrometer 指标至少覆盖 HTTP latency / error、R2DBC pool、Outbox backlog、Inbox failure、Task queue depth、Task duration / retry、Storage latency / error、Provider latency / error、Search projection lag、Cache hit / miss、JVM / GC / memory、Plugin failure。
+Micrometer 指标至少覆盖 HTTP latency / error、R2DBC pool、Outbox backlog、Inbox failure、Task queue depth、Task duration / retry、Storage latency / error、Provider latency / error、Search projection lag、Cache hit / miss、JVM / GC / memory、App lifecycle / App failure、Plugin failure。
 
 ### 24.4 Trace
 
@@ -1096,7 +1097,8 @@ HTTP Request
 | AI Provider | AI capability unavailable；核心业务继续 |
 | Metadata Provider | Retry / stale metadata；内部 Resource 保留 |
 | S3 Placement | 尝试其他 Replica；无可读副本时目标内容不可读 |
-| Plugin | Disable / fail isolated |
+| Server App | 目标 App unavailable / disabled；Platform 与其他 App 继续 |
+| Plugin Extension | Disable / fail isolated |
 
 ---
 
@@ -1120,7 +1122,32 @@ Background Task 必须支持按 Task Type 配置 max concurrency、max attempt�
 
 ---
 
-## 27. Plugin Runtime 技术边界
+## 27. App Runtime 与 Server App 技术边界
+
+Server App 必须保持：
+
+```text
+Client App
+  -> Server App Public API
+  -> Server App Application / Domain
+  -> Platform API / Capability
+  -> Platform Domain
+```
+
+禁止：
+
+```text
+Client App -> Platform Internal API
+Server App -> Platform Repository / Entity / Arbitrary SQL
+Server App A -> Server App B Repository / Persistence
+Official Server App -> Authorization Bypass
+```
+
+第一阶段第一方 Server App 可以静态编译进同一 JVM，但“同进程”不是安全或所有权旁路。Disable 至少必须停止新的 Public API 调用、Task 提交、Event Consumer 和 App-owned Scheduler；不要求首阶段从 JVM ClassLoader 真正卸载类。
+
+如果未来允许安装不可信第三方 Server App，单 JVM Capability API 不能被视为强安全沙箱。必须另行采用 Process Isolation / WASM / Out-of-process App Host 或等价强隔离方案。
+
+### 27.1 Plugin Extension Runtime 技术边界
 
 Plugin Runtime 必须保持：
 
@@ -1144,6 +1171,8 @@ Plugin
 Plugin 可以拥有独立私有 Schema / Migration，但必须遵守 Plugin Design 的生命周期和卸载规则。Plugin ClassLoader / Runtime Failure 必须隔离。
 
 Plugin 停用后，核心业务不应因为缺少 Plugin Bean 而无法启动；若某数据依赖插件解释，应以 Capability Unavailable 显式表达。
+
+Plugin 用于 Provider、Importer、Parser、Storage Provider、Automation Extension 等扩展点；Anime、Photos、Drive、Accounting 等完整业务使用 Server App 模型。
 
 ---
 

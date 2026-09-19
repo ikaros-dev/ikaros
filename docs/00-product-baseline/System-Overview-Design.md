@@ -117,6 +117,31 @@ V2 使用统一 Resource 身份和通用平台能力，但不能把所有内容�
 - Accounting 的 Ledger、Account、Transaction、Budget；
 - Password Manager 与 Private Notes 的高敏感安全模型。
 
+### 2.3.1 Platform / Server App / Client App 三层模型
+
+V2 的“统一平台”不等于“统一超级应用”。专业业务与客户端按以下三层边界组织：
+
+```text
+Client App
+    │ Public App API
+    ▼
+Server App
+    │ Platform API / Capability
+    ▼
+Ikaros Platform
+```
+
+其中：
+
+- **Ikaros Platform** 只拥有身份、认证授权、Device、App Runtime / Registry、Resource、Attachment / Blob / Storage、Event、Background Task、Notification、Audit、Configuration / Secret、Search Infrastructure 等基础能力；
+- **Server App** 拥有 Anime、Photos、Drive、Accounting、Reading、Music 等专业业务 Domain、数据、Public API、Event 与 Task；
+- **Client App** 是独立发布的软件产品。官方移动端不作为承载所有专业业务的超级 App；平台管理、Instance 管理和快速认证由 Ikaros 管理客户端负责，专业业务由独立 Client App 负责；
+- 第一方 Server App 与第三方 Server App 应尽量遵守同一 App Runtime Contract；
+- Server App 的 Platform Permission 与 Client App 的业务 Scope 必须分离；
+- 普通专业 Client 优先调用目标 Server App 的 Public API，不直接组合 Platform Resource / Attachment API 重新实现领域逻辑。
+
+完整决策见 `adr/ADR-005-platform-server-app-client-app-architecture.md`，运行时与客户端身份细节见 `../01-platform-foundation/App-Runtime-Identity-Client-Architecture-Design.md`。
+
 ### 2.4 HTTP-first / HTTP-native
 
 系统能力优先通过稳定的 HTTP API 暴露。
@@ -382,7 +407,14 @@ Ikaros Server 负责：
 
 ### 3.2 客户端负责
 
-客户端负责：
+客户端不再被假设为一个大而全的统一业务 App。客户端分为平台管理客户端与专业 Client App：
+
+- Ikaros 管理客户端负责 Instance 管理、认证、快速授权、Device / Session 管理和必要的平台管理入口；
+- Anime、Photos、Drive、Accounting、Reading 等专业能力由各自独立 Client App 承载；
+- 第三方 Client 可以在公开 App API 与授权契约下访问对应 Server App；
+- Client App 与 Server App 的安装、版本和生命周期彼此独立。
+
+客户端共同负责：
 
 - 展示和交互；
 - 本地状态与体验优化；

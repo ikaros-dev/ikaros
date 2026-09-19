@@ -340,6 +340,43 @@ P0 不提供任意 HTTP CRUD 修改 `permission_registry` 的能力。
 
 P0 不提供 `identity.list-sessions`。JWT 登录没有服务端 Session 列表可查询。
 
+## 9.1 App Runtime / Client Authorization Commands
+
+| Command ID | Permission / Principal | Step-up | Events |
+|---|---|---:|---|
+| `app-runtime.install-app` | `system.app.manage` | policy | `app-runtime.app.installed` |
+| `app-runtime.enable-app` | `system.app.manage` | policy | `app-runtime.app.enabled` |
+| `app-runtime.disable-app` | `system.app.manage` | policy | `app-runtime.app.disabled` |
+| `app-runtime.uninstall-app` | `system.app.manage` | REQUIRED when deleting app-owned data | `app-runtime.app.uninstalled` |
+| `app-runtime.replace-platform-permission-grants` | `system.app.manage` | REQUIRED for high-risk grants | `app-runtime.app.platform-permissions-replaced` |
+| `app-runtime.register-client` | `system.app.client.manage` or trusted registration flow | policy | `app-runtime.client.registered` |
+| `app-runtime.disable-client` | `system.app.client.manage` | policy | `app-runtime.client.disabled` |
+| `authorization.grant-app-client` | authenticated subject / explicit consent policy | policy | `authorization.app-grant.created` |
+| `authorization.replace-app-client-scopes` | grant subject or authorized administrator | policy | `authorization.app-grant.scopes-replaced` |
+| `authorization.revoke-app-client` | grant subject or authorized administrator | policy | `authorization.app-grant.revoked` |
+
+约束：
+
+- `install-app` 与 `enable-app` 分离；安装成功不自动启用；
+- `disable-app` 保留 App-owned Data / 配置；
+- `uninstall-app` 必须显式选择 KEEP_DATA / DELETE_APP_DATA，且不得隐式删除 Platform Resource / Attachment；
+- Platform Permission declaration 不等于 grant；
+- `authorization.*app-client*` Command 的 Owner 是 Authorization，不是 App Runtime；
+- Client Scope 必须来自目标 Server App 当前 Scope Registry；
+- Grant revoke 通过 status / `grant_version` 失效旧 App-scoped Token，不写 Token blacklist。
+
+## 9.2 App Runtime / Client Authorization Queries
+
+| Query ID | Permission | HTTP |
+|---|---|---|
+| `app-runtime.list-apps` | discovery policy / `system.app.read` for admin detail | contract-deferred |
+| `app-runtime.get-app` | discovery policy / `system.app.read` for admin detail | contract-deferred; candidate namespace `/api/app-registry/...` |
+| `app-runtime.list-clients` | `system.app.client.manage` | contract-deferred |
+| `authorization.list-current-user-app-grants` | current user | contract-deferred |
+| `authorization.get-app-grant` | grant subject or internal Authentication Capability | internal / contract-deferred |
+
+App Registry Discovery 的公开 HTTP 表示必须先进入 OpenAPI / HTTP Operation Registry。本 Catalog 不为 install / enable / disable / grant 管理动作猜测 Controller 路由。
+
 ---
 
 # Part G — P0 Event Catalog
@@ -462,7 +499,7 @@ Error Event 只包含可安全公开的 classification / summary，不复制 sta
 
 ---
 
-## 14. Identity Events
+## 14. Identity / Authorization / App Runtime Events
 
 | Event Type | v | Minimum Payload |
 |---|---:|---|
@@ -475,6 +512,16 @@ Error Event 只包含可安全公开的 classification / summary，不复制 sta
 | `authorization.user.role-assigned` | 1 | `user_id, role_id` |
 | `authorization.user.role-removed` | 1 | `user_id, role_id` |
 | `authentication.user.tokens-invalidated` | 1 | `user_id, security_version` |
+| `app-runtime.app.installed` | 1 | `app_id, package_version` |
+| `app-runtime.app.enabled` | 1 | `app_id, package_version` |
+| `app-runtime.app.disabled` | 1 | `app_id, reason_code?` |
+| `app-runtime.app.uninstalled` | 1 | `app_id, package_version, data_policy` |
+| `app-runtime.app.platform-permissions-replaced` | 1 | `app_id, permission_keys[]` |
+| `app-runtime.client.registered` | 1 | `client_id, app_id, client_type, official` |
+| `app-runtime.client.disabled` | 1 | `client_id, app_id` |
+| `authorization.app-grant.created` | 1 | `grant_id, subject_id, client_id, app_id, device_id?, scope_keys[], grant_version` |
+| `authorization.app-grant.scopes-replaced` | 1 | `grant_id, subject_id, client_id, app_id, scope_keys[], grant_version` |
+| `authorization.app-grant.revoked` | 1 | `grant_id, subject_id, client_id, app_id, device_id?, grant_version` |
 
 禁止 Event 包含：
 
@@ -483,7 +530,10 @@ Error Event 只包含可安全公开的 classification / summary，不复制 sta
 - Token digest；
 - Step-up Grant；
 - OTP；
-- credential。
+- credential；
+- Authorization Code / PKCE verifier；
+- Client Secret；
+- AppAuthorizationGrant 对应的 Access / Refresh Token。
 
 ---
 
@@ -504,6 +554,10 @@ Error Event 只包含可安全公开的 classification / summary，不复制 sta
 | `authentication.user.deactivated` | Authentication | token/security-version invalidation | Audit, Notification |
 | `authentication.user.tokens-invalidated` | Authentication | authorization/token acceptance cache invalidation | Audit, Notification |
 | `authorization.role.permissions-replaced` | Authorization | authorization cache invalidation | Audit |
+| `app-runtime.app.disabled` | App Runtime / routing gate | active app request admission | Audit, Notification |
+| `app-runtime.client.disabled` | Authentication / Authorization | client acceptance cache invalidation | Audit |
+| `authorization.app-grant.scopes-replaced` | Authentication / Authorization | grant acceptance cache invalidation | Audit |
+| `authorization.app-grant.revoked` | Authentication / Authorization | grant acceptance cache invalidation | Audit, Notification |
 
 “Required Consumer”失败不会回滚 producer 已提交事实，但必须进入 retry / DLQ / reconciliation 可观测流程。
 
@@ -545,6 +599,8 @@ P0 Operation ID 必须映射到 Catalog：
 
 后续增加 endpoint 时必须先存在对应 Query / Command Contract，禁止 Controller-first。
 
+ADR-005/006 新增的 App Runtime / Client Authorization Application Contract 已在 9.1 / 9.2 定义；App Registry Discovery 与管理路由当前均保持 `contract-deferred`; API Convention 只预留命名空间与候选路径，必须在后续 Contract PR 中同步更新 OpenAPI 与 HTTP Operation Registry 后才能实现。
+
 ---
 
 ## 17. Error Codes
@@ -573,6 +629,15 @@ identity.username-conflict
 identity.email-conflict
 identity.role-not-found
 identity.permission-invalid
+app.not-installed
+app.disabled
+app.incompatible
+app.api-version-unsupported
+app.client-invalid
+app.authorization-required
+app.scope-insufficient
+app.grant-not-found
+app.grant-revoked
 ```
 
 HTTP status 与业务 error code 分离。
@@ -702,6 +767,7 @@ P0 CI 后续必须增加：
 P0 Catalog + OpenAPI 只有满足以下条件才算完成：
 
 - [x] P0 Resource / Storage / Operations / Identity Command Catalog 已定义。
+- [x] App Runtime / Client Authorization Foundation Command / Query / Event Contract 已定义；HTTP 管理路由保持 contract-deferred。
 - [x] P0 Query Catalog 已定义。
 - [x] P0 Event Type / Version / Producer / Minimum Payload 已定义。
 - [x] Initial Producer / Consumer Matrix 已定义。

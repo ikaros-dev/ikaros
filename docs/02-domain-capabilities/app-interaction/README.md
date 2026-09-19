@@ -1,18 +1,20 @@
 # Ikaros V2 App 页面布局与交互设计
 
-> 本目录定义 Ikaros V2 官方客户端 App 的页面信息架构、界面布局、字段、组件、状态与交互规则。
+> 本目录保存 V2 客户端交互设计。ADR-005 之后，**不再把这里的统一业务 App Shell 视为最终产品架构**。
 >
 > **文件名与目录名使用英文，文档内容使用中文。**
 >
-> 本文档不是对 V1 Flutter App 的翻版，也不是把 CMS 页面缩小后搬到移动端。设计基线来自 `docs/v2/` 下的 V2 PRD 与各子系统设计文档；旧客户端仅可作为历史交互经验参考。
+> 新的客户端基线是：Ikaros 官方管理客户端只负责 Instance 管理、认证 / 快速授权、Device / Session 与必要的平台管理；Anime、Photos、Drive、Accounting、Reading 等专业业务由独立 Client App 承载。现有页面设计仍可作为各专业 Client App 的交互素材和组件规范来源，但跨领域统一导航、统一首页和“所有业务塞入一个 Flutter App”的描述均属于待拆分的过渡设计。
+>
+> 架构事实源见 `../../00-product-baseline/adr/ADR-005-platform-server-app-client-app-architecture.md` 和 `../../01-platform-foundation/App-Runtime-Identity-Client-Architecture-Design.md`。
 
 ---
 
 ## 1. 设计目标
 
-App 面向 Desktop 与 Mobile，暂定 Flutter 技术栈，并统一采用 Material Design 3。
+客户端面向 Desktop 与 Mobile。各独立 Client App 可以复用统一设计系统与组件，但不要求共享同一个可执行 App、同一个导航树或同一发布节奏。
 
-客户端重点承担：
+本目录后续应按 Client App 拆分；当前内容先作为迁移期 UX 素材库。专业客户端重点承担：
 
 - 统一资源浏览、搜索、收藏与消费。
 - 视频、音乐、漫画、小说、图片等内容体验。
@@ -61,7 +63,9 @@ App 面向 Desktop 与 Mobile，暂定 Flutter 技术栈，并统一采用 Mater
 
 ---
 
-## 3. 全局导航模型
+## 3. 过渡期统一导航模型
+
+> 本节是 ADR-005 之前的统一 App Shell 草案，仅用于拆分各独立 Client App 时参考信息分组，不再作为最终客户端全局导航契约。每个 Client App 应只保留自身业务与必要的平台入口。
 
 ### 3.1 主导航原则
 
