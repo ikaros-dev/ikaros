@@ -3,7 +3,6 @@ package run.ikaros.appruntime;
 import java.net.URI;
 import java.time.Instant;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -79,8 +78,10 @@ public class DefaultAppRuntimeService implements
             .then(store.install(request, now))
             .flatMap(saved -> emit(
                     "app-runtime.app.installed",
-                    "{"app_id":"" + json(request.appId()) + "","package_version":""
-                        + json(request.packageVersion()) + ""}"
+                    object(
+                        stringField("app_id", request.appId()),
+                        stringField("package_version", request.packageVersion())
+                    )
                 )
                 .then(audit(actorId, "app-runtime.app.install", request.appId()))
                 .thenReturn(saved));
@@ -92,17 +93,22 @@ public class DefaultAppRuntimeService implements
             if (current.lifecycleState() == AppLifecycleState.ENABLED) {
                 return Mono.just(current);
             }
-            if (!EnumSet.of(AppLifecycleState.INSTALLED, AppLifecycleState.DISABLED).contains(current.lifecycleState())) {
+            if (!EnumSet.of(AppLifecycleState.INSTALLED, AppLifecycleState.DISABLED)
+                .contains(current.lifecycleState())) {
                 return invalidState(appId, current.lifecycleState(), "enable");
             }
             Instant now = Instant.now();
-            return store.updateLifecycle(appId, current.version(), AppLifecycleState.ENABLED, null, now, null, now)
+            return store.updateLifecycle(
+                    current.appId(), current.version(), AppLifecycleState.ENABLED, null, now, null, now
+                )
                 .flatMap(saved -> emit(
                         "app-runtime.app.enabled",
-                        "{"app_id":"" + json(appId) + "","package_version":""
-                            + json(saved.packageVersion()) + ""}"
+                        object(
+                            stringField("app_id", saved.appId()),
+                            stringField("package_version", saved.packageVersion())
+                        )
                     )
-                    .then(audit(actorId, "app-runtime.app.enable", appId))
+                    .then(audit(actorId, "app-runtime.app.enable", saved.appId()))
                     .thenReturn(saved));
         });
         return transactional(operation);
@@ -118,13 +124,17 @@ public class DefaultAppRuntimeService implements
                 return invalidState(appId, current.lifecycleState(), "disable");
             }
             Instant now = Instant.now();
-            return store.updateLifecycle(appId, current.version(), AppLifecycleState.DISABLED, null, null, now, now)
+            return store.updateLifecycle(
+                    current.appId(), current.version(), AppLifecycleState.DISABLED, null, null, now, now
+                )
                 .flatMap(saved -> emit(
                         "app-runtime.app.disabled",
-                        "{"app_id":"" + json(appId) + "","reason_code":"
-                            + nullableJson(reasonCode) + "}"
+                        object(
+                            stringField("app_id", saved.appId()),
+                            nullableStringField("reason_code", reasonCode)
+                        )
                     )
-                    .then(audit(actorId, "app-runtime.app.disable", appId))
+                    .then(audit(actorId, "app-runtime.app.disable", saved.appId()))
                     .thenReturn(saved));
         });
         return transactional(operation);
@@ -158,14 +168,23 @@ public class DefaultAppRuntimeService implements
             }
             Instant now = Instant.now();
             return store.updateLifecycle(
-                    appId, current.version(), AppLifecycleState.UNINSTALLED, null, null, current.disabledAt(), now
+                    current.appId(),
+                    current.version(),
+                    AppLifecycleState.UNINSTALLED,
+                    null,
+                    null,
+                    current.disabledAt(),
+                    now
                 )
                 .flatMap(saved -> emit(
                         "app-runtime.app.uninstalled",
-                        "{"app_id":"" + json(appId) + "","package_version":""
-                            + json(saved.packageVersion()) + "","data_policy":"" + dataPolicy + ""}"
+                        object(
+                            stringField("app_id", saved.appId()),
+                            stringField("package_version", saved.packageVersion()),
+                            stringField("data_policy", dataPolicy.name())
+                        )
                     )
-                    .then(audit(actorId, "app-runtime.app.uninstall", appId))
+                    .then(audit(actorId, "app-runtime.app.uninstall", saved.appId()))
                     .thenReturn(saved));
         });
         return transactional(operation);
@@ -202,13 +221,18 @@ public class DefaultAppRuntimeService implements
             .filter(installation -> installation.lifecycleState() != AppLifecycleState.UNINSTALLED)
             .switchIfEmpty(Mono.error(new NotFoundException("app.not-installed", "目标 App 未安装")))
             .then(store.insertClient(request, Instant.now()))
-            .onErrorMap(DuplicateKeyException.class,
-                error -> new ConflictException("app.client-invalid", "Client ID 已注册"))
+            .onErrorMap(
+                DuplicateKeyException.class,
+                error -> new ConflictException("app.client-invalid", "Client ID 已注册")
+            )
             .flatMap(saved -> emit(
                     "app-runtime.client.registered",
-                    "{"client_id":"" + json(saved.clientId()) + "","app_id":""
-                        + json(saved.appId()) + "","client_type":"" + saved.clientType()
-                        + "","official":" + saved.official() + "}"
+                    object(
+                        stringField("client_id", saved.clientId()),
+                        stringField("app_id", saved.appId()),
+                        stringField("client_type", saved.clientType().name()),
+                        booleanField("official", saved.official())
+                    )
                 )
                 .then(audit(actorId, "app-runtime.client.register", saved.appId()))
                 .thenReturn(saved));
@@ -227,8 +251,10 @@ public class DefaultAppRuntimeService implements
             return store.updateClientStatus(current.clientId(), "DISABLED", Instant.now())
                 .flatMap(saved -> emit(
                         "app-runtime.client.disabled",
-                        "{"client_id":"" + json(saved.clientId()) + "","app_id":""
-                            + json(saved.appId()) + ""}"
+                        object(
+                            stringField("client_id", saved.clientId()),
+                            stringField("app_id", saved.appId())
+                        )
                     )
                     .then(audit(actorId, "app-runtime.client.disable", saved.appId()))
                     .thenReturn(saved));
@@ -256,13 +282,13 @@ public class DefaultAppRuntimeService implements
             .filter(installation -> installation.lifecycleState() != AppLifecycleState.UNINSTALLED)
             .switchIfEmpty(Mono.error(new NotFoundException("app.not-installed", "App 未安装")))
             .then(validatePermissions(keys))
-            .then(store.replacePermissionGrants(normalized, keys, Instant.now()))
+            .then(store.replacePermissionGrants(normalized, keys, actorId, Instant.now()))
             .then(emit(
                 "app-runtime.app.platform-permissions-replaced",
-                "{"app_id":"" + json(normalized) + "","permission_keys":["
-                    + keys.stream().sorted().map(key -> """ + json(key) + """)
-                        .reduce((left, right) -> left + "," + right).orElse("")
-                    + "]}"
+                object(
+                    stringField("app_id", normalized),
+                    stringArrayField("permission_keys", keys)
+                )
             ))
             .then(audit(actorId, "app-runtime.permission.replace", normalized));
         return transactional(operation);
@@ -307,7 +333,7 @@ public class DefaultAppRuntimeService implements
             action,
             "SERVER_APP",
             null,
-            "{"app_id":"" + json(appId) + ""}"
+            object(stringField("app_id", appId))
         );
     }
 
@@ -319,7 +345,7 @@ public class DefaultAppRuntimeService implements
         if (request == null) {
             throw new IllegalArgumentException("Install request 不能为空");
         }
-        normalizeId(request.appId());
+        requireCanonicalAppId(request.appId());
         requiredText(request.name(), "name");
         requiredText(request.publisher(), "publisher");
         requiredText(request.manifestVersion(), "manifest_version");
@@ -337,7 +363,7 @@ public class DefaultAppRuntimeService implements
             throw new IllegalArgumentException("Client request 不能为空");
         }
         requiredText(request.clientId(), "client_id");
-        normalizeId(request.appId());
+        requireCanonicalAppId(request.appId());
         requiredText(request.name(), "name");
         requiredText(request.publisher(), "publisher");
         if (request.clientType() == null) {
@@ -359,9 +385,20 @@ public class DefaultAppRuntimeService implements
         }
     }
 
+    private void requireCanonicalAppId(String value) {
+        String raw = requiredText(value, "app_id");
+        String canonical = normalizeId(raw);
+        if (!raw.equals(canonical)) {
+            throw new IllegalArgumentException("app_id 必须使用小写 canonical reverse-DNS 标识");
+        }
+    }
+
     private String normalizeId(String value) {
         String appId = requiredText(value, "app_id").toLowerCase();
-        if (!APP_ID.matcher(appId).matches() || appId.contains("..") || appId.endsWith(".") || appId.endsWith("-")) {
+        if (!APP_ID.matcher(appId).matches()
+            || appId.contains("..")
+            || appId.endsWith(".")
+            || appId.endsWith("-")) {
             throw new IllegalArgumentException("app_id 必须使用稳定 reverse-DNS 风格标识");
         }
         return appId;
@@ -381,11 +418,35 @@ public class DefaultAppRuntimeService implements
         return value.trim();
     }
 
-    private String json(String value) {
-        return value == null ? "" : value.replace("\\", "\\\\").replace(""", "\\"");
+    private String object(String... fields) {
+        return "{" + String.join(",", fields) + "}";
     }
 
-    private String nullableJson(String value) {
-        return value == null || value.isBlank() ? "null" : """ + json(value.trim()) + """;
+    private String stringField(String name, String value) {
+        return quote(name) + ":" + quote(value);
+    }
+
+    private String nullableStringField(String name, String value) {
+        return quote(name) + ":" + (value == null || value.isBlank() ? "null" : quote(value.trim()));
+    }
+
+    private String booleanField(String name, boolean value) {
+        return quote(name) + ":" + value;
+    }
+
+    private String stringArrayField(String name, Set<String> values) {
+        String body = String.join(",", values.stream().sorted().map(this::quote).toList());
+        return quote(name) + ":[" + body + "]";
+    }
+
+    private String quote(String value) {
+        return Character.toString(34) + json(value) + Character.toString(34);
+    }
+
+    private String json(String value) {
+        return value == null
+            ? ""
+            : value.replace(Character.toString(92), Character.toString(92) + Character.toString(92))
+                .replace(Character.toString(34), Character.toString(92) + Character.toString(34));
     }
 }
