@@ -120,6 +120,10 @@ anime.progress.write
 
 普通业务 Client 不应直接依赖 Resource / Attachment 等 Platform Domain API 拼装业务；客户端优先调用目标 Server App 的 Public App API。
 
+### 4.1 Client Grant / Token Binding 补充
+
+Client App 的独立授权、Device 级撤销与 App-scoped Token Binding 由 `ADR-006-app-client-authorization-grant-token-binding.md` 进一步冻结。ADR-005 负责三层架构边界，ADR-006 负责 User → Client → Server App 的持久化授权关系；两者共同构成客户端授权基线。
+
 ### 5. 建立五类独立身份
 
 至少区分：
