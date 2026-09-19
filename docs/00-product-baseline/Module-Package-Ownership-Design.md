@@ -308,10 +308,14 @@ Authorization 拥有：
 - Security Policy；
 - Access Control；
 - Resource Authorization；
+- AppAuthorizationGrant 与 Grant Scope；
+- Client / Device 级 Grant revoke / version；
 
 Authentication 和 Authorization 均可依赖 `common-api` 的 `PrincipalContext`，但不得依赖 `PrincipalContexts` 的实现细节。
 
 Authentication 在注册、登录和刷新 Token 时通过 `authorization-api` 的 `PermissionSnapshotQuery` 获取权限快照；用户视图中的角色编码通过 `RoleMembershipQuery` 获取。它不得直接访问 Authorization 实现模块、Role / Permission / Binding Entity 或 Repository。已签发 Access JWT 的权限快照在 Token 有效期内保持不变，权限变更不隐式提升 `security_version`。完整决策见 `adr/ADR-004-authentication-authorization-permission-snapshot.md`。
+
+面向 Server App 的 Token 签发还必须通过 `authorization-api` 获取 AppAuthorizationGrant Snapshot。Authentication 不直接访问 Grant Repository；App Runtime 只拥有 Client Registration / Scope Definition，Authorization 才拥有实际 User → Client → App 授权关系。Client / Device 级撤销遵循 `adr/ADR-006-app-client-authorization-grant-token-binding.md`。
 
 其他领域可以依赖 Security API，但不得直接读写 Security persistence。
 
@@ -343,7 +347,7 @@ Authentication 在注册、登录和刷新 Token 时通过 `authorization-api` �
 - App Scope registration；
 - Server App discovery / availability。
 
-App Runtime 不拥有 Anime、Photos、Drive、Accounting 等专业业务数据；它只拥有“应用如何被识别、安装、授权、启停和发现”的平台事实。
+App Runtime 不拥有 Anime、Photos、Drive、Accounting 等专业业务数据；它只拥有“应用如何被识别、安装、获得 Platform Permission、声明 Client Scope、启停和发现”的平台事实。User 对 Client 的实际 Scope Grant 属于 Authorization，不属于 App Runtime。
 
 第一方 Server App 与第三方 Server App 均不得因为来源不同而绕过 Authorization、Owner Boundary 或 Platform Capability。
 
