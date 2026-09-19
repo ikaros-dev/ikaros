@@ -247,14 +247,15 @@ POST /api/background-tasks/{task_id}/actions/cancel
 
 App Registry 是 Platform API，不属于任一 Server App。
 
-规范读取入口：
+目标命名空间预留为：
 
 ```text
-GET /api/app-registry/apps
-GET /api/app-registry/apps/{app_id}
+/api/app-registry/...
 ```
 
-用于返回安装状态、启用状态、App Package Version、受支持 App API Major、声明 Scope、能力与兼容性摘要。
+其中列表与单 App Discovery 的具体 HTTP Operation 当前为 `contract-deferred`。只有进入 OpenAPI 与 HTTP Operation Registry 后，`GET /api/app-registry/apps`、`GET /api/app-registry/apps/{app_id}` 等候选路径才成为稳定公开契约。
+
+App Registry 读取能力用于返回安装状态、启用状态、App Package Version、受支持 App API Major、声明 Scope、能力与兼容性摘要。
 
 Server App 的业务接口不得放进 `/api/app-registry`。
 
@@ -1768,13 +1769,15 @@ Discovery 分为两层：
 
 ### 25.2 Instance Discovery
 
-规范入口：
+目标 well-known 路径预留为：
 
 ```http
 GET /.well-known/ikaros
 ```
 
-至少返回：
+该 Operation 当前仍为 `contract-deferred`；必须进入 OpenAPI / HTTP Operation Registry 后才成为稳定公开接口。
+
+稳定后的响应至少需要表达：
 
 ```json
 {
@@ -1782,7 +1785,7 @@ GET /.well-known/ikaros
   "platform_api": "/api",
   "authorization_endpoint": "<registered authorization endpoint>",
   "token_endpoint": "<registered token endpoint>",
-  "app_registry_endpoint": "/api/app-registry/apps"
+  "app_registry_endpoint": "<registered app registry endpoint>"
 }
 ```
 
@@ -1792,13 +1795,15 @@ GET /.well-known/ikaros
 
 ### 25.3 App Discovery
 
-规范入口：
+App Discovery 属于 App Registry Platform API。候选路径为：
 
 ```http
 GET /api/app-registry/apps/{app_id}
 ```
 
-已安装 App 至少返回：
+但当前仍为 `contract-deferred`，不得在 Controller 中提前实现未登记路由。
+
+稳定后的已安装 App 响应至少需要表达：
 
 ```json
 {
