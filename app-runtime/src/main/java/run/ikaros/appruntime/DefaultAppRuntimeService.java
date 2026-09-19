@@ -167,7 +167,8 @@ public class DefaultAppRuntimeService implements
                 return invalidState(appId, current.lifecycleState(), "uninstall");
             }
             Instant now = Instant.now();
-            return store.updateLifecycle(
+            return store.replacePermissionGrants(current.appId(), Set.of(), actorId, now)
+                .then(store.updateLifecycle(
                     current.appId(),
                     current.version(),
                     AppLifecycleState.UNINSTALLED,
@@ -175,15 +176,22 @@ public class DefaultAppRuntimeService implements
                     null,
                     current.disabledAt(),
                     now
-                )
+                ))
                 .flatMap(saved -> emit(
+                        "app-runtime.app.platform-permissions-replaced",
+                        object(
+                            stringField("app_id", saved.appId()),
+                            stringArrayField("permission_keys", Set.of())
+                        )
+                    )
+                    .then(emit(
                         "app-runtime.app.uninstalled",
                         object(
                             stringField("app_id", saved.appId()),
                             stringField("package_version", saved.packageVersion()),
                             stringField("data_policy", dataPolicy.name())
                         )
-                    )
+                    ))
                     .then(audit(actorId, "app-runtime.app.uninstall", saved.appId()))
                     .thenReturn(saved));
         });
