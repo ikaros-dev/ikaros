@@ -718,7 +718,7 @@ Platform Permission 与 App Scope 是不同命名空间：
 
 复用只适用于同一账号、同一验证方式和 `LOGIN_STEP_UP` 用途，且新的 Grant 仍必须校验主体、`security_version`、`purpose`、`target_reference`（适用时）、SVL 与 `exp`。SMS 是否启用由 `ikaros.security.verification.sms.enabled` 控制，默认关闭；短信 Noop 模式仅用于开发并输出验证码到服务端控制台，生产环境不得使用 Noop 投递。
 
-### 11.4 Anti-enumeration
+### 11.5 Anti-enumeration
 
 认证、Recovery、Secure Domain、Share、Secret 等接口不得通过不同状态码、不同错误文案、明显不同响应结构泄露：
 
@@ -730,7 +730,7 @@ Platform Permission 与 App Scope 是不同命名空间：
 
 必要时允许对“无权限”和“不存在”统一返回安全的 `404` 或统一 Challenge Result。
 
-### 11.5 App-scoped Token
+### 11.6 App-scoped Token
 
 依据 ADR-006，面向 Server App 的 Access / Refresh Token 必须绑定：
 
@@ -747,7 +747,7 @@ device_id (when required)
 
 撤销 Grant 后，旧 App-scoped Token 按 Security Contract 失效；该机制不依赖 `jti` blacklist 或 Login Session。
 
-### 11.6 Capability Discovery 不替代权限
+### 11.7 Capability Discovery 不替代权限
 
 `capability.available = true` 只表示当前 Instance 具备能力。
 
@@ -950,6 +950,7 @@ app.scope_insufficient
 | 401 | 未认证或认证失效 |
 | 403 | 已认证但无权限 / Step-up 不足 |
 | 404 | 不存在，或按安全策略隐藏存在性 |
+| 406 | 请求的 Server App Public API Major 当前不受支持 |
 | 409 | 业务状态冲突、幂等 Key 与不同 Payload 冲突、无法自动合并的 Domain Conflict |
 | 410 | 已明确永久失效且允许调用者知道，例如已过期的公开临时资源 |
 | 412 | `If-Match` / ETag 前置条件失败 |
@@ -961,7 +962,6 @@ app.scope_insufficient
 | 502 | 上游 Provider 返回错误或无效响应 |
 | 503 | 当前能力临时不可用 / 过载 / 依赖不可用 |
 | 504 | 上游 Provider / Worker 请求超时 |
-| 406 | 请求的 Server App Public API Major 当前不受支持 |
 
 
 ### 14.4 Error Data Minimization
