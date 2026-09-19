@@ -338,7 +338,7 @@ Payload 与 attached 相同 identity key。
 }
 ```
 
-## 5. Authentication / Authorization Payloads
+## 5. Authentication / Authorization / App Runtime Payloads
 
 ### `authentication.user.created@1`
 
