@@ -17,9 +17,30 @@ import run.ikaros.authorization.SecurityPolicy;
 import run.ikaros.authorization.api.PlatformPermission;
 import run.ikaros.authentication.api.AuthenticatedPrincipal;
 import run.ikaros.authentication.api.SecurityVerificationLevel;
+import run.ikaros.operations.api.AuditEventCommand;
+import run.ikaros.operations.api.AuditResult;
+import run.ikaros.operations.api.AuditService;
 import reactor.core.publisher.Mono;
 
 class ResourceAuthorizationWebFilterTest {
+    @Test
+    void recordsDeniedAuditForAuthenticatedUserWithoutManagementPermission() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post("/api/admin/roles").build());
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 1L, java.util.List.of()));
+        AuditService audit = mock(AuditService.class);
+        when(audit.record(any(AuditEventCommand.class))).thenReturn(Mono.empty());
+
+        new ResourceAuthorizationWebFilter(mock(AccessControlService.class), false, audit)
+            .filter(exchange, mock(WebFilterChain.class)).block();
+
+        assertEquals(403, exchange.getResponse().getStatusCode().value());
+        verify(audit).record(argThat(event -> event.actorId().equals(actor)
+            && event.result() == AuditResult.DENIED && "authorization.request".equals(event.action())
+            && "HTTP_OPERATION".equals(event.targetType())));
+    }
+
     @Test
     void lowersStorageProviderManageToSvl2WhenSmsIsDisabled() {
         UUID actor = UUID.randomUUID();

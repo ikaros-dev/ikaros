@@ -6,6 +6,10 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.operations.api.AuditService;
+import run.ikaros.operations.api.AuditActorType;
+import run.ikaros.operations.api.AuditEventCommand;
+import run.ikaros.operations.api.AuditResult;
+import run.ikaros.operations.api.AuditRiskLevel;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.authentication.PlatformUserRepository;
@@ -88,8 +92,10 @@ public class EmailOtpVerificationProvider implements VerificationProvider {
                     challenge.issuedAt(), challenge.expiresAt(), challenge.attemptCount(), challenge.maxAttempts(), now,
                     VerificationChallengeStatus.VERIFIED, challenge.version());
                 return challengeRepository.save(verified)
-                    .then(auditService.record(userId, "security.verification.succeed", "VERIFICATION_CHALLENGE",
-                        challengeId, "{}"))
+                    .then(auditService.record(new AuditEventCommand(AuditActorType.USER, userId,
+                        "security.verification.succeed", "VERIFICATION_CHALLENGE", challengeId,
+                        AuditResult.SUCCESS, AuditRiskLevel.SENSITIVE, "{\"verification_level\":\"SVL_2\"}", 1,
+                        null)))
                     .thenReturn(new VerificationResult(challengeId, method(), SecurityVerificationLevel.SVL_2, userId,
                         now, now.plus(VERIFICATION_TTL)));
             }

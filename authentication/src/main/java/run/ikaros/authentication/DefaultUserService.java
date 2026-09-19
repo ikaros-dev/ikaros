@@ -89,7 +89,7 @@ public class DefaultUserService implements UserService {
             .flatMap(saved -> credentialRepository.save(new PasswordCredentialEntity(null, saved.id(),
                     PasswordHashService.hash(request.password()), now, now, null))
                 .then(emitUserCreated(saved))
-                .then(auditService.record(actorId, "identity.user.create", "USER", saved.id(), "{}"))
+                .then(adminAudit(actorId, "identity.user.create", saved.id(), "{}"))
                 .then(toView(saved)));
         return transaction == null ? operation : operation.as(transaction::transactional);
     }
@@ -104,7 +104,7 @@ public class DefaultUserService implements UserService {
         if (actorId.equals(userId)) {
             return Mono.error(new ForbiddenException("不允许修改当前登录用户"));
         }
-        return requiredUser(userId).flatMap(user -> {
+        Mono<UserView> operation = requiredUser(userId).flatMap(user -> {
             UserStatus status = request.status();
             PlatformUserEntity updated = new PlatformUserEntity(user.id(), request.username().trim(),
                 request.displayName().trim(), normalizeEmail(request.email()), status, user.createdAt(), Instant.now(),
@@ -113,9 +113,10 @@ public class DefaultUserService implements UserService {
             return userRepository.save(updated)
                 .onErrorMap(DuplicateKeyException.class, exception -> new ConflictException("用户名或邮箱已存在"))
                 .flatMap(saved -> emitStatusChanged(saved)
-                    .then(auditService.record(actorId, "identity.user.update", "USER", userId, "{}"))
+                    .then(adminAudit(actorId, "identity.user.update", userId, "{}"))
                     .then(toView(saved)));
         });
+        return transaction == null ? operation : operation.as(transaction::transactional);
     }
 
     @Override
@@ -142,15 +143,16 @@ public class DefaultUserService implements UserService {
         if (actorId.equals(userId)) {
             return Mono.error(new ForbiddenException("不允许修改当前登录用户"));
         }
-        return requiredUser(userId).flatMap(user -> {
+        Mono<UserView> operation = requiredUser(userId).flatMap(user -> {
             PlatformUserEntity changed = new PlatformUserEntity(user.id(), user.username(), user.displayName(), user.email(),
                 status, user.createdAt(), Instant.now(), user.lastLoginAt(),
                 status == user.status() ? user.securityVersion() : user.securityVersion() + 1, user.version());
             return userRepository.save(changed)
                 .flatMap(saved -> emitStatusChanged(saved)
-                    .then(auditService.record(actorId, "identity.user.status.change", "USER", userId, "{}"))
+                    .then(adminAudit(actorId, "identity.user.status.change", userId, "{}"))
                     .then(toView(saved)));
         });
+        return transaction == null ? operation : operation.as(transaction::transactional);
     }
 
     @Override
@@ -165,7 +167,7 @@ public class DefaultUserService implements UserService {
                 user.securityVersion() + 1, user.version(), 1);
             return userRepository.save(deleted)
                 .flatMap(saved -> emitUserDeactivated(saved)
-                    .then(auditService.record(actorId, "identity.user.delete", "USER", userId, "{}")));
+                    .then(adminAudit(actorId, "identity.user.delete", userId, "{}")));
         });
         return transaction == null ? operation : operation.as(transaction::transactional);
     }
@@ -179,7 +181,7 @@ public class DefaultUserService implements UserService {
             .onErrorMap(DuplicateKeyException.class, exception -> new ConflictException("用户名或邮箱已存在"))
             .flatMap(saved -> replacePassword(saved.id(), request.password(), now)
                 .then(emitUserCreated(saved))
-                .then(auditService.record(actorId, "identity.user.restore", "USER", saved.id(), "{}"))
+                .then(adminAudit(actorId, "identity.user.restore", saved.id(), "{}"))
                 .then(toView(saved)));
         return transaction == null ? operation : operation.as(transaction::transactional);
     }
@@ -210,11 +212,16 @@ public class DefaultUserService implements UserService {
     private Mono<Void> recordTokenInvalidation(UUID actorId, PlatformUserEntity user) {
         String details = "{\"security_version\":" + user.securityVersion() + "}";
         if (!actorId.equals(user.id())) {
-            return auditService.record(actorId, "identity.user.tokens.invalidate", "USER", user.id(), details);
+            return adminAudit(actorId, "identity.user.tokens.invalidate", user.id(), details);
         }
         return auditService.record(new AuditEventCommand(AuditActorType.USER, actorId,
             "identity.user.tokens.invalidate", "USER", user.id(), AuditResult.SUCCESS, AuditRiskLevel.SENSITIVE,
             details, 1, null));
+    }
+
+    private Mono<Void> adminAudit(UUID actorId, String action, UUID targetId, String details) {
+        return auditService.record(new AuditEventCommand(AuditActorType.ADMIN, actorId, action, "USER", targetId,
+            AuditResult.SUCCESS, AuditRiskLevel.HIGH, details, 1, null));
     }
 
     private Mono<Void> emitTokensInvalidated(PlatformUserEntity user) {

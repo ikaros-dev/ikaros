@@ -18,6 +18,11 @@ import run.ikaros.authorization.SecurityPolicy;
 import run.ikaros.authentication.api.AuthenticatedPrincipal;
 import run.ikaros.authentication.api.SecurityVerificationLevel;
 import run.ikaros.authorization.api.PlatformPermission;
+import run.ikaros.operations.api.AuditActorType;
+import run.ikaros.operations.api.AuditEventCommand;
+import run.ikaros.operations.api.AuditResult;
+import run.ikaros.operations.api.AuditRiskLevel;
+import run.ikaros.operations.api.AuditService;
 
 /** Resource HTTP 入口的统一 RBAC + JWT 校验。 */
 @Component
@@ -25,17 +30,26 @@ import run.ikaros.authorization.api.PlatformPermission;
 public class ResourceAuthorizationWebFilter implements WebFilter {
     private final AccessControlService accessControl;
     private final boolean smsOtpEnabled;
+    private final AuditService auditService;
 
     public ResourceAuthorizationWebFilter(AccessControlService accessControl) {
-        this(accessControl, false);
+        this(accessControl, false, null);
     }
 
     @Autowired
     public ResourceAuthorizationWebFilter(AccessControlService accessControl,
                                           @Value("${ikaros.security.verification.sms.enabled:false}")
                                           boolean smsOtpEnabled) {
+        this(accessControl, smsOtpEnabled, null);
+    }
+
+    @Autowired
+    public ResourceAuthorizationWebFilter(AccessControlService accessControl,
+                                          @Value("${ikaros.security.verification.sms.enabled:false}")
+                                          boolean smsOtpEnabled, AuditService auditService) {
         this.accessControl = accessControl;
         this.smsOtpEnabled = smsOtpEnabled;
+        this.auditService = auditService;
     }
 
     @Override
@@ -60,13 +74,16 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
         }
         if (path.equals("/api/me/actions/invalidate-tokens")) return chain.filter(exchange);
         PlatformPermission permission = permission(exchange.getRequest().getMethod().name(), path);
-        if (!hasPermission(jwtPrincipal, permission)) return reject(exchange, HttpStatus.FORBIDDEN);
+        if (!hasPermission(jwtPrincipal, permission)) {
+            return rejectDenied(exchange, jwtPrincipal, permission, AuditRiskLevel.SENSITIVE);
+        }
         SecurityPolicy securityPolicy = policy(permission);
         Mono<Void> currentAuthorization = accessControl.require(jwtPrincipal.actorId(),
             jwtPrincipal.verificationLevel(), jwtPrincipal.verificationExpiresAt(), securityPolicy);
         if (currentAuthorization != null) {
             return currentAuthorization.then(Mono.defer(() -> chain.filter(exchange)))
-                .onErrorResume(error -> reject(exchange, HttpStatus.FORBIDDEN));
+                .onErrorResume(error -> rejectDenied(exchange, jwtPrincipal, permission,
+                    securityPolicy.requireFreshVerification() ? AuditRiskLevel.HIGH : AuditRiskLevel.SENSITIVE));
         }
         return chain.filter(exchange);
     }
@@ -172,5 +189,15 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             + (status == HttpStatus.UNAUTHORIZED ? "authentication.required" : "authorization.denied") + "\"}";
         return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory()
             .wrap(body.getBytes(java.nio.charset.StandardCharsets.UTF_8))));
+    }
+
+    private Mono<Void> rejectDenied(ServerWebExchange exchange, AuthenticatedPrincipal principal,
+                                    PlatformPermission permission, AuditRiskLevel riskLevel) {
+        if (auditService == null) return reject(exchange, HttpStatus.FORBIDDEN);
+        String details = "{\"permission\":\"" + permission.key() + "\"}";
+        return auditService.record(new AuditEventCommand(AuditActorType.USER, principal.actorId(),
+                "authorization.request", "HTTP_OPERATION", null, AuditResult.DENIED, riskLevel, details, 1, null))
+            .onErrorResume(ignored -> Mono.empty())
+            .then(reject(exchange, HttpStatus.FORBIDDEN));
     }
 }

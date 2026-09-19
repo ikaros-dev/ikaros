@@ -22,6 +22,9 @@ import run.ikaros.common.ForbiddenException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
 import run.ikaros.operations.api.AuditEventCommand;
+import run.ikaros.operations.api.AuditActorType;
+import run.ikaros.operations.api.AuditResult;
+import run.ikaros.operations.api.AuditRiskLevel;
 import org.springframework.transaction.reactive.TransactionalOperator;
 
 /** 验证平台用户服务的创建、查询与状态规则。 */
@@ -32,12 +35,20 @@ class DefaultUserServiceTest {
     private PasswordCredentialRepository credentialRepository;
     private DefaultUserService service;
 
+    private void verifyAdminAudit(String action, UUID actorId, UUID targetId) {
+        verify(auditService).record(org.mockito.ArgumentMatchers.argThat(event ->
+            event.actorType() == AuditActorType.ADMIN && actorId.equals(event.actorId())
+                && action.equals(event.action()) && targetId.equals(event.targetId())
+                && event.result() == AuditResult.SUCCESS && event.riskLevel() == AuditRiskLevel.HIGH));
+    }
+
     @BeforeEach
     void setUp() {
         userRepository = mock(PlatformUserRepository.class);
         roleMembershipQuery = mock(RoleMembershipQuery.class);
         when(roleMembershipQuery.roleCodesFor(any())).thenReturn(Mono.just(List.of()));
         auditService = mock(AuditService.class);
+        when(auditService.record(any(AuditEventCommand.class))).thenReturn(Mono.empty());
         credentialRepository = mock(PasswordCredentialRepository.class);
         when(userRepository.findIncludingDeletedByUsername(any())).thenReturn(Mono.empty());
         service = new DefaultUserService(userRepository, roleMembershipQuery, auditService, null, null,
@@ -65,7 +76,7 @@ class DefaultUserServiceTest {
             .verifyComplete();
         verify(credentialRepository).save(argThat(credential -> credential.passwordHash().startsWith("pbkdf2-sha256$")
             && !credential.passwordHash().equals("correct horse")));
-        verify(auditService).record(actorId, "identity.user.create", "USER", userId, "{}");
+        verifyAdminAudit("identity.user.create", actorId, userId);
     }
 
     @Test
@@ -102,7 +113,7 @@ class DefaultUserServiceTest {
         StepVerifier.create(service.changeStatus(actorId, userId, UserStatus.LOCKED))
             .assertNext(view -> assertThat(view.status()).isEqualTo(UserStatus.LOCKED))
             .verifyComplete();
-        verify(auditService).record(actorId, "identity.user.status.change", "USER", userId, "{}");
+        verifyAdminAudit("identity.user.status.change", actorId, userId);
     }
 
     @Test
@@ -157,7 +168,7 @@ class DefaultUserServiceTest {
 
         verify(userRepository).save(argThat(user -> user.status() == UserStatus.DEACTIVATED
             && user.securityVersion() == 5L && user.isDel() == 1));
-        verify(auditService).record(actorId, "identity.user.delete", "USER", userId, "{}");
+        verifyAdminAudit("identity.user.delete", actorId, userId);
     }
 
     @Test
@@ -202,7 +213,7 @@ class DefaultUserServiceTest {
             .verifyComplete();
         verify(userRepository).save(argThat(user -> user.securityVersion() == 2L
             && user.status() == UserStatus.DISABLED));
-        verify(auditService).record(actorId, "identity.user.update", "USER", userId, "{}");
+        verifyAdminAudit("identity.user.update", actorId, userId);
     }
 
     @Test
