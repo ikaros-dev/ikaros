@@ -220,6 +220,8 @@ GET /api/apps/run.ikaros.accounting/v1/accounts
 
 `app_api_major` 与 Ikaros Server 产品版本、Platform API、App Package Version 均独立。一个 Server App 可以在迁移窗口内同时暴露多个受支持 Major Version。
 
+ADR-005 之前已经登记的专业领域路径，例如 `/api/media/**`、`/api/reading/**`、`/api/music/**`，视为**迁移期兼容契约**，不得作为新 Server App 继续扩展的路由模板。它们的重定向、兼容窗口和最终迁移到 `/api/apps/{app_id}/v{major}/...` 必须由独立 Contract / Implementation PR 更新 HTTP Registry、OpenAPI、Controller、SDK 与测试后执行；本架构 PR 不静默改写现有已登记 endpoint。
+
 ### 4.2 URI 命名
 
 统一规则：
@@ -1778,13 +1780,15 @@ GET /.well-known/ikaros
 {
   "instance_id": "019...",
   "platform_api": "/api",
-  "authorization_endpoint": "/api/auth/authorize",
-  "token_endpoint": "/api/auth/token",
+  "authorization_endpoint": "<registered authorization endpoint>",
+  "token_endpoint": "<registered token endpoint>",
   "app_registry_endpoint": "/api/app-registry/apps"
 }
 ```
 
 该入口只返回连接所需的最小公开元数据，不返回用户、Provider Credential、内部网络或敏感安装信息。
+
+`authorization_endpoint` / `token_endpoint` 的具体路径必须先进入 HTTP Operation Registry / OpenAPI 后才能冻结；本文不根据现有用户名密码登录 Controller 猜测 OAuth Authorization Code 路由。
 
 ### 25.3 App Discovery
 
