@@ -43,7 +43,6 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
         this(accessControl, smsOtpEnabled, null);
     }
 
-    @Autowired
     public ResourceAuthorizationWebFilter(AccessControlService accessControl,
                                           @Value("${ikaros.security.verification.sms.enabled:false}")
                                           boolean smsOtpEnabled, AuditService auditService) {

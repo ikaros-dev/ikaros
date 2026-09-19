@@ -8,6 +8,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.UUID;
+import java.util.Arrays;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
@@ -23,6 +25,14 @@ import run.ikaros.operations.api.AuditService;
 import reactor.core.publisher.Mono;
 
 class ResourceAuthorizationWebFilterTest {
+    @Test
+    void exposesExactlyOneRequiredSpringConstructor() {
+        long autowiredConstructors = Arrays.stream(ResourceAuthorizationWebFilter.class.getConstructors())
+            .filter(constructor -> constructor.isAnnotationPresent(Autowired.class))
+            .count();
+        assertEquals(1, autowiredConstructors);
+    }
+
     @Test
     void recordsDeniedAuditForAuthenticatedUserWithoutManagementPermission() {
         UUID actor = UUID.randomUUID();
