@@ -17,6 +17,8 @@
 
 ### 第二层：平台与内容底座
 
+- [`ADR-005 Platform / Server App / Client App`](./adr/ADR-005-platform-server-app-client-app-architecture.md) — V2 三层应用架构总决策。
+- [`ADR-006 App Client Authorization Grant`](./adr/ADR-006-app-client-authorization-grant-token-binding.md) — Client / Device 独立授权、Scope、Token Binding 与撤销语义。
 - [`App-Runtime-Identity-Client-Architecture-Design.md`](../01-platform-foundation/App-Runtime-Identity-Client-Architecture-Design.md) — Platform / Server App / Client App、App Registry、Client Registration、Permission / Scope、Discovery 与生命周期。
 - [`Core-Resource-Library-Subsystem-Design.md`](./Core-Resource-Library-Subsystem-Design.md) — Resource、Collection、Relation、Tag、External Identity、Metadata Provenance、用户状态、生命周期与搜索投影。
 - [`Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md`](./Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md) — Source、Scan、Candidate、Match、Import Plan、Metadata Refresh、Provenance、幂等与失败恢复。
@@ -34,7 +36,7 @@
 
 ### 第三层：身份与高敏感数据
 
-- [`Security-Identity-Authorization-Crypto-Subsystem-Design.md`](./Security-Identity-Authorization-Crypto-Subsystem-Design.md) — 身份、JWT 无状态认证、Step-up Verification、RBAC / ACL、授权与密码学边界。
+- [`Security-Identity-Authorization-Crypto-Subsystem-Design.md`](../01-platform-foundation/Security-Identity-Authorization-Crypto-Subsystem-Design.md) — 身份、JWT 无状态认证、AppAuthorizationGrant、Step-up Verification、RBAC / ACL、授权与密码学边界。
 - [`Secure-Data-Foundation-Design.md`](./Secure-Data-Foundation-Design.md) — Secure Domain 通用安全基础。
 - [`Password-Manager-Subsystem-Design.md`](./Password-Manager-Subsystem-Design.md) — 密码管理器领域模型与安全交互。
 - [`Private-Notes-Subsystem-Design.md`](./Private-Notes-Subsystem-Design.md) — 私密笔记的安全数据模型与访问边界。
@@ -67,7 +69,7 @@
 
 入口：[`app-interaction/README.md`](../02-domain-capabilities/app-interaction/README.md)
 
-Personal Drive 独立交互规格：[`app-interaction/drive/personal-drive-file-sync.md`](./app-interaction/drive/personal-drive-file-sync.md)
+Personal Drive 独立交互规格：[`app-interaction/drive/personal-drive-file-sync.md`](../02-domain-capabilities/app-interaction/drive/personal-drive-file-sync.md)
 
 ### CMS / Web Console 交互
 
