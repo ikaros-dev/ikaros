@@ -7,6 +7,7 @@
 - 架构基线新增 Platform / Server App / Client App 三层模型：专业业务收敛为可独立启停的 Server App，专业移动端/桌面端为独立 Client App；Ikaros 官方客户端聚焦平台管理与快速认证
 - 新增 App Runtime、App Identity、Client Registration、Platform Permission / App Scope、App Discovery 与独立生命周期设计，并明确 Plugin 收敛为 Provider / Importer / Parser 等扩展机制
 - 新增 AppAuthorizationGrant / Token Binding：保持无 Login Session / Token blacklist，同时支持按 Client / Device 独立授权和撤销；同步补齐 App Public API、Discovery、P0 app_runtime Schema 与实施路线
+- 实现 App Runtime Foundation：新增 `app-runtime-api` / `app-runtime` 模块、Server App lifecycle、Client Registration、Scope / Platform Permission Grant 持久化与迁移，并通过 Authorization Capability 校验 Permission Registry
 - 注册和登录
 - 完成系统访问控制后台：用户管理、角色与权限管理、用户角色关联管理
 - 用户支持新增、详情、编辑、分页查询和软删除；软删除使用 `is_del`（`0` 未删除、`1` 已删除）并在后端统一过滤
