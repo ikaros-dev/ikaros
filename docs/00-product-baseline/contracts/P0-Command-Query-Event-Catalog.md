@@ -370,7 +370,7 @@ P0 不提供 `identity.list-sessions`。JWT 登录没有服务端 Session 列表
 | Query ID | Permission | HTTP |
 |---|---|---|
 | `app-runtime.list-apps` | discovery policy / `system.app.read` for admin detail | contract-deferred |
-| `app-runtime.get-app` | discovery policy / `system.app.read` for admin detail | reserved: `GET /api/app-registry/apps/{app_id}` |
+| `app-runtime.get-app` | discovery policy / `system.app.read` for admin detail | contract-deferred; candidate namespace `/api/app-registry/...` |
 | `app-runtime.list-clients` | `system.app.client.manage` | contract-deferred |
 | `authorization.list-current-user-app-grants` | current user | contract-deferred |
 | `authorization.get-app-grant` | grant subject or internal Authentication Capability | internal / contract-deferred |
@@ -599,7 +599,7 @@ P0 Operation ID 必须映射到 Catalog：
 
 后续增加 endpoint 时必须先存在对应 Query / Command Contract，禁止 Controller-first。
 
-ADR-005/006 新增的 App Runtime / Client Authorization Application Contract 已在 9.1 / 9.2 定义；除 API Convention 已保留的 App Registry Discovery Namespace 外，其 HTTP 管理路由当前保持 `contract-deferred`，必须在后续 Contract PR 中同步更新 OpenAPI 与 HTTP Operation Registry 后才能实现。
+ADR-005/006 新增的 App Runtime / Client Authorization Application Contract 已在 9.1 / 9.2 定义；App Registry Discovery 与管理路由当前均保持 `contract-deferred`; API Convention 只预留命名空间与候选路径，必须在后续 Contract PR 中同步更新 OpenAPI 与 HTTP Operation Registry 后才能实现。
 
 ---
 
