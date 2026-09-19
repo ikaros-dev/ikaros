@@ -33,12 +33,15 @@
         "operations.background-task.created", "operations.background-task.started", "operations.background-task.succeeded", "operations.background-task.failed",
         "operations.background-task.cancel-requested", "operations.background-task.cancelled", "operations.background-task.retry-requested", "operations.background-task.timed-out",
         "authentication.user.created", "authentication.user.disabled", "authentication.user.enabled", "authentication.user.tokens-invalidated", "authorization.role.created",
-        "authorization.role.permissions-replaced", "authorization.user.role-assigned", "authorization.user.role-removed"
+        "authorization.role.permissions-replaced", "authorization.user.role-assigned", "authorization.user.role-removed",
+        "app-runtime.app.installed", "app-runtime.app.enabled", "app-runtime.app.disabled", "app-runtime.app.uninstalled",
+        "app-runtime.app.platform-permissions-replaced", "app-runtime.client.registered", "app-runtime.client.disabled",
+        "authorization.app-grant.created", "authorization.app-grant.scopes-replaced", "authorization.app-grant.revoked"
       ]
     },
     "schema_version": { "type": "integer", "const": 1 },
     "occurred_at": { "type": "string", "format": "date-time" },
-    "producer_subsystem": { "type": "string", "enum": ["resource", "storage", "operations", "authentication", "authorization", "ingestion"] },
+    "producer_subsystem": { "type": "string", "enum": ["resource", "storage", "operations", "authentication", "authorization", "app-runtime", "ingestion"] },
     "actor": {
       "type": ["object", "null"],
       "properties": { "type": { "type": "string" }, "id": { "type": ["string", "null"], "format": "uuid" } },
@@ -59,6 +62,7 @@
     { "if": { "properties": { "event_type": { "pattern": "^resource\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "resource" } } } },
     { "if": { "properties": { "event_type": { "pattern": "^storage\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "storage" } } } },
     { "if": { "properties": { "event_type": { "pattern": "^operations\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "operations" } } } },
+    { "if": { "properties": { "event_type": { "pattern": "^app-runtime\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "app-runtime" } } } },
     { "if": { "properties": { "event_type": { "pattern": "^identity\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "identity" } } } }
     ,{ "if": { "properties": { "event_type": { "pattern": "^(ingestion\\.|source\\.)" } } }, "then": { "properties": { "producer_subsystem": { "const": "ingestion" } } } }
   ],
