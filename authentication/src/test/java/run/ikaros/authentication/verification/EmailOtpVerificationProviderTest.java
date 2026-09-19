@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.operations.api.AuditService;
+import run.ikaros.operations.api.AuditEventCommand;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.authentication.PlatformUserEntity;
@@ -39,6 +40,7 @@ class EmailOtpVerificationProviderTest {
         otpHasher = mock(OtpHasher.class);
         delivery = mock(EmailOtpDelivery.class);
         auditService = mock(AuditService.class);
+        when(auditService.record(any(AuditEventCommand.class))).thenReturn(Mono.empty());
         provider = new EmailOtpVerificationProvider(userRepository, challengeRepository, codeGenerator, otpHasher,
             delivery, auditService);
     }

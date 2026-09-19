@@ -17,6 +17,11 @@ import run.ikaros.authorization.api.InitialRoleAssigner;
 import run.ikaros.authorization.api.PermissionSnapshot;
 import run.ikaros.authorization.api.PermissionSnapshotQuery;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.operations.api.AuditActorType;
+import run.ikaros.operations.api.AuditEventCommand;
+import run.ikaros.operations.api.AuditResult;
+import run.ikaros.operations.api.AuditRiskLevel;
+import run.ikaros.operations.api.AuditService;
 
 class AuthenticationServiceTest {
     @Test
@@ -28,6 +33,7 @@ class AuthenticationServiceTest {
         InitialRoleAssigner roles = mock(InitialRoleAssigner.class);
         PermissionSnapshotQuery permissions = mock(PermissionSnapshotQuery.class);
         TransactionalOperator transaction = mock(TransactionalOperator.class);
+        AuditService audit = mock(AuditService.class);
         UUID userId = UUID.randomUUID();
         Instant now = Instant.now();
         PlatformUserEntity user = new PlatformUserEntity(userId, "admin", "Administrator", null,
@@ -42,9 +48,10 @@ class AuthenticationServiceTest {
         when(permissions.permissionsFor(userId)).thenReturn(Mono.just(new PermissionSnapshot(userId, List.of("system.user.manage"))));
         when(tokens.issue(userId, 0L, List.of("system.user.manage")))
             .thenReturn(new JwtTokenService.TokenPair("access", "refresh", now.plusSeconds(300)));
+        when(audit.record(any(AuditEventCommand.class))).thenReturn(Mono.empty());
 
         AuthenticationService service = new AuthenticationService(users, credentials, userService, tokens, roles,
-            permissions, transaction);
+            permissions, transaction, audit);
         StepVerifier.create(service.register(new RegisterRequest("admin", "correct horse battery staple",
                 "Administrator", null)))
             .assertNext(view -> assertThat(view.userId()).isEqualTo(userId))
@@ -56,6 +63,10 @@ class AuthenticationServiceTest {
         verify(credentials).save(captured.capture());
         assertThat(captured.getValue().passwordHash()).startsWith("pbkdf2-sha256$")
             .doesNotContain("correct horse battery staple");
+        verify(audit).record(org.mockito.ArgumentMatchers.argThat(event ->
+            event.actorType() == AuditActorType.USER && event.result() == AuditResult.SUCCESS
+                && event.riskLevel() == AuditRiskLevel.SENSITIVE
+                && "authentication.register".equals(event.action())));
     }
 
     @Test
@@ -76,6 +87,7 @@ class AuthenticationServiceTest {
         JwtTokenService tokens = mock(JwtTokenService.class);
         PermissionSnapshotQuery permissions = mock(PermissionSnapshotQuery.class);
         TransactionalOperator transaction = mock(TransactionalOperator.class);
+        AuditService audit = mock(AuditService.class);
         UUID userId = UUID.randomUUID();
         Instant now = Instant.now();
         PlatformUserEntity user = new PlatformUserEntity(userId, "admin", "Administrator", null,
@@ -91,8 +103,9 @@ class AuthenticationServiceTest {
         when(permissions.permissionsFor(userId)).thenReturn(Mono.just(new PermissionSnapshot(userId, List.of())));
         when(tokens.issue(userId, 0L, List.of())).thenReturn(new JwtTokenService.TokenPair("access", "refresh", now.plusSeconds(300)));
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(audit.record(any(AuditEventCommand.class))).thenReturn(Mono.empty());
         AuthenticationService service = new AuthenticationService(users, credentials, userService, tokens,
-            mock(InitialRoleAssigner.class), permissions, transaction);
+            mock(InitialRoleAssigner.class), permissions, transaction, audit);
 
         when(users.save(any())).thenReturn(Mono.just(user));
         when(userService.get(userId)).thenReturn(Mono.just(new UserView(userId, "admin", "Administrator", null,
@@ -109,8 +122,60 @@ class AuthenticationServiceTest {
             .verifyComplete();
         assertThat(AuthenticationView.class.getRecordComponents()).extracting(component -> component.getName())
             .doesNotContain("sessionId");
+        verify(audit).record(org.mockito.ArgumentMatchers.argThat(event ->
+            event.actorType() == AuditActorType.USER && event.result() == AuditResult.SUCCESS
+                && "authentication.login".equals(event.action())));
 
         StepVerifier.create(service.logout()).verifyComplete();
+    }
+
+    @Test
+    void recordsAnonymousFailureWithoutPersistingPassword() {
+        PlatformUserRepository users = mock(PlatformUserRepository.class);
+        AuditService audit = mock(AuditService.class);
+        when(users.findByUsername("unknown-user")).thenReturn(Mono.empty());
+        when(audit.record(any(AuditEventCommand.class))).thenReturn(Mono.empty());
+        AuthenticationService service = new AuthenticationService(users, mock(PasswordCredentialRepository.class),
+            mock(UserService.class), mock(JwtTokenService.class), mock(InitialRoleAssigner.class),
+            mock(PermissionSnapshotQuery.class), mock(TransactionalOperator.class), audit);
+
+        StepVerifier.create(service.login(new LoginRequest("unknown-user", "plain-password")))
+            .expectError(NotFoundException.class)
+            .verify();
+
+        verify(audit).record(org.mockito.ArgumentMatchers.argThat(event ->
+            event.actorType() == AuditActorType.ANONYMOUS && event.actorId() == null
+                && event.result() == AuditResult.FAILURE && event.riskLevel() == AuditRiskLevel.SENSITIVE
+                && event.detailsJson().contains("unknown-user") && !event.detailsJson().contains("plain-password")));
+    }
+
+    @Test
+    void recordsAnonymousDeniedLoginForInactiveUser() {
+        PlatformUserRepository users = mock(PlatformUserRepository.class);
+        PasswordCredentialRepository credentials = mock(PasswordCredentialRepository.class);
+        AuditService audit = mock(AuditService.class);
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity inactiveUser = new PlatformUserEntity(userId, "inactive-user", "Inactive", null,
+            UserStatus.DISABLED, now, now, null, 0L);
+        String password = "correct horse battery staple";
+        when(users.findByUsername("inactive-user")).thenReturn(Mono.just(inactiveUser));
+        when(credentials.findByUserId(userId)).thenReturn(Mono.just(new PasswordCredentialEntity(UUID.randomUUID(),
+            userId, PasswordHashService.hash(password), now, now, 0L)));
+        when(audit.record(any(AuditEventCommand.class))).thenReturn(Mono.empty());
+        AuthenticationService service = new AuthenticationService(users, credentials, mock(UserService.class),
+            mock(JwtTokenService.class), mock(InitialRoleAssigner.class), mock(PermissionSnapshotQuery.class),
+            mock(TransactionalOperator.class), audit);
+
+        StepVerifier.create(service.login(new LoginRequest("inactive-user", password)))
+            .expectError(NotFoundException.class)
+            .verify();
+
+        verify(audit).record(org.mockito.ArgumentMatchers.argThat(event ->
+            event.actorType() == AuditActorType.ANONYMOUS && event.actorId() == null
+                && "authentication.login".equals(event.action()) && "USER".equals(event.targetType())
+                && userId.equals(event.targetId()) && event.result() == AuditResult.DENIED
+                && event.riskLevel() == AuditRiskLevel.SENSITIVE));
     }
 
     @Test

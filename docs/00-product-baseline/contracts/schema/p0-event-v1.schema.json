@@ -32,7 +32,7 @@
         "attachment.purged", "ingestion.import.started", "ingestion.plan.generated", "source.item.unavailable",
         "operations.background-task.created", "operations.background-task.started", "operations.background-task.succeeded", "operations.background-task.failed",
         "operations.background-task.cancel-requested", "operations.background-task.cancelled", "operations.background-task.retry-requested", "operations.background-task.timed-out",
-        "authentication.user.created", "authentication.user.disabled", "authentication.user.enabled", "authentication.user.tokens-invalidated", "authorization.role.created",
+        "authentication.user.created", "authentication.user.disabled", "authentication.user.enabled", "authentication.user.tokens-invalidated", "authorization.role.created", "authorization.role.updated", "authorization.role.deleted",
         "authorization.role.permissions-replaced", "authorization.user.role-assigned", "authorization.user.role-removed"
       ]
     },

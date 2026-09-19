@@ -18,6 +18,10 @@ public interface RoleService {
      */
     Mono<RoleView> create(UUID actorId, CreateRoleRequest request);
 
+    Mono<RoleView> update(UUID actorId, UUID roleId, UpdateRoleRequest request);
+
+    Mono<Void> delete(UUID actorId, UUID roleId);
+
     /**
      * 列出全部平台角色及其权限。
      *

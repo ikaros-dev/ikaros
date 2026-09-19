@@ -167,6 +167,16 @@ Dictionary 用于支持需要动态维护的显示值、可配置分类和扩展
 
 Audit Log 关注“谁在什么时候对什么执行了什么操作，结果如何”。
 
+审计事实由 `operations` Owner 的单一 `audit_event` 保存。公共写入契约必须包含：
+
+- `actor_type` 为 `USER`、`ADMIN`、`ANONYMOUS` 或 `SYSTEM`；`ANONYMOUS` 仅用于无法映射到用户 UUID 的未认证尝试，`ANONYMOUS` 和 `SYSTEM` 不得伪造 `actor_id`，`ADMIN` 必须在操作发生时写入该主体语义；
+- 小写点分 `action`、大写下划线 `target_type`、可选 `target_id`；
+- `result` 为 `SUCCESS`、`FAILURE` 或 `DENIED`，`risk_level` 为 `NORMAL`、`SENSITIVE` 或 `HIGH`；
+- `request_id`、`correlation_id` 与版本化 JSON 对象 `details`。详情写入前和读取前均须脱敏，不得保存密码、Token、OTP、Verification Grant、Authorization、Secret 或 Credential；
+- 迁移前缺少结果或风险的数据只能表示为 `UNKNOWN`，不得据事后状态推断。
+
+`action` 与 `target_type` 命名、details 允许字段和各操作的风险等级由审计覆盖矩阵维护；普通运行日志和 Activity 不得写入该事实表。
+
 ### 2.6 Scheduled Job 与其他 Task 概念分离
 
 V2 至少存在三类“任务”语义：
@@ -475,11 +485,13 @@ Subsystem Health 表示某个系统组件在某一时刻的健康状态。
 
 系统可提供若干内置角色。
 
-内置角色是否允许删除或修改需要明确限制。
+内置角色不得编辑或删除。
 
 ### FR-ROLE-03 自定义角色
 
 管理员可以创建自定义 Role。
+
+自定义 Role 的 `role_code` 创建后不可变；管理员只能编辑名称和描述。删除自定义 Role 前不得仍有 User Role 绑定，系统必须以冲突拒绝请求，避免静默撤销用户权限。
 
 ### FR-ROLE-04 Role Permission
 

@@ -6,11 +6,17 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.operations.api.AuditService;
+import run.ikaros.operations.api.AuditActorType;
+import run.ikaros.operations.api.AuditEventCommand;
+import run.ikaros.operations.api.AuditResult;
+import run.ikaros.operations.api.AuditRiskLevel;
 import run.ikaros.authorization.api.PlatformPermission;
 import run.ikaros.common.ConflictException;
+import run.ikaros.common.ForbiddenException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
@@ -26,6 +32,7 @@ public class DefaultRoleService implements RoleService {
     private final UserRoleRepository userRoleRepository;
     private final AuditService auditService;
     private final DurableEventPublisher eventService;
+    private final TransactionalOperator transaction;
 
     /**
      * 创建角色服务。
@@ -41,18 +48,25 @@ public class DefaultRoleService implements RoleService {
 
     public DefaultRoleService(PlatformRoleRepository roleRepository, RolePermissionRepository permissionRepository,
                               AuditService auditService, DurableEventPublisher eventService) {
-        this(roleRepository, permissionRepository, auditService, eventService, null);
+        this(roleRepository, permissionRepository, auditService, eventService, null, null);
     }
 
     @Autowired
     public DefaultRoleService(PlatformRoleRepository roleRepository, RolePermissionRepository permissionRepository,
                               AuditService auditService, DurableEventPublisher eventService,
                               UserRoleRepository userRoleRepository) {
+        this(roleRepository, permissionRepository, auditService, eventService, userRoleRepository, null);
+    }
+
+    public DefaultRoleService(PlatformRoleRepository roleRepository, RolePermissionRepository permissionRepository,
+                              AuditService auditService, DurableEventPublisher eventService,
+                              UserRoleRepository userRoleRepository, TransactionalOperator transaction) {
         this.roleRepository = roleRepository;
         this.permissionRepository = permissionRepository;
         this.auditService = auditService;
         this.eventService = eventService;
         this.userRoleRepository = userRoleRepository;
+        this.transaction = transaction;
     }
 
     @Override
@@ -66,12 +80,43 @@ public class DefaultRoleService implements RoleService {
         Instant now = Instant.now();
         PlatformRoleEntity role = new PlatformRoleEntity(null, request.code().trim(), request.name().trim(),
             request.description(), false, now, now, null);
-        return roleRepository.save(role)
+        Mono<RoleView> operation = roleRepository.save(role)
             .onErrorMap(DuplicateKeyException.class, exception -> new ConflictException("角色编码已存在"))
             .flatMap(saved -> emit("authorization.role.created", saved.id(),
                     "{\"role_id\":\"" + saved.id() + "\",\"role_key\":\"" + saved.code() + "\"}")
-                .then(auditService.record(actorId, "identity.role.create", "ROLE", saved.id(), "{}"))
+                .then(adminAudit(actorId, "identity.role.create", "ROLE", saved.id()))
                 .then(toView(saved)));
+        return transactional(operation);
+    }
+
+    @Override
+    public Mono<RoleView> update(UUID actorId, UUID roleId, UpdateRoleRequest request) {
+        if (request == null || request.name() == null || request.name().isBlank() || request.name().length() > 128
+            || request.description() != null && request.description().length() > 2000) {
+            return Mono.error(new IllegalArgumentException("角色资料不合法"));
+        }
+        Mono<RoleView> operation = requiredCustomRole(roleId).flatMap(role -> {
+            PlatformRoleEntity updated = new PlatformRoleEntity(role.id(), role.code(), request.name().trim(),
+                request.description(), false, role.createdAt(), Instant.now(), role.version());
+            return roleRepository.save(updated)
+                .flatMap(saved -> emit("authorization.role.updated", saved.id(), rolePayload(saved))
+                    .then(adminAudit(actorId, "identity.role.update", "ROLE", saved.id()))
+                    .then(toView(saved)));
+        });
+        return transactional(operation);
+    }
+
+    @Override
+    public Mono<Void> delete(UUID actorId, UUID roleId) {
+        Mono<Void> operation = requiredCustomRole(roleId)
+            .flatMap(role -> userRoleRepository.countByRoleId(roleId)
+                .flatMap(count -> count > 0
+                    ? Mono.error(new ConflictException("角色仍被用户绑定，不能删除"))
+                    : permissionRepository.deleteAllByRoleId(roleId)
+                        .then(roleRepository.delete(role))
+                        .then(emit("authorization.role.deleted", role.id(), rolePayload(role)))
+                        .then(adminAudit(actorId, "identity.role.delete", "ROLE", role.id()))));
+        return transactional(operation);
     }
 
     @Override
@@ -84,7 +129,7 @@ public class DefaultRoleService implements RoleService {
     @Override
     public Mono<RoleView> grantPermission(UUID actorId, UUID roleId, PlatformPermission permission) {
         Instant now = Instant.now();
-        return requiredRole(roleId)
+        Mono<RoleView> operation = requiredRole(roleId)
             .flatMap(role -> permissionRepository.findByRoleIdAndPermissionKey(roleId, permission.key())
                 .hasElement()
                 .flatMap(exists -> exists ? Mono.just(false) : permissionRepository.save(new RolePermissionEntity(
@@ -94,8 +139,9 @@ public class DefaultRoleService implements RoleService {
                 .flatMap(view -> (changed ? emit("authorization.role.permissions-replaced", roleId,
                     "{\"role_id\":\"" + roleId + "\",\"permission_keys\":"
                         + permissionKeysPayload(view.permissions()) + "}")
-                    : Mono.empty()).then(auditService.record(actorId, "identity.role.permission.grant", "ROLE", roleId, "{}"))
+                    : Mono.empty()).then(adminAudit(actorId, "identity.role.permission.grant", "ROLE", roleId))
                     .thenReturn(view)));
+        return transactional(operation);
     }
 
     @Override
@@ -106,7 +152,7 @@ public class DefaultRoleService implements RoleService {
             .distinct()
             .sorted()
             .toList();
-        return requiredRole(roleId)
+        Mono<RoleView> operation = requiredRole(roleId)
             .flatMap(role -> permissionRepository.findAllByRoleId(roleId).map(RolePermissionEntity::permissionKey)
                 .sort().collectList().flatMap(current -> {
                     if (current.equals(desired)) return toView(role);
@@ -120,27 +166,34 @@ public class DefaultRoleService implements RoleService {
                             "{\"role_id\":\"" + roleId + "\",\"permission_keys\":[\""
                                 + String.join("\",\"", desired) + "\"]}").thenReturn(view));
                 }))
-            .flatMap(view -> auditService.record(actorId, "identity.role.permission.replace", "ROLE", roleId, "{}")
+            .flatMap(view -> adminAudit(actorId, "identity.role.permission.replace", "ROLE", roleId)
                 .thenReturn(view));
+        return transactional(operation);
     }
 
     @Override
     public Mono<Void> assignRole(UUID actorId, UUID userId, UUID roleId) {
         Instant now = Instant.now();
-        return requiredRole(roleId)
+        Mono<Void> operation = requiredRole(roleId)
             .then(userRoleRepository.findByUserIdAndRoleId(userId, roleId))
             .switchIfEmpty(userRoleRepository.save(new UserRoleEntity(null, userId, roleId, now, null)))
-            .flatMap(binding -> auditService.record(actorId, "identity.user.role.assign", "USER", userId,
-                "{\"role_id\":\"" + roleId + "\"}"))
+            .flatMap(binding -> emit("authorization.user.role-assigned", userId,
+                "{\"user_id\":\"" + userId + "\",\"role_id\":\"" + roleId + "\"}")
+                .then(adminAudit(actorId, "identity.user.role.assign", "USER", userId,
+                    "{\"role_id\":\"" + roleId + "\"}")))
             .then();
+        return transactional(operation);
     }
 
     @Override
     public Mono<Void> revokeRole(UUID actorId, UUID userId, UUID roleId) {
-        return requiredRole(roleId)
+        Mono<Void> operation = requiredRole(roleId)
             .then(userRoleRepository.deleteByUserIdAndRoleId(userId, roleId))
-            .then(auditService.record(actorId, "identity.user.role.revoke", "USER", userId,
+            .then(emit("authorization.user.role-removed", userId,
+                "{\"user_id\":\"" + userId + "\",\"role_id\":\"" + roleId + "\"}"))
+            .then(adminAudit(actorId, "identity.user.role.revoke", "USER", userId,
                 "{\"role_id\":\"" + roleId + "\"}"));
+        return transactional(operation);
     }
 
     private Mono<Void> emit(String type, UUID roleId, String payload) {
@@ -154,6 +207,28 @@ public class DefaultRoleService implements RoleService {
     private Mono<PlatformRoleEntity> requiredRole(UUID roleId) {
         return roleRepository.findById(roleId)
             .switchIfEmpty(Mono.error(new NotFoundException("角色不存在")));
+    }
+
+    private Mono<PlatformRoleEntity> requiredCustomRole(UUID roleId) {
+        return requiredRole(roleId).flatMap(role -> role.builtIn()
+            ? Mono.error(new ForbiddenException("内置角色不能修改或删除")) : Mono.just(role));
+    }
+
+    private Mono<Void> adminAudit(UUID actorId, String action, String targetType, UUID targetId) {
+        return adminAudit(actorId, action, targetType, targetId, "{}");
+    }
+
+    private Mono<Void> adminAudit(UUID actorId, String action, String targetType, UUID targetId, String details) {
+        return auditService.record(new AuditEventCommand(AuditActorType.ADMIN, actorId, action, targetType, targetId,
+            AuditResult.SUCCESS, AuditRiskLevel.HIGH, details, 1, null));
+    }
+
+    private String rolePayload(PlatformRoleEntity role) {
+        return "{\"role_id\":\"" + role.id() + "\",\"role_key\":\"" + role.code() + "\"}";
+    }
+
+    private <T> Mono<T> transactional(Mono<T> operation) {
+        return transaction == null ? operation : operation.as(transaction::transactional);
     }
 
     private Mono<RoleView> toView(PlatformRoleEntity role) {

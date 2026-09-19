@@ -22,10 +22,14 @@ public record AuditEventEntity(
     @Column("occurred_at") Instant occurredAt,
     @Version Long version,
     @Column("request_id") String requestId,
-    @Column("correlation_id") String correlationId
+    @Column("correlation_id") String correlationId,
+    String result,
+    @Column("risk_level") String riskLevel,
+    @Column("details_schema_version") Integer detailsSchemaVersion
 ) {
     public AuditEventEntity(UUID id, String actorType, UUID actorId, String action, String targetType,
                             UUID targetId, String details, Instant occurredAt, Long version) {
-        this(id, actorType, actorId, action, targetType, targetId, details, occurredAt, version, null, null);
+        this(id, actorType, actorId, action, targetType, targetId, details, occurredAt, version, null, null,
+            "UNKNOWN", "UNKNOWN", 1);
     }
 }

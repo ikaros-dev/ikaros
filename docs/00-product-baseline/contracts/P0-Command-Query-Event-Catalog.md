@@ -307,6 +307,8 @@ Attachment Content Query 必须支持 HTTP Range，并在返回内容前重新�
 | `identity.enable-user` | `identity.user.manage` | policy | `authentication.user.enabled` |
 | `identity.delete-user` | `identity.user.manage` | REQUIRED | `authentication.user.deactivated` |
 | `identity.create-role` | `identity.role.manage` | policy | `authorization.role.created` |
+| `identity.update-role` | `identity.role.manage` | REQUIRED | `authorization.role.updated` |
+| `identity.delete-role` | `identity.role.manage` | REQUIRED | `authorization.role.deleted` |
 | `identity.replace-role-permissions` | `identity.role.manage` | REQUIRED | `authorization.role.permissions-replaced` |
 | `identity.assign-role` | `identity.role.manage` | policy | `authorization.user.role-assigned` |
 | `identity.remove-role` | `identity.role.manage` | policy | `authorization.user.role-removed` |
@@ -317,6 +319,8 @@ Attachment Content Query 必须支持 HTTP Range，并在返回内容前重新�
 如果用户名只命中一条 `is_del = 1` 的历史用户，`identity.create-user` 必须恢复该用户原记录，将 `is_del` 设为 `0`，覆盖昵称、邮箱和密码，并将状态设为 `ACTIVE`；不创建重复用户。若用户名属于未删除用户，或恢复时邮箱与其他未删除用户冲突，返回冲突错误。
 
 用户管理的资料/状态更新与软删除 Command 禁止目标用户等于当前执行主体；当前用户只能查看自身信息或执行明确允许的自助安全操作。
+
+`identity.update-role` 只允许更新非内置 Role 的名称和描述，不得修改 `role_code`。`identity.delete-role` 只允许删除非内置 Role，且当任意 User Role 绑定仍引用目标 Role 时必须以冲突拒绝；删除成功时同步移除该 Role 的 Permission 绑定。
 
 `identity.invalidate-user-tokens` 不枚举或撤销某个服务端 Session。它原子提升目标用户的 `security_version`；后续请求中，携带旧 `security_version` 的 JWT 被拒绝。
 
@@ -471,6 +475,8 @@ Error Event 只包含可安全公开的 classification / summary，不复制 sta
 | `authentication.user.enabled` | 1 | `user_id, security_version` |
 | `authentication.user.deactivated` | 1 | `user_id, security_version` |
 | `authorization.role.created` | 1 | `role_id, role_key` |
+| `authorization.role.updated` | 1 | `role_id, role_key` |
+| `authorization.role.deleted` | 1 | `role_id, role_key` |
 | `authorization.role.permissions-replaced` | 1 | `role_id, permission_keys[]` |
 | `authorization.user.role-assigned` | 1 | `user_id, role_id` |
 | `authorization.user.role-removed` | 1 | `user_id, role_id` |
@@ -504,6 +510,8 @@ Error Event 只包含可安全公开的 classification / summary，不复制 sta
 | `authentication.user.deactivated` | Authentication | token/security-version invalidation | Audit, Notification |
 | `authentication.user.tokens-invalidated` | Authentication | authorization/token acceptance cache invalidation | Audit, Notification |
 | `authorization.role.permissions-replaced` | Authorization | authorization cache invalidation | Audit |
+| `authorization.role.updated` | Authorization | authorization cache invalidation | Audit |
+| `authorization.role.deleted` | Authorization | authorization cache invalidation | Audit |
 
 “Required Consumer”失败不会回滚 producer 已提交事实，但必须进入 retry / DLQ / reconciliation 可观测流程。
 
@@ -540,6 +548,8 @@ P0 Operation ID 必须映射到 Catalog：
 | `GET /api/admin/users` | `listUsers` | `identity.list-users` |
 | `POST /api/admin/users` | `createUser` | `identity.create-user` |
 | `GET /api/admin/roles` | `listRoles` | `identity.list-roles` |
+| `PATCH /api/admin/roles/{role_id}` | `updateRole` | `identity.update-role` |
+| `DELETE /api/admin/roles/{role_id}` | `deleteRole` | `identity.delete-role` |
 | `GET /api/admin/permissions` | `listPermissions` | `identity.list-permissions` |
 | `POST /api/me/actions/invalidate-tokens` | `invalidateCurrentUserTokens` | `identity.invalidate-user-tokens` |
 

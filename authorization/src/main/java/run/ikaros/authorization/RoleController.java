@@ -11,6 +11,8 @@ import java.net.URI;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -73,6 +75,24 @@ public class RoleController {
     @GetMapping
     public Flux<RoleView> list() {
         return roleService.list();
+    }
+
+    @PatchMapping("/{roleId}")
+    public Mono<RoleView> update(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID roleId,
+        @Valid @RequestBody UpdateRoleRequest request
+    ) {
+        return roleService.update(actorId, roleId, request);
+    }
+
+    @DeleteMapping("/{roleId}")
+    public Mono<ResponseEntity<Void>> delete(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID roleId
+    ) {
+        return roleService.delete(actorId, roleId)
+            .thenReturn(ResponseEntity.noContent().build());
     }
 
     /**
