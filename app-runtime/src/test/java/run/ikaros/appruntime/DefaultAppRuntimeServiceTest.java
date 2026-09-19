@@ -124,6 +124,47 @@ class DefaultAppRuntimeServiceTest {
     }
 
     @Test
+    void uninstallRevokesPlatformPermissionGrants() {
+        UUID actor = UUID.randomUUID();
+        AppInstallationView disabled = installation(AppLifecycleState.DISABLED, 5);
+        AppInstallationView uninstalled = installation(AppLifecycleState.UNINSTALLED, 6);
+
+        when(store.installation("run.ikaros.anime")).thenReturn(Mono.just(disabled));
+        when(store.replacePermissionGrants(
+            eq("run.ikaros.anime"),
+            eq(Set.of()),
+            eq(actor),
+            org.mockito.ArgumentMatchers.any(Instant.class)
+        )).thenReturn(Mono.empty());
+        when(store.updateLifecycle(
+            eq("run.ikaros.anime"),
+            org.mockito.ArgumentMatchers.eq(5L),
+            eq(AppLifecycleState.UNINSTALLED),
+            nullable(String.class),
+            nullable(Instant.class),
+            nullable(Instant.class),
+            org.mockito.ArgumentMatchers.any(Instant.class)
+        )).thenReturn(Mono.just(uninstalled));
+
+        StepVerifier.create(service.uninstall(actor, "run.ikaros.anime", AppDataPolicy.KEEP_DATA))
+            .expectNext(uninstalled)
+            .verifyComplete();
+
+        verify(store).replacePermissionGrants(
+            eq("run.ikaros.anime"),
+            eq(Set.of()),
+            eq(actor),
+            org.mockito.ArgumentMatchers.any(Instant.class)
+        );
+        verify(events).append(org.mockito.ArgumentMatchers.argThat(
+            event -> "app-runtime.app.platform-permissions-replaced".equals(event.eventType())
+        ));
+        verify(events).append(org.mockito.ArgumentMatchers.argThat(
+            event -> "app-runtime.app.uninstalled".equals(event.eventType())
+        ));
+    }
+
+    @Test
     void rejectsDeleteDataUntilErasureHandlerExists() {
         StepVerifier.create(service.uninstall(
                 UUID.randomUUID(), "run.ikaros.anime", AppDataPolicy.DELETE_APP_DATA))
