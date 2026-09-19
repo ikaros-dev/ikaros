@@ -102,7 +102,7 @@ onMounted(loadEvents);
         <el-date-picker
           v-model="form.timeRange"
           type="datetimerange"
-          value-format="YYYY-MM-DDTHH:mm:ss[Z]"
+          value-format="YYYY-MM-DDTHH:mm:ssZ"
           :start-placeholder="t('auditLog.startTime')"
           :end-placeholder="t('auditLog.endTime')"
           :range-separator="t('auditLog.to')"
