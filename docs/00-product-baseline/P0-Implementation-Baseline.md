@@ -40,6 +40,7 @@ Phase 0 实现至少应以下列文档作为输入：
 - `Implementation-Roadmap-and-Dependency-Graph.md`
 - `Module-Package-Ownership-Design.md`
 - `adr/ADR-005-platform-server-app-client-app-architecture.md`
+- `adr/ADR-006-app-client-authorization-grant-token-binding.md`
 - `../01-platform-foundation/App-Runtime-Identity-Client-Architecture-Design.md`
 - `../01-platform-foundation/Plugin-Runtime-SDK-Lifecycle-Design.md`
 - `database/P0-Database-Schema-Design.md`
@@ -74,6 +75,7 @@ Media Delivery / Restore 的独立 P0 Addendum 继续作为专项规范性扩展
 - `/api`、Problem、snake_case、Idempotency、ETag/If-Match、Range 等 API 规则；
 - Platform / Server App / Client App 三层边界；
 - Server App Platform Permission 与 Client App Scope 分离；
+- AppAuthorizationGrant 作为 Authorization-owned 授权事实，支持 Client / Device 级撤销且不恢复 Login Session / Token blacklist；
 - App-owned Data 与 Platform Resource 的可选关联原则；
 - Plugin 私有持久化边界，以及 Plugin 不作为完整业务 App 抽象的边界。
 
@@ -106,6 +108,7 @@ Maven Multi-Module 中的逻辑模块骨架
  -> Transaction + Outbox / Inbox
  -> Background Task Runtime
  -> Resource / Storage / Authentication / Authorization Application API
+ -> App Runtime / Client Registration / AppAuthorizationGrant foundation
  -> OpenAPI Controller / DTO
  -> 契约 / 恢复 / 并发 / 安全测试
  -> P0 E2E 门禁
@@ -115,7 +118,7 @@ Maven Multi-Module 中的逻辑模块骨架
 
 Phase 1 Resource Core 对应能力实现前，至少补齐 Collection 层级关系、Resource Relation、必要的 Title/Alias 变更能力，以及当前处于 `contract-deferred` 状态的公开变更接口。
 
-Personal Drive 和每个 Professional Domain 仍必须分别具备 Schema + Command/Query + Event + Permission + OpenAPI（适用时）+ Acceptance Matrix，才能进入对应模块的编码阶段。
+Personal Drive 和每个第一方 Server App 仍必须分别具备 App Manifest + App-owned Schema + Command/Query + Event + Platform Permission + Client Scope + Public App API/OpenAPI（适用时）+ Acceptance Matrix，才能进入对应模块的编码阶段。
 
 ## 7. 变更控制
 
