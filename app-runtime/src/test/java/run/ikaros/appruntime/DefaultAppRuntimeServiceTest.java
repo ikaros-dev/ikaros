@@ -175,7 +175,7 @@ class DefaultAppRuntimeServiceTest {
             .expectError(IllegalArgumentException.class)
             .verify();
 
-        verify(store, never()).replacePermissionGrants(anyString(), any(), any());
+        verify(store, never()).replacePermissionGrants(anyString(), any(), any(), any());
     }
 
     private InstallAppRequest request() {
