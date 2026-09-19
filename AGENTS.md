@@ -76,6 +76,8 @@
 - Worker 不是数据库超级用户。Worker 必须通过 Background Task Claim、Task Handler Contract、目标领域 Application API、明确拥有的数据表或 Event/Outbox 工作，不得任意执行跨领域 SQL。
 - 专业业务采用 Platform / Server App / Client App 三层模型。Server App 只能通过 Platform API / Capability 使用平台能力；Client App 优先调用对应 Server App Public API，不得依赖 Platform 私有实现或拼装底层 API 重建领域规则。
 - Server App 的 Platform Permission 与 Client App 的业务 Scope 必须分离；第一方 App 不得因为官方身份绕过 Authorization、Owner Boundary 或 App Runtime Contract。
+- AppAuthorizationGrant 属于 Authorization Owner：App Runtime 只拥有 Client Registration / Scope Definition；Authentication 只能通过 `authorization-api` 获取 Grant Snapshot 签发 App-scoped Token。不得恢复 Login Session、持久化 Token / `jti` blacklist 来实现 Client 撤销。
+- Native Client 视为 Public Client，不得把静态 `client_secret` 嵌入 APK / IPA / 桌面安装包并作为安全边界；Client 授权使用 PKCE 等公开客户端安全机制。
 - Plugin 只能通过 Plugin API、Extension Point 和公开 Capability 访问核心能力；禁止直接访问 Core Repository、Entity、内部 Bean 或任意 Core SQL。Plugin 用于 Provider、Importer、Parser、Storage Provider、Automation Extension 等扩展场景，不作为 Anime、Photos、Drive、Accounting 等完整业务应用的产品级抽象。
 
 ## 数据库、事务与迁移
