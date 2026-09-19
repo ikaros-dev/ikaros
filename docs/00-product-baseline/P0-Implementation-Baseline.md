@@ -2,13 +2,15 @@
 
 | 项目 | 内容 |
 |---|---|
-| 基线 ID | `v2-p0-foundation-0.3` |
-| 基线日期 | 2026-09-06 |
+| 基线 ID | `v2-p0-foundation-0.4` |
+| 基线日期 | 2026-09-19 |
 | 状态 | **已接受，可进入 Phase 0 工程基础实现** |
 | 目标 | 允许 V2 从设计阶段进入 Phase 0 工程基础实现 |
 | 非目标 | 不表示 Phase 1+ 的所有业务域已经冻结 |
 
 > 本基线是“进入下一阶段”的工程门禁决议。它冻结 Phase 0 所需的基础契约，但不代表整个 V2 已经最终定稿。
+
+`v2-p0-foundation-0.4` 在原 0.3 基线上新增 ADR-005/006 的 Platform / Server App / Client App、App Runtime、Client Registration、AppAuthorizationGrant、App Scope / Platform Permission 分离与对应 P0 Schema / Contract Gate；不表示现有专业领域 HTTP 路由已经完成 Server App Namespace 迁移。
 
 ## 1. 决策
 
