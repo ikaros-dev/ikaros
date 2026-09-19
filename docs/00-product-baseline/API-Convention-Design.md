@@ -930,12 +930,12 @@ resource.not_found
 concurrency.precondition_failed
 idempotency.key_reused
 rate_limit.exceeded
-app.not_installed
+app.not-installed
 app.disabled
 app.incompatible
-app.api_version_unsupported
-app.authorization_required
-app.scope_insufficient
+app.api-version-unsupported
+app.authorization-required
+app.scope-insufficient
 ```
 
 这类稳定 Code。
@@ -1820,10 +1820,10 @@ GET /api/app-registry/apps/{app_id}
 调用者必须能够区分：
 
 ```text
-app.not_installed
+app.not-installed
 app.disabled
 app.incompatible
-app.api_version_unsupported
+app.api-version-unsupported
 ```
 
 Discovery 结果不是授权结果。
