@@ -16,15 +16,16 @@
 6. [`Implementation-Roadmap-and-Dependency-Graph.md`](./Implementation-Roadmap-and-Dependency-Graph.md)
 7. [`Module-Package-Ownership-Design.md`](./Module-Package-Ownership-Design.md)
 8. [`adr/ADR-005-platform-server-app-client-app-architecture.md`](./adr/ADR-005-platform-server-app-client-app-architecture.md)
-9. [`App-Runtime-Identity-Client-Architecture-Design.md`](../01-platform-foundation/App-Runtime-Identity-Client-Architecture-Design.md)
-10. [`Plugin-Runtime-SDK-Lifecycle-Design.md`](../01-platform-foundation/Plugin-Runtime-SDK-Lifecycle-Design.md)
-11. [`database/P0-Database-Schema-Design.md`](./database/P0-Database-Schema-Design.md)
-12. [`contracts/P0-Command-Query-Event-Catalog.md`](./contracts/P0-Command-Query-Event-Catalog.md)
-13. [`contracts/P0-Event-Payload-Schema-Registry.md`](./contracts/P0-Event-Payload-Schema-Registry.md)
-14. [`contracts/openapi-v2-p0.yaml`](./contracts/openapi-v2-p0.yaml)
-15. [`testing/P0-Acceptance-Invariant-Test-Matrix.md`](./testing/P0-Acceptance-Invariant-Test-Matrix.md)
-16. 目标 Server App 对应的 Subsystem Design
-17. Client App / CMS Interaction Design
+9. [`adr/ADR-006-app-client-authorization-grant-token-binding.md`](./adr/ADR-006-app-client-authorization-grant-token-binding.md)
+10. [`App-Runtime-Identity-Client-Architecture-Design.md`](../01-platform-foundation/App-Runtime-Identity-Client-Architecture-Design.md)
+11. [`Plugin-Runtime-SDK-Lifecycle-Design.md`](../01-platform-foundation/Plugin-Runtime-SDK-Lifecycle-Design.md)
+12. [`database/P0-Database-Schema-Design.md`](./database/P0-Database-Schema-Design.md)
+13. [`contracts/P0-Command-Query-Event-Catalog.md`](./contracts/P0-Command-Query-Event-Catalog.md)
+14. [`contracts/P0-Event-Payload-Schema-Registry.md`](./contracts/P0-Event-Payload-Schema-Registry.md)
+15. [`contracts/openapi-v2-p0.yaml`](./contracts/openapi-v2-p0.yaml)
+16. [`testing/P0-Acceptance-Invariant-Test-Matrix.md`](./testing/P0-Acceptance-Invariant-Test-Matrix.md)
+17. 目标 Server App 对应的 Subsystem Design
+18. Client App / CMS Interaction Design
 
 ---
 
@@ -55,7 +56,7 @@
 
 负责：
 
-- Foundation → Core Platform → Content Infrastructure → Professional Domains → Higher-level Capabilities 的实施顺序；
+- Engineering Foundation → Platform Kernel / App Runtime → Platform Services → First-party Server Apps → Higher-level Apps 的实施顺序；
 - 每个 Phase 的 Deliverables；
 - Phase Exit Criteria；
 - Definition of Ready / Definition of Done；
@@ -210,7 +211,7 @@ Automated Contract / Integration / E2E Tests
 
 ---
 
-## 4. 当前七项工程设计完成状态
+## 4. 当前工程设计完成状态
 
 | # | 工程设计事项 | 文档状态 |
 |---|---|---|
