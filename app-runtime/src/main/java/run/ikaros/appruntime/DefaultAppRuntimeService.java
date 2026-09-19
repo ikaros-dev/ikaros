@@ -282,15 +282,15 @@ public class DefaultAppRuntimeService implements
             .filter(installation -> installation.lifecycleState() != AppLifecycleState.UNINSTALLED)
             .switchIfEmpty(Mono.error(new NotFoundException("app.not-installed", "App 未安装")))
             .then(validatePermissions(keys))
-            .then(store.replacePermissionGrants(normalized, keys, actorId, Instant.now()))
-            .then(emit(
+            .then(Mono.defer(() -> store.replacePermissionGrants(normalized, keys, actorId, Instant.now())))
+            .then(Mono.defer(() -> emit(
                 "app-runtime.app.platform-permissions-replaced",
                 object(
                     stringField("app_id", normalized),
                     stringArrayField("permission_keys", keys)
                 )
-            ))
-            .then(audit(actorId, "app-runtime.permission.replace", normalized));
+            )))
+            .then(Mono.defer(() -> audit(actorId, "app-runtime.permission.replace", normalized)));
         return transactional(operation);
     }
 
