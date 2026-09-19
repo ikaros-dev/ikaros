@@ -56,7 +56,7 @@
 
 ## 核心领域语义
 
-- 业务逻辑内容以 `Resource` 为统一身份基础，但不得把所有领域压缩成无业务语义的通用 JSON。
+- 跨应用的内容型逻辑对象以 `Resource` 为统一身份基础，但不得把所有领域压缩成无业务语义的通用 JSON；并非所有 Server App Domain Entity 都必须成为 Resource，Ledger、Transaction、Budget 等纯业务实体可以由 App 独立拥有。
 - 跨领域二进制/内容对象统一称为 `Attachment`；`File`/`Path` 只能在 Personal Drive 或底层文件系统语境中使用，不得取代 Attachment 作为跨领域内容模型。
 - `Resource`、`Attachment`、`Blob`、`Blob Placement/Replica` 必须保持身份和生命周期分离。业务对象不能直接依赖物理路径或 Provider `object_key`。
 - 具有独立生命周期的内部实体主键统一使用平台 ID Generator 生成的 UUIDv7，并使用 PostgreSQL `uuid` 类型；不得使用自增整数、Snowflake、UUIDv4 或 Provider ID 作为内部实体主键。
@@ -74,7 +74,9 @@
 - 跨模块双向依赖必须通过 Event、更小的 Capability Contract、Integration 协议或重新划分所有权解决；禁止把依赖不清的类型/实体/工具全部塞进 `common`。
 - Controller 不得直接写 Repository，也不得横跨多个 Repository 拼接业务事务；请求必须进入唯一 Owner 的 Application API。
 - Worker 不是数据库超级用户。Worker 必须通过 Background Task Claim、Task Handler Contract、目标领域 Application API、明确拥有的数据表或 Event/Outbox 工作，不得任意执行跨领域 SQL。
-- Plugin 只能通过 Plugin API、Extension Point 和公开 Capability 访问核心能力；禁止直接访问 Core Repository、Entity、内部 Bean 或任意 Core SQL。插件数据、Migration、权限和运行时故障必须保持私有与隔离。
+- 专业业务采用 Platform / Server App / Client App 三层模型。Server App 只能通过 Platform API / Capability 使用平台能力；Client App 优先调用对应 Server App Public API，不得依赖 Platform 私有实现或拼装底层 API 重建领域规则。
+- Server App 的 Platform Permission 与 Client App 的业务 Scope 必须分离；第一方 App 不得因为官方身份绕过 Authorization、Owner Boundary 或 App Runtime Contract。
+- Plugin 只能通过 Plugin API、Extension Point 和公开 Capability 访问核心能力；禁止直接访问 Core Repository、Entity、内部 Bean 或任意 Core SQL。Plugin 用于 Provider、Importer、Parser、Storage Provider、Automation Extension 等扩展场景，不作为 Anime、Photos、Drive、Accounting 等完整业务应用的产品级抽象。
 
 ## 数据库、事务与迁移
 
@@ -112,7 +114,7 @@
 
 ## 安全、授权与敏感数据
 
-- Authentication 与 Authorization 分离。Controller/HTTP Security 只是第一道门；Application Command、Automation、Plugin、Background Task、Internal Command 和 Realtime Channel 都必须执行授权判断。
+- Authentication 与 Authorization 分离。Controller/HTTP Security 只是第一道门；Application Command、Server App、Client App、Automation、Plugin、Background Task、Internal Command 和 Realtime Channel 都必须执行授权判断。
 - 对象级授权必须在目标 Domain/Authorization Capability 中权威判断；Search/Cache 只能做候选过滤，不能作为最终 ACL 依据。Platform RBAC 不替代 Resource ACL、Share 或 Room Membership。
 - P0 身份认证采用无状态 JWT：请求必须校验签名、标准时间/受众约束、Subject、用户状态和 `security_version`。P0 不持久化登录 Session、Access/Refresh Token 原文或 Token Digest；用户级提前失效通过提升 `security_version`。
 - 业务配置只保存 Secret Reference 或加密封装。禁止在 API Response、Event Payload、普通日志、Plugin Config、Cache 或数据库普通参数中传播 Secret 明文、Credential、密码或私密领域明文。
@@ -123,7 +125,7 @@
 
 ## HTTP、契约与兼容性
 
-- HTTP-first：官方客户端、插件、脚本和第三方客户端原则上使用同一套公开能力。SSE/WebSocket/WebRTC 可用于实时场景，但不得成为绕过权限的隐藏业务通道。
+- HTTP-first：专业 Client App 原则上通过目标 Server App 的公开业务 API 工作，Server App 通过 Platform API / Capability 使用基础能力；管理客户端、插件、脚本和第三方客户端同样不得依赖隐藏内部通道。SSE/WebSocket/WebRTC 可用于实时场景，但不得成为绕过权限的隐藏业务通道。
 - 稳定 HTTP API 必须登记到 HTTP Operation Registry 并进入 OpenAPI；`operationId` 唯一，公开 API 不得暴露数据库 Schema Ownership 或内部实现。
 - API 默认遵循 `/api` 入口、JSON `snake_case` 字段、UUIDv7 身份、RFC 3339 时间、稳定 Problem `code`、cursor 分页和稳定排序。具体版本路径、Admin 命名空间和 operation 映射以 API Convention/OpenAPI 为准。
 - 有并发更新风险的资源使用 ETag/If-Match 与 revision 语义；创建/会产生副作用的可重试操作使用 `Idempotency-Key`，必须区分同 Key 同请求与同 Key 不同请求。
