@@ -305,7 +305,12 @@ class AppRuntimeStore {
             .all();
     }
 
-    Mono<Void> replacePermissionGrants(String appId, Set<String> permissionKeys, Instant now) {
+    Mono<Void> replacePermissionGrants(
+        String appId,
+        Set<String> permissionKeys,
+        java.util.UUID actorId,
+        Instant now
+    ) {
         Mono<Void> delete = databaseClient.sql("""
                 DELETE FROM app_runtime.app_permission_grant WHERE app_id = :appId
                 """)
@@ -314,18 +319,19 @@ class AppRuntimeStore {
             .rowsUpdated()
             .then();
         Flux<Void> inserts = Flux.fromIterable(permissionKeys.stream().sorted().toList())
-            .concatMap(key -> databaseClient.sql("""
-                    INSERT INTO app_runtime.app_permission_grant (
-                        app_id, permission_key, grant_status, granted_by_user_id, granted_at, updated_at
-                    )
-                    VALUES (:appId, :permissionKey, 'GRANTED', NULL, :now, :now)
-                    """)
-                .bind("appId", appId)
-                .bind("permissionKey", key)
-                .bind("now", now)
-                .fetch()
-                .rowsUpdated()
-                .then());
+            .concatMap(key -> {
+                DatabaseClient.GenericExecuteSpec spec = databaseClient.sql("""
+                        INSERT INTO app_runtime.app_permission_grant (
+                            app_id, permission_key, grant_status, granted_by_user_id, granted_at, updated_at
+                        )
+                        VALUES (:appId, :permissionKey, 'GRANTED', :actorId, :now, :now)
+                        """)
+                    .bind("appId", appId)
+                    .bind("permissionKey", key)
+                    .bind("now", now);
+                spec = bindNullable(spec, "actorId", actorId, java.util.UUID.class);
+                return spec.fetch().rowsUpdated().then();
+            });
         return delete.thenMany(inserts).then();
     }
 
