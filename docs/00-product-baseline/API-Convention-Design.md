@@ -114,9 +114,11 @@ Permission + Validation + Business Rule
 
 API 层不得成为绕过领域所有权的“万能写库入口”。
 
-### 3.2 官方客户端与第三方客户端使用同一公开能力
+### 3.2 第一方与第三方使用同一公开能力
 
-CMS、Flutter App、脚本、插件集成和第三方客户端原则上都应使用公开稳定能力。
+CMS、Ikaros 管理客户端、第一方 Client App、第三方 Client App、脚本、插件集成原则上都应使用公开稳定能力。
+
+依据 ADR-005，专业 Client App 不直接拼装 Platform Resource / Attachment API 来实现 Anime、Accounting、Photos 等领域逻辑，而是优先调用对应 Server App 的 Public App API。第一方 Client 不得因为官方身份获得隐藏业务入口或授权旁路。
 
 禁止长期保留：
 
@@ -156,6 +158,25 @@ V2 默认不是 SaaS 多租户系统，因此：
 
 未来若引入真正 Multi-Tenant，必须通过独立 ADR 和新契约设计处理，不能通过偷偷增加一个 Header 改变现有 V2 语义。
 
+### 3.5 Platform API 与 Server App Public API 分层
+
+V2 HTTP API 至少分为：
+
+```text
+Platform API
+    ├── Resource / Attachment / Task / Auth / Admin ...
+    └── App Registry / Discovery / Lifecycle
+
+Server App Public API
+    └── /api/apps/{app_id}/v{app_api_major}/...
+```
+
+Platform API 的 Owner 是对应 Platform Domain；Server App Public API 的 Owner 是对应 Server App。
+
+普通专业 Client 调用 Server App Public API 时，不应依赖该 App 内部如何组合 Resource、Attachment、Task、Search 等 Platform Capability。
+
+跨 App 调用也必须通过目标 Server App 的公开 App API / Capability / Event，不得通过 HTTP 暴露其他 App 的 Persistence。
+
 ---
 
 ## 4. API 版本入口与 URI Convention
@@ -184,6 +205,21 @@ Major Version 只在发生无法通过兼容演进解决的公共契约变更时
 
 Server 产品版本、Database Schema Version、Plugin API Version、Event Contract Version、Export Format Version 不得因为 API 路径中出现 `v2` 就被视为同一个版本概念。
 
+Server App Public API 拥有独立 Major Version。规范路径：
+
+```text
+/api/apps/{app_id}/v{app_api_major}/...
+```
+
+例如：
+
+```text
+GET /api/apps/run.ikaros.anime/v3/library
+GET /api/apps/run.ikaros.accounting/v1/accounts
+```
+
+`app_api_major` 与 Ikaros Server 产品版本、Platform API、App Package Version 均独立。一个 Server App 可以在迁移窗口内同时暴露多个受支持 Major Version。
+
 ### 4.2 URI 命名
 
 统一规则：
@@ -205,7 +241,22 @@ POST /api/resources/{resource_id}/actions/archive
 POST /api/background-tasks/{task_id}/actions/cancel
 ```
 
-### 4.3 Admin API 独立命名空间
+### 4.3 App Registry / Discovery Namespace
+
+App Registry 是 Platform API，不属于任一 Server App。
+
+规范读取入口：
+
+```text
+GET /api/app-registry/apps
+GET /api/app-registry/apps/{app_id}
+```
+
+用于返回安装状态、启用状态、App Package Version、受支持 App API Major、声明 Scope、能力与兼容性摘要。
+
+Server App 的业务接口不得放进 `/api/app-registry`。
+
+### 4.4 Admin API 独立命名空间
 
 平台管理能力使用明确的 Admin Namespace，例如：
 
@@ -217,7 +268,7 @@ POST /api/background-tasks/{task_id}/actions/cancel
 
 能够访问普通 Resource API 的 Principal 不自动获得 Admin API 权限。Admin API 每次请求仍必须进行独立 Authentication / Authorization / Step-up 判断。
 
-### 4.4 URI 不包含展示状态
+### 4.5 URI 不包含展示状态
 
 禁止将易变化的状态直接编码为资源身份，例如：
 
@@ -609,6 +660,27 @@ Security Policy
 
 高等级验证不会创造业务 Permission。
 
+对于 Server App Public API，还必须增加 Client / Grant 约束：
+
+```text
+Authentication
+AND User Permission / Object Policy
+AND Client Registration Valid
+AND AppAuthorizationGrant ACTIVE
+AND token.aud == target app_id
+AND token.client_id == grant.client_id
+AND token.scope ⊆ grant.granted_scopes
+AND Required Step-up Verification
+AND Security Policy
+```
+
+Platform Permission 与 App Scope 是不同命名空间：
+
+- Platform Permission：Server App → Platform；
+- App Scope：Client App → Server App。
+
+不得把二者合并成同一个 permission list。
+
 ### 11.2 HTTP Status
 
 基础语义：
@@ -658,7 +730,24 @@ Security Policy
 
 必要时允许对“无权限”和“不存在”统一返回安全的 `404` 或统一 Challenge Result。
 
-### 11.5 Capability Discovery 不替代权限
+### 11.5 App-scoped Token
+
+依据 ADR-006，面向 Server App 的 Access / Refresh Token 必须绑定：
+
+```text
+client_id
+aud = target app_id
+scope
+authorization_grant_id
+authorization_grant_version
+device_id (when required)
+```
+
+业务请求不得通过 Query/Header 临时覆盖 Token 中的 `client_id`、`aud` 或 `scope`。
+
+撤销 Grant 后，旧 App-scoped Token 按 Security Contract 失效；该机制不依赖 `jti` blacklist 或 Login Session。
+
+### 11.6 Capability Discovery 不替代权限
 
 `capability.available = true` 只表示当前 Instance 具备能力。
 
@@ -839,6 +928,12 @@ resource.not_found
 concurrency.precondition_failed
 idempotency.key_reused
 rate_limit.exceeded
+app.not_installed
+app.disabled
+app.incompatible
+app.api_version_unsupported
+app.authorization_required
+app.scope_insufficient
 ```
 
 这类稳定 Code。
@@ -866,6 +961,8 @@ rate_limit.exceeded
 | 502 | 上游 Provider 返回错误或无效响应 |
 | 503 | 当前能力临时不可用 / 过载 / 依赖不可用 |
 | 504 | 上游 Provider / Worker 请求超时 |
+| 406 | 请求的 Server App Public API Major 当前不受支持 |
+
 
 ### 14.4 Error Data Minimization
 
@@ -1648,8 +1745,14 @@ Retry-After: ...
 
 ### 25.1 目标
 
-不同 Ikaros Instance 可能启用不同：
+Discovery 分为两层：
 
+1. **Instance Discovery**：发现当前地址是否为 Ikaros Instance，以及认证、Platform API 和 App Registry 入口；
+2. **App Discovery**：发现某个 Server App 是否安装/启用、Public API Major、Scope 与能力。
+
+不同 Ikaros Instance 还可能启用不同：
+
+- Server App；
 - Plugin；
 - AI Provider；
 - Worker；
@@ -1661,7 +1764,67 @@ Retry-After: ...
 
 客户端不能通过不断调用失败来猜功能。
 
-### 25.2 Capability Key
+### 25.2 Instance Discovery
+
+规范入口：
+
+```http
+GET /.well-known/ikaros
+```
+
+至少返回：
+
+```json
+{
+  "instance_id": "019...",
+  "platform_api": "/api",
+  "authorization_endpoint": "/api/auth/authorize",
+  "token_endpoint": "/api/auth/token",
+  "app_registry_endpoint": "/api/app-registry/apps"
+}
+```
+
+该入口只返回连接所需的最小公开元数据，不返回用户、Provider Credential、内部网络或敏感安装信息。
+
+### 25.3 App Discovery
+
+规范入口：
+
+```http
+GET /api/app-registry/apps/{app_id}
+```
+
+已安装 App 至少返回：
+
+```json
+{
+  "app_id": "run.ikaros.anime",
+  "version": "3.4.1",
+  "state": "ENABLED",
+  "api_majors": [3],
+  "scopes": [
+    "anime.library.read",
+    "anime.playback"
+  ],
+  "capabilities": [
+    "library",
+    "playback"
+  ]
+}
+```
+
+调用者必须能够区分：
+
+```text
+app.not_installed
+app.disabled
+app.incompatible
+app.api_version_unsupported
+```
+
+Discovery 结果不是授权结果。
+
+### 25.4 Capability Key
 
 使用稳定的 dot-separated Key，例如：
 
@@ -1677,7 +1840,7 @@ plugin.<key>.enabled
 
 Capability Key 不绑定 Java Module 名或部署拓扑。
 
-### 25.3 推荐 Response
+### 25.5 推荐 Response
 
 ```json
 {
@@ -1700,7 +1863,7 @@ Capability Key 不绑定 Java Module 名或部署拓扑。
 
 具体 endpoint 名称由实现时确定，但整个 Instance 应只有一个统一 Discovery 语义，不应由每个模块发明自己的 Feature Probe。
 
-### 25.4 安全限制
+### 25.6 安全限制
 
 Discovery 可以告诉客户端“能力是否可用”，但不应暴露：
 
@@ -1720,7 +1883,9 @@ Ikaros V2 同时存在：
 
 ```text
 Database Schema Version
-API Version
+Platform API Version
+Server App Public API Version
+Server App Package Version
 Plugin API Version
 Event Contract Version
 Export Format Version
@@ -1728,7 +1893,28 @@ Export Format Version
 
 API Convention 只直接管理 HTTP API Version。
 
-### 26.2 同一 Major Version 内的兼容演进
+### 26.2 Platform 与 Server App 独立兼容
+
+Client App 不得通过 Ikaros Server 产品版本推断业务 API：
+
+```text
+if server_version >= x.y.z
+```
+
+专业 Client 必须基于 App Discovery 中的：
+
+```text
+app_id
+App Package Version
+supported App API Major
+capabilities
+```
+
+判断兼容性。
+
+同一个 Ikaros Instance 可以同时运行不同版本的 Server App，各 App Public API 独立演进。
+
+### 26.3 同一 Major Version 内的兼容演进
 
 通常视为兼容：
 
@@ -1753,13 +1939,13 @@ API Convention 只直接管理 HTTP API Version。
 
 破坏性修改原则上进入新的 API Major Version。
 
-### 26.3 Unknown Field Tolerance
+### 26.4 Unknown Field Tolerance
 
 客户端必须忽略自己不认识的响应 JSON 字段。
 
 服务端是否允许请求中出现未知字段，由具体写入 Schema 决定；默认稳定写接口应严格校验，避免用户以为某字段已经生效但实际被静默忽略。
 
-### 26.4 Deprecation
+### 26.5 Deprecation
 
 弃用必须：
 
@@ -1769,7 +1955,7 @@ API Convention 只直接管理 HTTP API Version。
 - 在运行时可行时返回标准 `Deprecation` / `Sunset` 信息；
 - 不在普通 Patch Release 中无信号删除公开稳定接口。
 
-### 26.5 安全紧急例外
+### 26.6 安全紧急例外
 
 若接口本身存在高风险安全缺陷，可能需要缩短弃用窗口或紧急关闭。
 
@@ -1925,15 +2111,22 @@ SDK 必须提供 Unknown / Raw Value 保底能力。
 
 旧客户端忽略未知响应字段。
 
-### 29.4 Capability First
+### 29.4 Discovery First
 
-客户端判断可选功能优先通过 Capability Discovery，而不是：
+Ikaros 管理客户端首先使用 Instance Discovery。
+
+专业 Client App 首先使用：
 
 ```text
-if serverVersion >= x.y.z
+Instance Discovery
+→ App Discovery
+→ Authorization
+→ Server App Public API
 ```
 
-版本号可以用于诊断，但不应成为所有 Feature Detection 的唯一方法。
+判断 App 是否可用与兼容时，优先使用 App Discovery 的 API Major / Capability，而不是 Ikaros Server 产品版本。
+
+版本号可以用于诊断，但不应成为 Feature Detection 的唯一方法。
 
 ---
 
