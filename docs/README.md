@@ -10,6 +10,8 @@
 
 实现 V2 核心平台所需的身份、安全、权限、审计、平台管理和跨模块联动基础。
 
+- [Platform / Server App / Client App 架构决策](00-product-baseline/adr/ADR-005-platform-server-app-client-app-architecture.md)
+- [App Runtime / Identity / Client Architecture](01-platform-foundation/App-Runtime-Identity-Client-Architecture-Design.md)
 - [安全、认证、授权与密码学](01-platform-foundation/Security-Identity-Authorization-Crypto-Subsystem-Design.md)
 - [私密数据安全基础层](01-platform-foundation/Secure-Data-Foundation-Design.md)
 - [Attachment / Blob / Storage](01-platform-foundation/Attachment-Blob-Storage-Subsystem-Design.md)
@@ -19,7 +21,7 @@
 
 ## 02：领域能力
 
-在平台基础之上扩展生产力、私密内容、密码管理和个人财务等领域能力。
+在平台基础之上扩展 Anime、Media、Drive、Productivity、Private Notes、Password Manager、Finance 等专业 Server App / 领域能力。第一阶段可继续与 Platform 同仓同进程构建，但按 App Owner Boundary 管理。
 
 - [媒体 CDN / Archive / Restore](02-domain-capabilities/Media-Delivery-CDN-Archive-Restore-Design.md)
 - [媒体 Archive Working Set Policy](02-domain-capabilities/Media-Archive-Working-Set-Policy.md)
