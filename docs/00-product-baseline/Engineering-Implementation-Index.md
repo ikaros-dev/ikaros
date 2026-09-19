@@ -15,14 +15,16 @@
 5. [`API-Convention-Design.md`](./API-Convention-Design.md)
 6. [`Implementation-Roadmap-and-Dependency-Graph.md`](./Implementation-Roadmap-and-Dependency-Graph.md)
 7. [`Module-Package-Ownership-Design.md`](./Module-Package-Ownership-Design.md)
-8. [`Plugin-Runtime-SDK-Lifecycle-Design.md`](./Plugin-Runtime-SDK-Lifecycle-Design.md)
-9. [`database/P0-Database-Schema-Design.md`](./database/P0-Database-Schema-Design.md)
-10. [`contracts/P0-Command-Query-Event-Catalog.md`](./contracts/P0-Command-Query-Event-Catalog.md)
-11. [`contracts/P0-Event-Payload-Schema-Registry.md`](./contracts/P0-Event-Payload-Schema-Registry.md)
-12. [`contracts/openapi-v2-p0.yaml`](./contracts/openapi-v2-p0.yaml)
-13. [`testing/P0-Acceptance-Invariant-Test-Matrix.md`](./testing/P0-Acceptance-Invariant-Test-Matrix.md)
-14. 目标业务对应的 Subsystem Design
-15. App / CMS Interaction Design
+8. [`adr/ADR-005-platform-server-app-client-app-architecture.md`](./adr/ADR-005-platform-server-app-client-app-architecture.md)
+9. [`App-Runtime-Identity-Client-Architecture-Design.md`](../01-platform-foundation/App-Runtime-Identity-Client-Architecture-Design.md)
+10. [`Plugin-Runtime-SDK-Lifecycle-Design.md`](../01-platform-foundation/Plugin-Runtime-SDK-Lifecycle-Design.md)
+11. [`database/P0-Database-Schema-Design.md`](./database/P0-Database-Schema-Design.md)
+12. [`contracts/P0-Command-Query-Event-Catalog.md`](./contracts/P0-Command-Query-Event-Catalog.md)
+13. [`contracts/P0-Event-Payload-Schema-Registry.md`](./contracts/P0-Event-Payload-Schema-Registry.md)
+14. [`contracts/openapi-v2-p0.yaml`](./contracts/openapi-v2-p0.yaml)
+15. [`testing/P0-Acceptance-Invariant-Test-Matrix.md`](./testing/P0-Acceptance-Invariant-Test-Matrix.md)
+16. 目标 Server App 对应的 Subsystem Design
+17. Client App / CMS Interaction Design
 
 ---
 
@@ -77,6 +79,23 @@
 它回答：
 
 > “谁拥有这份状态，模块之间允许依赖什么？”
+
+### App Runtime / Identity / Client Architecture Design
+
+负责：
+
+- Platform / Server App / Client App 三层边界；
+- App Registry 与 Server App identity；
+- Platform Permission 与 Client Scope 分离；
+- Client Registration、Native Public Client 与 PKCE；
+- Instance / App Discovery；
+- Server App 与 Client App 独立生命周期；
+- App-owned Data 与 Resource 可选关联；
+- Plugin 与完整业务 App 的边界。
+
+它回答：
+
+> “专业业务如何作为独立 Server App 运行，独立客户端如何安全发现并访问它？”
 
 ### Plugin Runtime / SDK / Lifecycle Design
 
