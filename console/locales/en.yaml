@@ -203,6 +203,19 @@ sessionManagement:
   invalidateSuccess: All login credentials were invalidated. Returning to the login page.
   invalidateFailed: Failed to invalidate login credentials
   unknown: Unknown
+  search: Search
+  searchPlaceholder: Search current browser or subject ID
+  searchButton: Search
+  reset: Reset
+  refresh: Refresh
+  resultHint: Stateless JWT only exposes the current browser credentials locally
+  subject: Subject ID
+  issuedAt: Issued At
+  expiresAt: Expiry Time
+  ip: Login IP
+  device: Login Device
+  actions: Actions
+  unavailable: Not available in the current authentication model
 
 buttons:
   pureLoginOut: LoginOut
