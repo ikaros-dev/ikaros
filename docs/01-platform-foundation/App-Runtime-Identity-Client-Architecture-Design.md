@@ -435,11 +435,11 @@ Client 应能够查询目标 Server App：
 以下情况必须可区分：
 
 ```text
-APP_NOT_INSTALLED
-APP_DISABLED
-APP_INCOMPATIBLE
-APP_API_VERSION_UNSUPPORTED
-APP_PERMISSION_REQUIRED
+app.not-installed
+app.disabled
+app.incompatible
+app.api-version-unsupported
+app.authorization-required
 ```
 
 ---
