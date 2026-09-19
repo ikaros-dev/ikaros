@@ -63,6 +63,8 @@
     { "if": { "properties": { "event_type": { "pattern": "^storage\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "storage" } } } },
     { "if": { "properties": { "event_type": { "pattern": "^operations\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "operations" } } } },
     { "if": { "properties": { "event_type": { "pattern": "^app-runtime\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "app-runtime" } } } },
+    { "if": { "properties": { "event_type": { "pattern": "^authentication\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "authentication" } } } },
+    { "if": { "properties": { "event_type": { "pattern": "^authorization\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "authorization" } } } },
     { "if": { "properties": { "event_type": { "pattern": "^identity\\." } } }, "then": { "properties": { "producer_subsystem": { "const": "identity" } } } }
     ,{ "if": { "properties": { "event_type": { "pattern": "^(ingestion\\.|source\\.)" } } }, "then": { "properties": { "producer_subsystem": { "const": "ingestion" } } } }
   ],
