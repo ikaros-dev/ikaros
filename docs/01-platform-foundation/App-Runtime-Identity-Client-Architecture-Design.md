@@ -5,7 +5,7 @@
 | 文档名称 | App Runtime / Identity / Client Architecture Design |
 | 适用版本 | Ikaros V2 |
 | 状态 | Draft |
-| 上位决策 | `adr/ADR-005-platform-server-app-client-app-architecture.md` |
+| 上位决策 | `adr/ADR-005-platform-server-app-client-app-architecture.md`、`adr/ADR-006-app-client-authorization-grant-token-binding.md` |
 | 关联设计 | `System-Overview-Design.md`、`Module-Package-Ownership-Design.md`、`Security-Identity-Authorization-Crypto-Subsystem-Design.md` |
 
 > 本文档定义 Ikaros V2 的 Platform、Server App、Client App 三层关系，以及 App Registry、App Identity、Client Registration、权限、授权、发现、生命周期、数据所有权与兼容性边界。
@@ -189,6 +189,8 @@ AppPermissionGrant
 AppDependency
 AppMigrationState
 AppClientRegistration
+
+Authorization-owned:
 AppAuthorizationGrant
 ```
 
@@ -260,6 +262,31 @@ Effective Server App Permission
 - status。
 
 `official` 只能作为来源与 UX 元数据，不得产生授权旁路。
+
+### 4.6 AppAuthorizationGrant 的 Owner
+
+`AppAuthorizationGrant` 不属于 App Registry / App Runtime 持久化所有权，而属于 Authorization。
+
+App Runtime 只提供：
+
+- Client Registration；
+- Server App identity / availability；
+- App Scope Definition；
+- App API compatibility metadata。
+
+Authorization 保存：
+
+```text
+subject
++ client
++ target app
++ optional device
++ granted scopes
++ grant version
++ status
+```
+
+的实际授权关系，并通过公开 Capability 与 Authentication 协作。完整决策见 ADR-006。
 
 ---
 
@@ -431,6 +458,8 @@ Native Client 应使用 Authorization Code + PKCE 一类的授权模式，并通
 
 具体 OAuth2 / OIDC Profile 在 Security 详细设计与 OpenAPI / Authorization Contract 中冻结。
 
+授权成功后必须建立或更新 Authorization-owned `AppAuthorizationGrant`。Grant 是“用户允许某个 Client 以哪些 Scope 访问哪个 Server App”的持久化授权事实，不是 Login Session。
+
 ### 8.3 Ikaros 管理客户端作为 Auth Broker
 
 官方 Ikaros 管理客户端可以优化认证体验：
@@ -449,9 +478,34 @@ Business Client
 
 - Ikaros 管理客户端不得把自己的 Access Token 复制给业务 Client；
 - 每个业务 Client 必须拥有独立 `client_id`；
-- Token 必须绑定正确 audience / scope；
-- 用户可以独立撤销某个 Client / Device 的授权；
+- Token 必须绑定正确 `client_id`、audience、scope、`authorization_grant_id` 与 `authorization_grant_version`；
+- 用户可以独立撤销某个 Client / Device 的 Grant；撤销后只使该 Grant 绑定的 Token 失效，不影响同用户其他 Client；
 - 官方 Client 不获得绕过 Server Authorization 的隐藏能力。
+
+### 8.4 AppAuthorizationGrant 与撤销
+
+依据 ADR-006，App-scoped Token 至少绑定：
+
+```text
+subject_id
+client_id
+aud = app_id
+scope
+authorization_grant_id
+authorization_grant_version
+device_id (optional)
+```
+
+请求时除 JWT 标准校验与用户 `security_version` 外，还必须校验 Grant ACTIVE 状态、Grant Version、Client / App 匹配和 Scope 子集关系。
+
+撤销：
+
+```text
+Grant.status = REVOKED
+Grant.grant_version++
+```
+
+即可使对应 Client / Device 的旧 Access / Refresh Token 失效，不需要 Token blacklist、`jti` Persistence 或 Security Session。
 
 ---
 
