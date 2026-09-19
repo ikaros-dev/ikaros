@@ -161,6 +161,35 @@ roleManagement:
     app_read: View Apps
     system_read: View System
 
+auditLog:
+  actorId: Actor ID
+  actorIdPlaceholder: Enter actor UUID
+  requestId: Request ID
+  requestIdPlaceholder: Enter request ID
+  timeRange: Time Range
+  startTime: Start time
+  endTime: End time
+  to: to
+  search: Search
+  reset: Reset
+  refresh: Refresh
+  resultHint: Audit records are sorted by occurrence time descending
+  occurredAt: Occurred At
+  actor: Actor
+  systemActor: System or anonymous principal
+  action: Action
+  target: Target
+  result: Result
+  riskLevel: Risk Level
+  actions: Actions
+  detail: Details
+  detailTitle: Audit Event Details
+  correlationId: Correlation ID
+  details: Details Data
+  empty: Empty
+  loadFailed: Failed to load audit log
+  detailFailed: Failed to load audit details
+
 buttons:
   pureLoginOut: LoginOut
   pureLogin: Login

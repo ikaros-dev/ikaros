@@ -161,6 +161,35 @@ roleManagement:
     app_read: 查看应用
     system_read: 查看系统
 
+auditLog:
+  actorId: 操作者 ID
+  actorIdPlaceholder: 请输入操作者 UUID
+  requestId: 请求 ID
+  requestIdPlaceholder: 请输入请求 ID
+  timeRange: 时间范围
+  startTime: 开始时间
+  endTime: 结束时间
+  to: 至
+  search: 查询
+  reset: 重置
+  refresh: 刷新
+  resultHint: 审计记录按发生时间倒序排列
+  occurredAt: 发生时间
+  actor: 操作者
+  systemActor: 系统或匿名主体
+  action: 动作
+  target: 目标
+  result: 结果
+  riskLevel: 风险等级
+  actions: 操作
+  detail: 详情
+  detailTitle: 审计事件详情
+  correlationId: 关联 ID
+  details: 详情数据
+  empty: 暂无
+  loadFailed: 获取审计日志失败
+  detailFailed: 获取审计详情失败
+
 buttons:
   pureLoginOut: 退出系统
   pureLogin: 登录
