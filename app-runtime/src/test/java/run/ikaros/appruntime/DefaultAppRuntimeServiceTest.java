@@ -2,6 +2,7 @@ package run.ikaros.appruntime;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -50,7 +51,8 @@ class DefaultAppRuntimeServiceTest {
             EventAppendRequest request = invocation.getArgument(0);
             return Mono.just(new EventReference(UUID.randomUUID(), request.eventType(), request.schemaVersion()));
         });
-        when(audit.record(any(), anyString(), anyString(), any(), anyString())).thenReturn(Mono.empty());
+        when(audit.record(nullable(UUID.class), anyString(), anyString(), nullable(UUID.class), anyString()))
+            .thenReturn(Mono.empty());
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(permissionCatalog.isRegistered(anyString())).thenReturn(Mono.just(true));
 
