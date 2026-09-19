@@ -12,6 +12,19 @@
 
 `v2-p0-foundation-0.4` 在原 0.3 基线上新增 ADR-005/006 的 Platform / Server App / Client App、App Runtime、Client Registration、AppAuthorizationGrant、App Scope / Platform Permission 分离与对应 P0 Schema / Contract Gate；不表示现有专业领域 HTTP 路由已经完成 Server App Namespace 迁移。
 
+### 当前实现检查点（2026-09-20）
+
+本次只更新实施状态，不修改 `v2-p0-foundation-0.4` 的规范性 Contract：
+
+- App Runtime Foundation：**部分实现**。Registry、基础 lifecycle、Scope Registry、Client Registration、Platform Permission Grant 与 `app_runtime` migration 已进入主线；
+- Client Registration：**内部 Application API + Persistence 已实现**，但无公开 HTTP、PKCE 或 Auth Broker；
+- AppAuthorizationGrant：**尚未实现**。ADR-006、Schema Contract 与 Test Gate 已冻结，但 production migration / Authorization Service / Token Binding 仍待后续；
+- App Dependency / App Migration State：**表已创建、行为未实现**；
+- Server App Package / Discovery / compatibility enforcement：**未实现**；
+- `DELETE_APP_DATA`：**未实现**，当前明确失败关闭。
+
+因此“#1427 已合并”不能解读为 P0 App Runtime / Client Authorization 整体完成。
+
 ## 1. 决策
 
 ```text
@@ -110,7 +123,8 @@ Maven Multi-Module 中的逻辑模块骨架
  -> Transaction + Outbox / Inbox
  -> Background Task Runtime
  -> Resource / Storage / Authentication / Authorization Application API
- -> App Runtime / Client Registration / AppAuthorizationGrant foundation
+ -> App Runtime / Client Registration foundation（部分已实现）
+ -> AppAuthorizationGrant / Client Authorization foundation（待实现）
  -> OpenAPI Controller / DTO
  -> 契约 / 恢复 / 并发 / 安全测试
  -> P0 E2E 门禁
