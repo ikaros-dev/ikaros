@@ -11,6 +11,7 @@
 实现 V2 核心平台所需的身份、安全、权限、审计、平台管理和跨模块联动基础。
 
 - [Platform / Server App / Client App 架构决策](00-product-baseline/adr/ADR-005-platform-server-app-client-app-architecture.md)
+- [App Client Authorization Grant 与 Token Binding](00-product-baseline/adr/ADR-006-app-client-authorization-grant-token-binding.md)
 - [App Runtime / Identity / Client Architecture](01-platform-foundation/App-Runtime-Identity-Client-Architecture-Design.md)
 - [安全、认证、授权与密码学](01-platform-foundation/Security-Identity-Authorization-Crypto-Subsystem-Design.md)
 - [私密数据安全基础层](01-platform-foundation/Secure-Data-Foundation-Design.md)
