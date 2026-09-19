@@ -39,7 +39,9 @@ Phase 0 实现至少应以下列文档作为输入：
 - `API-Convention-Design.md`
 - `Implementation-Roadmap-and-Dependency-Graph.md`
 - `Module-Package-Ownership-Design.md`
-- `Plugin-Runtime-SDK-Lifecycle-Design.md`
+- `adr/ADR-005-platform-server-app-client-app-architecture.md`
+- `../01-platform-foundation/App-Runtime-Identity-Client-Architecture-Design.md`
+- `../01-platform-foundation/Plugin-Runtime-SDK-Lifecycle-Design.md`
 - `database/P0-Database-Schema-Design.md`
 - `contracts/P0-Command-Query-Event-Catalog.md`
 - `contracts/P0-Event-Payload-Schema-Registry.md`
@@ -70,7 +72,10 @@ Media Delivery / Restore 的独立 P0 Addendum 继续作为专项规范性扩展
 - Permission Registry 的权威性与对象级授权边界；
 - Secret Reference 边界；
 - `/api`、Problem、snake_case、Idempotency、ETag/If-Match、Range 等 API 规则；
-- Plugin 私有持久化边界。
+- Platform / Server App / Client App 三层边界；
+- Server App Platform Permission 与 Client App Scope 分离；
+- App-owned Data 与 Platform Resource 的可选关联原则；
+- Plugin 私有持久化边界，以及 Plugin 不作为完整业务 App 抽象的边界。
 
 ## 4. 尚未冻结的内容
 
