@@ -369,6 +369,20 @@ P0-ARCH-001 ~ P0-ARCH-013 = PASS
 
 App Runtime 是 Platform Foundation；第一方 Server App 必须先通过同一逻辑契约 dogfood。
 
+### 当前自动化覆盖（2026-09-20）
+
+PR #1427 的 `DefaultAppRuntimeServiceTest` 已提供 Foundation 级自动化覆盖：
+
+- install 最终进入 `INSTALLED`，不会自动 enable；
+- `DISABLED -> ENABLED` 基础状态转换；
+- Enabled App 不能直接 uninstall；
+- `DELETE_APP_DATA` 在未注册 Erasure Handler 时失败关闭；
+- Client Registration 只能关联已安装 App；
+- 未注册 Platform Permission 不触发 Grant Store 写入；
+- uninstall(`KEEP_DATA`) 会撤销 Platform Permission Grant。
+
+这些测试只证明 **Foundation Application Contract 的当前行为**，不等于下表全部 P0 Gate 已 PASS。特别是 Public API / Task / Event Consumer admission、Client Scope enforcement、Redirect URI exact-match Authorization、Dependency compatibility、App-owned Migration isolation、Discovery E2E 仍需要后续自动化。
+
 | ID | Invariant | Level | Acceptance |
 |---|---|---|---|
 | `P0-APP-001` | Install 不自动等于 Enable | INTEGRATION | install ends INSTALLED; no public app route/task/event consumer active |

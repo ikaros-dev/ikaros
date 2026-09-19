@@ -246,6 +246,34 @@ Phase 0 只有在以下条件全部满足后才算完成：
 - App Migration State；
 - App-owned Data 保留 / 删除策略。
 
+#### 当前实施检查点（2026-09-20）
+
+PR #1427 已完成第一批 Foundation Slice：
+
+- [x] `app-runtime-api` / `app-runtime` Maven 模块；
+- [x] App Definition / Installation Registry；
+- [x] install / enable / disable；
+- [x] uninstall + `KEEP_DATA`，并在 uninstall 时撤销 Platform Permission Grant；
+- [x] App Scope Registry 持久化；
+- [x] Client Registration register / disable / query；
+- [x] Platform Permission Grant + Authorization Permission Catalog 校验；
+- [x] App Runtime Durable Event / Audit；
+- [x] `app_runtime` Schema 与 Dependency / Migration State 基础表。
+
+仍未完成：
+
+- [ ] Package Manifest / integrity / signature；
+- [ ] Platform API compatibility enforcement；
+- [ ] Dependency enable gate；
+- [ ] App-owned Migration orchestration；
+- [ ] `DELETE_APP_DATA` / Data Erasure Handler；
+- [ ] Instance / App Discovery HTTP；
+- [ ] first-party Server App route/task/event admission dogfood；
+- [ ] transitional lifecycle state orchestration；
+- [ ] AppAuthorizationGrant / PKCE（属于 Security / Client Authorization Slice）。
+
+因此当前不能把“App Runtime Foundation Slice 已合并”等同于 Phase 1 App Runtime 整体 Done。
+
 第一阶段允许第一方 Server App 静态编译进同一 JVM，但必须通过上述逻辑边界运行。
 
 ### 4.5 Plugin Extension Runtime Foundation

@@ -342,6 +342,14 @@ P0 不提供 `identity.list-sessions`。JWT 登录没有服务端 Session 列表
 
 ## 9.1 App Runtime / Client Authorization Commands
 
+> Implementation checkpoint（2026-09-20）：
+>
+> - `app-runtime.install-app`、`enable-app`、`disable-app`、`uninstall-app(KEEP_DATA)`、`replace-platform-permission-grants`、`register-client`、`disable-client` 已由 `app-runtime-api` / `app-runtime` 的内部 Application Contract 实现；
+> - `uninstall-app(DELETE_APP_DATA)` 当前明确失败为 `app.data-delete-unsupported`；
+> - Package ingestion、compatibility/dependency enforcement、App Migration orchestration 尚未实现，因此当前 `install-app` 是 **Registry/Foundation install**，不是完整 Server App Package 安装器；
+> - `authorization.grant-app-client`、`replace-app-client-scopes`、`revoke-app-client` 仍为 Contract-only，等待 ADR-006 Authorization Slice；
+> - 本节所有 App Runtime 管理 HTTP Route 仍为 `contract-deferred`。
+
 | Command ID | Permission / Principal | Step-up | Events |
 |---|---|---:|---|
 | `app-runtime.install-app` | `system.app.manage` | policy | `app-runtime.app.installed` |
@@ -366,6 +374,8 @@ P0 不提供 `identity.list-sessions`。JWT 登录没有服务端 Session 列表
 - Grant revoke 通过 status / `grant_version` 失效旧 App-scoped Token，不写 Token blacklist。
 
 ## 9.2 App Runtime / Client Authorization Queries
+
+当前 `app-runtime-api` 已提供内部 Query 能力：definition、installation、installations、scope registry、client get/list，以及 granted platform permissions。下表中的 HTTP 表示仍未冻结；Authorization Grant Query 仍未实现。
 
 | Query ID | Permission | HTTP |
 |---|---|---|

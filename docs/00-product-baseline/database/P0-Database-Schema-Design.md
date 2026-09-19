@@ -1047,6 +1047,28 @@ P0 至少将以下不变量下降到 Constraint：
 
 本 Part 只定义 Platform 为运行 Server App 所必需的最小持久化事实。Server App 自己的 Domain Schema 不属于 `app_runtime`。
 
+### Implementation Checkpoint（2026-09-20）
+
+PR #1427 已通过 `V202609200005__DDL_APP_RUNTIME_FOUNDATION.sql` 创建：
+
+- `app_runtime.app_definition`
+- `app_runtime.app_installation`
+- `app_runtime.app_scope_definition`
+- `app_runtime.app_permission_grant`
+- `app_runtime.app_client_registration`
+- `app_runtime.app_client_redirect_uri`
+- `app_runtime.app_dependency`
+- `app_runtime.app_migration_history`
+
+其中当前服务层状态：
+
+- Registry / Installation / Scope / Permission Grant / Client Registration 已接入 `app-runtime` R2DBC Store；
+- `app_dependency` 与 `app_migration_history` 当前为 **schema-only**，尚未接入 lifecycle enforcement / orchestration；
+- `identity.app_authorization_grant` 与 `identity.app_authorization_grant_scope` **尚未创建 production migration**，仍属于 ADR-006 / Authorization 后续实现；
+- 当前不存在 Login Session、Token Digest 或 `jti` blacklist 表。
+
+不得因为本文已定义 AppAuthorizationGrant Schema Contract 就认为其已在主线数据库中可用。
+
 ## 31. `app_runtime.app_definition`
 
 表达稳定 App identity 与 Manifest 中需要平台检索的最小元数据。
@@ -1140,6 +1162,8 @@ CHECK grant_status in ('GRANTED','DENIED','REVOKED')
 ```
 
 该表表达 Server App → Platform 的实际 Permission Grant。
+
+当前实现通过 Authorization-owned `PermissionCatalogQuery` 校验 Permission Key，避免 App Runtime 直接读取 `permission_registry`。Grant 记录 `granted_by_user_id`；Server App uninstall 时当前 Foundation 会清空其 Platform Permission Grant，避免重新安装静默继承旧授权。
 
 `permission_key` 属于 Authorization Permission Registry 的稳定 Contract Key。为保持 Owner Boundary，P0 不从 `app_runtime` 对 `identity.permission_registry` 建跨 Owner FK；写入时必须通过 Authorization Capability 验证 Key 有效。
 
