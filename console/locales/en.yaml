@@ -190,6 +190,20 @@ auditLog:
   loadFailed: Failed to load audit log
   detailFailed: Failed to load audit details
 
+sessionManagement:
+  statelessTitle: This account uses stateless JWT authentication
+  statelessDescription: The server does not store or expose a login session list. Normal logout clears credentials in this browser; use the security version action to invalidate all issued credentials.
+  currentBrowser: Current browser
+  currentBrowserDescription: Login credentials stored in this browser
+  accessTokenExpiresAt: Access token expiry
+  invalidateTitle: Invalidate all login credentials
+  invalidateDescription: This invalidates all access and refresh tokens issued for the account and requires signing in again.
+  invalidateConfirm: Invalidate all login credentials for this account? This browser will also be signed out.
+  invalidateConfirmButton: Invalidate and sign out
+  invalidateSuccess: All login credentials were invalidated. Returning to the login page.
+  invalidateFailed: Failed to invalidate login credentials
+  unknown: Unknown
+
 buttons:
   pureLoginOut: LoginOut
   pureLogin: Login

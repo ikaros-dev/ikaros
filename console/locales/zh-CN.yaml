@@ -190,6 +190,20 @@ auditLog:
   loadFailed: 获取审计日志失败
   detailFailed: 获取审计详情失败
 
+sessionManagement:
+  statelessTitle: 当前账号使用无状态 JWT 登录
+  statelessDescription: 系统不会保存或展示服务端登录会话列表。普通退出只清理当前浏览器凭据；如需让所有已签发凭据失效，请提升安全版本。
+  currentBrowser: 当前浏览器
+  currentBrowserDescription: 当前浏览器保存的登录凭据
+  accessTokenExpiresAt: 访问 Token 过期时间
+  invalidateTitle: 使所有登录凭据失效
+  invalidateDescription: 此操作会让当前账号已签发的访问和刷新 Token 全部失效，并要求重新登录。
+  invalidateConfirm: 确定让当前账号的所有登录凭据失效吗？当前浏览器也会退出。
+  invalidateConfirmButton: 全部失效并退出
+  invalidateSuccess: 所有登录凭据已失效，即将返回登录页
+  invalidateFailed: 使登录凭据失效失败
+  unknown: 未知
+
 buttons:
   pureLoginOut: 退出系统
   pureLogin: 登录
