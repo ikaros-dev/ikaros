@@ -4,11 +4,39 @@
 |---|---|
 | 文档名称 | App Runtime / Identity / Client Architecture Design |
 | 适用版本 | Ikaros V2 |
-| 状态 | Draft |
+| 状态 | Active / Foundation Partially Implemented |
 | 上位决策 | `adr/ADR-005-platform-server-app-client-app-architecture.md`、`adr/ADR-006-app-client-authorization-grant-token-binding.md` |
 | 关联设计 | `System-Overview-Design.md`、`Module-Package-Ownership-Design.md`、`Security-Identity-Authorization-Crypto-Subsystem-Design.md` |
 
 > 本文档定义 Ikaros V2 的 Platform、Server App、Client App 三层关系，以及 App Registry、App Identity、Client Registration、权限、授权、发现、生命周期、数据所有权与兼容性边界。
+>
+> 实现状态与目标设计分开阅读：目标设计描述最终 Contract；下方 Implementation Checkpoint 描述当前主线已落地能力，未列为 Implemented 的能力不得从表结构或设计章节推断为已实现。
+
+## 0. Implementation Checkpoint
+
+截至 2026-09-20，PR #1427（commit `3a49d2a`）已落地第一阶段 **App Runtime Foundation Slice**。
+
+| Capability | 当前状态 | 说明 |
+|---|---|---|
+| `app-runtime-api` / `app-runtime` Maven 模块 | Implemented | 已进入根 Maven 与 `application` Composition Root |
+| App Definition / Installation Registry | Implemented | R2DBC 持久化，`app_runtime` Owner Schema |
+| install / enable / disable | Implemented (foundation) | 逻辑状态直接落到稳定态；尚未编排 INSTALLING / ENABLING / DISABLING 中间态 |
+| uninstall + `KEEP_DATA` | Implemented | Enabled App 必须先 disable；uninstall 时撤销 Server App Platform Permission Grant |
+| `DELETE_APP_DATA` | Deferred | 当前显式返回 `app.data-delete-unsupported`，等待 App-owned Data Erasure Handler |
+| App Scope Registry | Implemented (registry only) | 可随 Install 写入/查询；尚未接入 Client Authorization enforcement |
+| Platform Permission Grant | Implemented | Permission Key 通过 `authorization-api/PermissionCatalogQuery` 校验；Grant 写 Audit / Durable Event |
+| Client Registration | Implemented (foundation) | register / disable / query；Redirect URI 持久化并做基础 URI 格式校验 |
+| Redirect URI exact-match authorization | Deferred | 等待 Authorization Code + PKCE 流程 |
+| App Dependency | Schema only | `app_runtime.app_dependency` 已建表，尚未接入 Enable compatibility gate |
+| App Migration State | Schema only | `app_runtime.app_migration_history` 已建表，尚未接入 Package/Migration orchestration |
+| Package Manifest / integrity / signature | Deferred | 尚无 Server App Package ingestion |
+| Platform API compatibility enforcement | Deferred | Schema/Contract 已定义，Enable 当前未执行完整 compatibility check |
+| Instance / App Discovery HTTP | Contract-deferred | 尚无 Controller / OpenAPI Operation |
+| AppAuthorizationGrant | Deferred | ADR-006 已冻结；Authorization persistence/token binding 尚未实现 |
+| Authorization Code + PKCE / Auth Broker | Deferred | 属于后续 Client Authorization Slice |
+| Dynamic JVM loading / out-of-process host | Future | 不属于 Foundation Slice |
+
+当前 Foundation 的含义是：**平台已经拥有稳定 App identity、Registry、基础 lifecycle、Client Registry 与 Platform Permission Grant 的内部 Application Contract 和持久化边界，但尚未拥有完整 Package Runtime 与 Client Authorization。**
 
 ---
 
@@ -581,6 +609,10 @@ DELETE_APP_DATA
 
 即使选择删除 App-owned Data，也不能隐式删除已经进入 Platform Domain 的 Resource / Attachment；这类对象必须由各自 Owner 的显式 Command 管理。
 
+当前 Foundation 实现仅支持 `KEEP_DATA`。选择 `DELETE_APP_DATA` 会以 `app.data-delete-unsupported` 失败关闭，直到目标 Server App 注册明确的 Data Erasure Handler。
+
+无论数据策略如何，Server App 进入 `UNINSTALLED` 前必须撤销其 Platform Permission Grant，避免后续重新安装时静默继承旧授权。Client Registration 不因 Server App uninstall 被隐式删除；客户端可继续作为历史注册事实存在，但目标 App availability gate 必须阻止其业务调用。
+
 ---
 
 ## 10. Client Lifecycle
@@ -936,11 +968,29 @@ Server App 更适合：
 
 ### Phase 1：逻辑边界
 
-- 定义 App Runtime Contract；
-- 增加 App Registry；
-- 建立 `app_id` / `client_id` 语义；
-- 第一方业务模块按 Server App Owner 约束；
+当前状态：**Foundation Slice 已落地，Phase 1 尚未整体完成。**
+
+已实现：
+
+- `app-runtime-api` / `app-runtime`；
+- App Definition / Installation Registry；
+- `app_id` / `client_id` 语义；
+- install / enable / disable / uninstall(KEEP_DATA)；
+- App Scope Registry；
+- Client Registration 基础；
+- Server App Platform Permission Grant；
+- App Runtime Owner Schema / Migration；
+- Durable Event / Audit 集成；
 - 保持 Modular Monolith。
+
+仍需：
+
+- Dependency / compatibility enforcement；
+- App Migration orchestration；
+- Package Manifest / integrity；
+- App Discovery；
+- 第一方 Server App dogfood 与 route admission；
+- 完整 lifecycle transitional state orchestration。
 
 ### Phase 2：客户端授权与发现
 
