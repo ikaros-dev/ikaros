@@ -779,12 +779,17 @@ storage.blob.gc
 platform.task.read
 platform.task.cancel
 platform.audit.read
+system.app.read
+system.app.manage
+system.app.client.manage
 identity.user.read
 identity.user.manage
 identity.role.manage
 ```
 
 具体 Permission Catalog 由 Command / Query Contract 文档继续补全。
+
+其中 `system.app.read`、`system.app.manage`、`system.app.client.manage` 由 App Runtime 注册；它们只管理 App Registry / Lifecycle / Client Registration，不授予任何专业 Server App 业务数据访问权。
 
 ---
 
