@@ -47,6 +47,8 @@ AppAuthorizationGrant
 ├── device_id (optional)
 ├── granted_scopes
 ├── grant_version
+├── refresh_generation
+├── refresh_last_used_at (optional)
 ├── status
 ├── granted_at
 ├── updated_at
@@ -60,7 +62,9 @@ AppAuthorizationGrant
 - `app_id`：目标 Server App；
 - `device_id`：需要设备级隔离时绑定的 Device identity；
 - `granted_scopes`：用户实际同意且当前仍有效的 App Scope；
-- `grant_version`：授权版本，用于使旧 Token 立即失效；
+- `grant_version`：授权版本，用于使旧 Access / Refresh Token 立即失效；
+- `refresh_generation`：Public Client Refresh Token Rotation 的单调代际，不是 Token ID；
+- `refresh_last_used_at`：最近一次成功 Rotation 时间，可用于 inactivity policy；
 - `status`：至少区分 ACTIVE / REVOKED；
 - Grant 是“授权关系”，不是“登录会话”。
 
@@ -129,6 +133,7 @@ aud = target app_id
 scope
 authorization_grant_id
 authorization_grant_version
+refresh_generation (refresh token only)
 device_id (when device-bound)
 iat
 exp
@@ -211,18 +216,54 @@ subject + client + app + optional device
 
 Refresh Token 可以继续使用签名 JWT，但必须绑定同一 Authorization Grant。
 
-刷新时必须重新校验：
+依据 RFC 9700，Public Client 若签发 Refresh Token，必须具备 replay detection。V2 P0 采用 **Refresh Token Rotation**，而不是创建 Token Row / Digest / `jti` blacklist。
+
+Refresh JWT 额外携带：
+
+```text
+authorization_grant_id
+authorization_grant_version
+refresh_generation
+```
+
+初次授权时：
+
+```text
+grant.refresh_generation = 0
+```
+
+每次 Refresh 必须重新校验：
 
 - User status；
 - `security_version`；
 - Client registration；
 - Server App availability；
 - Grant status / version；
-- 当前 granted scopes。
+- 当前 granted scopes；
+- Token `refresh_generation == grant.refresh_generation`。
+
+成功 Refresh 使用 compare-and-swap 原子执行：
+
+```text
+grant.refresh_generation++
+grant.refresh_last_used_at = now()
+```
+
+然后签发新 Access Token 与新一代 Refresh Token。
+
+如果已经使用过的旧 Refresh Token 再次出现：
+
+```text
+token.refresh_generation < grant.refresh_generation
+```
+
+视为 Refresh Token replay。Server 无法可靠区分攻击者与合法 Client，因此撤销对应 Grant、提升 `grant_version`，要求重新完成 Authorization。
 
 刷新成功后签发的 Access Token 不得扩大到 Grant 未授权 Scope。
 
 Grant 已撤销时 Refresh 必须失败。
+
+`refresh_generation` 是 Grant-owned replay state，不是 per-token Session/Persistence；仍然不保存 Refresh Token 原文、Digest 或 `jti`。
 
 ### 8. Grant 不是 OAuth Login Session
 

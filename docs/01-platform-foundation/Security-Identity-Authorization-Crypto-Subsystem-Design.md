@@ -564,6 +564,8 @@ Authorization 是该 Grant 的唯一 Owner；App Runtime 只拥有 Client Regist
 
 撤销 Grant 或提升 `grant_version` 可以使该 Grant 绑定的旧 Access / Refresh Token 失效，同时不影响同一用户其他 Client / Device。该机制不创建 Token Row、不持久化 `jti`，也不恢复 `SecuritySession`。
 
+Public Client Refresh Token 采用 RFC 9700 要求的 replay protection：P0 使用 Refresh Token Rotation。Authorization Grant 保存单调 `refresh_generation`，Authentication 在 Refresh 时原子 compare-and-swap generation；旧 generation 重放时撤销对应 Grant。该 replay state 属于 Grant，不是 Login Session，也不保存 Token/Digest/`jti`。
+
 ### 8.2 Step-up 使用短期 Verification Grant
 
 完成 Email OTP / SMS / Identity / Face Verification 后，不修改某个服务端 Session 的 `current_svl`。
