@@ -88,7 +88,7 @@ P0 以上述内容作为**逻辑模块拓扑**，统一由根 `pom.xml` 聚合�
 
 当前包归属决议：
 
-- `collection`、`metadata`、`relation`、`progress`、`activity` 归属 `resource`，当前不独立拆分；
+- `collection`、`metadata`、`relation`、`progress`、`activity` 归属 `resource`，当前不独立拆分；其中 `progress` 是跨内容 App 的 Generic User + Resource Progress 权威，Media/Reading 等领域不得再维护第二份同语义 current progress truth；
 - `identity`、`security`、`verification` 归属认证与授权能力，按职责拆为 `authentication` 与 `authorization`；
 - `audit` 归属 `operations`；
 - `offline` 归属 `sync`；
@@ -385,7 +385,7 @@ Operations 不因为拥有管理 UI 就拥有其他领域的业务数据。
 
 | 模块 | 唯一拥有的核心状态 | 不拥有 |
 |---|---|---|
-| `resource` | Resource、Collection、Tag、External Identity、Metadata Provenance、Resource Lifecycle、通用 User State | Blob、Drive Path、媒体专业结构 |
+| `resource` | Resource、Collection、Tag、External Identity、Metadata Provenance、Resource Lifecycle、Generic User + Resource Progress / 通用 User State | Blob、Drive Path、媒体专业结构 |
 | `storage` | Attachment、Blob、Placement、Replica、Derived Attachment、Integrity | Resource Metadata、Drive Tree |
 | `ingestion` | Source、Scan、Candidate、Match、Import Plan/Run | Resource 最终业务状态 |
 | `drive` | Drive Space、Node、File Revision、Trash、Drive Conflict、Drive Quota、Sync Binding | Blob Placement、Device Runtime |
@@ -393,7 +393,7 @@ Operations 不因为拥有管理 UI 就拥有其他领域的业务数据。
 | `sharing` | Share、Invite、Room、Membership、Presence/Room state | Resource ACL 真相本身 |
 | `search` | Search Projection、Index Generation、Checkpoint | 业务真相 |
 | `backup` | Restore Point、Manifest、Verification、Restore Run | Export Format 业务定义 |
-| `media` | Work/Season/Episode、Media Release、Track、Subtitle、Playback Session/Progress | Blob 物理位置 |
+| `media` | Work/Season/Episode、Media Release、Track、Subtitle、Playback Session / Playback History、播放领域编排 | Generic Resource Progress、Blob 物理位置、Storage Delivery/Restore 真相 |
 | `reading` | Edition、Volume、Chapter、Page、Reading Locator/Progress | 通用 Attachment 存储 |
 | `music` | Artist、Album、Track、Playlist、Queue、Lyrics relation | Blob 物理位置 |
 | `photo` | Photo、EXIF、Album、Capture/Location projection | 原始 Blob 生命周期 |

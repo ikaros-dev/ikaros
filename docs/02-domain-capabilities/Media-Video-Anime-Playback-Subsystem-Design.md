@@ -16,6 +16,8 @@
 > 本文档定义 Ikaros V2 动画、影视与通用视频领域中的 Media Subject、Season、Episode、Release / Media Version、Track、Subtitle、Media Probe、Playback Source、Transcoding、Playback Session 与播放进度的服务端边界。
 >
 > 本文档不把播放器 UI、FFmpeg、VLC、HLS 或 DASH 某一种实现当作领域模型。专业媒体领域负责“一个内容如何被组织和播放”，Storage 负责“字节在哪里”，客户端负责“如何解码和呈现”。
+>
+> 在 ADR-005 的 Server App 架构下，Anime 首个 Dogfood 的迁移细节见 `First-Party-Server-App-Migration-Dogfood-Design.md`。Generic current playback progress 的持久化权威属于 Resource `ResourceProgressService`；Media/Anime 继续拥有 Playback Session、History、Release 与播放领域编排。
 
 ---
 
@@ -60,7 +62,7 @@ Media 子系统需要解决：
 - Playback Variant / Adaptive Rendition；
 - Transcoding Job 的业务契约；
 - Playback Session；
-- Playback Progress / Completion；
+- Playback Progress / Completion 的领域语义与 Command 编排；Generic current progress 的持久化权威属于 Resource；
 - 媒体可用状态；
 - Room 播放同步的 Media Capability；
 - 媒体事件、可观测性与测试基线。
@@ -90,7 +92,7 @@ Media 子系统需要解决：
 6. **Probe 是派生技术信息**：Probe 丢失后可重新从媒体 Attachment 生成。
 7. **播放选择必须可解释**：系统不能静默选择 Missing、Corrupted 或用户无权访问的版本。
 8. **播放权限必须在服务端验证**：知道 Blob URL 不意味着拥有媒体访问权限。
-9. **Playback Session 不拥有用户长期进度真相**：长期 Progress 属于 User + Resource 状态或 Media 专业进度投影。
+9. **Playback Session 不拥有用户长期进度真相**：Generic current Progress 的唯一权威属于 User + Resource 状态（`ResourceProgressService`）；Media 可以拥有 Session/History 或只包含额外领域语义的投影，但不得保存第二份同语义 current position truth。
 10. **旧设备不能无条件覆盖新 Progress**：进度更新必须有 version / sequence / event time 合并规则。
 11. **转码是异步工作**：长耗时媒体处理不能占用普通 HTTP 请求线程等待完成。
 12. **Derived Variant 可重建**：清理可重建转码不影响原始媒体。
@@ -727,6 +729,8 @@ Session 是运行 / 历史事实，不是媒体文件本体。
 ```text
 User + Playable Resource
 ```
+
+其持久化权威是 Resource Owner 的 `ResourceProgressService`。当前主线 `PersistentMediaPlaybackService` 已通过该 Capability 写入 `VIDEO_SECONDS`；Anime Dogfood 延续这一边界，不再创建第二份 authoritative progress table。
 
 通常 Episode 的 Progress 记录在 Episode Resource 上，而不是整个 Series 对应的 Media Subject。
 
