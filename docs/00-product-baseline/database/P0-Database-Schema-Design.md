@@ -1259,6 +1259,8 @@ App-owned Migration History 与 Platform Migration History 分离。一个 App �
 | `app_id` | text | NO |
 | `device_id` | uuid | YES |
 | `grant_version` | bigint | NO |
+| `refresh_generation` | bigint | NO |
+| `refresh_last_used_at` | timestamptz | YES |
 | `status` | text | NO |
 | `granted_at` | timestamptz | NO |
 | `updated_at` | timestamptz | NO |
@@ -1268,6 +1270,7 @@ App-owned Migration History 与 Platform Migration History 分离。一个 App �
 PRIMARY KEY(id)
 FK subject_id -> platform_user(id) ON DELETE RESTRICT
 CHECK grant_version >= 0
+CHECK refresh_generation >= 0
 CHECK status in ('ACTIVE','REVOKED')
 UNIQUE NULLS NOT DISTINCT(subject_id, client_id, app_id, device_id)
 ```
@@ -1283,6 +1286,8 @@ revoked_at = now()
 ```
 
 不得在该表保存 Token、Token Digest、`jti` 或 Session 状态。
+
+`refresh_generation` 是 Grant 级 Refresh Token Rotation 代际，用于 Public Client replay detection。它不标识某一枚 Token，也不要求保存 Token 原文、Digest 或 `jti`。成功 Refresh 通过 compare-and-swap 单调递增 generation；旧 generation 再次出现时按安全策略撤销 Grant。
 
 ### 37.2 `identity.app_authorization_grant_scope`
 
