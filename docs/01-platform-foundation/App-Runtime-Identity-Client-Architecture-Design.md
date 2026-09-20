@@ -22,7 +22,7 @@
 | App Definition / Installation Registry | Implemented | R2DBC 持久化，`app_runtime` Owner Schema |
 | install / enable / disable | Implemented (foundation) | 逻辑状态直接落到稳定态；尚未编排 INSTALLING / ENABLING / DISABLING 中间态 |
 | uninstall + `KEEP_DATA` | Implemented | Enabled App 必须先 disable；uninstall 时撤销 Server App Platform Permission Grant |
-| `DELETE_APP_DATA` | Deferred | 当前显式返回 `app.data-delete-unsupported`，等待 App-owned Data Erasure Handler |
+| `DELETE_APP_DATA` | Deferred | 当前显式返回 `app.data-delete-unsupported`；后续实现必须遵守 Erasure Plan + Quiesce/Drain + Step-up + Tombstone 契约 |
 | App Scope Registry | Implemented (registry only) | 可随 Install 写入/查询；尚未接入 Client Authorization enforcement |
 | Platform Permission Grant | Implemented | Permission Key 通过 `authorization-api/PermissionCatalogQuery` 校验；Grant 写 Audit / Durable Event |
 | Client Registration | Implemented (foundation) | register / disable / query；Redirect URI 持久化并做基础 URI 格式校验 |
@@ -596,6 +596,8 @@ Disable：
 - 保留配置；
 - 不删除 Platform Resource / Attachment。
 
+Disable 只是普通运行态 admission gate，不自动证明所有 in-flight Task / Event Handler / Scheduler 已停止写数据。若后续执行 `DELETE_APP_DATA`，必须进一步进入 App-owned Data Erasure 的 Quiesce / Drain Barrier，确认所有 write-capable execution 已终止后才能删除。
+
 ### 9.4 Uninstall
 
 Uninstall 必须明确数据保留策略。
@@ -612,6 +614,29 @@ DELETE_APP_DATA
 当前 Foundation 实现仅支持 `KEEP_DATA`。选择 `DELETE_APP_DATA` 会以 `app.data-delete-unsupported` 失败关闭，直到目标 Server App 注册明确的 Data Erasure Handler。
 
 无论数据策略如何，Server App 进入 `UNINSTALLED` 前必须撤销其 Platform Permission Grant，避免后续重新安装时静默继承旧授权。Client Registration 不因 Server App uninstall 被隐式删除；客户端可继续作为历史注册事实存在，但目标 App availability gate 必须阻止其业务调用。
+
+`DELETE_APP_DATA` 的完整语义以 `App-Owned-Data-Erasure-Uninstall-Design.md` 为准，至少要求：
+
+```text
+DISABLED
+→ erasure plan
+→ explicit confirmation + Step-up
+→ erasure fence
+→ QUIESCING / DRAINING / DRAINED
+→ app-owned data erase
+→ reference / external-side-effect reconciliation
+→ tombstone + audit
+→ UNINSTALLED
+```
+
+关键边界：
+
+- Disable 不能替代 Drain；
+- Erasure Handler 不能直接删除 Platform Resource / Attachment / Blob；
+- 同一 app_id 同时只能存在一个 active Erasure/Uninstall Operation；
+- Plan/确认必须绑定 installation version 与 plan digest；
+- App Config/Secret Reference/外部 webhook 等属于 Erasure Plan 的独立清理类别；
+- Erasure 成功前不得把部分删除状态标为 UNINSTALLED。
 
 ---
 
