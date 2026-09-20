@@ -14,7 +14,7 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 public interface AuditEventRepository extends ReactiveCrudRepository<AuditEventEntity, UUID> {
     @Query("""
         select id, actor_type, actor_id, action, target_type, target_id, details, occurred_at, version,
-               request_id, correlation_id
+               request_id, correlation_id, result, risk_level, details_schema_version
         from audit_event
         where (:actorId is null or actor_id = :actorId)
           and (:requestId = '' or request_id = :requestId)

@@ -58,7 +58,7 @@
     </modules>
 
     <properties>
-        <revision>2.0.0-beta-1</revision>
+        <revision>2.0.0-beta-2</revision>
         <java.version>21</java.version>
         <springdoc.version>3.0.3</springdoc.version>
         <r2dbc-migrate.version>4.0.1</r2dbc-migrate.version>

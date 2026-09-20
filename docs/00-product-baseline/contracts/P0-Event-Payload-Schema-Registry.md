@@ -377,6 +377,24 @@ Payload 与 attached 相同 identity key。
 }
 ```
 
+### `authorization.role.updated@1`
+
+```json
+{
+  "role_id": "uuid",
+  "role_key": "string"
+}
+```
+
+### `authorization.role.deleted@1`
+
+```json
+{
+  "role_id": "uuid",
+  "role_key": "string"
+}
+```
+
 ### `authorization.role.permissions-replaced@1`
 
 ```json

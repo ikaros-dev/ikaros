@@ -1011,6 +1011,56 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /admin/roles/{role_id}:
+    patch:
+      tags: [Admin Identity]
+      operationId: updateRole
+      x-ikaros-contract-id: identity.update-role
+      summary: Update a custom role's name and description
+      parameters:
+        - name: role_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateRoleRequest' }
+      responses:
+        '200':
+          description: Role updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Role' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Admin Identity]
+      operationId: deleteRole
+      x-ikaros-contract-id: identity.delete-role
+      summary: Delete an unassigned custom role
+      parameters:
+        - name: role_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Ikaros-Actor-Id
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Role deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /admin/roles/users/{user_id}/roles/{role_id}:
     post:
       tags: [Admin Identity]
@@ -2696,6 +2746,13 @@ components:
       additionalProperties: false
       properties:
         code: { type: string, pattern: '^[A-Z][A-Z0-9_]*$', maxLength: 96 }
+        name: { type: string, minLength: 1, maxLength: 128 }
+        description: { type: [string, 'null'], maxLength: 2000 }
+    UpdateRoleRequest:
+      type: object
+      required: [name]
+      additionalProperties: false
+      properties:
         name: { type: string, minLength: 1, maxLength: 128 }
         description: { type: [string, 'null'], maxLength: 2000 }
     ReplaceRolePermissionsRequest:

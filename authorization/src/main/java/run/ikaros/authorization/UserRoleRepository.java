@@ -27,4 +27,6 @@ public interface UserRoleRepository extends ReactiveCrudRepository<UserRoleEntit
     Mono<UserRoleEntity> findByUserIdAndRoleId(UUID userId, UUID roleId);
 
     Mono<Void> deleteByUserIdAndRoleId(UUID userId, UUID roleId);
+
+    Mono<Long> countByRoleId(UUID roleId);
 }

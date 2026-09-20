@@ -17,6 +17,12 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.authorization.api.PlatformPermission;
 import run.ikaros.operations.api.AuditService;
+import run.ikaros.operations.api.AuditEventCommand;
+import run.ikaros.operations.api.AuditActorType;
+import run.ikaros.operations.api.AuditResult;
+import run.ikaros.operations.api.AuditRiskLevel;
+import run.ikaros.common.ConflictException;
+import run.ikaros.common.ForbiddenException;
 
 /** 验证角色与平台权限注册表的关键业务规则。 */
 class DefaultRoleServiceTest {
@@ -32,6 +38,7 @@ class DefaultRoleServiceTest {
         permissionRepository = mock(RolePermissionRepository.class);
         userRoleRepository = mock(UserRoleRepository.class);
         auditService = mock(AuditService.class);
+        when(auditService.record(any(AuditEventCommand.class))).thenReturn(Mono.empty());
         service = new DefaultRoleService(roleRepository, permissionRepository, auditService, null, userRoleRepository);
     }
 
@@ -153,5 +160,43 @@ class DefaultRoleServiceTest {
         StepVerifier.create(service.revokeRole(actorId, userId, roleId)).verifyComplete();
         verify(userRoleRepository).save(any(UserRoleEntity.class));
         verify(userRoleRepository).deleteByUserIdAndRoleId(userId, roleId);
+    }
+
+    @Test
+    void updatesCustomRoleAndWritesHighRiskAdminAudit() {
+        UUID actorId = UUID.randomUUID();
+        UUID roleId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformRoleEntity role = new PlatformRoleEntity(roleId, "EDITOR", "Editor", null, false, now, now, 0L);
+        PlatformRoleEntity updated = new PlatformRoleEntity(roleId, "EDITOR", "Content editor", "May edit content",
+            false, now, now.plusSeconds(1), 1L);
+        when(roleRepository.findById(roleId)).thenReturn(Mono.just(role));
+        when(roleRepository.save(any())).thenReturn(Mono.just(updated));
+        when(permissionRepository.findAllByRoleId(roleId)).thenReturn(Flux.empty());
+
+        StepVerifier.create(service.update(actorId, roleId, new UpdateRoleRequest("Content editor", "May edit content")))
+            .assertNext(view -> assertThat(view.name()).isEqualTo("Content editor"))
+            .verifyComplete();
+
+        verify(auditService).record(org.mockito.ArgumentMatchers.argThat(event ->
+            event.actorType() == AuditActorType.ADMIN && actorId.equals(event.actorId())
+                && "identity.role.update".equals(event.action()) && roleId.equals(event.targetId())
+                && event.result() == AuditResult.SUCCESS && event.riskLevel() == AuditRiskLevel.HIGH));
+    }
+
+    @Test
+    void rejectsBuiltInOrAssignedRoleDeletion() {
+        UUID actorId = UUID.randomUUID();
+        UUID builtInId = UUID.randomUUID();
+        UUID assignedId = UUID.randomUUID();
+        Instant now = Instant.now();
+        when(roleRepository.findById(builtInId)).thenReturn(Mono.just(new PlatformRoleEntity(builtInId, "ADMIN",
+            "Administrator", null, true, now, now, 0L)));
+        when(roleRepository.findById(assignedId)).thenReturn(Mono.just(new PlatformRoleEntity(assignedId, "EDITOR",
+            "Editor", null, false, now, now, 0L)));
+        when(userRoleRepository.countByRoleId(assignedId)).thenReturn(Mono.just(1L));
+
+        StepVerifier.create(service.delete(actorId, builtInId)).expectError(ForbiddenException.class).verify();
+        StepVerifier.create(service.delete(actorId, assignedId)).expectError(ConflictException.class).verify();
     }
 }
