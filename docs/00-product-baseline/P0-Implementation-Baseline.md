@@ -2,13 +2,28 @@
 
 | 项目 | 内容 |
 |---|---|
-| 基线 ID | `v2-p0-foundation-0.3` |
-| 基线日期 | 2026-09-06 |
+| 基线 ID | `v2-p0-foundation-0.4` |
+| 基线日期 | 2026-09-19 |
 | 状态 | **已接受，可进入 Phase 0 工程基础实现** |
 | 目标 | 允许 V2 从设计阶段进入 Phase 0 工程基础实现 |
 | 非目标 | 不表示 Phase 1+ 的所有业务域已经冻结 |
 
 > 本基线是“进入下一阶段”的工程门禁决议。它冻结 Phase 0 所需的基础契约，但不代表整个 V2 已经最终定稿。
+
+`v2-p0-foundation-0.4` 在原 0.3 基线上新增 ADR-005/006 的 Platform / Server App / Client App、App Runtime、Client Registration、AppAuthorizationGrant、App Scope / Platform Permission 分离与对应 P0 Schema / Contract Gate；不表示现有专业领域 HTTP 路由已经完成 Server App Namespace 迁移。
+
+### 当前实现检查点（2026-09-20）
+
+本次只更新实施状态，不修改 `v2-p0-foundation-0.4` 的规范性 Contract：
+
+- App Runtime Foundation：**部分实现**。Registry、基础 lifecycle、Scope Registry、Client Registration、Platform Permission Grant 与 `app_runtime` migration 已进入主线；
+- Client Registration：**内部 Application API + Persistence 已实现**，但无公开 HTTP、PKCE 或 Auth Broker；
+- AppAuthorizationGrant：**尚未实现**。ADR-006、Schema Contract 与 Test Gate 已冻结，但 production migration / Authorization Service / Token Binding 仍待后续；
+- App Dependency / App Migration State：**表已创建、行为未实现**；
+- Server App Package / Discovery / compatibility enforcement：**未实现**；
+- `DELETE_APP_DATA`：**未实现**，当前明确失败关闭。
+
+因此“#1427 已合并”不能解读为 P0 App Runtime / Client Authorization 整体完成。
 
 ## 1. 决策
 
@@ -39,7 +54,10 @@ Phase 0 实现至少应以下列文档作为输入：
 - `API-Convention-Design.md`
 - `Implementation-Roadmap-and-Dependency-Graph.md`
 - `Module-Package-Ownership-Design.md`
-- `Plugin-Runtime-SDK-Lifecycle-Design.md`
+- `adr/ADR-005-platform-server-app-client-app-architecture.md`
+- `adr/ADR-006-app-client-authorization-grant-token-binding.md`
+- `../01-platform-foundation/App-Runtime-Identity-Client-Architecture-Design.md`
+- `../01-platform-foundation/Plugin-Runtime-SDK-Lifecycle-Design.md`
 - `database/P0-Database-Schema-Design.md`
 - `contracts/P0-Command-Query-Event-Catalog.md`
 - `contracts/P0-Event-Payload-Schema-Registry.md`
@@ -70,7 +88,11 @@ Media Delivery / Restore 的独立 P0 Addendum 继续作为专项规范性扩展
 - Permission Registry 的权威性与对象级授权边界；
 - Secret Reference 边界；
 - `/api`、Problem、snake_case、Idempotency、ETag/If-Match、Range 等 API 规则；
-- Plugin 私有持久化边界。
+- Platform / Server App / Client App 三层边界；
+- Server App Platform Permission 与 Client App Scope 分离；
+- AppAuthorizationGrant 作为 Authorization-owned 授权事实，支持 Client / Device 级撤销且不恢复 Login Session / Token blacklist；
+- App-owned Data 与 Platform Resource 的可选关联原则；
+- Plugin 私有持久化边界，以及 Plugin 不作为完整业务 App 抽象的边界。
 
 ## 4. 尚未冻结的内容
 
@@ -101,6 +123,8 @@ Maven Multi-Module 中的逻辑模块骨架
  -> Transaction + Outbox / Inbox
  -> Background Task Runtime
  -> Resource / Storage / Authentication / Authorization Application API
+ -> App Runtime / Client Registration foundation（部分已实现）
+ -> AppAuthorizationGrant / Client Authorization foundation（待实现）
  -> OpenAPI Controller / DTO
  -> 契约 / 恢复 / 并发 / 安全测试
  -> P0 E2E 门禁
@@ -110,7 +134,7 @@ Maven Multi-Module 中的逻辑模块骨架
 
 Phase 1 Resource Core 对应能力实现前，至少补齐 Collection 层级关系、Resource Relation、必要的 Title/Alias 变更能力，以及当前处于 `contract-deferred` 状态的公开变更接口。
 
-Personal Drive 和每个 Professional Domain 仍必须分别具备 Schema + Command/Query + Event + Permission + OpenAPI（适用时）+ Acceptance Matrix，才能进入对应模块的编码阶段。
+Personal Drive 和每个第一方 Server App 仍必须分别具备 App Manifest + App-owned Schema + Command/Query + Event + Platform Permission + Client Scope + Public App API/OpenAPI（适用时）+ Acceptance Matrix，才能进入对应模块的编码阶段。
 
 ## 7. 变更控制
 

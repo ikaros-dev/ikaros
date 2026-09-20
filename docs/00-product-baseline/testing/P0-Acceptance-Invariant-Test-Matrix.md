@@ -68,13 +68,16 @@ FUTURE
 | `P0-ARCH-008` | Search/Analytics projection 不被业务模块作为 truth source | MODULE | 禁止 domain/application 依赖 projection repository |
 | `P0-ARCH-009` | Plugin 无权直接获取模块私有 Repository | SECURITY/MODULE | plugin API compile/runtime boundary test |
 | `P0-ARCH-010` | Controller 不直接调用 Repository | MODULE | architecture test |
+| `P0-ARCH-011` | Server App 只能通过 Platform API / Capability 与其他 Owner 交互 | MODULE | first-party app fixture cannot import platform/app persistence |
+| `P0-ARCH-012` | AppAuthorizationGrant 由 Authorization Owner 持有，App Runtime 不直接读写 Grant persistence | MODULE/SECURITY | dependency + repository ownership test |
+| `P0-ARCH-013` | 专业 Client 只依赖 Server App Public API，不依赖 Platform internal endpoint | CONTRACT | generated client / route dependency scan |
 
 ### Gate
 
 P0 module skeleton 合并前：
 
 ```text
-P0-ARCH-001 ~ P0-ARCH-010 = PASS
+P0-ARCH-001 ~ P0-ARCH-013 = PASS
 ```
 
 ---
@@ -95,6 +98,9 @@ P0-ARCH-001 ~ P0-ARCH-010 = PASS
 | `P0-DB-008` | stable public enum 不使用 ordinal | DB/CONTRACT | schema + serializer assertion |
 | `P0-DB-009` | destructive cross-domain cascade 不存在 | DB | FK metadata assertion |
 | `P0-DB-010` | Permission / Built-in Role seed 可重复且结果稳定 | DB | seed rerun/idempotency test |
+| `P0-DB-011` | `app_runtime` 只持久化 App Registry / Installation / Client / Scope / Permission / Dependency / Migration 状态 | DB/MODULE | schema ownership assertion; no professional domain table in app_runtime |
+| `P0-DB-012` | `identity.app_authorization_grant` 不保存 Access/Refresh Token、Digest、`jti` 或 Login Session 状态 | SECURITY/DB | information_schema + persistence fixture |
+| `P0-DB-013` | Server App Migration 不得修改 Platform 或其他 App Owner Schema | DB/SECURITY | migration boundary fixture |
 
 ---
 
@@ -273,6 +279,11 @@ P0-ARCH-001 ~ P0-ARCH-010 = PASS
 | `P0-ID-016` | `jti` 只用于 Token / Grant 追踪，不形成服务端 Session 或撤销黑名单 | SECURITY/DB | schema/log scan finds no persisted token identifier blacklist or login session state |
 | `P0-ID-017` | `LOGIN_STEP_UP` 在同账号最近成功验证的配置窗口内可换发 Grant，窗口外必须重新 OTP | SECURITY/UNIT/E2E | recent verified challenge returns a new Grant without issuing OTP; expired window issues a new challenge; different user/purpose cannot reuse |
 | `P0-ID-018` | Email OTP 与 SMS OTP 均达到 SVL-2；不同验证方式不得交叉复用 Grant | SECURITY/UNIT/E2E | email and SMS results contain SVL-2; either grant satisfies an SVL-1 policy; reuse query is method-bound |
+| `P0-ID-019` | App-scoped Token 必须绑定 `client_id`、`aud`、Scope、Grant ID / Version | SECURITY/CONTRACT | missing/mismatched claim rejected |
+| `P0-ID-020` | revoke AppAuthorizationGrant 后，仅对应 Client / App / optional Device 的旧 Access / Refresh Token 失效 | SECURITY/E2E | Anime client revoked; Photos client for same user remains valid |
+| `P0-ID-021` | Token Scope 必须是当前 Grant Scope 子集，Audience 必须匹配目标 Server App | SECURITY/E2E | widened scope / wrong audience rejected |
+| `P0-ID-022` | Native Client 不依赖静态 Client Secret 作为安全边界 | SECURITY/CONTRACT | PUBLIC_NATIVE registration has no required embedded secret; PKCE flow fixture |
+| `P0-ID-023` | User `security_version` 提升仍使该用户所有 Client Grant 绑定的旧 Token 失效 | SECURITY/E2E | all app-scoped old tokens rejected after user-wide invalidation |
 
 ---
 
@@ -352,11 +363,42 @@ P0-ARCH-001 ~ P0-ARCH-010 = PASS
 
 ---
 
-# Part L — Plugin Runtime P0 Gate
+# Part L — App Runtime / Plugin Extension P0 Gate
 
-## 22. Plugin Contract Tests
+## 22. App Runtime Contract Tests
 
-虽然 P0 首批实现可以不交付完整 Marketplace，但 Plugin Runtime 边界已经属于平台基础契约。
+App Runtime 是 Platform Foundation；第一方 Server App 必须先通过同一逻辑契约 dogfood。
+
+### 当前自动化覆盖（2026-09-20）
+
+PR #1427 的 `DefaultAppRuntimeServiceTest` 已提供 Foundation 级自动化覆盖：
+
+- install 最终进入 `INSTALLED`，不会自动 enable；
+- `DISABLED -> ENABLED` 基础状态转换；
+- Enabled App 不能直接 uninstall；
+- `DELETE_APP_DATA` 在未注册 Erasure Handler 时失败关闭；
+- Client Registration 只能关联已安装 App；
+- 未注册 Platform Permission 不触发 Grant Store 写入；
+- uninstall(`KEEP_DATA`) 会撤销 Platform Permission Grant。
+
+这些测试只证明 **Foundation Application Contract 的当前行为**，不等于下表全部 P0 Gate 已 PASS。特别是 Public API / Task / Event Consumer admission、Client Scope enforcement、Redirect URI exact-match Authorization、Dependency compatibility、App-owned Migration isolation、Discovery E2E 仍需要后续自动化。
+
+| ID | Invariant | Level | Acceptance |
+|---|---|---|---|
+| `P0-APP-001` | Install 不自动等于 Enable | INTEGRATION | install ends INSTALLED; no public app route/task/event consumer active |
+| `P0-APP-002` | Disable 停止新 Public API / Task / Event Consumer，但保留 App-owned Data / 配置 | INTEGRATION/DB | disable fixture + row preservation |
+| `P0-APP-003` | Uninstall 必须显式 KEEP_DATA / DELETE_APP_DATA，且不得隐式删除 Platform Resource / Attachment | DB/E2E | uninstall fixtures verify separate lifecycle |
+| `P0-APP-004` | 未授予 Platform Permission 的 Server App 调用被拒绝 | SECURITY | capability deny fixture |
+| `P0-APP-005` | 未授予 Client Scope 的 Client 调用被拒绝 | SECURITY/E2E | app public API returns scope denial |
+| `P0-APP-006` | Client Redirect URI 必须与注册值精确匹配 | SECURITY | authorization redirect mismatch rejected |
+| `P0-APP-007` | App required dependency 缺失/不兼容时不能进入 ENABLED | CONTRACT/INTEGRATION | lifecycle compatibility fixture |
+| `P0-APP-008` | First-party App 不因官方身份绕过 App Runtime / Authorization | SECURITY/MODULE | official app fixture uses same admission path |
+| `P0-APP-009` | App-owned Migration 只能修改自身 Owner Schema | DB/SECURITY | migration boundary fixture |
+| `P0-APP-010` | Disabled / incompatible / unsupported API Major 可通过 Discovery / stable error code 区分 | CONTRACT/E2E | discovery + error fixture |
+
+## 22.1 Plugin Extension Contract Tests
+
+虽然 P0 首批实现可以不交付完整 Marketplace，但 Plugin Extension Runtime 边界已经属于平台基础契约。
 
 | ID | Invariant | Level | Acceptance |
 |---|---|---|---|
@@ -476,9 +518,35 @@ No password/token/grant data appears in event or audit payload
 
 ---
 
+## 29. E2E-07 Revoke One App Client Grant
+
+```text
+User has:
+  Anime iOS Grant version=3
+  Photos iOS Grant version=7
+
+Anime Access / Refresh Token bind:
+  client_id = run.ikaros.anime.ios
+  aud = run.ikaros.anime
+  authorization_grant_version = 3
+
+User revokes Anime iOS Grant
+  -> grant status REVOKED
+  -> grant_version = 4
+  -> authorization.app-grant.revoked event
+
+Assert:
+  old Anime Access rejected
+  old Anime Refresh cannot mint new Access
+  Photos Access / Refresh still valid
+  no token blacklist / jti persistence created
+```
+
+---
+
 # Part N — CI Execution Layers
 
-## 29. PR Fast Gate
+## 30. PR Fast Gate
 
 每个普通实现 PR 至少运行：
 
@@ -496,7 +564,7 @@ Module integration tests
 
 ---
 
-## 30. Full P0 Gate
+## 31. Full P0 Gate
 
 主分支 / nightly / release candidate 运行：
 
@@ -515,7 +583,7 @@ all PR Fast Gate
 
 # Part O — Traceability
 
-## 31. Requirement -> Contract -> Test
+## 32. Requirement -> Contract -> Test
 
 任何 P0 实现项必须能建立：
 
@@ -537,7 +605,7 @@ PR 描述中建议引用对应 `P0-*` Test ID。
 
 ---
 
-## 32. Minimum Definition of Done
+## 33. Minimum Definition of Done
 
 P0 工程实现不能只以“接口能调用”作为完成标准。
 
@@ -558,7 +626,7 @@ P0 工程实现不能只以“接口能调用”作为完成标准。
 
 # Part P — P0 Overall Acceptance Gate
 
-## 33. P0 Foundation Ready
+## 34. P0 Foundation Ready
 
 当且仅当以下条件同时满足，才允许从“设计基线”进入“P0 Foundation Ready”：
 
@@ -590,7 +658,7 @@ explicit issue
 
 ---
 
-## 34. What This Matrix Does Not Claim
+## 35. What This Matrix Does Not Claim
 
 本文档完成意味着 P0 的**验收方法和不可违反的测试合同**已经定义，并不意味着测试代码已经实现。
 

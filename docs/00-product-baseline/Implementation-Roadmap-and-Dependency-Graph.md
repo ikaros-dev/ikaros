@@ -23,7 +23,7 @@ V2 已完成大部分领域设计，下一阶段的主要风险不再是“缺�
 - 过早实现高层业务，后续因底座变化反复返工；
 - 没有明确的阶段退出条件，导致“代码已写很多，但平台仍不可验证”。
 
-因此实施采用 **Foundation → Core Platform → Content Infrastructure → Professional Domains → Higher-level Capabilities → Migration & Hardening** 的纵向收敛路径。
+因此实施采用 **Engineering Foundation → Platform Kernel / App Runtime → Platform Services → First-party Server Apps → Higher-level Apps → Migration & Hardening** 的纵向收敛路径。
 
 ---
 
@@ -32,10 +32,10 @@ V2 已完成大部分领域设计，下一阶段的主要风险不再是“缺�
 ```mermaid
 flowchart TD
     P0[Phase 0\nEngineering Foundation]
-    P1[Phase 1\nCore Platform]
-    P2[Phase 2\nContent Infrastructure]
-    P3[Phase 3\nProfessional Domains]
-    P4[Phase 4\nHigher-level Capabilities]
+    P1[Phase 1\nPlatform Kernel + App Runtime]
+    P2[Phase 2\nPlatform Services]
+    P3[Phase 3\nFirst-party Server Apps]
+    P4[Phase 4\nHigher-level Apps]
     P5[Phase 5\nMigration & Hardening]
 
     P0 --> P1
@@ -60,26 +60,31 @@ Engineering Foundation
 
         ↓
 
-Core Platform
+Platform Kernel + App Runtime
+├── Authentication / Authorization
+├── App Registry / App Runtime
+├── AppAuthorizationGrant / Client Scope
 ├── Resource / Collection / Relation
 ├── Attachment / Blob / Placement
-├── Permission / ACL foundation
-├── Plugin Runtime foundation
-└── Search Projection foundation
+├── Event / Outbox
+├── Background Task / Scheduler
+├── Notification / Audit / Config / Secret
+├── Plugin Extension Runtime
+└── Search Infrastructure
 
         ↓
 
-Content Infrastructure
+Platform Services
 ├── Content Ingestion / Metadata Sync
-├── Personal Drive
 ├── Offline / Device Sync
 ├── Sharing / Collaboration
 └── Backup / Restore
 
         ↓
 
-Professional Domains
-├── Media
+First-party Server Apps
+├── Personal Drive
+├── Media / Anime
 ├── Reading
 ├── Music
 ├── Photo
@@ -88,8 +93,8 @@ Professional Domains
 
         ↓
 
-Higher-level Capabilities
-├── Automation
+Higher-level Apps
+├── Automation UI / App-facing orchestration
 ├── Analytics
 ├── AI / Persona
 ├── Productivity
@@ -174,7 +179,7 @@ Phase 0 只有在以下条件全部满足后才算完成：
 
 ---
 
-## 4. Phase 1 — Core Platform
+## 4. Phase 1 — Platform Kernel + App Runtime
 
 ### 4.1 Resource Core
 
@@ -221,20 +226,70 @@ Phase 0 只有在以下条件全部满足后才算完成：
 - RBAC foundation；
 - resource-scoped authorization hook；
 - Step-up policy hook；
+- AppAuthorizationGrant；
+- Client / Device grant revocation；
+- App Scope enforcement；
 - audit context。
 
-### 4.4 Plugin Runtime Foundation
+### 4.4 App Runtime Foundation
 
-只实现后续业务插件所必需的最小 Runtime：
+建立 Server App 的最小平台运行时：
+
+- App Definition / App Registry；
+- install / enable / disable / upgrade / uninstall lifecycle；
+- App Package / Platform API compatibility；
+- Server App Platform Permission declaration / grant；
+- App Scope Registry；
+- Client Registration；
+- App Discovery；
+- App Dependency；
+- App Migration State；
+- App-owned Data 保留 / 删除策略。
+
+#### 当前实施检查点（2026-09-20）
+
+PR #1427 已完成第一批 Foundation Slice：
+
+- [x] `app-runtime-api` / `app-runtime` Maven 模块；
+- [x] App Definition / Installation Registry；
+- [x] install / enable / disable；
+- [x] uninstall + `KEEP_DATA`，并在 uninstall 时撤销 Platform Permission Grant；
+- [x] App Scope Registry 持久化；
+- [x] Client Registration register / disable / query；
+- [x] Platform Permission Grant + Authorization Permission Catalog 校验；
+- [x] App Runtime Durable Event / Audit；
+- [x] `app_runtime` Schema 与 Dependency / Migration State 基础表。
+
+仍未完成：
+
+- [ ] Package Manifest / integrity / signature；
+- [ ] Platform API compatibility enforcement；
+- [ ] Dependency enable gate；
+- [ ] App-owned Migration orchestration；
+- [ ] `DELETE_APP_DATA` / Data Erasure Handler；
+- [ ] Instance / App Discovery HTTP；
+- [ ] first-party Server App route/task/event admission dogfood；
+- [ ] transitional lifecycle state orchestration；
+- [ ] AppAuthorizationGrant / PKCE（属于 Security / Client Authorization Slice）。
+
+因此当前不能把“App Runtime Foundation Slice 已合并”等同于 Phase 1 App Runtime 整体 Done。
+
+第一阶段允许第一方 Server App 静态编译进同一 JVM，但必须通过上述逻辑边界运行。
+
+### 4.5 Plugin Extension Runtime Foundation
+
+只实现 Provider / Importer / Parser / Storage Provider / Automation Extension 等扩展所需 Runtime：
 
 - manifest；
-- API compatibility；
-- install / enable / disable / uninstall lifecycle；
+- Plugin API compatibility；
 - permission / capability declaration；
 - configuration + secret reference；
-- extension registry。
+- extension registry；
+- failure isolation。
 
-### 4.5 Search Projection Foundation
+Plugin 不再作为完整业务 App 的实施入口。
+
+### 4.6 Search Projection Foundation
 
 只建立投影框架，不提前做复杂 ranking：
 
@@ -245,85 +300,75 @@ Phase 0 只有在以下条件全部满足后才算完成：
 - rebuild generation；
 - dead-letter / reconciliation。
 
-### 4.6 Exit Criteria
+### 4.7 Exit Criteria
 
 - Resource 可创建、查询、更新、归档并产生可靠 Event；
 - Attachment 可以完成 upload → Blob → Placement → Attachment；
 - 相同内容可以复用 Blob，但 Attachment 仍保持独立；
 - 权限检查位于业务入口而非 UI；
 - Search Projection 可以从业务真相全量重建；
-- Plugin Runtime 能加载一个最小测试插件且不直接访问其他领域私有 persistence。
+- App Registry 可以注册一个最小测试 Server App，并完成 install → enable → disable；
+- 未授予 Platform Permission 的 Server App 调用被拒绝；
+- 未授予 App Scope 的测试 Client 调用被拒绝；
+- Client Grant revoke 后旧 App-scoped Token 被拒绝，但同用户其他 Client 不受影响；
+- Plugin Extension Runtime 能加载一个最小测试扩展且不直接访问其他领域私有 persistence。
 
 ---
 
-## 5. Phase 2 — Content Infrastructure
+## 5. Phase 2 — Platform Services
 
 按以下顺序推进：
 
 1. **Content Ingestion / Metadata Synchronization**
-2. **Personal Drive P0**
-3. **Offline / Device Sync Runtime**
-4. **Sharing / ACL / Room 基础**
-5. **Backup / Restore**
+2. **Offline / Device Sync Runtime**
+3. **Sharing / ACL / Room 基础**
+4. **Backup / Restore**
 
-### 5.1 Personal Drive P0
+这些能力属于跨 App Platform Service / Infrastructure，不得拥有 Anime、Drive、Finance 等专业业务状态。
 
-Drive 实现必须以现有 `Personal-Drive-File-Synchronization-P0-Semantics.md` 为验收基线，至少完成：
-
-- Drive Space；
-- Node / Parent relation；
-- immutable File Revision；
-- resumable upload commit；
-- Move / Rename；
-- Trash / Restore；
-- Tombstone / Change Generation；
-- Quota；
-- Backup Mode；
-- Conflict Copy；
-- Camera Backup file-side state。
-
-严禁在此阶段另建一套独立物理文件存储模型。
-
-### 5.2 Exit Criteria
+### 5.1 Exit Criteria
 
 必须通过：
 
-- 重复上传；
-- 中断恢复；
-- crash/retry；
-- rename/move identity preservation；
-- trash/restore；
-- stale client mutation；
+- ingestion duplicate / retry；
+- offline cursor resume / stale mutation；
 - duplicate event；
-- sync conflict；
-- quota boundary；
-- backup mode deletion safety；
+- sharing / ACL enforcement；
+- backup / restore consistency；
+- service unavailable / rebuild；
 
-等集成测试。
+等跨 App 基础能力集成测试。
 
 ---
 
-## 6. Phase 3 — Professional Domains
+## 6. Phase 3 — First-party Server Apps
 
 推荐实施顺序：
 
-1. Media / Video / Anime；
-2. Reading / Comic / Novel / Ebook；
-3. Music；
-4. Photo；
-5. Document / Content Creation；
-6. Game Archive。
+1. Personal Drive；
+2. Media / Video / Anime；
+3. Reading / Comic / Novel / Ebook；
+4. Music；
+5. Photo；
+6. Document / Content Creation；
+7. Game Archive。
+
+Personal Drive 从本 Phase 起作为第一方 Server App，而不是 Platform Kernel 的内置业务模块。其文件树、Revision、Trash、Quota 等状态由 Drive App Owner 持有；Platform 继续只拥有 Attachment / Blob / Storage 等基础能力。
 
 排序依据不是业务重要性，而是优先验证 Resource + Attachment + Blob + Progress + Derived Attachment 等核心抽象能否支持真实专业领域。
 
-每个领域开工前必须先完成自己的：
+每个 Server App 开工前必须先完成自己的：
 
 ```text
-Schema Design
+app_id / App Manifest
+App-owned Schema Design
+Platform Permission Declaration
+Client Scope Definition
+Public App API / OpenAPI Contract
 Command / Query Catalog
 Event Catalog
-Permission Registry
-API / OpenAPI Contract
+Task Handler Catalog
+Lifecycle / Migration Strategy
 Acceptance Matrix
 ```
 
@@ -331,17 +376,19 @@ Acceptance Matrix
 
 ---
 
-## 7. Phase 4 — Higher-level Capabilities
+## 7. Phase 4 — Higher-level Apps
 
-建议依赖成熟的基础业务事实后再进入：
+建议依赖成熟的 Platform Services 与 App Runtime 后再进入：
 
-- Platform Automation；
+- Automation 面向用户的高层编排能力；
 - Analytics；
 - AI Intelligence / Persona；
 - Productivity；
 - Personal Finance；
 - Private Notes；
 - Password Manager。
+
+其中属于完整用户业务的能力按 Server App 约束实现；即使与 Server 同仓，也不回退为 Platform 内部 Repository。
 
 其中：
 
@@ -357,15 +404,17 @@ Acceptance Matrix
 主要工作：
 
 1. V1 → V2 Migration / Import Tool；
-2. OpenAPI / SDK compatibility validation；
-3. Plugin compatibility test suite；
-4. Backup → Restore Drill；
-5. Security review；
-6. Performance / capacity baseline；
-7. Upgrade / migration drill；
-8. Crash / retry / duplicate delivery chaos tests；
-9. App / CMS E2E；
-10. Release readiness checklist。
+2. Platform API + Server App Public API compatibility validation；
+3. App Package / App API / Client compatibility test suite；
+4. Plugin Extension compatibility test suite；
+5. Client Authorization / Grant revoke / Device revoke security drill；
+6. Backup → Restore Drill；
+7. Security review；
+8. Performance / capacity baseline；
+9. Upgrade / migration drill；
+10. Crash / retry / duplicate delivery chaos tests；
+11. Independent Client App / Ikaros Admin / CMS E2E；
+12. Release readiness checklist。
 
 ---
 
@@ -373,7 +422,8 @@ Acceptance Matrix
 
 任何模块进入编码前至少必须具备：
 
-- Owner Subsystem；
+- Owner Subsystem / Server App Owner；
+- 对 Server App：`app_id`、Manifest、Platform Permission、Client Scope、Public App API Major；
 - Scope / Non-goal；
 - Domain Invariants；
 - Schema Draft；
@@ -427,7 +477,10 @@ V2 实现阶段明确避免：
 7. 通过 `ADMIN` 绕过 Resource / Drive / Secure Domain 内容权限；
 8. 把 Path / Object Key 当稳定内容身份；
 9. 把 Cache / Download / Replica 合并为一个“文件副本”概念；
-10. 为尚未出现的规模问题提前微服务化。
+10. 为尚未出现的规模问题提前微服务化；
+11. 因第一方业务与 Platform 同进程，就直接访问 Platform 或其他 App 的 Repository；
+12. 让专业 Client 绕过 Server App Public API，直接拼装 Resource / Attachment API 重建领域逻辑；
+13. 把 Anime、Photos、Drive、Accounting 等完整业务重新包装成 Plugin。
 
 ---
 

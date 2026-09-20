@@ -58,6 +58,7 @@ storage
 integration
 operations
 identity
+app_runtime
 ```
 
 所有业务表必须显式位于 Owner Schema 中，不依赖 `public` 默认命名空间。
@@ -778,12 +779,17 @@ storage.blob.gc
 platform.task.read
 platform.task.cancel
 platform.audit.read
+system.app.read
+system.app.manage
+system.app.client.manage
 identity.user.read
 identity.user.manage
 identity.role.manage
 ```
 
 具体 Permission Catalog 由 Command / Query Contract 文档继续补全。
+
+其中 `system.app.read`、`system.app.manage`、`system.app.client.manage` 由 App Runtime 注册；它们只管理 App Registry / Lifecycle / Client Registration，不授予任何专业 Server App 业务数据访问权。
 
 ---
 
@@ -876,6 +882,8 @@ platform_user.security_version
 
 Step-up Verification 的 OTP Challenge 可以按验证子系统需要短期持久化，但它是一次性 Challenge，不是登录 Session。验证成功后签发的 Step-up Grant 应为短期、Purpose-bound 的签名凭据；服务端不因此创建 `SecuritySession` 行。
 
+ADR-006 定义的 `identity.app_authorization_grant` 是 Authorization Domain 的 Client Scope 授权事实，不属于登录 Session。App-scoped Token 必须绑定 Grant identity / version；Grant 表本身不得保存 Token 原文、Digest 或 `jti`。
+
 ---
 
 # Part F — Cross-domain Transactions
@@ -955,17 +963,23 @@ Lease/Heartbeat 更新必须是短事务。
 ```text
 V<...001>__CREATE_SCHEMAS.sql
 V<...002>__IDENTITY_FOUNDATION.sql
-V<...003>__INTEGRATION_OUTBOX_INBOX.sql
-V<...004>__OPERATIONS_BACKGROUND_TASK.sql
-V<...005>__RESOURCE_CORE.sql
-V<...006>__STORAGE_CORE.sql
-V<...007>__SEED_PERMISSION_REGISTRY.sql
-V<...008>__SEED_BUILTIN_ROLES.sql
+V<...003>__APP_RUNTIME_FOUNDATION.sql
+V<...004>__APP_AUTHORIZATION_GRANT.sql
+V<...005>__INTEGRATION_OUTBOX_INBOX.sql
+V<...006>__OPERATIONS_BACKGROUND_TASK.sql
+V<...007>__RESOURCE_CORE.sql
+V<...008>__STORAGE_CORE.sql
+V<...009>__SEED_PERMISSION_REGISTRY.sql
+V<...010>__SEED_BUILTIN_ROLES.sql
 ```
 
 具体单调版本号由提交时按仓库 Migration Version Policy 分配，但顺序依赖不得倒置。
 
 `identity_foundation` 不创建登录 Session 表；Identity 持久化基线只保留账号、权限、角色、绑定、凭据/验证所需数据以及用户级 `security_version`。
+
+`app_runtime_foundation` 只创建 Platform 必须掌握的 App Registry / Installation / Client Registration / Permission Grant / Scope / Dependency / Migration 状态，不创建任何 Anime、Drive、Finance 等专业业务表。
+
+`app_authorization_grant` 由 Authorization Owner 持久化到 `identity` Schema，用于 Client / Device 级 Scope Grant 与撤销；它不是 Session Store。
 
 ### 28.1 Migration 原则
 
@@ -1029,9 +1043,264 @@ P0 至少将以下不变量下降到 Constraint：
 
 ---
 
-# Part I — P0 Schema Exit Criteria
+# Part I — App Runtime / Client Authorization Schema
 
-## 31. Definition of Ready for `r2dbc-migrate`
+本 Part 只定义 Platform 为运行 Server App 所必需的最小持久化事实。Server App 自己的 Domain Schema 不属于 `app_runtime`。
+
+### Implementation Checkpoint（2026-09-20）
+
+PR #1427 已通过 `V202609200005__DDL_APP_RUNTIME_FOUNDATION.sql` 创建：
+
+- `app_runtime.app_definition`
+- `app_runtime.app_installation`
+- `app_runtime.app_scope_definition`
+- `app_runtime.app_permission_grant`
+- `app_runtime.app_client_registration`
+- `app_runtime.app_client_redirect_uri`
+- `app_runtime.app_dependency`
+- `app_runtime.app_migration_history`
+
+其中当前服务层状态：
+
+- Registry / Installation / Scope / Permission Grant / Client Registration 已接入 `app-runtime` R2DBC Store；
+- `app_dependency` 与 `app_migration_history` 当前为 **schema-only**，尚未接入 lifecycle enforcement / orchestration；
+- `identity.app_authorization_grant` 与 `identity.app_authorization_grant_scope` **尚未创建 production migration**，仍属于 ADR-006 / Authorization 后续实现；
+- 当前不存在 Login Session、Token Digest 或 `jti` blacklist 表。
+
+不得因为本文已定义 AppAuthorizationGrant Schema Contract 就认为其已在主线数据库中可用。
+
+## 31. `app_runtime.app_definition`
+
+表达稳定 App identity 与 Manifest 中需要平台检索的最小元数据。
+
+| Column | Type | Null |
+|---|---|---:|
+| `app_id` | text | NO |
+| `name` | text | NO |
+| `publisher` | text | NO |
+| `manifest_version` | text | NO |
+| `supported_api_majors` | integer[] | NO |
+| `created_at` | timestamptz | NO |
+| `updated_at` | timestamptz | NO |
+
+```text
+PRIMARY KEY(app_id)
+```
+
+`app_id` 使用稳定 reverse-DNS 风格标识，例如 `run.ikaros.anime`。App 升级不得改变 `app_id`。
+
+---
+
+## 32. `app_runtime.app_installation`
+
+表达当前 Instance 上 Server App 的安装与运行状态。
+
+| Column | Type | Null |
+|---|---|---:|
+| `app_id` | text | NO |
+| `package_version` | text | NO |
+| `lifecycle_state` | text | NO |
+| `platform_api_min` | text | NO |
+| `platform_api_max` | text | YES |
+| `configuration_state` | text | NO |
+| `failure_code` | text | YES |
+| `version` | bigint | NO |
+| `installed_at` | timestamptz | NO |
+| `enabled_at` | timestamptz | YES |
+| `disabled_at` | timestamptz | YES |
+| `updated_at` | timestamptz | NO |
+
+```text
+PRIMARY KEY(app_id)
+FK app_id -> app_runtime.app_definition(app_id) ON DELETE RESTRICT
+CHECK lifecycle_state in (
+  'DISCOVERED','INSTALLING','INSTALLED','ENABLING','ENABLED',
+  'DISABLING','DISABLED','UPGRADING','FAILED',
+  'UNINSTALLING','UNINSTALLED','INCOMPATIBLE'
+)
+CHECK version >= 0
+```
+
+Disable 不删除 App-owned Data；Uninstall 的数据保留策略由 App Runtime Command 决定。
+
+---
+
+## 33. App Scope 与 Platform Permission Grant
+
+### 33.1 `app_runtime.app_scope_definition`
+
+```text
+app_id text not null
+scope_key text not null
+description text not null
+created_at timestamptz not null
+updated_at timestamptz not null
+PRIMARY KEY(app_id, scope_key)
+FK app_id -> app_runtime.app_definition(app_id) ON DELETE CASCADE
+```
+
+Scope 表达 Client App → Server App 的业务授权，例如：
+
+```text
+anime.library.read
+anime.playback
+accounting.transaction.write
+```
+
+### 33.2 `app_runtime.app_permission_grant`
+
+```text
+app_id text not null
+permission_key text not null
+grant_status text not null
+granted_by_user_id uuid null
+granted_at timestamptz null
+updated_at timestamptz not null
+PRIMARY KEY(app_id, permission_key)
+FK app_id -> app_runtime.app_definition(app_id) ON DELETE CASCADE
+CHECK grant_status in ('GRANTED','DENIED','REVOKED')
+```
+
+该表表达 Server App → Platform 的实际 Permission Grant。
+
+当前实现通过 Authorization-owned `PermissionCatalogQuery` 校验 Permission Key，避免 App Runtime 直接读取 `permission_registry`。Grant 记录 `granted_by_user_id`；Server App uninstall 时当前 Foundation 会清空其 Platform Permission Grant，避免重新安装静默继承旧授权。
+
+`permission_key` 属于 Authorization Permission Registry 的稳定 Contract Key。为保持 Owner Boundary，P0 不从 `app_runtime` 对 `identity.permission_registry` 建跨 Owner FK；写入时必须通过 Authorization Capability 验证 Key 有效。
+
+App Scope 与 Platform Permission 不得互换。
+
+---
+
+## 34. Client Registration
+
+### 34.1 `app_runtime.app_client_registration`
+
+| Column | Type | Null |
+|---|---|---:|
+| `client_id` | text | NO |
+| `app_id` | text | NO |
+| `name` | text | NO |
+| `client_type` | text | NO |
+| `publisher` | text | NO |
+| `official` | boolean | NO |
+| `status` | text | NO |
+| `created_at` | timestamptz | NO |
+| `updated_at` | timestamptz | NO |
+
+```text
+PRIMARY KEY(client_id)
+FK app_id -> app_runtime.app_definition(app_id) ON DELETE RESTRICT
+CHECK client_type in ('PUBLIC_NATIVE','PUBLIC_BROWSER','CONFIDENTIAL_SERVER')
+CHECK status in ('ACTIVE','DISABLED','REVOKED')
+```
+
+`official` 仅是 Publisher / UX 元数据，不产生授权旁路。
+
+### 34.2 `app_runtime.app_client_redirect_uri`
+
+```text
+client_id text not null
+redirect_uri text not null
+created_at timestamptz not null
+PRIMARY KEY(client_id, redirect_uri)
+FK client_id -> app_runtime.app_client_registration(client_id) ON DELETE CASCADE
+```
+
+Native / Browser Authorization 必须对 Redirect URI 做精确匹配；不得使用任意前缀或模糊 Host 匹配替代注册契约。
+
+---
+
+## 35. `app_runtime.app_dependency`
+
+```text
+app_id text not null
+dependency_app_id text not null
+api_requirement text null
+required boolean not null
+created_at timestamptz not null
+PRIMARY KEY(app_id, dependency_app_id)
+FK app_id -> app_runtime.app_definition(app_id) ON DELETE CASCADE
+CHECK app_id <> dependency_app_id
+```
+
+`dependency_app_id` 不建立 FK，以允许描述尚未安装的 Required / Optional App；Enable 时通过 App Registry 解析兼容性。
+
+---
+
+## 36. `app_runtime.app_migration_history`
+
+```text
+app_id text not null
+migration_version text not null
+checksum text not null
+status text not null
+applied_at timestamptz null
+created_at timestamptz not null
+PRIMARY KEY(app_id, migration_version)
+FK app_id -> app_runtime.app_definition(app_id) ON DELETE RESTRICT
+CHECK status in ('PENDING','APPLIED','FAILED')
+```
+
+App-owned Migration History 与 Platform Migration History 分离。一个 App 不得通过自己的 Migration 修改其他 Owner Schema。
+
+---
+
+## 37. AppAuthorizationGrant
+
+### 37.1 `identity.app_authorization_grant`
+
+该表属于 Authorization Owner，不属于 App Runtime。
+
+| Column | Type | Null |
+|---|---|---:|
+| `id` | uuid | NO |
+| `subject_id` | uuid | NO |
+| `client_id` | text | NO |
+| `app_id` | text | NO |
+| `device_id` | uuid | YES |
+| `grant_version` | bigint | NO |
+| `status` | text | NO |
+| `granted_at` | timestamptz | NO |
+| `updated_at` | timestamptz | NO |
+| `revoked_at` | timestamptz | YES |
+
+```text
+PRIMARY KEY(id)
+FK subject_id -> platform_user(id) ON DELETE RESTRICT
+CHECK grant_version >= 0
+CHECK status in ('ACTIVE','REVOKED')
+UNIQUE NULLS NOT DISTINCT(subject_id, client_id, app_id, device_id)
+```
+
+`client_id`、`app_id`、`device_id` 是跨 Owner Stable Contract Reference；Authorization 不对 App Runtime / Device Persistence 建数据库 FK。
+
+撤销 Grant：
+
+```text
+status = REVOKED
+grant_version = grant_version + 1
+revoked_at = now()
+```
+
+不得在该表保存 Token、Token Digest、`jti` 或 Session 状态。
+
+### 37.2 `identity.app_authorization_grant_scope`
+
+```text
+grant_id uuid not null
+scope_key text not null
+created_at timestamptz not null
+PRIMARY KEY(grant_id, scope_key)
+FK grant_id -> identity.app_authorization_grant(id) ON DELETE CASCADE
+```
+
+`scope_key` 必须来自目标 Server App 当前声明的 Scope Registry。Authorization 通过 App Runtime Capability 验证，不建立跨 Owner FK。
+
+---
+
+# Part J — P0 Schema Exit Criteria
+
+## 38. Definition of Ready for `r2dbc-migrate`
 
 该 Schema Contract 进入真实 `r2dbc-migrate` 实现前必须满足：
 
@@ -1044,7 +1313,7 @@ P0 至少将以下不变量下降到 Constraint：
 - [ ] 所有 Secret 字段均转换为 digest / secret reference / encrypted envelope。
 - [ ] 索引能支持 P0 cursor pagination / claim / dispatch 查询。
 
-## 32. Definition of Done for P0 Schema
+## 39. Definition of Done for P0 Schema
 
 只有以下全部成立才视为首批 P0 Schema 完成：
 
@@ -1061,7 +1330,7 @@ P0 至少将以下不变量下降到 Constraint：
 
 ---
 
-## 33. 后续 Schema 顺序
+## 40. 后续 Schema 顺序
 
 本文件完成后，下一批 Schema 建议按以下顺序增加：
 

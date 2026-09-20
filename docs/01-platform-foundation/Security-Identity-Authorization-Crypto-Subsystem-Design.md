@@ -18,6 +18,7 @@ Ikaros V2 需要一个统一的 **Security Subsystem**，作为平台身份、�
 - Authentication：确认“你是谁”
 - Stateless JWT Validation：校验签名、有效期、用户状态与 `security_version`
 - Authorization：确认“你可以做什么”
+- App Client Authorization：管理 User 对 Client App → Server App 的持久化 Scope Grant，并支持 Client / Device 级撤销
 - Step-up Verification：高风险操作前提升认证保证等级，并签发短期 Purpose-bound Grant
 - Secure Domain Unlock：管理客户端 / Secure Domain 的敏感数据解锁边界，不等同于服务端登录 Session
 - Key Management：密钥创建、包装、版本、轮换、恢复与撤销
@@ -61,13 +62,17 @@ Refresh Token Digest as session state
 
 JWT 是自包含签名凭据。服务端对请求进行 Token 校验，不依赖“查找当前登录会话”来恢复认证状态。
 
+“无登录 Session”不等于“没有任何服务端授权事实”。ADR-006 定义的 `AppAuthorizationGrant` 是 Authorization Domain 的授权关系：它记录用户允许某个 Client 以哪些 Scope 访问哪个 Server App，并通过 Grant status / version 支持 Client / Device 级撤销。它不是 Login Session，也不保存 Access / Refresh Token、Token Digest 或 `jti` blacklist。
+
 因此：
 
 - 不存在“活跃登录会话列表”；
 - 不存在“撤销单个服务端 Session”；
 - 普通 Logout 只清除客户端本地 Token / Credential Cache；
-- Token 正常失效依赖 `exp`；
+- 普通非 App-scoped Token 正常失效依赖 `exp`；
+- App-scoped Token 还必须满足绑定 `AppAuthorizationGrant` 的 ACTIVE 状态与 `grant_version`；
 - 需要让某用户全部既有 JWT 提前失效时，提升该用户的 `security_version`；
+- 需要只撤销某 Client / Device 对某 Server App 的授权时，撤销对应 `AppAuthorizationGrant`；
 - Step-up Verification 产生短时、Purpose-bound 的签名 Grant，而不是修改服务端 Session 状态。
 
 业务领域中的 `Playback Session`、`Reading Session`、`Upload Session`、AI Conversation 等独立业务对象不属于这里所说的登录 Session，不受此规则影响。
@@ -495,8 +500,17 @@ AccessJwt
 ├── security_version
 ├── iat
 ├── exp
-├── issuer / audience（启用时）
+├── issuer
+├── audience
 └── authorization snapshot / references（按实现策略）
+
+App-scoped Access / Refresh JWT 还必须表达：
+├── client_id
+├── aud = target app_id
+├── scope
+├── authorization_grant_id
+├── authorization_grant_version
+└── device_id（启用 device-bound grant 时）
 ```
 
 服务端不为该 Token 建立 `SecuritySession` 行，也不要求 JWT 包含 `sid` 来关联服务端登录状态。`jti` 仅用于 Token 追踪、审计关联和问题排查；它不被持久化，也不承担单 Token 撤销职责。
@@ -508,6 +522,16 @@ signature valid
 AND exp / nbf / iat valid
 AND subject user exists and is allowed to authenticate
 AND token.security_version == user.security_version
+
+对于 App-scoped Token 还必须：
+AND client registration is valid
+AND target Server App is available
+AND grant.status == ACTIVE
+AND token.authorization_grant_version == grant.grant_version
+AND token.client_id == grant.client_id
+AND token.aud == grant.app_id
+AND token.scope ⊆ grant.granted_scopes
+AND device binding matches when required
 ```
 
 JWT 正常到期由 `exp` 控制。
@@ -523,6 +547,22 @@ all JWTs carrying previous security_version become invalid
 ```
 
 这是一种用户级 Token Epoch，不是 Session Store。
+
+### 8.1.1 AppAuthorizationGrant
+
+Client / Device 级授权使用 ADR-006 定义的 `AppAuthorizationGrant`：
+
+```text
+User
+  ↓ grants scopes to
+Client App
+  ↓ targets
+Server App
+```
+
+Authorization 是该 Grant 的唯一 Owner；App Runtime 只拥有 Client Registration 与 Scope Definition，Authentication 通过公开 Capability 获取 Grant Snapshot 后签发 App-scoped Token。
+
+撤销 Grant 或提升 `grant_version` 可以使该 Grant 绑定的旧 Access / Refresh Token 失效，同时不影响同一用户其他 Client / Device。该机制不创建 Token Row、不持久化 `jti`，也不恢复 `SecuritySession`。
 
 ### 8.2 Step-up 使用短期 Verification Grant
 
@@ -1110,6 +1150,9 @@ KEY_SNAPSHOT_ACCESS
 RECOVERY_POLICY_CHANGE
 TRUSTED_DEVICE_CHANGE
 TOKEN_INVALIDATION
+APP_AUTHORIZATION_GRANTED
+APP_AUTHORIZATION_SCOPE_CHANGED
+APP_AUTHORIZATION_REVOKED
 ```
 
 对于普通解密操作，可以采用安全聚合或采样策略避免产生不可控日志量；高风险密钥操作必须完整审计。
@@ -1363,6 +1406,8 @@ Security Subsystem 再根据 Policy 决定是否允许目标 Command，并按需
 - Security Subsystem 基础模型
 - Stateless JWT Authentication / Validation
 - User `security_version` Token Invalidation
+- AppAuthorizationGrant / Client Scope enforcement
+- Client / Device Grant revocation
 - Email OTP Provider
 - Verification Challenge
 - Purpose Binding
@@ -1495,7 +1540,7 @@ JWT Authentication
 Server Session
 ```
 
-JWT 登录状态不在服务端持久化为 Session；正常失效依赖 Token TTL，用户级紧急失效依赖 `security_version`，Step-up 使用独立短期 Grant。
+JWT 登录状态不在服务端持久化为 Session；用户级紧急失效依赖 `security_version`，App Client / Device 级授权失效依赖 `AppAuthorizationGrant` status / version，Step-up 使用独立短期 Verification Grant。
 
 ---
 
@@ -1504,6 +1549,7 @@ JWT 登录状态不在服务端持久化为 Session；正常失效依赖 Token T
 后续应继续形成：
 
 - Stateless JWT Token / Claim / Rotation Design
+- App Client Authorization Grant / PKCE Protocol Design
 - Email OTP Protocol Design
 - Step-up Verification Grant Design
 - Key Ring / Key Snapshot Schema

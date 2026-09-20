@@ -17,6 +17,9 @@
 
 ### 第二层：平台与内容底座
 
+- [`ADR-005 Platform / Server App / Client App`](./adr/ADR-005-platform-server-app-client-app-architecture.md) — V2 三层应用架构总决策。
+- [`ADR-006 App Client Authorization Grant`](./adr/ADR-006-app-client-authorization-grant-token-binding.md) — Client / Device 独立授权、Scope、Token Binding 与撤销语义。
+- [`App-Runtime-Identity-Client-Architecture-Design.md`](../01-platform-foundation/App-Runtime-Identity-Client-Architecture-Design.md) — Platform / Server App / Client App、App Registry、Client Registration、Permission / Scope、Discovery 与生命周期。
 - [`Core-Resource-Library-Subsystem-Design.md`](./Core-Resource-Library-Subsystem-Design.md) — Resource、Collection、Relation、Tag、External Identity、Metadata Provenance、用户状态、生命周期与搜索投影。
 - [`Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md`](./Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md) — Source、Scan、Candidate、Match、Import Plan、Metadata Refresh、Provenance、幂等与失败恢复。
 - [`Attachment-Blob-Storage-Subsystem-Design.md`](./Attachment-Blob-Storage-Subsystem-Design.md) — Attachment / Blob / Replica / 分层存储与内容生命周期。
@@ -33,7 +36,7 @@
 
 ### 第三层：身份与高敏感数据
 
-- [`Security-Identity-Authorization-Crypto-Subsystem-Design.md`](./Security-Identity-Authorization-Crypto-Subsystem-Design.md) — 身份、JWT 无状态认证、Step-up Verification、RBAC / ACL、授权与密码学边界。
+- [`Security-Identity-Authorization-Crypto-Subsystem-Design.md`](../01-platform-foundation/Security-Identity-Authorization-Crypto-Subsystem-Design.md) — 身份、JWT 无状态认证、AppAuthorizationGrant、Step-up Verification、RBAC / ACL、授权与密码学边界。
 - [`Secure-Data-Foundation-Design.md`](./Secure-Data-Foundation-Design.md) — Secure Domain 通用安全基础。
 - [`Password-Manager-Subsystem-Design.md`](./Password-Manager-Subsystem-Design.md) — 密码管理器领域模型与安全交互。
 - [`Private-Notes-Subsystem-Design.md`](./Private-Notes-Subsystem-Design.md) — 私密笔记的安全数据模型与访问边界。
@@ -58,13 +61,15 @@
 
 ## 2. 客户端交互文档
 
-### App / 多端交互
+### Client App / 多端交互
 
-[`app-interaction/`](./app-interaction/) 描述用户侧 App 的信息架构和交互，包括登录、账户、应用 Shell、Resource Library、Drive、媒体消费、文档创作、分享、Offline、AI、Analytics、Automation、Productivity、Finance 和安全数据产品。
+依据 ADR-005，Ikaros 不再以一个大而全的统一业务 App 作为移动端长期产品模型。官方 Ikaros 管理客户端负责 Instance 管理、认证 / 快速授权、Device / Session 与必要的平台管理；Anime、Photos、Drive、Accounting、Reading 等专业业务由独立 Client App 承载。
 
-入口：[`app-interaction/README.md`](./app-interaction/README.md)
+[`app-interaction/`](../02-domain-capabilities/app-interaction/) 保存既有用户侧交互设计。现有统一 App Shell 内容属于拆分前的过渡 UX 素材，不再作为跨业务客户端的最终架构事实源。
 
-Personal Drive 独立交互规格：[`app-interaction/drive/personal-drive-file-sync.md`](./app-interaction/drive/personal-drive-file-sync.md)
+入口：[`app-interaction/README.md`](../02-domain-capabilities/app-interaction/README.md)
+
+Personal Drive 独立交互规格：[`app-interaction/drive/personal-drive-file-sync.md`](../02-domain-capabilities/app-interaction/drive/personal-drive-file-sync.md)
 
 ### CMS / Web Console 交互
 
@@ -136,7 +141,8 @@ Console 用户可见 Sidebar 一级节点固定为：
 | 身份 / 授权 / Crypto | ✅ | ✅ | ✅ | ✅ 系统 / 访问控制 | 已覆盖 |
 | Secure Data 基础 | ✅ | ✅ | ✅ | ✅ 应用安全域 | 已覆盖 |
 | Background Task / Scheduler | ✅ | ✅ | 间接 | ✅ 资源 / 活动中心 | 已覆盖 |
-| Plugin / Integration / Automation | ✅ | ✅ | ✅ | ✅ 系统 / 集成 + 应用 / 自动化 | 已覆盖 |
+| App Runtime / Server App / Client App | ✅ ADR-005 | ✅ App Runtime | 过渡拆分中 | ✅ 应用中心 | 架构基线已覆盖 |
+| Plugin / Integration / Automation | ✅ | ✅ | ✅ | ✅ 系统 / 集成 + 应用 / 自动化 | Plugin 收敛为扩展机制 |
 | Notification | ✅ | Platform Administration | ✅ | ✅ 系统 / 通知中心 + 账号偏好 | 已覆盖 |
 | AI Intelligence / Persona | ✅ | ✅ | ✅ | ✅ 应用 / AI | 已覆盖 |
 | Analytics / Statistics | ✅ | ✅ | ✅ | ✅ 应用 / 数据分析 | 已覆盖 |

@@ -26,6 +26,8 @@
         <module>resource</module>
         <module>integration-api</module>
         <module>integration</module>
+        <module>app-runtime-api</module>
+        <module>app-runtime</module>
         <module>operations-api</module>
         <module>operations</module>
         <module>authorization-api</module>

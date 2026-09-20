@@ -338,7 +338,7 @@ Payload 与 attached 相同 identity key。
 }
 ```
 
-## 5. Authentication / Authorization Payloads
+## 5. Authentication / Authorization / App Runtime Payloads
 
 ### `authentication.user.created@1`
 
@@ -427,6 +427,116 @@ Payload 与 attached 相同 identity key。
 ```
 
 该事件表示用户级 Token Security Version 已提升。它不对应某个登录 Session，也不包含 JWT、Token Digest 或客户端设备信息。
+
+### `app-runtime.app.installed@1`
+
+```json
+{
+  "app_id": "run.ikaros.anime",
+  "package_version": "3.4.1"
+}
+```
+
+### `app-runtime.app.enabled@1`
+
+```json
+{
+  "app_id": "run.ikaros.anime",
+  "package_version": "3.4.1"
+}
+```
+
+### `app-runtime.app.disabled@1`
+
+```json
+{
+  "app_id": "run.ikaros.anime",
+  "reason_code": "USER_REQUEST"
+}
+```
+
+### `app-runtime.app.uninstalled@1`
+
+```json
+{
+  "app_id": "run.ikaros.anime",
+  "package_version": "3.4.1",
+  "data_policy": "KEEP_DATA|DELETE_APP_DATA"
+}
+```
+
+### `app-runtime.app.platform-permissions-replaced@1`
+
+```json
+{
+  "app_id": "run.ikaros.anime",
+  "permission_keys": ["resource.read", "attachment.read"]
+}
+```
+
+### `app-runtime.client.registered@1`
+
+```json
+{
+  "client_id": "run.ikaros.anime.ios",
+  "app_id": "run.ikaros.anime",
+  "client_type": "PUBLIC_NATIVE",
+  "official": true
+}
+```
+
+不得包含 Client Secret、Authorization Code、PKCE verifier 或客户端本地 Credential。
+
+### `app-runtime.client.disabled@1`
+
+```json
+{
+  "client_id": "run.ikaros.anime.ios",
+  "app_id": "run.ikaros.anime"
+}
+```
+
+### `authorization.app-grant.created@1`
+
+```json
+{
+  "grant_id": "uuid",
+  "subject_id": "uuid",
+  "client_id": "run.ikaros.anime.ios",
+  "app_id": "run.ikaros.anime",
+  "device_id": "uuid-or-null",
+  "scope_keys": ["anime.library.read", "anime.playback"],
+  "grant_version": 0
+}
+```
+
+### `authorization.app-grant.scopes-replaced@1`
+
+```json
+{
+  "grant_id": "uuid",
+  "subject_id": "uuid",
+  "client_id": "run.ikaros.anime.ios",
+  "app_id": "run.ikaros.anime",
+  "scope_keys": ["anime.library.read"],
+  "grant_version": 1
+}
+```
+
+### `authorization.app-grant.revoked@1`
+
+```json
+{
+  "grant_id": "uuid",
+  "subject_id": "uuid",
+  "client_id": "run.ikaros.anime.ios",
+  "app_id": "run.ikaros.anime",
+  "device_id": "uuid-or-null",
+  "grant_version": 2
+}
+```
+
+Grant 事件只包含授权元数据，不包含 Access / Refresh Token、Token Digest、`jti`、Authorization Code、PKCE verifier 或 Secret。
 
 ### `storage.delivery-provider.created@1`
 

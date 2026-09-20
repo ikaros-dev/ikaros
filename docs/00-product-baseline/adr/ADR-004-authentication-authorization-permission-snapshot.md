@@ -44,6 +44,9 @@ Authentication 需要在登录、注册和刷新 Token 时把用户权限写入 
 9. `authorization` 不依赖 `authentication` 实现；对象级授权、Security Policy 和最终 Allow / Deny 仍由 Authorization 或目标业务 Owner 权威判断，JWT 权限快照不能替代 Resource ACL、Share 或 Membership 判断。
 10. `InitialRoleAssigner` 只由用户创建流程调用，用于保持首个用户等系统初始化角色分配的同步语义；它不返回 Role Entity，也不允许调用方直接写入角色绑定。
 11. `RoleMembershipQuery` 只返回稳定排序的角色编码；Authentication 可以用它组装 `UserView`，但不得因此获得角色、绑定或权限 Persistence 的访问权。
+12. ADR-006 引入 App-scoped Token 后，Authentication 还必须通过 `authorization-api` 获取独立的 `AppAuthorizationGrant` Snapshot。该 Snapshot 至少表达 `grant_id`、`client_id`、`app_id / audience`、`granted_scopes`、`grant_version`、状态以及可选 `device_id`；不得暴露 Grant Repository / Entity。
+13. User Permission Snapshot 与 App Authorization Grant Snapshot 是两类不同事实。Access JWT 可以同时携带用户权限快照与 App Scope，但必须保留来源语义，不得把 `resource.read` 与 `anime.playback` 等键混成一个无命名空间的权限集合。
+14. Authentication 签发 App-scoped Access / Refresh Token 时，若 Client Registration、目标 Server App、Grant 状态或 Scope 校验失败，必须失败关闭，不签发降级 Token。
 
 ## Maven 依赖方向
 
@@ -70,6 +73,8 @@ authorization   -> authentication
 - 权限快照存在 Token 生命周期内的已知延迟，必须通过刷新或用户级 Token 失效获得最新授权状态；
 - Authentication 签发 Token 依赖 Authorization Capability 的可用性，但不会因为 Capability 异常而签发权限不完整的 Token；
 - 后续可在不暴露 Persistence 的前提下替换权限计算、缓存或 Projection 实现。
+- App Client 授权不再复用用户级 Permission Snapshot 表达；Client Scope 由 ADR-006 的 Grant Snapshot 独立提供；
+- Client / Device 级撤销通过 Grant status / version 生效，不要求 Authentication 持久化 Token 或恢复 Security Session。
 
 ## 验证
 
@@ -78,3 +83,5 @@ authorization   -> authentication
 - Capability 契约测试验证权限键去重、稳定排序和失败关闭；
 - JWT 测试验证 Access Token 携带快照，Refresh 后获得新的快照；
 - 权限变更测试验证既有 JWT 按本决策保持原快照，用户级 `security_version` 失效后旧 JWT 被拒绝。
+- App-scoped Token 测试验证 Authentication 同时读取 User Permission Snapshot 与 App Authorization Grant Snapshot；
+- Grant revoke / version change 后旧 App-scoped Token 被拒绝，而同用户其他 Client Grant 不受影响。

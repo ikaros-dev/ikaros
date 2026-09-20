@@ -32,6 +32,16 @@
         </dependency>
         <dependency>
             <groupId>run.ikaros</groupId>
+            <artifactId>app-runtime-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>run.ikaros</groupId>
+            <artifactId>app-runtime</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>run.ikaros</groupId>
             <artifactId>operations-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -271,6 +281,7 @@
                                 <resource><directory>${project.basedir}/../common/src/main/resources/db/migration</directory></resource>
                                 <resource><directory>${project.basedir}/../authentication/src/main/resources/db/migration</directory></resource>
                                 <resource><directory>${project.basedir}/../authorization/src/main/resources/db/migration</directory></resource>
+                                <resource><directory>${project.basedir}/../app-runtime/src/main/resources/db/migration</directory></resource>
                                 <resource><directory>${project.basedir}/../backup/src/main/resources/db/migration</directory></resource>
                                 <resource><directory>${project.basedir}/../document/src/main/resources/db/migration</directory></resource>
                                 <resource><directory>${project.basedir}/../drive/src/main/resources/db/migration</directory></resource>
