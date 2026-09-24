@@ -249,7 +249,7 @@ DELETE /library/{anime_id}
 | `/api/media/playback/**` | `MediaPlaybackController` | Anime Playback Session API；current progress 继续由 ResourceProgressService 权威 |
 | `/api/media/resources/{resourceId}/availability` | `MediaAvailabilityController` | Anime availability composition |
 | `/api/media/releases/{releaseId}` | `MediaTechnicalMetadataController` | Anime-owned release/probe metadata |
-| `/api/media/seasons/{seasonId}/restore-requests` | `StorageRestoreSeasonController`（storage owner） | 保持 Storage Owner；Anime 只能通过公开 Restore Capability 编排 |
+| `/api/media/seasons/{seasonId}/restore-requests` | `MediaRestoreSeasonController`（media owner） | Media 展开 Attachment 集合，调用 StorageRestoreCapability；Storage 独立重新授权与预算检查 |
 
 当前关键 Persistence / Migration：
 

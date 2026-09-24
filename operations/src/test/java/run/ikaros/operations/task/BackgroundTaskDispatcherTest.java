@@ -1,10 +1,22 @@
 package run.ikaros.operations.task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+import run.ikaros.common.ConflictException;
 import run.ikaros.operations.api.BackgroundTask;
+import run.ikaros.operations.api.BackgroundTaskService;
 import run.ikaros.operations.api.TaskStatus;
 
 class BackgroundTaskDispatcherTest {
@@ -16,6 +28,49 @@ class BackgroundTaskDispatcherTest {
         tasks.submit("test", Map.of(), "once").block();
         BackgroundTask result = dispatcher.dispatchOnce("runner", Duration.ofMinutes(1)).block();
         assertEquals(TaskStatus.SUCCEEDED, result.status());
+    }
+
+    @Test
+    void renewsLeaseWhileHandlerIsStillRunning() throws InterruptedException {
+        InMemoryBackgroundTaskService tasks = new InMemoryBackgroundTaskService();
+        BackgroundTask submitted = tasks.submit("long-running", Map.of(), "long-running-once").block();
+        BackgroundTaskDispatcher dispatcher = new BackgroundTaskDispatcher(tasks);
+        dispatcher.register("long-running", task -> reactor.core.publisher.Mono.never());
+
+        reactor.core.Disposable execution = dispatcher.dispatchOnce("runner", Duration.ofMillis(120)).subscribe();
+        Thread.sleep(260);
+        execution.dispose();
+
+        assertTrue(tasks.get(submitted.id()).block().leaseExpiresAt().isAfter(java.time.Instant.now()),
+            "The active Handler should keep its Task Lease alive");
+    }
+
+    @Test
+    void cancelsHandlerWhenLeaseRenewalFails() {
+        BackgroundTaskService tasks = mock(BackgroundTaskService.class);
+        UUID taskId = UUID.randomUUID();
+        UUID leaseToken = UUID.randomUUID();
+        Instant now = Instant.now();
+        Duration leaseDuration = Duration.ofSeconds(3);
+        BackgroundTask claimed = new BackgroundTask(taskId, "lease-loss", TaskStatus.RUNNING, Map.of(),
+            "lease-loss", now, null, "runner", leaseToken, now.plus(leaseDuration), 1, null, Map.of(), Map.of(),
+            now, now, null);
+        when(tasks.claim("runner", leaseDuration)).thenReturn(Mono.just(claimed));
+        when(tasks.heartbeat(taskId, leaseToken, leaseDuration))
+            .thenReturn(Mono.error(new ConflictException("Lease 已被其他 Worker 接管")));
+        when(tasks.fail(eq(taskId), eq(leaseToken), anyMap())).thenReturn(Mono.just(claimed));
+        java.util.concurrent.atomic.AtomicBoolean cancelled = new java.util.concurrent.atomic.AtomicBoolean();
+        BackgroundTaskDispatcher dispatcher = new BackgroundTaskDispatcher(tasks);
+        dispatcher.register("lease-loss", task -> Mono.<Map<String, Object>>never()
+            .doOnCancel(() -> cancelled.set(true)));
+
+        StepVerifier.withVirtualTime(() -> dispatcher.dispatchOnce("runner", leaseDuration))
+            .thenAwait(Duration.ofSeconds(1))
+            .expectError(ConflictException.class)
+            .verify();
+
+        org.junit.jupiter.api.Assertions.assertTrue(cancelled.get());
+        verify(tasks).fail(eq(taskId), eq(leaseToken), anyMap());
     }
 
     @org.junit.jupiter.api.Test

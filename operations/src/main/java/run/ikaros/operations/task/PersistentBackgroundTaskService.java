@@ -9,8 +9,10 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 import run.ikaros.common.ConflictException;
@@ -32,10 +34,13 @@ public class PersistentBackgroundTaskService implements BackgroundTaskOperations
     private final ObjectMapper mapper;
     private final DurableEventPublisher events;
     private final DatabaseClient database;
+    private final TransactionalOperator transaction;
 
     public PersistentBackgroundTaskService(BackgroundTaskRepository tasks, BackgroundTaskAttemptRepository attempts,
-                                           ObjectMapper mapper, DurableEventPublisher events, DatabaseClient database) {
-        this.tasks = tasks; this.attempts = attempts; this.mapper = mapper; this.events = events; this.database = database;
+                                           ObjectMapper mapper, DurableEventPublisher events, DatabaseClient database,
+                                           TransactionalOperator transaction) {
+        this.tasks = tasks; this.attempts = attempts; this.mapper = mapper; this.events = events;
+        this.database = database; this.transaction = transaction;
     }
 
     @Override
@@ -98,7 +103,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskOperations
                 "operations", "background_task", saved.id(), "{\"task_id\":\"" + saved.id() + "\",\"task_type\":\""
                     + saved.taskType() + "\",\"status\":\"" + saved.status() + "\"}")).then() : Mono.empty();
             return createdEvent.then(view(saved));
-        });
+        }).as(transaction::transactional);
     }
 
     @Override
@@ -116,7 +121,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskOperations
                 TaskStatus.RUNNING.name(), runnerId, claimed.leaseExpiresAt(), observedAt, observedAt, null, null, observedAt))
                 .then(events.append(new EventAppendRequest("operations.background-task.started", 1, "operations", "background_task", claimed.id(),
                     "{\"task_id\":\"" + claimed.id() + "\",\"attempt_no\":" + claimed.attempt() + "}")))
-                .then(view(claimed)));
+                .then(view(claimed))).as(transaction::transactional);
     }
 
     private Mono<Void> requeueExpired(Instant observedAt) {
@@ -125,7 +130,7 @@ public class PersistentBackgroundTaskService implements BackgroundTaskOperations
                 expired.cancelRequestedAt() == null ? TaskStatus.PENDING.name() : TaskStatus.CANCELLED.name(),
                 expired.payload(), expired.idempotencyKey(), observedAt, expired.timeoutAt(), null, null, null,
                 expired.attempt(), expired.cancelRequestedAt(), expired.progress(), expired.result(), expired.createdAt(),
-                Instant.now(), expired.parentTaskId()))
+                Instant.now(), expired.parentTaskId(), expired.version()))
                 .flatMap(requeued -> finishAttempt(expired,
                     expired.cancelRequestedAt() == null ? "LEASE_LOST" : TaskStatus.CANCELLED.name(), "Lease 已过期")
                     .then(expired.cancelRequestedAt() == null ? Mono.empty()
@@ -146,13 +151,14 @@ public class PersistentBackgroundTaskService implements BackgroundTaskOperations
             )
             update background_task task
                set status = 'RUNNING', lease_owner = :runnerId, lease_token = :leaseToken,
-                   lease_expires_at = :leaseExpiresAt, attempt = task.attempt + 1, updated_at = :now
+                   lease_expires_at = :leaseExpiresAt, attempt = task.attempt + 1, updated_at = :now,
+                   version = task.version + 1
               from candidate
              where task.id = candidate.id
          returning task.id, task.task_type, task.status, task.payload, task.idempotency_key,
                    task.available_at, task.timeout_at, task.lease_owner, task.lease_token,
                    task.lease_expires_at, task.attempt, task.cancel_requested_at, task.progress,
-                   task.result_summary, task.created_at, task.updated_at, task.parent_task_id
+                   task.result_summary, task.created_at, task.updated_at, task.parent_task_id, task.version
             """)
             .bind("runnerId", runnerId)
             .bind("leaseToken", leaseToken)
@@ -163,7 +169,8 @@ public class PersistentBackgroundTaskService implements BackgroundTaskOperations
                 row.get("available_at", Instant.class), row.get("timeout_at", Instant.class), row.get("lease_owner", String.class),
                 row.get("lease_token", UUID.class), row.get("lease_expires_at", Instant.class), row.get("attempt", Integer.class),
                 row.get("cancel_requested_at", Instant.class), json(row.get("progress")), json(row.get("result_summary")),
-                row.get("created_at", Instant.class), row.get("updated_at", Instant.class), row.get("parent_task_id", UUID.class)))
+                row.get("created_at", Instant.class), row.get("updated_at", Instant.class), row.get("parent_task_id", UUID.class),
+                row.get("version", Long.class)))
             .one();
     }
 
@@ -178,7 +185,8 @@ public class PersistentBackgroundTaskService implements BackgroundTaskOperations
             tasks.findAllByStatusAndTimeoutAtLessThanEqual(TaskStatus.RUNNING.name(), now))
             .concatMap(task -> tasks.save(new BackgroundTaskEntity(task.id(), task.taskType(), TaskStatus.TIMED_OUT.name(),
                 task.payload(), task.idempotencyKey(), task.availableAt(), task.timeoutAt(), null, null, null, task.attempt(),
-                task.cancelRequestedAt(), task.progress(), Json.of("{\"code\":\"TASK_TIMEOUT\"}"), task.createdAt(), Instant.now(), task.parentTaskId()))
+                task.cancelRequestedAt(), task.progress(), Json.of("{\"code\":\"TASK_TIMEOUT\"}"), task.createdAt(),
+                Instant.now(), task.parentTaskId(), task.version()))
                 .flatMap(saved -> finishAttempt(task, TaskStatus.TIMED_OUT.name(), "TASK_TIMEOUT")
                     .then(events.append(new EventAppendRequest("operations.background-task.timed-out", 1, "operations", "background_task", saved.id(),
                         "{\"task_id\":\"" + saved.id() + "\",\"attempt_no\":" + saved.attempt() + "}")))))
@@ -192,7 +200,9 @@ public class PersistentBackgroundTaskService implements BackgroundTaskOperations
         }
         return leased(taskId, leaseToken).flatMap(task -> tasks.save(copy(task, TaskStatus.RUNNING,
             task.leaseOwner(), task.leaseToken(), Instant.now().plus(leaseDuration), task.attempt(),
-            task.cancelRequestedAt(), task.progress(), task.result()))).flatMap(this::view);
+            task.cancelRequestedAt(), task.progress(), task.result()))).flatMap(this::view)
+            .transform(this::translateVersionConflict)
+            .as(transaction::transactional);
     }
 
     @Override
@@ -201,18 +211,18 @@ public class PersistentBackgroundTaskService implements BackgroundTaskOperations
             .flatMap(task -> encode(progress).flatMap(json -> tasks.save(copy(task, TaskStatus.valueOf(task.status()),
                 task.leaseOwner(), task.leaseToken(), task.leaseExpiresAt(), task.attempt(),
                 task.cancelRequestedAt(), Json.of(json), task.result()))))
-            .flatMap(this::view);
+            .flatMap(this::view).transform(this::translateVersionConflict).as(transaction::transactional);
     }
 
     @Override
     public Mono<BackgroundTask> complete(UUID taskId, UUID leaseToken, Map<String, Object> result) {
         return leased(taskId, leaseToken).flatMap(task -> encode(result).flatMap(json -> tasks.save(copy(task,
-            TaskStatus.SUCCEEDED, task.leaseOwner(), task.leaseToken(), task.leaseExpiresAt(), task.attempt(),
+            TaskStatus.SUCCEEDED, null, null, null, task.attempt(),
             task.cancelRequestedAt(), task.progress(), Json.of(json)))
             .flatMap(saved -> finishAttempt(task, TaskStatus.SUCCEEDED.name(), null)
                 .then(events.append(new EventAppendRequest("operations.background-task.succeeded", 1, "operations", "background_task", saved.id(),
                     "{\"task_id\":\"" + saved.id() + "\",\"attempt_no\":" + saved.attempt() + "}")))
-                .then(view(saved)))));
+                .then(view(saved))))).transform(this::translateVersionConflict).as(transaction::transactional);
     }
 
     @Override
@@ -223,16 +233,15 @@ public class PersistentBackgroundTaskService implements BackgroundTaskOperations
                 Instant availableAt = retryable ? Instant.now().plus(backoff(task.attempt())) : task.availableAt();
                 BackgroundTaskEntity failed = new BackgroundTaskEntity(task.id(), task.taskType(),
                     retryable ? TaskStatus.PENDING.name() : TaskStatus.FAILED.name(), task.payload(), task.idempotencyKey(),
-                    availableAt, task.timeoutAt(), retryable ? null : task.leaseOwner(), retryable ? null : task.leaseToken(),
-                    retryable ? null : task.leaseExpiresAt(), task.attempt(), task.cancelRequestedAt(), task.progress(), Json.of(json),
-                    task.createdAt(), Instant.now(), task.parentTaskId());
+                    availableAt, task.timeoutAt(), null, null, null, task.attempt(), task.cancelRequestedAt(), task.progress(), Json.of(json),
+                    task.createdAt(), Instant.now(), task.parentTaskId(), task.version());
                 return tasks.save(failed).flatMap(saved -> finishAttempt(task, TaskStatus.FAILED.name(), message(error))
                     .then(events.append(new EventAppendRequest("operations.background-task.failed", 1, "operations", "background_task", saved.id(),
                         "{\"task_id\":\"" + saved.id() + "\",\"attempt_no\":" + saved.attempt()
                             + ",\"error_classification\":\"" + safe(error == null ? null : error.get("code"))
                             + "\",\"retryable\":" + retryable + "}")))
                     .then(view(saved)));
-            }));
+            })).transform(this::translateVersionConflict).as(transaction::transactional);
     }
 
     private Mono<Void> finishAttempt(BackgroundTaskEntity task, String status, String error) {
@@ -265,7 +274,9 @@ public class PersistentBackgroundTaskService implements BackgroundTaskOperations
                 return tasks.save(new BackgroundTaskEntity(null, old.taskType(), TaskStatus.PENDING.name(), old.payload(), null,
                     now, timeoutAtJson(old.payload(), now), null, null, null, 0, null, Json.of("{}"), Json.of("{}"), now, now, old.id()));
             }).flatMap(saved -> events.append(new EventAppendRequest("operations.background-task.retry-requested", 1, "operations", "background_task", saved.parentTaskId(),
-                "{\"task_id\":\"" + saved.parentTaskId() + "\",\"next_attempt_no\":" + (saved.attempt() + 1) + "}")).then(view(saved)));
+                "{\"task_id\":\"" + saved.parentTaskId() + "\",\"next_attempt_no\":" + (saved.attempt() + 1) + "}")).then(view(saved)))
+            .transform(this::translateVersionConflict)
+            .as(transaction::transactional);
     }
 
     @Override
@@ -282,20 +293,20 @@ public class PersistentBackgroundTaskService implements BackgroundTaskOperations
                     task.leaseExpiresAt(), task.attempt(), Instant.now(), task.progress(), task.result()))
                     .flatMap(saved -> events.append(new EventAppendRequest("operations.background-task.cancel-requested", 1, "operations", "background_task", saved.id(),
                         "{\"task_id\":\"" + saved.id() + "\"}")).then(view(saved)));
-            });
+            }).transform(this::translateVersionConflict).as(transaction::transactional);
     }
 
     @Override
     public Mono<BackgroundTask> acknowledgeCancellation(UUID taskId, UUID leaseToken) {
         return leased(taskId, leaseToken).flatMap(task -> {
             if (task.cancelRequestedAt() == null) return Mono.error(new ConflictException("Task 尚未请求取消"));
-            return tasks.save(copy(task, TaskStatus.CANCELLED, task.leaseOwner(), task.leaseToken(), task.leaseExpiresAt(),
+            return tasks.save(copy(task, TaskStatus.CANCELLED, null, null, null,
                 task.attempt(), task.cancelRequestedAt(), task.progress(), task.result()))
                 .flatMap(saved -> finishAttempt(task, TaskStatus.CANCELLED.name(), null)
                     .then(events.append(new EventAppendRequest("operations.background-task.cancelled", 1, "operations", "background_task", saved.id(),
                         "{\"task_id\":\"" + saved.id() + "\",\"attempt_no\":" + saved.attempt() + "}")))
                     .then(view(saved)));
-        });
+        }).transform(this::translateVersionConflict).as(transaction::transactional);
     }
 
     private Mono<BackgroundTaskEntity> leased(UUID id, UUID token) {
@@ -327,7 +338,13 @@ public class PersistentBackgroundTaskService implements BackgroundTaskOperations
     private BackgroundTaskEntity copy(BackgroundTaskEntity old, TaskStatus status, String owner, UUID token,
                                       Instant expires, int attempt, Instant cancelled, Json progress, Json result) {
         return new BackgroundTaskEntity(old.id(), old.taskType(), status.name(), old.payload(), old.idempotencyKey(),
-            old.availableAt(), old.timeoutAt(), owner, token, expires, attempt, cancelled, progress, result, old.createdAt(), Instant.now(), old.parentTaskId());
+            old.availableAt(), old.timeoutAt(), owner, token, expires, attempt, cancelled, progress, result,
+            old.createdAt(), Instant.now(), old.parentTaskId(), old.version());
+    }
+
+    private <T> Mono<T> translateVersionConflict(Mono<T> operation) {
+        return operation.onErrorMap(OptimisticLockingFailureException.class,
+            error -> new ConflictException("Task 状态或 Lease 已被其他 Worker 更新"));
     }
 
     private String text(Json value) { return value == null ? "{}" : value.asString(); }

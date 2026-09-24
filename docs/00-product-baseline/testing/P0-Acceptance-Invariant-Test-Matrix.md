@@ -226,6 +226,8 @@ P0-ARCH-001 ~ P0-ARCH-013 = PASS
 | `P0-EVT-012` | consumer crash after commit before ack 可安全重放 | RECOVERY | duplicate ignored |
 | `P0-EVT-013` | unknown optional event field 不使旧 consumer 崩溃 | CONTRACT | forward-compatible payload fixture |
 | `P0-EVT-014` | breaking event schema change 被 compatibility check 阻止 | CONTRACT | required/type/removal negative tests |
+| `P0-EVT-015` | 每个 Consumer 独立获得仍保留的 Event，不受另一 Consumer 的完成标记影响 | DB/INTEGRATION | PostgreSQL delivery test: Consumer A completes, Consumer B receives the same Event |
+| `P0-EVT-016` | Consumer failure 只更新自己的重试状态，达到上限进入 DEAD | DB/INTEGRATION | failed side effect and Inbox roll back; Delivery retry state commits independently |
 
 ---
 
@@ -247,6 +249,10 @@ P0-ARCH-001 ~ P0-ARCH-013 = PASS
 | `P0-TASK-010` | cancel PENDING -> CANCELLED | MODULE | transition test |
 | `P0-TASK-011` | cancel RUNNING 是 request/协作语义 | MODULE | handler cancellation fixture |
 | `P0-TASK-012` | 不可取消 Handler 暴露 cancellable=false | CONTRACT/E2E | API representation test |
+| `P0-TASK-013` | Task、Attempt 与 start Event 原子提交 | DB/INTEGRATION | PostgreSQL rollback after event append failure leaves Task pending and no Attempt |
+| `P0-TASK-014` | 旧 Lease 不能修改被重新认领的 Task | DB/CONCURRENCY | PostgreSQL reclaim fixture rejects stale token |
+| `P0-TASK-015` | Handler 超过初始 Lease 仍被续租；失去 Lease 后停止订阅 | UNIT/INTEGRATION | long-running Handler observes renewal; heartbeat conflict cancels work |
+| `P0-TASK-016` | Worker 同时在途执行数不超过配置 | UNIT | admission limit blocks claims above configured capacity |
 
 ---
 
@@ -277,8 +283,8 @@ P0-ARCH-001 ~ P0-ARCH-013 = PASS
 | `P0-ID-014` | Authentication / Authorization / Step-up 可独立失败 | SECURITY | separate fixtures verify distinct error semantics |
 | `P0-ID-015` | Verification Grant 必须校验 `purpose`、`target_reference`（适用时）、`exp` 与目标 SVL | SECURITY/E2E | wrong purpose/target, expired grant or insufficient SVL rejected |
 | `P0-ID-016` | `jti` 只用于 Token / Grant 追踪，不形成服务端 Session 或撤销黑名单 | SECURITY/DB | schema/log scan finds no persisted token identifier blacklist or login session state |
-| `P0-ID-017` | `LOGIN_STEP_UP` 在同账号最近成功验证的配置窗口内可换发 Grant，窗口外必须重新 OTP | SECURITY/UNIT/E2E | recent verified challenge returns a new Grant without issuing OTP; expired window issues a new challenge; different user/purpose cannot reuse |
-| `P0-ID-018` | Email OTP 与 SMS OTP 均达到 SVL-2；不同验证方式不得交叉复用 Grant | SECURITY/UNIT/E2E | email and SMS results contain SVL-2; either grant satisfies an SVL-1 policy; reuse query is method-bound |
+| `P0-ID-017` | 同账号历史 OTP 不授予当前调用方 Step-up | SECURITY/UNIT/E2E | recent verified challenge never issues a Grant; issuing Step-up requires a new OTP challenge |
+| `P0-ID-018` | Email OTP 与 SMS OTP 均达到 SVL-2；Grant 不延长验证新鲜度 | SECURITY/UNIT/E2E | both methods issue SVL-2 only after OTP verification; expired or security-version-invalidated grants are rejected |
 | `P0-ID-019` | App-scoped Token 必须绑定 `client_id`、`aud`、Scope、Grant ID / Version | SECURITY/CONTRACT | missing/mismatched claim rejected |
 | `P0-ID-020` | revoke AppAuthorizationGrant 后，仅对应 Client / App / optional Device 的旧 Access / Refresh Token 失效 | SECURITY/E2E | Anime client revoked; Photos client for same user remains valid |
 | `P0-ID-021` | Token Scope 必须是当前 Grant Scope 子集，Audience 必须匹配目标 Server App | SECURITY/E2E | widened scope / wrong audience rejected |
@@ -673,3 +679,14 @@ explicit issue
 - security regression tests。
 
 测试实现完成度必须由 CI 结果判断，不能仅凭本文档勾选状态判断。
+
+## 架构评审补充门禁（ADR-008）
+
+- `P0-EVT-FANOUT`：多个消费者独立确认、失败隔离、相同消费者重放幂等。
+- `P0-TASK-ATOMIC`：Task/Attempt/Outbox 失败原子回滚，旧租约提交与续租/取消/回收竞争安全。
+- `P0-TASK-RENEW`：长任务自动续租，续租失败取消订阅，Worker 有界并发。
+- `P0-ARCH-COVERAGE`：扫描所有 Maven 生产模块，Controller 样本为空失败；Storage 不依赖 Media。
+- `P0-DOC-INTEGRITY`：相对链接、ADR 编号和自动生成图表视图一致。
+- `P0-RESTORE-ACTIVATION`：恢复后的外部副作用默认隔离，安全材料更新后再激活（实现待完成，不得标记 PASS）。
+
+执行证据由 CI 报告提供，尚未实现的 Gate 必须明确标记为未完成。

@@ -39,7 +39,7 @@
 - [AI Persona](03-ai-and-analytics/AI-Persona-System-Design.md)
 - [数据分析与统计](03-ai-and-analytics/Data-Analytics-Statistics-Subsystem-Design.md)
 
-## 100：图表展示
+## 90：图表展示
 
 - [图表展示目录](90-diagrams/README.md)
 
@@ -53,4 +53,4 @@
 - [AI 与分析详细设计](03-ai-and-analytics/)
 - [契约、数据库与验收材料](00-product-baseline/)
 
-同名文档以原 `docs/v2` 版本为准；汇总完成后，原目录已移除。
+规范正文以当前阶段目录中的文档为唯一事实来源；`90-diagrams` 只包含生成的展示视图，原 `docs/v2` 目录不再作为事实来源。

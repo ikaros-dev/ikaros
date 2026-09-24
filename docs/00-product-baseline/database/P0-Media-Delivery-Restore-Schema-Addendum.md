@@ -315,10 +315,11 @@ idempotency_key
 background_task_id
 budget_decision
 selected_attachment_ids
+request_fingerprint
 created_at / updated_at / version
 ```
 
-Restore Request 的 Storage scope 统一为 `ATTACHMENT_SET`；`scope_id` 必须允许为空，并在该 scope 下固定为 `NULL`。Attachment 集合由 Request Item / Attachment 引用表达，不使用 Episode、Season 或其他业务领域 ID 作为 Storage scope。`background_task_id` 将外部 Provider 恢复操作放入可靠 Background Task，而不是在 HTTP/数据库长事务中同步等待。
+Restore Request 的 Storage scope 统一为 `ATTACHMENT_SET`；`scope_id` 必须允许为空，并在该 scope 下固定为 `NULL`。Attachment 集合由已持久化的 Attachment 选择表达，不使用 Episode、Season 或其他业务领域 ID 作为 Storage scope。`request_fingerprint` 保存规范化 Attachment ID 集合、恢复类别和确认令牌的 SHA-256 摘要，不保存确认令牌本身。`background_task_id` 将外部 Provider 恢复操作放入可靠 Background Task，而不是在 HTTP/数据库长事务中同步等待。
 
 新的批量 Command 要求 `idempotency_key` 非空。幂等唯一性至少按 `actor_id + idempotency_key` 保证；相同 Key 对应不同 Attachment 集合或恢复参数时必须返回冲突，而不是复用错误请求。
 

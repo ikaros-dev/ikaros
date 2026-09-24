@@ -152,7 +152,7 @@ run.ikaros.sharing                             -> sharing
 
 `AttachmentReferenceQuery` 是带 `actorId` 的对象级授权能力，负责校验附件可读性及其与 Resource 的活动归属；`AttachmentAvailabilityQuery` 只返回稳定的五态业务结果。Blob、Placement、Provider、Restore Repository 和内部实体均属于 Storage 实现边界。
 
-Storage 的 Season Restore 不得直接依赖 Media Entity 或 Repository；Storage 通过 `media-api` 的 `MediaRestoreTargetQuery` 获取已授权的 Episode Resource ID。后台任务的提交、生命周期、派发和 Handler 注册契约由 `operations-api` 提供；Task Entity、Claim/Lease/Attempt 和任务 Migration 由 `platform-operations` 的 `run.ikaros.operations.task` 所有，业务模块不得依赖其实现类型。
+Season Restore 由 Media Owner 编排：校验 Season 权限，通过公开 Storage 查询解析 Attachment，再调用 `storage-api` 的 `StorageRestoreCapability` 提交有界 Attachment ID 集合。Storage 不依赖 `media-api`，不接收 Season/Episode ID，不重新展开已提交的恢复范围。后台任务的提交、生命周期、派发和 Handler 注册契约由 `operations-api` 提供；Task Entity、Claim/Lease/Attempt 和任务 Migration 由 `platform-operations` 的 `run.ikaros.operations.task` 所有，业务模块不得依赖其实现类型。
 
 Drive 抽取阶段严格限定于 `drive` 自身的实现。Device、DeviceTrustState、DeviceRepository 和设备 HTTP 能力归属 `sync`；`sync-api` 仅暴露最小的 `DeviceTrustQuery`，Drive 与 Offline 只能通过该能力判断设备是否可用，不得引用 Sync 的 Entity、Repository 或信任状态实现。设备 HTTP 路由统一为 `/api/sync/devices`，Drive 不反向依赖 Offline。
 

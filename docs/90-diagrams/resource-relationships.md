@@ -5,8 +5,8 @@
 来源：
 
 - [V2 产品需求文档](../00-product-baseline/Product-Requirements-Document.md)
-- [核心平台 DDL](../../src/main/resources/db/migration/V202609021000__DDL_CORE_PLATFORM.sql)
-- [Resource 源码包](../../src/main/java/run/ikaros/resource/)
+- [Resource 核心 DDL](../../resource/src/main/resources/db/migration/V202609021000__DDL_RESOURCE_CORE.sql)
+- [Resource 源码包](../../resource/src/main/java/run/ikaros/resource/)
 
 ## 领域关系图
 

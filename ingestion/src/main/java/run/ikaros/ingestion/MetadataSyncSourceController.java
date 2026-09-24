@@ -21,13 +21,10 @@ import reactor.core.publisher.Flux;
 public class MetadataSyncSourceController {
     private final MetadataSyncSourceService service;
     private final MetadataSyncService syncService;
-    private final MetadataSyncStatusRepository statusRepository;
 
-    public MetadataSyncSourceController(MetadataSyncSourceService service, MetadataSyncService syncService,
-                                       MetadataSyncStatusRepository statusRepository) {
+    public MetadataSyncSourceController(MetadataSyncSourceService service, MetadataSyncService syncService) {
         this.service = service;
         this.syncService = syncService;
-        this.statusRepository = statusRepository;
     }
 
     @PostMapping
@@ -59,9 +56,7 @@ public class MetadataSyncSourceController {
     @GetMapping("/{sourceId}/status")
     public Flux<MetadataSyncStatusView> status(@RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
                                                @PathVariable UUID sourceId) {
-        return statusRepository.findTop50ByOwnerIdAndSyncSourceIdOrderByCheckedAtDesc(actorId, sourceId)
-            .map(value -> new MetadataSyncStatusView(value.id(), value.syncSourceId(), value.resourceId(),
-                value.fieldKey(), value.status(), value.candidateId(), value.checkedAt()));
+        return syncService.status(actorId, sourceId);
     }
 
     @DeleteMapping("/{sourceId}")

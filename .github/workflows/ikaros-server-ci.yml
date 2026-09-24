@@ -64,6 +64,9 @@ jobs:
           java-version: "21"
           cache: maven
 
+      - name: Validate canonical architecture docs
+        run: python3 scripts/check_architecture_docs.py
+
       - name: Run architecture and contract tests
         run: mvn --batch-mode --update-snapshots -pl application -am -DskipTests=false test
 

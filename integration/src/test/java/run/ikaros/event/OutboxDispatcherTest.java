@@ -28,14 +28,15 @@ class OutboxDispatcherTest {
         DurableEventService events = mock(DurableEventService.class);
         DurableEventConsumer consumer = mock(DurableEventConsumer.class);
         java.util.UUID eventId = java.util.UUID.randomUUID();
-        when(events.pendingEvents()).thenReturn(reactor.core.publisher.Flux.empty());
+        when(consumer.consumerId()).thenReturn("consumer");
+        when(events.pendingEvents("consumer")).thenReturn(reactor.core.publisher.Flux.empty());
         when(events.dispatchOnce(eventId, consumer)).thenReturn(Mono.just(1L));
 
         OutboxDispatcher dispatcher = new OutboxDispatcher(events, List.of(consumer));
         StepVerifier.create(dispatcher.pendingEvents()).verifyComplete();
         StepVerifier.create(dispatcher.retry(eventId)).expectNext(1L).verifyComplete();
 
-        verify(events).pendingEvents();
+        verify(events).pendingEvents("consumer");
         verify(events).dispatchOnce(eventId, consumer);
     }
 }

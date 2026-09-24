@@ -456,6 +456,27 @@ Activate Instance
 
 ## 11. Restore Activation 与回退
 
+### 11.1 运行时与安全激活门禁（ADR-008）
+
+恢复出的数据库不是可立即运行的实例。Restore/Drill 默认处于隔离模式：禁止 Worker Claim、Scheduler、Outbox 外部副作用、Webhook、通知投递、自动化和 Provider 写入；演练环境使用独立网络/凭据，不得复用生产外部写权限。
+
+激活计划必须持久记录并核对：
+
+| 状态类别 | 激活前处理 |
+|---|---|
+| RUNNING Task / Attempt / Lease | 使旧租约失效；按 Handler recovery policy 转为可重试或人工核对；不能沿用旧 runner/lease token |
+| Outbox / Consumer Inbox / Delivery | 保留同一快照的一致关系；内部可重建投影可重放；外部副作用先对账，不因恢复了旧 Inbox 就认为外部操作尚未发生 |
+| Scheduled Job | 按 misfire policy 预览待触发集合，默认不批量补发外部操作 |
+| JWT / Verification Grant / App Grant | 激活时生成新的认证信任代际，或强制使用不在旧备份内的新签名密钥并停用旧密钥；不能仅给恢复后的 security_version 加一而假设所有历史 Token 都失效 |
+| Provider Callback / Webhook | 更新回调凭据/代际或保持禁用，拒绝来自旧运行实例的写入 |
+| 原生产实例 | 切换前确保只有一个可产生外部副作用的实例；回退也必须经过相同门禁 |
+
+对已经执行但不在恢复点记录内的外部副作用，必须使用稳定业务幂等键与 Provider 查询对账；无法证明幂等/执行结果的操作进入人工确认，不自动重放。
+
+只有清理/核对结果、认证信任更新、Blob 完整性和权限冒烟测试全部通过后才可开放 Worker 与普通流量。此处是 Backup 交付门禁；未实现激活协调器前不得宣称支持自动安全恢复。
+
+### 11.2 业务校验与切换
+
 恢复完成后至少通过：
 
 - PostgreSQL Schema 兼容；

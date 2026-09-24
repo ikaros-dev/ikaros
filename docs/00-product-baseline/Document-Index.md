@@ -20,42 +20,42 @@
 - [`ADR-005 Platform / Server App / Client App`](./adr/ADR-005-platform-server-app-client-app-architecture.md) — V2 三层应用架构总决策。
 - [`ADR-006 App Client Authorization Grant`](./adr/ADR-006-app-client-authorization-grant-token-binding.md) — Client / Device 独立授权、Scope、Token Binding 与撤销语义。
 - [`App-Runtime-Identity-Client-Architecture-Design.md`](../01-platform-foundation/App-Runtime-Identity-Client-Architecture-Design.md) — Platform / Server App / Client App、App Registry、Client Registration、Permission / Scope、Discovery 与生命周期。
-- [`Core-Resource-Library-Subsystem-Design.md`](./Core-Resource-Library-Subsystem-Design.md) — Resource、Collection、Relation、Tag、External Identity、Metadata Provenance、用户状态、生命周期与搜索投影。
-- [`Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md`](./Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md) — Source、Scan、Candidate、Match、Import Plan、Metadata Refresh、Provenance、幂等与失败恢复。
-- [`Attachment-Blob-Storage-Subsystem-Design.md`](./Attachment-Blob-Storage-Subsystem-Design.md) — Attachment / Blob / Replica / 分层存储与内容生命周期。
-- [`Personal-Drive-File-Synchronization-Subsystem-Design.md`](./Personal-Drive-File-Synchronization-Subsystem-Design.md) — Drive Space、Drive Node、File Revision、上传下载、目录同步、Camera Backup、冲突与分享边界。
-- [`Personal-Drive-File-Synchronization-P0-Semantics.md`](./Personal-Drive-File-Synchronization-P0-Semantics.md) — Drive Change Generation、Tombstone / Restore、Atomic Save、Quota、Camera Backup 与 P0 同步一致性语义。
-- [`Sharing-Collaboration-Room-Subsystem-Design.md`](./Sharing-Collaboration-Room-Subsystem-Design.md) — Share、Invite、Room、Membership、Presence、实时状态、Sequence、Replay 与权限收敛。
-- [`Offline-Cache-Device-Synchronization-Subsystem-Design.md`](./Offline-Cache-Device-Synchronization-Subsystem-Design.md) — Device、Download / Cache、Pending Mutation、Change Feed / Cursor、Tombstone、Conflict、Full Resync 与 Secure Offline Data。
-- [`Search-Discovery-Subsystem-Design.md`](./Search-Discovery-Subsystem-Design.md) — Search Document、权限感知查询、索引投影、Generation Rebuild、失败恢复与 Semantic Search 边界。
-- [`Backup-Restore-Data-Portability-Subsystem-Design.md`](./Backup-Restore-Data-Portability-Subsystem-Design.md) — Restore Point、Backup Manifest、一致恢复点、Verification、Restore、Retention、Export / Import 与安全边界。
-- [`Background-Task-Scheduler-Design.md`](./Background-Task-Scheduler-Design.md) — 后台任务、调度、重试、状态与 Worker 执行模型。
-- [`Platform-Integration-Automation-Design.md`](./Platform-Integration-Automation-Design.md) — Capability、Command、Event、Automation 与外部集成。
-- [`Platform-Administration-Operations-Subsystem-Design.md`](./Platform-Administration-Operations-Subsystem-Design.md) — 平台配置、通知、审计、运维、管理与可观测性。
-- [`Data-Analytics-Statistics-Subsystem-Design.md`](./Data-Analytics-Statistics-Subsystem-Design.md) — Activity、统计、分析投影与数据边界。
+- [`Core-Resource-Library-Subsystem-Design.md`](../01-platform-foundation/Core-Resource-Library-Subsystem-Design.md) — Resource、Collection、Relation、Tag、External Identity、Metadata Provenance、用户状态、生命周期与搜索投影。
+- [`Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md`](../01-platform-foundation/Content-Ingestion-Metadata-Synchronization-Subsystem-Design.md) — Source、Scan、Candidate、Match、Import Plan、Metadata Refresh、Provenance、幂等与失败恢复。
+- [`Attachment-Blob-Storage-Subsystem-Design.md`](../01-platform-foundation/Attachment-Blob-Storage-Subsystem-Design.md) — Attachment / Blob / Replica / 分层存储与内容生命周期。
+- [`Personal-Drive-File-Synchronization-Subsystem-Design.md`](../01-platform-foundation/Personal-Drive-File-Synchronization-Subsystem-Design.md) — Drive Space、Drive Node、File Revision、上传下载、目录同步、Camera Backup、冲突与分享边界。
+- [`Personal-Drive-File-Synchronization-P0-Semantics.md`](../01-platform-foundation/Personal-Drive-File-Synchronization-P0-Semantics.md) — Drive Change Generation、Tombstone / Restore、Atomic Save、Quota、Camera Backup 与 P0 同步一致性语义。
+- [`Sharing-Collaboration-Room-Subsystem-Design.md`](../02-domain-capabilities/Sharing-Collaboration-Room-Subsystem-Design.md) — Share、Invite、Room、Membership、Presence、实时状态、Sequence、Replay 与权限收敛。
+- [`Offline-Cache-Device-Synchronization-Subsystem-Design.md`](../01-platform-foundation/Offline-Cache-Device-Synchronization-Subsystem-Design.md) — Device、Download / Cache、Pending Mutation、Change Feed / Cursor、Tombstone、Conflict、Full Resync 与 Secure Offline Data。
+- [`Search-Discovery-Subsystem-Design.md`](../01-platform-foundation/Search-Discovery-Subsystem-Design.md) — Search Document、权限感知查询、索引投影、Generation Rebuild、失败恢复与 Semantic Search 边界。
+- [`Backup-Restore-Data-Portability-Subsystem-Design.md`](../01-platform-foundation/Backup-Restore-Data-Portability-Subsystem-Design.md) — Restore Point、Backup Manifest、一致恢复点、Verification、Restore、Retention、Export / Import 与安全边界。
+- [`Background-Task-Scheduler-Design.md`](../01-platform-foundation/Background-Task-Scheduler-Design.md) — 后台任务、调度、重试、状态与 Worker 执行模型。
+- [`Platform-Integration-Automation-Design.md`](../01-platform-foundation/Platform-Integration-Automation-Design.md) — Capability、Command、Event、Automation 与外部集成。
+- [`Platform-Administration-Operations-Subsystem-Design.md`](../01-platform-foundation/Platform-Administration-Operations-Subsystem-Design.md) — 平台配置、通知、审计、运维、管理与可观测性。
+- [`Data-Analytics-Statistics-Subsystem-Design.md`](../03-ai-and-analytics/Data-Analytics-Statistics-Subsystem-Design.md) — Activity、统计、分析投影与数据边界。
 
 ### 第三层：身份与高敏感数据
 
 - [`Security-Identity-Authorization-Crypto-Subsystem-Design.md`](../01-platform-foundation/Security-Identity-Authorization-Crypto-Subsystem-Design.md) — 身份、JWT 无状态认证、AppAuthorizationGrant、Step-up Verification、RBAC / ACL、授权与密码学边界。
-- [`Secure-Data-Foundation-Design.md`](./Secure-Data-Foundation-Design.md) — Secure Domain 通用安全基础。
-- [`Password-Manager-Subsystem-Design.md`](./Password-Manager-Subsystem-Design.md) — 密码管理器领域模型与安全交互。
-- [`Private-Notes-Subsystem-Design.md`](./Private-Notes-Subsystem-Design.md) — 私密笔记的安全数据模型与访问边界。
+- [`Secure-Data-Foundation-Design.md`](../01-platform-foundation/Secure-Data-Foundation-Design.md) — Secure Domain 通用安全基础。
+- [`Password-Manager-Subsystem-Design.md`](../02-domain-capabilities/Password-Manager-Subsystem-Design.md) — 密码管理器领域模型与安全交互。
+- [`Private-Notes-Subsystem-Design.md`](../02-domain-capabilities/Private-Notes-Subsystem-Design.md) — 私密笔记的安全数据模型与访问边界。
 
 ### 第四层：专业内容领域
 
-- [`Content-Creation-Revision-Collaborative-Document-Subsystem-Design.md`](./Content-Creation-Revision-Collaborative-Document-Subsystem-Design.md) — Document / Article / Note、Working Copy、不可变 Revision、Publication、Comment / Annotation 与协同编辑边界。
-- [`Media-Video-Anime-Playback-Subsystem-Design.md`](./Media-Video-Anime-Playback-Subsystem-Design.md) — Work / Season / Episode、Media Release、Probe / Track / Subtitle、Playback Variant、Transcoding、Playback Session 与 Progress。
-- [`Reading-Comic-Novel-Ebook-Subsystem-Design.md`](./Reading-Comic-Novel-Ebook-Subsystem-Design.md) — Comic / Novel / Ebook、Edition、Volume / Chapter / Page、稳定 Reading Locator、Progress、Annotation、OCR / Translation。
-- [`Music-Library-Playback-Queue-Subsystem-Design.md`](./Music-Library-Playback-Queue-Subsystem-Design.md) — Artist / Album / Edition / Disc / Track、Audio Source、Lyrics、Playlist、Queue、Shuffle / Repeat 与播放历史。
-- [`Photo-Album-Image-Asset-Subsystem-Design.md`](./Photo-Album-Image-Asset-Subsystem-Design.md) — Photo、Original Asset、EXIF、Capture Time、Location、Manual / Smart Album、Preview / Thumbnail 与 AI Artifact。
-- [`Game-Digital-Asset-Archive-Subsystem-Design.md`](./Game-Digital-Asset-Archive-Subsystem-Design.md) — Game、Edition / Version / Platform、Installer / Patch / MOD / Save / Manual、Compatibility、Archive 与 Plugin Action 边界。
+- [`Content-Creation-Revision-Collaborative-Document-Subsystem-Design.md`](../02-domain-capabilities/Content-Creation-Revision-Collaborative-Document-Subsystem-Design.md) — Document / Article / Note、Working Copy、不可变 Revision、Publication、Comment / Annotation 与协同编辑边界。
+- [`Media-Video-Anime-Playback-Subsystem-Design.md`](../02-domain-capabilities/Media-Video-Anime-Playback-Subsystem-Design.md) — Work / Season / Episode、Media Release、Probe / Track / Subtitle、Playback Variant、Transcoding、Playback Session 与 Progress。
+- [`Reading-Comic-Novel-Ebook-Subsystem-Design.md`](../02-domain-capabilities/Reading-Comic-Novel-Ebook-Subsystem-Design.md) — Comic / Novel / Ebook、Edition、Volume / Chapter / Page、稳定 Reading Locator、Progress、Annotation、OCR / Translation。
+- [`Music-Library-Playback-Queue-Subsystem-Design.md`](../02-domain-capabilities/Music-Library-Playback-Queue-Subsystem-Design.md) — Artist / Album / Edition / Disc / Track、Audio Source、Lyrics、Playlist、Queue、Shuffle / Repeat 与播放历史。
+- [`Photo-Album-Image-Asset-Subsystem-Design.md`](../02-domain-capabilities/Photo-Album-Image-Asset-Subsystem-Design.md) — Photo、Original Asset、EXIF、Capture Time、Location、Manual / Smart Album、Preview / Thumbnail 与 AI Artifact。
+- [`Game-Digital-Asset-Archive-Subsystem-Design.md`](../02-domain-capabilities/Game-Digital-Asset-Archive-Subsystem-Design.md) — Game、Edition / Version / Platform、Installer / Patch / MOD / Save / Manual、Compatibility、Archive 与 Plugin Action 边界。
 
 ### 第五层：业务增强能力
 
-- [`AI-Intelligence-Subsystem-Design.md`](./AI-Intelligence-Subsystem-Design.md) — AI Provider、Context、Tool、智能处理与安全边界。
-- [`AI-Persona-System-Design.md`](./AI-Persona-System-Design.md) — AI Persona、角色配置与行为边界。
-- [`Productivity-Planning-Subsystem-Design.md`](./Productivity-Planning-Subsystem-Design.md) — Task、Project、Goal、OKR 等效率规划能力。
-- [`Personal-Finance-Accounting-Subsystem-Design.md`](./Personal-Finance-Accounting-Subsystem-Design.md) — 个人财务、账户、交易、预算与账本能力。
+- [`AI-Intelligence-Subsystem-Design.md`](../03-ai-and-analytics/AI-Intelligence-Subsystem-Design.md) — AI Provider、Context、Tool、智能处理与安全边界。
+- [`AI-Persona-System-Design.md`](../03-ai-and-analytics/AI-Persona-System-Design.md) — AI Persona、角色配置与行为边界。
+- [`Productivity-Planning-Subsystem-Design.md`](../02-domain-capabilities/Productivity-Planning-Subsystem-Design.md) — Task、Project、Goal、OKR 等效率规划能力。
+- [`Personal-Finance-Accounting-Subsystem-Design.md`](../02-domain-capabilities/Personal-Finance-Accounting-Subsystem-Design.md) — 个人财务、账户、交易、预算与账本能力。
 
 ---
 
@@ -73,7 +73,7 @@ Personal Drive 独立交互规格：[`app-interaction/drive/personal-drive-file-
 
 ### CMS / Web Console 交互
 
-[`cms-console-interaction/`](./cms-console-interaction/) 描述 Web Console 的最终态管理交互。当前 V2 按从零重构处理，不以旧菜单或旧 Route 为兼容约束。
+[`cms-console-interaction/`](../01-platform-foundation/cms-console-interaction) 描述 Web Console 的最终态管理交互。当前 V2 按从零重构处理，不以旧菜单或旧 Route 为兼容约束。
 
 Console 用户可见 Sidebar 一级节点固定为：
 
@@ -107,18 +107,18 @@ Console 用户可见 Sidebar 一级节点固定为：
 
 关键设计文件：
 
-- [`cms-console-interaction/README.md`](./cms-console-interaction/README.md) — 通用 Console 交互规范；
-- [`cms-console-interaction/Console-Information-Architecture-and-Product-Journey-Contract.md`](./cms-console-interaction/Console-Information-Architecture-and-Product-Journey-Contract.md) — canonical IA、菜单层级与 route tree；
-- [`cms-console-interaction/Console-Product-Journey-Acceptance-Contract.md`](./cms-console-interaction/Console-Product-Journey-Acceptance-Contract.md) — Golden Path / Product Journey Acceptance；
-- [`cms-console-interaction/route-permission-matrix.md`](./cms-console-interaction/route-permission-matrix.md) — canonical Route / Permission Matrix；
+- [`cms-console-interaction/README.md`](../01-platform-foundation/cms-console-interaction/README.md) — 通用 Console 交互规范；
+- [`cms-console-interaction/Console-Information-Architecture-and-Product-Journey-Contract.md`](../01-platform-foundation/cms-console-interaction/Console-Information-Architecture-and-Product-Journey-Contract.md) — canonical IA、菜单层级与 route tree；
+- [`cms-console-interaction/Console-Product-Journey-Acceptance-Contract.md`](../01-platform-foundation/cms-console-interaction/Console-Product-Journey-Acceptance-Contract.md) — Golden Path / Product Journey Acceptance；
+- [`cms-console-interaction/route-permission-matrix.md`](../01-platform-foundation/cms-console-interaction/route-permission-matrix.md) — canonical Route / Permission Matrix；
 - [`database/Migration-Version-Policy.md`](./database/Migration-Version-Policy.md) — Migration 文件归属、命名、UTC+8 版本生成与全局单调序列契约；
-- [`cms-console-interaction/personal-drive/README.md`](./cms-console-interaction/personal-drive/README.md) — Drive App 管理规格。
+- [`cms-console-interaction/personal-drive/README.md`](../01-platform-foundation/cms-console-interaction/personal-drive/README.md) — Drive App 管理规格。
 
 `cms-console-interaction/*` 的历史目录名只表示领域文档容器，不代表全局 Sidebar 分组。
 
 ### 原型
 
-[`prototypes/`](./prototypes/) 保存 V2 交互原型草稿，仅用于辅助讨论，不应作为服务端领域契约、数据库 Schema 或 API 的事实来源。
+V2 交互原型草稿仅用于辅助讨论，不应作为服务端领域契约、数据库 Schema 或 API 的事实来源；当前仓库未提交原型文件。
 
 ---
 

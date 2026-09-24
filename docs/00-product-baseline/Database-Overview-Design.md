@@ -1042,15 +1042,7 @@ causation_id
 payload
 ```
 
-派发系统可以附加：
-
-- dispatch status；
-- available_at；
-- attempt count / attempt history；
-- last error summary；
-- dispatched_at；
-
-但这些派发元数据不能改变 Event 已经发生的事实内容。
+`event_outbox.dispatched_at` 只保留兼容遥测用途，不能作为所有 Consumer 的全局完成标志。每个 Consumer 的重试时间、尝试计数、错误分类和 Delivery 状态保存在 `(consumer_id,event_id)` 投递记录中；派发元数据不能改变 Event 已发生的事实内容。
 
 ### 16.3 Event Payload 的边界
 
@@ -1067,6 +1059,10 @@ Event Payload：
 ### 16.4 LISTEN / NOTIFY 只用于唤醒
 
 PostgreSQL LISTEN / NOTIFY 可以提示 Dispatcher“有新 Outbox 记录”，但不能成为唯一事件存储。
+
+### 16.5 Consumer 独立投递
+
+Integration 为每个 `(consumer_id,event_id)` 保存 `PENDING / RETRY / DELIVERED / DEAD` 状态、尝试数、`next_attempt_at` 与稳定错误分类。成功副作用、Inbox 去重记录和 Consumer Delivery 在同一数据库事务提交；失败副作用和 Inbox 回滚，随后单独记录退避重试。某个 Consumer 已完成事件不得阻止其他 Consumer 首次接收仍保留的事件。具体物理约束见 P0 Database Schema §17.1。
 
 持久化 Outbox 才是可靠来源。
 

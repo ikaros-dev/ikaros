@@ -2,6 +2,7 @@ package run.ikaros.event;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.UUID;
@@ -22,7 +23,8 @@ class DurableEventServiceTest {
             Mono.just(invocation.getArgument(0)));
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        DurableEventService service = new DurableEventService(outbox, mock(InboxEntryRepository.class), transaction);
+        DurableEventService service = new DurableEventService(outbox, mock(InboxEntryRepository.class),
+            mock(OutboxDeliveryRepository.class), transaction);
         StepVerifier.create(service.append(new EventAppendRequest("resource.resource.created", 1,
                 "resource", "resource", UUID.randomUUID(), "{}")))
             .expectNextCount(1)
@@ -36,10 +38,19 @@ class DurableEventServiceTest {
     void dispatchesThroughStableConsumerContract() {
         OutboxEventRepository outbox = mock(OutboxEventRepository.class);
         InboxEntryRepository inbox = mock(InboxEntryRepository.class);
+        OutboxDeliveryRepository deliveries = mock(OutboxDeliveryRepository.class);
         TransactionalOperator transaction = mock(TransactionalOperator.class);
         OutboxEventEntity event = new OutboxEventEntity(UUID.randomUUID(), "resource.resource.created", 1,
             "resource", UUID.randomUUID(), "{}", java.time.Instant.now(), 0, null, null);
-        when(outbox.findTop100ByDispatchedAtIsNullOrderByOccurredAtAsc()).thenReturn(reactor.core.publisher.Flux.just(event));
+        when(outbox.findTop100PendingForConsumer(org.mockito.ArgumentMatchers.eq("consumer"), any()))
+            .thenReturn(reactor.core.publisher.Flux.just(event));
+        when(deliveries.insertIfAbsent(any(), any(), any())).thenReturn(Mono.just(1));
+        when(deliveries.lockByConsumerIdAndEventId(any(), any())).thenReturn(Mono.just(new OutboxDeliveryEntity(
+            UUID.randomUUID(), "consumer", event.id(), "PENDING", 0, java.time.Instant.now().minusSeconds(1),
+            null, null, java.time.Instant.now(), java.time.Instant.now())));
+        when(deliveries.recordAttempt(any(), any(), any())).thenReturn(Mono.just(1));
+        when(deliveries.markDelivered(any(), any(), any())).thenReturn(Mono.just(1));
+        when(deliveries.recordFailure(any(), any(), any(), any(), anyInt())).thenReturn(Mono.just(1));
         when(outbox.recordAttempt(any(), any())).thenReturn(Mono.just(1));
         when(outbox.markDispatched(any(), any())).thenReturn(Mono.just(1));
         when(inbox.insertIfAbsent(any(), any(), any())).thenReturn(Mono.just(1));
@@ -48,7 +59,7 @@ class DurableEventServiceTest {
         when(consumer.consumerId()).thenReturn("consumer");
         when(consumer.consume(any())).thenReturn(Mono.empty());
 
-        StepVerifier.create(new DurableEventService(outbox, inbox, transaction)
+        StepVerifier.create(new DurableEventService(outbox, inbox, deliveries, transaction)
                 .dispatchOnce(consumer))
             .expectNext(1L)
             .verifyComplete();
@@ -60,7 +71,7 @@ class DurableEventServiceTest {
         OutboxEventRepository outbox = mock(OutboxEventRepository.class);
         when(outbox.findById(any(UUID.class))).thenReturn(Mono.empty());
         DurableEventService service = new DurableEventService(outbox,
-            mock(InboxEntryRepository.class), mock(TransactionalOperator.class));
+            mock(InboxEntryRepository.class), mock(OutboxDeliveryRepository.class), mock(TransactionalOperator.class));
         DurableEventConsumer consumer = mock(DurableEventConsumer.class);
         when(consumer.consumerId()).thenReturn("consumer");
 
@@ -72,7 +83,7 @@ class DurableEventServiceTest {
     @Test
     void rejectsSecretLikePayloadsBeforePersistence() {
         DurableEventService service = new DurableEventService(mock(OutboxEventRepository.class),
-            mock(InboxEntryRepository.class), mock(TransactionalOperator.class));
+            mock(InboxEntryRepository.class), mock(OutboxDeliveryRepository.class), mock(TransactionalOperator.class));
         assertThrows(RuntimeException.class, () -> service.append(new EventAppendRequest("resource.resource.created", 1,
             "resource", "resource", UUID.randomUUID(), "{\"access_token\":\"x\"}")).block());
     }
@@ -80,7 +91,7 @@ class DurableEventServiceTest {
     @Test
     void rejectsMalformedOrNonObjectPayloadsBeforePersistence() {
         DurableEventService service = new DurableEventService(mock(OutboxEventRepository.class),
-            mock(InboxEntryRepository.class), mock(TransactionalOperator.class));
+            mock(InboxEntryRepository.class), mock(OutboxDeliveryRepository.class), mock(TransactionalOperator.class));
         assertThrows(RuntimeException.class, () -> service.append(new EventAppendRequest("resource.resource.created", 1,
             "resource", "resource", UUID.randomUUID(), "not-json")).block());
         assertThrows(RuntimeException.class, () -> service.append(new EventAppendRequest("resource.resource.created", 1,
@@ -90,7 +101,7 @@ class DurableEventServiceTest {
     @Test
     void rejectsUnstableEventTypeNamesBeforePersistence() {
         DurableEventService service = new DurableEventService(mock(OutboxEventRepository.class),
-            mock(InboxEntryRepository.class), mock(TransactionalOperator.class));
+            mock(InboxEntryRepository.class), mock(OutboxDeliveryRepository.class), mock(TransactionalOperator.class));
         assertThrows(RuntimeException.class, () -> service.append(new EventAppendRequest("ResourceCreated", 1,
             "resource", "resource", UUID.randomUUID(), "{}")).block());
     }

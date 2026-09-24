@@ -713,13 +713,11 @@ Platform Permission 与 App Scope 是不同命名空间：
 
 这些字段只能在调用者已经被允许知道目标能力存在时返回。
 
-### 11.4 Step-up Challenge 复用
+### 11.4 Step-up Challenge 签发
 
-`POST /api/security/step-up` 发起 Email `LOGIN_STEP_UP` 时，服务端可以在同一账号最近一次 Email OTP 成功验证仍处于复用窗口内的情况下直接返回新的 SVL-2 `Verification Grant`，而不再次发送 OTP。SMS Step-up 使用对应的 `/api/security/step-up/sms` 入口并签发 SVL-2 Grant。复用窗口默认 4 小时，由应用配置决定。
+依据 ADR-008，`POST /api/security/step-up` 和 SMS 对应入口每次都创建新的 `LOGIN_STEP_UP` Challenge。近期成功的 OTP 记录不能为当前调用方换发或延长 Verification Grant。客户端可以继续使用自己持有、仍在有效期内且通过主体与 `security_version` 校验的既有 Grant；签发新 Challenge 不改变既有 Grant 的 `verified_at` 或 `exp`。
 
-命中复用窗口时，响应仍不得包含 OTP、OTP Digest 或认证邮箱；客户端使用响应中的 `verification_grant` 继续执行原操作。未命中窗口时，响应返回普通挑战摘要，客户端必须完成 OTP 验证后再使用返回的 Grant。
-
-复用只适用于同一账号、同一验证方式和 `LOGIN_STEP_UP` 用途，且新的 Grant 仍必须校验主体、`security_version`、`purpose`、`target_reference`（适用时）、SVL 与 `exp`。SMS 是否启用由 `ikaros.security.verification.sms.enabled` 控制，默认关闭；短信 Noop 模式仅用于开发并输出验证码到服务端控制台，生产环境不得使用 Noop 投递。
+响应不得包含 OTP、OTP Digest 或认证邮箱。SMS 是否启用由 `ikaros.security.verification.sms.enabled` 控制，默认关闭；短信 Noop 模式仅用于开发并输出验证码到服务端控制台，生产环境不得使用 Noop 投递。
 
 ### 11.5 Anti-enumeration
 

@@ -15,7 +15,16 @@ public record StorageRestoreRequestEntity(@Id UUID id, @Column("actor_id") UUID 
     @Column("idempotency_key") String idempotencyKey, @Column("background_task_id") UUID backgroundTaskId,
     @Column("created_at") Instant createdAt, @Column("updated_at") Instant updatedAt,
     @Column("budget_decision") String budgetDecision,
-    @Column("selected_attachment_ids") String selectedAttachmentIds, @Version Long version) {
+    @Column("selected_attachment_ids") String selectedAttachmentIds,
+    @Column("request_fingerprint") String requestFingerprint, @Version Long version) {
+    public StorageRestoreRequestEntity(UUID id, UUID actorId, StorageRestoreScope scope, UUID scopeId,
+        StorageRestoreRequestStatus status, int totalItems, int completedItems, long totalBytes, String errorSummary,
+        String idempotencyKey, UUID backgroundTaskId, Instant createdAt, Instant updatedAt, String budgetDecision,
+        String selectedAttachmentIds, Long version) {
+        this(id, actorId, scope, scopeId, status, totalItems, completedItems, totalBytes, errorSummary,
+            idempotencyKey, backgroundTaskId, createdAt, updatedAt, budgetDecision, selectedAttachmentIds, null, version);
+    }
+
     public StorageRestoreRequestEntity(UUID id, UUID actorId, StorageRestoreScope scope, UUID scopeId,
         StorageRestoreRequestStatus status, int totalItems, int completedItems, long totalBytes, String errorSummary,
         String idempotencyKey, UUID backgroundTaskId, Instant createdAt, Instant updatedAt, Long version) {

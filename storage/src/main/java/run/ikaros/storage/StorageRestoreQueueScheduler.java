@@ -30,6 +30,14 @@ public class StorageRestoreQueueScheduler {
     }
 
     private Mono<Void> release(StorageRestoreRequestEntity request) {
+        if (request.scope() != StorageRestoreScope.ATTACHMENT
+            && (request.selectedAttachmentIds() == null || request.selectedAttachmentIds().isBlank())) {
+            return requests.save(new StorageRestoreRequestEntity(request.id(), request.actorId(), request.scope(),
+                request.scopeId(), StorageRestoreRequestStatus.FAILED, request.totalItems(), request.completedItems(),
+                request.totalBytes(), "MISSING_FROZEN_ATTACHMENT_SELECTION", request.idempotencyKey(),
+                request.backgroundTaskId(), request.createdAt(), Instant.now(), request.budgetDecision(),
+                request.selectedAttachmentIds(), request.requestFingerprint(), request.version())).then();
+        }
         return budget.evaluate(request.totalItems(), request.totalBytes(), null)
             .filter(decision -> decision != StorageRestoreBudgetDecision.QUEUED)
             .flatMap(decision -> tasks.submit("storage.restore", payload(request),
@@ -37,18 +45,21 @@ public class StorageRestoreQueueScheduler {
             .flatMap(task -> requests.save(new StorageRestoreRequestEntity(request.id(), request.actorId(), request.scope(),
                 request.scopeId(), StorageRestoreRequestStatus.REQUESTED, request.totalItems(), request.completedItems(),
                 request.totalBytes(), request.errorSummary(), request.idempotencyKey(), task.id(), request.createdAt(),
-                Instant.now(), request.budgetDecision(), request.selectedAttachmentIds(), request.version())))
+                Instant.now(), request.budgetDecision(), request.selectedAttachmentIds(), request.requestFingerprint(),
+                request.version())))
             .then();
     }
 
     private Map<String, Object> payload(StorageRestoreRequestEntity request) {
-        String scopeKey = request.scope() == StorageRestoreScope.SEASON ? "season_id" : "attachment_id";
         Map<String, Object> payload = new java.util.HashMap<>();
         payload.put("restore_request_id", request.id().toString());
-        payload.put(scopeKey, request.scopeId().toString());
         payload.put("provider_restore_class", "STANDARD");
         if (request.selectedAttachmentIds() != null && !request.selectedAttachmentIds().isBlank()) {
             payload.put("selected_attachment_ids", request.selectedAttachmentIds());
+        } else if (request.scope() == StorageRestoreScope.ATTACHMENT) {
+            payload.put("attachment_id", request.scopeId().toString());
+        } else {
+            throw new IllegalStateException("Queued Restore Request has no frozen Attachment selection");
         }
         return payload;
     }
