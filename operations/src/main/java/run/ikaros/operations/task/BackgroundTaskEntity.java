@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 import io.r2dbc.postgresql.codec.Json;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -16,7 +17,7 @@ public record BackgroundTaskEntity(@Id UUID id, @Column("task_type") String task
     int attempt, @Column("cancel_requested_at") Instant cancelRequestedAt,
     @Column("progress") Json progress, @Column("result_summary") Json result,
     @Column("created_at") Instant createdAt, @Column("updated_at") Instant updatedAt,
-    @Column("parent_task_id") UUID parentTaskId) {
+    @Column("parent_task_id") UUID parentTaskId, @Version Long version) {
     public BackgroundTaskEntity(UUID id, String taskType, String status, String payload, String idempotencyKey,
         Instant availableAt, Instant timeoutAt, String leaseOwner, UUID leaseToken, Instant leaseExpiresAt,
         int attempt, Instant cancelRequestedAt, String progress, String result, Instant createdAt,
@@ -24,6 +25,14 @@ public record BackgroundTaskEntity(@Id UUID id, @Column("task_type") String task
         this(id, taskType, status, Json.of(payload == null ? "{}" : payload), idempotencyKey, availableAt, timeoutAt,
             leaseOwner, leaseToken, leaseExpiresAt, attempt, cancelRequestedAt,
             Json.of(progress == null ? "{}" : progress), Json.of(result == null ? "{}" : result), createdAt, updatedAt,
-            parentTaskId);
+            parentTaskId, 0L);
+    }
+
+    public BackgroundTaskEntity(UUID id, String taskType, String status, Json payload, String idempotencyKey,
+        Instant availableAt, Instant timeoutAt, String leaseOwner, UUID leaseToken, Instant leaseExpiresAt,
+        int attempt, Instant cancelRequestedAt, Json progress, Json result, Instant createdAt,
+        Instant updatedAt, UUID parentTaskId) {
+        this(id, taskType, status, payload, idempotencyKey, availableAt, timeoutAt, leaseOwner, leaseToken,
+            leaseExpiresAt, attempt, cancelRequestedAt, progress, result, createdAt, updatedAt, parentTaskId, 0L);
     }
 }

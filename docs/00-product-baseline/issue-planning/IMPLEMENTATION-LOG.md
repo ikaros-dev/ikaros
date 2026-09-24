@@ -286,6 +286,7 @@
 - 日期：2026-09-10
 - 验收结论：重复投递使用 Inbox 的 `(consumer_id, event_id)` 唯一写入结果判定；并发请求只有成功 claim 的一方执行 handler，重复方跳过副作用并继续完成投递标记。失败 handler 不提交 Inbox/完成标记，后续投递仍可重试。
 - 追踪语义：Outbox 记录 `request_id`、`correlation_id`、`causation_id` 和 `actor_id`；消费者收到 `DurableEvent` view，不绕过公开 Integration API 暴露持久化实体。
+- 架构收敛（2026-09-23）：该历史记录中的全局 `dispatched_at IS NULL` 扫描已由 ADR-008 supersede；当前投递资格和重试状态独立按 Consumer 保存。
 - Console 对接：`console/src/views/integration/index.vue` 的“集成事件”页读取已登记的 `GET /health/operations`，展示待投递、已尝试未完成、最近尝试，并提供加载、错误和空结果状态；不在前端伪造事件执行结果。
 - 验证：`OutboxRetrySemanticsTest` 新增两次并发 dispatch 仅执行一次 handler 的可重复测试；相关 DurableEvent、Dispatcher、Retry 测试共 11 项通过；Console `pnpm typecheck` 和 `pnpm build` 通过。真实 PostgreSQL 唯一约束并发回放仍需要 Docker Desktop + Testcontainers，当前环境未安装 Docker，未伪造运行证据。
 

@@ -21,17 +21,21 @@ import run.ikaros.integration.api.EventReference;
 /** Outbox 写入与 Inbox 幂等消费边界。 */
 @Service
 public class DurableEventService implements DurableEventPublisher {
+    private static final int MAX_DELIVERY_ATTEMPTS = 8;
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final java.util.regex.Pattern EVENT_TYPE =
         java.util.regex.Pattern.compile("[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*");
     private final OutboxEventRepository outbox;
     private final InboxEntryRepository inbox;
+    private final OutboxDeliveryRepository deliveries;
     private final TransactionalOperator transaction;
 
     public DurableEventService(OutboxEventRepository outbox, InboxEntryRepository inbox,
+                               OutboxDeliveryRepository deliveries,
                                TransactionalOperator transaction) {
         this.outbox = outbox;
         this.inbox = inbox;
+        this.deliveries = deliveries;
         this.transaction = transaction;
     }
 
@@ -83,8 +87,11 @@ public class DurableEventService implements DurableEventPublisher {
     }
 
     public Mono<Long> dispatchOnce(String consumerId, Function<OutboxEventEntity, Mono<Void>> handler) {
-        return outbox.findTop100ByDispatchedAtIsNullOrderByOccurredAtAsc()
-            .concatMap(event -> dispatchEvent(event, consumerId, handler))
+        if (consumerId == null || consumerId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("事件 Consumer ID 不合法"));
+        }
+        return outbox.findTop100PendingForConsumer(consumerId, Instant.now())
+            .concatMap(event -> dispatchEvent(event, consumerId, handler, false))
             .reduce(0L, Long::sum);
     }
 
@@ -92,24 +99,45 @@ public class DurableEventService implements DurableEventPublisher {
         return outbox.findTop100ByDispatchedAtIsNullOrderByOccurredAtAsc().map(this::toDurableEvent);
     }
 
+    public reactor.core.publisher.Flux<DurableEvent> pendingEvents(String consumerId) {
+        if (consumerId == null || consumerId.isBlank()) return reactor.core.publisher.Flux.empty();
+        return outbox.findTop100UndeliveredForConsumer(consumerId).map(this::toDurableEvent);
+    }
+
     public Mono<Long> dispatchOnce(UUID eventId, DurableEventConsumer consumer) {
         if (consumer == null || consumer.consumerId() == null || consumer.consumerId().isBlank()) {
             return Mono.error(new IllegalArgumentException("事件 Consumer ID 不合法"));
         }
         return outbox.findById(eventId)
-            .filter(event -> event.dispatchedAt() == null)
-            .switchIfEmpty(Mono.error(new NotFoundException("事件不存在或已完成")))
-            .flatMap(event -> dispatchEvent(event, consumer.consumerId(), candidate -> consumer.consume(toDurableEvent(candidate))));
+            .switchIfEmpty(Mono.error(new NotFoundException("事件不存在")))
+            .flatMap(event -> dispatchEvent(event, consumer.consumerId(),
+                candidate -> consumer.consume(toDurableEvent(candidate)), true));
     }
 
     private Mono<Long> dispatchEvent(OutboxEventEntity event, String consumerId,
-                                     Function<OutboxEventEntity, Mono<Void>> handler) {
-        return outbox.recordAttempt(event.id(), Instant.now())
-            .then(transaction.transactional(inbox.insertIfAbsent(consumerId, event.id(), Instant.now())
-                .flatMap(inserted -> inserted == 0
-                    ? mark(event)
-                    : handler.apply(event).then(Mono.defer(() -> mark(event))))))
-            .thenReturn(1L);
+                                     Function<OutboxEventEntity, Mono<Void>> handler, boolean forceRetry) {
+        Instant now = Instant.now();
+        return deliveries.insertIfAbsent(consumerId, event.id(), now)
+            .then(transaction.transactional(deliveries.lockByConsumerIdAndEventId(consumerId, event.id())
+                .switchIfEmpty(Mono.error(new NotFoundException("事件投递记录不存在")))
+                .flatMap(delivery -> {
+                    if ("DELIVERED".equals(delivery.status()) || (!forceRetry && "DEAD".equals(delivery.status()))
+                        || (!forceRetry && delivery.nextAttemptAt().isAfter(now))) {
+                        return Mono.just(0L);
+                    }
+                    return deliveries.recordAttempt(consumerId, event.id(), now)
+                        .then(outbox.recordAttempt(event.id(), now))
+                        .then(inbox.insertIfAbsent(consumerId, event.id(), now))
+                        .flatMap(inserted -> inserted == 0
+                            ? deliveries.markDelivered(consumerId, event.id(), Instant.now())
+                                .then(mark(event)).thenReturn(1L)
+                            : handler.apply(event)
+                                .then(deliveries.markDelivered(consumerId, event.id(), Instant.now()))
+                                .then(mark(event)).thenReturn(1L));
+                })))
+            .onErrorResume(error -> deliveries.recordFailure(consumerId, event.id(), Instant.now(),
+                    error.getClass().getSimpleName(), MAX_DELIVERY_ATTEMPTS)
+                .thenReturn(0L));
     }
 
     public Mono<Long> dispatchOnce(DurableEventConsumer consumer) {

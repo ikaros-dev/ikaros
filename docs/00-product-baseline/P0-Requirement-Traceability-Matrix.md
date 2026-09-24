@@ -2,7 +2,7 @@
 
 | 项目 | 内容 |
 |---|---|
-| 基线 | `v2-p0-foundation-0.2` |
+| 基线 | `v2-p0-foundation-0.4` |
 | 状态 | 已接受 / 工程可追溯基线 |
 | PRD | `Product-Requirements-Document.md` |
 | 契约目录 | `contracts/P0-Command-Query-Event-Catalog.md` |

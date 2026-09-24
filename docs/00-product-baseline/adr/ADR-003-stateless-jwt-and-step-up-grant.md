@@ -21,7 +21,7 @@
 6. 用户级提前失效通过提升 `security_version` 完成。请求认证必须校验 Token 中的版本与当前用户版本一致，并校验用户状态。
 7. Step-up 成功后签发短期、Purpose-bound 的增强 JWT / Verification Grant，不创建或更新登录 Session。
 8. 普通 Logout 由客户端删除本地 Token 与 Credential Cache 完成；服务端不产生登录 Session 变更。
-9. 同一账号最近一次成功完成 `LOGIN_STEP_UP` 的时间，在可配置复用窗口内（默认 4 小时）可直接换发新的短期 Verification Grant；复用不跨账号、不跨用途，并继续校验当前 `security_version`。
+9. **Superseded by ADR-008**：取消根据同账号历史 OTP 记录直接换发 Grant。发起 Step-up 创建新 Challenge；客户端只能使用自己持有且未过期、未被安全版本失效的 Grant。
 10. P0 Email OTP 达到 SVL-2，SMS OTP 也达到 SVL-2；当前后台管理统一使用 Email OTP，SMS 保留为备用验证通道。
 
 ## Token Claim 最小要求
@@ -91,7 +91,7 @@ Ikaros 仍不支持基于单枚 `jti` 的 Token blacklist，也不把普通 Logo
 - Access / Refresh JWT 与 Step-up Grant 均产生唯一 `jti`；
 - `security_version` 变化后旧 Access / Refresh JWT 均无法继续使用；
 - Step-up Grant 校验 `purpose`、目标、SVL 与有效期；
-- Step-up 复用窗口只依据同账号最近成功验证的 `consumed_at`，窗口外必须重新发起 OTP；
-- Step-up 复用还必须绑定验证方式，Email OTP 的 SVL-2 结果可以满足 SVL-1 或 SVL-2 策略；
+- 同账号历史成功 Challenge 不会使普通 Access JWT 自动获得新的 Step-up Grant；
+- Email OTP 的 SVL-2 结果可以满足 SVL-1 或 SVL-2 策略；Grant 的验证时间和有效期不能因发起新请求被延长；
 - 普通 Logout 不修改 Login Session 状态，因为不存在该状态；
 - App-scoped Token 的 Client / Device 级撤销通过 ADR-006 的 `AppAuthorizationGrant` 完成，不通过 `jti` blacklist。

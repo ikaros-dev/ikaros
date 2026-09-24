@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.integration.api.DurableEventPublisher;
-import run.ikaros.media.api.MediaRestoreTargetQuery;
 import run.ikaros.operations.api.BackgroundTaskDispatcher;
 import run.ikaros.storage.api.BlobAvailability;
 import run.ikaros.storage.api.PlacementState;
@@ -24,8 +23,7 @@ class StorageRestoreTaskHandlerTest {
         mock(BackgroundTaskDispatcher.class), mock(StorageRestoreRequestRepository.class),
         mock(AttachmentRepository.class), blobs, placements, mock(StorageProviderRegistry.class),
         mock(StorageRestoreExecutor.class), mock(StorageRestoreOperationRepository.class),
-        mock(StorageRestoreRequestItemRepository.class), mock(MediaRestoreTargetQuery.class),
-        mock(DurableEventPublisher.class));
+        mock(StorageRestoreRequestItemRepository.class), mock(DurableEventPublisher.class));
 
     @Test
     void successfulRestoreActivatesPlacementAndBlob() {

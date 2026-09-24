@@ -627,6 +627,14 @@ PRIMARY KEY(consumer_key, event_id)
 
 消费者必须在“写自身投影/业务结果 + 插入 Inbox”同一事务中完成幂等提交；如果目标系统不是 PostgreSQL，则必须使用目标系统等价的原子/幂等机制。
 
+### 17.1 Consumer Delivery 状态（ADR-008）
+
+每个 `(consumer_id,event_id)` 独立拥有 `status(PENDING/RETRY/DELIVERED/DEAD)`、`attempt_count`、`next_attempt_at`、`last_error_classification`、`updated_at`。成功 Delivery、Inbox 与 Consumer 数据库副作用同事务提交；失败记录在该事务回滚后持久化。失败采用有上限的退避，达到阈值进入 DEAD；人工 retry 显式请求再次投递。
+
+当前物理实现表为 Integration-owned `event_delivery`，与已有 `event_outbox` / `event_inbox` 同 namespace；全量迁入逻辑 Owner Schema 是独立迁移，不混入本次追加 Migration。`event_outbox.dispatched_at` 仅保留兼容遥测含义，不再作为 Consumer 查询条件或全局完成凭证。
+
+Consumer 以 Inbox 为幂等权威，默认接收仍保留的历史事件；新增 Consumer 与清理历史必须先明确补投/Retention 策略。某 Consumer 跳过不相关事件，只确认自己的 Delivery，不影响其他 Consumer。
+
 ---
 
 # Part D — Operations Schema

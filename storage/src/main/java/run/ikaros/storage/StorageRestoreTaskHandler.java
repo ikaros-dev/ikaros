@@ -12,7 +12,6 @@ import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.operations.api.BackgroundTask;
 import run.ikaros.operations.api.BackgroundTaskDispatcher;
-import run.ikaros.media.api.MediaRestoreTargetQuery;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
 
@@ -27,18 +26,16 @@ public class StorageRestoreTaskHandler {
     private final StorageRestoreExecutor executor;
     private final StorageRestoreOperationRepository operations;
     private final StorageRestoreRequestItemRepository items;
-    private final MediaRestoreTargetQuery mediaTargets;
     private final DurableEventPublisher events;
 
     public StorageRestoreTaskHandler(BackgroundTaskDispatcher dispatcher, StorageRestoreRequestRepository requests,
         AttachmentRepository attachments, BlobRepository blobs, BlobPlacementRepository placements,
         StorageProviderRegistry providers, StorageRestoreExecutor executor,
-        StorageRestoreOperationRepository operations, StorageRestoreRequestItemRepository items, MediaRestoreTargetQuery mediaTargets,
+        StorageRestoreOperationRepository operations, StorageRestoreRequestItemRepository items,
         DurableEventPublisher events) {
         this.dispatcher = dispatcher; this.requests = requests; this.attachments = attachments;
         this.blobs = blobs; this.placements = placements; this.providers = providers; this.executor = executor;
         this.operations = operations; this.items = items;
-        this.mediaTargets = mediaTargets;
         this.events = events;
     }
 
@@ -56,23 +53,38 @@ public class StorageRestoreTaskHandler {
             .flatMap(request -> request.status() == StorageRestoreRequestStatus.CANCELLED
                 ? Mono.just(Map.<String, Object>of("restore_request_id", requestId.toString(), "cancelled", true))
                 : updateStatus(request, StorageRestoreRequestStatus.IN_PROGRESS).then(
-                    task.payload().containsKey("season_id")
-                        ? restoreSeason(request, requestId, task.id(), restoreClass, uuid(task.payload(), "season_id"), retryFailedOnly,
-                            selectedAttachmentIds)
-                        : attachments.findById(uuid(task.payload(), "attachment_id"))
+                    request.scope() == StorageRestoreScope.ATTACHMENT
+                        ? attachments.findById(uuid(task.payload(), "attachment_id"))
                             .filter(attachment -> attachment.deletedAt() == null)
                             .switchIfEmpty(Mono.error(new NotFoundException("附件不存在")))
                             .flatMap(attachment -> restoreAttachment(request, attachment, requestId, task.id(), restoreClass, true,
-                                retryFailedOnly))));
+                                retryFailedOnly))
+                        : restoreAttachmentSet(request, requestId, task.id(), restoreClass,
+                            request.selectedAttachmentIds() == null ? selectedAttachmentIds : request.selectedAttachmentIds(),
+                            retryFailedOnly)));
     }
 
-    private Mono<Map<String, Object>> restoreSeason(StorageRestoreRequestEntity request, UUID requestId, UUID taskId,
-        String restoreClass, UUID seasonId, boolean retryFailedOnly, String selectedAttachmentIds) {
-        return mediaTargets.findOwnedEpisodeResourceIds(request.actorId(), seasonId)
-            .flatMap(resourceId -> attachments.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(resourceId))
-            .filter(attachment -> selectedAttachmentIds == null || java.util.Set.of(selectedAttachmentIds.split(","))
-                .contains(attachment.id().toString()))
-            .concatMap(attachment -> restoreAttachment(request, attachment, requestId, taskId, restoreClass, false, retryFailedOnly))
+    private Mono<Map<String, Object>> restoreAttachmentSet(StorageRestoreRequestEntity request, UUID requestId, UUID taskId,
+        String restoreClass, String selectedAttachmentIds, boolean retryFailedOnly) {
+        if (selectedAttachmentIds == null || selectedAttachmentIds.isBlank()) {
+            return failInvalidSelection(request, "Restore Request 缺少已冻结的 Attachment ID 集合");
+        }
+        java.util.List<UUID> attachmentIds;
+        try {
+            attachmentIds = java.util.Arrays.stream(selectedAttachmentIds.split(","))
+                .map(UUID::fromString).distinct().toList();
+        } catch (IllegalArgumentException error) {
+            return failInvalidSelection(request, "Restore Request 的 Attachment ID 集合无效");
+        }
+        if (attachmentIds.isEmpty() || attachmentIds.size() > 1000) {
+            return failInvalidSelection(request, "Restore Request 的 Attachment ID 集合超过限制");
+        }
+        return reactor.core.publisher.Flux.fromIterable(attachmentIds)
+            .concatMap(id -> attachments.findById(id)
+                .filter(attachment -> attachment.deletedAt() == null)
+                .switchIfEmpty(Mono.error(new NotFoundException("已选择的 Attachment 不存在")))
+                .flatMap(attachment -> restoreAttachment(request, attachment, requestId, taskId, restoreClass, false,
+                    retryFailedOnly)))
             .then(items.findAllByRequestId(request.id()).collectList())
             .flatMap(result -> {
                 int ready = (int) result.stream().filter(item -> item.status() == StorageRestoreRequestItemStatus.READY
@@ -83,6 +95,11 @@ public class StorageRestoreTaskHandler {
                 return updateStatus(request, status, ready)
                     .thenReturn(Map.of("restore_request_id", requestId.toString(), "completed_items", ready));
             });
+    }
+
+    private Mono<Map<String, Object>> failInvalidSelection(StorageRestoreRequestEntity request, String reason) {
+        return updateStatus(request, StorageRestoreRequestStatus.FAILED)
+            .then(Mono.error(new ConflictException(reason)));
     }
 
     private Mono<Map<String, Object>> restoreAttachment(StorageRestoreRequestEntity request,
@@ -237,10 +254,15 @@ public class StorageRestoreTaskHandler {
 
     private Mono<StorageRestoreRequestEntity> updateStatus(StorageRestoreRequestEntity request,
         StorageRestoreRequestStatus status, int completedItems) {
-        return requests.save(new StorageRestoreRequestEntity(request.id(), request.actorId(), request.scope(), request.scopeId(),
-            status, request.totalItems(), completedItems,
-            request.totalBytes(), request.errorSummary(), request.idempotencyKey(), request.backgroundTaskId(), request.createdAt(),
-            Instant.now(), request.budgetDecision(), request.selectedAttachmentIds(), request.version()))
+        return requests.findById(request.id())
+            .switchIfEmpty(Mono.error(new NotFoundException("Restore Request 不存在")))
+            .flatMap(current -> current.status() == StorageRestoreRequestStatus.CANCELLED
+                && status != StorageRestoreRequestStatus.CANCELLED ? Mono.just(current)
+                : requests.save(new StorageRestoreRequestEntity(current.id(), current.actorId(), current.scope(), current.scopeId(),
+                    status, current.totalItems(), Math.min(current.totalItems(), completedItems),
+                    current.totalBytes(), current.errorSummary(), current.idempotencyKey(), current.backgroundTaskId(), current.createdAt(),
+                    Instant.now(), current.budgetDecision(), current.selectedAttachmentIds(), current.requestFingerprint(),
+                    current.version())))
             .flatMap(saved -> status == StorageRestoreRequestStatus.COMPLETED
                 || status == StorageRestoreRequestStatus.PARTIAL_FAILURE
                 || status == StorageRestoreRequestStatus.FAILED

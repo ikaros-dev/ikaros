@@ -6,14 +6,14 @@
 
 ## 1. 领域与工程设计
 
-1. [`Media-Delivery-CDN-Archive-Restore-Design.md`](./Media-Delivery-CDN-Archive-Restore-Design.md)
+1. [`Media-Delivery-CDN-Archive-Restore-Design.md`](../02-domain-capabilities/Media-Delivery-CDN-Archive-Restore-Design.md)
    - 控制面 / 数据面分离；
    - Delivery Provider；
    - CDN / Private Origin；
    - Archive Restore；
    - Heat / Tiering / Working Set。
 
-2. [`Media-Delivery-CDN-Archive-Restore-Engineering-Addendum.md`](./Media-Delivery-CDN-Archive-Restore-Engineering-Addendum.md)
+2. [`Media-Delivery-CDN-Archive-Restore-Engineering-Addendum.md`](../02-domain-capabilities/Media-Delivery-CDN-Archive-Restore-Engineering-Addendum.md)
    - Restore Request / Operation 三层模型；
    - 去重与并发合并；
    - CDN Cache Identity 与 Authorization 解耦；
@@ -23,7 +23,7 @@
    - Delivery Fallback；
    - Storage Provider / Delivery Provider / Binding 正式边界。
 
-3. [`Media-Delivery-Restore-Reliability-Addendum.md`](./Media-Delivery-Restore-Reliability-Addendum.md)
+3. [`Media-Delivery-Restore-Reliability-Addendum.md`](../02-domain-capabilities/Media-Delivery-Restore-Reliability-Addendum.md)
    - Sticky Delivery Binding；
    - Selection Epoch；
    - Circuit Breaker / Hysteresis；
@@ -33,7 +33,7 @@
    - Server Crash Window A/B/C；
    - External Restore observation。
 
-4. [`Media-Delivery-Representation-Sharing-Budget-P1-Design.md`](./Media-Delivery-Representation-Sharing-Budget-P1-Design.md)
+4. [`Media-Delivery-Representation-Sharing-Budget-P1-Design.md`](../02-domain-capabilities/Media-Delivery-Representation-Sharing-Budget-P1-Design.md)
    - Adaptive Representation 与 Storage / Delivery 桥接；
    - Source / Derived Tier 独立；
    - Share / Guest → Delivery Grant；
@@ -137,7 +137,7 @@ storage.restore_budget_policy
 
 ### P1 Design
 
-[`Media-Delivery-Representation-Sharing-Budget-P1-Design.md`](./Media-Delivery-Representation-Sharing-Budget-P1-Design.md)
+[`Media-Delivery-Representation-Sharing-Budget-P1-Design.md`](../02-domain-capabilities/Media-Delivery-Representation-Sharing-Budget-P1-Design.md)
 
 P1 负责：
 
@@ -171,9 +171,9 @@ P1 负责：
 
 ### App
 
-- [`app-interaction/Media-Archive-Restore-Interaction-Design.md`](./app-interaction/Media-Archive-Restore-Interaction-Design.md)
-- [`app-interaction/Media-Delivery-Restore-Safety-Supplement.md`](./app-interaction/Media-Delivery-Restore-Safety-Supplement.md)
-- [`app-interaction/Media-Delivery-Reliability-Sharing-Supplement.md`](./app-interaction/Media-Delivery-Reliability-Sharing-Supplement.md)
+- [`app-interaction/Media-Archive-Restore-Interaction-Design.md`](../02-domain-capabilities/app-interaction/Media-Archive-Restore-Interaction-Design.md)
+- [`app-interaction/Media-Delivery-Restore-Safety-Supplement.md`](../02-domain-capabilities/app-interaction/Media-Delivery-Restore-Safety-Supplement.md)
+- [`app-interaction/Media-Delivery-Reliability-Sharing-Supplement.md`](../02-domain-capabilities/app-interaction/Media-Delivery-Reliability-Sharing-Supplement.md)
 
 覆盖：
 
@@ -190,9 +190,9 @@ P1 负责：
 
 ### CMS Console
 
-- [`cms-console-interaction/Storage-Delivery-Archive-Operations-Design.md`](./cms-console-interaction/Storage-Delivery-Archive-Operations-Design.md)
-- [`cms-console-interaction/Storage-Delivery-Restore-Safety-Supplement.md`](./cms-console-interaction/Storage-Delivery-Restore-Safety-Supplement.md)
-- [`cms-console-interaction/Media-Delivery-Reliability-Budget-Operations-Supplement.md`](./cms-console-interaction/Media-Delivery-Reliability-Budget-Operations-Supplement.md)
+- [`cms-console-interaction/Storage-Delivery-Archive-Operations-Design.md`](../01-platform-foundation/cms-console-interaction/Storage-Delivery-Archive-Operations-Design.md)
+- [`cms-console-interaction/Storage-Delivery-Restore-Safety-Supplement.md`](../01-platform-foundation/cms-console-interaction/Storage-Delivery-Restore-Safety-Supplement.md)
+- [`cms-console-interaction/Media-Delivery-Reliability-Budget-Operations-Supplement.md`](../01-platform-foundation/cms-console-interaction/Media-Delivery-Reliability-Budget-Operations-Supplement.md)
 
 覆盖：
 

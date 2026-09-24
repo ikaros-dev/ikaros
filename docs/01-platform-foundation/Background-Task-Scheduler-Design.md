@@ -846,6 +846,8 @@ leaseExpiresAt = now + leaseDuration
 
 Heartbeat 周期和 Lease Duration 是运行时配置，不写死在业务 Handler。
 
+Runtime 默认每个 Lease Duration 的三分之一续租，直到 Handler 终态前停止；续租失败必须取消 Handler 订阅，不允许继续以旧执行权提交。Worker admission 独立限制在途任务数。Claim/Task/Attempt/Outbox、Finalize/Attempt/Outbox 各自在一个短事务中完成；Heartbeat、取消、超时和回收同样锁定 Task 后再检查/更新，防止 check-then-save 竞争。外部 IO 不得位于这些事务内。
+
 ### 11.5 Lease 不等于 Exactly Once
 
 Lease 只能保护运行时状态认领，无法保证外部副作用 Exactly Once。

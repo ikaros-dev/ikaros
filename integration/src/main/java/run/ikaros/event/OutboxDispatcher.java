@@ -35,12 +35,19 @@ public final class OutboxDispatcher {
 
     Mono<Void> dispatchNow() {
         return Flux.fromIterable(consumers)
-            .concatMap(events::dispatchOnce)
+            .concatMap(consumer -> events.dispatchOnce(consumer)
+                .onErrorResume(error -> {
+                    log.warn("Durable event consumer {} failed", consumer.consumerId(), error);
+                    return Mono.just(0L);
+                }))
             .then();
     }
 
     public Flux<DurableEvent> pendingEvents() {
-        return events.pendingEvents();
+        if (consumers.isEmpty()) return events.pendingEvents();
+        return Flux.fromIterable(consumers)
+            .concatMap(consumer -> events.pendingEvents(consumer.consumerId()))
+            .distinct(DurableEvent::eventId);
     }
 
     public Mono<Long> retry(UUID eventId) {
@@ -48,7 +55,11 @@ public final class OutboxDispatcher {
             return Mono.error(new NotFoundException("没有注册事件 Consumer"));
         }
         return Flux.fromIterable(consumers)
-            .concatMap(consumer -> events.dispatchOnce(eventId, consumer))
+            .concatMap(consumer -> events.dispatchOnce(eventId, consumer)
+                .onErrorResume(error -> {
+                    log.warn("Durable event retry for consumer {} failed", consumer.consumerId(), error);
+                    return Mono.just(0L);
+                }))
             .reduce(0L, Long::sum);
     }
 }

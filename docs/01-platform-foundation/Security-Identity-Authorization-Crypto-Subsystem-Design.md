@@ -607,14 +607,9 @@ AND Security Policy
 
 Verification Grant 只证明一次短期提升验证，不延长普通 Access JWT 生命周期，也不形成服务端登录 Session。
 
-对于 `LOGIN_STEP_UP`，Security Subsystem 可以依据最近一次成功验证的 `consumed_at` 提供账号级复用窗口。窗口默认 4 小时，并由应用配置覆盖；窗口内只换发新的短期 Grant，不重新发送或验证 OTP。复用必须同时满足：
+依据 ADR-008，`LOGIN_STEP_UP` 不再提供账号级历史 OTP 自动换发。发起 Step-up 必须创建新 Challenge，不能因为同一账号在其他客户端最近完成验证而直接提升当前调用方。
 
-- 主体为同一用户；
-- 用途仍为 `LOGIN_STEP_UP`；
-- 最近一次成功验证仍处于复用窗口内；
-- 当前用户 `security_version` 与 Grant 一致。
-
-复用窗口不改变目标 Command 的 Permission、SVL、Freshness 或最终确认要求；窗口外必须重新发起 OTP。
+客户端可以继续使用自己持有的有效 Grant；每次使用校验主体、`security_version`、purpose/target、SVL 与有效期，不延长原 `verified_at` / `exp`。未来若实现换发，必须先冻结原 Grant 持有证明、Client/Device 绑定和动作新鲜度契约。
 
 需要 SVL-2 的高风险动作可使用 Email OTP、SMS OTP 或更高等级验证；当前后台管理统一使用 Email OTP。
 

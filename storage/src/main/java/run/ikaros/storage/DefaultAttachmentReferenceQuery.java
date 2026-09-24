@@ -2,6 +2,7 @@ package run.ikaros.storage;
 
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.resource.api.ResourceOwnershipQuery;
@@ -34,5 +35,12 @@ final class DefaultAttachmentReferenceQuery implements AttachmentReferenceQuery 
             .then(attachments.findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(attachmentId, resourceId))
             .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或不属于指定 Resource")))
             .map(attachment -> new AttachmentReference(attachment.id(), attachment.resourceId()));
+    }
+
+    @Override
+    public Flux<AttachmentReference> listActiveForResource(UUID actorId, UUID resourceId) {
+        return resources.requireOwned(actorId, resourceId)
+            .thenMany(attachments.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(resourceId)
+                .map(attachment -> new AttachmentReference(attachment.id(), attachment.resourceId())));
     }
 }

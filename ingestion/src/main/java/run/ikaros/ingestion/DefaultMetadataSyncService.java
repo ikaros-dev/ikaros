@@ -2,6 +2,7 @@ package run.ikaros.ingestion;
 
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
 import run.ikaros.resource.api.MetadataSource;
@@ -43,6 +44,15 @@ public class DefaultMetadataSyncService implements MetadataSyncService {
                     request.resourceId(), request.fieldKey().trim(), result.status(),
                     result.candidate() == null ? null : result.candidate().id(), java.time.Instant.now()))
                     .thenReturn(result)));
+    }
+
+    @Override
+    public Flux<MetadataSyncStatusView> status(UUID ownerId, UUID syncSourceId) {
+        return sources.findByIdAndOwnerId(syncSourceId, ownerId)
+            .switchIfEmpty(Mono.error(new NotFoundException("元数据同步来源不存在或无权访问")))
+            .flatMapMany(source -> statuses.findTop50ByOwnerIdAndSyncSourceIdOrderByCheckedAtDesc(ownerId, source.id())
+                .map(value -> new MetadataSyncStatusView(value.id(), value.syncSourceId(), value.resourceId(),
+                    value.fieldKey(), value.status(), value.candidateId(), value.checkedAt())));
     }
 
     private boolean sameValue(ResourceMetadataView current, String incoming) {

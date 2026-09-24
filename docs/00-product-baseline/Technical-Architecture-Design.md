@@ -760,6 +760,8 @@ P0 采用：
 
 只有 Consumer Side Effect 和 Inbox Mark 能处于安全一致关系时才算消费成功。
 
+每个 Consumer 独立查询尚未进入其 Inbox 的事件，重试/Dead Letter 状态保存于 Consumer Delivery。不得以第一个 Consumer 完成时更新的全局 `dispatched_at` 阻断其他 Consumer。参见 ADR-008 和 P0 Schema §17.1。
+
 ### 14.5 Dispatcher
 
 单机模式 Dispatcher 可以运行在 Server 内。多节点模式使用数据库 Claim：`FOR UPDATE SKIP LOCKED`、bounded batch、需要时的 lease / heartbeat、retry with backoff，以及 poison event / dead letter state。
@@ -823,6 +825,8 @@ LIMIT N
 ```
 
 Claim 后形成 Lease。Worker 崩溃后 Lease 到期，任务重新可执行。
+
+Claim、Attempt 和 Outbox 必须同事务提交。续租、Finalize、取消、超时和租约回收使用短事务行锁或条件更新；租约校验与写入不可分离。Runtime 自动续租，续租失败取消 Handler 订阅，并限制同时在途执行数。
 
 ### 16.4 Task Handler
 

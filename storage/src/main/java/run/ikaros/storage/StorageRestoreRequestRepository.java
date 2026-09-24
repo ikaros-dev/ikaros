@@ -9,6 +9,8 @@ import reactor.core.publisher.Mono;
 public interface StorageRestoreRequestRepository extends ReactiveCrudRepository<StorageRestoreRequestEntity, UUID> {
     Mono<StorageRestoreRequestEntity> findByActorIdAndScopeAndScopeIdAndIdempotencyKey(UUID actorId,
         StorageRestoreScope scope, UUID scopeId, String idempotencyKey);
+    Mono<StorageRestoreRequestEntity> findByActorIdAndScopeAndIdempotencyKey(UUID actorId,
+        StorageRestoreScope scope, String idempotencyKey);
     Flux<StorageRestoreRequestEntity> findAllByActorIdOrderByCreatedAtDesc(UUID actorId);
     Flux<StorageRestoreRequestEntity> findAllByStatusOrderByCreatedAtAsc(StorageRestoreRequestStatus status);
     Mono<StorageRestoreRequestEntity> findFirstByActorIdAndScopeAndScopeIdAndStatusInOrderByCreatedAtDesc(

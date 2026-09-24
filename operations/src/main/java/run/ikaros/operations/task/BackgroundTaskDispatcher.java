@@ -36,7 +36,7 @@ public class BackgroundTaskDispatcher implements run.ikaros.operations.api.Backg
                     "message", "未注册 Task Handler: " + task.taskType(), "retryable", false))
                     .then(Mono.error(new ConflictException("未注册 Task Handler: " + task.taskType())));
             }
-            return handler.handle(task).defaultIfEmpty(Map.of())
+            return runWithLease(task, handler, leaseDuration)
                 .flatMap(result -> tasks.get(task.id()).flatMap(current -> current.cancelRequestedAt() != null
                     ? tasks.acknowledgeCancellation(task.id(), task.leaseToken())
                     : tasks.complete(task.id(), task.leaseToken(), result)))
@@ -44,6 +44,17 @@ public class BackgroundTaskDispatcher implements run.ikaros.operations.api.Backg
                     "code", error.getClass().getSimpleName(), "message", error.getMessage() == null ? "Task Handler 执行失败" : error.getMessage(),
                     "retryable", retryable(error))).then(Mono.error(error)));
         });
+    }
+
+    private Mono<Map<String, Object>> runWithLease(BackgroundTask task, BackgroundTaskHandler handler,
+                                                    Duration leaseDuration) {
+        long intervalMillis = Math.max(10, leaseDuration.toMillis() / 3);
+        Mono<Map<String, Object>> work = Mono.defer(() -> handler.handle(task)).defaultIfEmpty(Map.of());
+        Mono<Map<String, Object>> leaseFailure = reactor.core.publisher.Flux
+            .interval(Duration.ofMillis(intervalMillis))
+            .concatMap(ignored -> tasks.heartbeat(task.id(), task.leaseToken(), leaseDuration).then(), 1)
+            .then(Mono.<Map<String, Object>>never());
+        return Mono.firstWithSignal(work, leaseFailure);
     }
 
     private boolean retryable(Throwable error) {
