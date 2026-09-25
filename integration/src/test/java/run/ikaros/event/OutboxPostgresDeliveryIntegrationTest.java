@@ -89,7 +89,7 @@ class OutboxPostgresDeliveryIntegrationTest {
         assertTrue(countEffects("search") == 1L);
         assertEquals(0L, countEffects("notification"));
         assertEquals(0L, events.dispatchOnce(search).block());
-        assertEquals(eventId, events.pendingEvents("notification").map(event -> event.eventId()).blockFirst());
+        assertEquals(eventId, events.pendingEvents("notification").map(event -> event.id()).blockFirst());
         assertTrue(events.pendingEvents("search").collectList().block().isEmpty());
         assertEquals(1L, outbox.countPending().block());
     }
@@ -114,7 +114,7 @@ class OutboxPostgresDeliveryIntegrationTest {
         OutboxDeliveryEntity dead = deliveries.lockByConsumerIdAndEventId("poison-consumer", eventId).block();
         assertEquals("DEAD", dead.status());
         assertEquals(8, dead.attemptCount());
-        assertEquals(eventId, events.pendingEvents("poison-consumer").map(event -> event.eventId()).blockFirst());
+        assertEquals(eventId, events.pendingEvents("poison-consumer").map(event -> event.id()).blockFirst());
     }
 
     private DurableEventConsumer consumer(String id) {
@@ -122,7 +122,7 @@ class OutboxPostgresDeliveryIntegrationTest {
             @Override public String consumerId() { return id; }
             @Override public Mono<Void> consume(run.ikaros.integration.api.DurableEvent event) {
                 return database.sql("insert into consumer_effect (consumer_id, event_id) values (:consumerId, :eventId)")
-                    .bind("consumerId", id).bind("eventId", event.eventId()).fetch().rowsUpdated().then();
+                    .bind("consumerId", id).bind("eventId", event.id()).fetch().rowsUpdated().then();
             }
         };
     }
