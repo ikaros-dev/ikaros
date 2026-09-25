@@ -122,7 +122,7 @@ public class DurableEventService implements DurableEventPublisher {
                 .switchIfEmpty(Mono.error(new NotFoundException("事件投递记录不存在")))
                 .flatMap(delivery -> {
                     if ("DELIVERED".equals(delivery.status()) || (!forceRetry && "DEAD".equals(delivery.status()))
-                        || (!forceRetry && delivery.nextAttemptAt().isAfter(now))) {
+                        || (!forceRetry && delivery.nextAttemptAt().isAfter(Instant.now()))) {
                         return Mono.just(0L);
                     }
                     return deliveries.recordAttempt(consumerId, event.id(), now)

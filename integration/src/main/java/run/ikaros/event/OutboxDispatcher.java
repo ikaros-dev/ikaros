@@ -47,7 +47,7 @@ public final class OutboxDispatcher {
         if (consumers.isEmpty()) return events.pendingEvents();
         return Flux.fromIterable(consumers)
             .concatMap(consumer -> events.pendingEvents(consumer.consumerId()))
-            .distinct(DurableEvent::eventId);
+            .distinct(DurableEvent::id);
     }
 
     public Mono<Long> retry(UUID eventId) {
