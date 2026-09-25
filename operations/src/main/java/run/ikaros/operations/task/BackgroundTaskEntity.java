@@ -25,7 +25,7 @@ public record BackgroundTaskEntity(@Id UUID id, @Column("task_type") String task
         this(id, taskType, status, Json.of(payload == null ? "{}" : payload), idempotencyKey, availableAt, timeoutAt,
             leaseOwner, leaseToken, leaseExpiresAt, attempt, cancelRequestedAt,
             Json.of(progress == null ? "{}" : progress), Json.of(result == null ? "{}" : result), createdAt, updatedAt,
-            parentTaskId, 0L);
+            parentTaskId, null);
     }
 
     public BackgroundTaskEntity(UUID id, String taskType, String status, Json payload, String idempotencyKey,
@@ -33,6 +33,6 @@ public record BackgroundTaskEntity(@Id UUID id, @Column("task_type") String task
         int attempt, Instant cancelRequestedAt, Json progress, Json result, Instant createdAt,
         Instant updatedAt, UUID parentTaskId) {
         this(id, taskType, status, payload, idempotencyKey, availableAt, timeoutAt, leaseOwner, leaseToken,
-            leaseExpiresAt, attempt, cancelRequestedAt, progress, result, createdAt, updatedAt, parentTaskId, 0L);
+            leaseExpiresAt, attempt, cancelRequestedAt, progress, result, createdAt, updatedAt, parentTaskId, null);
     }
 }
