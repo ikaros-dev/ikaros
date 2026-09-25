@@ -22,6 +22,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Mono;
+import run.ikaros.common.DefaultUuidV7Generator;
 import run.ikaros.integration.api.DurableEventConsumer;
 
 @Testcontainers
@@ -69,10 +70,7 @@ class OutboxPostgresDeliveryIntegrationTest {
 
     @Test
     void oneConsumerFailureDoesNotHideEventFromAnotherConsumer() {
-        UUID eventId = UUID.randomUUID();
-        outbox.save(new OutboxEventEntity(eventId, "resource.resource.created", 1, "resource", eventId,
-            "resource", "resource", eventId, "{}", java.time.Instant.now(), 0, null, null,
-            null, null, null, null)).block();
+        UUID eventId = createEvent();
         DurableEventConsumer search = consumer("search");
 
         assertEquals(1L, events.dispatchOnce(search).block());
@@ -96,10 +94,7 @@ class OutboxPostgresDeliveryIntegrationTest {
 
     @Test
     void failedConsumerDeliveryMovesToDeadAfterConfiguredAttemptLimit() {
-        UUID eventId = UUID.randomUUID();
-        outbox.save(new OutboxEventEntity(eventId, "resource.resource.created", 1, "resource", eventId,
-            "resource", "resource", eventId, "{}", java.time.Instant.now(), 0, null, null,
-            null, null, null, null)).block();
+        UUID eventId = createEvent();
         DurableEventConsumer failing = new DurableEventConsumer() {
             @Override public String consumerId() { return "poison-consumer"; }
             @Override public Mono<Void> consume(run.ikaros.integration.api.DurableEvent event) {
@@ -115,6 +110,17 @@ class OutboxPostgresDeliveryIntegrationTest {
         assertEquals("DEAD", dead.status());
         assertEquals(8, dead.attemptCount());
         assertEquals(eventId, events.pendingEvents("poison-consumer").map(event -> event.id()).blockFirst());
+    }
+
+    private UUID createEvent() {
+        UUID eventId = new DefaultUuidV7Generator().next();
+        assertEquals(1, database.sql("insert into event_outbox (id, event_type, schema_version, aggregate_type, "
+                + "producer_subsystem, subject_type, payload_json, occurred_at) "
+                + "values (:id, 'resource.resource.created', 1, 'resource', 'resource', 'resource', '{}', :occurredAt)")
+            .bind("id", eventId)
+            .bind("occurredAt", java.time.Instant.now())
+            .fetch().rowsUpdated().block());
+        return eventId;
     }
 
     private DurableEventConsumer consumer(String id) {
