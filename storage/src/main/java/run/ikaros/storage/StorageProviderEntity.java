@@ -22,13 +22,15 @@ public record StorageProviderEntity(@Id UUID id, @Column("provider_key") String 
                                     @Column("enabled") Boolean enabled,
                                     @Column("drain_status") String drainStatus,
                                     @Version Long version,
-                                    @Column("configuration") Json configuration) {
+                                    @Column("configuration") Json configuration,
+                                    @Column("idempotency_key") String idempotencyKey,
+                                    @Column("request_fingerprint") String requestFingerprint) {
     public StorageProviderEntity(UUID id, String providerKey, String providerType, String tier, String status,
                                  String secretReference, String providerMetadata, Instant createdAt, Instant updatedAt) {
         this(id, providerKey, providerType, tier, status, secretReference,
             Json.of(providerMetadata == null ? "{}" : providerMetadata), null, null, null, createdAt, updatedAt,
             providerKey, Json.of("{}"), writable(status), drain(status), null,
-            Json.of(providerMetadata == null ? "{}" : providerMetadata));
+            Json.of(providerMetadata == null ? "{}" : providerMetadata), null, null);
     }
 
     public StorageProviderEntity(UUID id, String providerKey, String providerType, String tier, String status,
@@ -39,17 +41,27 @@ public record StorageProviderEntity(@Id UUID id, @Column("provider_key") String 
             Json.of(providerMetadata == null ? "{}" : providerMetadata), accessKeyIdCiphertext,
             secretAccessKeyCiphertext, sessionTokenCiphertext, createdAt, updatedAt, providerKey,
             Json.of("{}"), writable(status), drain(status), null,
-            Json.of(providerMetadata == null ? "{}" : providerMetadata));
+            Json.of(providerMetadata == null ? "{}" : providerMetadata), null, null);
     }
 
     public StorageProviderEntity(UUID id, String providerKey, String providerType, String tier, String status,
         String secretReference, String providerMetadata, String accessKeyIdCiphertext, String secretAccessKeyCiphertext,
         String sessionTokenCiphertext, Instant createdAt, Instant updatedAt, String displayName, String capabilities,
         Boolean enabled, String drainStatus, Long version, String configuration) {
+        this(id, providerKey, providerType, tier, status, secretReference, providerMetadata, accessKeyIdCiphertext,
+            secretAccessKeyCiphertext, sessionTokenCiphertext, createdAt, updatedAt, displayName, capabilities, enabled,
+            drainStatus, version, configuration, null, null);
+    }
+
+    public StorageProviderEntity(UUID id, String providerKey, String providerType, String tier, String status,
+        String secretReference, String providerMetadata, String accessKeyIdCiphertext, String secretAccessKeyCiphertext,
+        String sessionTokenCiphertext, Instant createdAt, Instant updatedAt, String displayName, String capabilities,
+        Boolean enabled, String drainStatus, Long version, String configuration, String idempotencyKey,
+        String requestFingerprint) {
         this(id, providerKey, providerType, tier, status, secretReference,
             Json.of(providerMetadata == null ? "{}" : providerMetadata), accessKeyIdCiphertext, secretAccessKeyCiphertext,
             sessionTokenCiphertext, createdAt, updatedAt, displayName, Json.of(capabilities == null ? "{}" : capabilities),
-            enabled, drainStatus, version, Json.of(configuration == null ? "{}" : configuration));
+            enabled, drainStatus, version, Json.of(configuration == null ? "{}" : configuration), idempotencyKey, requestFingerprint);
     }
 
     private static Boolean writable(String status) {

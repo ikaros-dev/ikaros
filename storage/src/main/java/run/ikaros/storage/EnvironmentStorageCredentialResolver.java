@@ -39,7 +39,8 @@ public class EnvironmentStorageCredentialResolver implements StorageCredentialRe
                             provider.tier(), provider.status(), provider.secretReference(), provider.providerMetadata().asString(),
                             accessCiphertext, secretCiphertext, sessionCiphertext, provider.createdAt(), java.time.Instant.now(),
                             provider.displayName(), provider.capabilities().asString(), provider.enabled(), provider.drainStatus(),
-                            provider.version(), provider.configuration().asString()));
+                            provider.version(), provider.configuration().asString(), provider.idempotencyKey(),
+                            provider.requestFingerprint()));
                     return refreshed.flatMap(saved -> {
                         String access = cipher.decrypt(saved.accessKeyIdCiphertext());
                         String secret = cipher.decrypt(saved.secretAccessKeyCiphertext());
