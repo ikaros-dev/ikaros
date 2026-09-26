@@ -498,14 +498,14 @@ export default {
           "SystemIntegrations",
           "menus.integrations",
           "ep:connection",
-          "/system/integrations/plugins",
+          "/system/integrations/apps",
           [
             page(
-              "plugins",
-              "SystemPlugins",
-              "menus.pluginManagement",
-              "menuDescriptions.pluginManagement",
-              () => import("@/views/console/system/integrations/Plugins.vue"),
+              "apps",
+              "SystemApps",
+              "menus.appManagement",
+              "menuDescriptions.appManagement",
+              () => import("@/views/console/system/integrations/Apps.vue"),
               "integration.read"
             ),
             page(

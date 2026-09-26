@@ -325,7 +325,7 @@ menus:
   rolesPermissions: Roles & Permissions
   authentication: Authentication
   integrations: Integrations
-  pluginManagement: Plugin Management
+  appManagement: App Management
   externalIntegrations: External Integrations
   eventDelivery: Event Delivery
   communications: Notifications & Audit
@@ -491,7 +491,7 @@ menuDescriptions:
   userManagement: Manage platform users, account status, role assignments, and session governance.
   rolesPermissions: Manage roles, the permission catalog, and role-permission mappings.
   authentication: Configure platform login, Step-up, recovery, and authentication policies.
-  pluginManagement: Manage plugin installation, enablement, upgrades, permissions, and lifecycle.
+  appManagement: Manage app installation, enablement, upgrades, permissions, and lifecycle.
   externalIntegrations: Manage Connectors, Metadata Sources, Webhooks, and other external platform connections.
   eventDelivery: View event delivery status, retries, and platform event chains.
   notifications: Manage system notification rules, channels, templates, and delivery policies.
