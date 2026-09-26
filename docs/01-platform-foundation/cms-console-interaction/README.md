@@ -79,7 +79,7 @@ Console 使用 Material Design 3 作为设计语言。
     角色与权限                            /system/access/roles-permissions
     身份认证                              /system/access/authentication
   集成                                    /system/integrations/*
-    插件管理                              /system/integrations/plugins
+    应用管理                              /system/integrations/apps
     外部集成                              /system/integrations/external
     事件投递                              /system/integrations/events
   通知与审计                              /system/communications/*

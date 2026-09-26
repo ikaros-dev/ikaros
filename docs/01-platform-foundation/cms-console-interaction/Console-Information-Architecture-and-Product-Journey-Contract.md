@@ -55,7 +55,7 @@ Ikaros 后台管理系统
    │  ├─ 角色与权限
    │  └─ 身份认证
    ├─ 集成
-   │  ├─ 插件管理
+   │  ├─ 应用管理
    │  ├─ 外部集成
    │  └─ 事件投递
    ├─ 通知与审计
@@ -92,7 +92,7 @@ Profile、Preferences 和当前账号 Security 从头像菜单进入，不进入
 | 系统 / 访问控制 / 用户管理 | `/system/access/users` | 用户管理 |
 | 系统 / 访问控制 / 角色与权限 | `/system/access/roles-permissions` | Role / Permission 管理 |
 | 系统 / 访问控制 / 身份认证 | `/system/access/authentication` | 认证与安全策略 |
-| 系统 / 集成 / 插件管理 | `/system/integrations/plugins` | Plugin 管理 |
+| 系统 / 集成 / 应用管理 | `/system/integrations/apps` | App 管理 |
 | 系统 / 集成 / 外部集成 | `/system/integrations/external` | Connector / Webhook / Metadata Source 等外部连接 |
 | 系统 / 集成 / 事件投递 | `/system/integrations/events` | Event Delivery / Retry / Diagnostics |
 | 系统 / 通知与审计 / 通知中心 | `/system/communications/notifications` | 系统通知策略和投递 |
@@ -145,7 +145,7 @@ App 页面继续位于 `/apps/<app>/**`；插件应用使用 `/apps/plugins/<app
   /system/access/users
   /system/access/roles-permissions
   /system/access/authentication
-  /system/integrations/plugins
+  /system/integrations/apps
   /system/integrations/external
   /system/integrations/events
   /system/communications/notifications

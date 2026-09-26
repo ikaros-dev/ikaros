@@ -34,13 +34,13 @@
 
 用户可见菜单按以下职责组织：
 
-- 插件管理：`/system/integrations/plugins`；
+- 应用管理：`/system/integrations/apps`；
 - 外部集成：`/system/integrations/external`；
 - 事件投递：`/system/integrations/events`。
 
-## 3. 插件管理
+## 3. 应用管理
 
-插件安装、启用、升级、权限授权和卸载属于 `/system/integrations/plugins`。
+应用安装、启用、升级、权限授权和卸载属于 `/system/integrations/apps`。当前由插件提供的应用入口仍受插件 Capability 和权限边界约束。
 
 插件必须声明：
 
@@ -73,7 +73,7 @@ Drive Device Sync 的用户产品配置在 `/apps/drive/sync`。平台级 Connec
 
 - 自动化只作为“应用 / 自动化”（`/apps/automation`）；
 - `/system/integrations` 只作为目录根，不渲染业务页面；
-- 插件管理使用 `/system/integrations/plugins`；
+- 应用管理使用 `/system/integrations/apps`；
 - 外部集成使用 `/system/integrations/external`；
 - 事件投递使用 `/system/integrations/events`；
 - 添加资源使用 `/resources/add`，与系统级 Connector 配置分离；

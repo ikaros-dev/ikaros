@@ -179,7 +179,7 @@ Sidebar 的 System 菜单采用“平铺分组”表现：访问控制、集成�
 
 | 页面 | Route | 最小能力 | 主要写操作 |
 |---|---|---|---|
-| 插件管理 | `/system/integrations/plugins` | 对应 plugin read | install / enable / disable / uninstall |
+| 应用管理 | `/system/integrations/apps` | 对应 integration read | install / enable / disable / uninstall |
 | 外部集成 | `/system/integrations/external` | 对应 integration read | Connector / Webhook / Metadata Source 配置 |
 | 事件投递 | `/system/integrations/events` | 对应 event delivery read | retry / replay / policy actions |
 
