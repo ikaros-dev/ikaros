@@ -486,6 +486,8 @@ P0 物化后的 Attachment 绑定单一不可变 Blob。替换内容创建新 At
 | `enabled` | boolean | NO |
 | `drain_status` | text | NO |
 | `version` | bigint | NO |
+| `idempotency_key` | text | YES |
+| `request_fingerprint` | char(64) | YES |
 | `created_at` | timestamptz | NO |
 | `updated_at` | timestamptz | NO |
 

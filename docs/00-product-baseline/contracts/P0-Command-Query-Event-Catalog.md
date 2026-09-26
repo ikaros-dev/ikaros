@@ -212,7 +212,7 @@ Cursor 对客户端 opaque。
 | `storage.update-provider` | `storage.provider.manage` | OPTIONAL | no | `storage.provider.updated` |
 | `storage.enable-provider` | `storage.provider.manage` | NATURAL | no | `storage.provider.enabled` |
 | `storage.disable-provider` | `storage.provider.manage` | NATURAL | maybe drain precondition | `storage.provider.disabled` |
-| `storage.delete-provider` | `storage.provider.manage` | NATURAL | provider must have no placements or delivery bindings; audited hard delete | `storage.provider.deleted` |
+| `storage.delete-provider` | `storage.provider.manage` | NATURAL | disabled provider; no placements or delivery bindings; audited hard delete | `storage.provider.deleted` |
 | `storage.request-provider-drain` | `storage.provider.manage` | REQUIRED | yes | `storage.provider.drain-requested` |
 | `storage.create-delivery-provider` | `storage.provider.manage` | REQUIRED | no | `storage.delivery-provider.created` |
 | `storage.update-delivery-provider` | `storage.provider.manage` | REQUIRED | no | `storage.delivery-provider.updated` |
