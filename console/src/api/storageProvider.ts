@@ -32,6 +32,16 @@ export type StorageProviderStatus = {
   checked_at: string;
 };
 
+export type CreateStorageProviderRequest = {
+  provider_key: string;
+  provider_type: string;
+  display_name: string;
+  tier: StorageProvider["tier"];
+  capabilities: Record<string, unknown>;
+  credential_ref: string;
+  configuration: Record<string, unknown>;
+};
+
 export const listStorageProviders = () =>
   http.request<StorageProvider[]>("get", "/admin/storage-providers");
 
@@ -43,3 +53,20 @@ export const getStorageProviderStatus = (providerId: string) =>
 
 export const probeStorageProvider = (providerId: string) =>
   http.request<StorageProviderProbe>("post", `/admin/storage-providers/${providerId}/probe`);
+
+export const createStorageProvider = (data: CreateStorageProviderRequest, idempotencyKey: string) =>
+  http.request<StorageProvider>("post", "/admin/storage-providers", {
+    data,
+    headers: { "Idempotency-Key": idempotencyKey }
+  });
+
+export const enableStorageProvider = (providerId: string) =>
+  http.request<StorageProvider>("post", `/admin/storage-providers/${providerId}/enable`);
+
+export const disableStorageProvider = (providerId: string) =>
+  http.request<StorageProvider>("post", `/admin/storage-providers/${providerId}/disable`);
+
+export const deleteStorageProvider = (providerId: string, version: number) =>
+  http.request<void>("delete", `/admin/storage-providers/${providerId}`, {
+    headers: { "If-Match": `"${version}"` }
+  });

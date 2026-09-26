@@ -288,6 +288,23 @@ storageProviderManagement:
   search: Search
   reset: Reset
   refresh: Refresh
+  create: Add provider
+  createSuccess: Storage provider created
+  enable: Enable
+  disable: Disable
+  delete: Delete
+  enableSuccess: Storage provider enabled
+  disableSuccess: Storage provider disabled
+  deleteSuccess: Storage provider deleted
+  deleteTitle: Delete storage provider
+  deleteConfirm: Delete “{name}”? Only disabled providers without placements or delivery bindings can be deleted.
+  credentialRef: Credential reference
+  endpoint: Endpoint
+  bucket: Bucket
+  region: Region
+  actionFailed: Operation failed
+  verificationTitle: Security verification
+  verificationDescription: Verify your identity to manage storage providers.
   name: Name
   key: Key
   type: Provider type

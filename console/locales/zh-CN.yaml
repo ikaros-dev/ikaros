@@ -288,6 +288,23 @@ storageProviderManagement:
   search: 搜索
   reset: 重置
   refresh: 刷新
+  create: 新增提供方
+  createSuccess: 存储提供方已创建
+  enable: 启用
+  disable: 停用
+  delete: 删除
+  enableSuccess: 存储提供方已启用
+  disableSuccess: 存储提供方已停用
+  deleteSuccess: 存储提供方已删除
+  deleteTitle: 删除存储提供方
+  deleteConfirm: 确认删除“{name}”？仅已停用且没有数据位置或 Delivery Binding 的提供方可以删除。
+  credentialRef: 凭据引用
+  endpoint: Endpoint
+  bucket: Bucket
+  region: Region
+  actionFailed: 操作失败
+  verificationTitle: 安全验证
+  verificationDescription: 管理存储提供方需要完成安全验证。
   name: 名称
   key: 标识
   type: 提供方类型
