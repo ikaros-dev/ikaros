@@ -26,7 +26,8 @@ public class StorageProviderCredentialService {
                 provider.providerType(), provider.tier(), provider.status(), "secret://provider/" + provider.providerKey(),
                 provider.providerMetadata().asString(), cipher.encrypt(request.accessKeyId()),
                 cipher.encrypt(request.secretAccessKey()), cipher.encrypt(blankToNull(request.sessionToken())),
-                provider.createdAt(), Instant.now())))
+                provider.createdAt(), Instant.now(), provider.displayName(), provider.capabilities().asString(),
+                provider.enabled(), provider.drainStatus(), provider.version(), provider.configuration().asString())))
             .then();
     }
 

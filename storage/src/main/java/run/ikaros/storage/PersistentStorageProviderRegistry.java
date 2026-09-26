@@ -39,13 +39,26 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
     @Override
     public Mono<StorageProvider> register(String providerKey, String providerType, StorageTier tier,
                                           String secretReference, Map<String, Object> metadata) {
-        return register(providerKey, providerType, tier, secretReference, metadata, null, null, null);
+        return register(providerKey, providerType, providerKey, tier, secretReference, Map.of(), metadata, null, null, null);
+    }
+
+    @Override
+    public Mono<StorageProvider> registerConfigured(String providerKey, String providerType, String displayName,
+        StorageTier tier, String secretReference, Map<String, Object> capabilities, Map<String, Object> configuration) {
+        return register(providerKey, providerType, displayName, tier, secretReference, capabilities, configuration, null, null, null);
     }
 
     @Override
     public Mono<StorageProvider> register(String providerKey, String providerType, StorageTier tier,
                                           String secretReference, Map<String, Object> metadata,
                                           String accessKeyId, String secretAccessKey, String sessionToken) {
+        return register(providerKey, providerType, providerKey, tier, secretReference, Map.of(), metadata,
+            accessKeyId, secretAccessKey, sessionToken);
+    }
+
+    private Mono<StorageProvider> register(String providerKey, String providerType, String displayName, StorageTier tier,
+        String secretReference, Map<String, Object> capabilities, Map<String, Object> metadata,
+        String accessKeyId, String secretAccessKey, String sessionToken) {
         if (providerKey == null || providerKey.isBlank() || providerType == null || providerType.isBlank()
             || tier == null) {
             return Mono.error(new IllegalArgumentException("Storage Provider 参数不完整"));
@@ -61,11 +74,12 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
         }
         return repository.findByProviderKey(providerKey)
             .flatMap(existing -> Mono.<StorageProvider>error(new ConflictException("Storage Provider 标识已存在")))
-            .switchIfEmpty(Mono.defer(() -> encode(metadata).flatMap(json -> {
+            .switchIfEmpty(Mono.defer(() -> Mono.zip(encode(metadata), encode(capabilities)).flatMap(encoded -> {
                 Instant now = Instant.now();
                 return repository.save(new StorageProviderEntity(null, providerKey, providerType, tier.name(),
-                    StorageProviderStatus.ENABLED.name(), reference, json, hasCredentials ? credentialCipher.encrypt(accessKeyId) : null,
-                    hasCredentials ? credentialCipher.encrypt(secretAccessKey) : null, hasCredentials ? credentialCipher.encrypt(sessionToken) : null, now, now)).map(this::toModel)
+                    StorageProviderStatus.ENABLED.name(), reference, encoded.getT1(), hasCredentials ? credentialCipher.encrypt(accessKeyId) : null,
+                    hasCredentials ? credentialCipher.encrypt(secretAccessKey) : null, hasCredentials ? credentialCipher.encrypt(sessionToken) : null,
+                    now, now, displayName, encoded.getT2(), true, "NORMAL", 0L, encoded.getT1())).map(this::toModel)
                     .flatMap(provider -> emit("storage.provider.created", provider,
                         "{\"provider_id\":\"" + provider.id() + "\",\"provider_type\":\"" + provider.providerType()
                             + "\",\"tier\":\"" + provider.tier() + "\"}").thenReturn(provider));
@@ -96,7 +110,9 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
                 return encode(requestedMetadata == null ? readMetadata(current.providerMetadata().asString()) : requestedMetadata)
                     .flatMap(metadata -> repository.save(new StorageProviderEntity(current.id(), current.providerKey(),
                         type, tier, current.status(), secret, metadata, current.accessKeyIdCiphertext(),
-                        current.secretAccessKeyCiphertext(), current.sessionTokenCiphertext(), current.createdAt(), Instant.now())))
+                        current.secretAccessKeyCiphertext(), current.sessionTokenCiphertext(), current.createdAt(), Instant.now(),
+                        current.displayName(), current.capabilities().asString(), current.enabled(), current.drainStatus(),
+                        current.version(), metadata)))
                     .map(this::toModel)
                     .flatMap(provider -> emit("storage.provider.updated", provider,
                         "{\"provider_id\":\"" + provider.id()
@@ -142,9 +158,11 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
     private Mono<StorageProvider> change(UUID id, StorageProviderStatus status) {
         return repository.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
             .map(current -> new StorageProviderEntity(current.id(), current.providerKey(), current.providerType(),
-                current.tier(), status.name(), current.secretReference(), current.providerMetadata(),
+                current.tier(), status.name(), current.secretReference(), current.providerMetadata().asString(),
                 current.accessKeyIdCiphertext(), current.secretAccessKeyCiphertext(), current.sessionTokenCiphertext(),
-                current.createdAt(), Instant.now()))
+                current.createdAt(), Instant.now(), current.displayName(), current.capabilities().asString(),
+                status == StorageProviderStatus.ENABLED, status == StorageProviderStatus.DRAINING ? "DRAINING" : "NORMAL",
+                current.version(), current.configuration().asString()))
             .flatMap(repository::save).map(this::toModel)
             .flatMap(provider -> {
                 if (status == StorageProviderStatus.DRAINING) return Mono.just(provider);
@@ -195,11 +213,14 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
 
     private StorageProvider toModel(StorageProviderEntity entity) {
         try {
-            Map<String, Object> metadata = mapper.readValue(entity.providerMetadata().asString(),
+            Map<String, Object> metadata = mapper.readValue(entity.configuration().asString(),
+                mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class));
+            Map<String, Object> capabilities = mapper.readValue(entity.capabilities().asString(),
                 mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class));
             return new StorageProvider(entity.id(), entity.providerKey(), entity.providerType(),
                 StorageTier.valueOf(entity.tier()), StorageProviderStatus.valueOf(entity.status()),
-                entity.secretReference(), metadata, entity.createdAt(), entity.updatedAt());
+                entity.secretReference(), metadata, entity.createdAt(), entity.updatedAt(), entity.displayName(),
+                capabilities, Boolean.TRUE.equals(entity.enabled()), entity.drainStatus(), entity.version() == null ? 0 : entity.version());
         } catch (JacksonException | IllegalArgumentException error) {
             throw new ConflictException("Storage Provider 数据损坏");
         }

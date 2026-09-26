@@ -2655,7 +2655,7 @@ components:
         display_name: { type: string }
         tier:
           type: string
-          enum: [HOT, WARM, COLD, ARCHIVE]
+          enum: [HOT, WARM, COLD, ARCHIVE, DEEP_ARCHIVE]
         enabled: { type: boolean }
         drain_status:
           type: string
@@ -2691,7 +2691,7 @@ components:
           description: Secret reference only; plaintext credentials are forbidden.
         tier:
           type: string
-          enum: [HOT, WARM, COLD, ARCHIVE]
+          enum: [HOT, WARM, COLD, ARCHIVE, DEEP_ARCHIVE]
         capabilities:
           type: object
           additionalProperties: true

@@ -491,7 +491,7 @@ P0 物化后的 Attachment 绑定单一不可变 Blob。替换内容创建新 At
 
 ```text
 UNIQUE(provider_key)
-CHECK tier in ('HOT','WARM','COLD','ARCHIVE')
+CHECK tier in ('HOT','WARM','COLD','ARCHIVE','DEEP_ARCHIVE')
 CHECK drain_status in ('NORMAL','DRAINING','DRAINED')
 ```
 

@@ -6,7 +6,6 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,78 +16,55 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping({"/api/storage/providers", "/api/admin/storage-providers"})
+@RequestMapping("/api/admin/storage-providers")
 public class StorageProviderController {
     private final StorageProviderRegistry registry;
-    private final StorageProviderCredentialRotationService credentialRotation;
     private final StorageProviderCredentialService credentialService;
     private final StorageProviderProbeService probeService;
     private final StorageProviderStatusService statusService;
 
     public StorageProviderController(StorageProviderRegistry registry,
-                                     StorageProviderCredentialRotationService credentialRotation,
                                      StorageProviderCredentialService credentialService,
                                      StorageProviderProbeService probeService,
                                      StorageProviderStatusService statusService) {
         this.registry = registry;
-        this.credentialRotation = credentialRotation;
         this.credentialService = credentialService;
         this.probeService = probeService;
         this.statusService = statusService;
     }
 
     @PostMapping
-    public Mono<ResponseEntity<StorageProvider>> register(@Valid @RequestBody RegisterStorageProviderRequest request) {
+    public Mono<ResponseEntity<StorageProviderView>> register(@Valid @RequestBody RegisterStorageProviderRequest request) {
         return registry.register(request.providerKey(), request.providerType(), request.tier(),
                 request.secretReference(), request.metadata(), request.accessKeyId(), request.secretAccessKey(), request.sessionToken())
-            .map(provider -> ResponseEntity.created(URI.create("/api/storage/providers/" + provider.id()))
-                .body(provider));
+            .map(provider -> ResponseEntity.created(URI.create("/api/admin/storage-providers/" + provider.id()))
+                .body(StorageProviderView.from(provider)));
     }
 
     @GetMapping
-    public Flux<StorageProvider> list() {
-        return registry.list();
+    public Flux<StorageProviderView> list() {
+        return registry.list().map(StorageProviderView::from);
     }
 
     @GetMapping("/{providerId}")
-    public Mono<StorageProvider> get(@PathVariable UUID providerId) {
-        return registry.get(providerId);
-    }
-
-    @PostMapping("/{providerId}/enable")
-    public Mono<StorageProvider> enable(@PathVariable UUID providerId) {
-        return registry.enable(providerId);
+    public Mono<StorageProviderView> get(@PathVariable UUID providerId) {
+        return registry.get(providerId).map(StorageProviderView::from);
     }
 
     @PostMapping("/{providerId}/probe")
-    public Mono<StorageProviderProbeResult> probe(@PathVariable UUID providerId) {
-        return probeService.probe(providerId);
+    public Mono<StorageProviderProbeView> probe(@PathVariable UUID providerId) {
+        return probeService.probe(providerId).map(StorageProviderProbeView::from);
     }
 
     @GetMapping("/{providerId}/status")
-    public Mono<StorageProviderStatusView> status(@PathVariable UUID providerId) {
-        return statusService.get(providerId);
-    }
-
-    @PostMapping("/{providerId}/actions/rotate-credentials")
-    public Mono<StorageCredentialRotationView> rotateCredentials(@PathVariable UUID providerId) {
-        return credentialRotation.rotate(providerId);
+    public Mono<StorageProviderStatusResponse> status(@PathVariable UUID providerId) {
+        return statusService.get(providerId).map(StorageProviderStatusResponse::from);
     }
 
     @PostMapping("/{providerId}/credentials")
-    public Mono<StorageProviderProbeResult> replaceCredentials(@PathVariable UUID providerId,
+    public Mono<StorageProviderProbeView> replaceCredentials(@PathVariable UUID providerId,
                                                           @Valid @RequestBody ReplaceStorageProviderCredentialsRequest request) {
         return credentialService.replace(providerId, request)
-            .then(probeService.probe(providerId));
-    }
-
-    @PostMapping("/actions/rotate-credentials")
-    public Mono<StorageCredentialBatchRotationView> rotateAllCredentials() {
-        return credentialRotation.rotateAll();
-    }
-
-    @DeleteMapping("/{providerId}")
-    public Mono<ResponseEntity<Void>> disable(@PathVariable UUID providerId) {
-        return registry.disable(providerId).thenReturn(ResponseEntity.noContent().build());
+            .then(probeService.probe(providerId)).map(StorageProviderProbeView::from);
     }
 }
