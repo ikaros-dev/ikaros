@@ -121,6 +121,40 @@ paths:
       x-ikaros-contract-id: storage.get-provider
       responses:
         '200': { description: 存储提供方, content: { application/json: { schema: { $ref: './openapi-v2-p0.yaml#/components/schemas/StorageProvider' } } } }
+    delete:
+      operationId: deleteStorageProvider
+      x-ikaros-contract-id: storage.delete-provider
+      summary: Delete a provider that has no placements or delivery bindings
+      responses:
+        '204': { description: Provider deleted and audit/event recorded }
+        '401': { description: 未认证 }
+        '403': { description: 无权删除或未完成所需二次验证 }
+        '404': { description: Provider 不存在 }
+        '409': { description: Provider 仍有数据位置或 Delivery Binding }
+  /admin/storage-providers/{provider_id}/enable:
+    parameters:
+      - { name: provider_id, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: enableStorageProvider
+      x-ikaros-contract-id: storage.enable-provider
+      summary: Enable a storage provider
+      responses:
+        '200': { description: Provider enabled, content: { application/json: { schema: { $ref: './openapi-v2-p0.yaml#/components/schemas/StorageProvider' } } } }
+        '401': { description: 未认证 }
+        '403': { description: 无权管理 Provider 或未完成所需二次验证 }
+        '404': { description: Provider 不存在 }
+  /admin/storage-providers/{provider_id}/disable:
+    parameters:
+      - { name: provider_id, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      operationId: disableStorageProvider
+      x-ikaros-contract-id: storage.disable-provider
+      summary: Disable a storage provider
+      responses:
+        '200': { description: Provider disabled, content: { application/json: { schema: { $ref: './openapi-v2-p0.yaml#/components/schemas/StorageProvider' } } } }
+        '401': { description: 未认证 }
+        '403': { description: 无权管理 Provider 或未完成所需二次验证 }
+        '404': { description: Provider 不存在 }
   /me:
     get:
       operationId: getCurrentUser

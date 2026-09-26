@@ -108,6 +108,9 @@ operations:
   - { method: GET, path: '/background-tasks/{task_id}/attempts', operation_id: listBackgroundTaskAttempts, contract_id: operations.list-task-attempts, source: contracts/openapi-v2-p0-contract-convergence.yaml }
   - { method: GET, path: '/admin/blobs/{blob_id}/placements', operation_id: listBlobPlacements, contract_id: storage.list-blob-placements, source: contracts/openapi-v2-p0-contract-convergence.yaml }
   - { method: GET, path: '/admin/storage-providers/{provider_id}', operation_id: getStorageProvider, contract_id: storage.get-provider, source: contracts/openapi-v2-p0-contract-convergence.yaml }
+  - { method: POST, path: '/admin/storage-providers/{provider_id}/enable', operation_id: enableStorageProvider, contract_id: storage.enable-provider, source: contracts/openapi-v2-p0-contract-convergence.yaml }
+  - { method: POST, path: '/admin/storage-providers/{provider_id}/disable', operation_id: disableStorageProvider, contract_id: storage.disable-provider, source: contracts/openapi-v2-p0-contract-convergence.yaml }
+  - { method: DELETE, path: '/admin/storage-providers/{provider_id}', operation_id: deleteStorageProvider, contract_id: storage.delete-provider, source: contracts/openapi-v2-p0-contract-convergence.yaml }
   - { method: GET, path: /me, operation_id: getCurrentUser, contract_id: identity.get-current-user, source: contracts/openapi-v2-p0-contract-convergence.yaml }
   - { method: POST, path: /me/actions/invalidate-tokens, operation_id: invalidateCurrentUserTokens, contract_id: identity.invalidate-user-tokens, source: contracts/openapi-v2-p0-contract-convergence.yaml }
   - { method: GET, path: '/admin/users/{user_id}', operation_id: getUser, contract_id: identity.get-user, source: contracts/openapi-v2-p0-contract-convergence.yaml }
