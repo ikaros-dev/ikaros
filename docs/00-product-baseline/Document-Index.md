@@ -132,7 +132,7 @@ V2 交互原型草稿仅用于辅助讨论，不应作为服务端领域契约�
 | Content Ingestion / Import / Metadata Sync | ✅ | ✅ Ingestion / Metadata | 间接 | ✅ 添加资源 + Resource Metadata | 核心契约已覆盖 |
 | Attachment / Blob / Storage | ✅ | ✅ Storage | 间接 | ✅ 存储 | 核心契约已覆盖 |
 | Personal Drive / File Sync / Camera Backup | ✅ | ✅ 主设计 + P0 Semantics | ✅ | ✅ 应用 / 云盘 | 产品、系统、服务端与交互均已覆盖 |
-| Sharing / Collaboration / Room | ✅ | ✅ Sharing | ✅ | ✅ 应用 / 分享 | 核心契约已覆盖 |
+| Sharing / Collaboration / Room | ✅ | ✅ Sharing | ✅ | ✅ 跨应用能力，无独立页面 | 核心契约已覆盖 |
 | Offline Cache / Device Sync | ✅ | ✅ Offline / Sync | ✅ | 应用 / 云盘 / 媒体适用入口 | 核心契约已覆盖 |
 | Content Creation / Revision / Collaborative Document | ✅ | ✅ Document | ✅ | ✅ 应用 / 文档 | 核心契约已覆盖 |
 | 视频 / 动画 / 影视专业领域 | ✅ | ✅ Media | ✅ | 资源库 + 应用 / 媒体 | 核心契约已覆盖 |

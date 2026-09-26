@@ -1,6 +1,6 @@
 # 资源库、资源与创作 — CMS Console 交互规格
 
-> Resource 是统一逻辑内容身份。Console 中 Resource 管理的用户入口固定为“资源 / 资源库”；Documents、Media、Sharing 等专业体验属于“应用”，但必须引用同一 Resource 身份。
+> Resource 是统一逻辑内容身份。Console 中 Resource 管理的用户入口固定为“资源 / 资源库”；Documents、Media 等专业体验属于“应用”，Sharing 是跨应用能力；它们都引用同一 Resource 身份。
 
 ## 1. 资源库（Library）
 
