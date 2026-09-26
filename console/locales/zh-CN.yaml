@@ -298,7 +298,6 @@ menus:
   backupManagement: 备份管理
   storageMaintenance: 存储维护
   apps: 应用
-  appsOverview: 应用中心
   drive: 云盘
   driveNodeDetail: 云盘文件详情
   driveTransfers: 云盘传输
@@ -467,7 +466,6 @@ menuDescriptions:
   archiveManagement: 管理归档资源、恢复请求、恢复预算以及待清理对象。
   backupManagement: 管理备份与恢复点，并查看备份验证和发布状态。
   storageMaintenance: 处理完整性校验、Blob、Placement、GC、Delivery 与高级存储诊断。
-  appsOverview: 查看已启用的核心应用和插件应用，并进入对应产品。
   drive: 浏览和管理个人文件、文件夹、空间以及云盘相关操作。
   driveNodeDetail: 查看单个文件或文件夹的版本、存储、共享、同步与活动信息。
   driveTransfers: 查看上传、下载和其他云盘传输任务的状态。

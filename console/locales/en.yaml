@@ -298,7 +298,6 @@ menus:
   backupManagement: Backup Management
   storageMaintenance: Storage Maintenance
   apps: Apps
-  appsOverview: App Center
   drive: Drive
   driveNodeDetail: Drive File Detail
   driveTransfers: Drive Transfers
@@ -467,7 +466,6 @@ menuDescriptions:
   archiveManagement: Manage archived resources, restore requests, restore budgets, and pending cleanup.
   backupManagement: Manage backups and restore points and view verification and publication status.
   storageMaintenance: Handle integrity checks, Blob, Placement, GC, Delivery, and advanced storage diagnostics.
-  appsOverview: View enabled core and plugin apps and open the corresponding product.
   drive: Browse and manage personal files, folders, spaces, and Drive operations.
   driveNodeDetail: View versions, storage, sharing, sync, and activity for a file or folder.
   driveTransfers: View the status of uploads, downloads, and other Drive transfers.

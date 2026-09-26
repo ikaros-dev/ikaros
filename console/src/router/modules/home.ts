@@ -269,15 +269,6 @@ export default {
       { title: "menus.apps", icon: "ep:grid" },
       [
         page(
-          "overview",
-          "AppsOverview",
-          "menus.appsOverview",
-          "menuDescriptions.appsOverview",
-          () => import("@/views/console/apps/Overview.vue"),
-          "app.read",
-          { icon: "ep:grid" }
-        ),
-        page(
           "drive",
           "Drive",
           "menus.drive",
@@ -448,7 +439,7 @@ export default {
           hidden("/apps/plugins")
         )
       ],
-      "/apps/overview"
+      "/apps/drive"
     ),
 
     workspace(
