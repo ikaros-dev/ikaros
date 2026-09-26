@@ -14,7 +14,7 @@ const pages = [
   ["DashboardHome", ""],
   ["ResourceLibrary", "library"], ["ResourceDetail", "library/:resourceId"], ["ResourceCollections", "library/collections"], ["ResourceSearch", "library/search"], ["AddResource", "add"], ["ActivityCenter", "activity"], ["ActivityDetail", "activity/:activityId"],
   ["StorageOverview", "overview"], ["StorageProviders", "providers"], ["StorageProviderDetail", "providers/:providerId"], ["StoragePolicy", "policy"], ["StorageArchive", "archive"], ["StorageBackup", "backup"], ["StorageMaintenance", "maintenance"],
-  ["Drive", "drive"], ["DriveNodeDetail", "drive/nodes/:nodeId"], ["DriveTransfers", "drive/transfers"], ["DriveSync", "drive/sync"], ["DriveConflicts", "drive/conflicts"], ["DriveTrash", "drive/trash"], ["DriveSettings", "drive/settings"], ["Documents", "documents"], ["DocumentEditor", "documents/:id/edit"], ["Media", "media"], ["Planning", "planning"], ["Finance", "finance"], ["PrivateNotes", "private-notes"], ["Passwords", "passwords"], ["AI", "ai"], ["Sharing", "sharing"], ["Analytics", "analytics"], ["Automation", "automation"],
+  ["Drive", "drive"], ["DriveNodeDetail", "drive/nodes/:nodeId"], ["DriveTransfers", "drive/transfers"], ["DriveSync", "drive/sync"], ["DriveConflicts", "drive/conflicts"], ["DriveTrash", "drive/trash"], ["DriveSettings", "drive/settings"], ["Documents", "documents"], ["DocumentEditor", "documents/:id/edit"], ["Media", "media"], ["Planning", "planning"], ["Finance", "finance"], ["PrivateNotes", "private-notes"], ["Passwords", "passwords"], ["AI", "ai"], ["Analytics", "analytics"], ["Automation", "automation"],
   ["SystemUsers", "users"], ["SystemRolesPermissions", "roles-permissions"], ["SystemAuthentication", "authentication"], ["SystemApps", "apps"], ["SystemExternalIntegrations", "external"], ["SystemEventDelivery", "events"], ["SystemNotifications", "notifications"], ["SystemAudit", "audit"], ["SystemParameters", "parameters"], ["SystemHealth", "health"], ["SystemDiagnostics", "diagnostics"],
   ["AccountProfile", "profile"], ["AccountPreferences", "preferences"], ["AccountNotifications", "notifications"], ["AccountSecurity", "security"], ["AccountSessions", "sessions"], ["AccountApiTokens", "api-tokens"]
 ];
@@ -35,6 +35,8 @@ assert.doesNotMatch(home, /workspace\(\s*"\/(library|add|activity)"/);
 assert.doesNotMatch(home, /\/apps\/overview|AppsOverview|appsOverview/);
 assert.doesNotMatch(home, /page\(\s*"plugins",\s*"PluginApps"/);
 assert.doesNotMatch(home, /plugins\/:appId|PluginApp|pluginApp/);
+assert.doesNotMatch(home, /page\(\s*"sharing",\s*"Sharing"/);
+assert.doesNotMatch(home, /"\/apps\/sharing"/);
 assert.doesNotMatch(home, /\/system\/integrations\/plugins/);
 assert.doesNotMatch(home, /@\/views\/(dashboard|resources|storage|apps|drive|documents|media|planning|finance|notes|password|ai|sharing|analytics|ingestion|integration|security|communications|operations|platform|workbench)\//);
 assert.match(home, /redirect: "\/dashboard"/);

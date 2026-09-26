@@ -43,7 +43,6 @@ Ikaros 后台管理系统
 │  ├─ 私密笔记
 │  ├─ 密码库
 │  ├─ AI
-│  ├─ 分享
 │  ├─ 数据分析
 │  └─ 自动化
 │
@@ -132,7 +131,6 @@ App 页面继续位于 `/apps/<app>/**`；Console 不再提供通用插件应用
   /apps/private-notes/**
   /apps/passwords/**
   /apps/ai/**
-  /apps/sharing/**
   /apps/analytics/**
   /apps/automation/**
 
@@ -213,7 +211,7 @@ Provider、Policy、GC 和 Placement Repair 不得继续混在同一默认页面
 
 ## 8. 应用（Apps）
 
-应用工作区不设置独立总览页；`/apps` 默认进入首个业务应用 `/apps/drive`。Drive、Documents、Media、Planning、Finance、Private Notes、Passwords、AI、Sharing、Analytics、Automation 等业务产品使用 `/apps/<app>/**`。
+应用工作区不设置独立总览页；`/apps` 默认进入首个业务应用 `/apps/drive`。Drive、Documents、Media、Planning、Finance、Private Notes、Passwords、AI、Analytics、Automation 等业务产品使用 `/apps/<app>/**`。分享作为跨应用能力，不提供独立的 `/apps/sharing` 菜单或页面。
 
 只有当前部署启用且当前用户有权访问的 App 才显示。App 产生的后台工作仍进入 `/resources/activity`。
 

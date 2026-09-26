@@ -150,7 +150,6 @@
 - 私密笔记：`/apps/private-notes/**`，使用 `private_note.*` 并要求 Secure Domain Unlock；
 - 密码库：`/apps/passwords/**`，使用 `password.*` / canonical secret capability；
 - AI：`/apps/ai/**`，使用 `ai.*`，长期工作进入 `/resources/activity`；
-- 分享：`/apps/sharing/**`，使用 `share.*` / `room.*`；
 - 数据分析：`/apps/analytics/**`，不得扩张敏感域读取能力；
 - 自动化：`/apps/automation/**`，规则编辑使用 `automation.*`，长期执行进入 `/resources/activity`；
 

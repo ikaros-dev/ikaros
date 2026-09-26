@@ -67,7 +67,6 @@ Console 使用 Material Design 3 作为设计语言。
   私密笔记                                /apps/private-notes/**
   密码库                                  /apps/passwords/**
   AI                                      /apps/ai/**
-  分享                                    /apps/sharing/**
   数据分析                                /apps/analytics/**
   自动化                                  /apps/automation/**
 
