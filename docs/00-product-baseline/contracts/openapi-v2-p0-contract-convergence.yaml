@@ -134,6 +134,7 @@ paths:
         '404': { description: Provider 不存在 }
         '409': { description: Provider 尚未停用，或仍有数据位置或 Delivery Binding }
         '412': { description: If-Match 版本与 Provider 当前版本不匹配 }
+        '428': { $ref: './openapi-v2-p0.yaml#/components/responses/PreconditionRequired' }
   /admin/storage-providers/{provider_id}/enable:
     parameters:
       - { name: provider_id, in: path, required: true, schema: { type: string, format: uuid } }
