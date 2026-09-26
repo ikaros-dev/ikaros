@@ -313,7 +313,6 @@ menus:
   privateNotes: 私密笔记
   passwords: 密码库
   ai: AI
-  sharing: 分享
   analytics: 数据分析
   automation: 自动化
   system: 系统
@@ -479,7 +478,6 @@ menuDescriptions:
   privateNotes: 管理需要更高隐私保护的私密笔记与同步状态。
   passwords: 管理密码条目、安全状态、设备访问与密码健康检查。
   ai: 提供 AI 对话、内容辅助、模型与智能能力入口。
-  sharing: 管理资源分享、访问范围、链接和共享状态。
   analytics: 查看资源、存储、应用与使用情况的数据分析和报表。
   automation: 配置自动化规则、触发条件、动作与执行结果。
   userManagement: 管理平台用户、账号状态、角色分配和会话治理。

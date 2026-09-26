@@ -398,14 +398,6 @@ export default {
           "ai.read"
         ),
         page(
-          "sharing",
-          "Sharing",
-          "menus.sharing",
-          "menuDescriptions.sharing",
-          () => import("@/views/console/apps/Sharing.vue"),
-          "share.read"
-        ),
-        page(
           "analytics",
           "Analytics",
           "menus.analytics",

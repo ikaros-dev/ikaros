@@ -313,7 +313,6 @@ menus:
   privateNotes: Private Notes
   passwords: Passwords
   ai: AI
-  sharing: Sharing
   analytics: Analytics
   automation: Automation
   system: System
@@ -479,7 +478,6 @@ menuDescriptions:
   privateNotes: Manage private notes and sync status with enhanced privacy protection.
   passwords: Manage password entries, security status, device access, and password health.
   ai: Access AI conversations, content assistance, models, and intelligent capabilities.
-  sharing: Manage resource sharing, access scope, links, and sharing status.
   analytics: View analytics and reports for resources, storage, apps, and usage.
   automation: Configure automation rules, triggers, actions, and execution results.
   userManagement: Manage platform users, account status, role assignments, and session governance.
