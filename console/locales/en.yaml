@@ -279,6 +279,38 @@ panel:
   pureHiddenTags: Hidden Tags
   pureHiddenFooter: Hidden Footer
   pureMultiTagsCache: MultiTags Cache
+storageProviderManagement:
+  query: Name, key, or type
+  tier: Storage tier
+  status: Status
+  enabled: Enabled
+  disabled: Disabled
+  search: Search
+  reset: Reset
+  refresh: Refresh
+  name: Name
+  key: Key
+  type: Provider type
+  actions: Actions
+  details: Details
+  probe: Probe
+  empty: No storage providers
+  version: Version
+  capabilities: Capabilities
+  configuration: Configuration
+  health: Health
+  connection: Connection
+  read: Read
+  write: Write
+  capacity: Capacity (bytes)
+  loadFailed: Failed to load storage providers
+  detailFailed: Failed to load provider details
+  probeFailed: Failed to probe provider
+  probeResult:
+    HEALTHY: Provider connection is healthy
+    DEGRADED: Provider is degraded
+    FAILED: Provider connection failed
+    UNSUPPORTED: Provider probe is unsupported
 menus:
   dashboard: Dashboard
   resources: Resources

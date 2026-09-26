@@ -279,6 +279,38 @@ panel:
   pureHiddenTags: 隐藏标签页
   pureHiddenFooter: 隐藏页脚
   pureMultiTagsCache: 页签持久化
+storageProviderManagement:
+  query: 名称、标识或类型
+  tier: 存储层级
+  status: 状态
+  enabled: 已启用
+  disabled: 已停用
+  search: 搜索
+  reset: 重置
+  refresh: 刷新
+  name: 名称
+  key: 标识
+  type: 提供方类型
+  actions: 操作
+  details: 详情
+  probe: 探测
+  empty: 暂无存储提供方
+  version: 版本
+  capabilities: 能力
+  configuration: 配置
+  health: 健康状态
+  connection: 连接
+  read: 读取
+  write: 写入
+  capacity: 容量（字节）
+  loadFailed: 获取存储提供方失败
+  detailFailed: 获取存储提供方详情失败
+  probeFailed: 存储提供方探测失败
+  probeResult:
+    HEALTHY: 提供方连接正常
+    DEGRADED: 提供方状态异常
+    FAILED: 提供方连接失败
+    UNSUPPORTED: 提供方不支持探测
 menus:
   dashboard: 仪表盘
   resources: 资源
