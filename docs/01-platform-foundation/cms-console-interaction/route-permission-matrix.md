@@ -112,11 +112,7 @@
 
 ## 6. 应用
 
-`/apps` 是一级目录前缀；默认 redirect 到 `/apps/overview`。
-
-| 页面 | Route | 最小能力 |
-|---|---|---|
-| 应用中心 | `/apps/overview` | 已认证；按 App capability 过滤卡片 |
+`/apps` 是一级目录前缀；默认 redirect 到首个业务应用 `/apps/drive`。应用目录不设置独立总览页。
 
 应用只展示启用且可访问的业务产品。App route 统一位于 `/apps/<app>/**`；插件应用统一位于 `/apps/plugins/<appId>/**` 或受控子路径。
 
