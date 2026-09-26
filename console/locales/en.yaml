@@ -316,7 +316,6 @@ menus:
   sharing: Sharing
   analytics: Analytics
   automation: Automation
-  pluginApps: Plugin Apps
   pluginApp: Plugin App Page
   system: System
   accessControl: Access Control
@@ -484,7 +483,6 @@ menuDescriptions:
   sharing: Manage resource sharing, access scope, links, and sharing status.
   analytics: View analytics and reports for resources, storage, apps, and usage.
   automation: Configure automation rules, triggers, actions, and execution results.
-  pluginApps: View app entries provided by plugins and open enabled plugin apps.
   pluginApp: Host an independent app page provided by a plugin; business content is implemented by that plugin.
   userManagement: Manage platform users, account status, role assignments, and session governance.
   rolesPermissions: Manage roles, the permission catalog, and role-permission mappings.
