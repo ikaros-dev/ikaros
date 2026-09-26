@@ -421,15 +421,6 @@ export default {
           () => import("@/views/console/apps/Automation.vue"),
           "automation.read"
         ),
-        page(
-          "plugins/:appId",
-          "PluginApp",
-          "menus.pluginApp",
-          "menuDescriptions.pluginApp",
-          () => import("@/views/console/apps/PluginApp.vue"),
-          undefined,
-          { showLink: false }
-        )
       ],
       "/apps/drive"
     ),

@@ -316,7 +316,6 @@ menus:
   sharing: 分享
   analytics: 数据分析
   automation: 自动化
-  pluginApp: 插件应用页面
   system: 系统
   accessControl: 访问控制
   userManagement: 用户管理
@@ -483,7 +482,6 @@ menuDescriptions:
   sharing: 管理资源分享、访问范围、链接和共享状态。
   analytics: 查看资源、存储、应用与使用情况的数据分析和报表。
   automation: 配置自动化规则、触发条件、动作与执行结果。
-  pluginApp: 承载插件提供的独立应用页面；实际业务内容由对应插件实现。
   userManagement: 管理平台用户、账号状态、角色分配和会话治理。
   rolesPermissions: 统一管理角色、权限目录以及角色与权限之间的映射。
   authentication: 配置平台登录、Step-up、恢复与身份认证策略。

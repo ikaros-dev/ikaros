@@ -34,7 +34,7 @@ for (const target of ["/resources/library", "/storage/overview", "/apps/drive", 
 assert.doesNotMatch(home, /workspace\(\s*"\/(library|add|activity)"/);
 assert.doesNotMatch(home, /\/apps\/overview|AppsOverview|appsOverview/);
 assert.doesNotMatch(home, /page\(\s*"plugins",\s*"PluginApps"/);
-assert.doesNotMatch(home, /plugins\/\:appId|PluginApp|pluginApp/);
+assert.doesNotMatch(home, /plugins\/:appId|PluginApp|pluginApp/);
 assert.doesNotMatch(home, /\/system\/integrations\/plugins/);
 assert.doesNotMatch(home, /@\/views\/(dashboard|resources|storage|apps|drive|documents|media|planning|finance|notes|password|ai|sharing|analytics|ingestion|integration|security|communications|operations|platform|workbench)\//);
 assert.match(home, /redirect: "\/dashboard"/);
