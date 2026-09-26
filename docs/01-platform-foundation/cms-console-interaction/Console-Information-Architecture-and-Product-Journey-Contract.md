@@ -98,7 +98,7 @@ Profile、Preferences 和当前账号 Security 从头像菜单进入，不进入
 | 系统 / 运维 / 系统健康 | `/system/operations/health` | Health / Readiness |
 | 系统 / 运维 / 系统诊断 | `/system/operations/diagnostics` | 高级诊断 |
 
-App 页面继续位于 `/apps/<app>/**`；插件应用使用 `/apps/plugins/<appId>/**` 或插件声明的受控子路由，但不得跳出 `/apps/**`。
+App 页面继续位于 `/apps/<app>/**`；Console 不再提供通用插件应用承载页，插件声明的 App Entry 不会自动注册为 Console 路由。
 
 ## 4. Canonical route tree
 
@@ -135,7 +135,6 @@ App 页面继续位于 `/apps/<app>/**`；插件应用使用 `/apps/plugins/<app
   /apps/sharing/**
   /apps/analytics/**
   /apps/automation/**
-  /apps/plugins/<appId>/**
 
 /system
   /system/access/users

@@ -114,7 +114,7 @@
 
 `/apps` 是一级目录前缀；默认 redirect 到首个业务应用 `/apps/drive`。应用目录不设置独立总览页。
 
-应用只展示启用且可访问的业务产品。App route 统一位于 `/apps/<app>/**`；插件应用统一位于 `/apps/plugins/<appId>/**` 或受控子路径。
+应用只展示启用且可访问的业务产品。App route 统一位于 `/apps/<app>/**`；Console 不提供通用插件应用承载页。
 
 ### 6.1 云盘
 
@@ -153,7 +153,6 @@
 - 分享：`/apps/sharing/**`，使用 `share.*` / `room.*`；
 - 数据分析：`/apps/analytics/**`，不得扩张敏感域读取能力；
 - 自动化：`/apps/automation/**`，规则编辑使用 `automation.*`，长期执行进入 `/resources/activity`；
-- 插件应用：`/apps/plugins/<appId>/**`，必须声明 capability。
 
 ## 7. 系统
 

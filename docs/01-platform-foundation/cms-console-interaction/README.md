@@ -70,7 +70,6 @@ Console 使用 Material Design 3 作为设计语言。
   分享                                    /apps/sharing/**
   数据分析                                /apps/analytics/**
   自动化                                  /apps/automation/**
-  插件应用                                /apps/plugins/<appId>/**
 
 系统                                      /system/*
   访问控制                                /system/access/*
