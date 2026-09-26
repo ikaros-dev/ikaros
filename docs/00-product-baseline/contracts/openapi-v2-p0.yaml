@@ -2663,6 +2663,10 @@ components:
         capabilities:
           type: object
           additionalProperties: true
+        configuration:
+          type: object
+          description: Non-secret provider configuration such as endpoint, bucket, and region.
+          additionalProperties: true
         version: { type: integer, format: int64 }
     StorageProviderProbeResult:
       type: object
@@ -2690,6 +2694,10 @@ components:
           enum: [HOT, WARM, COLD, ARCHIVE]
         capabilities:
           type: object
+          additionalProperties: true
+        configuration:
+          type: object
+          description: Non-secret provider configuration such as endpoint, bucket, and region.
           additionalProperties: true
     User:
       type: object

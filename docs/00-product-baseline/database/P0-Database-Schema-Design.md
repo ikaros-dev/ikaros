@@ -481,6 +481,7 @@ P0 物化后的 Attachment 绑定单一不可变 Blob。替换内容创建新 At
 | `display_name` | text | NO |
 | `credential_ref` | text | YES |
 | `capabilities` | jsonb | NO |
+| `configuration` | jsonb | NO |
 | `tier` | text | NO |
 | `enabled` | boolean | NO |
 | `drain_status` | text | NO |
