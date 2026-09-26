@@ -269,15 +269,6 @@ export default {
       { title: "menus.apps", icon: "ep:grid" },
       [
         page(
-          "overview",
-          "AppsOverview",
-          "menus.appsOverview",
-          "menuDescriptions.appsOverview",
-          () => import("@/views/console/apps/Overview.vue"),
-          "app.read",
-          { icon: "ep:grid" }
-        ),
-        page(
           "drive",
           "Drive",
           "menus.drive",
@@ -407,14 +398,6 @@ export default {
           "ai.read"
         ),
         page(
-          "sharing",
-          "Sharing",
-          "menus.sharing",
-          "menuDescriptions.sharing",
-          () => import("@/views/console/apps/Sharing.vue"),
-          "share.read"
-        ),
-        page(
           "analytics",
           "Analytics",
           "menus.analytics",
@@ -430,25 +413,8 @@ export default {
           () => import("@/views/console/apps/Automation.vue"),
           "automation.read"
         ),
-        page(
-          "plugins",
-          "PluginApps",
-          "menus.pluginApps",
-          "menuDescriptions.pluginApps",
-          () => import("@/views/console/apps/Plugins.vue"),
-          "app.read"
-        ),
-        page(
-          "plugins/:appId",
-          "PluginApp",
-          "menus.pluginApp",
-          "menuDescriptions.pluginApp",
-          () => import("@/views/console/apps/PluginApp.vue"),
-          undefined,
-          hidden("/apps/plugins")
-        )
       ],
-      "/apps/overview"
+      "/apps/drive"
     ),
 
     workspace(
@@ -498,14 +464,14 @@ export default {
           "SystemIntegrations",
           "menus.integrations",
           "ep:connection",
-          "/system/integrations/plugins",
+          "/system/integrations/apps",
           [
             page(
-              "plugins",
-              "SystemPlugins",
-              "menus.pluginManagement",
-              "menuDescriptions.pluginManagement",
-              () => import("@/views/console/system/integrations/Plugins.vue"),
+              "apps",
+              "SystemApps",
+              "menus.appManagement",
+              "menuDescriptions.appManagement",
+              () => import("@/views/console/system/integrations/Apps.vue"),
               "integration.read"
             ),
             page(

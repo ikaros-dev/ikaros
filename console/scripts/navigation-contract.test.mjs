@@ -57,10 +57,6 @@ test("Menu page titles and descriptions use localized resources", () => {
 test("Permission-filtered menu entry points declare their canonical capabilities", () => {
   assert.match(
     home,
-    /"AppsOverview"[\s\S]*?\n\s*"app\.read"/
-  );
-  assert.match(
-    home,
     /"SystemUsers"[\s\S]*?\n\s*"system\.user\.read"/
   );
   assert.match(
@@ -88,7 +84,7 @@ test("Management permissions expose their corresponding administration menus", (
 });
 
 test("Directory roots redirect to canonical child pages", () => {
-  for (const target of ["/resources/library", "/storage/overview", "/apps/overview", "/system/access/users"]) {
+  for (const target of ["/resources/library", "/storage/overview", "/apps/drive", "/system/access/users"]) {
     assert.ok(home.includes(`"${target}"`));
   }
 });

@@ -112,7 +112,7 @@ Task Attempt、Worker、Lease、Blob Placement 等实现对象只能在必要的
 - [ ] `/resources` 只作为一级目录根 redirect，不渲染业务页面。
 - [ ] 存储分组包含存储概览、存储提供方、存储策略、归档管理、备份管理、存储维护；概览使用 `/storage/overview`。
 - [ ] `/storage`、`/apps`、`/system` 等目录根不复用任何子页面组件。
-- [ ] 应用中心使用 `/apps/overview`；业务 App 使用 `/apps/<app>/**`。
+- [ ] 应用工作区没有独立总览菜单和页面；`/apps` 默认进入 `/apps/drive`，业务 App 使用 `/apps/<app>/**`。
 - [ ] 系统按访问控制、集成、通知与审计、平台配置、运维形成二级目录；三级页面使用 `/system/<group>/<page>`。
 - [ ] Router 不再注册 `/library`、`/add`、`/activity` 作为 canonical 产品路由，也不恢复历史 `*-center` 或旧 `/console/*` 产品路由。
 - [ ] 各设计文档使用同一 canonical route tree 和中文菜单显示名称。

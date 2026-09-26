@@ -80,7 +80,7 @@ Console 用户可见 Sidebar 一级节点固定为：
 - **仪表盘**：Attention 与正在进行的工作；
 - **资源**：资源库、添加资源、活动中心；
 - **存储**：存储概览、存储提供方、存储策略、归档管理、备份管理、存储维护；
-- **应用**：应用中心、云盘、文档、媒体、计划、财务、私密笔记、密码库、AI、分享、数据分析、自动化和插件应用；
+- **应用**：云盘、文档、媒体、计划、财务、私密笔记、密码库、AI、数据分析和自动化；
 - **系统**：访问控制、集成、通知与审计、平台配置、运维。
 
 菜单层级与 canonical route 层级一一对应：
@@ -94,7 +94,7 @@ Console 用户可见 Sidebar 一级节点固定为：
 存储                            /storage/*
   存储概览                      /storage/overview
 应用                            /apps/*
-  应用中心                      /apps/overview
+  云盘                          /apps/drive/**
 系统                            /system/*
   访问控制                      /system/access/*
   集成                          /system/integrations/*
@@ -104,6 +104,8 @@ Console 用户可见 Sidebar 一级节点固定为：
 ```
 
 目录根只负责组织和 redirect，不渲染业务页面。二级菜单页面必须使用二层 route，三级菜单页面必须使用三层 route；一个页面只有一个 canonical route。
+
+应用目录 `/apps` 默认重定向到 `/apps/drive`，不提供独立总览页面。
 
 关键设计文件：
 
@@ -130,7 +132,7 @@ V2 交互原型草稿仅用于辅助讨论，不应作为服务端领域契约�
 | Content Ingestion / Import / Metadata Sync | ✅ | ✅ Ingestion / Metadata | 间接 | ✅ 添加资源 + Resource Metadata | 核心契约已覆盖 |
 | Attachment / Blob / Storage | ✅ | ✅ Storage | 间接 | ✅ 存储 | 核心契约已覆盖 |
 | Personal Drive / File Sync / Camera Backup | ✅ | ✅ 主设计 + P0 Semantics | ✅ | ✅ 应用 / 云盘 | 产品、系统、服务端与交互均已覆盖 |
-| Sharing / Collaboration / Room | ✅ | ✅ Sharing | ✅ | ✅ 应用 / 分享 | 核心契约已覆盖 |
+| Sharing / Collaboration / Room | ✅ | ✅ Sharing | ✅ | ✅ 跨应用能力，无独立页面 | 核心契约已覆盖 |
 | Offline Cache / Device Sync | ✅ | ✅ Offline / Sync | ✅ | 应用 / 云盘 / 媒体适用入口 | 核心契约已覆盖 |
 | Content Creation / Revision / Collaborative Document | ✅ | ✅ Document | ✅ | ✅ 应用 / 文档 | 核心契约已覆盖 |
 | 视频 / 动画 / 影视专业领域 | ✅ | ✅ Media | ✅ | 资源库 + 应用 / 媒体 | 核心契约已覆盖 |
@@ -141,7 +143,7 @@ V2 交互原型草稿仅用于辅助讨论，不应作为服务端领域契约�
 | 身份 / 授权 / Crypto | ✅ | ✅ | ✅ | ✅ 系统 / 访问控制 | 已覆盖 |
 | Secure Data 基础 | ✅ | ✅ | ✅ | ✅ 应用安全域 | 已覆盖 |
 | Background Task / Scheduler | ✅ | ✅ | 间接 | ✅ 资源 / 活动中心 | 已覆盖 |
-| App Runtime / Server App / Client App | ✅ ADR-005 | ✅ App Runtime | 过渡拆分中 | ✅ 应用中心 | 架构基线已覆盖 |
+| App Runtime / Server App / Client App | ✅ ADR-005 | ✅ App Runtime | 过渡拆分中 | ✅ 应用导航 | 架构基线已覆盖 |
 | Plugin / Integration / Automation | ✅ | ✅ | ✅ | ✅ 系统 / 集成 + 应用 / 自动化 | Plugin 收敛为扩展机制 |
 | Notification | ✅ | Platform Administration | ✅ | ✅ 系统 / 通知中心 + 账号偏好 | 已覆盖 |
 | AI Intelligence / Persona | ✅ | ✅ | ✅ | ✅ 应用 / AI | 已覆盖 |

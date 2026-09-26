@@ -112,13 +112,9 @@
 
 ## 6. 应用
 
-`/apps` 是一级目录前缀；默认 redirect 到 `/apps/overview`。
+`/apps` 是一级目录前缀；默认 redirect 到首个业务应用 `/apps/drive`。应用目录不设置独立总览页。
 
-| 页面 | Route | 最小能力 |
-|---|---|---|
-| 应用中心 | `/apps/overview` | 已认证；按 App capability 过滤卡片 |
-
-应用只展示启用且可访问的业务产品。App route 统一位于 `/apps/<app>/**`；插件应用统一位于 `/apps/plugins/<appId>/**` 或受控子路径。
+应用只展示启用且可访问的业务产品。App route 统一位于 `/apps/<app>/**`；Console 不提供通用插件应用承载页。
 
 ### 6.1 云盘
 
@@ -154,10 +150,8 @@
 - 私密笔记：`/apps/private-notes/**`，使用 `private_note.*` 并要求 Secure Domain Unlock；
 - 密码库：`/apps/passwords/**`，使用 `password.*` / canonical secret capability；
 - AI：`/apps/ai/**`，使用 `ai.*`，长期工作进入 `/resources/activity`；
-- 分享：`/apps/sharing/**`，使用 `share.*` / `room.*`；
 - 数据分析：`/apps/analytics/**`，不得扩张敏感域读取能力；
 - 自动化：`/apps/automation/**`，规则编辑使用 `automation.*`，长期执行进入 `/resources/activity`；
-- 插件应用：`/apps/plugins/<appId>/**`，必须声明 capability。
 
 ## 7. 系统
 
@@ -179,7 +173,7 @@ Sidebar 的 System 菜单采用“平铺分组”表现：访问控制、集成�
 
 | 页面 | Route | 最小能力 | 主要写操作 |
 |---|---|---|---|
-| 插件管理 | `/system/integrations/plugins` | 对应 plugin read | install / enable / disable / uninstall |
+| 应用管理 | `/system/integrations/apps` | 对应 integration read | install / enable / disable / uninstall |
 | 外部集成 | `/system/integrations/external` | 对应 integration read | Connector / Webhook / Metadata Source 配置 |
 | 事件投递 | `/system/integrations/events` | 对应 event delivery read | retry / replay / policy actions |
 

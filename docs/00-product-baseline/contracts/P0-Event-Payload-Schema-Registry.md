@@ -237,6 +237,15 @@ Payload 与 attached 相同 identity key。
 { "provider_id": "uuid" }
 ```
 
+### `storage.provider.deleted@1`
+
+```json
+{
+  "provider_id": "uuid",
+  "provider_key": "provider-key"
+}
+```
+
 ### `storage.provider.drain-requested@1`
 
 ```json

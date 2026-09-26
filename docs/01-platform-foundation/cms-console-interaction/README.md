@@ -59,7 +59,6 @@ Console 使用 Material Design 3 作为设计语言。
   存储维护                                /storage/maintenance
 
 应用                                      /apps/*
-  应用中心                                /apps/overview
   云盘                                    /apps/drive/**
   文档                                    /apps/documents/**
   媒体                                    /apps/media/**
@@ -68,10 +67,8 @@ Console 使用 Material Design 3 作为设计语言。
   私密笔记                                /apps/private-notes/**
   密码库                                  /apps/passwords/**
   AI                                      /apps/ai/**
-  分享                                    /apps/sharing/**
   数据分析                                /apps/analytics/**
   自动化                                  /apps/automation/**
-  插件应用                                /apps/plugins/<appId>/**
 
 系统                                      /system/*
   访问控制                                /system/access/*
@@ -79,7 +76,7 @@ Console 使用 Material Design 3 作为设计语言。
     角色与权限                            /system/access/roles-permissions
     身份认证                              /system/access/authentication
   集成                                    /system/integrations/*
-    插件管理                              /system/integrations/plugins
+    应用管理                              /system/integrations/apps
     外部集成                              /system/integrations/external
     事件投递                              /system/integrations/events
   通知与审计                              /system/communications/*
@@ -112,7 +109,7 @@ Console 使用 Material Design 3 作为设计语言。
 
 菜单层级与 canonical route tree 必须一致。一级目录使用稳定英文前缀；二级菜单页面使用二层 route；三级菜单页面使用三层 route。
 
-目录根可以做 redirect，但不是页面。例如 `/resources` 默认重定向到 `/resources/library`，`/storage` 默认重定向到 `/storage/overview`，`/apps` 默认重定向到 `/apps/overview`。
+目录根可以做 redirect，但不是页面。例如 `/resources` 默认重定向到 `/resources/library`，`/storage` 默认重定向到 `/storage/overview`，`/apps` 默认重定向到首个业务应用 `/apps/drive`。
 
 全局 canonical route tree 见 IA 契约和 [`route-permission-matrix.md`](./route-permission-matrix.md)。当前设计不要求旧路由 redirect 或 alias。
 
@@ -140,7 +137,7 @@ Canonical route：`/resources/activity`。统一 Import、Restore、Sync、Backu
 
 ### 应用（Apps）
 
-应用中心位于 `/apps/overview`；云盘、文档、媒体、计划、财务、私密笔记、密码库、AI、分享、数据分析、自动化以及插件应用等可选业务产品位于 `/apps/**`。
+应用工作区不设置独立总览页；云盘、文档、媒体、计划、财务、私密笔记、密码库、AI、分享、数据分析、自动化以及插件应用等可选业务产品位于 `/apps/**`，`/apps` 默认进入云盘 `/apps/drive`。
 
 ### 系统（System）
 

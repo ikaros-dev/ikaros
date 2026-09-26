@@ -279,6 +279,55 @@ panel:
   pureHiddenTags: Hidden Tags
   pureHiddenFooter: Hidden Footer
   pureMultiTagsCache: MultiTags Cache
+storageProviderManagement:
+  query: Name, key, or type
+  tier: Storage tier
+  status: Status
+  enabled: Enabled
+  disabled: Disabled
+  search: Search
+  reset: Reset
+  refresh: Refresh
+  create: Add provider
+  createSuccess: Storage provider created
+  enable: Enable
+  disable: Disable
+  delete: Delete
+  enableSuccess: Storage provider enabled
+  disableSuccess: Storage provider disabled
+  deleteSuccess: Storage provider deleted
+  deleteTitle: Delete storage provider
+  deleteConfirm: Delete “{name}”? Only disabled providers without placements or delivery bindings can be deleted.
+  credentialRef: Credential reference
+  endpoint: Endpoint
+  bucket: Bucket
+  region: Region
+  actionFailed: Operation failed
+  verificationTitle: Security verification
+  verificationDescription: Verify your identity to manage storage providers.
+  name: Name
+  key: Key
+  type: Provider type
+  actions: Actions
+  details: Details
+  probe: Probe
+  empty: No storage providers
+  version: Version
+  capabilities: Capabilities
+  configuration: Configuration
+  health: Health
+  connection: Connection
+  read: Read
+  write: Write
+  capacity: Capacity (bytes)
+  loadFailed: Failed to load storage providers
+  detailFailed: Failed to load provider details
+  probeFailed: Failed to probe provider
+  probeResult:
+    HEALTHY: Provider connection is healthy
+    DEGRADED: Provider is degraded
+    FAILED: Provider connection failed
+    UNSUPPORTED: Provider probe is unsupported
 menus:
   dashboard: Dashboard
   resources: Resources
@@ -298,7 +347,6 @@ menus:
   backupManagement: Backup Management
   storageMaintenance: Storage Maintenance
   apps: Apps
-  appsOverview: App Center
   drive: Drive
   driveNodeDetail: Drive File Detail
   driveTransfers: Drive Transfers
@@ -314,18 +362,15 @@ menus:
   privateNotes: Private Notes
   passwords: Passwords
   ai: AI
-  sharing: Sharing
   analytics: Analytics
   automation: Automation
-  pluginApps: Plugin Apps
-  pluginApp: Plugin App Page
   system: System
   accessControl: Access Control
   userManagement: User Management
   rolesPermissions: Roles & Permissions
   authentication: Authentication
   integrations: Integrations
-  pluginManagement: Plugin Management
+  appManagement: App Management
   externalIntegrations: External Integrations
   eventDelivery: Event Delivery
   communications: Notifications & Audit
@@ -467,7 +512,6 @@ menuDescriptions:
   archiveManagement: Manage archived resources, restore requests, restore budgets, and pending cleanup.
   backupManagement: Manage backups and restore points and view verification and publication status.
   storageMaintenance: Handle integrity checks, Blob, Placement, GC, Delivery, and advanced storage diagnostics.
-  appsOverview: View enabled core and plugin apps and open the corresponding product.
   drive: Browse and manage personal files, folders, spaces, and Drive operations.
   driveNodeDetail: View versions, storage, sharing, sync, and activity for a file or folder.
   driveTransfers: View the status of uploads, downloads, and other Drive transfers.
@@ -483,15 +527,12 @@ menuDescriptions:
   privateNotes: Manage private notes and sync status with enhanced privacy protection.
   passwords: Manage password entries, security status, device access, and password health.
   ai: Access AI conversations, content assistance, models, and intelligent capabilities.
-  sharing: Manage resource sharing, access scope, links, and sharing status.
   analytics: View analytics and reports for resources, storage, apps, and usage.
   automation: Configure automation rules, triggers, actions, and execution results.
-  pluginApps: View app entries provided by plugins and open enabled plugin apps.
-  pluginApp: Host an independent app page provided by a plugin; business content is implemented by that plugin.
   userManagement: Manage platform users, account status, role assignments, and session governance.
   rolesPermissions: Manage roles, the permission catalog, and role-permission mappings.
   authentication: Configure platform login, Step-up, recovery, and authentication policies.
-  pluginManagement: Manage plugin installation, enablement, upgrades, permissions, and lifecycle.
+  appManagement: Manage app installation, enablement, upgrades, permissions, and lifecycle.
   externalIntegrations: Manage Connectors, Metadata Sources, Webhooks, and other external platform connections.
   eventDelivery: View event delivery status, retries, and platform event chains.
   notifications: Manage system notification rules, channels, templates, and delivery policies.

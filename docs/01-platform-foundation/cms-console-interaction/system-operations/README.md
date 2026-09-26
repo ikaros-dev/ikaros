@@ -62,7 +62,7 @@ System 不再定义 `/system/tasks`、Operations Jobs、Background Tasks 等产�
 
 - Storage Provider 具体配置在 `/storage/providers`；
 - Resource Availability 在 `/resources/library/:resourceId`；
-- 插件管理在 `/system/integrations/plugins`；
+- 应用管理在 `/system/integrations/apps`；
 - 外部集成在 `/system/integrations/external`；
 - 权限问题在 `/system/access/users`、`/system/access/roles-permissions` 或 `/system/access/authentication`；
 - 系统健康只提供跨系统健康摘要和技术诊断。

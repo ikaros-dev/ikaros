@@ -279,6 +279,55 @@ panel:
   pureHiddenTags: 隐藏标签页
   pureHiddenFooter: 隐藏页脚
   pureMultiTagsCache: 页签持久化
+storageProviderManagement:
+  query: 名称、标识或类型
+  tier: 存储层级
+  status: 状态
+  enabled: 已启用
+  disabled: 已停用
+  search: 搜索
+  reset: 重置
+  refresh: 刷新
+  create: 新增提供方
+  createSuccess: 存储提供方已创建
+  enable: 启用
+  disable: 停用
+  delete: 删除
+  enableSuccess: 存储提供方已启用
+  disableSuccess: 存储提供方已停用
+  deleteSuccess: 存储提供方已删除
+  deleteTitle: 删除存储提供方
+  deleteConfirm: 确认删除“{name}”？仅已停用且没有数据位置或 Delivery Binding 的提供方可以删除。
+  credentialRef: 凭据引用
+  endpoint: Endpoint
+  bucket: Bucket
+  region: Region
+  actionFailed: 操作失败
+  verificationTitle: 安全验证
+  verificationDescription: 管理存储提供方需要完成安全验证。
+  name: 名称
+  key: 标识
+  type: 提供方类型
+  actions: 操作
+  details: 详情
+  probe: 探测
+  empty: 暂无存储提供方
+  version: 版本
+  capabilities: 能力
+  configuration: 配置
+  health: 健康状态
+  connection: 连接
+  read: 读取
+  write: 写入
+  capacity: 容量（字节）
+  loadFailed: 获取存储提供方失败
+  detailFailed: 获取存储提供方详情失败
+  probeFailed: 存储提供方探测失败
+  probeResult:
+    HEALTHY: 提供方连接正常
+    DEGRADED: 提供方状态异常
+    FAILED: 提供方连接失败
+    UNSUPPORTED: 提供方不支持探测
 menus:
   dashboard: 仪表盘
   resources: 资源
@@ -298,7 +347,6 @@ menus:
   backupManagement: 备份管理
   storageMaintenance: 存储维护
   apps: 应用
-  appsOverview: 应用中心
   drive: 云盘
   driveNodeDetail: 云盘文件详情
   driveTransfers: 云盘传输
@@ -314,18 +362,15 @@ menus:
   privateNotes: 私密笔记
   passwords: 密码库
   ai: AI
-  sharing: 分享
   analytics: 数据分析
   automation: 自动化
-  pluginApps: 插件应用
-  pluginApp: 插件应用页面
   system: 系统
   accessControl: 访问控制
   userManagement: 用户管理
   rolesPermissions: 角色与权限
   authentication: 身份认证
   integrations: 集成
-  pluginManagement: 插件管理
+  appManagement: 应用管理
   externalIntegrations: 外部集成
   eventDelivery: 事件投递
   communications: 通知与审计
@@ -467,7 +512,6 @@ menuDescriptions:
   archiveManagement: 管理归档资源、恢复请求、恢复预算以及待清理对象。
   backupManagement: 管理备份与恢复点，并查看备份验证和发布状态。
   storageMaintenance: 处理完整性校验、Blob、Placement、GC、Delivery 与高级存储诊断。
-  appsOverview: 查看已启用的核心应用和插件应用，并进入对应产品。
   drive: 浏览和管理个人文件、文件夹、空间以及云盘相关操作。
   driveNodeDetail: 查看单个文件或文件夹的版本、存储、共享、同步与活动信息。
   driveTransfers: 查看上传、下载和其他云盘传输任务的状态。
@@ -483,15 +527,12 @@ menuDescriptions:
   privateNotes: 管理需要更高隐私保护的私密笔记与同步状态。
   passwords: 管理密码条目、安全状态、设备访问与密码健康检查。
   ai: 提供 AI 对话、内容辅助、模型与智能能力入口。
-  sharing: 管理资源分享、访问范围、链接和共享状态。
   analytics: 查看资源、存储、应用与使用情况的数据分析和报表。
   automation: 配置自动化规则、触发条件、动作与执行结果。
-  pluginApps: 查看由插件提供的应用入口，并进入已启用的插件应用。
-  pluginApp: 承载插件提供的独立应用页面；实际业务内容由对应插件实现。
   userManagement: 管理平台用户、账号状态、角色分配和会话治理。
   rolesPermissions: 统一管理角色、权限目录以及角色与权限之间的映射。
   authentication: 配置平台登录、Step-up、恢复与身份认证策略。
-  pluginManagement: 管理插件安装、启停、升级、权限和生命周期。
+  appManagement: 管理应用安装、启停、升级、权限和生命周期。
   externalIntegrations: 管理 Connector、Metadata Source、Webhook 等平台外部连接。
   eventDelivery: 查看事件投递状态、失败重试和平台事件链路。
   notifications: 管理系统通知规则、渠道、模板与投递策略。

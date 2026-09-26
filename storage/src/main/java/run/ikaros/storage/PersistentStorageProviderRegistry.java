@@ -9,7 +9,9 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
@@ -26,50 +28,93 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
     private final ObjectMapper mapper;
     private final DurableEventPublisher events;
     private final StorageCredentialCipher credentialCipher;
+    private final TransactionalOperator transaction;
 
     @Autowired
     public PersistentStorageProviderRegistry(StorageProviderRepository repository, ObjectMapper mapper,
-                                             DurableEventPublisher events, StorageCredentialCipher credentialCipher) {
+                                             DurableEventPublisher events, StorageCredentialCipher credentialCipher,
+                                             TransactionalOperator transaction) {
         this.repository = repository;
         this.mapper = mapper;
         this.events = events;
         this.credentialCipher = credentialCipher;
+        this.transaction = transaction;
+    }
+
+    public PersistentStorageProviderRegistry(StorageProviderRepository repository, ObjectMapper mapper,
+                                             DurableEventPublisher events, StorageCredentialCipher credentialCipher) {
+        this(repository, mapper, events, credentialCipher, null);
     }
 
     @Override
     public Mono<StorageProvider> register(String providerKey, String providerType, StorageTier tier,
                                           String secretReference, Map<String, Object> metadata) {
-        return register(providerKey, providerType, tier, secretReference, metadata, null, null, null);
+        return register(providerKey, providerType, providerKey, tier, secretReference, Map.of(), metadata, null, null, null, null, null);
+    }
+
+    @Override
+    public Mono<StorageProvider> registerConfigured(String providerKey, String providerType, String displayName,
+        StorageTier tier, String secretReference, Map<String, Object> capabilities, Map<String, Object> configuration,
+        String idempotencyKey, String requestFingerprint) {
+        return register(providerKey, providerType, displayName, tier, secretReference, capabilities, configuration,
+            null, null, null, idempotencyKey, requestFingerprint);
     }
 
     @Override
     public Mono<StorageProvider> register(String providerKey, String providerType, StorageTier tier,
                                           String secretReference, Map<String, Object> metadata,
                                           String accessKeyId, String secretAccessKey, String sessionToken) {
+        return register(providerKey, providerType, providerKey, tier, secretReference, Map.of(), metadata,
+            accessKeyId, secretAccessKey, sessionToken, null, null);
+    }
+
+    private Mono<StorageProvider> register(String providerKey, String providerType, String displayName, StorageTier tier,
+        String secretReference, Map<String, Object> capabilities, Map<String, Object> metadata,
+        String accessKeyId, String secretAccessKey, String sessionToken, String idempotencyKey, String requestFingerprint) {
         if (providerKey == null || providerKey.isBlank() || providerType == null || providerType.isBlank()
             || tier == null) {
             return Mono.error(new IllegalArgumentException("Storage Provider 参数不完整"));
         }
         boolean hasCredentials = accessKeyId != null && !accessKeyId.isBlank() && secretAccessKey != null && !secretAccessKey.isBlank();
-        if (!hasCredentials && (secretReference == null || secretReference.isBlank())) return Mono.error(new IllegalArgumentException("必须提供 Secret 引用或 AccessKey/SecretKey"));
+        if (!hasCredentials && secretReference != null && secretReference.isBlank()) return Mono.error(new IllegalArgumentException("Secret 引用不能为空"));
         if (containsPlaintextCredential(metadata)) {
             return Mono.error(new ConflictException("Provider metadata 不得保存明文凭据"));
         }
-        String reference = hasCredentials ? "secret://provider/" + providerKey : secretReference;
+        if (idempotencyKey != null && (idempotencyKey.isBlank() || idempotencyKey.length() > 256
+            || requestFingerprint == null || requestFingerprint.length() != 64)) {
+            return Mono.error(new IllegalArgumentException("Idempotency-Key 或请求指纹无效"));
+        }
+        String reference = hasCredentials ? "secret://provider/" + providerKey
+            : secretReference == null ? "secret://default" : secretReference;
         if (!reference.startsWith("secret://")) {
             return Mono.error(new ConflictException("Provider secret reference 必须使用 secret:// URI"));
         }
-        return repository.findByProviderKey(providerKey)
+        Mono<StorageProvider> replay = idempotencyKey == null ? Mono.empty() : repository.findByIdempotencyKey(idempotencyKey)
+            .flatMap(existing -> existing.requestFingerprint().equals(requestFingerprint)
+                ? Mono.just(toModel(existing))
+                : Mono.error(new ConflictException("Idempotency-Key 已用于不同的 Storage Provider 请求")));
+        Mono<StorageProvider> registration = replay.switchIfEmpty(Mono.defer(() -> repository.findByProviderKey(providerKey)
             .flatMap(existing -> Mono.<StorageProvider>error(new ConflictException("Storage Provider 标识已存在")))
-            .switchIfEmpty(Mono.defer(() -> encode(metadata).flatMap(json -> {
+            .switchIfEmpty(Mono.defer(() -> Mono.zip(encode(metadata), encode(capabilities)).flatMap(encoded -> {
                 Instant now = Instant.now();
                 return repository.save(new StorageProviderEntity(null, providerKey, providerType, tier.name(),
-                    StorageProviderStatus.ENABLED.name(), reference, json, hasCredentials ? credentialCipher.encrypt(accessKeyId) : null,
-                    hasCredentials ? credentialCipher.encrypt(secretAccessKey) : null, hasCredentials ? credentialCipher.encrypt(sessionToken) : null, now, now)).map(this::toModel)
+                    StorageProviderStatus.ENABLED.name(), reference, encoded.getT1(), hasCredentials ? credentialCipher.encrypt(accessKeyId) : null,
+                    hasCredentials ? credentialCipher.encrypt(secretAccessKey) : null, hasCredentials ? credentialCipher.encrypt(sessionToken) : null,
+                    now, now, displayName, encoded.getT2(), true, "NORMAL", 0L, encoded.getT1(),
+                    idempotencyKey, requestFingerprint)).map(this::toModel)
                     .flatMap(provider -> emit("storage.provider.created", provider,
                         "{\"provider_id\":\"" + provider.id() + "\",\"provider_type\":\"" + provider.providerType()
                             + "\",\"tier\":\"" + provider.tier() + "\"}").thenReturn(provider));
-            })));
+            })))));
+        Mono<StorageProvider> committed = transaction == null ? registration : transaction.transactional(registration);
+        return committed.onErrorResume(DataIntegrityViolationException.class, error -> {
+                if (idempotencyKey == null) return Mono.error(new ConflictException("Storage Provider 标识已存在"));
+                return repository.findByIdempotencyKey(idempotencyKey)
+                    .flatMap(existing -> existing.requestFingerprint().equals(requestFingerprint)
+                        ? Mono.just(toModel(existing))
+                        : Mono.error(new ConflictException("Idempotency-Key 已用于不同的 Storage Provider 请求")))
+                    .switchIfEmpty(Mono.error(new ConflictException("Storage Provider 标识已存在")));
+            });
     }
 
     @Override
@@ -96,7 +141,9 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
                 return encode(requestedMetadata == null ? readMetadata(current.providerMetadata().asString()) : requestedMetadata)
                     .flatMap(metadata -> repository.save(new StorageProviderEntity(current.id(), current.providerKey(),
                         type, tier, current.status(), secret, metadata, current.accessKeyIdCiphertext(),
-                        current.secretAccessKeyCiphertext(), current.sessionTokenCiphertext(), current.createdAt(), Instant.now())))
+                        current.secretAccessKeyCiphertext(), current.sessionTokenCiphertext(), current.createdAt(), Instant.now(),
+                        current.displayName(), current.capabilities().asString(), current.enabled(), current.drainStatus(),
+                        current.version(), metadata, current.idempotencyKey(), current.requestFingerprint())))
                     .map(this::toModel)
                     .flatMap(provider -> emit("storage.provider.updated", provider,
                         "{\"provider_id\":\"" + provider.id()
@@ -140,17 +187,23 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
     }
 
     private Mono<StorageProvider> change(UUID id, StorageProviderStatus status) {
-        return repository.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
-            .map(current -> new StorageProviderEntity(current.id(), current.providerKey(), current.providerType(),
-                current.tier(), status.name(), current.secretReference(), current.providerMetadata(),
-                current.accessKeyIdCiphertext(), current.secretAccessKeyCiphertext(), current.sessionTokenCiphertext(),
-                current.createdAt(), Instant.now()))
-            .flatMap(repository::save).map(this::toModel)
-            .flatMap(provider -> {
-                if (status == StorageProviderStatus.DRAINING) return Mono.just(provider);
-                String event = status == StorageProviderStatus.ENABLED ? "storage.provider.enabled" : "storage.provider.disabled";
-                return emit(event, provider, "{\"provider_id\":\"" + provider.id() + "\"}").thenReturn(provider);
+        Mono<StorageProvider> changed = repository.findById(id)
+            .switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
+            .flatMap(current -> {
+                if (status.name().equals(current.status())) return Mono.just(toModel(current));
+                StorageProviderEntity updated = new StorageProviderEntity(current.id(), current.providerKey(), current.providerType(),
+                    current.tier(), status.name(), current.secretReference(), current.providerMetadata().asString(),
+                    current.accessKeyIdCiphertext(), current.secretAccessKeyCiphertext(), current.sessionTokenCiphertext(),
+                    current.createdAt(), Instant.now(), current.displayName(), current.capabilities().asString(),
+                    status == StorageProviderStatus.ENABLED, status == StorageProviderStatus.DRAINING ? "DRAINING" : "NORMAL",
+                    current.version(), current.configuration().asString(), current.idempotencyKey(), current.requestFingerprint());
+                return repository.save(updated).map(this::toModel).flatMap(provider -> {
+                    if (status == StorageProviderStatus.DRAINING) return Mono.just(provider);
+                    String event = status == StorageProviderStatus.ENABLED ? "storage.provider.enabled" : "storage.provider.disabled";
+                    return emit(event, provider, "{\"provider_id\":\"" + provider.id() + "\"}").thenReturn(provider);
+                });
             });
+        return transaction == null ? changed : transaction.transactional(changed);
     }
 
     private Mono<Void> checkWritable(StorageProvider provider) {
@@ -195,11 +248,14 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
 
     private StorageProvider toModel(StorageProviderEntity entity) {
         try {
-            Map<String, Object> metadata = mapper.readValue(entity.providerMetadata().asString(),
+            Map<String, Object> metadata = mapper.readValue(entity.configuration().asString(),
+                mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class));
+            Map<String, Object> capabilities = mapper.readValue(entity.capabilities().asString(),
                 mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class));
             return new StorageProvider(entity.id(), entity.providerKey(), entity.providerType(),
                 StorageTier.valueOf(entity.tier()), StorageProviderStatus.valueOf(entity.status()),
-                entity.secretReference(), metadata, entity.createdAt(), entity.updatedAt());
+                entity.secretReference(), metadata, entity.createdAt(), entity.updatedAt(), entity.displayName(),
+                capabilities, Boolean.TRUE.equals(entity.enabled()), entity.drainStatus(), entity.version() == null ? 0 : entity.version());
         } catch (JacksonException | IllegalArgumentException error) {
             throw new ConflictException("Storage Provider 数据损坏");
         }

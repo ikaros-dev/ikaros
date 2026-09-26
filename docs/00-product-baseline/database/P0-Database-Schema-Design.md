@@ -481,16 +481,19 @@ P0 物化后的 Attachment 绑定单一不可变 Blob。替换内容创建新 At
 | `display_name` | text | NO |
 | `credential_ref` | text | YES |
 | `capabilities` | jsonb | NO |
+| `configuration` | jsonb | NO |
 | `tier` | text | NO |
 | `enabled` | boolean | NO |
 | `drain_status` | text | NO |
 | `version` | bigint | NO |
+| `idempotency_key` | text | YES |
+| `request_fingerprint` | char(64) | YES |
 | `created_at` | timestamptz | NO |
 | `updated_at` | timestamptz | NO |
 
 ```text
 UNIQUE(provider_key)
-CHECK tier in ('HOT','WARM','COLD','ARCHIVE')
+CHECK tier in ('HOT','WARM','COLD','ARCHIVE','DEEP_ARCHIVE')
 CHECK drain_status in ('NORMAL','DRAINING','DRAINED')
 ```
 

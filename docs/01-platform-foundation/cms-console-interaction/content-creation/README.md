@@ -1,6 +1,6 @@
 # 资源库、资源与创作 — CMS Console 交互规格
 
-> Resource 是统一逻辑内容身份。Console 中 Resource 管理的用户入口固定为“资源 / 资源库”；Documents、Media、Sharing 等专业体验属于“应用”，但必须引用同一 Resource 身份。
+> Resource 是统一逻辑内容身份。Console 中 Resource 管理的用户入口固定为“资源 / 资源库”；Documents、Media 等专业体验属于“应用”，Sharing 是跨应用能力；它们都引用同一 Resource 身份。
 
 ## 1. 资源库（Library）
 
@@ -133,11 +133,9 @@ Collection 详情中的 Resource 点击回到 `/resources/library/:resourceId`�
 
 用户消费历史不占用 `/resources/activity`。活动中心只表示后台长期工作。
 
-## 7. 分享应用（Sharing）
+## 7. 分享能力（Sharing）
 
-**Base Route：** `/apps/sharing`
-
-承载 Share Link、Room、Watch/Listen 等协作体验。
+Share Link、Room、Watch/Listen 等是跨应用协作能力；Console 不提供独立的 `/apps/sharing` 菜单或页面。
 
 Share / Room 不修改底层 Resource 身份。需要长期异步处理的操作仍进入 `/resources/activity`。
 
@@ -158,7 +156,7 @@ Resource 必须区分 Active、Archived、Trash 和永久清理。
 
 - 所有 Resource 浏览和管理从“资源 / 资源库”（`/resources/library`）进入；
 - Resource Detail 使用 `/resources/library/:resourceId`；
-- 文档 / 媒体 / 分享只作为“应用”下的专业体验；
+- 文档 / 媒体作为“应用”下的专业体验；分享作为跨应用能力，不设置独立应用路由；
 - 添加资源入口统一到 `/resources/add`；
 - 长任务统一进入“资源 / 活动中心”（`/resources/activity`）；
 - `/resources` 仅作为一级目录根，不渲染资源库页面；

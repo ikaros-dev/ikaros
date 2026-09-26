@@ -212,6 +212,7 @@ Cursor 对客户端 opaque。
 | `storage.update-provider` | `storage.provider.manage` | OPTIONAL | no | `storage.provider.updated` |
 | `storage.enable-provider` | `storage.provider.manage` | NATURAL | no | `storage.provider.enabled` |
 | `storage.disable-provider` | `storage.provider.manage` | NATURAL | maybe drain precondition | `storage.provider.disabled` |
+| `storage.delete-provider` | `storage.provider.manage` | NATURAL | disabled provider; no placements or delivery bindings; audited hard delete | `storage.provider.deleted` |
 | `storage.request-provider-drain` | `storage.provider.manage` | REQUIRED | yes | `storage.provider.drain-requested` |
 | `storage.create-delivery-provider` | `storage.provider.manage` | REQUIRED | no | `storage.delivery-provider.created` |
 | `storage.update-delivery-provider` | `storage.provider.manage` | REQUIRED | no | `storage.delivery-provider.updated` |
@@ -488,6 +489,7 @@ Search / Analytics 等消费者需要完整读取时，通过 Query API/Capabili
 | `storage.provider.updated` | 1 | `provider_id, changed_fields[]` |
 | `storage.provider.enabled` | 1 | `provider_id` |
 | `storage.provider.disabled` | 1 | `provider_id` |
+| `storage.provider.deleted` | 1 | `provider_id, provider_key` |
 | `storage.provider.drain-requested` | 1 | `provider_id, task_id` |
 | `storage.blob.gc-requested` | 1 | `blob_id, task_id` |
 | `storage.blob.purged` | 1 | `blob_id, purged_placement_count` |
@@ -607,6 +609,9 @@ P0 Operation ID 必须映射到 Catalog：
 | `POST /api/background-tasks/{task_id}/actions/cancel` | `cancelBackgroundTask` | `operations.cancel-background-task` |
 | `GET /api/admin/storage-providers` | `listStorageProviders` | `storage.list-providers` |
 | `POST /api/admin/storage-providers` | `createStorageProvider` | `storage.create-provider` |
+| `POST /api/admin/storage-providers/{provider_id}/enable` | `enableStorageProvider` | `storage.enable-provider` |
+| `POST /api/admin/storage-providers/{provider_id}/disable` | `disableStorageProvider` | `storage.disable-provider` |
+| `DELETE /api/admin/storage-providers/{provider_id}` | `deleteStorageProvider` | `storage.delete-provider` |
 | `GET /api/admin/users` | `listUsers` | `identity.list-users` |
 | `POST /api/admin/users` | `createUser` | `identity.create-user` |
 | `GET /api/admin/roles` | `listRoles` | `identity.list-roles` |

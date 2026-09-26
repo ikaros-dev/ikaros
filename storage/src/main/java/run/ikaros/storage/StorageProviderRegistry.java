@@ -11,6 +11,12 @@ public interface StorageProviderRegistry {
     Mono<StorageProvider> register(String providerKey, String providerType, StorageTier tier,
                                     String secretReference, Map<String, Object> metadata);
 
+    default Mono<StorageProvider> registerConfigured(String providerKey, String providerType, String displayName,
+        StorageTier tier, String secretReference, Map<String, Object> capabilities, Map<String, Object> configuration,
+        String idempotencyKey, String requestFingerprint) {
+        return register(providerKey, providerType, tier, secretReference, configuration);
+    }
+
     default Mono<StorageProvider> register(String providerKey, String providerType, StorageTier tier,
                                            String secretReference, Map<String, Object> metadata,
                                            String accessKeyId, String secretAccessKey, String sessionToken) {

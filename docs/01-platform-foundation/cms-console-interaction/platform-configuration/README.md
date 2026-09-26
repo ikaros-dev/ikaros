@@ -75,7 +75,7 @@ Console 用户可见 Sidebar 由 IA 契约固定为：
 - 用户管理 → `/system/access/users`；
 - 角色与权限 → `/system/access/roles-permissions`；
 - 身份认证 → `/system/access/authentication`；
-- 插件管理 → `/system/integrations/plugins`；
+- 应用管理 → `/system/integrations/apps`；
 - 外部集成 → `/system/integrations/external`；
 - 事件投递 → `/system/integrations/events`；
 - 系统健康 → `/system/operations/health`；

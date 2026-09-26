@@ -50,7 +50,9 @@ public class StorageProviderCredentialRotationService {
         }
         return providers.save(new StorageProviderEntity(provider.id(), provider.providerKey(), provider.providerType(),
                 provider.tier(), provider.status(), provider.secretReference(), provider.providerMetadata().asString(), access,
-                secret, session, provider.createdAt(), Instant.now()))
+                secret, session, provider.createdAt(), Instant.now(), provider.displayName(), provider.capabilities().asString(),
+                provider.enabled(), provider.drainStatus(), provider.version(), provider.configuration().asString(),
+                provider.idempotencyKey(), provider.requestFingerprint()))
             .map(saved -> view(saved, rotated));
     }
 

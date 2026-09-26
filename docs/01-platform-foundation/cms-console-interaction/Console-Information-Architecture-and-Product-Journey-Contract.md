@@ -35,7 +35,6 @@ Ikaros 后台管理系统
 │  └─ 存储维护
 │
 ├─ 应用
-│  ├─ 应用中心
 │  ├─ 云盘
 │  ├─ 文档
 │  ├─ 媒体
@@ -44,10 +43,8 @@ Ikaros 后台管理系统
 │  ├─ 私密笔记
 │  ├─ 密码库
 │  ├─ AI
-│  ├─ 分享
 │  ├─ 数据分析
-│  ├─ 自动化
-│  └─ 插件应用
+│  └─ 自动化
 │
 └─ 系统
    ├─ 访问控制
@@ -55,7 +52,7 @@ Ikaros 后台管理系统
    │  ├─ 角色与权限
    │  └─ 身份认证
    ├─ 集成
-   │  ├─ 插件管理
+   │  ├─ 应用管理
    │  ├─ 外部集成
    │  └─ 事件投递
    ├─ 通知与审计
@@ -88,11 +85,10 @@ Profile、Preferences 和当前账号 Security 从头像菜单进入，不进入
 | 存储 / 归档管理 | `/storage/archive` | Archive / Restore |
 | 存储 / 备份管理 | `/storage/backup` | Backup / Restore Point |
 | 存储 / 存储维护 | `/storage/maintenance` | Integrity / GC / Placement / Repair |
-| 应用 / 应用中心 | `/apps/overview` | 已启用和可访问 App 总览 |
 | 系统 / 访问控制 / 用户管理 | `/system/access/users` | 用户管理 |
 | 系统 / 访问控制 / 角色与权限 | `/system/access/roles-permissions` | Role / Permission 管理 |
 | 系统 / 访问控制 / 身份认证 | `/system/access/authentication` | 认证与安全策略 |
-| 系统 / 集成 / 插件管理 | `/system/integrations/plugins` | Plugin 管理 |
+| 系统 / 集成 / 应用管理 | `/system/integrations/apps` | App 管理 |
 | 系统 / 集成 / 外部集成 | `/system/integrations/external` | Connector / Webhook / Metadata Source 等外部连接 |
 | 系统 / 集成 / 事件投递 | `/system/integrations/events` | Event Delivery / Retry / Diagnostics |
 | 系统 / 通知与审计 / 通知中心 | `/system/communications/notifications` | 系统通知策略和投递 |
@@ -101,7 +97,7 @@ Profile、Preferences 和当前账号 Security 从头像菜单进入，不进入
 | 系统 / 运维 / 系统健康 | `/system/operations/health` | Health / Readiness |
 | 系统 / 运维 / 系统诊断 | `/system/operations/diagnostics` | 高级诊断 |
 
-App 页面继续位于 `/apps/<app>/**`；插件应用使用 `/apps/plugins/<appId>/**` 或插件声明的受控子路由，但不得跳出 `/apps/**`。
+App 页面继续位于 `/apps/<app>/**`；Console 不再提供通用插件应用承载页，插件声明的 App Entry 不会自动注册为 Console 路由。
 
 ## 4. Canonical route tree
 
@@ -127,7 +123,6 @@ App 页面继续位于 `/apps/<app>/**`；插件应用使用 `/apps/plugins/<app
   /storage/maintenance
 
 /apps
-  /apps/overview
   /apps/drive/**
   /apps/documents/**
   /apps/media/**
@@ -136,16 +131,14 @@ App 页面继续位于 `/apps/<app>/**`；插件应用使用 `/apps/plugins/<app
   /apps/private-notes/**
   /apps/passwords/**
   /apps/ai/**
-  /apps/sharing/**
   /apps/analytics/**
   /apps/automation/**
-  /apps/plugins/<appId>/**
 
 /system
   /system/access/users
   /system/access/roles-permissions
   /system/access/authentication
-  /system/integrations/plugins
+  /system/integrations/apps
   /system/integrations/external
   /system/integrations/events
   /system/communications/notifications
@@ -166,7 +159,7 @@ App 页面继续位于 `/apps/<app>/**`；插件应用使用 `/apps/plugins/<app
 
 - `/resources` → 第一个可访问的资源子页面，默认 `/resources/library`；
 - `/storage` → `/storage/overview`；
-- `/apps` → `/apps/overview`；
+- `/apps` → `/apps/drive`；
 - `/system`、`/system/access`、`/system/integrations`、`/system/communications`、`/system/settings`、`/system/operations` → 当前用户第一个可访问的子页面。
 
 当前设计不定义旧 route alias 或兼容页。历史 `/library`、`/add`、`/activity`、`/storage` 页面语义应直接收敛到以上最终结构。
@@ -218,7 +211,7 @@ Provider、Policy、GC 和 Placement Repair 不得继续混在同一默认页面
 
 ## 8. 应用（Apps）
 
-应用中心 canonical route 为 `/apps/overview`。Drive、Documents、Media、Planning、Finance、Private Notes、Passwords、AI、Sharing、Analytics、Automation 等业务产品使用 `/apps/<app>/**`。
+应用工作区不设置独立总览页；`/apps` 默认进入首个业务应用 `/apps/drive`。Drive、Documents、Media、Planning、Finance、Private Notes、Passwords、AI、Analytics、Automation 等业务产品使用 `/apps/<app>/**`。分享作为跨应用能力，不提供独立的 `/apps/sharing` 菜单或页面。
 
 只有当前部署启用且当前用户有权访问的 App 才显示。App 产生的后台工作仍进入 `/resources/activity`。
 
@@ -264,7 +257,7 @@ A/B/C/R 等能力 Issue 负责领域能力，不负责自行扩张全局 IA。�
 - 资源分组固定包含资源库、添加资源、活动中心；
 - 资源页面统一位于 `/resources/**`；
 - 存储页面统一位于 `/storage/**`，概览使用 `/storage/overview`；
-- 应用中心使用 `/apps/overview`，业务 App 位于 `/apps/<app>/**`；
+- `/apps` 默认进入首个业务应用 `/apps/drive`，业务 App 位于 `/apps/<app>/**`；
 - System 的三级菜单页面与 `/system/<group>/<page>` 对齐；Sidebar 以不可点击分组标题平铺展示三级页面，不渲染为可展开的父子菜单；
 - 仪表盘是默认入口并承担 Attention-first 总览；
 - 活动中心是后台工作唯一用户入口；
