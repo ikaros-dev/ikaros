@@ -178,8 +178,25 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
             Map<String, Object> metadata = provider.metadata();
             String bucket = required(metadata, "bucket");
             String region = String.valueOf(metadata.getOrDefault("region", "us-east-1"));
-            String endpointText = required(metadata, "endpoint");
-            return new S3Settings(bucket, region, URI.create(endpointText));
+            return new S3Settings(bucket, region, endpoint(required(metadata, "endpoint")));
+        }
+
+        /**
+         * Vendor endpoints are commonly written without a scheme (for example
+         * {@code oss-cn-hangzhou.aliyuncs.com}). The AWS SDK requires an
+         * absolute endpoint URI, so default a missing scheme to {@code https}.
+         */
+        private static URI endpoint(String endpointText) {
+            String normalized = endpointText.contains("://") ? endpointText : "https://" + endpointText;
+            try {
+                URI parsed = URI.create(normalized);
+                if (parsed.getHost() == null) {
+                    throw new IllegalArgumentException("S3 Provider endpoint 无效: " + endpointText);
+                }
+                return parsed;
+            } catch (IllegalArgumentException error) {
+                throw new IllegalArgumentException("S3 Provider endpoint 无效: " + endpointText, error);
+            }
         }
 
         private static String required(Map<String, Object> metadata, String key) {
