@@ -2684,7 +2684,11 @@ components:
       required: [provider_key, provider_type, display_name, tier, capabilities]
       properties:
         provider_key: { type: string, minLength: 1 }
-        provider_type: { type: string, minLength: 1 }
+        provider_type:
+          type: string
+          enum: [S3, AWS_S3, S3_COMPATIBLE, ALIYUN_OSS_S3, TENCENT_COS_S3, LOCAL_FILESYSTEM]
+          description: Registered physical adapter type; unregistered values are rejected instead of
+            creating a provider that no adapter can serve.
         display_name: { type: string, minLength: 1 }
         credential_ref:
           type: [string, 'null']

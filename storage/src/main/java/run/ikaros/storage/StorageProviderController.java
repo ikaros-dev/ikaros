@@ -50,7 +50,7 @@ public class StorageProviderController {
             return Mono.error(new IllegalArgumentException("access_key_id 与 secret_access_key 必须同时提供"));
         }
         String fingerprint = fingerprint(request);
-        return registry.registerConfigured(request.providerKey(), request.providerType(), request.displayName(),
+        return registry.registerConfigured(request.providerKey(), request.providerType().name(), request.displayName(),
                 request.tier(), request.credentialRef(), request.capabilities(), request.configuration(),
                 idempotencyKey, fingerprint,
                 request.accessKeyId(), request.secretAccessKey(), request.sessionToken())
@@ -108,7 +108,7 @@ public class StorageProviderController {
     }
 
     private String fingerprint(StorageProviderCreateRequest request) {
-        String body = String.join("\n", request.providerKey(), request.providerType(), request.displayName(),
+        String body = String.join("\n", request.providerKey(), request.providerType().name(), request.displayName(),
             request.tier().name(), request.credentialRef() == null ? "secret://default" : request.credentialRef(),
             new java.util.TreeMap<>(request.capabilities()).toString(),
             new java.util.TreeMap<>(request.configuration() == null ? java.util.Map.of() : request.configuration()).toString(),

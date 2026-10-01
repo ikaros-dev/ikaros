@@ -553,6 +553,15 @@ StorageProvider
 └── version: bigint
 ```
 
+`provider_type` 必须是已注册的物理 adapter 代码，创建时即校验并拒绝未注册值，避免出现"创建成功但无 adapter 可服务"的 Provider：
+
+```text
+S3 / AWS_S3 / S3_COMPATIBLE      // 通用 S3 与 S3 兼容
+ALIYUN_OSS_S3                    // 阿里云 OSS（S3 协议）
+TENCENT_COS_S3                   // 腾讯云 COS（S3 协议）
+LOCAL_FILESYSTEM                 // 本地文件系统
+```
+
 ### 9.3 管理模式与健康状态分离
 
 Provider 管理模式：

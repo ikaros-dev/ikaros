@@ -34,7 +34,7 @@ const createLoading = ref(false);
 const mutatingId = ref("");
 const createForm = reactive({
   provider_key: "",
-  provider_type: "",
+  provider_type: "S3",
   display_name: "",
   tier: "HOT" as StorageProvider["tier"],
   access_key_id: "",
@@ -50,6 +50,7 @@ const verificationVisible = stepUp.visible;
 const verificationLoading = stepUp.loading;
 const verificationCode = stepUp.code;
 const form = reactive({ query: "", tier: "", enabled: "" });
+const providerTypes = ["S3", "AWS_S3", "S3_COMPATIBLE", "ALIYUN_OSS_S3", "TENCENT_COS_S3", "LOCAL_FILESYSTEM"];
 
 const filteredProviders = computed(() => {
   const query = form.query.trim().toLowerCase();
@@ -123,7 +124,7 @@ const closeVerification = () => {
 const openCreate = () => {
   Object.assign(createForm, {
     provider_key: "",
-    provider_type: "",
+    provider_type: "S3",
     display_name: "",
     tier: "HOT",
     access_key_id: "",
@@ -363,7 +364,9 @@ onMounted(() => void loadProviders());
           <el-input v-model="createForm.provider_key" maxlength="256" />
         </el-form-item>
         <el-form-item :label="t('storageProviderManagement.type')" required>
-          <el-input v-model="createForm.provider_type" maxlength="128" />
+          <el-select v-model="createForm.provider_type" class="w-full">
+            <el-option v-for="type in providerTypes" :key="type" :label="type" :value="type" />
+          </el-select>
         </el-form-item>
         <el-form-item :label="t('storageProviderManagement.name')" required>
           <el-input v-model="createForm.display_name" maxlength="256" />
