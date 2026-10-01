@@ -298,10 +298,10 @@ storageProviderManagement:
   deleteSuccess: 存储提供方已删除
   deleteTitle: 删除存储提供方
   deleteConfirm: 确认删除“{name}”？仅已停用且没有数据位置或 Delivery Binding 的提供方可以删除。
-  accessKeyId: 访问密钥 ID（Access Key）
-  secretAccessKey: 访问密钥 Secret（Secret Key）
+  accessKeyId: Access Key
+  secretAccessKey: Access Secret
   sessionToken: 会话令牌（可选）
-  credentialsPaired: Access Key 与 Secret Key 必须同时填写
+  credentialsPaired: Access Key 与 Access Secret 必须同时填写
   endpoint: Endpoint
   bucket: Bucket
   region: Region

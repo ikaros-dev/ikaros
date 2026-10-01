@@ -298,10 +298,10 @@ storageProviderManagement:
   deleteSuccess: Storage provider deleted
   deleteTitle: Delete storage provider
   deleteConfirm: Delete “{name}”? Only disabled providers without placements or delivery bindings can be deleted.
-  accessKeyId: Access Key ID
-  secretAccessKey: Secret Access Key
+  accessKeyId: Access Key
+  secretAccessKey: Access Secret
   sessionToken: Session token (optional)
-  credentialsPaired: Access Key ID and Secret Access Key must be provided together
+  credentialsPaired: Access Key and Access Secret must be provided together
   endpoint: Endpoint
   bucket: Bucket
   region: Region
