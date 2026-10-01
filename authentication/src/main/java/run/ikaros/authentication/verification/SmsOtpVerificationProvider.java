@@ -3,6 +3,8 @@ package run.ikaros.authentication.verification;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.authentication.PlatformUserRepository;
@@ -27,17 +29,33 @@ public class SmsOtpVerificationProvider implements VerificationProvider {
     private final OtpHasher otpHasher;
     private final SmsOtpDelivery delivery;
     private final AuditService auditService;
+    private final Duration grantTtl;
 
     public SmsOtpVerificationProvider(PlatformUserRepository userRepository,
                                       VerificationChallengeRepository challengeRepository,
                                       OtpCodeGenerator codeGenerator, OtpHasher otpHasher,
                                       SmsOtpDelivery delivery, AuditService auditService) {
+        this(userRepository, challengeRepository, codeGenerator, otpHasher, delivery, auditService, VERIFICATION_TTL);
+    }
+
+    /**
+     * 创建 SMS OTP Provider，并允许通过配置覆盖 Step-up Grant 有效期。
+     *
+     * @param grantTtl Verification Grant 有效期；默认 PT5M
+     */
+    @Autowired
+    public SmsOtpVerificationProvider(PlatformUserRepository userRepository,
+                                      VerificationChallengeRepository challengeRepository,
+                                      OtpCodeGenerator codeGenerator, OtpHasher otpHasher,
+                                      SmsOtpDelivery delivery, AuditService auditService,
+                                      @Value("${ikaros.security.verification.grant-ttl:PT5M}") Duration grantTtl) {
         this.userRepository = userRepository;
         this.challengeRepository = challengeRepository;
         this.codeGenerator = codeGenerator;
         this.otpHasher = otpHasher;
         this.delivery = delivery;
         this.auditService = auditService;
+        this.grantTtl = grantTtl == null ? VERIFICATION_TTL : grantTtl;
     }
 
     @Override
@@ -72,7 +90,7 @@ public class SmsOtpVerificationProvider implements VerificationProvider {
                     .then(auditService.record(userId, "security.verification.succeed", "VERIFICATION_CHALLENGE",
                         challengeId, "{}"))
                     .thenReturn(new VerificationResult(challengeId, method(), SecurityVerificationLevel.SVL_2,
-                        userId, now, now.plus(VERIFICATION_TTL)));
+                        userId, now, now.plus(grantTtl)));
             }
             return failedAttempt(challenge, userId);
         });

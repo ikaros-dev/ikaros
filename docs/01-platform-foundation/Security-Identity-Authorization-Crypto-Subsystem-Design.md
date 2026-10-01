@@ -627,7 +627,9 @@ SVL-1 Step-up Grant TTL short-lived
 SVL-4 Step-up Grant TTL very short-lived
 ```
 
-具体时长属于详细设计和安全策略。
+具体时长属于详细设计和安全策略。当前实现由 `ikaros.security.verification.grant-ttl`（默认 `PT5M`）统一控制
+Email/SMS OTP 签发的 Verification Grant 有效期；客户端可在该窗口内复用自己持有的有效 Grant，
+服务端不做账号级历史自动换发（见 ADR-008），窗口结束或安全等级不满足时必须重新发起 Step-up。
 
 高风险操作可以要求：
 

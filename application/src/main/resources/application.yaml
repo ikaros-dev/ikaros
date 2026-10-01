@@ -30,6 +30,8 @@ ikaros:
     credential-encryption-key-version: ${IKAROS_STORAGE_CREDENTIAL_ENCRYPTION_KEY_VERSION:v1}
   security:
     verification:
+      # Step-up Verification Grant 有效期；决定客户端可复用已验证状态的时间窗口。
+      grant-ttl: ${IKAROS_SECURITY_VERIFICATION_GRANT_TTL:PT5M}
       email:
         delivery: ${IKAROS_SECURITY_EMAIL_DELIVERY:NOOP}
         endpoint: ${IKAROS_SECURITY_EMAIL_ENDPOINT:}

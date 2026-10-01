@@ -314,7 +314,7 @@ const verifyAndExecute = async (reusedGrant?: string) => {
     } else if (action === "revokeRole" && rolesUser.value && pendingRoleId.value) {
       await revokeUserRole(rolesUser.value.id, pendingRoleId.value);
     }
-    clearVerificationGrant();
+    // 成功后保留未过期的 Grant 供窗口期内复用；失败路径才清除并要求重新验证。
     stepUp.close();
     pendingDeleteUser.value = null;
     pendingCreateRequest.value = null;

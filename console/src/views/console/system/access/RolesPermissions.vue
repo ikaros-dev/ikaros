@@ -198,7 +198,7 @@ const verifyAndExecute = async (reusedGrant?: string) => {
     } else if (action === "update") {
       await executePermissionsUpdate();
     }
-    clearVerificationGrant();
+    // 成功后保留未过期的 Grant 供窗口期内复用；失败路径才清除并要求重新验证。
     stepUp.close();
     pendingCreateRequest.value = null;
     pendingAction.value = null;
