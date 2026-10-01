@@ -335,7 +335,11 @@ storageProviderManagement:
   deliveryHint: 一个存储提供方可以绑定多个分发提供方，按优先级升序尝试。
   deliveryLoadFailed: 获取分发绑定失败
   deliveryProvider: 分发提供方
-  noDeliveryProviders: 当前实例还没有分发提供方，无法新增绑定。
+  deliveryProviderCreate: 新建分发提供方
+  deliveryProviderCreateTitle: 新建分发提供方
+  deliveryProviderCreateSuccess: 分发提供方已创建
+  credentialRef: 凭据引用（可选）
+  noDeliveryProviders: 当前实例还没有分发提供方，请先新建分发提供方，再新增绑定。
   bindingCreate: 新增分发
   bindingCreateTitle: 新增分发绑定
   bindingEditTitle: 编辑分发绑定

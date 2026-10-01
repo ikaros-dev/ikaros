@@ -71,8 +71,26 @@ export type DeliveryBindingRequest = {
   fallbackParticipation: boolean;
 };
 
+export type DeliveryProviderWriteRequest = {
+  providerKey: string;
+  providerType: DeliveryProviderType;
+  displayName: string;
+  credentialRef?: string | null;
+  config: Record<string, unknown>;
+  enabled: boolean;
+};
+
 export const listDeliveryProviders = () =>
   http.request<DeliveryProvider[]>("get", "/admin/delivery-providers");
+
+export const createDeliveryProvider = (
+  data: DeliveryProviderWriteRequest,
+  idempotencyKey: string
+) =>
+  http.request<DeliveryProvider>("post", "/admin/delivery-providers", {
+    data,
+    headers: { "Idempotency-Key": idempotencyKey }
+  });
 
 export const listDeliveryBindings = (storageProviderId: string) =>
   http.request<DeliveryBinding[]>(

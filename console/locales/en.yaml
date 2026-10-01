@@ -335,7 +335,11 @@ storageProviderManagement:
   deliveryHint: A storage provider can bind multiple delivery providers, tried in ascending priority order.
   deliveryLoadFailed: Failed to load delivery bindings
   deliveryProvider: Delivery provider
-  noDeliveryProviders: This instance has no delivery providers yet, so no binding can be added.
+  deliveryProviderCreate: New delivery provider
+  deliveryProviderCreateTitle: New delivery provider
+  deliveryProviderCreateSuccess: Delivery provider created
+  credentialRef: Credential reference (optional)
+  noDeliveryProviders: This instance has no delivery providers yet. Create one first, then add a binding.
   bindingCreate: Add binding
   bindingCreateTitle: Add delivery binding
   bindingEditTitle: Edit delivery binding

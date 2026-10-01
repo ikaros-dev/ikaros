@@ -21,6 +21,7 @@ import {
 } from "@/api/storageProvider";
 import {
   createDeliveryBinding,
+  createDeliveryProvider,
   deleteDeliveryBinding,
   listDeliveryBindings,
   listDeliveryProviders,
@@ -29,7 +30,9 @@ import {
   type DeliveryBindingCacheKeyPolicy,
   type DeliveryBindingRangePolicy,
   type DeliveryBindingRequest,
-  type DeliveryProvider
+  type DeliveryProvider,
+  type DeliveryProviderType,
+  type DeliveryProviderWriteRequest
 } from "@/api/deliveryProvider";
 import { getHttpErrorMessage } from "@/utils/http";
 import { useStepUpVerification } from "@/composables/useStepUpVerification";
@@ -90,6 +93,17 @@ const bindingVisible = ref(false);
 const bindingLoading = ref(false);
 const bindingMutatingId = ref("");
 const bindingTarget = ref<DeliveryBinding | null>(null);
+const providerFormVisible = ref(false);
+const providerFormLoading = ref(false);
+const deliveryProviderTypes: DeliveryProviderType[] = ["DIRECT", "CDN", "SERVER_PROXY"];
+const providerForm = reactive({
+  providerKey: "",
+  providerType: "CDN" as DeliveryProviderType,
+  displayName: "",
+  endpoint: "",
+  credentialRef: "",
+  enabled: true
+});
 const cacheKeyPolicies: DeliveryBindingCacheKeyPolicy[] = ["CONTENT_IDENTITY", "FULL_REQUEST", "NO_CACHE"];
 const rangePolicies: DeliveryBindingRangePolicy[] = ["PASSTHROUGH", "FIXED_CHUNK", "UNSUPPORTED"];
 const bindingForm = reactive({
@@ -358,6 +372,41 @@ const openDelivery = async (provider: StorageProvider) => {
   deliveryTarget.value = provider;
   deliveryVisible.value = true;
   await loadDeliveryBindings();
+};
+
+const openProviderCreate = () => {
+  Object.assign(providerForm, {
+    providerKey: "",
+    providerType: "CDN",
+    displayName: "",
+    endpoint: "",
+    credentialRef: "",
+    enabled: true
+  });
+  providerFormVisible.value = true;
+};
+
+const submitProvider = async () => {
+  if (!providerForm.providerKey.trim() || !providerForm.displayName.trim()) return;
+  const request: DeliveryProviderWriteRequest = {
+    providerKey: providerForm.providerKey.trim(),
+    providerType: providerForm.providerType,
+    displayName: providerForm.displayName.trim(),
+    credentialRef: providerForm.credentialRef.trim() || null,
+    config: providerForm.endpoint.trim() ? { endpoint: providerForm.endpoint.trim() } : {},
+    enabled: providerForm.enabled
+  };
+  providerFormVisible.value = false;
+  await runWithVerification(async () => {
+    providerFormLoading.value = true;
+    try {
+      await createDeliveryProvider(request, crypto.randomUUID());
+      ElMessage.success(t("storageProviderManagement.deliveryProviderCreateSuccess"));
+      await loadDeliveryProviderOptions();
+    } finally {
+      providerFormLoading.value = false;
+    }
+  });
 };
 
 const openBindingCreate = () => {
@@ -629,6 +678,9 @@ onMounted(() => void loadProviders());
         </span>
         <div>
           <el-button :loading="deliveryLoading" @click="loadDeliveryBindings">{{ t("storageProviderManagement.refresh") }}</el-button>
+          <el-button type="primary" plain @click="openProviderCreate">
+            {{ t("storageProviderManagement.deliveryProviderCreate") }}
+          </el-button>
           <el-button type="primary" :disabled="deliveryProviders.length === 0" @click="openBindingCreate">
             {{ t("storageProviderManagement.bindingCreate") }}
           </el-button>
@@ -684,6 +736,41 @@ onMounted(() => void loadProviders());
         </template>
       </el-table>
     </el-drawer>
+
+    <el-dialog
+      v-model="providerFormVisible"
+      :title="t('storageProviderManagement.deliveryProviderCreateTitle')"
+      width="560px"
+    >
+      <el-form :model="providerForm" label-width="170px">
+        <el-form-item :label="t('storageProviderManagement.key')" required>
+          <el-input v-model="providerForm.providerKey" maxlength="128" />
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.type')" required>
+          <el-select v-model="providerForm.providerType" class="w-full">
+            <el-option v-for="type in deliveryProviderTypes" :key="type" :label="type" :value="type" />
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.name')" required>
+          <el-input v-model="providerForm.displayName" maxlength="256" />
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.endpoint')">
+          <el-input v-model="providerForm.endpoint" />
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.credentialRef')">
+          <el-input v-model="providerForm.credentialRef" maxlength="512" />
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.enabled')">
+          <el-switch v-model="providerForm.enabled" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="providerFormVisible = false">{{ t("buttons.pureClose") }}</el-button>
+        <el-button type="primary" :loading="providerFormLoading" @click="submitProvider">
+          {{ t("buttons.pureConfirm") }}
+        </el-button>
+      </template>
+    </el-dialog>
 
     <el-dialog
       v-model="bindingVisible"
