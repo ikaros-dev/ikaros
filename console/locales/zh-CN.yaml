@@ -593,7 +593,11 @@ menuDescriptions:
   apiTokens: 管理当前账号创建的 API 令牌及其访问范围和生命周期。
 addResource:
   actionFailed: 操作失败，请重试
-  steps: { source: 选择来源, scan: 扫描与识别, review: 预览与确认, import: 导入 }
+  steps:
+    source: 选择来源
+    scan: 扫描与识别
+    review: 预览与确认
+    import: 导入
   sourceTitle: 选择资源来源
   sourceDescription: 选择已配置的来源，或登记一个可扫描的来源。
   addSource: 添加来源
@@ -612,7 +616,7 @@ addResource:
     PLUGIN_SOURCE: 插件来源
   startScan: 开始扫描
   scanTitle: 正在准备扫描
-  scanDescription: 已为“{source}”创建扫描任务。任务完成后刷新状态查看识别结果。
+  scanDescription: "已为“{source}”创建扫描任务。任务完成后刷新状态查看识别结果。"
   scanFailed: 扫描失败
   discoveredCount: 已发现 {count} 项
   refreshScan: 刷新状态
@@ -634,7 +638,7 @@ addResource:
   importStartedDescription: 你可以在活动中心查看进度和处理结果。
   openActivity: 前往活动中心
   openLibrary: 打开资源库
-  runReference: 任务参考：{id}
+  runReference: "任务参考：{id}"
   back: 上一步
 resourceLibrary:
   query: 标题关键词

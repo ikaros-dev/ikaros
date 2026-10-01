@@ -593,7 +593,11 @@ menuDescriptions:
   apiTokens: Manage API tokens created by the current account, including scope and lifecycle.
 addResource:
   actionFailed: The action failed. Please try again.
-  steps: { source: Source, scan: Scan and identify, review: Preview and confirm, import: Import }
+  steps:
+    source: Source
+    scan: Scan and identify
+    review: Preview and confirm
+    import: Import
   sourceTitle: Choose a source
   sourceDescription: Select a configured source or register one that can be scanned.
   addSource: Add source
@@ -612,7 +616,7 @@ addResource:
     PLUGIN_SOURCE: Plugin source
   startScan: Start scan
   scanTitle: Scan in progress
-  scanDescription: A scan was created for “{source}”. Refresh the status to see recognized items when it finishes.
+  scanDescription: "A scan was created for “{source}”. Refresh the status to see recognized items when it finishes."
   scanFailed: Scan failed
   discoveredCount: "{count} items discovered"
   refreshScan: Refresh status
@@ -634,7 +638,7 @@ addResource:
   importStartedDescription: Track progress and results in Activity Center.
   openActivity: Open Activity Center
   openLibrary: Open Resource Library
-  runReference: Run reference: {id}
+  runReference: "Run reference: {id}"
   back: Back
 resourceLibrary:
   query: Title keyword
