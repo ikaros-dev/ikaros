@@ -39,6 +39,124 @@ export const resourceLifecycles: ResourceLifecycle[] = [
   "PURGED"
 ];
 
+export type IngestionSourceType =
+  | "LOCAL_FILESYSTEM"
+  | "NAS_MOUNT"
+  | "OBJECT_STORAGE"
+  | "MANUAL_UPLOAD"
+  | "REMOTE_URL"
+  | "PROVIDER_COLLECTION"
+  | "PLUGIN_SOURCE";
+
+export type IngestionSource = {
+  id: string;
+  type: IngestionSourceType;
+  displayName: string;
+  rootReference: string;
+  credentialConfigured: boolean;
+  scanPolicy: Record<string, unknown>;
+  status: "ENABLED" | "DISABLED";
+  healthStatus: string;
+};
+
+export type IngestionScan = {
+  id: string;
+  sourceId: string;
+  status: "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELLED";
+  discoveredCount: number;
+  changedCount: number;
+  skippedCount: number;
+  errorSummary: string | null;
+};
+
+export type IngestionCandidate = {
+  id: string;
+  suggestedResourceType: string;
+  titleHint: string | null;
+  externalIdHint: string | null;
+  confidence: number;
+  status: string;
+};
+
+export type ImportPlan = {
+  id: string;
+  scanRunId: string;
+  dryRun: boolean;
+  status: string;
+  version: number | null;
+  itemCount: number;
+};
+
+export type ImportPlanItem = {
+  id: string;
+  planId: string;
+  candidateId: string;
+  action: string;
+  targetId: string | null;
+  reason: string | null;
+  confidence: number;
+  version: number | null;
+};
+
+export type ImportRun = {
+  id: string;
+  planId: string;
+  status: string;
+  completedCount: number;
+  failedCount: number;
+  skippedCount: number;
+};
+
+export const listIngestionSources = () =>
+  http.request<IngestionSource[]>("get", "/ingestion/sources");
+
+export const createIngestionSource = (data: {
+  type: IngestionSourceType;
+  displayName: string;
+  rootReference: string;
+}) => http.request<IngestionSource>("post", "/ingestion/sources", { data });
+
+export const startIngestionScan = (sourceId: string) =>
+  http.request<IngestionScan>("post", `/ingestion/sources/${sourceId}/scans`, {
+    data: { trigger: "USER_REQUESTED" }
+  });
+
+export const getIngestionScan = (scanId: string) =>
+  http.request<IngestionScan>("get", `/ingestion/sources/scans/${scanId}`);
+
+export const listIngestionCandidates = (scanId: string) =>
+  http.request<IngestionCandidate[]>("get", `/ingestion/scans/${scanId}/candidates`);
+
+export const generateImportPlan = (scanId: string) =>
+  http.request<ImportPlan>("post", `/ingestion/scans/${scanId}/plans`, {
+    data: { dryRun: false, policySnapshot: {} }
+  });
+
+export const listImportPlanItems = (planId: string) =>
+  http.request<ImportPlanItem[]>("get", `/ingestion/scans/plans/${planId}/items`);
+
+export const updateImportPlanItem = (
+  planId: string,
+  itemId: string,
+  data: { expectedVersion: number; action: "CREATE_RESOURCE" | "SKIP"; reason?: string }
+) =>
+  http.request<ImportPlanItem>(
+    "patch",
+    `/ingestion/scans/plans/${planId}/items/${itemId}`,
+    { data }
+  );
+
+export const approveImportPlan = (planId: string, expectedVersion: number) =>
+  http.request<ImportPlan>("post", `/ingestion/scans/plans/${planId}/approve`, {
+    data: { expectedVersion }
+  });
+
+export const startImportRun = (planId: string, expectedPlanVersion: number) =>
+  http.request<ImportRun>("post", `/ingestion/plans/${planId}/runs`, {
+    data: { expectedPlanVersion },
+    headers: { "Idempotency-Key": crypto.randomUUID() }
+  });
+
 export type ResourceClassification =
   | "PUBLIC"
   | "SHARED"

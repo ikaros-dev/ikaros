@@ -591,6 +591,51 @@ menuDescriptions:
   accountSecurity: Manage the current account's password, recovery methods, and security status.
   sessions: View the current account's login sessions and revoke sessions when needed.
   apiTokens: Manage API tokens created by the current account, including scope and lifecycle.
+addResource:
+  actionFailed: The action failed. Please try again.
+  steps: { source: Source, scan: Scan and identify, review: Preview and confirm, import: Import }
+  sourceTitle: Choose a source
+  sourceDescription: Select a configured source or register one that can be scanned.
+  addSource: Add source
+  sourceType: Source type
+  sourceName: Source name
+  sourceLocation: Source location
+  sourceLocationHint: Enter a mount path, bucket, or source address
+  saveSource: Save source
+  noSources: No available sources. Add a source to continue.
+  types:
+    LOCAL_FILESYSTEM: Local filesystem
+    NAS_MOUNT: NAS mount
+    OBJECT_STORAGE: Object storage
+    REMOTE_URL: Remote URL
+    PROVIDER_COLLECTION: Provider collection
+    PLUGIN_SOURCE: Plugin source
+  startScan: Start scan
+  scanTitle: Scan in progress
+  scanDescription: A scan was created for “{source}”. Refresh the status to see recognized items when it finishes.
+  scanFailed: Scan failed
+  discoveredCount: "{count} items discovered"
+  refreshScan: Refresh status
+  previewResults: Review results
+  reviewTitle: Review recognized items
+  reviewDescription: Confirm each resource to create or skip items you do not want to import.
+  candidateCount: "{count} items"
+  candidateTitle: Recognized title
+  candidateType: Suggested type
+  confidence: Confidence
+  decision: Import action
+  chooseDecision: Choose an action
+  createResource: Create resource
+  skipItem: Skip
+  untitled: Title not recognized
+  noCandidates: This scan found no items to review.
+  confirmImport: Confirm and start import
+  importStarted: Import submitted
+  importStartedDescription: Track progress and results in Activity Center.
+  openActivity: Open Activity Center
+  openLibrary: Open Resource Library
+  runReference: Run reference: {id}
+  back: Back
 resourceLibrary:
   query: Title keyword
   type: Type
