@@ -5,7 +5,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import io.r2dbc.postgresql.codec.Json;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -24,7 +23,7 @@ class PersistentStorageProviderRegistryTest {
         StorageCredentialCipher cipher = mock(StorageCredentialCipher.class);
         UUID id = UUID.randomUUID();
         when(repository.findByProviderKey("local")).thenReturn(reactor.core.publisher.Mono.empty());
-        when(repository.save(any())).thenReturn(reactor.core.publisher.Mono.just(new StorageProviderEntity(id, "local", "filesystem", "HOT", "ENABLED", "secret://storage/local", Json.of("{}"), null, null, null, Instant.now(), Instant.now())));
+        when(repository.save(any())).thenReturn(reactor.core.publisher.Mono.just(new StorageProviderEntity(id, "local", "filesystem", "HOT", "ENABLED", "secret://storage/local", "{}", null, null, null, Instant.now(), Instant.now())));
         when(events.append(any(EventAppendRequest.class))).thenReturn(reactor.core.publisher.Mono.empty());
         PersistentStorageProviderRegistry registry = new PersistentStorageProviderRegistry(repository, new ObjectMapper(), events, cipher);
 
@@ -46,7 +45,7 @@ class PersistentStorageProviderRegistryTest {
         when(repository.save(any())).thenAnswer(invocation -> {
             persisted.set(invocation.getArgument(0));
             return reactor.core.publisher.Mono.just(new StorageProviderEntity(id, "local", "filesystem", "HOT",
-                "ENABLED", "secret://storage/local", Json.of("{}"), null, null, null, Instant.now(), Instant.now()));
+                "ENABLED", "secret://storage/local", "{}", null, null, null, Instant.now(), Instant.now()));
         });
         when(events.append(any(EventAppendRequest.class))).thenReturn(reactor.core.publisher.Mono.empty());
         PersistentStorageProviderRegistry registry = new PersistentStorageProviderRegistry(repository, new ObjectMapper(), events, cipher);
@@ -75,7 +74,7 @@ class PersistentStorageProviderRegistryTest {
         when(repository.save(any())).thenAnswer(invocation -> {
             persisted.set(invocation.getArgument(0));
             return reactor.core.publisher.Mono.just(new StorageProviderEntity(id, "oss", "s3", "HOT", "ENABLED",
-                "secret://provider/oss", Json.of("{}"), null, null, null, Instant.now(), Instant.now()));
+                "secret://provider/oss", "{}", null, null, null, Instant.now(), Instant.now()));
         });
         when(events.append(any(EventAppendRequest.class))).thenReturn(reactor.core.publisher.Mono.empty());
         PersistentStorageProviderRegistry registry = new PersistentStorageProviderRegistry(repository, new ObjectMapper(), events, cipher);
