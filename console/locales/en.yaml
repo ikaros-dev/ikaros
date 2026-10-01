@@ -591,3 +591,83 @@ menuDescriptions:
   accountSecurity: Manage the current account's password, recovery methods, and security status.
   sessions: View the current account's login sessions and revoke sessions when needed.
   apiTokens: Manage API tokens created by the current account, including scope and lifecycle.
+resourceLibrary:
+  query: Title keyword
+  type: Type
+  lifecycle: Lifecycle
+  collection: Collection
+  tag: Tag
+  source: Source provider
+  search: Search
+  reset: Reset
+  refresh: Refresh
+  title: Title
+  classification: Classification
+  updatedAt: Updated
+  actions: Actions
+  details: Details
+  empty: No resources
+  loadFailed: Failed to load the resource library
+resourceDetail:
+  back: Back to library
+  refresh: Refresh
+  edit: Edit
+  favorite: Favorite
+  unfavorite: Unfavorite
+  id: Resource ID
+  type: Type
+  primaryTitle: Primary title
+  classification: Classification
+  lifecycle: Lifecycle
+  version: Version
+  createdAt: Created
+  updatedAt: Updated
+  summary: Summary
+  archive: Archive
+  restore: Restore from trash
+  trash: Move to trash
+  purge: Delete permanently
+  archiveSuccess: Resource archived
+  restoreSuccess: Resource restored
+  trashTitle: Move to trash
+  trashConfirm: Move “{name}” to trash?
+  trashSuccess: Resource moved to trash
+  purgeTitle: Delete resource permanently
+  purgeConfirm: Deleting “{name}” permanently cannot be undone. Continue?
+  purgeSuccess: Resource permanently deleted
+  tags: Tags
+  tagPlaceholder: Type a tag name and press Enter
+  tagAdd: Add tag
+  tagAdded: Tag added
+  tagRemoved: Tag removed
+  titles: Titles
+  locale: Locale
+  value: Value
+  primary: Primary
+  kind: Kind
+  titlesEmpty: No titles
+  identities: External identities
+  externalType: External type
+  externalValue: External ID
+  identitiesEmpty: No external identities
+  metadata: Metadata
+  metadataSet: Set metadata manually
+  metadataSetTitle: Set metadata manually
+  fieldKey: Field
+  source: Source
+  manuallyLocked: Manually locked
+  metadataRestore: Restore automatic
+  metadataEmpty: No metadata
+  metadataSaved: Metadata saved
+  metadataRestored: Metadata restored to automatic
+  relations: Relations
+  target: Target resource
+  relationType: Relation type
+  position: Position
+  relationsEmpty: No relations
+  editTitle: Edit resource
+  updateSuccess: Resource updated
+  yes: "Yes"
+  no: "No"
+  loadFailed: Failed to load resource details
+  actionFailed: Operation failed

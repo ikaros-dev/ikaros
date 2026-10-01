@@ -1,0 +1,235 @@
+import { http } from "@/utils/http";
+
+/**
+ * 资源（Resource）接口。注意：resource-api 的 DTO 未标注 `@JsonNaming`，
+ * 线上为 camelCase（已实测），因此这里按实际格式建模。
+ */
+
+export type ResourceType =
+  | "VIDEO"
+  | "COMIC"
+  | "BOOK"
+  | "MUSIC"
+  | "PHOTO"
+  | "ARTICLE"
+  | "DOCUMENT"
+  | "GAME"
+  | "ARCHIVE"
+  | "OTHER";
+
+export const resourceTypes: ResourceType[] = [
+  "VIDEO",
+  "COMIC",
+  "BOOK",
+  "MUSIC",
+  "PHOTO",
+  "ARTICLE",
+  "DOCUMENT",
+  "GAME",
+  "ARCHIVE",
+  "OTHER"
+];
+
+export type ResourceLifecycle = "ACTIVE" | "ARCHIVED" | "TRASHED" | "PURGED";
+
+export const resourceLifecycles: ResourceLifecycle[] = [
+  "ACTIVE",
+  "ARCHIVED",
+  "TRASHED",
+  "PURGED"
+];
+
+export type ResourceClassification =
+  | "PUBLIC"
+  | "SHARED"
+  | "PRIVATE"
+  | "SENSITIVE"
+  | "SECURE";
+
+export type ResourceTitle = {
+  id: string;
+  locale: string;
+  value: string;
+  primary: boolean;
+  kind: "TITLE" | "ALIAS";
+};
+
+export type ExternalIdentity = {
+  id: string;
+  provider: string;
+  type: string;
+  value: string;
+};
+
+export type Resource = {
+  id: string;
+  type: ResourceType;
+  primaryTitle: string | null;
+  summary: string | null;
+  dataClassification: ResourceClassification;
+  lifecycle: ResourceLifecycle;
+  titles: ResourceTitle[];
+  externalIdentities: ExternalIdentity[];
+  createdAt: string;
+  updatedAt: string;
+  version: number;
+};
+
+export type ResourcePage = {
+  items: Resource[];
+  total: number;
+  page: number;
+  size: number;
+};
+
+export type ResourceLibraryFilters = {
+  type?: string;
+  query?: string;
+  lifecycle_status?: string;
+  collection_id?: string;
+  tag?: string;
+  source_provider?: string;
+  page?: number;
+  size?: number;
+};
+
+export type Collection = {
+  id: string;
+  parentId: string | null;
+  name: string;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+  version: number | null;
+};
+
+export type ResourceTag = {
+  id: string;
+  name: string;
+  color: string | null;
+};
+
+export type ResourceMetadata = {
+  id: string;
+  fieldKey: string;
+  value: string;
+  source: "USER" | "FILE_SCAN" | "IMPORT" | "PROVIDER" | "PLUGIN" | "SYSTEM";
+  sourceReference: string | null;
+  manuallyLocked: boolean;
+  applied: boolean;
+};
+
+export type ResourceRelation = {
+  id: string;
+  targetResourceId: string;
+  type: string;
+  position: number;
+};
+
+export type FavoriteState = {
+  resourceId: string;
+  favorite: boolean;
+};
+
+export const listResources = (filters: ResourceLibraryFilters = {}) =>
+  http.request<ResourcePage>("get", "/resources", { params: filters });
+
+export const getResource = (resourceId: string) =>
+  http.request<Resource>("get", `/resources/${resourceId}`);
+
+export const updateResource = (
+  resourceId: string,
+  data: { primary_title?: string; summary?: string },
+  version: number
+) =>
+  http.request<Resource>("patch", `/resources/${resourceId}`, {
+    data,
+    headers: {
+      "If-Match": `"${version}"`,
+      "Content-Type": "application/merge-patch+json"
+    }
+  });
+
+export const archiveResource = (resourceId: string, version: number) =>
+  http.request<Resource>("post", `/resources/${resourceId}/actions/archive`, {
+    headers: { "If-Match": `"${version}"` }
+  });
+
+export const restoreResource = (resourceId: string, version: number) =>
+  http.request<Resource>("post", `/resources/${resourceId}/actions/restore`, {
+    headers: { "If-Match": `"${version}"` }
+  });
+
+export const trashResource = (resourceId: string, version: number) =>
+  http.request<void>("delete", `/resources/${resourceId}`, {
+    headers: { "If-Match": `"${version}"` }
+  });
+
+export const purgeResource = (resourceId: string, version: number) =>
+  http.request<void>("post", `/resources/${resourceId}/actions/purge`, {
+    headers: { "If-Match": `"${version}"`, "X-Ikaros-Confirmation": "PURGE" }
+  });
+
+export const listCollections = () =>
+  http.request<Collection[]>("get", "/collections");
+
+export const listTagCatalog = (query = "") =>
+  http.request<{ items: ResourceTag[]; total: number }>("get", "/tags", {
+    params: { query, page: 0, size: 100 }
+  });
+
+export const listResourceTags = (resourceId: string) =>
+  http.request<ResourceTag[]>("get", `/resources/${resourceId}/tags`);
+
+export const addResourceTag = (
+  resourceId: string,
+  data: { name: string; color?: string }
+) =>
+  http.request<ResourceTag>("post", `/resources/${resourceId}/tags`, { data });
+
+export const deleteResourceTag = (resourceId: string, tagId: string) =>
+  http.request<void>(
+    "delete",
+    `/resources/${resourceId}/tags/${tagId}`
+  );
+
+export const getFavorite = (resourceId: string) =>
+  http.request<FavoriteState>("get", `/resources/${resourceId}/favorite`);
+
+export const addFavorite = (resourceId: string) =>
+  http.request<FavoriteState>("post", `/resources/${resourceId}/favorite`);
+
+export const removeFavorite = (resourceId: string) =>
+  http.request<void>("delete", `/resources/${resourceId}/favorite`);
+
+export const listResourceMetadata = (resourceId: string) =>
+  http.request<ResourceMetadata[]>(
+    "get",
+    `/resources/${resourceId}/metadata`
+  );
+
+export const setResourceMetadata = (
+  resourceId: string,
+  fieldKey: string,
+  value: string
+) =>
+  http.request<ResourceMetadata>(
+    "put",
+    `/resources/${resourceId}/metadata/${encodeURIComponent(fieldKey)}`,
+    { data: { value } }
+  );
+
+export const restoreAutomaticMetadata = (
+  resourceId: string,
+  fieldKey: string
+) =>
+  http.request<ResourceMetadata>(
+    "post",
+    `/resources/${resourceId}/metadata/${encodeURIComponent(fieldKey)}/restore-automatic`
+  );
+
+export const listResourceRelations = (resourceId: string) =>
+  http.request<ResourceRelation[]>(
+    "get",
+    `/resources/${resourceId}/relations`
+  );
