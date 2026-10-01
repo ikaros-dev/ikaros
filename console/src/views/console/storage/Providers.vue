@@ -744,7 +744,7 @@ onMounted(() => void loadProviders());
     <el-drawer
       v-model="deliveryVisible"
       direction="rtl"
-      size="900px"
+      size="80%"
       :title="t('storageProviderManagement.deliveryTitle', { name: deliveryTarget?.display_name ?? '' })"
     >
       <div class="mb-3 flex items-center justify-between">
