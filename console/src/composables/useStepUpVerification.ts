@@ -4,7 +4,11 @@ import {
   verifyStepUpChallenge,
   type VerificationMethod
 } from "@/api/user";
-import { setVerificationGrant } from "@/utils/verificationGrant";
+import {
+  getVerificationGrant,
+  hasValidVerificationGrant,
+  setVerificationGrant
+} from "@/utils/verificationGrant";
 
 export function useStepUpVerification() {
   const visible = ref(false);
@@ -20,6 +24,11 @@ export function useStepUpVerification() {
     loading.value = true;
     try {
       method.value = selectedMethod;
+      // 客户端已持有未过期的 Verification Grant 时直接复用，不再重复发起 Step-up 挑战。
+      if (hasValidVerificationGrant()) {
+        await onReused(getVerificationGrant());
+        return;
+      }
       const challenge = await issueStepUpChallenge(selectedMethod);
       if (challenge.verificationGrant) {
         setVerificationGrant(challenge.verificationGrant);
