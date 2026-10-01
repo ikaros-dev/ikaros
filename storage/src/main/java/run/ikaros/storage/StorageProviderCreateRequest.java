@@ -16,5 +16,8 @@ public record StorageProviderCreateRequest(
     @NotNull StorageTier tier,
     @NotNull Map<String, Object> capabilities,
     @Size(max = 512) String credentialRef,
-    Map<String, Object> configuration
+    Map<String, Object> configuration,
+    @Size(max = 256) String accessKeyId,
+    @Size(max = 512) String secretAccessKey,
+    @Size(max = 2048) String sessionToken
 ) { }

@@ -37,7 +37,9 @@ const createForm = reactive({
   provider_type: "",
   display_name: "",
   tier: "HOT" as StorageProvider["tier"],
-  credential_ref: "secret://default",
+  access_key_id: "",
+  secret_access_key: "",
+  session_token: "",
   endpoint: "",
   bucket: "",
   region: ""
@@ -124,7 +126,9 @@ const openCreate = () => {
     provider_type: "",
     display_name: "",
     tier: "HOT",
-    credential_ref: "secret://default",
+    access_key_id: "",
+    secret_access_key: "",
+    session_token: "",
     endpoint: "",
     bucket: "",
     region: ""
@@ -134,7 +138,13 @@ const openCreate = () => {
 
 const submitCreate = async () => {
   if (!createForm.provider_key.trim() || !createForm.provider_type.trim()
-    || !createForm.display_name.trim() || !createForm.credential_ref.trim()) return;
+    || !createForm.display_name.trim()) return;
+  const accessKeyId = createForm.access_key_id.trim();
+  const secretAccessKey = createForm.secret_access_key.trim();
+  if (Boolean(accessKeyId) !== Boolean(secretAccessKey)) {
+    ElMessage.warning(t("storageProviderManagement.credentialsPaired"));
+    return;
+  }
   const configuration = Object.fromEntries(
     Object.entries({ endpoint: createForm.endpoint, bucket: createForm.bucket, region: createForm.region })
       .filter(([, value]) => value.trim())
@@ -144,10 +154,14 @@ const submitCreate = async () => {
     provider_type: createForm.provider_type.trim(),
     display_name: createForm.display_name.trim(),
     tier: createForm.tier,
-    credential_ref: createForm.credential_ref.trim(),
     capabilities: {},
     configuration
   };
+  if (accessKeyId && secretAccessKey) {
+    request.access_key_id = accessKeyId;
+    request.secret_access_key = secretAccessKey;
+    if (createForm.session_token.trim()) request.session_token = createForm.session_token.trim();
+  }
   createVisible.value = false;
   try {
     await runWithVerification(async () => {
@@ -359,8 +373,14 @@ onMounted(() => void loadProviders());
             <el-option v-for="tier in ['HOT', 'WARM', 'COLD', 'ARCHIVE', 'DEEP_ARCHIVE']" :key="tier" :label="tier" :value="tier" />
           </el-select>
         </el-form-item>
-        <el-form-item :label="t('storageProviderManagement.credentialRef')" required>
-          <el-input v-model="createForm.credential_ref" maxlength="512" />
+        <el-form-item :label="t('storageProviderManagement.accessKeyId')">
+          <el-input v-model="createForm.access_key_id" maxlength="256" />
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.secretAccessKey')">
+          <el-input v-model="createForm.secret_access_key" type="password" show-password maxlength="512" />
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.sessionToken')">
+          <el-input v-model="createForm.session_token" type="password" show-password maxlength="2048" />
         </el-form-item>
         <el-form-item :label="t('storageProviderManagement.endpoint')">
           <el-input v-model="createForm.endpoint" />

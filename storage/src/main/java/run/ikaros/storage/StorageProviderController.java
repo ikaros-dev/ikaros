@@ -46,10 +46,14 @@ public class StorageProviderController {
         if (idempotencyKey == null || idempotencyKey.isBlank()) {
             return Mono.error(new IllegalArgumentException("缺少 Idempotency-Key"));
         }
+        if (hasText(request.accessKeyId()) != hasText(request.secretAccessKey())) {
+            return Mono.error(new IllegalArgumentException("access_key_id 与 secret_access_key 必须同时提供"));
+        }
         String fingerprint = fingerprint(request);
         return registry.registerConfigured(request.providerKey(), request.providerType(), request.displayName(),
                 request.tier(), request.credentialRef(), request.capabilities(), request.configuration(),
-                idempotencyKey, fingerprint)
+                idempotencyKey, fingerprint,
+                request.accessKeyId(), request.secretAccessKey(), request.sessionToken())
             .map(provider -> ResponseEntity.created(URI.create("/api/admin/storage-providers/" + provider.id()))
                 .body(StorageProviderView.from(provider)));
     }
@@ -99,11 +103,18 @@ public class StorageProviderController {
             .then(probeService.probe(providerId)).map(StorageProviderProbeView::from);
     }
 
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
+    }
+
     private String fingerprint(StorageProviderCreateRequest request) {
         String body = String.join("\n", request.providerKey(), request.providerType(), request.displayName(),
             request.tier().name(), request.credentialRef() == null ? "secret://default" : request.credentialRef(),
             new java.util.TreeMap<>(request.capabilities()).toString(),
-            new java.util.TreeMap<>(request.configuration() == null ? java.util.Map.of() : request.configuration()).toString());
+            new java.util.TreeMap<>(request.configuration() == null ? java.util.Map.of() : request.configuration()).toString(),
+            request.accessKeyId() == null ? "" : request.accessKeyId(),
+            request.secretAccessKey() == null ? "" : request.secretAccessKey(),
+            request.sessionToken() == null ? "" : request.sessionToken());
         try {
             return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
                 .digest(body.getBytes(java.nio.charset.StandardCharsets.UTF_8)));

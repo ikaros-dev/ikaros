@@ -2688,7 +2688,8 @@ components:
         display_name: { type: string, minLength: 1 }
         credential_ref:
           type: [string, 'null']
-          description: Secret reference only; plaintext credentials are forbidden.
+          description: Secret reference only; plaintext credentials are forbidden. Leave empty when
+            access_key_id/secret_access_key are supplied for object storage.
         tier:
           type: string
           enum: [HOT, WARM, COLD, ARCHIVE, DEEP_ARCHIVE]
@@ -2699,6 +2700,24 @@ components:
           type: object
           description: Non-secret provider configuration such as endpoint, bucket, and region.
           additionalProperties: true
+        access_key_id:
+          type: [string, 'null']
+          maxLength: 256
+          writeOnly: true
+          description: Object storage access key id. Stored as server-side envelope ciphertext and
+            never returned; must be supplied together with secret_access_key.
+        secret_access_key:
+          type: [string, 'null']
+          maxLength: 512
+          writeOnly: true
+          description: Object storage secret access key. Stored as server-side envelope ciphertext and
+            never returned; must be supplied together with access_key_id.
+        session_token:
+          type: [string, 'null']
+          maxLength: 2048
+          writeOnly: true
+          description: Optional temporary session token for object storage. Stored as server-side
+            envelope ciphertext and never returned.
     User:
       type: object
       required: [id, username, status, security_version, version, created_at]

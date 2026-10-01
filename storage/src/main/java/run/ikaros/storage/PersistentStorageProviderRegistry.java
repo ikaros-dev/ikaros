@@ -61,6 +61,15 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
     }
 
     @Override
+    public Mono<StorageProvider> registerConfigured(String providerKey, String providerType, String displayName,
+        StorageTier tier, String secretReference, Map<String, Object> capabilities, Map<String, Object> configuration,
+        String idempotencyKey, String requestFingerprint,
+        String accessKeyId, String secretAccessKey, String sessionToken) {
+        return register(providerKey, providerType, displayName, tier, secretReference, capabilities, configuration,
+            accessKeyId, secretAccessKey, sessionToken, idempotencyKey, requestFingerprint);
+    }
+
+    @Override
     public Mono<StorageProvider> register(String providerKey, String providerType, StorageTier tier,
                                           String secretReference, Map<String, Object> metadata,
                                           String accessKeyId, String secretAccessKey, String sessionToken) {

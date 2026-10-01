@@ -38,8 +38,11 @@ export type CreateStorageProviderRequest = {
   display_name: string;
   tier: StorageProvider["tier"];
   capabilities: Record<string, unknown>;
-  credential_ref: string;
+  credential_ref?: string;
   configuration: Record<string, unknown>;
+  access_key_id?: string;
+  secret_access_key?: string;
+  session_token?: string;
 };
 
 export const listStorageProviders = () =>
