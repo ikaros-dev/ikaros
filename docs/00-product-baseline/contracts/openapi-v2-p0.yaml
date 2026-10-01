@@ -822,6 +822,7 @@ paths:
       operationId: probeStorageProvider
       x-ikaros-contract-id: storage.probe-provider
       summary: Probe storage provider connection and read/write capability
+      description: 停用的 Storage Provider 必须先启用才能探测，否则返回 409。
       parameters:
         - name: provider_id
           in: path
@@ -836,6 +837,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /admin/storage-providers/{provider_id}/credentials:
     post:
       tags: [Admin Storage]

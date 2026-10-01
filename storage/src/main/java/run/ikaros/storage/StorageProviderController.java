@@ -110,7 +110,7 @@ public class StorageProviderController {
     public Mono<StorageProviderProbeView> replaceCredentials(@PathVariable UUID providerId,
                                                           @Valid @RequestBody ReplaceStorageProviderCredentialsRequest request) {
         return credentialService.replace(providerId, request)
-            .then(probeService.probe(providerId)).map(StorageProviderProbeView::from);
+            .then(probeService.probeProvider(providerId)).map(StorageProviderProbeView::from);
     }
 
     private boolean hasText(String value) {
