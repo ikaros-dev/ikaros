@@ -12,8 +12,12 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import java.util.Base64;
 import java.util.HexFormat;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.core.checksums.RequestChecksumCalculation;
+import software.amazon.awssdk.core.checksums.ResponseChecksumValidation;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -131,8 +135,7 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
         return credentialResolver.resolve(provider.secretReference()).flatMap(credentials -> Mono.fromCallable(() -> {
             S3Settings settings = S3Settings.from(provider);
             String key = ".ikaros-probe/" + provider.id() + "/" + java.util.UUID.randomUUID();
-            try (S3Client client = S3Client.builder().region(Region.of(settings.region()))
-                .endpointOverride(settings.endpoint()).credentialsProvider(credentials).build()) {
+            try (S3Client client = buildClient(settings, credentials)) {
                 boolean created = false;
                 try {
                     client.putObject(PutObjectRequest.builder().bucket(settings.bucket()).key(key)
@@ -165,10 +168,26 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
         return "PROVIDER_UNAVAILABLE";
     }
 
-    private <T> T withClient(S3Settings settings, software.amazon.awssdk.auth.credentials.AwsCredentialsProvider credentials,
+    /**
+     * Builds a client for third-party S3-compatible providers (Aliyun OSS,
+     * Tencent COS, MinIO...). Chunked transfer encoding is disabled because the
+     * SDK defaults to {@code aws-chunked} since 2.30, and those providers reject
+     * it with "MultiChunkedEncoding ... is not supported". Flexible checksums
+     * are sent only when the operation requires them, so no CRC32 trailer or
+     * checksum header is added for plain PUT/GET.
+     */
+    static S3Client buildClient(S3Settings settings, AwsCredentialsProvider credentials) {
+        return S3Client.builder().region(Region.of(settings.region()))
+            .endpointOverride(settings.endpoint()).credentialsProvider(credentials)
+            .serviceConfiguration(S3Configuration.builder().chunkedEncodingEnabled(false).build())
+            .requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
+            .responseChecksumValidation(ResponseChecksumValidation.WHEN_REQUIRED)
+            .build();
+    }
+
+    private <T> T withClient(S3Settings settings, AwsCredentialsProvider credentials,
                              java.util.function.Function<S3Client, T> action) {
-        try (S3Client client = S3Client.builder().region(Region.of(settings.region()))
-            .endpointOverride(settings.endpoint()).credentialsProvider(credentials).build()) {
+        try (S3Client client = buildClient(settings, credentials)) {
             return action.apply(client);
         }
     }
