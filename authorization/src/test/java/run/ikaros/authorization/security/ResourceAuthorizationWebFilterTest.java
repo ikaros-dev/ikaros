@@ -27,6 +27,27 @@ import reactor.core.publisher.Mono;
 
 class ResourceAuthorizationWebFilterTest {
     @Test
+    void allowsIngestionReadPermissionToListSources() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(
+            MockServerHttpRequest.get("/api/ingestion/sources").build());
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 0L,
+                java.util.List.of(PlatformPermission.INGESTION_READ.key())));
+        WebFilterChain chain = mock(WebFilterChain.class);
+        AccessControlService accessControl = mock(AccessControlService.class);
+        when(accessControl.require(eq(actor), eq(SecurityVerificationLevel.SVL_0), eq(null), any()))
+            .thenReturn(Mono.empty());
+        when(chain.filter(exchange)).thenReturn(Mono.empty());
+
+        new ResourceAuthorizationWebFilter(accessControl).filter(exchange, chain).block();
+
+        verify(accessControl).require(eq(actor), eq(SecurityVerificationLevel.SVL_0), eq(null),
+            argThat(policy -> policy.permission() == PlatformPermission.INGESTION_READ));
+        verify(chain).filter(exchange);
+    }
+
+    @Test
     void exposesExactlyOneRequiredSpringConstructor() {
         long autowiredConstructors = Arrays.stream(ResourceAuthorizationWebFilter.class.getConstructors())
             .filter(constructor -> constructor.isAnnotationPresent(Autowired.class))

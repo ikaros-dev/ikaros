@@ -152,7 +152,10 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
                 : PlatformPermission.STORAGE_PROVIDER_MANAGE;
         }
         if (path.contains("/admin/blobs")) return PlatformPermission.STORAGE_PROVIDER_READ;
-        if (path.contains("/ingestion/sources")) return PlatformPermission.INGESTION_SOURCE_MANAGE;
+        if (path.contains("/ingestion/sources")) {
+            return "GET".equals(method) ? PlatformPermission.INGESTION_READ
+                : PlatformPermission.INGESTION_SOURCE_MANAGE;
+        }
         if ("GET".equals(method)) return PlatformPermission.RESOURCE_READ;
         if ("DELETE".equals(method)) return PlatformPermission.RESOURCE_DELETE;
         return PlatformPermission.RESOURCE_WRITE;
