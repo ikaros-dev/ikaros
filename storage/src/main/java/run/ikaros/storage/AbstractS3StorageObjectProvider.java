@@ -5,6 +5,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -24,6 +26,7 @@ import run.ikaros.storage.api.StorageProviderProbeStatus;
 
 /** S3 API implementation shared by cloud vendors exposing S3-compatible APIs. */
 abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractS3StorageObjectProvider.class);
     private static final Duration URL_TTL = Duration.ofMinutes(15);
     @Value("${ikaros.storage.upload-url-ttl:PT15M}")
     private Duration timeout = URL_TTL;
@@ -144,8 +147,15 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
                 }
             }
         })).subscribeOn(Schedulers.boundedElastic())
-            .onErrorResume(error -> Mono.just(new StorageProviderProbeResult(provider.id(),
-                StorageProviderProbeStatus.FAILED, false, false, false, Instant.now(), classifyProbeError(error))));
+            .onErrorResume(error -> {
+                // 探测失败的具体原因（连接/认证/Endpoint/权限等）只在 debug 级别输出，
+                // 便于排查，同时避免默认日志噪音与凭据外泄。
+                LOGGER.debug("Storage Provider[{}] probe failed (type={}, endpoint={}, bucket={})",
+                    provider.providerKey(), provider.providerType(),
+                    provider.metadata().get("endpoint"), provider.metadata().get("bucket"), error);
+                return Mono.just(new StorageProviderProbeResult(provider.id(),
+                    StorageProviderProbeStatus.FAILED, false, false, false, Instant.now(), classifyProbeError(error)));
+            });
     }
 
     private String classifyProbeError(Throwable error) {
