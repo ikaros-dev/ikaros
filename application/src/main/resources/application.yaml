@@ -32,6 +32,12 @@ ikaros:
     verification:
       # Step-up Verification Grant 有效期；决定客户端可复用已验证状态的时间窗口。
       grant-ttl: ${IKAROS_SECURITY_VERIFICATION_GRANT_TTL:PT5M}
+      # Email/SMS OTP 挑战策略；issue-window 与 max-issues-per-window 共同构成单用户发起频率限制。
+      otp:
+        ttl: ${IKAROS_SECURITY_VERIFICATION_OTP_TTL:PT5M}
+        issue-window: ${IKAROS_SECURITY_VERIFICATION_OTP_ISSUE_WINDOW:PT10M}
+        max-issues-per-window: ${IKAROS_SECURITY_VERIFICATION_OTP_MAX_ISSUES_PER_WINDOW:3}
+        max-attempts: ${IKAROS_SECURITY_VERIFICATION_OTP_MAX_ATTEMPTS:5}
       email:
         delivery: ${IKAROS_SECURITY_EMAIL_DELIVERY:NOOP}
         endpoint: ${IKAROS_SECURITY_EMAIL_ENDPOINT:}
