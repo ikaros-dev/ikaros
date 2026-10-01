@@ -137,6 +137,49 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
+    void readsDeliveryBindingsWithDeliveryReadPermission() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
+            "/api/storage/providers/" + UUID.randomUUID() + "/delivery-bindings").build());
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 1L,
+                java.util.List.of(PlatformPermission.STORAGE_DELIVERY_READ.key()),
+                SecurityVerificationLevel.SVL_0, null, null, null));
+        WebFilterChain chain = mock(WebFilterChain.class);
+        when(chain.filter(exchange)).thenReturn(Mono.empty());
+        AccessControlService accessControl = mock(AccessControlService.class);
+        when(accessControl.require(eq(actor), any(), any(), any())).thenReturn(Mono.empty());
+
+        new ResourceAuthorizationWebFilter(accessControl).filter(exchange, chain).block();
+
+        verify(accessControl).require(eq(actor), any(), any(),
+            argThat(policy -> policy.permission() == PlatformPermission.STORAGE_DELIVERY_READ));
+        verify(chain).filter(exchange);
+    }
+
+    @Test
+    void writesDeliveryBindingsOnlyWithDeliveryManagePermission() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(
+            "/api/storage/providers/" + UUID.randomUUID() + "/delivery-bindings").build());
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 1L,
+                java.util.List.of(PlatformPermission.STORAGE_DELIVERY_MANAGE.key()),
+                SecurityVerificationLevel.SVL_2, null, null, null));
+        WebFilterChain chain = mock(WebFilterChain.class);
+        when(chain.filter(exchange)).thenReturn(Mono.empty());
+        AccessControlService accessControl = mock(AccessControlService.class);
+        when(accessControl.require(eq(actor), eq(SecurityVerificationLevel.SVL_2), eq(null), any()))
+            .thenReturn(Mono.empty());
+
+        new ResourceAuthorizationWebFilter(accessControl).filter(exchange, chain).block();
+
+        verify(accessControl).require(eq(actor), eq(SecurityVerificationLevel.SVL_2), eq(null),
+            argThat(policy -> policy.permission() == PlatformPermission.STORAGE_DELIVERY_MANAGE));
+        verify(chain).filter(exchange);
+    }
+
+    @Test
     void rejectsStorageProviderAdminAliasWithoutToken() {
         UUID actor = UUID.randomUUID();
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
