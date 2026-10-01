@@ -380,7 +380,7 @@ onMounted(() => void loadProviders());
         <template #default="scope">
           <el-button link type="primary" @click="openDetail(scope.row)">{{ t("storageProviderManagement.details") }}</el-button>
           <el-button link type="primary" @click="openEdit(scope.row)">{{ t("storageProviderManagement.edit") }}</el-button>
-          <el-button link type="primary" :loading="probingId === scope.row.id" @click="probe(scope.row)">
+          <el-button link type="primary" :disabled="!scope.row.enabled" :loading="probingId === scope.row.id" @click="probe(scope.row)">
             {{ t("storageProviderManagement.probe") }}
           </el-button>
           <el-button link type="primary" :loading="mutatingId === scope.row.id" @click="setEnabled(scope.row, !scope.row.enabled)">
