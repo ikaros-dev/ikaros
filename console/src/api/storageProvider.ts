@@ -63,6 +63,39 @@ export const createStorageProvider = (data: CreateStorageProviderRequest, idempo
     headers: { "Idempotency-Key": idempotencyKey }
   });
 
+export type UpdateStorageProviderRequest = {
+  provider_type: string;
+  display_name: string;
+  tier: StorageProvider["tier"];
+  configuration: Record<string, unknown>;
+};
+
+export const updateStorageProvider = (
+  providerId: string,
+  data: UpdateStorageProviderRequest,
+  version: number
+) =>
+  http.request<StorageProvider>("put", `/admin/storage-providers/${providerId}`, {
+    data,
+    headers: { "If-Match": `"${version}"` }
+  });
+
+export type ReplaceStorageProviderCredentialsRequest = {
+  access_key_id: string;
+  secret_access_key: string;
+  session_token?: string;
+};
+
+export const replaceStorageProviderCredentials = (
+  providerId: string,
+  data: ReplaceStorageProviderCredentialsRequest
+) =>
+  http.request<StorageProviderProbe>(
+    "post",
+    `/admin/storage-providers/${providerId}/credentials`,
+    { data }
+  );
+
 export const enableStorageProvider = (providerId: string) =>
   http.request<StorageProvider>("post", `/admin/storage-providers/${providerId}/enable`);
 

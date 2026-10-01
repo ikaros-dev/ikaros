@@ -16,6 +16,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
 
@@ -130,29 +131,33 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
     public Mono<StorageProvider> enable(UUID providerId) { return change(providerId, StorageProviderStatus.ENABLED); }
 
     @Override
-    public Mono<StorageProvider> update(UUID providerId, UpdateStorageProviderRequest request) {
+    public Mono<StorageProvider> update(UUID providerId, UpdateStorageProviderRequest request, long expectedVersion) {
         if (request == null) return Mono.error(new IllegalArgumentException("更新请求不能为空"));
         return repository.findById(providerId)
             .switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
             .flatMap(current -> {
+                if (current.version() == null || current.version() != expectedVersion) {
+                    return Mono.error(new PreconditionFailedException("Storage Provider 版本已变更，请刷新后重试"));
+                }
                 String secret = request.secretReference() == null ? current.secretReference() : request.secretReference();
                 if (request.secretReference() != null && !secret.startsWith("secret://")) {
                     return Mono.error(new ConflictException("Provider secret reference 必须使用 secret:// URI"));
                 }
-                String type = request.providerType() == null ? current.providerType() : request.providerType();
+                String type = request.providerType() == null ? current.providerType() : request.providerType().name();
                 String tier = request.tier() == null ? current.tier() : request.tier().name();
-                Map<String, Object> requestedMetadata = request.metadata();
-                if (requestedMetadata != null && requestedMetadata.values().stream().anyMatch(value -> value instanceof String valueString
-                    && (valueString.toLowerCase().contains("password")
-                        || valueString.toLowerCase().contains("secret")))) {
+                String displayName = request.displayName() == null ? current.displayName() : request.displayName();
+                Map<String, Object> requestedConfiguration = request.configuration();
+                if (containsPlaintextCredential(requestedConfiguration)) {
                     return Mono.error(new ConflictException("Provider metadata 不得保存明文凭据"));
                 }
-                return encode(requestedMetadata == null ? readMetadata(current.providerMetadata().asString()) : requestedMetadata)
-                    .flatMap(metadata -> repository.save(new StorageProviderEntity(current.id(), current.providerKey(),
-                        type, tier, current.status(), secret, metadata, current.accessKeyIdCiphertext(),
-                        current.secretAccessKeyCiphertext(), current.sessionTokenCiphertext(), current.createdAt(), Instant.now(),
-                        current.displayName(), current.capabilities().asString(), current.enabled(), current.drainStatus(),
-                        current.version(), metadata, current.idempotencyKey(), current.requestFingerprint())))
+                return encode(requestedConfiguration == null
+                        ? readMetadata(current.configuration().asString()) : requestedConfiguration)
+                    .flatMap(configuration -> repository.save(new StorageProviderEntity(current.id(), current.providerKey(),
+                        type, tier, current.status(), secret, current.providerMetadata().asString(),
+                        current.accessKeyIdCiphertext(), current.secretAccessKeyCiphertext(),
+                        current.sessionTokenCiphertext(), current.createdAt(), Instant.now(), displayName,
+                        current.capabilities().asString(), current.enabled(), current.drainStatus(), current.version(),
+                        configuration, current.idempotencyKey(), current.requestFingerprint())))
                     .map(this::toModel)
                     .flatMap(provider -> emit("storage.provider.updated", provider,
                         "{\"provider_id\":\"" + provider.id()
@@ -245,9 +250,10 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
     private String changedFields(UpdateStorageProviderRequest request) {
         java.util.List<String> fields = new java.util.ArrayList<>();
         if (request.providerType() != null) fields.add("\"provider_type\"");
+        if (request.displayName() != null) fields.add("\"display_name\"");
         if (request.tier() != null) fields.add("\"tier\"");
         if (request.secretReference() != null) fields.add("\"secret_reference\"");
-        if (request.metadata() != null) fields.add("\"metadata\"");
+        if (request.configuration() != null) fields.add("\"configuration\"");
         return "[" + String.join(",", fields) + "]";
     }
 

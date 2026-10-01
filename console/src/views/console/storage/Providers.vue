@@ -9,10 +9,13 @@ import {
   listStorageProviders,
   probeStorageProvider,
   createStorageProvider,
+  updateStorageProvider,
+  replaceStorageProviderCredentials,
   enableStorageProvider,
   disableStorageProvider,
   deleteStorageProvider,
   type CreateStorageProviderRequest,
+  type UpdateStorageProviderRequest,
   type StorageProvider,
   type StorageProviderStatus
 } from "@/api/storageProvider";
@@ -43,6 +46,20 @@ const createForm = reactive({
   endpoint: "",
   bucket: "",
   region: ""
+});
+const editVisible = ref(false);
+const editLoading = ref(false);
+const editTarget = ref<StorageProvider | null>(null);
+const editForm = reactive({
+  provider_type: "S3",
+  display_name: "",
+  tier: "HOT" as StorageProvider["tier"],
+  endpoint: "",
+  bucket: "",
+  region: "",
+  access_key_id: "",
+  secret_access_key: "",
+  session_token: ""
 });
 const stepUp = useStepUpVerification();
 const pendingMutation = ref<(() => Promise<void>) | null>(null);
@@ -185,6 +202,62 @@ const submitCreate = async () => {
   }
 };
 
+const openEdit = (provider: StorageProvider) => {
+  editTarget.value = provider;
+  const configuration = provider.configuration ?? {};
+  Object.assign(editForm, {
+    provider_type: providerTypes.includes(provider.provider_type) ? provider.provider_type : providerTypes[0],
+    display_name: provider.display_name,
+    tier: provider.tier,
+    endpoint: String(configuration.endpoint ?? ""),
+    bucket: String(configuration.bucket ?? ""),
+    region: String(configuration.region ?? ""),
+    access_key_id: "",
+    secret_access_key: "",
+    session_token: ""
+  });
+  editVisible.value = true;
+};
+
+const submitEdit = async () => {
+  const provider = editTarget.value;
+  if (!provider || !editForm.display_name.trim() || !editForm.provider_type.trim()) return;
+  const accessKeyId = editForm.access_key_id.trim();
+  const secretAccessKey = editForm.secret_access_key.trim();
+  if (Boolean(accessKeyId) !== Boolean(secretAccessKey)) {
+    ElMessage.warning(t("storageProviderManagement.credentialsPaired"));
+    return;
+  }
+  const configuration = Object.fromEntries(
+    Object.entries({ endpoint: editForm.endpoint, bucket: editForm.bucket, region: editForm.region })
+      .filter(([, value]) => value.trim())
+  );
+  const request: UpdateStorageProviderRequest = {
+    provider_type: editForm.provider_type,
+    display_name: editForm.display_name.trim(),
+    tier: editForm.tier,
+    configuration
+  };
+  editVisible.value = false;
+  await runWithVerification(async () => {
+    editLoading.value = true;
+    try {
+      await updateStorageProvider(provider.id, request, provider.version);
+      if (accessKeyId && secretAccessKey) {
+        await replaceStorageProviderCredentials(provider.id, {
+          access_key_id: accessKeyId,
+          secret_access_key: secretAccessKey,
+          ...(editForm.session_token.trim() ? { session_token: editForm.session_token.trim() } : {})
+        });
+      }
+      ElMessage.success(t("storageProviderManagement.updateSuccess"));
+      await loadProviders();
+    } finally {
+      editLoading.value = false;
+    }
+  });
+};
+
 const setEnabled = async (provider: StorageProvider, enabled: boolean) => {
   await runWithVerification(async () => {
     mutatingId.value = provider.id;
@@ -303,9 +376,10 @@ onMounted(() => void loadProviders());
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column :label="t('storageProviderManagement.actions')" width="310" fixed="right">
+      <el-table-column :label="t('storageProviderManagement.actions')" width="360" fixed="right">
         <template #default="scope">
           <el-button link type="primary" @click="openDetail(scope.row)">{{ t("storageProviderManagement.details") }}</el-button>
+          <el-button link type="primary" @click="openEdit(scope.row)">{{ t("storageProviderManagement.edit") }}</el-button>
           <el-button link type="primary" :loading="probingId === scope.row.id" @click="probe(scope.row)">
             {{ t("storageProviderManagement.probe") }}
           </el-button>
@@ -403,6 +477,49 @@ onMounted(() => void loadProviders());
       <template #footer>
         <el-button @click="createVisible = false">{{ t("buttons.pureClose") }}</el-button>
         <el-button type="primary" :loading="createLoading" @click="submitCreate">{{ t("storageProviderManagement.create") }}</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="editVisible" :title="t('storageProviderManagement.editTitle')" width="560px">
+      <el-form :model="editForm" label-width="140px">
+        <el-form-item :label="t('storageProviderManagement.key')">
+          <el-input :model-value="editTarget?.provider_key" disabled />
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.type')" required>
+          <el-select v-model="editForm.provider_type" class="w-full">
+            <el-option v-for="type in providerTypes" :key="type" :label="type" :value="type" />
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.name')" required>
+          <el-input v-model="editForm.display_name" maxlength="256" />
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.tier')" required>
+          <el-select v-model="editForm.tier" class="w-full">
+            <el-option v-for="tier in ['HOT', 'WARM', 'COLD', 'ARCHIVE', 'DEEP_ARCHIVE']" :key="tier" :label="tier" :value="tier" />
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.endpoint')">
+          <el-input v-model="editForm.endpoint" />
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.bucket')">
+          <el-input v-model="editForm.bucket" />
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.region')">
+          <el-input v-model="editForm.region" />
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.accessKeyId')">
+          <el-input v-model="editForm.access_key_id" maxlength="256" :placeholder="t('storageProviderManagement.credentialsUnchanged')" />
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.secretAccessKey')">
+          <el-input v-model="editForm.secret_access_key" type="password" show-password maxlength="512" :placeholder="t('storageProviderManagement.credentialsUnchanged')" />
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.sessionToken')">
+          <el-input v-model="editForm.session_token" type="password" show-password maxlength="2048" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editVisible = false">{{ t("buttons.pureClose") }}</el-button>
+        <el-button type="primary" :loading="editLoading" @click="submitEdit">{{ t("buttons.pureConfirm") }}</el-button>
       </template>
     </el-dialog>
 

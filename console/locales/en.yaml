@@ -314,6 +314,10 @@ storageProviderManagement:
   actions: Actions
   details: Details
   probe: Probe
+  edit: Edit
+  editTitle: Edit storage provider
+  updateSuccess: Storage provider updated
+  credentialsUnchanged: Leave blank to keep unchanged
   empty: No storage providers
   version: Version
   capabilities: Capabilities

@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.NotFoundException;
+import run.ikaros.common.PreconditionFailedException;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
 
@@ -56,22 +57,28 @@ public class InMemoryStorageProviderRegistry implements StorageProviderRegistry 
     public Mono<StorageProvider> enable(UUID providerId) { return change(providerId, StorageProviderStatus.ENABLED); }
 
     @Override
-    public Mono<StorageProvider> update(UUID providerId, UpdateStorageProviderRequest request) {
+    public Mono<StorageProvider> update(UUID providerId, UpdateStorageProviderRequest request, long expectedVersion) {
         if (request == null) return Mono.error(new IllegalArgumentException("更新请求不能为空"));
         return get(providerId).flatMap(current -> {
+            if (current.version() != expectedVersion) {
+                return Mono.error(new PreconditionFailedException("Storage Provider 版本已变更，请刷新后重试"));
+            }
             String secret = request.secretReference() == null ? current.secretReference() : request.secretReference();
             if (request.secretReference() != null && !secret.startsWith("secret://")) {
                 return Mono.error(new ConflictException("Provider secret reference 必须使用 secret:// URI"));
             }
-            Map<String, Object> metadata = request.metadata() == null ? current.metadata() : request.metadata();
-            if (metadata.values().stream().anyMatch(value -> value instanceof String string
+            Map<String, Object> configuration = request.configuration() == null
+                ? current.metadata() : request.configuration();
+            if (configuration.values().stream().anyMatch(value -> value instanceof String string
                 && (string.toLowerCase().contains("password") || string.toLowerCase().contains("secret")))) {
                 return Mono.error(new ConflictException("Provider metadata 不得保存明文凭据"));
             }
             StorageProvider updated = new StorageProvider(current.id(), current.providerKey(),
-                request.providerType() == null ? current.providerType() : request.providerType(),
-                request.tier() == null ? current.tier() : request.tier(), current.status(), secret, metadata,
-                current.createdAt(), Instant.now());
+                request.providerType() == null ? current.providerType() : request.providerType().name(),
+                request.tier() == null ? current.tier() : request.tier(), current.status(), secret, configuration,
+                current.createdAt(), Instant.now(),
+                request.displayName() == null ? current.displayName() : request.displayName(),
+                current.capabilities(), current.enabled(), current.drainStatus(), current.version());
             providers.replace(providerId, current, updated);
             return emitUpdated(updated, request).thenReturn(updated);
         });
@@ -133,9 +140,10 @@ public class InMemoryStorageProviderRegistry implements StorageProviderRegistry 
     private String changedFields(UpdateStorageProviderRequest request) {
         java.util.List<String> fields = new java.util.ArrayList<>();
         if (request.providerType() != null) fields.add("\"provider_type\"");
+        if (request.displayName() != null) fields.add("\"display_name\"");
         if (request.tier() != null) fields.add("\"tier\"");
         if (request.secretReference() != null) fields.add("\"secret_reference\"");
-        if (request.metadata() != null) fields.add("\"metadata\"");
+        if (request.configuration() != null) fields.add("\"configuration\"");
         return "[" + String.join(",", fields) + "]";
     }
 }

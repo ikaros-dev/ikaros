@@ -562,6 +562,11 @@ TENCENT_COS_S3                   // 腾讯云 COS（S3 协议）
 LOCAL_FILESYSTEM                 // 本地文件系统
 ```
 
+Provider 的 `provider_type`、`display_name`、`tier` 与非敏感 `configuration` 通过
+`PUT /api/admin/storage-providers/{provider_id}` 按 `If-Match` 版本更新，版本不匹配返回 412；
+`provider_key` 与启停状态不经过该命令。凭据替换仍走
+`POST /api/admin/storage-providers/{provider_id}/credentials`，请求与响应均不回显明文。
+
 ### 9.3 管理模式与健康状态分离
 
 Provider 管理模式：

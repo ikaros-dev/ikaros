@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -66,6 +67,15 @@ public class StorageProviderController {
     @GetMapping("/{providerId}")
     public Mono<StorageProviderView> get(@PathVariable UUID providerId) {
         return registry.get(providerId).map(StorageProviderView::from);
+    }
+
+    @PutMapping("/{providerId}")
+    public Mono<ResponseEntity<StorageProviderView>> update(@PathVariable UUID providerId,
+        @RequestHeader(value = "If-Match", required = false) String ifMatch,
+        @Valid @RequestBody UpdateStorageProviderRequest request) {
+        return registry.update(providerId, request, IfMatchVersion.parse(ifMatch))
+            .map(provider -> ResponseEntity.ok().eTag(IfMatchVersion.etag(provider.version()))
+                .body(StorageProviderView.from(provider)));
     }
 
     @PostMapping("/{providerId}/enable")

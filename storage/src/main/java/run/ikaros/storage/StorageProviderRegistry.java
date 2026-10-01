@@ -37,7 +37,7 @@ public interface StorageProviderRegistry {
                                            String accessKeyId, String secretAccessKey, String sessionToken) {
         return register(providerKey, providerType, tier, secretReference, metadata);
     }
-    Mono<StorageProvider> update(UUID providerId, UpdateStorageProviderRequest request);
+    Mono<StorageProvider> update(UUID providerId, UpdateStorageProviderRequest request, long expectedVersion);
     Mono<StorageProvider> enable(UUID providerId);
     Mono<StorageProvider> disable(UUID providerId);
     Mono<StorageProvider> drain(UUID providerId);

@@ -314,6 +314,10 @@ storageProviderManagement:
   actions: 操作
   details: 详情
   probe: 探测
+  edit: 编辑
+  editTitle: 编辑存储提供方
+  updateSuccess: 存储提供方已更新
+  credentialsUnchanged: 留空表示不修改
   empty: 暂无存储提供方
   version: 版本
   capabilities: 能力
