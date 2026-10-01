@@ -19,6 +19,18 @@ import {
   type StorageProvider,
   type StorageProviderStatus
 } from "@/api/storageProvider";
+import {
+  createDeliveryBinding,
+  deleteDeliveryBinding,
+  listDeliveryBindings,
+  listDeliveryProviders,
+  updateDeliveryBinding,
+  type DeliveryBinding,
+  type DeliveryBindingCacheKeyPolicy,
+  type DeliveryBindingRangePolicy,
+  type DeliveryBindingRequest,
+  type DeliveryProvider
+} from "@/api/deliveryProvider";
 import { getHttpErrorMessage } from "@/utils/http";
 import { useStepUpVerification } from "@/composables/useStepUpVerification";
 
@@ -68,6 +80,26 @@ const verificationLoading = stepUp.loading;
 const verificationCode = stepUp.code;
 const form = reactive({ query: "", tier: "", enabled: "" });
 const providerTypes = ["S3", "AWS_S3", "S3_COMPATIBLE", "ALIYUN_OSS_S3", "TENCENT_COS_S3", "LOCAL_FILESYSTEM"];
+
+const deliveryVisible = ref(false);
+const deliveryTarget = ref<StorageProvider | null>(null);
+const deliveryLoading = ref(false);
+const deliveryBindings = ref<DeliveryBinding[]>([]);
+const deliveryProviders = ref<DeliveryProvider[]>([]);
+const bindingVisible = ref(false);
+const bindingLoading = ref(false);
+const bindingMutatingId = ref("");
+const bindingTarget = ref<DeliveryBinding | null>(null);
+const cacheKeyPolicies: DeliveryBindingCacheKeyPolicy[] = ["CONTENT_IDENTITY", "FULL_REQUEST", "NO_CACHE"];
+const rangePolicies: DeliveryBindingRangePolicy[] = ["PASSTHROUGH", "FIXED_CHUNK", "UNSUPPORTED"];
+const bindingForm = reactive({
+  deliveryProviderKey: "",
+  priority: 10,
+  enabled: true,
+  cacheKeyPolicy: "CONTENT_IDENTITY" as DeliveryBindingCacheKeyPolicy,
+  rangePolicy: "PASSTHROUGH" as DeliveryBindingRangePolicy,
+  fallbackParticipation: false
+});
 
 const filteredProviders = computed(() => {
   const query = form.query.trim().toLowerCase();
@@ -294,6 +326,153 @@ const removeProvider = async (provider: StorageProvider) => {
   });
 };
 
+const deliveryProviderLabel = (providerKey: string) => {
+  const provider = deliveryProviders.value.find(item => item.providerKey === providerKey);
+  if (!provider) return providerKey;
+  return `${provider.displayName || provider.providerKey} (${provider.providerKey})`;
+};
+
+const loadDeliveryProviderOptions = async () => {
+  try {
+    deliveryProviders.value = await listDeliveryProviders();
+  } catch {
+    deliveryProviders.value = [];
+  }
+};
+
+const loadDeliveryBindings = async () => {
+  const provider = deliveryTarget.value;
+  if (!provider) return;
+  deliveryLoading.value = true;
+  try {
+    await loadDeliveryProviderOptions();
+    deliveryBindings.value = await listDeliveryBindings(provider.id);
+  } catch (error) {
+    ElMessage.error(getHttpErrorMessage(error, t("storageProviderManagement.deliveryLoadFailed")));
+  } finally {
+    deliveryLoading.value = false;
+  }
+};
+
+const openDelivery = async (provider: StorageProvider) => {
+  deliveryTarget.value = provider;
+  deliveryVisible.value = true;
+  await loadDeliveryBindings();
+};
+
+const openBindingCreate = () => {
+  bindingTarget.value = null;
+  const maxPriority = deliveryBindings.value.reduce((max, item) => Math.max(max, item.priority), 0);
+  Object.assign(bindingForm, {
+    deliveryProviderKey: deliveryProviders.value[0]?.providerKey ?? "",
+    priority: maxPriority + 10,
+    enabled: true,
+    cacheKeyPolicy: "CONTENT_IDENTITY",
+    rangePolicy: "PASSTHROUGH",
+    fallbackParticipation: false
+  });
+  bindingVisible.value = true;
+};
+
+const openBindingEdit = (binding: DeliveryBinding) => {
+  bindingTarget.value = binding;
+  Object.assign(bindingForm, {
+    deliveryProviderKey: binding.deliveryProviderKey,
+    priority: binding.priority,
+    enabled: binding.enabled,
+    cacheKeyPolicy: binding.cacheKeyPolicy,
+    rangePolicy: binding.rangePolicy,
+    fallbackParticipation: binding.fallbackParticipation
+  });
+  bindingVisible.value = true;
+};
+
+const submitBinding = async () => {
+  const provider = deliveryTarget.value;
+  if (!provider || !bindingForm.deliveryProviderKey.trim()) return;
+  const request: DeliveryBindingRequest = {
+    deliveryProviderKey: bindingForm.deliveryProviderKey.trim(),
+    priority: Math.max(0, Number(bindingForm.priority) || 0),
+    enabled: bindingForm.enabled,
+    cacheKeyPolicy: bindingForm.cacheKeyPolicy,
+    rangePolicy: bindingForm.rangePolicy,
+    fallbackParticipation: bindingForm.fallbackParticipation
+  };
+  const target = bindingTarget.value;
+  bindingVisible.value = false;
+  await runWithVerification(async () => {
+    bindingLoading.value = true;
+    try {
+      if (target && target.version != null) {
+        await updateDeliveryBinding(provider.id, target.id, request, target.version);
+      } else {
+        await createDeliveryBinding(provider.id, request);
+      }
+      ElMessage.success(t("storageProviderManagement.bindingSaveSuccess"));
+      await loadDeliveryBindings();
+    } finally {
+      bindingLoading.value = false;
+    }
+  });
+};
+
+const toggleBinding = async (binding: DeliveryBinding) => {
+  const provider = deliveryTarget.value;
+  if (!provider || binding.version == null) return;
+  await runWithVerification(async () => {
+    bindingMutatingId.value = binding.id;
+    try {
+      await updateDeliveryBinding(
+        provider.id,
+        binding.id,
+        {
+          deliveryProviderKey: binding.deliveryProviderKey,
+          priority: binding.priority,
+          enabled: !binding.enabled,
+          cacheKeyPolicy: binding.cacheKeyPolicy,
+          rangePolicy: binding.rangePolicy,
+          fallbackParticipation: binding.fallbackParticipation
+        },
+        binding.version as number
+      );
+      ElMessage.success(t(
+        binding.enabled
+          ? "storageProviderManagement.bindingDisableSuccess"
+          : "storageProviderManagement.bindingEnableSuccess"
+      ));
+      await loadDeliveryBindings();
+    } finally {
+      bindingMutatingId.value = "";
+    }
+  });
+};
+
+const removeBinding = async (binding: DeliveryBinding) => {
+  const provider = deliveryTarget.value;
+  if (!provider) return;
+  try {
+    await ElMessageBox.confirm(
+      t("storageProviderManagement.bindingDeleteConfirm", {
+        key: deliveryProviderLabel(binding.deliveryProviderKey)
+      }),
+      t("storageProviderManagement.bindingDeleteTitle"),
+      { type: "warning", confirmButtonText: t("buttons.pureConfirm"), cancelButtonText: t("buttons.pureClose") }
+    );
+  } catch {
+    return;
+  }
+  await runWithVerification(async () => {
+    bindingMutatingId.value = binding.id;
+    try {
+      await deleteDeliveryBinding(provider.id, binding.id);
+      ElMessage.success(t("storageProviderManagement.bindingDeleteSuccess"));
+      await loadDeliveryBindings();
+    } finally {
+      bindingMutatingId.value = "";
+    }
+  });
+};
+
 const probe = async (provider: StorageProvider) => {
   probingId.value = provider.id;
   await runWithVerification(async () => {
@@ -376,10 +555,11 @@ onMounted(() => void loadProviders());
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column :label="t('storageProviderManagement.actions')" width="360" fixed="right">
+      <el-table-column :label="t('storageProviderManagement.actions')" width="420" fixed="right">
         <template #default="scope">
           <el-button link type="primary" @click="openDetail(scope.row)">{{ t("storageProviderManagement.details") }}</el-button>
           <el-button link type="primary" @click="openEdit(scope.row)">{{ t("storageProviderManagement.edit") }}</el-button>
+          <el-button link type="primary" @click="openDelivery(scope.row)">{{ t("storageProviderManagement.delivery") }}</el-button>
           <el-button link type="primary" :disabled="!scope.row.enabled" :loading="probingId === scope.row.id" @click="probe(scope.row)">
             {{ t("storageProviderManagement.probe") }}
           </el-button>
@@ -436,6 +616,118 @@ onMounted(() => void loadProviders());
         </template>
       </template>
     </el-drawer>
+
+    <el-drawer
+      v-model="deliveryVisible"
+      direction="rtl"
+      size="720px"
+      :title="t('storageProviderManagement.deliveryTitle', { name: deliveryTarget?.display_name ?? '' })"
+    >
+      <div class="mb-3 flex items-center justify-between">
+        <span class="text-sm text-gray-500">
+          {{ t("storageProviderManagement.deliveryHint") }}
+        </span>
+        <div>
+          <el-button :loading="deliveryLoading" @click="loadDeliveryBindings">{{ t("storageProviderManagement.refresh") }}</el-button>
+          <el-button type="primary" :disabled="deliveryProviders.length === 0" @click="openBindingCreate">
+            {{ t("storageProviderManagement.bindingCreate") }}
+          </el-button>
+        </div>
+      </div>
+      <el-alert
+        v-if="deliveryProviders.length === 0"
+        class="mb-3"
+        type="info"
+        :closable="false"
+        :title="t('storageProviderManagement.noDeliveryProviders')"
+      />
+      <el-table v-loading="deliveryLoading" :data="deliveryBindings" row-key="id" border>
+        <el-table-column :label="t('storageProviderManagement.deliveryProvider')" min-width="200">
+          <template #default="scope">{{ deliveryProviderLabel(scope.row.deliveryProviderKey) }}</template>
+        </el-table-column>
+        <el-table-column prop="priority" :label="t('storageProviderManagement.priority')" width="90" />
+        <el-table-column :label="t('storageProviderManagement.status')" width="100">
+          <template #default="scope">
+            <el-tag :type="scope.row.enabled ? 'success' : 'info'">
+              {{ scope.row.enabled ? t("storageProviderManagement.enabled") : t("storageProviderManagement.disabled") }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="cacheKeyPolicy" :label="t('storageProviderManagement.cacheKeyPolicy')" width="150" />
+        <el-table-column prop="rangePolicy" :label="t('storageProviderManagement.rangePolicy')" width="140" />
+        <el-table-column :label="t('storageProviderManagement.fallbackParticipation')" width="120">
+          <template #default="scope">{{ scope.row.fallbackParticipation ? t("storageProviderManagement.yes") : t("storageProviderManagement.no") }}</template>
+        </el-table-column>
+        <el-table-column :label="t('storageProviderManagement.actions')" width="230" fixed="right">
+          <template #default="scope">
+            <el-button link type="primary" @click="openBindingEdit(scope.row)">{{ t("storageProviderManagement.edit") }}</el-button>
+            <el-button
+              link
+              type="primary"
+              :loading="bindingMutatingId === scope.row.id"
+              @click="toggleBinding(scope.row)"
+            >
+              {{ scope.row.enabled ? t("storageProviderManagement.disable") : t("storageProviderManagement.enable") }}
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              :loading="bindingMutatingId === scope.row.id"
+              @click="removeBinding(scope.row)"
+            >
+              {{ t("storageProviderManagement.bindingUnbind") }}
+            </el-button>
+          </template>
+        </el-table-column>
+        <template #empty>
+          <el-empty :description="t('storageProviderManagement.bindingEmpty')" />
+        </template>
+      </el-table>
+    </el-drawer>
+
+    <el-dialog
+      v-model="bindingVisible"
+      :title="bindingTarget ? t('storageProviderManagement.bindingEditTitle') : t('storageProviderManagement.bindingCreateTitle')"
+      width="560px"
+    >
+      <el-form :model="bindingForm" label-width="170px">
+        <el-form-item :label="t('storageProviderManagement.deliveryProvider')" required>
+          <el-select v-model="bindingForm.deliveryProviderKey" class="w-full">
+            <el-option
+              v-for="item in deliveryProviders"
+              :key="item.id"
+              :label="deliveryProviderLabel(item.providerKey)"
+              :value="item.providerKey"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.priority')" required>
+          <el-input-number v-model="bindingForm.priority" :min="0" class="w-full" />
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.enabled')">
+          <el-switch v-model="bindingForm.enabled" />
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.cacheKeyPolicy')" required>
+          <el-select v-model="bindingForm.cacheKeyPolicy" class="w-full">
+            <el-option v-for="policy in cacheKeyPolicies" :key="policy" :label="policy" :value="policy" />
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.rangePolicy')" required>
+          <el-select v-model="bindingForm.rangePolicy" class="w-full">
+            <el-option v-for="policy in rangePolicies" :key="policy" :label="policy" :value="policy" />
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="t('storageProviderManagement.fallbackParticipation')">
+          <el-switch v-model="bindingForm.fallbackParticipation" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="bindingVisible = false">{{ t("buttons.pureClose") }}</el-button>
+        <el-button type="primary" :loading="bindingLoading" @click="submitBinding">
+          {{ t("buttons.pureConfirm") }}
+        </el-button>
+      </template>
+    </el-dialog>
 
     <el-dialog v-model="createVisible" :title="t('storageProviderManagement.create')" width="560px">
       <el-form :model="createForm" label-width="140px">

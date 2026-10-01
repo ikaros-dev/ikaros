@@ -330,6 +330,29 @@ storageProviderManagement:
   loadFailed: Failed to load storage providers
   detailFailed: Failed to load provider details
   probeFailed: Failed to probe provider
+  delivery: Delivery
+  deliveryTitle: Delivery management · {name}
+  deliveryHint: A storage provider can bind multiple delivery providers, tried in ascending priority order.
+  deliveryLoadFailed: Failed to load delivery bindings
+  deliveryProvider: Delivery provider
+  noDeliveryProviders: This instance has no delivery providers yet, so no binding can be added.
+  bindingCreate: Add binding
+  bindingCreateTitle: Add delivery binding
+  bindingEditTitle: Edit delivery binding
+  bindingEmpty: No delivery bindings
+  bindingSaveSuccess: Delivery binding saved
+  bindingEnableSuccess: Delivery binding enabled
+  bindingDisableSuccess: Delivery binding disabled
+  bindingUnbind: Unbind
+  bindingDeleteTitle: Unbind delivery
+  bindingDeleteConfirm: Unbind “{key}”?
+  bindingDeleteSuccess: Delivery binding removed
+  priority: Priority
+  cacheKeyPolicy: Cache key policy
+  rangePolicy: Range policy
+  fallbackParticipation: Fallback participation
+  yes: "Yes"
+  no: "No"
   probeResult:
     HEALTHY: Provider connection is healthy
     DEGRADED: Provider is degraded

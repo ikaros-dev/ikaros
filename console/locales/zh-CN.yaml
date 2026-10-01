@@ -330,6 +330,29 @@ storageProviderManagement:
   loadFailed: 获取存储提供方失败
   detailFailed: 获取存储提供方详情失败
   probeFailed: 存储提供方探测失败
+  delivery: 分发
+  deliveryTitle: 分发管理 · {name}
+  deliveryHint: 一个存储提供方可以绑定多个分发提供方，按优先级升序尝试。
+  deliveryLoadFailed: 获取分发绑定失败
+  deliveryProvider: 分发提供方
+  noDeliveryProviders: 当前实例还没有分发提供方，无法新增绑定。
+  bindingCreate: 新增分发
+  bindingCreateTitle: 新增分发绑定
+  bindingEditTitle: 编辑分发绑定
+  bindingEmpty: 暂无分发绑定
+  bindingSaveSuccess: 分发绑定已保存
+  bindingEnableSuccess: 分发绑定已启用
+  bindingDisableSuccess: 分发绑定已停用
+  bindingUnbind: 解绑
+  bindingDeleteTitle: 解绑分发
+  bindingDeleteConfirm: 确认解绑“{key}”？
+  bindingDeleteSuccess: 分发绑定已解绑
+  priority: 优先级
+  cacheKeyPolicy: 缓存键策略
+  rangePolicy: Range 策略
+  fallbackParticipation: 参与 Fallback
+  yes: 是
+  no: 否
   probeResult:
     HEALTHY: 提供方连接正常
     DEGRADED: 提供方状态异常
