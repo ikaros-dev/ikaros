@@ -337,7 +337,18 @@ storageProviderManagement:
   deliveryProvider: 分发提供方
   deliveryProviderCreate: 新建分发提供方
   deliveryProviderCreateTitle: 新建分发提供方
+  deliveryProviderEditTitle: 编辑分发提供方
   deliveryProviderCreateSuccess: 分发提供方已创建
+  deliveryProviderUpdateSuccess: 分发提供方已更新
+  deliveryProviderEnableSuccess: 分发提供方已启用
+  deliveryProviderDisableSuccess: 分发提供方已停用
+  deliveryProviderDeleteTitle: 删除分发提供方
+  deliveryProviderDeleteConfirm: 确认删除“{name}”？仍被分发绑定引用的提供方无法删除。
+  deliveryProviderDeleteSuccess: 分发提供方已删除
+  deliveryProviderLoadFailed: 获取分发提供方失败
+  deliveryProviderSection: 分发提供方
+  deliveryProviderEmpty: 暂无分发提供方
+  bindingSection: 分发绑定
   credentialRef: 凭据引用（可选）
   noDeliveryProviders: 当前实例还没有分发提供方，请先新建分发提供方，再新增绑定。
   bindingCreate: 新增分发

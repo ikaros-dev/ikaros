@@ -92,6 +92,31 @@ export const createDeliveryProvider = (
     headers: { "Idempotency-Key": idempotencyKey }
   });
 
+export const updateDeliveryProvider = (
+  providerId: string,
+  data: DeliveryProviderWriteRequest,
+  version: number
+) =>
+  http.request<DeliveryProvider>("patch", `/admin/delivery-providers/${providerId}`, {
+    data,
+    headers: { "If-Match": `"${version}"` }
+  });
+
+export const enableDeliveryProvider = (providerId: string) =>
+  http.request<DeliveryProvider>(
+    "post",
+    `/admin/delivery-providers/${providerId}/enable`
+  );
+
+export const disableDeliveryProvider = (providerId: string) =>
+  http.request<DeliveryProvider>(
+    "post",
+    `/admin/delivery-providers/${providerId}/disable`
+  );
+
+export const deleteDeliveryProvider = (providerId: string) =>
+  http.request<void>("delete", `/admin/delivery-providers/${providerId}`);
+
 export const listDeliveryBindings = (storageProviderId: string) =>
   http.request<DeliveryBinding[]>(
     "get",

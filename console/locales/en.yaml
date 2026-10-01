@@ -337,7 +337,18 @@ storageProviderManagement:
   deliveryProvider: Delivery provider
   deliveryProviderCreate: New delivery provider
   deliveryProviderCreateTitle: New delivery provider
+  deliveryProviderEditTitle: Edit delivery provider
   deliveryProviderCreateSuccess: Delivery provider created
+  deliveryProviderUpdateSuccess: Delivery provider updated
+  deliveryProviderEnableSuccess: Delivery provider enabled
+  deliveryProviderDisableSuccess: Delivery provider disabled
+  deliveryProviderDeleteTitle: Delete delivery provider
+  deliveryProviderDeleteConfirm: Delete “{name}”? A provider still referenced by a binding cannot be deleted.
+  deliveryProviderDeleteSuccess: Delivery provider deleted
+  deliveryProviderLoadFailed: Failed to load delivery providers
+  deliveryProviderSection: Delivery providers
+  deliveryProviderEmpty: No delivery providers
+  bindingSection: Delivery bindings
   credentialRef: Credential reference (optional)
   noDeliveryProviders: This instance has no delivery providers yet. Create one first, then add a binding.
   bindingCreate: Add binding

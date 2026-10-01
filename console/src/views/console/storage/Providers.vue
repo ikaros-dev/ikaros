@@ -23,9 +23,13 @@ import {
   createDeliveryBinding,
   createDeliveryProvider,
   deleteDeliveryBinding,
+  deleteDeliveryProvider,
+  disableDeliveryProvider,
+  enableDeliveryProvider,
   listDeliveryBindings,
   listDeliveryProviders,
   updateDeliveryBinding,
+  updateDeliveryProvider,
   type DeliveryBinding,
   type DeliveryBindingCacheKeyPolicy,
   type DeliveryBindingRangePolicy,
@@ -95,6 +99,9 @@ const bindingMutatingId = ref("");
 const bindingTarget = ref<DeliveryBinding | null>(null);
 const providerFormVisible = ref(false);
 const providerFormLoading = ref(false);
+const providerListLoading = ref(false);
+const providerMutatingId = ref("");
+const providerFormTarget = ref<DeliveryProvider | null>(null);
 const deliveryProviderTypes: DeliveryProviderType[] = ["DIRECT", "CDN", "SERVER_PROXY"];
 const providerForm = reactive({
   providerKey: "",
@@ -346,11 +353,15 @@ const deliveryProviderLabel = (providerKey: string) => {
   return `${provider.displayName || provider.providerKey} (${provider.providerKey})`;
 };
 
-const loadDeliveryProviderOptions = async () => {
+const loadDeliveryProviders = async () => {
+  providerListLoading.value = true;
   try {
     deliveryProviders.value = await listDeliveryProviders();
-  } catch {
+  } catch (error) {
+    ElMessage.error(getHttpErrorMessage(error, t("storageProviderManagement.deliveryProviderLoadFailed")));
     deliveryProviders.value = [];
+  } finally {
+    providerListLoading.value = false;
   }
 };
 
@@ -359,7 +370,6 @@ const loadDeliveryBindings = async () => {
   if (!provider) return;
   deliveryLoading.value = true;
   try {
-    await loadDeliveryProviderOptions();
     deliveryBindings.value = await listDeliveryBindings(provider.id);
   } catch (error) {
     ElMessage.error(getHttpErrorMessage(error, t("storageProviderManagement.deliveryLoadFailed")));
@@ -368,13 +378,18 @@ const loadDeliveryBindings = async () => {
   }
 };
 
+const refreshDelivery = async () => {
+  await Promise.all([loadDeliveryProviders(), loadDeliveryBindings()]);
+};
+
 const openDelivery = async (provider: StorageProvider) => {
   deliveryTarget.value = provider;
   deliveryVisible.value = true;
-  await loadDeliveryBindings();
+  await refreshDelivery();
 };
 
 const openProviderCreate = () => {
+  providerFormTarget.value = null;
   Object.assign(providerForm, {
     providerKey: "",
     providerType: "CDN",
@@ -382,6 +397,19 @@ const openProviderCreate = () => {
     endpoint: "",
     credentialRef: "",
     enabled: true
+  });
+  providerFormVisible.value = true;
+};
+
+const openProviderEdit = (provider: DeliveryProvider) => {
+  providerFormTarget.value = provider;
+  Object.assign(providerForm, {
+    providerKey: provider.providerKey,
+    providerType: provider.providerType,
+    displayName: provider.displayName,
+    endpoint: String(provider.config?.endpoint ?? ""),
+    credentialRef: provider.credentialRef ?? "",
+    enabled: provider.enabled
   });
   providerFormVisible.value = true;
 };
@@ -396,15 +424,62 @@ const submitProvider = async () => {
     config: providerForm.endpoint.trim() ? { endpoint: providerForm.endpoint.trim() } : {},
     enabled: providerForm.enabled
   };
+  const target = providerFormTarget.value;
   providerFormVisible.value = false;
   await runWithVerification(async () => {
     providerFormLoading.value = true;
     try {
-      await createDeliveryProvider(request, crypto.randomUUID());
-      ElMessage.success(t("storageProviderManagement.deliveryProviderCreateSuccess"));
-      await loadDeliveryProviderOptions();
+      if (target) {
+        await updateDeliveryProvider(target.id, request, target.version);
+      } else {
+        await createDeliveryProvider(request, crypto.randomUUID());
+      }
+      ElMessage.success(t(target
+        ? "storageProviderManagement.deliveryProviderUpdateSuccess"
+        : "storageProviderManagement.deliveryProviderCreateSuccess"));
+      await refreshDelivery();
     } finally {
       providerFormLoading.value = false;
+    }
+  });
+};
+
+const toggleDeliveryProvider = async (provider: DeliveryProvider) => {
+  await runWithVerification(async () => {
+    providerMutatingId.value = provider.id;
+    try {
+      if (provider.enabled) await disableDeliveryProvider(provider.id);
+      else await enableDeliveryProvider(provider.id);
+      ElMessage.success(t(provider.enabled
+        ? "storageProviderManagement.deliveryProviderDisableSuccess"
+        : "storageProviderManagement.deliveryProviderEnableSuccess"));
+      await refreshDelivery();
+    } finally {
+      providerMutatingId.value = "";
+    }
+  });
+};
+
+const removeDeliveryProvider = async (provider: DeliveryProvider) => {
+  try {
+    await ElMessageBox.confirm(
+      t("storageProviderManagement.deliveryProviderDeleteConfirm", {
+        name: provider.displayName || provider.providerKey
+      }),
+      t("storageProviderManagement.deliveryProviderDeleteTitle"),
+      { type: "warning", confirmButtonText: t("buttons.pureConfirm"), cancelButtonText: t("buttons.pureClose") }
+    );
+  } catch {
+    return;
+  }
+  await runWithVerification(async () => {
+    providerMutatingId.value = provider.id;
+    try {
+      await deleteDeliveryProvider(provider.id);
+      ElMessage.success(t("storageProviderManagement.deliveryProviderDeleteSuccess"));
+      await refreshDelivery();
+    } finally {
+      providerMutatingId.value = "";
     }
   });
 };
@@ -669,30 +744,79 @@ onMounted(() => void loadProviders());
     <el-drawer
       v-model="deliveryVisible"
       direction="rtl"
-      size="720px"
+      size="900px"
       :title="t('storageProviderManagement.deliveryTitle', { name: deliveryTarget?.display_name ?? '' })"
     >
       <div class="mb-3 flex items-center justify-between">
         <span class="text-sm text-gray-500">
           {{ t("storageProviderManagement.deliveryHint") }}
         </span>
+        <el-button :loading="providerListLoading || deliveryLoading" @click="refreshDelivery">
+          {{ t("storageProviderManagement.refresh") }}
+        </el-button>
+      </div>
+
+      <div class="mb-2 flex items-center justify-between">
+        <span class="font-medium">{{ t("storageProviderManagement.deliveryProviderSection") }}</span>
+        <el-button type="primary" plain @click="openProviderCreate">
+          {{ t("storageProviderManagement.deliveryProviderCreate") }}
+        </el-button>
+      </div>
+      <el-table v-loading="providerListLoading" :data="deliveryProviders" row-key="id" border>
+        <el-table-column prop="providerKey" :label="t('storageProviderManagement.key')" min-width="150" />
+        <el-table-column prop="providerType" :label="t('storageProviderManagement.type')" width="130" />
+        <el-table-column prop="displayName" :label="t('storageProviderManagement.name')" min-width="150" />
+        <el-table-column :label="t('storageProviderManagement.status')" width="100">
+          <template #default="scope">
+            <el-tag :type="scope.row.enabled ? 'success' : 'info'">
+              {{ scope.row.enabled ? t("storageProviderManagement.enabled") : t("storageProviderManagement.disabled") }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="healthStatus" :label="t('storageProviderManagement.health')" width="120" />
+        <el-table-column :label="t('storageProviderManagement.actions')" width="230" fixed="right">
+          <template #default="scope">
+            <el-button link type="primary" @click="openProviderEdit(scope.row)">{{ t("storageProviderManagement.edit") }}</el-button>
+            <el-button
+              link
+              type="primary"
+              :loading="providerMutatingId === scope.row.id"
+              @click="toggleDeliveryProvider(scope.row)"
+            >
+              {{ scope.row.enabled ? t("storageProviderManagement.disable") : t("storageProviderManagement.enable") }}
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              :loading="providerMutatingId === scope.row.id"
+              @click="removeDeliveryProvider(scope.row)"
+            >
+              {{ t("storageProviderManagement.delete") }}
+            </el-button>
+          </template>
+        </el-table-column>
+        <template #empty>
+          <el-empty :description="t('storageProviderManagement.deliveryProviderEmpty')" />
+        </template>
+      </el-table>
+
+      <el-divider />
+
+      <div class="mb-2 flex items-center justify-between">
+        <span class="font-medium">{{ t("storageProviderManagement.bindingSection") }}</span>
         <div>
-          <el-button :loading="deliveryLoading" @click="loadDeliveryBindings">{{ t("storageProviderManagement.refresh") }}</el-button>
-          <el-button type="primary" plain @click="openProviderCreate">
-            {{ t("storageProviderManagement.deliveryProviderCreate") }}
-          </el-button>
+          <el-alert
+            v-if="deliveryProviders.length === 0"
+            class="mb-2"
+            type="info"
+            :closable="false"
+            :title="t('storageProviderManagement.noDeliveryProviders')"
+          />
           <el-button type="primary" :disabled="deliveryProviders.length === 0" @click="openBindingCreate">
             {{ t("storageProviderManagement.bindingCreate") }}
           </el-button>
         </div>
       </div>
-      <el-alert
-        v-if="deliveryProviders.length === 0"
-        class="mb-3"
-        type="info"
-        :closable="false"
-        :title="t('storageProviderManagement.noDeliveryProviders')"
-      />
       <el-table v-loading="deliveryLoading" :data="deliveryBindings" row-key="id" border>
         <el-table-column :label="t('storageProviderManagement.deliveryProvider')" min-width="200">
           <template #default="scope">{{ deliveryProviderLabel(scope.row.deliveryProviderKey) }}</template>
@@ -739,7 +863,9 @@ onMounted(() => void loadProviders());
 
     <el-dialog
       v-model="providerFormVisible"
-      :title="t('storageProviderManagement.deliveryProviderCreateTitle')"
+      :title="providerFormTarget
+        ? t('storageProviderManagement.deliveryProviderEditTitle')
+        : t('storageProviderManagement.deliveryProviderCreateTitle')"
       width="560px"
     >
       <el-form :model="providerForm" label-width="170px">
