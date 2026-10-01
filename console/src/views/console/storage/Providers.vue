@@ -121,7 +121,7 @@ const closeVerification = () => {
   probingId.value = "";
 };
 
-const openCreate = () => {
+const resetCreateForm = () => {
   Object.assign(createForm, {
     provider_key: "",
     provider_type: "S3",
@@ -134,6 +134,10 @@ const openCreate = () => {
     bucket: "",
     region: ""
   });
+};
+
+// 只在新增成功后清空表单；关闭弹窗、二次验证取消或创建失败都保留已填内容。
+const openCreate = () => {
   createVisible.value = true;
 };
 
@@ -170,6 +174,7 @@ const submitCreate = async () => {
       try {
         await createStorageProvider(request, crypto.randomUUID());
         ElMessage.success(t("storageProviderManagement.createSuccess"));
+        resetCreateForm();
         await loadProviders();
       } finally {
         createLoading.value = false;
