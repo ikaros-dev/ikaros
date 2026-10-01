@@ -247,12 +247,12 @@ onMounted(() => void loadProviders());
         <el-input v-model="form.query" clearable @keyup.enter="search" />
       </el-form-item>
       <el-form-item :label="t('storageProviderManagement.tier')">
-        <el-select v-model="form.tier" clearable class="w-48">
+        <el-select v-model="form.tier" clearable class="w-[45rem]">
           <el-option v-for="tier in ['HOT', 'WARM', 'COLD', 'ARCHIVE', 'DEEP_ARCHIVE']" :key="tier" :label="tier" :value="tier" />
         </el-select>
       </el-form-item>
       <el-form-item :label="t('storageProviderManagement.status')">
-        <el-select v-model="form.enabled" clearable class="w-48">
+        <el-select v-model="form.enabled" clearable class="w-[45rem]">
           <el-option :label="t('storageProviderManagement.enabled')" value="true" />
           <el-option :label="t('storageProviderManagement.disabled')" value="false" />
         </el-select>
