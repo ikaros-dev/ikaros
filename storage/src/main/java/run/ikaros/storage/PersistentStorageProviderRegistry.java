@@ -100,7 +100,7 @@ public class PersistentStorageProviderRegistry implements StorageProviderRegistr
                 return repository.save(new StorageProviderEntity(null, providerKey, providerType, tier.name(),
                     StorageProviderStatus.ENABLED.name(), reference, encoded.getT1(), hasCredentials ? credentialCipher.encrypt(accessKeyId) : null,
                     hasCredentials ? credentialCipher.encrypt(secretAccessKey) : null, hasCredentials ? credentialCipher.encrypt(sessionToken) : null,
-                    now, now, displayName, encoded.getT2(), true, "NORMAL", 0L, encoded.getT1(),
+                    now, now, displayName, encoded.getT2(), true, "NORMAL", null, encoded.getT1(),
                     idempotencyKey, requestFingerprint)).map(this::toModel)
                     .flatMap(provider -> emit("storage.provider.created", provider,
                         "{\"provider_id\":\"" + provider.id() + "\",\"provider_type\":\"" + provider.providerType()

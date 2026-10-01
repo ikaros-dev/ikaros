@@ -1,6 +1,7 @@
 package run.ikaros.authorization.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -93,6 +94,23 @@ class ResourceAuthorizationWebFilterTest {
         verify(accessControl).require(eq(actor), eq(SecurityVerificationLevel.SVL_3), eq(null),
             argThat(policy -> policy.permission() == PlatformPermission.STORAGE_PROVIDER_MANAGE));
         verify(chain).filter(exchange);
+    }
+
+    @Test
+    void propagatesDownstreamFailureInsteadOfMaskingItAsForbidden() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(
+            "/api/admin/storage-providers").build());
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 1L,
+                java.util.List.of(PlatformPermission.STORAGE_PROVIDER_MANAGE.key()),
+                SecurityVerificationLevel.SVL_2, java.time.Instant.now().plusSeconds(60), null, null));
+        AccessControlService accessControl = mock(AccessControlService.class);
+        when(accessControl.require(any(), any(), any(), any())).thenReturn(Mono.empty());
+
+        assertThrows(IllegalStateException.class, () -> new ResourceAuthorizationWebFilter(accessControl, false)
+            .filter(exchange, current -> Mono.error(new IllegalStateException("downstream boom"))).block());
+        assertEquals(null, exchange.getResponse().getStatusCode());
     }
 
     @Test

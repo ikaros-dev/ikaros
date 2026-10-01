@@ -18,6 +18,7 @@ import run.ikaros.authorization.SecurityPolicy;
 import run.ikaros.authentication.api.AuthenticatedPrincipal;
 import run.ikaros.authentication.api.SecurityVerificationLevel;
 import run.ikaros.authorization.api.PlatformPermission;
+import run.ikaros.common.ForbiddenException;
 import run.ikaros.operations.api.AuditActorType;
 import run.ikaros.operations.api.AuditEventCommand;
 import run.ikaros.operations.api.AuditResult;
@@ -80,9 +81,11 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
         Mono<Void> currentAuthorization = accessControl.require(jwtPrincipal.actorId(),
             jwtPrincipal.verificationLevel(), jwtPrincipal.verificationExpiresAt(), securityPolicy);
         if (currentAuthorization != null) {
+            // 只把授权判定失败收敛为 403；下游 Handler 的异常必须保持原样（通常为 5xx），
+            // 否则任何业务/映射错误都会被伪装成 Forbidden，掩盖真实故障。
             return currentAuthorization.then(Mono.defer(() -> chain.filter(exchange)))
-                .onErrorResume(error -> rejectDenied(exchange, jwtPrincipal, permission,
-                    securityPolicy.requireFreshVerification() ? AuditRiskLevel.HIGH : AuditRiskLevel.SENSITIVE));
+                .onErrorResume(ForbiddenException.class, error -> rejectDenied(exchange, jwtPrincipal,
+                    permission, securityPolicy.requireFreshVerification() ? AuditRiskLevel.HIGH : AuditRiskLevel.SENSITIVE));
         }
         return chain.filter(exchange);
     }
