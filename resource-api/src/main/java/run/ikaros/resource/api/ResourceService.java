@@ -44,7 +44,9 @@ public interface ResourceService {
      * @param size 每页记录数
      * @return 分页结果
      */
-    Mono<PageResponse<ResourceView>> list(UUID ownerId, ResourceType type, String query, int page, int size);
+    default Mono<PageResponse<ResourceView>> list(UUID ownerId, ResourceType type, String query, int page, int size) {
+        return list(ownerId, ResourceLibraryQuery.of(type, query, ResourceLifecycle.ACTIVE, page, size));
+    }
 
     /**
      * 按生命周期查询当前用户拥有的资源。
@@ -57,8 +59,19 @@ public interface ResourceService {
      * @param size 页大小
      * @return 分页资源视图
      */
-    Mono<PageResponse<ResourceView>> list(UUID ownerId, ResourceType type, String query,
-                                          ResourceLifecycle lifecycle, int page, int size);
+    default Mono<PageResponse<ResourceView>> list(UUID ownerId, ResourceType type, String query,
+                                                  ResourceLifecycle lifecycle, int page, int size) {
+        return list(ownerId, ResourceLibraryQuery.of(type, query, lifecycle, page, size));
+    }
+
+    /**
+     * 按资源库筛选条件分页浏览当前拥有者的 Resource。
+     *
+     * @param ownerId 当前拥有者标识
+     * @param query 类型、关键词、生命周期、Collection、标签与来源筛选
+     * @return 分页结果
+     */
+    Mono<PageResponse<ResourceView>> list(UUID ownerId, ResourceLibraryQuery query);
 
     Mono<ResourceView> findByExternalIdentity(UUID ownerId, String provider, String externalType,
                                                String externalId);

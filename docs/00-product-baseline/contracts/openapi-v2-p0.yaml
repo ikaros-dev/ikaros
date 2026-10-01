@@ -491,15 +491,39 @@ paths:
       x-ikaros-contract-id: resource.list-resources
       summary: List visible resources
       parameters:
-        - $ref: '#/components/parameters/Cursor'
-        - $ref: '#/components/parameters/Limit'
         - name: type
           in: query
+          description: Resource 业务类型过滤。
+          schema: { type: string }
+        - name: query
+          in: query
+          description: 主标题关键词过滤。
           schema: { type: string }
         - name: lifecycle_status
           in: query
+          description: 生命周期过滤，默认 ACTIVE。
           schema:
             $ref: '#/components/schemas/ResourceLifecycleStatus'
+        - name: collection_id
+          in: query
+          description: 仅返回该 Collection 的成员资源。
+          schema: { type: string, format: uuid }
+        - name: tag
+          in: query
+          description: 按标签名精确过滤。
+          schema: { type: string }
+        - name: source_provider
+          in: query
+          description: 按外部身份 provider 过滤，同时匹配其 namespace 前缀。
+          schema: { type: string }
+        - name: page
+          in: query
+          description: 从零开始的页码。
+          schema: { type: integer, minimum: 0, default: 0 }
+        - name: size
+          in: query
+          description: 每页记录数。
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
       responses:
         '200':
           description: Resource page
@@ -2042,12 +2066,14 @@ components:
       additionalProperties: false
     ResourcePage:
       type: object
-      required: [items]
+      required: [items, total, page, size]
       properties:
         items:
           type: array
           items: { $ref: '#/components/schemas/Resource' }
-        next_cursor: { type: [string, 'null'] }
+        total: { type: integer, format: int64, minimum: 0 }
+        page: { type: integer, minimum: 0 }
+        size: { type: integer, minimum: 1 }
     SearchPage:
       type: object
       required: [items]

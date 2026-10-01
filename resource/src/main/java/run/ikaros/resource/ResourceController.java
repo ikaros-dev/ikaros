@@ -98,10 +98,14 @@ public class ResourceController {
         @RequestParam(required = false) ResourceType type,
         @RequestParam(required = false) String query,
         @RequestParam(name = "lifecycle_status", defaultValue = "ACTIVE") ResourceLifecycle lifecycle,
+        @RequestParam(name = "collection_id", required = false) UUID collectionId,
+        @RequestParam(required = false) String tag,
+        @RequestParam(name = "source_provider", required = false) String sourceProvider,
         @RequestParam(defaultValue = "0") @Min(0) int page,
         @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
-        return resourceService.list(actorId, type, query, lifecycle, page, size);
+        return resourceService.list(actorId, new ResourceLibraryQuery(type, query, lifecycle, collectionId,
+            tag, sourceProvider, page, size));
     }
 
     @Operation(summary = "按外部身份查找资源", description = "使用 Provider、类型和外部 ID 查找当前用户拥有的 Resource。")

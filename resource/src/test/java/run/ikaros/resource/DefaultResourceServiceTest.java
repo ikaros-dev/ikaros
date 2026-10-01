@@ -114,8 +114,8 @@ class DefaultResourceServiceTest {
             ResourceLifecycle.ACTIVE, now, now, null, 0L);
         ResourceTitleEntity title = new ResourceTitleEntity(UUID.randomUUID(), resourceId, "zh-CN", "测试书籍",
             true, now, now, 0L);
-        when(resourceRepository.search(ownerId, "", "书", "ACTIVE", 20, 20)).thenReturn(Flux.just(resource));
-        when(resourceRepository.countSearch(ownerId, "", "书", "ACTIVE")).thenReturn(Mono.just(1L));
+        when(resourceRepository.search(ownerId, "", "书", "ACTIVE", "", "", "", 20, 20)).thenReturn(Flux.just(resource));
+        when(resourceRepository.countSearch(ownerId, "", "书", "ACTIVE", "", "", "")).thenReturn(Mono.just(1L));
         when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.just(title));
         when(identityRepository.findAllByResourceIdOrderByProviderAsc(resourceId)).thenReturn(Flux.empty());
 
@@ -131,8 +131,8 @@ class DefaultResourceServiceTest {
     @Test
     void returnsEmptyPageWhenOwnerHasNoActiveResources() {
         UUID ownerId = UUID.randomUUID();
-        when(resourceRepository.search(ownerId, "", "", "ACTIVE", 0, 20)).thenReturn(Flux.empty());
-        when(resourceRepository.countSearch(ownerId, "", "", "ACTIVE")).thenReturn(Mono.just(0L));
+        when(resourceRepository.search(ownerId, "", "", "ACTIVE", "", "", "", 0, 20)).thenReturn(Flux.empty());
+        when(resourceRepository.countSearch(ownerId, "", "", "ACTIVE", "", "", "")).thenReturn(Mono.just(0L));
 
         StepVerifier.create(service.list(ownerId, null, null, 0, 20))
             .assertNext(page -> assertThat(page.items()).isEmpty())
@@ -148,8 +148,8 @@ class DefaultResourceServiceTest {
             ResourceLifecycle.ARCHIVED, now, now, null, 2L);
         ResourceTitleEntity title = new ResourceTitleEntity(UUID.randomUUID(), resourceId, "zh-CN", "归档书籍",
             true, now, now, 0L);
-        when(resourceRepository.search(ownerId, "", "", "ARCHIVED", 0, 20)).thenReturn(Flux.just(archived));
-        when(resourceRepository.countSearch(ownerId, "", "", "ARCHIVED")).thenReturn(Mono.just(1L));
+        when(resourceRepository.search(ownerId, "", "", "ARCHIVED", "", "", "", 0, 20)).thenReturn(Flux.just(archived));
+        when(resourceRepository.countSearch(ownerId, "", "", "ARCHIVED", "", "", "")).thenReturn(Mono.just(1L));
         when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.just(title));
         when(identityRepository.findAllByResourceIdOrderByProviderAsc(resourceId)).thenReturn(Flux.empty());
 
@@ -157,6 +157,28 @@ class DefaultResourceServiceTest {
             .assertNext(page -> assertThat(page.items()).singleElement()
                 .satisfies(item -> assertThat(item.lifecycle()).isEqualTo(ResourceLifecycle.ARCHIVED)))
             .verifyComplete();
+    }
+
+    @Test
+    void forwardsCollectionTagAndSourceFiltersToRepository() {
+        UUID ownerId = UUID.randomUUID();
+        UUID collectionId = UUID.randomUUID();
+        when(resourceRepository.search(ownerId, "BOOK", "书", "ACTIVE", collectionId.toString(), "历史",
+            "anilist", 0, 20)).thenReturn(Flux.empty());
+        when(resourceRepository.countSearch(ownerId, "BOOK", "书", "ACTIVE", collectionId.toString(), "历史",
+            "anilist")).thenReturn(Mono.just(0L));
+
+        StepVerifier.create(service.list(ownerId, new ResourceLibraryQuery(ResourceType.BOOK, "书",
+                ResourceLifecycle.ACTIVE, collectionId, " 历史 ", " anilist ", 0, 20)))
+            .assertNext(page -> assertThat(page.items()).isEmpty())
+            .verifyComplete();
+    }
+
+    @Test
+    void rejectsLibraryQueryWithoutLifecycle() {
+        StepVerifier.create(service.list(UUID.randomUUID(), new ResourceLibraryQuery(null, null, null,
+                null, null, null, 0, 20)))
+            .expectError(IllegalArgumentException.class).verify();
     }
 
     @Test
