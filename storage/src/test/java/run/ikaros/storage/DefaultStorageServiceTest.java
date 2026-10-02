@@ -306,15 +306,15 @@ class DefaultStorageServiceTest {
     }
 
     @Test
-    void listsAllOwnerAttachmentsWithPaginationWhenResourceFilterIsMissing() {
+    void listsAllOwnerAttachmentsNewestFirstWhenResourceFilterIsMissing() {
         UUID ownerId = UUID.randomUUID();
         UUID firstResourceId = UUID.randomUUID();
         UUID secondResourceId = UUID.randomUUID();
         Instant now = Instant.now();
         AttachmentEntity first = new AttachmentEntity(UUID.randomUUID(), firstResourceId, UUID.randomUUID(),
-            "first.txt", AttachmentKind.ORIGINAL, now, null, 0L);
+            "first.txt", AttachmentKind.ORIGINAL, now.plusSeconds(1), null, 0L);
         AttachmentEntity second = new AttachmentEntity(UUID.randomUUID(), secondResourceId, UUID.randomUUID(),
-            "second.txt", AttachmentKind.SUBTITLE, now.plusSeconds(1), null, 0L);
+            "second.txt", AttachmentKind.SUBTITLE, now, null, 0L);
         BlobEntity firstBlob = new BlobEntity(first.blobId(), "f".repeat(64), 10L, "text/plain",
             BlobAvailability.AVAILABLE, now, 0L);
         BlobEntity secondBlob = new BlobEntity(second.blobId(), "s".repeat(64), 20L, "text/plain",

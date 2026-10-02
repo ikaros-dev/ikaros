@@ -711,7 +711,7 @@ paths:
       operationId: listAdminAttachments
       x-ikaros-contract-id: storage.admin-list-attachments
       summary: List active attachments across all users
-      description: Requires storage.attachment.manage. Returns only attachments that are neither archived nor deleted.
+      description: Requires storage.attachment.manage. Returns only attachments that are neither archived nor deleted, ordered by created_at descending and id descending.
       parameters:
         - in: query
           name: page

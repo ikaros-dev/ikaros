@@ -27,7 +27,7 @@ public interface AttachmentRepository extends ReactiveCrudRepository<AttachmentE
           and a.archived_at is null
           and a.deleted_at is null
           and (:resourceId is null or a.resource_id = :resourceId)
-        order by a.created_at asc, a.id asc
+        order by a.created_at desc, a.id desc
         offset :offset limit :limit
         """)
     Flux<AttachmentEntity> search(UUID ownerId, UUID resourceId, long offset, int limit);
@@ -61,7 +61,7 @@ public interface AttachmentRepository extends ReactiveCrudRepository<AttachmentE
      * @param resourceId Resource 标识
      * @return 附件列表
      */
-    Flux<AttachmentEntity> findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(UUID resourceId);
+    Flux<AttachmentEntity> findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtDesc(UUID resourceId);
 
     Mono<AttachmentEntity> findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(UUID id, UUID resourceId);
 

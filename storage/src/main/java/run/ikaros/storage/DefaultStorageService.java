@@ -367,7 +367,7 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
     @Override
     public Mono<List<AttachmentView>> list(UUID ownerId, UUID resourceId) {
         return owned(ownerId, resourceId)
-            .thenMany(attachmentRepository.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(resourceId)
+            .thenMany(attachmentRepository.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtDesc(resourceId)
                 .take(MAX_UNPAGED_RESULTS))
             .flatMap(attachment -> blobRepository.findById(attachment.blobId())
                 .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
