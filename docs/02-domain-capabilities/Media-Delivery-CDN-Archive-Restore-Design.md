@@ -126,7 +126,7 @@ DeliveryProviderType
 当前语义：
 
 - `DIRECT`：由绑定的 Storage Provider 生成读取意图；若 Storage Provider 返回签名 URL，保留其真实签名 Host，不由 Delivery 层重写成虚构域名。
-- `CDN`：Delivery Provider 必须通过 `config.endpoint` 提供有效 CDN 对外 Endpoint；Storage Object Provider 使用真实 object key 与该 Endpoint 生成读取合同。HTTP/HTTPS Endpoint 的 Host 必须原样保留，不得把 Storage Bucket 前置到 Host；S3 签名使用路径式寻址，Bucket 位于 URL 路径中。
+- `CDN`：Delivery Provider 通过 `config.endpoint` 提供 CDN 对外 Endpoint；Storage Object Provider 使用真实 object key 与该 Endpoint 生成读取合同。Endpoint 以 `http://` 或 `https://` 开头时，Host 原样保留，使用路径式寻址，Bucket 放在 URL 路径中。未带 HTTP(S) scheme 时，按主机名处理，在 Host 前添加 Storage Bucket 名，并使用 HTTPS 与虚拟主机式寻址。
 - `SERVER_PROXY`：生成 Ikaros Attachment Content URL，可由 Provider `config.endpoint` 提供外部 Server 基址。
 
 **禁止**根据 Binding 或 Provider Key 猜测 CDN 域名、Bucket 域名或厂商 URL。
