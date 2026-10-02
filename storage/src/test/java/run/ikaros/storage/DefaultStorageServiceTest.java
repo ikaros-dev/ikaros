@@ -120,11 +120,12 @@ class DefaultStorageServiceTest {
         Instant now = Instant.now();
         StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
         StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
+        UploadSessionRepository sessions = mock(UploadSessionRepository.class);
         TransactionalOperator transaction = mock(TransactionalOperator.class);
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
         DefaultStorageService uploadService = new DefaultStorageService(resourceOwnership, attachmentRepository,
             blobRepository, placementRepository, derivedAttachmentRepository, auditService, transaction,
-            providers, null, null);
+            providers, null, null, sessions);
         uploadService.setObjectProviderRegistry(objects);
         StorageProvider provider = new StorageProvider(UUID.randomUUID(), "local", "local", StorageTier.WARM,
             StorageProviderStatus.ENABLED, null, java.util.Map.of(), now, now);
@@ -132,6 +133,11 @@ class DefaultStorageServiceTest {
             AttachmentKind.ORIGINAL, now, null, 0L, "retry-key");
         BlobEntity blob = new BlobEntity(blobId, "a".repeat(64), 10L, "application/octet-stream",
             BlobAvailability.AVAILABLE, now, 0L);
+        UUID sessionId = UUID.randomUUID();
+        UploadSessionEntity session = new UploadSessionEntity(sessionId, ownerId, resourceId, "local", "a.bin",
+            10L, "a".repeat(64), UploadSessionState.OPEN, now.plusSeconds(600), now, now, 0L, "begin-key");
+        UploadSessionEntity completedSession = new UploadSessionEntity(sessionId, ownerId, resourceId, "local", "a.bin",
+            10L, "a".repeat(64), UploadSessionState.COMPLETED, session.expiresAt(), now, now, 1L, "begin-key");
         when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.empty());
         when(providers.requireWritableByKey("local")).thenReturn(Mono.just(provider));
         when(objects.verify(provider, "a.bin")).thenReturn(Mono.just(new StorageObjectMetadata(
@@ -139,15 +145,18 @@ class DefaultStorageServiceTest {
         when(attachmentRepository.findByResourceIdAndIdempotencyKeyAndArchivedAtIsNullAndDeletedAtIsNull(
             resourceId, "retry-key")).thenReturn(Mono.just(existing));
         when(blobRepository.findById(blobId)).thenReturn(Mono.just(blob));
+        when(sessions.findByIdAndOwnerId(sessionId, ownerId)).thenReturn(Mono.just(session));
+        when(sessions.save(any(UploadSessionEntity.class))).thenReturn(Mono.just(completedSession));
 
         CommitUploadRequest request = new CommitUploadRequest("a".repeat(64), "a".repeat(64), false, 10L,
             "application/octet-stream", "a.bin", AttachmentKind.ORIGINAL, "local", StorageTier.WARM,
-            "a.bin", "retry-key");
+            "a.bin", "retry-key", sessionId);
         StepVerifier.create(uploadService.commitUpload(ownerId, resourceId, request))
             .assertNext(view -> assertThat(view.id()).isEqualTo(attachmentId))
             .verifyComplete();
         verify(attachmentRepository, org.mockito.Mockito.never()).save(any(AttachmentEntity.class));
         verify(blobRepository, org.mockito.Mockito.never()).save(any(BlobEntity.class));
+        verify(sessions).save(argThat(value -> value.state() == UploadSessionState.COMPLETED));
     }
 
     @Test

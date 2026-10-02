@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.util.UUID;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.annotation.JsonNaming;
 
@@ -21,11 +22,12 @@ public record CommitUploadRequest(
     @NotBlank @Size(max = 128) String provider,
     @NotNull StorageTier tier,
     @NotBlank @Size(max = 1024) String objectKey,
-    @NotBlank @Size(max = 128) String idempotencyKey
+    @NotBlank @Size(max = 128) String idempotencyKey,
+    @NotNull UUID sessionId
 ) {
     public CommitUploadRequest(String sha256, long sizeBytes, String mediaType, String fileName,
                                AttachmentKind kind, String provider, StorageTier tier, String objectKey) {
-        this(sha256, sha256, false, sizeBytes, mediaType, fileName, kind, provider, tier, objectKey, null);
+        this(sha256, sha256, false, sizeBytes, mediaType, fileName, kind, provider, tier, objectKey, null, null);
     }
 
     public AttachBlobRequest asAttachment() {

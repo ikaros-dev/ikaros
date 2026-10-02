@@ -188,7 +188,36 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
             .flatMap(provider -> (request.deduplicated()
                 ? verifyDeduplicatedPlacement(provider, request)
                 : verifyUploadedObject(provider, request))
-                .then(attachInternal(ownerId, resourceId, request.asAttachment(), request.idempotencyKey())));
+                .then(transactionalOperator.transactional(
+                    completeUploadSession(ownerId, resourceId, request)
+                        .then(attachInternal(ownerId, resourceId, request.asAttachment(), request.idempotencyKey()))
+                )));
+    }
+
+    private Mono<Void> completeUploadSession(UUID ownerId, UUID resourceId, CommitUploadRequest request) {
+        if (uploadSessionRepository == null) {
+            return Mono.error(new ConflictException("上传会话能力未配置"));
+        }
+        return uploadSessionRepository.findByIdAndOwnerId(request.sessionId(), ownerId)
+            .switchIfEmpty(Mono.error(new NotFoundException("上传会话不存在或不属于当前用户")))
+            .flatMap(session -> {
+                boolean matches = session.resourceId().equals(resourceId)
+                    && session.provider().equals(request.provider())
+                    && session.objectKey().equals(request.objectKey())
+                    && session.expectedSize() == request.sizeBytes()
+                    && session.declaredSha256().equalsIgnoreCase(request.sha256());
+                if (!matches) return Mono.error(new ConflictException("上传会话与提交内容不匹配"));
+                if (session.state() == UploadSessionState.COMPLETED) return Mono.empty();
+                if (session.state() == UploadSessionState.ABORTED
+                    || session.state() == UploadSessionState.EXPIRED
+                    || !session.expiresAt().isAfter(Instant.now())) {
+                    return Mono.error(new ConflictException("上传会话已终止或过期"));
+                }
+                return uploadSessionRepository.save(new UploadSessionEntity(session.id(), session.ownerId(),
+                    session.resourceId(), session.provider(), session.objectKey(), session.expectedSize(),
+                    session.declaredSha256(), UploadSessionState.COMPLETED, session.expiresAt(), session.createdAt(),
+                    Instant.now(), session.version(), session.idempotencyKey())).then();
+            });
     }
 
     @Override

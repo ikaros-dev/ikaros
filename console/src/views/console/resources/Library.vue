@@ -199,6 +199,7 @@ const submitCreate = async () => {
       });
     }
     await commitAttachmentUpload(createdResource.id, {
+      session_id: intent.session_id,
       sha256,
       upload_sha256: sha256,
       deduplicated: intent.deduplicated,

@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import run.ikaros.integration.api.DurableEventPublisher;
 import run.ikaros.integration.api.EventAppendRequest;
+import run.ikaros.storage.api.PlacementState;
 import run.ikaros.storage.api.StorageTier;
 import run.ikaros.storage.api.UploadSessionState;
 
@@ -21,6 +22,7 @@ class UploadSessionExpirySchedulerTest {
     @Test
     void expiresSessionCleansObjectAndPublishesEvent() {
         UploadSessionRepository sessions = mock(UploadSessionRepository.class);
+        BlobPlacementRepository placements = mock(BlobPlacementRepository.class);
         StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
         StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
         DurableEventPublisher events = mock(DurableEventPublisher.class);
@@ -31,12 +33,13 @@ class UploadSessionExpirySchedulerTest {
         StorageProvider provider = new StorageProvider(UUID.randomUUID(), "local", "local", StorageTier.WARM,
             StorageProviderStatus.ENABLED, null, Map.of(), now, now);
         when(sessions.findAllByStateInAndExpiresAtBefore(any(), any())).thenReturn(Flux.just(open));
+        when(placements.findByProviderAndObjectKey("local", "tmp/a.bin")).thenReturn(Mono.empty());
         when(sessions.save(any(UploadSessionEntity.class))).thenReturn(Mono.just(expired));
         when(providers.getByKey("local")).thenReturn(Mono.just(provider));
         when(objects.deleteObject(provider, "tmp/a.bin")).thenReturn(Mono.empty());
         when(events.append(any(EventAppendRequest.class))).thenReturn(Mono.empty());
 
-        StepVerifier.create(new UploadSessionExpiryScheduler(sessions, providers, objects, events).expireNow())
+        StepVerifier.create(new UploadSessionExpiryScheduler(sessions, placements, providers, objects, events).expireNow())
             .verifyComplete();
 
         verify(sessions).save(any(UploadSessionEntity.class));
@@ -47,15 +50,44 @@ class UploadSessionExpirySchedulerTest {
     @Test
     void keepsScanningExpiredSessionWhenCleanupFails() {
         UploadSessionRepository sessions = mock(UploadSessionRepository.class);
+        BlobPlacementRepository placements = mock(BlobPlacementRepository.class);
         StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
         StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
         DurableEventPublisher events = mock(DurableEventPublisher.class);
         UploadSessionEntity expired = session(UUID.randomUUID(), UploadSessionState.EXPIRED, Instant.now().minusSeconds(1));
         when(sessions.findAllByStateInAndExpiresAtBefore(any(), any())).thenReturn(Flux.just(expired));
+        when(placements.findByProviderAndObjectKey("local", "tmp/a.bin")).thenReturn(Mono.empty());
         when(providers.getByKey("local")).thenReturn(Mono.error(new IllegalStateException("provider unavailable")));
 
-        StepVerifier.create(new UploadSessionExpiryScheduler(sessions, providers, objects, events).expireNow())
+        StepVerifier.create(new UploadSessionExpiryScheduler(sessions, placements, providers, objects, events).expireNow())
             .verifyComplete();
+        verify(events, org.mockito.Mockito.never()).append(any(EventAppendRequest.class));
+    }
+
+    @Test
+    void protectsUploadObjectAlreadyReferencedByPlacement() {
+        UploadSessionRepository sessions = mock(UploadSessionRepository.class);
+        BlobPlacementRepository placements = mock(BlobPlacementRepository.class);
+        StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
+        StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
+        DurableEventPublisher events = mock(DurableEventPublisher.class);
+        Instant now = Instant.now();
+        UUID id = UUID.randomUUID();
+        UploadSessionEntity open = session(id, UploadSessionState.OPEN, now.minusSeconds(1));
+        UploadSessionEntity completed = new UploadSessionEntity(id, open.ownerId(), open.resourceId(), open.provider(),
+            open.objectKey(), open.expectedSize(), open.declaredSha256(), UploadSessionState.COMPLETED,
+            open.expiresAt(), open.createdAt(), now, 1L, open.idempotencyKey());
+        BlobPlacementEntity placement = new BlobPlacementEntity(UUID.randomUUID(), UUID.randomUUID(), "local",
+            StorageTier.WARM, open.objectKey(), PlacementState.ACTIVE, now, now, 0L);
+        when(sessions.findAllByStateInAndExpiresAtBefore(any(), any())).thenReturn(Flux.just(open));
+        when(placements.findByProviderAndObjectKey("local", "tmp/a.bin")).thenReturn(Mono.just(placement));
+        when(sessions.save(any(UploadSessionEntity.class))).thenReturn(Mono.just(completed));
+
+        StepVerifier.create(new UploadSessionExpiryScheduler(sessions, placements, providers, objects, events).expireNow())
+            .verifyComplete();
+
+        verify(sessions).save(org.mockito.ArgumentMatchers.argThat(value -> value.state() == UploadSessionState.COMPLETED));
+        verify(objects, org.mockito.Mockito.never()).deleteObject(any(), any());
         verify(events, org.mockito.Mockito.never()).append(any(EventAppendRequest.class));
     }
 
