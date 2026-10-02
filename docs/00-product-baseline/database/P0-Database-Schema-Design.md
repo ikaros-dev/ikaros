@@ -446,7 +446,7 @@ CHECK lifecycle_status in ('ACTIVE','GC_CANDIDATE','PURGED')
 
 ## 12. `storage.attachment`
 
-> 基数变更：以下 `blob_id` 列是旧 P0 Schema 的迁移兼容描述，其单 Blob 语义已被 [ADR-009](../adr/ADR-009-attachment-blob-many-to-many.md) 替代。目标 Schema 使用 Storage 拥有的 `attachment_blob` 多对多绑定与独立的 `blob_metadata` 表。绑定角色、默认选择、元数据版本与 API 契约冻结后，必须先补齐本节的完整约束再追加生产 Migration；不得把旧字段作为完整内容集合。
+> 基数变更：以下 `blob_id` 列是旧 P0 Schema 的迁移兼容描述，其单 Blob 语义已被 [ADR-009](../adr/ADR-009-attachment-blob-many-to-many.md) 替代。目标 Schema 使用 Storage 拥有的 `attachment_blob` 多对多绑定与独立的 `blob_metadata` 表。默认读取原件、显式选择转码及仅保存技术元数据的规则已确定；绑定角色、表示选择参数、元数据版本与 API 契约冻结后，必须先补齐本节的完整约束再追加生产 Migration；不得把旧字段作为完整内容集合。
 
 | Column | Type | Null |
 |---|---|---:|
@@ -470,6 +470,10 @@ CHECK lifecycle_status in ('ACTIVE','ARCHIVED','TRASHED','PURGED')
 ```
 
 目标规则：Attachment 是逻辑文件，可绑定原件与多个转码 Blob；多个 Attachment 可通过去重共享 Blob。转码不创建新逻辑附件，且不得修改既有 Blob 字节。文件替换语义另行冻结，不由转码规则推导。
+
+已物化 Attachment 必须有唯一有效原件绑定，未明确选择表示的读取固定使用原件；不得增加可切换默认 Blob，也不得在原件不可用时静默回退到转码。目标绑定表须以约束保证原件唯一，并由物化事务保证原件存在；完整字段与约束仍需在 Migration 前冻结。
+
+`storage.blob_metadata` 仅保存 Blob 字节可提取的技术信息（容器、时长、码率、编码、分辨率、音轨等），通过 Blob 引用关联而非按 Attachment 重复保存。业务标题、剧集、歌手、用户备注不属于该表；技术记录及更新不得修改 Blob 内容身份。提取版本、记录格式、并发与敏感信息边界须在 DDL 前冻结。
 
 ---
 

@@ -186,6 +186,10 @@ ADR-009 身份调整新增验收门禁（实现尚待契约收敛；上述文件
 | `P0-STO-024` | Blob 元数据与内容身份分离 | MODULE/DB | metadata update leaves Blob hash/size unchanged; owner API required |
 | `P0-STO-025` | Attachment 表达独立文件间关系 | CONTRACT/DB | video/subtitle and song/lyrics use distinct attachment identities and relation |
 | `P0-STO-026` | 绑定迁移保留已有身份与可读性 | MIGRATION/SECURITY | attachment/blob IDs, hash, authorization and content remain consistent across backfill |
+| `P0-STO-027` | 未明确选择表示时使用唯一有效原件 | DB/CONTRACT | duplicate active original rejected; default download/preview and metadata resolve original |
+| `P0-STO-028` | 原件不可用时不静默回退到转码 | MODULE/INTEGRATION | original requires restore or is missing/corrupted while transcode is ready; original state returned |
+| `P0-STO-029` | 转码选择校验附件绑定与授权 | SECURITY/INTEGRATION | explicit selection returns chosen bytes; foreign/unbound representation and unauthorized actor rejected |
+| `P0-STO-030` | blob_metadata 仅保存对应字节的技术信息 | MODULE/CONTRACT | per-Blob probe results differ by representation; shared Blob reuse preserves independent business fields; business tags and Secure plaintext excluded |
 
 ## 11. Integrity / GC
 
