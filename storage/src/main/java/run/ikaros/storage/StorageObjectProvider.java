@@ -23,6 +23,7 @@ public interface StorageObjectProvider {
         return createReadIntent(provider, objectKey);
     }
 
+    /** Returns empty only when the remote object does not exist; provider/auth failures remain errors. */
     Mono<StorageObjectMetadata> verify(StorageProvider provider, String objectKey);
 
     /** 服务端受控写入派生内容；大文件不得通过此接口写入。 */

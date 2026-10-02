@@ -185,9 +185,7 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
         }
         return owned(ownerId, resourceId)
             .then(Mono.defer(() -> providerRegistry.requireWritableByKey(request.provider())))
-            .flatMap(provider -> (request.deduplicated()
-                ? verifyDeduplicatedPlacement(provider, request)
-                : verifyUploadedObject(provider, request))
+            .flatMap(provider -> verifyUploadedObject(provider, request)
                 .then(attachInternal(ownerId, resourceId, request.asAttachment(), request.idempotencyKey())));
     }
 
@@ -297,8 +295,21 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
                         .filter(placement -> placement.provider().equals(provider.providerKey())
                             && placement.placementState() == PlacementState.ACTIVE)
                         .next()
-                        .map(placement -> new StorageUploadIntentView(provider.providerKey(), provider.tier(), "SKIP", "",
-                            placement.objectKey(), Instant.now(), request.sha256(), true, null, java.util.Map.of()));
+                        .flatMap(placement -> objectProviderRegistry.verify(provider, placement.objectKey())
+                            .flatMap(actual -> {
+                                if (actual.sizeBytes() != request.sizeBytes()) {
+                                    return Mono.error(new ConflictException("已存在对象大小与上传声明不一致"));
+                                }
+                                String expectedChecksum = java.util.Base64.getEncoder().encodeToString(
+                                    java.util.HexFormat.of().parseHex(request.sha256()));
+                                if (actual.checksumSha256() != null
+                                    && !actual.checksumSha256().equals(expectedChecksum)) {
+                                    return Mono.error(new ConflictException("已存在对象 SHA-256 与上传声明不一致"));
+                                }
+                                return Mono.just(new StorageUploadIntentView(provider.providerKey(), provider.tier(),
+                                    "SKIP", "", placement.objectKey(), Instant.now(), request.sha256(), true,
+                                    null, java.util.Map.of()));
+                            }));
                 })
                 .switchIfEmpty(Mono.defer(() -> objectProviderRegistry.createUploadIntent(provider,
                     new StorageUploadRequest(objectKey, request.sizeBytes(), request.mediaType(), request.sha256()))
@@ -335,27 +346,9 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
                 return Mono.<Void>error(new ConflictException("已上传对象大小与提交声明不一致"));
             }
             return Mono.<Void>empty();
-        }).onErrorMap(error -> error instanceof ConflictException ? error
+        }).switchIfEmpty(Mono.error(new ConflictException("已上传对象不存在，请检查上传是否完成")))
+            .onErrorMap(error -> error instanceof ConflictException ? error
             : new ConflictException("无法确认已上传对象，请检查上传是否完成"));
-    }
-
-    private Mono<Void> verifyDeduplicatedPlacement(StorageProvider provider, CommitUploadRequest request) {
-        if (provider.tier() != request.tier()) {
-            return Mono.error(new ConflictException("Placement tier 与 Storage Provider 配置不一致"));
-        }
-        if (!request.sha256().equalsIgnoreCase(request.uploadSha256())) {
-            return Mono.error(new ConflictException("上传意图 SHA-256 与提交声明不一致"));
-        }
-        return blobRepository.findBySha256(request.sha256().toLowerCase())
-            .filter(blob -> "SHA-256".equalsIgnoreCase(blob.hashAlgorithm())
-                && blob.sizeBytes() == request.sizeBytes())
-            .switchIfEmpty(Mono.error(new ConflictException("去重引用的 Blob 不存在或内容信息不匹配")))
-            .flatMap(blob -> placementRepository.findByProviderAndObjectKey(provider.providerKey(), request.objectKey())
-                .filter(placement -> placement.blobId().equals(blob.id())
-                    && placement.storageTier() == provider.tier()
-                    && placement.placementState() == PlacementState.ACTIVE)
-                .switchIfEmpty(Mono.error(new ConflictException("去重引用的有效 Storage Placement 不存在")))
-                .then());
     }
 
     private String safeFileName(String fileName) {
