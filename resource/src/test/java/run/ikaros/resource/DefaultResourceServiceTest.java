@@ -175,10 +175,42 @@ class DefaultResourceServiceTest {
     }
 
     @Test
-    void rejectsLibraryQueryWithoutLifecycle() {
-        StepVerifier.create(service.list(UUID.randomUUID(), new ResourceLibraryQuery(null, null, null,
-                null, null, null, 0, 20)))
+    void listsAllLifecyclesWhenLibraryQueryOmitsLifecycle() {
+        UUID ownerId = UUID.randomUUID();
+        Instant now = Instant.now();
+        java.util.List<ResourceEntity> resources = java.util.Arrays.stream(ResourceLifecycle.values())
+            .map(lifecycle -> new ResourceEntity(UUID.randomUUID(), ownerId, ResourceType.BOOK,
+                lifecycle, now, now, null, 0L))
+            .toList();
+        when(resourceRepository.search(ownerId, "", "", "", "", "", "", 20, 20))
+            .thenReturn(Flux.fromIterable(resources));
+        when(resourceRepository.countSearch(ownerId, "", "", "", "", "", ""))
+            .thenReturn(Mono.just((long) resources.size()));
+        for (ResourceEntity resource : resources) {
+            when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resource.id()))
+                .thenReturn(Flux.empty());
+            when(identityRepository.findAllByResourceIdOrderByProviderAsc(resource.id()))
+                .thenReturn(Flux.empty());
+        }
+
+        StepVerifier.create(service.list(ownerId, new ResourceLibraryQuery(null, null, null,
+                null, null, null, 1, 20)))
+            .assertNext(page -> {
+                assertThat(page.items()).extracting(ResourceView::lifecycle)
+                    .containsExactlyInAnyOrder(ResourceLifecycle.values());
+                assertThat(page.total()).isEqualTo(resources.size());
+                assertThat(page.page()).isEqualTo(1);
+                assertThat(page.size()).isEqualTo(20);
+            }).verifyComplete();
+        verify(resourceRepository).search(ownerId, "", "", "", "", "", "", 20, 20);
+        verify(resourceRepository).countSearch(ownerId, "", "", "", "", "", "");
+    }
+
+    @Test
+    void rejectsNullLibraryQueryBeforeRepositoryAccess() {
+        StepVerifier.create(service.list(UUID.randomUUID(), (ResourceLibraryQuery) null))
             .expectError(IllegalArgumentException.class).verify();
+        verifyNoInteractions(resourceRepository, titleRepository, identityRepository);
     }
 
     @Test
