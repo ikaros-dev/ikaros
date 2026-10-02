@@ -120,7 +120,7 @@ watch(
       params: { ...route.params },
       meta: {
         ...route.meta,
-        tabTitle: `${t("menus.attachmentManagement")}-${id.slice(0, 8)}...`
+        tabTitle: `${t("menus.attachmentManagement")}-${id.slice(0, 8)}`
       }
     });
     void load();
