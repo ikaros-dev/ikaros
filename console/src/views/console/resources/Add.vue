@@ -338,8 +338,8 @@ onMounted(() => void loadSources());
 }
 
 .source-form {
-  margin: 20px 0;
   padding: 20px;
+  margin: 20px 0;
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 8px;
 }
@@ -347,14 +347,14 @@ onMounted(() => void loadSources());
 .source-list {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
   gap: 10px;
+  align-items: stretch;
   margin-top: 18px;
 }
 
 .source-list :deep(.el-radio) {
   height: auto;
-  margin-right: 0;
   padding: 16px;
+  margin-right: 0;
 }
 </style>
