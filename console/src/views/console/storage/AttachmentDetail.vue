@@ -117,10 +117,7 @@ watch(
     const tags = useMultiTagsStoreHook();
     const routeName = String(route.name ?? "StorageAttachmentDetail");
     tags.multiTags = tags.multiTags.filter(
-      tag =>
-        tag.name !== routeName ||
-        tag.params?.attachmentId !== undefined ||
-        tag.path === route.path
+      tag => tag.name !== routeName || tag.params?.attachmentId !== undefined
     );
     tags.handleTags("push", {
       path: route.path,
@@ -128,7 +125,7 @@ watch(
       params: { ...route.params },
       meta: {
         ...route.meta,
-        tabTitle: `${t("menus.attachmentManagement")}-${id.slice(0, 8)}`
+        tabTitle: `${t("menus.attachmentDetails")}-${id.slice(0, 8)}`
       }
     });
     void load();
