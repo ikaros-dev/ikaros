@@ -240,6 +240,8 @@ Direct upload sequence is Resource creation → `storage.begin-upload` → Provi
 The supplied `object_key` identifies only a Provider placement, never the Resource or Attachment. Commit verifies the
 uploaded object's declared size and SHA-256 before persisting the Attachment. Clients must use an idempotency key for
 both Resource creation and Attachment commit; a failed upload may leave the newly created Resource without an Attachment.
+The upload intent returns `required_headers`; clients must send these signed headers with the Provider upload, excluding
+headers managed by the browser such as `Host` and `Content-Length`.
 
 ### 4.2 GC
 

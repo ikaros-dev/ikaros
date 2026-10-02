@@ -272,7 +272,7 @@ components:
         sha256: { type: string, pattern: '^[A-Fa-f0-9]{64}$' }
     UploadIntent:
       type: object
-      required: [provider, tier, method, url, object_key, expires_at, sha256, deduplicated, session_id]
+      required: [provider, tier, method, url, object_key, expires_at, sha256, deduplicated, session_id, required_headers]
       properties:
         provider: { type: string }
         tier: { type: string }
@@ -283,6 +283,7 @@ components:
         sha256: { type: string }
         deduplicated: { type: boolean }
         session_id: { type: string, format: uuid }
+        required_headers: { type: object, additionalProperties: { type: string }, description: Signed request headers the client must send; excludes browser-managed headers. }
     UploadSession:
       type: object
       required: [id, owner_id, resource_id, provider, object_key, expected_size, declared_sha256, state, expires_at]
