@@ -78,6 +78,7 @@ operations:
   - { method: GET, path: '/attachments/{attachment_id}', operation_id: getAttachment, contract_id: storage.get-attachment, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: '/attachments/{attachment_id}/preview-url', operation_id: getAttachmentPreviewUrl, contract_id: storage.get-attachment-preview-url, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: /admin/attachments, operation_id: listAdminAttachments, contract_id: storage.admin-list-attachments, source: contracts/openapi-v2-p0.yaml }
+  - { method: GET, path: '/admin/attachments/{attachment_id}/blob', operation_id: getAdminAttachmentBlob, contract_id: storage.admin-get-attachment-blob, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: '/attachments/{attachment_id}/availability', operation_id: getAttachmentMediaAvailability, contract_id: media.get-attachment-availability, source: contracts/openapi-v2-p0.yaml }
   - { method: POST, path: '/attachments/{attachment_id}/restore-requests', operation_id: requestAttachmentRestore, contract_id: storage.request-attachment-restore, source: contracts/openapi-v2-p0.yaml }
   - { method: GET, path: '/attachments/{attachment_id}/content', operation_id: getAttachmentContent, contract_id: storage.get-attachment-content, source: contracts/openapi-v2-p0.yaml }

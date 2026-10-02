@@ -742,6 +742,24 @@ paths:
                   size: { type: integer, minimum: 1 }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/attachments/{attachment_id}/blob:
+    parameters:
+      - $ref: '#/components/parameters/AttachmentId'
+    get:
+      tags: [Admin Storage]
+      operationId: getAdminAttachmentBlob
+      x-ikaros-contract-id: storage.admin-get-attachment-blob
+      summary: Get the Blob metadata referenced by an active attachment
+      description: Requires storage.attachment.manage. Returns Blob identity and content metadata only; physical locations and placements are not exposed.
+      responses:
+        '200':
+          description: Blob metadata
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminAttachmentBlob' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /attachments/{attachment_id}/content:
     parameters:
       - $ref: '#/components/parameters/AttachmentId'
@@ -2183,6 +2201,17 @@ components:
         size_bytes: { type: integer, format: int64, minimum: 0 }
         media_type: { type: string }
         availability: { type: string, enum: [READY, PROCESSING, RESTORE_REQUIRED, MISSING, CORRUPTED] }
+    AdminAttachmentBlob:
+      type: object
+      required: [id, hash_algorithm, sha256, size_bytes, media_type, availability, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        hash_algorithm: { type: string }
+        sha256: { type: string, pattern: '^[a-fA-F0-9]{64}$' }
+        size_bytes: { type: integer, format: int64, minimum: 0 }
+        media_type: { type: string }
+        availability: { type: string, enum: [AVAILABLE, REMOTE, PROCESSING, RESTORING, MISSING, CORRUPTED] }
+        created_at: { type: string, format: date-time }
     AttachmentPreviewUrl:
       type: object
       required: [method, url, expires_at, range_supported, content_type, providers]
