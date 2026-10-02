@@ -161,10 +161,36 @@ const submitCreate = async () => {
       if (!intent.url || intent.method.toUpperCase() !== "PUT") {
         throw new Error(t("resourceLibrary.unsupportedUploadMethod"));
       }
+      const uploadHeaders = { ...intent.required_headers };
+      const signedHeaders = new URL(intent.url).searchParams
+        .get("X-Amz-SignedHeaders")
+        ?.split(";")
+        .map(header => header.toLowerCase()) ?? [];
+      if (
+        signedHeaders.includes("x-amz-checksum-sha256") &&
+        !uploadHeaders["x-amz-checksum-sha256"]
+      ) {
+        const digestBytes = Uint8Array.from(
+          sha256.match(/.{2}/g) ?? [],
+          byte => Number.parseInt(byte, 16)
+        );
+        uploadHeaders["x-amz-checksum-sha256"] = btoa(
+          String.fromCharCode(...digestBytes)
+        );
+      }
+      const missingSignedHeaders = signedHeaders.filter(
+        header =>
+          header !== "host" &&
+          header !== "content-length" &&
+          !Object.keys(uploadHeaders).some(key => key.toLowerCase() === header)
+      );
+      if (missingSignedHeaders.length > 0) {
+        throw new Error(`上传签名头缺失：${missingSignedHeaders.join(", ")}`);
+      }
       await axios.put(intent.url, file, {
         headers: {
-          ...intent.required_headers,
-          "Content-Type": (intent.required_headers["content-type"] ?? file.type) || "application/octet-stream"
+          ...uploadHeaders,
+          "Content-Type": (uploadHeaders["content-type"] ?? file.type) || "application/octet-stream"
         },
         onUploadProgress: event => {
           if (event.total) uploadProgress.value = Math.round((event.loaded / event.total) * 100);
