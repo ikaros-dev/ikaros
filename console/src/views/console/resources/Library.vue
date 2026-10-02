@@ -178,6 +178,7 @@ const submitCreate = async () => {
           String.fromCharCode(...digestBytes)
         );
       }
+      uploadHeaders["content-type"] ??= file.type || "application/octet-stream";
       const missingSignedHeaders = signedHeaders.filter(
         header =>
           header !== "host" &&
