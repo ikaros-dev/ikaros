@@ -2185,14 +2185,14 @@ components:
         availability: { type: string, enum: [READY, PROCESSING, RESTORE_REQUIRED, MISSING, CORRUPTED] }
     AttachmentPreviewUrl:
       type: object
-      required: [method, url, expiresAt, rangeSupported, contentType, providers]
+      required: [method, url, expires_at, range_supported, content_type, providers]
       properties:
         method: { type: string }
         url: { type: string, format: uri }
-        expiresAt: { type: string, format: date-time }
-        rangeSupported: { type: boolean }
-        contentType: { type: string }
-        selectedProvider:
+        expires_at: { type: string, format: date-time }
+        range_supported: { type: boolean }
+        content_type: { type: string }
+        selected_provider:
           oneOf:
             - { $ref: '#/components/schemas/AttachmentDeliveryProviderOption' }
             - { type: 'null' }
@@ -2201,13 +2201,13 @@ components:
           items: { $ref: '#/components/schemas/AttachmentDeliveryProviderOption' }
     AttachmentDeliveryProviderOption:
       type: object
-      required: [bindingId, deliveryProviderId, deliveryProviderKey, displayName, providerType, priority, selected]
+      required: [binding_id, delivery_provider_id, delivery_provider_key, display_name, provider_type, priority, selected]
       properties:
-        bindingId: { type: string, format: uuid }
-        deliveryProviderId: { type: string, format: uuid }
-        deliveryProviderKey: { type: string }
-        displayName: { type: string }
-        providerType: { type: string, enum: [DIRECT, CDN, SERVER_PROXY] }
+        binding_id: { type: string, format: uuid }
+        delivery_provider_id: { type: string, format: uuid }
+        delivery_provider_key: { type: string }
+        display_name: { type: string }
+        provider_type: { type: string, enum: [DIRECT, CDN, SERVER_PROXY] }
         priority: { type: integer }
         selected: { type: boolean }
     MediaSubject:

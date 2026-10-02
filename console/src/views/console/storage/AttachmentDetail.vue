@@ -50,7 +50,7 @@ const loadPreview = async (providerKey?: string) => {
     if (requestId !== previewRequestId) return;
     preview.value = result;
     selectedProviderKey.value =
-      result.selectedProvider?.deliveryProviderKey ?? "";
+      result.selected_provider?.delivery_provider_key ?? "";
   } catch (error) {
     if (requestId === previewRequestId) {
       previewError.value = getHttpErrorMessage(
@@ -208,9 +208,9 @@ watch(
               >
                 <el-option
                   v-for="provider in preview.providers"
-                  :key="provider.deliveryProviderKey"
-                  :label="provider.displayName"
-                  :value="provider.deliveryProviderKey"
+                  :key="provider.delivery_provider_key"
+                  :label="provider.display_name"
+                  :value="provider.delivery_provider_key"
                 />
               </el-select>
             </div>

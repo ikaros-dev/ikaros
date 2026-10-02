@@ -192,6 +192,10 @@ version / timestamps
 GET /api/attachments/{attachmentId}/preview-url?delivery_provider={providerKey}
 ```
 
+公开响应使用 `snake_case`：顶层字段为 `method`、`url`、`expires_at`、`range_supported`、
+`content_type`、`selected_provider` 与 `providers`；Provider 选项字段为 `binding_id`、
+`delivery_provider_id`、`delivery_provider_key`、`display_name`、`provider_type`、`priority` 与 `selected`。
+
 当前行为：
 
 - 未传、空值或指定 Key 不在可用候选中时，按候选 Binding 的最小 `priority` 选择默认 Provider；

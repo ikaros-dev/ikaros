@@ -44,11 +44,11 @@ export type ManagedAttachmentPage = {
 export type AttachmentPageQuery = { page: number; size: number };
 
 export type AttachmentPreviewProvider = {
-  bindingId: string;
-  deliveryProviderId: string;
-  deliveryProviderKey: string;
-  displayName: string;
-  providerType: "DIRECT" | "CDN" | "SERVER_PROXY";
+  binding_id: string;
+  delivery_provider_id: string;
+  delivery_provider_key: string;
+  display_name: string;
+  provider_type: "DIRECT" | "CDN" | "SERVER_PROXY";
   priority: number;
   selected: boolean;
 };
@@ -56,10 +56,10 @@ export type AttachmentPreviewProvider = {
 export type AttachmentPreviewUrl = {
   method: string;
   url: string;
-  expiresAt: string;
-  rangeSupported: boolean;
-  contentType: string;
-  selectedProvider: AttachmentPreviewProvider | null;
+  expires_at: string;
+  range_supported: boolean;
+  content_type: string;
+  selected_provider: AttachmentPreviewProvider | null;
   providers: AttachmentPreviewProvider[];
 };
 
