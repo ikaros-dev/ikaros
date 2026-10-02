@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useI18n } from "vue-i18n";
@@ -29,6 +29,7 @@ import {
   type ResourceTag
 } from "@/api/resource";
 import { getHttpErrorMessage } from "@/utils/http";
+import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -197,7 +198,30 @@ const restoreMetadata = async (row: ResourceMetadata) => {
 
 const back = () => void router.push("/resources/library");
 
-onMounted(() => void loadResource());
+const openAttachmentDetail = (attachment: ResourceAttachment) => {
+  void router.push({
+    name: "StorageAttachmentDetail",
+    params: { attachmentId: attachment.id }
+  });
+};
+
+watch(
+  resourceId,
+  id => {
+    if (!id) return;
+    useMultiTagsStoreHook().handleTags("push", {
+      path: route.path,
+      name: String(route.name ?? "ResourceDetail"),
+      params: { ...route.params },
+      meta: {
+        ...route.meta,
+        tabTitle: `${t("menus.resourceDetail")}-${id.slice(0, 8)}`
+      }
+    });
+    void loadResource();
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -251,6 +275,13 @@ onMounted(() => void loadResource());
         <el-table-column prop="mediaType" :label="t('resourceDetail.mediaType')" min-width="180" />
         <el-table-column prop="sizeBytes" :label="t('resourceDetail.fileSize')" width="130" />
         <el-table-column prop="availability" :label="t('resourceDetail.availability')" width="160" />
+        <el-table-column :label="t('resourceDetail.actions')" width="100" fixed="right">
+          <template #default="scope">
+            <el-button link type="primary" @click="openAttachmentDetail(scope.row)">
+              {{ t('attachmentManagement.details') }}
+            </el-button>
+          </template>
+        </el-table-column>
         <template #empty><el-empty :description="t('resourceDetail.attachmentsEmpty')" /></template>
       </el-table>
 

@@ -145,7 +145,7 @@ export default {
           "menuDescriptions.resourceDetail",
           () => import("@/views/console/resources/ResourceDetail.vue"),
           "resource.read",
-          hidden("/resources/library")
+          { ...hidden("/resources/library"), showTab: true }
         ),
         page(
           "library/collections",
