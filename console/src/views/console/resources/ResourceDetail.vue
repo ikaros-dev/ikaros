@@ -209,9 +209,17 @@ watch(
   resourceId,
   id => {
     if (!id) return;
-    useMultiTagsStoreHook().handleTags("push", {
+    const tags = useMultiTagsStoreHook();
+    const routeName = String(route.name ?? "ResourceDetail");
+    tags.multiTags = tags.multiTags.filter(
+      tag =>
+        tag.name !== routeName ||
+        tag.params?.resourceId !== undefined ||
+        tag.path === route.path
+    );
+    tags.handleTags("push", {
       path: route.path,
-      name: String(route.name ?? "ResourceDetail"),
+      name: routeName,
       params: { ...route.params },
       meta: {
         ...route.meta,
