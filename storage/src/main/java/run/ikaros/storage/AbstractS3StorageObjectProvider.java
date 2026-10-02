@@ -3,6 +3,8 @@ package run.ikaros.storage;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Base64;
+import java.util.HexFormat;
 import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -10,17 +12,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import java.util.Base64;
-import java.util.HexFormat;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.signer.AwsS3V4Signer;
+import software.amazon.awssdk.auth.signer.params.Aws4PresignerParams;
 import software.amazon.awssdk.core.checksums.RequestChecksumCalculation;
 import software.amazon.awssdk.core.checksums.ResponseChecksumValidation;
+import software.amazon.awssdk.http.SdkHttpFullRequest;
+import software.amazon.awssdk.http.SdkHttpMethod;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
@@ -71,18 +75,33 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
         return credentialResolver.resolve(provider.secretReference()).flatMap(credentials -> Mono.fromCallable(() -> {
             S3Settings settings = S3Settings.from(provider);
             URI endpoint = signingEndpoint == null ? settings.endpoint() : signingEndpoint;
+            if (signingEndpoint != null && signingEndpoint.getScheme() != null) {
+                return presignMappedBucketObject(endpoint, objectKey, credentials, settings.region());
+            }
             S3Presigner.Builder presignerBuilder = S3Presigner.builder().region(Region.of(settings.region()))
                 .endpointOverride(signingEndpoint == null ? endpoint : httpsEndpointIfNeeded(endpoint))
                 .credentialsProvider(credentials);
-            if (signingEndpoint != null && signingEndpoint.getScheme() != null) {
-                presignerBuilder.serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build());
-            }
             try (S3Presigner presigner = presignerBuilder.build()) {
                 GetObjectPresignRequest presign = GetObjectPresignRequest.builder().signatureDuration(timeout)
                     .getObjectRequest(GetObjectRequest.builder().bucket(settings.bucket()).key(objectKey).build()).build();
                 return new StorageReadIntent("GET", presigner.presignGetObject(presign).url().toString(), Instant.now().plus(timeout));
             }
         })).subscribeOn(Schedulers.boundedElastic());
+    }
+
+    private StorageReadIntent presignMappedBucketObject(URI endpoint, String objectKey,
+                                                         AwsCredentialsProvider credentials, String region)
+        throws java.net.URISyntaxException {
+        String basePath = endpoint.getPath() == null ? "" : endpoint.getPath().replaceAll("/+\\z", "");
+        String keyPath = objectKey.replaceAll("\\A/+", "");
+        URI objectUri = new URI(endpoint.getScheme(), endpoint.getUserInfo(), endpoint.getHost(), endpoint.getPort(),
+            basePath + "/" + keyPath, null, null);
+        SdkHttpFullRequest request = SdkHttpFullRequest.builder().uri(objectUri).method(SdkHttpMethod.GET).build();
+        Instant expiresAt = Instant.now().plus(timeout);
+        SdkHttpFullRequest signed = AwsS3V4Signer.create().presign(request, Aws4PresignerParams.builder()
+            .awsCredentials(credentials.resolveCredentials()).signingName("s3").signingRegion(Region.of(region))
+            .expirationTime(expiresAt).build());
+        return new StorageReadIntent("GET", signed.getUri().toString(), expiresAt);
     }
 
     private URI httpsEndpointIfNeeded(URI endpoint) {
