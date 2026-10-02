@@ -309,7 +309,7 @@ Role 不是 Attachment 自身类型；同一个 Attachment 在不同业务对象
 
 ## 12. Media Probe
 
-Probe 从 Source Attachment 提取技术信息。
+Probe 从 Source Attachment 明确选定的 Blob 表示提取技术信息。依照 [ADR-009](../00-product-baseline/adr/ADR-009-attachment-blob-many-to-many.md)，同一附件的不同转码字节属于不同 Blob，不能只以 Attachment ID 标识 Probe 结果。Storage 拥有独立 `blob_metadata` 表，Media 通过公开 Capability 登记和查询提取结果；具体记录格式及更新契约冻结前不得实现跨 Owner 私写。
 
 Probe Result 可以包含：
 

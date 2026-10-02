@@ -29,7 +29,7 @@ Media Release
         ├── Manifest
         ├── Segment / Chunk Set
         ├── Subtitle / Audio variant
-        └── Derived Attachments / Blobs
+        └── Source Attachment 的 Blob 表示绑定 / 独立派生附件
 ```
 
 规则：
@@ -38,7 +38,7 @@ Media Release
 2. Derived Representation 可以删除并重建，不影响 Source。
 3. Source 与 Derived Representation 的 Storage Tier 独立。
 4. Source 可以进入 Archive，而高频播放 Representation 保持 WARM / HOT。
-5. Representation 是否物化为多个 Attachment / Blob 由封装策略决定，但不能把 Provider 内部 Object Key 当作媒体业务身份。
+5. 依照 [ADR-009](../00-product-baseline/adr/ADR-009-attachment-blob-many-to-many.md)，同一逻辑视频的转码表示绑定到原 Attachment，不因码率或编码变化创建新 Attachment。独立文件（如字幕）使用独立 Attachment 及附件间关系；分片封装的表示映射须单独冻结，不能把 Provider 内部 Object Key 当作媒体业务身份。
 
 ### 1.2 Representation Identity
 

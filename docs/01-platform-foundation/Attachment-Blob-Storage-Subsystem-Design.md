@@ -207,27 +207,13 @@ Attachment 是业务层可引用的内容对象，统一用于：
 
 Attachment 不保存“永久物理路径”。
 
-### 5.2 一个 Attachment 对应一个当前 Blob
+### 5.2 Attachment 与 Blob 多对多绑定
 
-P0 规则：
+依照 [ADR-009](../00-product-baseline/adr/ADR-009-attachment-blob-many-to-many.md)，Attachment 表示逻辑文件，Blob 表示它的具体不可变字节表示。一个附件可通过 `attachment_blob` 绑定原件与多个转码 Blob；多个附件也可以因去重共享同一 Blob，因此持久化关系为多对多。
 
-> 一个已经完成物化的 Attachment 绑定一个不可变 Blob。
+转码产生不同字节时创建或复用相应 Blob，并绑定到原 Attachment；不因码率、编码等表示变化创建新业务附件。不同压制组的独立文件、视频与字幕、歌曲与歌词仍是不同 Attachment，其文件间关系由 Relation Core 表达。
 
-如果同一业务槽位需要多个版本，例如：
-
-- 原视频与转码视频；
-- 图片原图与预览；
-- 文档不同 Revision 中的附件；
-- 一个文件被用户替换；
-
-应创建新的 Attachment，并由业务 Revision / Relation 表达版本、派生或替换关系，而不是原地修改 Blob 的字节内容。
-
-这样可以保证：
-
-- Blob 与缓存天然不可变；
-- 内容摘要稳定；
-- 历史引用可审计；
-- GC 可以准确判断旧内容是否仍被引用。
+每个 Blob 的内容身份仍不可变，绑定与解除绑定必须可审计。GC 检查所有有效绑定，不能只检查附件上的一个 `blob_id`。原件与派生表示的来源追踪、默认内容选择、版本及替换语义须按 ADR-009 冻结契约后实施；当前单 Blob 实现属于待迁移状态。
 
 ### 5.3 Attachment 概念字段
 
@@ -236,7 +222,7 @@ P0 规则：
 ```text
 Attachment
 ├── id: uuid / UUIDv7
-├── blob_id: uuid
+├── blob_bindings: AttachmentBlob[]  # 通过独立 attachment_blob 表持久化
 ├── filename: text?
 ├── media_type: text?
 ├── usage_kind: stable string code?
@@ -1072,7 +1058,7 @@ API 还应提供受控的：
 
 ## 15. Derived Attachment
 
-### 15.1 派生内容始终产生新 Attachment / Blob
+### 15.1 区分同一附件的表示与独立派生文件
 
 以下操作产生新内容时：
 
@@ -1085,11 +1071,11 @@ API 还应提供受控的：
 - 电子书格式转换；
 - AI 生成的文件型 Artifact；
 
-都创建新的 Attachment 与 Blob。
+字节发生变化时创建或去重复用对应 Blob。同一逻辑文件的转码表示绑定到原 Attachment；形成独立逻辑文件的产物创建新的 Attachment。上述其他产物是否为独立文件须由对应业务契约明确，不能由 Storage 根据任务类型隐式决定。
 
 ### 15.2 Lineage
 
-派生关系必须保留：
+独立派生附件的关系必须保留：
 
 ```text
 Derived Attachment
@@ -1098,6 +1084,8 @@ Original Attachment
 ```
 
 关系的持久化由 Relation Core 统一设计；Storage 只要求该关系存在并可查询，不在本专项复制一套通用 Relation 表。
+
+同一附件内部的转码表示须追踪源 Blob / 绑定与转码配置，不使用 Attachment 间关系替代表示来源。
 
 ### 15.3 Rebuildability
 
@@ -1932,7 +1920,9 @@ PostgreSQL LISTEN / NOTIFY 只能用于唤醒，不是唯一事实队列。
 
 ```text
 attachment
+attachment_blob
 blob
+blob_metadata
 blob_placement
 storage_provider
 storage_policy
@@ -1945,11 +1935,15 @@ Background Task、Outbox、Audit 复用平台公共能力，不在 Storage Schem
 ### 30.2 Attachment 约束
 
 - `id`：UUIDv7 Primary Key。
-- `blob_id`：必须引用有效 Blob；PURGED 后按实现可以保留 Tombstone 或解除内容引用。
+- Blob 引用：通过 `attachment_blob` 多对多绑定，不能以附件上的单个 `blob_id` 作为完整引用集合；旧字段仅用于迁移兼容。
 - `lifecycle`：稳定字符串 Code / DB Check Constraint。
 - `version`：乐观锁。
 - `created_at / updated_at / deleted_at`：`timestamptz`。
-- 普通查询索引：`blob_id`、`lifecycle`、`created_at`。
+- 普通查询索引：`lifecycle`、`created_at`；绑定表必须支持按 Attachment 和 Blob 两个方向查询。
+
+`attachment_blob` 的附件与 Blob 外键必须有数据库约束，独立绑定身份使用 UUIDv7。解绑、版本和默认表示选择的精确约束按 ADR-009 收敛后进入 Schema；未冻结前不得自行生成 DDL。
+
+`blob_metadata` 由 Storage 拥有并引用 Blob；通过独立记录保存文件元数据，不改变 Blob 摘要与大小。记录结构、元数据范围、提取版本及更新语义待冻结；不得把该表当作任意业务 JSON 的跨模块写入入口。
 
 ### 30.3 Blob 约束
 

@@ -446,6 +446,8 @@ CHECK lifecycle_status in ('ACTIVE','GC_CANDIDATE','PURGED')
 
 ## 12. `storage.attachment`
 
+> 基数变更：以下 `blob_id` 列是旧 P0 Schema 的迁移兼容描述，其单 Blob 语义已被 [ADR-009](../adr/ADR-009-attachment-blob-many-to-many.md) 替代。目标 Schema 使用 Storage 拥有的 `attachment_blob` 多对多绑定与独立的 `blob_metadata` 表。绑定角色、默认选择、元数据版本与 API 契约冻结后，必须先补齐本节的完整约束再追加生产 Migration；不得把旧字段作为完整内容集合。
+
 | Column | Type | Null |
 |---|---|---:|
 | `id` | uuid | NO |
@@ -467,7 +469,7 @@ FK(blob_id) -> storage.blob(id) ON DELETE RESTRICT
 CHECK lifecycle_status in ('ACTIVE','ARCHIVED','TRASHED','PURGED')
 ```
 
-P0 物化后的 Attachment 绑定单一不可变 Blob。替换内容创建新 Attachment，而不是修改旧 Blob 字节。
+目标规则：Attachment 是逻辑文件，可绑定原件与多个转码 Blob；多个 Attachment 可通过去重共享 Blob。转码不创建新逻辑附件，且不得修改既有 Blob 字节。文件替换语义另行冻结，不由转码规则推导。
 
 ---
 

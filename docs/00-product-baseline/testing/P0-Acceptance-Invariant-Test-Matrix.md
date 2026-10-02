@@ -176,6 +176,17 @@ P0-ARCH-001 ~ P0-ARCH-013 = PASS
 | `P0-STO-006` | Provider 内 Object Key 唯一 | DB | duplicate placement rejected |
 | `P0-STO-007` | 多 Placement 不改变 Blob identity | MODULE | migration/copy preserves blob ID |
 
+ADR-009 身份调整新增验收门禁（实现尚待契约收敛；上述文件替换规则须单独确认）：
+
+| ID | Invariant | Level | Acceptance |
+|---|---|---|---|
+| `P0-STO-021` | 同一逻辑文件的原件与转码 Blob 绑定同一 Attachment | CONTRACT/DB | one attachment retains multiple distinct byte representations |
+| `P0-STO-022` | 多 Attachment 可共享去重后的 Blob | DB/SECURITY | identical bytes reuse Blob; independent names, permissions and lifecycle preserved |
+| `P0-STO-023` | GC 检查全部有效 attachment_blob 绑定 | CONCURRENCY/INTEGRATION | removing one reference preserves other attachment access; concurrent new binding blocks GC |
+| `P0-STO-024` | Blob 元数据与内容身份分离 | MODULE/DB | metadata update leaves Blob hash/size unchanged; owner API required |
+| `P0-STO-025` | Attachment 表达独立文件间关系 | CONTRACT/DB | video/subtitle and song/lyrics use distinct attachment identities and relation |
+| `P0-STO-026` | 绑定迁移保留已有身份与可读性 | MIGRATION/SECURITY | attachment/blob IDs, hash, authorization and content remain consistent across backfill |
+
 ## 11. Integrity / GC
 
 | ID | Invariant | Level | Acceptance |
