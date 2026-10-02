@@ -10,6 +10,7 @@ type WorkspaceOptions = {
 type PageOptions = {
   icon?: string;
   showLink?: boolean;
+  showTab?: boolean;
   showParent?: boolean;
   activePath?: string;
 };
@@ -83,6 +84,7 @@ function page(
       icon: options.icon ?? "ep:document",
       ...(capability ? { capability } : {}),
       ...(options.showLink === false ? { showLink: false } : {}),
+      ...(options.showTab ? { showTab: true } : {}),
       ...(options.showParent ? { showParent: true } : {}),
       ...(options.activePath ? { activePath: options.activePath } : {})
     }
@@ -224,7 +226,7 @@ export default {
           "menuDescriptions.attachmentDetails",
           () => import("@/views/console/storage/AttachmentDetail.vue"),
           ["resource.read", "storage.attachment.manage"],
-          hidden("/storage/attachments")
+          { ...hidden("/storage/attachments"), showTab: true }
         ),
         page(
           "providers",

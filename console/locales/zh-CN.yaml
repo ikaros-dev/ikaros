@@ -665,7 +665,6 @@ attachmentManagement:
   details: 详情
   basicInfo: 基本信息
   otherInfo: 其它信息
-  backToList: 返回附件列表
   notFound: 附件不存在或当前账号无权访问
   detailFailed: 获取附件详情失败
   empty: 暂无附件

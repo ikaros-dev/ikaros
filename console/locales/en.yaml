@@ -665,7 +665,6 @@ attachmentManagement:
   details: Details
   basicInfo: Basic Information
   otherInfo: Other Information
-  backToList: Back to Attachments
   notFound: The attachment does not exist or is not accessible to this account.
   detailFailed: Failed to load attachment details
   empty: No attachments

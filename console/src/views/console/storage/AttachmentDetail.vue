@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
 import PageCard from "@/views/console/PageCard.vue";
@@ -10,7 +10,6 @@ import { getHttpErrorMessage } from "@/utils/http";
 
 const { t } = useI18n();
 const route = useRoute();
-const router = useRouter();
 const attachmentId = computed(() => String(route.params.attachmentId ?? ""));
 const loading = ref(false);
 const attachment = ref<Attachment | null>(null);
@@ -49,10 +48,6 @@ watch(attachmentId, () => void load(), { immediate: true });
 <template>
   <PageCard>
     <div class="mt-6">
-      <el-button class="mb-4" @click="router.push('/storage/attachments')">
-        {{ t("attachmentManagement.backToList") }}
-      </el-button>
-
       <el-skeleton v-if="loading" :rows="8" animated />
       <el-empty v-else-if="!attachment" :description="t('attachmentManagement.notFound')" />
       <template v-else>
