@@ -640,6 +640,8 @@ addResource:
   openLibrary: Open Resource Library
   runReference: "Run reference: {id}"
   back: Back
+  verificationTitle: Security verification
+  verificationDescription: Adding an ingestion source requires security verification.
 resourceLibrary:
   query: Title keyword
   type: Type

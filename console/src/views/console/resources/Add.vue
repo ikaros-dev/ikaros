@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
 import PageCard from "@/views/console/PageCard.vue";
+import { useStepUpVerification } from "@/composables/useStepUpVerification";
 import {
   approveImportPlan,
   createIngestionSource,
@@ -26,6 +27,7 @@ import { getHttpErrorMessage } from "@/utils/http";
 
 const { t } = useI18n();
 const router = useRouter();
+const stepUp = useStepUpVerification();
 const activeStep = ref(0);
 const loading = ref(false);
 const savingItem = ref("");
@@ -37,6 +39,7 @@ const plan = ref<ImportPlan | null>(null);
 const planItems = ref<ImportPlanItem[]>([]);
 const runId = ref("");
 const sourceFormVisible = ref(false);
+const pendingSourceSave = ref(false);
 const sourceForm = reactive({
   type: "LOCAL_FILESYSTEM" as IngestionSourceType,
   displayName: "",
@@ -70,7 +73,7 @@ const loadSources = async () => {
   }
 };
 
-const saveSource = async () => {
+const createSource = async () => {
   if (!sourceForm.displayName.trim() || !sourceForm.rootReference.trim()) return;
   loading.value = true;
   try {
@@ -88,6 +91,36 @@ const saveSource = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const saveSource = async () => {
+  if (!sourceForm.displayName.trim() || !sourceForm.rootReference.trim()) return;
+  pendingSourceSave.value = true;
+  try {
+    await stepUp.request("EMAIL_OTP", createSource);
+    if (!stepUp.visible.value) pendingSourceSave.value = false;
+  } catch (error) {
+    pendingSourceSave.value = false;
+    showError(error);
+  }
+};
+
+const verifyAndSaveSource = async () => {
+  try {
+    const grant = await stepUp.verify();
+    if (!grant || !pendingSourceSave.value) return;
+    pendingSourceSave.value = false;
+    await createSource();
+    stepUp.close();
+  } catch (error) {
+    showError(error);
+    stepUp.close();
+  }
+};
+
+const closeVerification = () => {
+  stepUp.close();
+  pendingSourceSave.value = false;
 };
 
 const beginScan = async () => {
@@ -207,7 +240,7 @@ onMounted(() => void loadSources());
         </el-form-item>
         <div class="flex justify-end gap-2">
           <el-button @click="sourceFormVisible = false">{{ t("buttons.pureClose") }}</el-button>
-          <el-button type="primary" :loading="loading" :disabled="!sourceForm.displayName.trim() || !sourceForm.rootReference.trim()" @click="saveSource">
+          <el-button type="primary" :loading="loading || stepUp.loading.value" :disabled="!sourceForm.displayName.trim() || !sourceForm.rootReference.trim()" @click="saveSource">
             {{ t("addResource.saveSource") }}
           </el-button>
         </div>
@@ -284,6 +317,17 @@ onMounted(() => void loadSources());
       </el-result>
       <p class="text-xs text-[var(--el-text-color-secondary)]">{{ t("addResource.runReference", { id: runId }) }}</p>
     </section>
+
+    <el-dialog v-model="stepUp.visible.value" :title="t('addResource.verificationTitle')" width="420px" :close-on-click-modal="false" @closed="closeVerification">
+      <p class="mb-4 text-[var(--el-text-color-secondary)]">{{ t("addResource.verificationDescription") }}</p>
+      <el-input v-model="stepUp.code.value" maxlength="6" inputmode="numeric" @keyup.enter="verifyAndSaveSource" />
+      <template #footer>
+        <el-button @click="closeVerification">{{ t("buttons.pureClose") }}</el-button>
+        <el-button type="primary" :loading="stepUp.loading.value" :disabled="!/^[0-9]{6}$/.test(stepUp.code.value)" @click="verifyAndSaveSource">
+          {{ t("buttons.pureConfirm") }}
+        </el-button>
+      </template>
+    </el-dialog>
   </PageCard>
 </template>
 

@@ -640,6 +640,8 @@ addResource:
   openLibrary: 打开资源库
   runReference: "任务参考：{id}"
   back: 上一步
+  verificationTitle: 安全验证
+  verificationDescription: 添加导入来源需要完成安全验证。
 resourceLibrary:
   query: 标题关键词
   type: 业务类型
