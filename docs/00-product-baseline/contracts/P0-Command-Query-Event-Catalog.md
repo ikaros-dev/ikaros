@@ -267,7 +267,8 @@ API 返回 `202 Accepted + background_task_id`。
 
 | Query ID | Permission | HTTP |
 |---|---|---|
-| `storage.get-attachment` | `storage.attachment.read` + source ACL | `GET /attachments/{attachment_id}` |
+| `storage.get-attachment` | `resource.read` + source ACL | `GET /attachments/{attachment_id}` |
+| `storage.get-attachment-preview-url` | `resource.read` + source ACL | `GET /attachments/{attachment_id}/preview-url` |
 | `storage.admin-list-attachments` | `storage.attachment.manage` | `GET /admin/attachments` |
 | `storage.get-attachment-content` | same + download policy | `GET /attachments/{attachment_id}/content` |
 | `storage.get-blob` | admin/system only | internal / admin |
@@ -614,6 +615,7 @@ P0 Operation ID 必须映射到 Catalog：
 | `POST /api/resources/{resource_id}/actions/archive` | `archiveResource` | `resource.archive-resource` |
 | `POST /api/resources/{resource_id}/actions/restore` | `restoreResource` | `resource.restore-resource` |
 | `GET /api/attachments/{attachment_id}` | `getAttachment` | `storage.get-attachment` |
+| `GET /api/attachments/{attachment_id}/preview-url` | `getAttachmentPreviewUrl` | `storage.get-attachment-preview-url` |
 | `GET /api/admin/attachments` | `listAdminAttachments` | `storage.admin-list-attachments` |
 | `GET /api/attachments/{attachment_id}/content` | `getAttachmentContent` | `storage.get-attachment-content` |
 | `POST /api/resources/{resource_id}/attachments/commit` | `commitAttachmentUpload` | `storage.commit-upload` |

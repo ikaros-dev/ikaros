@@ -680,6 +680,31 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /attachments/{attachment_id}/preview-url:
+    parameters:
+      - $ref: '#/components/parameters/AttachmentId'
+    get:
+      tags: [Attachments]
+      operationId: getAttachmentPreviewUrl
+      x-ikaros-contract-id: storage.get-attachment-preview-url
+      summary: Issue an authorized short-lived attachment preview URL
+      description: Requires attachment read permission and source Resource access. The returned URL is short-lived and must not be persisted or logged.
+      parameters:
+        - in: query
+          name: delivery_provider
+          required: false
+          schema: { type: string, maxLength: 128 }
+      responses:
+        '200':
+          description: Authorized preview URL and available delivery provider options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentPreviewUrl'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
   /admin/attachments:
     get:
       tags: [Admin Storage]
@@ -2027,6 +2052,11 @@ components:
       content:
         application/problem+json:
           schema: { $ref: '#/components/schemas/Problem' }
+    ServiceUnavailable:
+      description: The attachment cannot currently be previewed
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
     PreconditionFailed:
       description: ETag/version precondition failed
       content:
@@ -2153,6 +2183,33 @@ components:
         size_bytes: { type: integer, format: int64, minimum: 0 }
         media_type: { type: string }
         availability: { type: string, enum: [READY, PROCESSING, RESTORE_REQUIRED, MISSING, CORRUPTED] }
+    AttachmentPreviewUrl:
+      type: object
+      required: [method, url, expiresAt, rangeSupported, contentType, providers]
+      properties:
+        method: { type: string }
+        url: { type: string, format: uri }
+        expiresAt: { type: string, format: date-time }
+        rangeSupported: { type: boolean }
+        contentType: { type: string }
+        selectedProvider:
+          oneOf:
+            - { $ref: '#/components/schemas/AttachmentDeliveryProviderOption' }
+            - { type: 'null' }
+        providers:
+          type: array
+          items: { $ref: '#/components/schemas/AttachmentDeliveryProviderOption' }
+    AttachmentDeliveryProviderOption:
+      type: object
+      required: [bindingId, deliveryProviderId, deliveryProviderKey, displayName, providerType, priority, selected]
+      properties:
+        bindingId: { type: string, format: uuid }
+        deliveryProviderId: { type: string, format: uuid }
+        deliveryProviderKey: { type: string }
+        displayName: { type: string }
+        providerType: { type: string, enum: [DIRECT, CDN, SERVER_PROXY] }
+        priority: { type: integer }
+        selected: { type: boolean }
     MediaSubject:
       type: object
       required: [id, resource_id, kind, created_at]
