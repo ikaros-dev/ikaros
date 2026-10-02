@@ -644,6 +644,22 @@ addResource:
   back: Back
   verificationTitle: Security verification
   verificationDescription: Adding an ingestion source requires security verification.
+attachmentManagement:
+  allUsersHint: This list includes active attachments from all users.
+  accessibleHint: This account can only see attachments it is authorized to access.
+  searchPlaceholder: Search by file name, attachment ID, or resource ID
+  searchCurrentPagePlaceholder: Search file names or IDs on this page
+  search: Search
+  fileName: File name
+  kind: Attachment type
+  size: Size
+  bytes: "{value} bytes"
+  mediaType: Media type
+  availability: Availability
+  attachmentId: Attachment ID
+  resourceId: Resource ID
+  empty: No attachments
+  loadFailed: Failed to load attachments
 resourceLibrary:
   create: New
   createTitle: Create resource

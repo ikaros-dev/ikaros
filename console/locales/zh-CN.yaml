@@ -644,6 +644,22 @@ addResource:
   back: 上一步
   verificationTitle: 安全验证
   verificationDescription: 添加导入来源需要完成安全验证。
+attachmentManagement:
+  allUsersHint: 当前列表涵盖所有用户的活动附件。
+  accessibleHint: 当前账号仅能看到有权访问的附件。
+  searchPlaceholder: 按文件名或附件、资源 ID 搜索
+  searchCurrentPagePlaceholder: 搜索当前页的文件名或 ID
+  search: 搜索
+  fileName: 文件名
+  kind: 附件类型
+  size: 大小
+  bytes: "{value} 字节"
+  mediaType: 媒体类型
+  availability: 可用状态
+  attachmentId: 附件 ID
+  resourceId: 资源 ID
+  empty: 暂无附件
+  loadFailed: 获取附件列表失败
 resourceLibrary:
   create: 新建
   createTitle: 新建资源

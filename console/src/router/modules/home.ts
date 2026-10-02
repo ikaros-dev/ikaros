@@ -70,7 +70,7 @@ function page(
   title: string,
   description: string,
   component: any,
-  capability?: string,
+  capability?: string | string[],
   options: PageOptions = {}
 ) {
   return {
@@ -207,6 +207,15 @@ export default {
           () => import("@/views/console/storage/Overview.vue"),
           "storage.read",
           { icon: "ep:data-analysis" }
+        ),
+        page(
+          "attachments",
+          "StorageAttachments",
+          "menus.attachmentManagement",
+          "menuDescriptions.attachmentManagement",
+          () => import("@/views/console/storage/Attachments.vue"),
+          ["resource.read", "storage.attachment.manage"],
+          { icon: "ep:document" }
         ),
         page(
           "providers",
