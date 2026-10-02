@@ -293,12 +293,13 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
                     }
                     return placementRepository.findFirstByBlobIdAndProvider(blob.id(), provider.providerKey())
                         .map(placement -> new StorageUploadIntentView(provider.providerKey(), provider.tier(), "SKIP", "",
-                            placement.objectKey(), Instant.now(), request.sha256(), true));
+                            placement.objectKey(), Instant.now(), request.sha256(), true, null, java.util.Map.of()));
                 })
                 .switchIfEmpty(Mono.defer(() -> objectProviderRegistry.createUploadIntent(provider,
                     new StorageUploadRequest(objectKey, request.sizeBytes(), request.mediaType(), request.sha256()))
                     .map(intent -> new StorageUploadIntentView(provider.providerKey(), provider.tier(), intent.method(),
-                        intent.url(), intent.objectKey(), intent.expiresAt(), request.sha256(), false)))))
+                        intent.url(), intent.objectKey(), intent.expiresAt(), request.sha256(), false, null,
+                        intent.requiredHeaders())))))
             .flatMap(view -> persistUploadSession(ownerId, resourceId, request, idempotencyKey, view));
     }
 
@@ -315,7 +316,8 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
             view.expiresAt(), now, now, 0L, idempotencyKey);
         return uploadSessionRepository.save(session)
             .map(saved -> new StorageUploadIntentView(view.provider(), view.tier(), view.method(), view.url(),
-                view.objectKey(), view.expiresAt(), view.sha256(), view.deduplicated(), saved.id()));
+                view.objectKey(), view.expiresAt(), view.sha256(), view.deduplicated(), saved.id(),
+                view.requiredHeaders()));
     }
 
     private Mono<Void> verifyUploadedObject(StorageProvider provider, CommitUploadRequest request) {

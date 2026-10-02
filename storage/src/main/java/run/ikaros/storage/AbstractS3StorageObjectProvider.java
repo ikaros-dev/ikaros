@@ -47,8 +47,16 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
                     .putObjectRequest(builder -> builder.bucket(settings.bucket()).key(request.objectKey())
                         .contentLength(request.sizeBytes()).contentType(request.mediaType())
                         .checksumSHA256(checksumHeader(request.sha256())).build()).build();
-                String url = presigner.presignPutObject(presign).url().toString();
-                return new StorageUploadIntent("PUT", url, request.objectKey(), Instant.now().plus(timeout));
+                var signedRequest = presigner.presignPutObject(presign);
+                String url = signedRequest.url().toString();
+                var requiredHeaders = signedRequest.signedHeaders().entrySet().stream()
+                    .filter(entry -> !entry.getKey().equalsIgnoreCase("host")
+                        && !entry.getKey().equalsIgnoreCase("content-length"))
+                    .collect(java.util.stream.Collectors.toUnmodifiableMap(
+                        entry -> entry.getKey().toLowerCase(java.util.Locale.ROOT),
+                        entry -> String.join(",", entry.getValue())));
+                return new StorageUploadIntent("PUT", url, request.objectKey(), Instant.now().plus(timeout),
+                    requiredHeaders);
             }
         })).subscribeOn(Schedulers.boundedElastic());
     }

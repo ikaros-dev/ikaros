@@ -162,7 +162,10 @@ const submitCreate = async () => {
         throw new Error(t("resourceLibrary.unsupportedUploadMethod"));
       }
       await axios.put(intent.url, file, {
-        headers: { "Content-Type": file.type || "application/octet-stream" },
+        headers: {
+          ...intent.required_headers,
+          "Content-Type": (intent.required_headers["content-type"] ?? file.type) || "application/octet-stream"
+        },
         onUploadProgress: event => {
           if (event.total) uploadProgress.value = Math.round((event.loaded / event.total) * 100);
         }

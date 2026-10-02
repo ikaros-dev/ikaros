@@ -55,6 +55,7 @@ export type AttachmentUploadIntent = {
   sha256: string;
   deduplicated: boolean;
   session_id: string;
+  required_headers: Record<string, string>;
 };
 
 export type CommitAttachmentUploadRequest = {
