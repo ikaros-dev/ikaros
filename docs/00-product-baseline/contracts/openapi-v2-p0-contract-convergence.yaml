@@ -299,8 +299,9 @@ components:
         expires_at: { type: string, format: date-time }
     CommitUploadRequest:
       type: object
-      required: [sha256, upload_sha256, size_bytes, media_type, file_name, kind, provider, tier, object_key, idempotency_key]
+      required: [session_id, sha256, upload_sha256, size_bytes, media_type, file_name, kind, provider, tier, object_key, idempotency_key]
       properties:
+        session_id: { type: string, format: uuid, description: Upload intent session being committed; must belong to the caller and match this resource and object key. }
         sha256: { type: string, pattern: '^[A-Fa-f0-9]{64}$' }
         upload_sha256: { type: string, pattern: '^[A-Fa-f0-9]{64}$' }
         deduplicated: { type: boolean, default: false }

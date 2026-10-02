@@ -242,6 +242,9 @@ uploaded object's declared size and SHA-256 before persisting the Attachment. Fo
 instead confirm that the declared SHA-256 and size match an existing Blob and that the supplied Provider/object key
 identifies its ACTIVE Placement; it must not require a second remote upload or object HEAD. Clients must use an idempotency key for
 both Resource creation and Attachment commit; a failed upload may leave the newly created Resource without an Attachment.
+Commit must include the `session_id` returned by `storage.begin-upload`; the session must match the caller, Resource, Provider,
+object key, size, and declared SHA-256. Completing the upload session and creating the Attachment happen in the same Storage
+transaction, so expiry cleanup cannot delete an object after it becomes a durable Placement.
 The upload intent returns `required_headers`; clients must send these signed headers with the Provider upload, excluding
 headers managed by the browser such as `Host` and `Content-Length`.
 
