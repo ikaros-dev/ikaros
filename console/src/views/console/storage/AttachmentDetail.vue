@@ -114,9 +114,17 @@ watch(
   attachmentId,
   id => {
     if (!id) return;
-    useMultiTagsStoreHook().handleTags("push", {
+    const tags = useMultiTagsStoreHook();
+    const routeName = String(route.name ?? "StorageAttachmentDetail");
+    tags.multiTags = tags.multiTags.filter(
+      tag =>
+        tag.name !== routeName ||
+        tag.params?.attachmentId !== undefined ||
+        tag.path === route.path
+    );
+    tags.handleTags("push", {
       path: route.path,
-      name: String(route.name ?? "StorageAttachmentDetail"),
+      name: routeName,
       params: { ...route.params },
       meta: {
         ...route.meta,

@@ -200,10 +200,12 @@ router.beforeEach((to: ToRouteType, _from, next) => {
                   meta
                 });
               } else {
-                const { path, name, meta } = route;
+                const { name, meta } = route;
                 useMultiTagsStoreHook().handleTags("push", {
-                  path,
+                  path: to.path,
                   name,
+                  params: { ...to.params },
+                  query: { ...to.query },
                   meta
                 });
               }
