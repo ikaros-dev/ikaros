@@ -127,6 +127,7 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             return "GET".equals(method) ? PlatformPermission.SYSTEM_USER_READ
                 : PlatformPermission.SYSTEM_USER_MANAGE;
         }
+        if (path.startsWith("/api/admin/attachments")) return PlatformPermission.STORAGE_ATTACHMENT_MANAGE;
         if (path.contains("/admin/delivery-providers")) {
             return "GET".equals(method) ? PlatformPermission.STORAGE_DELIVERY_READ
                 : PlatformPermission.STORAGE_DELIVERY_MANAGE;

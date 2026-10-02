@@ -268,6 +268,7 @@ API 返回 `202 Accepted + background_task_id`。
 | Query ID | Permission | HTTP |
 |---|---|---|
 | `storage.get-attachment` | `storage.attachment.read` + source ACL | `GET /attachments/{attachment_id}` |
+| `storage.admin-list-attachments` | `storage.attachment.manage` | `GET /admin/attachments` |
 | `storage.get-attachment-content` | same + download policy | `GET /attachments/{attachment_id}/content` |
 | `storage.get-blob` | admin/system only | internal / admin |
 | `storage.list-blob-placements` | `storage.provider.read` | `GET /admin/blobs/{blob_id}/placements` |
@@ -275,6 +276,8 @@ API 返回 `202 Accepted + background_task_id`。
 | `storage.get-provider` | `storage.provider.read` | `GET /admin/storage-providers/{provider_id}` |
 
 Attachment Content Query 必须支持 HTTP Range，并在返回内容前重新执行当前授权判断。
+
+`storage.admin-list-attachments` 返回所有用户未归档、未删除的 Attachment，支持文件名、Attachment ID 和 Resource ID 搜索及分页；应用服务必须再次校验 `storage.attachment.manage`。未持有该权限的 Console 使用普通 Attachment Query，结果继续受当前用户访问边界约束。
 
 ---
 
@@ -611,6 +614,7 @@ P0 Operation ID 必须映射到 Catalog：
 | `POST /api/resources/{resource_id}/actions/archive` | `archiveResource` | `resource.archive-resource` |
 | `POST /api/resources/{resource_id}/actions/restore` | `restoreResource` | `resource.restore-resource` |
 | `GET /api/attachments/{attachment_id}` | `getAttachment` | `storage.get-attachment` |
+| `GET /api/admin/attachments` | `listAdminAttachments` | `storage.admin-list-attachments` |
 | `GET /api/attachments/{attachment_id}/content` | `getAttachmentContent` | `storage.get-attachment-content` |
 | `POST /api/resources/{resource_id}/attachments/commit` | `commitAttachmentUpload` | `storage.commit-upload` |
 | `GET /api/background-tasks/{task_id}` | `getBackgroundTask` | `operations.get-background-task` |

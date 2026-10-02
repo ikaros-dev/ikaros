@@ -680,6 +680,43 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /admin/attachments:
+    get:
+      tags: [Admin Storage]
+      operationId: listAdminAttachments
+      x-ikaros-contract-id: storage.admin-list-attachments
+      summary: List active attachments across all users
+      description: Requires storage.attachment.manage. Returns only attachments that are neither archived nor deleted.
+      parameters:
+        - in: query
+          name: page
+          required: false
+          schema: { type: integer, minimum: 0, default: 0 }
+        - in: query
+          name: size
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - in: query
+          name: query
+          required: false
+          schema: { type: string, maxLength: 256 }
+      responses:
+        '200':
+          description: Active attachments from all users
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, total, page, size]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/AttachmentManagementItem' }
+                  total: { type: integer, format: int64, minimum: 0 }
+                  page: { type: integer, minimum: 0 }
+                  size: { type: integer, minimum: 1 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
   /attachments/{attachment_id}/content:
     parameters:
       - $ref: '#/components/parameters/AttachmentId'
@@ -2104,6 +2141,18 @@ components:
         version: { type: integer, format: int64, minimum: 0 }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+    AttachmentManagementItem:
+      type: object
+      required: [id, resource_id, file_name, kind, sha256, size_bytes, media_type, availability]
+      properties:
+        id: { type: string, format: uuid }
+        resource_id: { type: string, format: uuid }
+        file_name: { type: string }
+        kind: { type: string }
+        sha256: { type: string, pattern: '^[a-fA-F0-9]{64}$' }
+        size_bytes: { type: integer, format: int64, minimum: 0 }
+        media_type: { type: string }
+        availability: { type: string, enum: [READY, PROCESSING, RESTORE_REQUIRED, MISSING, CORRUPTED] }
     MediaSubject:
       type: object
       required: [id, resource_id, kind, created_at]
