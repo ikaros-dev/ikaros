@@ -1947,7 +1947,7 @@ Background Task、Outbox、Audit 复用平台公共能力，不在 Storage Schem
 
 `attachment_blob` 的附件与 Blob 外键必须有数据库约束，独立绑定身份使用 UUIDv7。唯一有效原件绑定必须由数据库约束与物化流程共同保证。解绑、版本及表示选择参数的精确约束按 ADR-009 收敛后进入 Schema；未冻结前不得自行生成 DDL。
 
-`blob_metadata` 由 Storage 拥有并引用 Blob，仅保存从对应字节提取的文件技术信息，如容器、时长、码率、编码、分辨率、帧率、音轨与声道。不同 Blob 的技术信息分别保存，共享同一 Blob 的附件可复用这些信息；技术信息更新不改变 Blob 摘要与大小。标题、歌手、备注等资源业务元数据保存到 `resource_metadata`，通过 Resource Owner 的公开 API 写入，沿用来源、人工锁定与授权规则。记录结构、提取版本及更新语义待冻结；Secure Domain 明文技术信息不能进入普通 Storage 元数据表，不得把该表当作任意业务 JSON 的跨模块写入入口。
+`blob_metadata` 由 Storage 拥有并引用 Blob，仅保存从对应字节提取的文件技术信息，如容器、时长、码率、编码、分辨率、帧率、音轨与声道。不同 Blob 的技术信息分别保存，共享同一 Blob 的附件可复用这些信息；技术信息更新不改变 Blob 摘要与大小。标题、歌手、备注等资源业务元数据保存到 `resource_metadata`，通过 Resource Owner 的公开 API 写入，沿用来源、人工锁定与授权规则。建表记录结构见下文，提取版本及应用更新语义待冻结；Secure Domain 明文技术信息不能进入普通 Storage 元数据表，不得把该表当作任意业务 JSON 的跨模块写入入口。
 
 `blob_metadata` 建表结构已冻结为逐字段键值记录：UUIDv7 `id`、Blob 外键 `blob_id`、`field_key`、JSONB `field_value`、`updated_at` 与非负乐观锁 `version`，同一 Blob 的 `field_key` 唯一。技术记录从属于 Blob，经受控 Blob 删除后由同 Owner 外键级联清理；记录不作为阻止 GC 的业务引用。具体约束以 [Schema §12.1](../00-product-baseline/database/P0-Database-Schema-Design.md#121-storageblob_metadata已冻结建表契约) 为准，提取版本与公开写入/查询契约仍待冻结。
 

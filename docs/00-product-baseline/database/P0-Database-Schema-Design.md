@@ -473,7 +473,7 @@ CHECK lifecycle_status in ('ACTIVE','ARCHIVED','TRASHED','PURGED')
 
 已物化 Attachment 必须有唯一有效原件绑定，未明确选择表示的读取固定使用原件；不得增加可切换默认 Blob，也不得在原件不可用时静默回退到转码。目标绑定表须以约束保证原件唯一，并由物化事务保证原件存在；完整字段与约束仍需在 Migration 前冻结。
 
-`storage.blob_metadata` 仅保存 Blob 字节可提取的文件技术信息（容器、时长、码率、编码、分辨率、音轨等），通过 Blob 引用关联而非按 Attachment 重复保存。标题、歌手、备注等资源业务元数据保存到 Resource Owner 的 `resource_metadata`，跨模块通过公开 API 管理；技术记录及更新不得修改 Blob 内容身份。提取版本、记录格式、并发与敏感信息边界须在 DDL 前冻结。
+`storage.blob_metadata` 仅保存 Blob 字节可提取的文件技术信息（容器、时长、码率、编码、分辨率、音轨等），通过 Blob 引用关联而非按 Attachment 重复保存。标题、歌手、备注等资源业务元数据保存到 Resource Owner 的 `resource_metadata`，跨模块通过公开 API 管理；技术记录及更新不得修改 Blob 内容身份。建表契约见 §12.1；提取版本、字段类型与公开读写契约须在应用实现前冻结。
 
 ### 12.1 `storage.blob_metadata`（已冻结建表契约）
 
