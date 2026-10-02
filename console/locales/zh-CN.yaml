@@ -385,6 +385,7 @@ menus:
   activityDetail: 活动详情
   storage: 存储
   storageOverview: 存储概览
+  attachmentManagement: 附件管理
   storageProviders: 存储提供方
   storageProviderDetail: 存储提供方详情
   storagePolicy: 存储策略
@@ -551,6 +552,7 @@ menuDescriptions:
   activityCenter: 统一查看导入、存储、元数据、备份、下载、AI 与自动化等后台工作。
   activityDetail: 查看单个后台工作的状态、进度、结果、错误与执行信息。
   storageOverview: 查看存储容量、层级分布、Provider 状态、恢复状态与需要关注的问题。
+  attachmentManagement: 浏览当前可访问的附件；拥有附件管理权限时可查看所有用户的活动附件。
   storageProviders: 配置和管理存储提供方、凭据、容量、层级与健康状态。
   storageProviderDetail: 查看和维护单个存储提供方的配置、容量和运行状态。
   storagePolicy: 配置资源在不同存储层级之间的生命周期、保留、副本与迁移策略。
@@ -699,6 +701,12 @@ resourceDetail:
   purgeTitle: 永久删除资源
   purgeConfirm: 永久删除“{name}”不可撤销，确认继续？
   purgeSuccess: 资源已永久删除
+  attachments: 附件
+  fileName: 文件名
+  mediaType: 媒体类型
+  fileSize: 大小（字节）
+  availability: 可用状态
+  attachmentsEmpty: 暂无附件
   tags: 标签
   tagPlaceholder: 输入标签名后回车
   tagAdd: 添加标签

@@ -332,6 +332,12 @@ export const commitAttachmentUpload = (
     { data }
   );
 
+export const listResourceAttachments = (resourceId: string) =>
+  http.request<ResourceAttachment[]>(
+    "get",
+    `/resources/${resourceId}/attachments`
+  );
+
 export const getResource = (resourceId: string) =>
   http.request<Resource>("get", `/resources/${resourceId}`);
 

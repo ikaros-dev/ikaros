@@ -11,6 +11,7 @@ import {
   deleteResourceTag,
   getFavorite,
   getResource,
+  listResourceAttachments,
   listResourceMetadata,
   listResourceRelations,
   listResourceTags,
@@ -22,6 +23,7 @@ import {
   trashResource,
   updateResource,
   type Resource,
+  type ResourceAttachment,
   type ResourceMetadata,
   type ResourceRelation,
   type ResourceTag
@@ -36,6 +38,7 @@ const resourceId = computed(() => String(route.params.resourceId ?? ""));
 const loading = ref(false);
 const mutating = ref(false);
 const resource = ref<Resource | null>(null);
+const attachments = ref<ResourceAttachment[]>([]);
 const tags = ref<ResourceTag[]>([]);
 const metadata = ref<ResourceMetadata[]>([]);
 const relations = ref<ResourceRelation[]>([]);
@@ -52,12 +55,14 @@ const loadResource = async () => {
   try {
     const detail = await getResource(resourceId.value);
     resource.value = detail;
-    const [tagList, metaList, relationList, favoriteState] = await Promise.all([
+    const [attachmentList, tagList, metaList, relationList, favoriteState] = await Promise.all([
+      listResourceAttachments(resourceId.value),
       listResourceTags(resourceId.value),
       listResourceMetadata(resourceId.value),
       listResourceRelations(resourceId.value),
       getFavorite(resourceId.value)
     ]);
+    attachments.value = attachmentList;
     tags.value = tagList;
     metadata.value = metaList;
     relations.value = relationList;
@@ -238,6 +243,16 @@ onMounted(() => void loadResource());
           {{ t("resourceDetail.purge") }}
         </el-button>
       </div>
+
+      <el-divider content-position="left">{{ t("resourceDetail.attachments") }}</el-divider>
+      <el-table :data="attachments" row-key="id" border>
+        <el-table-column prop="fileName" :label="t('resourceDetail.fileName')" min-width="220" />
+        <el-table-column prop="kind" :label="t('resourceDetail.kind')" width="130" />
+        <el-table-column prop="mediaType" :label="t('resourceDetail.mediaType')" min-width="180" />
+        <el-table-column prop="sizeBytes" :label="t('resourceDetail.fileSize')" width="130" />
+        <el-table-column prop="availability" :label="t('resourceDetail.availability')" width="160" />
+        <template #empty><el-empty :description="t('resourceDetail.attachmentsEmpty')" /></template>
+      </el-table>
 
       <el-divider content-position="left">{{ t("resourceDetail.tags") }}</el-divider>
       <div class="mb-2 flex flex-wrap items-center gap-2">

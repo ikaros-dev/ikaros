@@ -385,6 +385,7 @@ menus:
   activityDetail: Activity Detail
   storage: Storage
   storageOverview: Storage Overview
+  attachmentManagement: Attachment Management
   storageProviders: Storage Providers
   storageProviderDetail: Storage Provider Detail
   storagePolicy: Storage Policy
@@ -551,6 +552,7 @@ menuDescriptions:
   activityCenter: View background work for imports, storage, metadata, backups, downloads, AI, and automation.
   activityDetail: View the status, progress, result, errors, and execution details of a background job.
   storageOverview: View storage capacity, tier distribution, Provider status, recovery status, and attention items.
+  attachmentManagement: Browse accessible attachments, or all users’ active attachments with the attachment management permission.
   storageProviders: Configure and manage storage providers, credentials, capacity, tiers, and health.
   storageProviderDetail: View and maintain an individual storage provider's configuration, capacity, and runtime status.
   storagePolicy: Configure lifecycle, retention, replicas, and migration policies across storage tiers.
@@ -699,6 +701,12 @@ resourceDetail:
   purgeTitle: Delete resource permanently
   purgeConfirm: Deleting “{name}” permanently cannot be undone. Continue?
   purgeSuccess: Resource permanently deleted
+  attachments: Attachments
+  fileName: File name
+  mediaType: Media type
+  fileSize: Size (bytes)
+  availability: Availability
+  attachmentsEmpty: No attachments
   tags: Tags
   tagPlaceholder: Type a tag name and press Enter
   tagAdd: Add tag
