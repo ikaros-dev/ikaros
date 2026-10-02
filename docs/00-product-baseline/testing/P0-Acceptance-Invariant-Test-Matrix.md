@@ -190,6 +190,7 @@ ADR-009 身份调整新增验收门禁（实现尚待契约收敛；上述文件
 | `P0-STO-028` | 原件不可用时不静默回退到转码 | MODULE/INTEGRATION | original requires restore or is missing/corrupted while transcode is ready; original state returned |
 | `P0-STO-029` | 请求参数选择 Blob 并校验附件绑定与授权 | SECURITY/INTEGRATION | absent parameter reads original; explicit selection returns chosen bytes without changing subsequent default; foreign/unbound Blob and unauthorized actor rejected |
 | `P0-STO-030` | blob_metadata 仅保存文件技术信息，资源业务元数据归 resource_metadata | MODULE/CONTRACT | per-Blob probe results differ by representation; Blob selection preserves resource_metadata values/provenance/manual locks; business tags and Secure plaintext excluded from blob_metadata |
+| `P0-STO-031` | blob_metadata Migration 约束与类型正确 | MIGRATION/DB | actual SQL on PostgreSQL 18 accepts JSON scalar/array/object, UUIDv7 and timestamptz; rejects duplicate Blob/key, unknown Blob, blank/untrimmed key, SQL null value and negative version; controlled Blob deletion cleans subordinate metadata |
 
 ## 11. Integrity / GC
 

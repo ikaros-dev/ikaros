@@ -1949,6 +1949,8 @@ Background Task、Outbox、Audit 复用平台公共能力，不在 Storage Schem
 
 `blob_metadata` 由 Storage 拥有并引用 Blob，仅保存从对应字节提取的文件技术信息，如容器、时长、码率、编码、分辨率、帧率、音轨与声道。不同 Blob 的技术信息分别保存，共享同一 Blob 的附件可复用这些信息；技术信息更新不改变 Blob 摘要与大小。标题、歌手、备注等资源业务元数据保存到 `resource_metadata`，通过 Resource Owner 的公开 API 写入，沿用来源、人工锁定与授权规则。记录结构、提取版本及更新语义待冻结；Secure Domain 明文技术信息不能进入普通 Storage 元数据表，不得把该表当作任意业务 JSON 的跨模块写入入口。
 
+`blob_metadata` 建表结构已冻结为逐字段键值记录：UUIDv7 `id`、Blob 外键 `blob_id`、`field_key`、JSONB `field_value`、`updated_at` 与非负乐观锁 `version`，同一 Blob 的 `field_key` 唯一。技术记录从属于 Blob，经受控 Blob 删除后由同 Owner 外键级联清理；记录不作为阻止 GC 的业务引用。具体约束以 [Schema §12.1](../00-product-baseline/database/P0-Database-Schema-Design.md#121-storageblob_metadata已冻结建表契约) 为准，提取版本与公开写入/查询契约仍待冻结。
+
 ### 30.3 Blob 约束
 
 普通去重至少需要唯一约束：

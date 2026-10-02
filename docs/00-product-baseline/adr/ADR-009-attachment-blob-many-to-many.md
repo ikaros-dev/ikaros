@@ -34,7 +34,7 @@
 - “替换文件”的业务语义；不能把用户确认的转码规则自动扩展为任意替换规则。
 - 附件关系类型、方向、授权与关联查询契约。
 
-上述执行契约未冻结前不得实现未登记的表示选择接口或生产 Migration，也不得自行猜测新 HTTP 路由。
+上述执行契约未冻结前不得实现未登记的表示选择接口或依赖未冻结绑定语义的生产 Migration，也不得自行猜测新 HTTP 路由。独立 `blob_metadata` 建表契约已按用户确认冻结为 `id / blob_id / field_key / field_value(jsonb) / updated_at / version`，详见 [Schema §12.1](../database/P0-Database-Schema-Design.md#121-storageblob_metadata已冻结建表契约)；可先追加建表 Migration，提取器与读写 Capability 待后续契约收敛。
 
 ## 收敛与迁移
 

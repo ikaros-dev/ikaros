@@ -475,6 +475,25 @@ CHECK lifecycle_status in ('ACTIVE','ARCHIVED','TRASHED','PURGED')
 
 `storage.blob_metadata` 仅保存 Blob 字节可提取的文件技术信息（容器、时长、码率、编码、分辨率、音轨等），通过 Blob 引用关联而非按 Attachment 重复保存。标题、歌手、备注等资源业务元数据保存到 Resource Owner 的 `resource_metadata`，跨模块通过公开 API 管理；技术记录及更新不得修改 Blob 内容身份。提取版本、记录格式、并发与敏感信息边界须在 DDL 前冻结。
 
+### 12.1 `storage.blob_metadata`（已冻结建表契约）
+
+Owner 为 Storage。本阶段只新增表与约束，不提供未登记的 Command、Query 或 HTTP 接口，也不改变 Attachment 与 Blob 的现有运行时绑定。
+
+| Column | Type | Null | Default / Meaning |
+|---|---|---:|---|
+| `id` | uuid | NO | `uuid_v7()`，平台 UUIDv7 生成能力 |
+| `blob_id` | uuid | NO | 对应 Blob |
+| `field_key` | varchar(128) | NO | 非空且无首尾空格的技术字段名 |
+| `field_value` | jsonb | NO | JSON 数字、字符串、数组或对象；例如时长、编码、音轨列表 |
+| `updated_at` | timestamptz | NO | `CURRENT_TIMESTAMP`；更新时由未来的 Owner 写入契约同步更新 |
+| `version` | bigint | NO | `0`；非负乐观并发版本，不代表提取工具版本 |
+
+约束：`PRIMARY KEY(id)`、`UNIQUE(blob_id, field_key)`、`CHECK(field_key = btrim(field_key) AND field_key <> '')`、`CHECK(version >= 0)`。唯一索引的前缀支持按 Blob 查询，无需重复建立相同前缀索引。
+
+`blob_id` 外键引用 `blob(id) ON DELETE CASCADE`。元数据没有独立业务保留生命周期，不计为阻止 Blob GC 的业务引用；仅当 Blob 已通过引用、Retention Hold、Placement 与审计检查后被受控删除，才由同 Owner 外键级联清理技术记录。逻辑删除或归档附件不会直接触发此清理。
+
+普通表不得保存 Secure Domain 明文技术信息。未来写入 Capability 需定义字段类型、提取来源/工具版本、授权和 `version` 条件更新，并拒绝业务字段；这些应用契约尚未冻结，不因建表而自动开放。
+
 ---
 
 ## 13. `storage.storage_provider`
