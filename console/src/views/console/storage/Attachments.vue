@@ -127,7 +127,7 @@ onMounted(load);
       @size-change="search"
     />
 
-    <el-drawer v-model="detailVisible" :title="t('attachmentManagement.details')" size="520px">
+    <el-drawer v-model="detailVisible" :title="t('attachmentManagement.details')" size="720px">
       <el-descriptions v-if="selectedAttachment" :column="1" border>
         <el-descriptions-item :label="t('attachmentManagement.fileName')">{{ selectedAttachment.fileName }}</el-descriptions-item>
         <el-descriptions-item :label="t('attachmentManagement.attachmentId')">{{ selectedAttachment.id }}</el-descriptions-item>
