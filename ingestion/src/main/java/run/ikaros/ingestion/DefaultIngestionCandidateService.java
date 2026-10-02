@@ -3,6 +3,7 @@ package run.ikaros.ingestion;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
@@ -18,9 +19,12 @@ public class DefaultIngestionCandidateService implements IngestionCandidateServi
     @Override public Mono<IngestionCandidateView> create(UUID ownerId, UUID scanRunId, CreateCandidateRequest request) {
         return scans.findByIdAndOwnerId(scanRunId, ownerId)
             .switchIfEmpty(Mono.error(new NotFoundException("扫描运行不存在或无权访问")))
-            .flatMap(scan -> candidates.save(new IngestionCandidateEntity(null, scanRunId, scan.sourceId(),
-                request.suggestedResourceType(), request.titleHint(), request.externalIdHint(), request.confidence(),
-                request.fingerprint(), CandidateStatus.NEW.name(), Instant.now(), null)))
+            .flatMap(scan -> candidates.findByScanRunIdAndFingerprint(scanRunId, request.fingerprint())
+                .switchIfEmpty(candidates.save(new IngestionCandidateEntity(null, scanRunId, scan.sourceId(),
+                    request.suggestedResourceType(), request.titleHint(), request.externalIdHint(), request.confidence(),
+                    request.fingerprint(), CandidateStatus.NEW.name(), Instant.now(), null)))
+                .onErrorResume(DuplicateKeyException.class, error -> candidates.findByScanRunIdAndFingerprint(
+                    scanRunId, request.fingerprint()).switchIfEmpty(Mono.error(error))))
             .map(this::view);
     }
     @Override public Mono<List<IngestionCandidateView>> list(UUID ownerId, UUID scanRunId) {

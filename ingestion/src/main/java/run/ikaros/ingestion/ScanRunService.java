@@ -11,4 +11,6 @@ public interface ScanRunService {
     Mono<ScanRunView> cancel(UUID ownerId, UUID scanId);
     Mono<ScanRunView> checkpoint(UUID scanId, String checkpoint, long discovered, long changed,
                                  long skipped, String errorSummary);
+    Mono<ScanRunView> finish(UUID scanId, ScanRunStatus status, String checkpoint, long discovered,
+                             long changed, long skipped, String errorSummary);
 }

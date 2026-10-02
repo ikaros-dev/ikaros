@@ -223,6 +223,15 @@ Scan Run 至少记录：
 
 大型 Scan 必须作为 Background Task 执行。
 
+本地文件系统扫描契约：
+
+- 仅扫描已启用的 `LOCAL_FILESYSTEM` Source；根目录必须是可访问的明确目录，系统敏感目录和文件系统根目录不得作为扫描根目录。
+- 扫描只枚举根目录内的普通文件，不跟随符号链接，不接受解析后逃出根目录的路径；敏感目录（如 `.ssh`、`.gnupg`、`.aws`、`.azure`、`.config`、`AppData`）及其内容跳过。
+- 只读取文件元数据，不读取文件内容；Discovered Item 使用来源相对路径作为 `relative_key`，并记录大小、修改时间、弱版本标记和可识别的媒体类型。
+- 支持的视频、音频、图片、电子书、文档和归档扩展名可生成 Candidate；其他普通文件仍记录为 Discovered Item 并计入 skipped。扫描器不得直接创建 Resource。
+- 扫描文件数必须有上限；扫描需分页式流处理、周期性保存 checkpoint/progress，并在安全检查点响应任务取消。
+- 重试同一个 Scan Run 时，Discovered Item 按 `(scan_run_id, relative_key)`、Candidate 按 `(scan_run_id, fingerprint)` 幂等复用。弱 fingerprint 由 relative key、size、modified time 构成，不是内容身份。
+
 ---
 
 ## 8. Discovered Item

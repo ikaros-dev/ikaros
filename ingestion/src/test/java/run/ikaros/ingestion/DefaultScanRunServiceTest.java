@@ -35,10 +35,13 @@ class DefaultScanRunServiceTest {
         BackgroundTaskService tasks = mock(BackgroundTaskService.class);
         AuditService audit = mock(AuditService.class);
         when(sources.findByIdAndOwnerId(sourceId, ownerId)).thenReturn(Mono.just(source));
-        when(tasks.submit(eq("ingestion.scan"), any(), eq("ingestion.scan:" + sourceId))).thenReturn(Mono.just(task));
-        when(runs.save(any(ScanRunEntity.class))).thenAnswer(invocation ->
-            Mono.just(new ScanRunEntity(runId, sourceId, ownerId, "console", ownerId, "PENDING", null,
-                0, 0, 0, null, taskId, now, null, now, 0L)));
+        when(runs.save(any(ScanRunEntity.class))).thenAnswer(invocation -> {
+            ScanRunEntity saved = invocation.getArgument(0);
+            return Mono.just(new ScanRunEntity(runId, sourceId, ownerId, saved.trigger(), ownerId,
+                saved.status(), saved.checkpoint(), saved.discoveredCount(), saved.changedCount(), saved.skippedCount(),
+                saved.errorSummary(), saved.backgroundTaskId(), saved.startedAt(), saved.finishedAt(), now, 0L));
+        });
+        when(tasks.submit(eq("ingestion.scan"), any(), eq("ingestion.scan:" + runId))).thenReturn(Mono.just(task));
         when(audit.record(eq(ownerId), eq("ingestion.scan.start"), eq("INGESTION_SCAN"), eq(runId), eq("{}")))
             .thenReturn(Mono.empty());
 
@@ -47,6 +50,8 @@ class DefaultScanRunServiceTest {
 
         assertEquals(runId, result.id());
         assertEquals(ScanRunStatus.PENDING, result.status());
+        verify(tasks).submit(eq("ingestion.scan"), org.mockito.ArgumentMatchers.argThat(payload ->
+            runId.toString().equals(payload.get("scan_run_id"))), eq("ingestion.scan:" + runId));
         verify(audit).record(ownerId, "ingestion.scan.start", "INGESTION_SCAN", runId, "{}");
     }
 
