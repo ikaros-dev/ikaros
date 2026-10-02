@@ -10,7 +10,7 @@ import java.util.UUID;
  *
  * @param type Resource 类型过滤，{@code null} 表示不过滤
  * @param keyword 标题关键词，空白表示不过滤
- * @param lifecycle 生命周期过滤，不可为空
+ * @param lifecycle 生命周期过滤，{@code null} 表示不过滤
  * @param collectionId Collection 过滤，{@code null} 表示不过滤
  * @param tag 标签名精确过滤，空白表示不过滤
  * @param sourceProvider 外部身份 provider 过滤，空白表示不过滤

@@ -31,7 +31,7 @@ public interface ResourceRepository extends ReactiveCrudRepository<ResourceEntit
      * @param ownerId 资源拥有者
      * @param resourceType 类型过滤，空字符串表示不过滤
      * @param query 标题关键词，空字符串表示不过滤
-     * @param lifecycle 生命周期
+     * @param lifecycle 生命周期过滤，空字符串表示不过滤
      * @param collectionId Collection 过滤，空字符串表示不过滤
      * @param tag 标签名精确过滤，空字符串表示不过滤
      * @param sourceProvider 外部身份 provider 过滤，空字符串表示不过滤
@@ -43,7 +43,7 @@ public interface ResourceRepository extends ReactiveCrudRepository<ResourceEntit
         select distinct r.* from resource r
         join resource_title t on t.resource_id = r.id
         where r.owner_id = :ownerId
-          and r.lifecycle = :lifecycle
+          and (:lifecycle = '' or r.lifecycle = :lifecycle)
           and (:resourceType = '' or r.resource_type = :resourceType)
           and (:query = '' or t.title ilike '%' || :query || '%')
           and (:collectionId = '' or exists (
@@ -68,7 +68,7 @@ public interface ResourceRepository extends ReactiveCrudRepository<ResourceEntit
      * @param ownerId 资源拥有者
      * @param resourceType 类型过滤，空字符串表示不过滤
      * @param query 标题关键词，空字符串表示不过滤
-     * @param lifecycle 生命周期
+     * @param lifecycle 生命周期过滤，空字符串表示不过滤
      * @param collectionId Collection 过滤，空字符串表示不过滤
      * @param tag 标签名精确过滤，空字符串表示不过滤
      * @param sourceProvider 外部身份 provider 过滤，空字符串表示不过滤
@@ -78,7 +78,7 @@ public interface ResourceRepository extends ReactiveCrudRepository<ResourceEntit
         select count(distinct r.id) from resource r
         join resource_title t on t.resource_id = r.id
         where r.owner_id = :ownerId
-          and r.lifecycle = :lifecycle
+          and (:lifecycle = '' or r.lifecycle = :lifecycle)
           and (:resourceType = '' or r.resource_type = :resourceType)
           and (:query = '' or t.title ilike '%' || :query || '%')
           and (:collectionId = '' or exists (
