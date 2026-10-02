@@ -7,7 +7,9 @@ import reactor.core.publisher.Mono;
 import run.ikaros.authorization.api.PermissionSnapshotQuery;
 import run.ikaros.common.ConflictException;
 import run.ikaros.common.ForbiddenException;
+import run.ikaros.common.NotFoundException;
 import run.ikaros.storage.api.AttachmentAvailabilityStatus;
+import run.ikaros.storage.api.AdminAttachmentBlob;
 import run.ikaros.storage.api.AdminAttachmentItem;
 import run.ikaros.storage.api.AdminAttachmentPage;
 
@@ -59,5 +61,17 @@ public final class AdminAttachmentQueryService {
                 return Mono.zip(items, count)
                     .map(result -> new AdminAttachmentPage(result.getT1(), result.getT2(), page, size));
             }));
+    }
+
+    public Mono<AdminAttachmentBlob> getBlob(UUID actorId, UUID attachmentId) {
+        return permissionSnapshotQuery.permissionsFor(actorId)
+            .filter(snapshot -> snapshot.permissionKeys().contains(REQUIRED_PERMISSION))
+            .switchIfEmpty(Mono.error(new ForbiddenException("缺少附件管理权限")))
+            .then(attachments.findByIdAndArchivedAtIsNullAndDeletedAtIsNull(attachmentId)
+                .switchIfEmpty(Mono.error(new NotFoundException("附件不存在")))
+                .flatMap(attachment -> blobs.findById(attachment.blobId())
+                    .switchIfEmpty(Mono.error(new NotFoundException("附件不存在")))
+                    .map(blob -> new AdminAttachmentBlob(blob.id(), blob.hashAlgorithm(), blob.sha256(),
+                        blob.sizeBytes(), blob.mediaType(), blob.availability(), blob.createdAt()))));
     }
 }
