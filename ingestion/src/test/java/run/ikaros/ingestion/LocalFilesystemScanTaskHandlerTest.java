@@ -1,6 +1,8 @@
 package run.ikaros.ingestion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -15,6 +17,10 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.Resources;
+import org.springframework.test.util.ReflectionTestUtils;
+import run.ikaros.common.ConflictException;
 import run.ikaros.operations.api.BackgroundTask;
 import run.ikaros.operations.api.BackgroundTaskDispatcher;
 import run.ikaros.operations.api.BackgroundTaskService;
@@ -26,6 +32,44 @@ import reactor.test.StepVerifier;
 class LocalFilesystemScanTaskHandlerTest {
     @TempDir
     Path root;
+
+    @Test
+    @ResourceLock(Resources.SYSTEM_PROPERTIES)
+    void unixSensitiveDirectoryPolicyAllowsOrdinaryAbsolutePaths() {
+        LocalFilesystemScanTaskHandler handler = new LocalFilesystemScanTaskHandler(
+            null, null, null, null, null, null, 100);
+        String originalOs = System.getProperty("os.name");
+        try {
+            System.setProperty("os.name", "Linux");
+            for (String path : List.of("/tmp/media", "/home/user/media", "/etc-media", "/var/library")) {
+                Boolean sensitive = ReflectionTestUtils.invokeMethod(handler, "isSensitiveRoot", Path.of(path));
+                assertFalse(sensitive, path + " must be allowed as a scan root");
+            }
+            for (String path : List.of("/etc", "/etc/ssl", "/proc", "/sys", "/dev", "/run", "/root",
+                "/boot", "/usr", "/bin", "/sbin", "/var/lib", "/var/lib/private")) {
+                Boolean sensitive = ReflectionTestUtils.invokeMethod(handler, "isSensitiveRoot", Path.of(path));
+                assertTrue(sensitive, path + " must remain blocked");
+            }
+        } finally {
+            if (originalOs == null) System.clearProperty("os.name");
+            else System.setProperty("os.name", originalOs);
+        }
+    }
+
+    @Test
+    void rejectsFilesystemRootBeforeScanning() throws Exception {
+        LocalFilesystemScanTaskHandler handler = new LocalFilesystemScanTaskHandler(
+            null, null, null, null, null, null, 100);
+        Mono<?> resolution = ReflectionTestUtils.invokeMethod(handler, "resolveRoot",
+            root.toRealPath().getRoot().toString());
+
+        StepVerifier.create(resolution)
+            .expectErrorSatisfies(error -> {
+                assertTrue(error instanceof ConflictException);
+                assertEquals("本地来源根目录不可扫描", error.getMessage());
+            })
+            .verify();
+    }
 
     @Test
     void discoversFilesAndCreatesCandidatesWithoutReadingUnsupportedFiles() throws Exception {

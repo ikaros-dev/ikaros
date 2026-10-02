@@ -205,7 +205,7 @@ public final class LocalFilesystemScanTaskHandler {
             }
             return false;
         }
-        for (String sensitive : new String[] {"/", "/etc", "/proc", "/sys", "/dev", "/run", "/root", "/boot", "/usr", "/bin", "/sbin", "/var/lib"}) {
+        for (String sensitive : new String[] {"/etc", "/proc", "/sys", "/dev", "/run", "/root", "/boot", "/usr", "/bin", "/sbin", "/var/lib"}) {
             if (root.startsWith(Path.of(sensitive))) return true;
         }
         return false;
