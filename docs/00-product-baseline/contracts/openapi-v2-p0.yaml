@@ -501,7 +501,7 @@ paths:
           schema: { type: string }
         - name: lifecycle_status
           in: query
-          description: 生命周期过滤，默认 ACTIVE。
+          description: 可选的生命周期过滤；省略时返回当前用户所有生命周期的资源。
           schema:
             $ref: '#/components/schemas/ResourceLifecycleStatus'
         - name: collection_id
