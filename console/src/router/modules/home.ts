@@ -218,6 +218,15 @@ export default {
           { icon: "ep:document" }
         ),
         page(
+          "attachments/:attachmentId",
+          "StorageAttachmentDetail",
+          "menus.attachmentDetails",
+          "menuDescriptions.attachmentDetails",
+          () => import("@/views/console/storage/AttachmentDetail.vue"),
+          ["resource.read", "storage.attachment.manage"],
+          hidden("/storage/attachments")
+        ),
+        page(
           "providers",
           "StorageProviders",
           "menus.storageProviders",

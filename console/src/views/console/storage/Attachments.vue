@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
+import { useRouter } from "vue-router";
 import PageCard from "@/views/console/PageCard.vue";
 import {
   listAccessibleAttachments,
@@ -12,14 +13,13 @@ import { hasPerms } from "@/utils/auth";
 import { getHttpErrorMessage } from "@/utils/http";
 
 const { t } = useI18n();
+const router = useRouter();
 const loading = ref(false);
 const attachments = ref<Attachment[]>([]);
 const total = ref(0);
 const page = ref(1);
 const size = ref(20);
 const query = ref("");
-const detailVisible = ref(false);
-const selectedAttachment = ref<Attachment | null>(null);
 const canManageAll = computed(() => hasPerms("storage.attachment.manage"));
 const filteredAttachments = computed(() => {
   if (canManageAll.value) return attachments.value;
@@ -67,8 +67,7 @@ const search = () => {
 };
 
 const openDetail = (attachment: Attachment) => {
-  selectedAttachment.value = attachment;
-  detailVisible.value = true;
+  void router.push({ name: "StorageAttachmentDetail", params: { attachmentId: attachment.id } });
 };
 
 onMounted(load);
@@ -127,19 +126,5 @@ onMounted(load);
       @size-change="search"
     />
 
-    <el-drawer v-model="detailVisible" :title="t('attachmentManagement.details')" size="720px">
-      <el-descriptions v-if="selectedAttachment" :column="1" border>
-        <el-descriptions-item :label="t('attachmentManagement.fileName')">{{ selectedAttachment.fileName }}</el-descriptions-item>
-        <el-descriptions-item :label="t('attachmentManagement.attachmentId')">{{ selectedAttachment.id }}</el-descriptions-item>
-        <el-descriptions-item :label="t('attachmentManagement.resourceId')">{{ selectedAttachment.resourceId }}</el-descriptions-item>
-        <el-descriptions-item :label="t('attachmentManagement.kind')">{{ selectedAttachment.kind }}</el-descriptions-item>
-        <el-descriptions-item :label="t('attachmentManagement.sha256')">{{ selectedAttachment.sha256 }}</el-descriptions-item>
-        <el-descriptions-item :label="t('attachmentManagement.size')">
-          {{ t('attachmentManagement.bytes', { value: selectedAttachment.sizeBytes.toLocaleString() }) }}
-        </el-descriptions-item>
-        <el-descriptions-item :label="t('attachmentManagement.mediaType')">{{ selectedAttachment.mediaType }}</el-descriptions-item>
-        <el-descriptions-item :label="t('attachmentManagement.availability')">{{ selectedAttachment.availability }}</el-descriptions-item>
-      </el-descriptions>
-    </el-drawer>
   </PageCard>
 </template>

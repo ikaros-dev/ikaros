@@ -386,6 +386,7 @@ menus:
   storage: 存储
   storageOverview: 存储概览
   attachmentManagement: 附件管理
+  attachmentDetails: 附件详情
   storageProviders: 存储提供方
   storageProviderDetail: 存储提供方详情
   storagePolicy: 存储策略
@@ -553,6 +554,7 @@ menuDescriptions:
   activityDetail: 查看单个后台工作的状态、进度、结果、错误与执行信息。
   storageOverview: 查看存储容量、层级分布、Provider 状态、恢复状态与需要关注的问题。
   attachmentManagement: 浏览当前可访问的附件；拥有附件管理权限时可查看所有用户的活动附件。
+  attachmentDetails: 查看附件基本信息及关联标识。
   storageProviders: 配置和管理存储提供方、凭据、容量、层级与健康状态。
   storageProviderDetail: 查看和维护单个存储提供方的配置、容量和运行状态。
   storagePolicy: 配置资源在不同存储层级之间的生命周期、保留、副本与迁移策略。
@@ -661,6 +663,11 @@ attachmentManagement:
   sha256: SHA-256
   actions: 操作
   details: 详情
+  basicInfo: 基本信息
+  otherInfo: 其它信息
+  backToList: 返回附件列表
+  notFound: 附件不存在或当前账号无权访问
+  detailFailed: 获取附件详情失败
   empty: 暂无附件
   loadFailed: 获取附件列表失败
 resourceLibrary:

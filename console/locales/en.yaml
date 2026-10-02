@@ -386,6 +386,7 @@ menus:
   storage: Storage
   storageOverview: Storage Overview
   attachmentManagement: Attachment Management
+  attachmentDetails: Attachment Details
   storageProviders: Storage Providers
   storageProviderDetail: Storage Provider Detail
   storagePolicy: Storage Policy
@@ -553,6 +554,7 @@ menuDescriptions:
   activityDetail: View the status, progress, result, errors, and execution details of a background job.
   storageOverview: View storage capacity, tier distribution, Provider status, recovery status, and attention items.
   attachmentManagement: Browse accessible attachments, or all users’ active attachments with the attachment management permission.
+  attachmentDetails: View attachment details and related identifiers.
   storageProviders: Configure and manage storage providers, credentials, capacity, tiers, and health.
   storageProviderDetail: View and maintain an individual storage provider's configuration, capacity, and runtime status.
   storagePolicy: Configure lifecycle, retention, replicas, and migration policies across storage tiers.
@@ -661,6 +663,11 @@ attachmentManagement:
   sha256: SHA-256
   actions: Actions
   details: Details
+  basicInfo: Basic Information
+  otherInfo: Other Information
+  backToList: Back to Attachments
+  notFound: The attachment does not exist or is not accessible to this account.
+  detailFailed: Failed to load attachment details
   empty: No attachments
   loadFailed: Failed to load attachments
 resourceLibrary:

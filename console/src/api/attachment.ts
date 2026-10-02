@@ -41,5 +41,8 @@ export type AttachmentPageQuery = { page: number; size: number };
 export const listAccessibleAttachments = (params: AttachmentPageQuery) =>
   http.request<AttachmentPage>("get", "/attachments", { params });
 
+export const getAttachment = (attachmentId: string) =>
+  http.request<Attachment>("get", `/attachments/${attachmentId}`);
+
 export const listAllManagedAttachments = (params: AttachmentPageQuery & { query?: string }) =>
   http.request<ManagedAttachmentPage>("get", "/admin/attachments", { params });
