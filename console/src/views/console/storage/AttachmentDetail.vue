@@ -15,6 +15,7 @@ import {
 } from "@/api/attachment";
 import { hasPerms } from "@/utils/auth";
 import { getHttpErrorMessage } from "@/utils/http";
+import { listBlobPlacements, type BlobPlacement } from "@/api/storageProvider";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 
 const { t } = useI18n();
@@ -26,6 +27,13 @@ const blob = ref<AdminAttachmentBlob | null>(null);
 const blobLoading = ref(false);
 const blobError = ref("");
 const canManageAll = computed(() => hasPerms("storage.attachment.manage"));
+const canReadPlacements = computed(() => hasPerms("storage.provider.read"));
+const placementDrawerVisible = ref(false);
+const placementLoading = ref(false);
+const placementError = ref("");
+const placements = ref<BlobPlacement[]>([]);
+const placementBlobId = ref("");
+let placementRequestId = 0;
 const previewLoading = ref(false);
 const previewError = ref("");
 const preview = ref<AttachmentPreviewUrl | null>(null);
@@ -59,6 +67,28 @@ const loadBlob = async (id: string, requestId: number) => {
     }
   } finally {
     if (requestId === attachmentRequestId) blobLoading.value = false;
+  }
+};
+
+const showPlacements = async (blobId: string) => {
+  const requestId = ++placementRequestId;
+  placementBlobId.value = blobId;
+  placementDrawerVisible.value = true;
+  placementLoading.value = true;
+  placementError.value = "";
+  placements.value = [];
+  try {
+    const result = await listBlobPlacements(blobId);
+    if (requestId === placementRequestId) placements.value = result;
+  } catch (error) {
+    if (requestId === placementRequestId) {
+      placementError.value = getHttpErrorMessage(
+        error,
+        t("attachmentManagement.placementsLoadFailed")
+      );
+    }
+  } finally {
+    if (requestId === placementRequestId) placementLoading.value = false;
   }
 };
 
@@ -279,6 +309,23 @@ watch(
               :label="t('attachmentManagement.createdAt')"
               min-width="200"
             />
+            <el-table-column
+              v-if="canReadPlacements"
+              :label="t('attachmentManagement.actions')"
+              fixed="right"
+              width="110"
+            >
+              <template #default="scope">
+                <el-button
+                  v-if="canReadPlacements"
+                  link
+                  type="primary"
+                  @click="showPlacements(scope.row.id)"
+                >
+                  {{ t("attachmentManagement.locations") }}
+                </el-button>
+              </template>
+            </el-table-column>
           </el-table>
         </el-card>
 
@@ -351,5 +398,58 @@ watch(
         </el-card>
       </template>
     </div>
+    <el-drawer
+      v-model="placementDrawerVisible"
+      direction="rtl"
+      size="70%"
+      :title="t('attachmentManagement.placementsTitle')"
+    >
+      <div class="mb-3 break-all text-sm text-[var(--el-text-color-secondary)]">
+        {{ t("attachmentManagement.blobId") }}: {{ placementBlobId }}
+      </div>
+      <el-alert
+        v-if="placementError"
+        :title="placementError"
+        type="warning"
+        :closable="false"
+        show-icon
+        class="mb-3"
+      />
+      <el-table
+        v-loading="placementLoading"
+        :data="placements"
+        row-key="id"
+        border
+      >
+        <el-table-column
+          prop="id"
+          :label="t('attachmentManagement.placementId')"
+          min-width="250"
+        />
+        <el-table-column
+          prop="provider"
+          :label="t('attachmentManagement.provider')"
+          min-width="160"
+        />
+        <el-table-column
+          prop="object_key"
+          :label="t('attachmentManagement.objectKey')"
+          min-width="220"
+        />
+        <el-table-column
+          prop="tier"
+          :label="t('attachmentManagement.tier')"
+          min-width="120"
+        />
+        <el-table-column
+          prop="state"
+          :label="t('attachmentManagement.placementState')"
+          min-width="160"
+        />
+        <template #empty>
+          <el-empty :description="t('attachmentManagement.placementsEmpty')" />
+        </template>
+      </el-table>
+    </el-drawer>
   </PageCard>
 </template>

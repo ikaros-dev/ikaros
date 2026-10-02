@@ -32,6 +32,23 @@ export type StorageProviderStatus = {
   checked_at: string;
 };
 
+export type BlobPlacement = {
+  id: string;
+  provider: string;
+  tier: "HOT" | "WARM" | "COLD" | "ARCHIVE" | "DEEP_ARCHIVE";
+  object_key: string;
+  state:
+    | "ACTIVE"
+    | "VERIFYING"
+    | "UNAVAILABLE"
+    | "DELETING"
+    | "RESTORING"
+    | "READY_TEMPORARILY";
+};
+
+export const listBlobPlacements = (blobId: string) =>
+  http.request<BlobPlacement[]>("get", `/admin/blobs/${blobId}/placements`);
+
 export type CreateStorageProviderRequest = {
   provider_key: string;
   provider_type: string;

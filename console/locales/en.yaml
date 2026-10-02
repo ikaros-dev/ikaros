@@ -670,6 +670,15 @@ attachmentManagement:
   blobAvailability: Blob availability
   createdAt: Created at
   blobLoadFailed: Failed to load Blob metadata
+  locations: Locations
+  placementsTitle: Blob placements
+  placementsLoadFailed: Failed to load Blob placements
+  placementsEmpty: This Blob has no placements
+  placementId: Placement ID
+  provider: Storage provider
+  objectKey: Object key
+  tier: Storage tier
+  placementState: Placement state
   preview: Preview
   previewFailed: Failed to preview attachment
   previewUnsupported: Preview is not supported for this media type
