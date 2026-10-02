@@ -18,11 +18,10 @@ import software.amazon.awssdk.core.checksums.ResponseChecksumValidation;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -113,8 +112,7 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
                 return new StorageObjectMetadata(objectKey, object.contentLength(), object.contentType(), object.eTag(),
                     object.checksumSHA256());
             });
-        })).subscribeOn(Schedulers.boundedElastic())
-            .onErrorResume(S3Exception.class, error -> error.statusCode() == 404 ? Mono.empty() : Mono.error(error));
+        })).subscribeOn(Schedulers.boundedElastic());
     }
 
     @Override
