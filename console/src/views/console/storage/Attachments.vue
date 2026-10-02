@@ -18,6 +18,8 @@ const total = ref(0);
 const page = ref(1);
 const size = ref(20);
 const query = ref("");
+const detailVisible = ref(false);
+const selectedAttachment = ref<Attachment | null>(null);
 const canManageAll = computed(() => hasPerms("storage.attachment.manage"));
 const filteredAttachments = computed(() => {
   if (canManageAll.value) return attachments.value;
@@ -64,6 +66,11 @@ const search = () => {
   void load();
 };
 
+const openDetail = (attachment: Attachment) => {
+  selectedAttachment.value = attachment;
+  detailVisible.value = true;
+};
+
 onMounted(load);
 </script>
 
@@ -101,6 +108,11 @@ onMounted(load);
       <el-table-column prop="availability" :label="t('attachmentManagement.availability')" width="160" />
       <el-table-column prop="id" :label="t('attachmentManagement.attachmentId')" min-width="230" show-overflow-tooltip />
       <el-table-column prop="resourceId" :label="t('attachmentManagement.resourceId')" min-width="230" show-overflow-tooltip />
+      <el-table-column :label="t('attachmentManagement.actions')" width="100" fixed="right">
+        <template #default="scope">
+          <el-button link type="primary" @click="openDetail(scope.row)">{{ t('attachmentManagement.details') }}</el-button>
+        </template>
+      </el-table-column>
     </el-table>
 
     <el-empty v-if="!loading && attachments.length === 0" :description="t('attachmentManagement.empty')" />
@@ -114,5 +126,20 @@ onMounted(load);
       @current-change="load"
       @size-change="search"
     />
+
+    <el-drawer v-model="detailVisible" :title="t('attachmentManagement.details')" size="520px">
+      <el-descriptions v-if="selectedAttachment" :column="1" border>
+        <el-descriptions-item :label="t('attachmentManagement.fileName')">{{ selectedAttachment.fileName }}</el-descriptions-item>
+        <el-descriptions-item :label="t('attachmentManagement.attachmentId')">{{ selectedAttachment.id }}</el-descriptions-item>
+        <el-descriptions-item :label="t('attachmentManagement.resourceId')">{{ selectedAttachment.resourceId }}</el-descriptions-item>
+        <el-descriptions-item :label="t('attachmentManagement.kind')">{{ selectedAttachment.kind }}</el-descriptions-item>
+        <el-descriptions-item :label="t('attachmentManagement.sha256')">{{ selectedAttachment.sha256 }}</el-descriptions-item>
+        <el-descriptions-item :label="t('attachmentManagement.size')">
+          {{ t('attachmentManagement.bytes', { value: selectedAttachment.sizeBytes.toLocaleString() }) }}
+        </el-descriptions-item>
+        <el-descriptions-item :label="t('attachmentManagement.mediaType')">{{ selectedAttachment.mediaType }}</el-descriptions-item>
+        <el-descriptions-item :label="t('attachmentManagement.availability')">{{ selectedAttachment.availability }}</el-descriptions-item>
+      </el-descriptions>
+    </el-drawer>
   </PageCard>
 </template>

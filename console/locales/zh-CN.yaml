@@ -658,6 +658,9 @@ attachmentManagement:
   availability: 可用状态
   attachmentId: 附件 ID
   resourceId: 资源 ID
+  sha256: SHA-256
+  actions: 操作
+  details: 详情
   empty: 暂无附件
   loadFailed: 获取附件列表失败
 resourceLibrary:

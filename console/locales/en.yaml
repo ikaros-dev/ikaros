@@ -658,6 +658,9 @@ attachmentManagement:
   availability: Availability
   attachmentId: Attachment ID
   resourceId: Resource ID
+  sha256: SHA-256
+  actions: Actions
+  details: Details
   empty: No attachments
   loadFailed: Failed to load attachments
 resourceLibrary:
