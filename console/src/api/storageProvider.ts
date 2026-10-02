@@ -36,7 +36,7 @@ export type BlobPlacement = {
   id: string;
   provider: string;
   tier: "HOT" | "WARM" | "COLD" | "ARCHIVE" | "DEEP_ARCHIVE";
-  object_key: string;
+  objectKey: string;
   state:
     | "ACTIVE"
     | "VERIFYING"

@@ -432,7 +432,7 @@ watch(
           min-width="160"
         />
         <el-table-column
-          prop="object_key"
+          prop="objectKey"
           :label="t('attachmentManagement.objectKey')"
           min-width="220"
         />
