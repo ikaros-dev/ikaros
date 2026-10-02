@@ -238,7 +238,9 @@ Storage Credential 永远使用 Secret Reference。
 
 Direct upload sequence is Resource creation → `storage.begin-upload` → Provider object upload → `storage.commit-upload`.
 The supplied `object_key` identifies only a Provider placement, never the Resource or Attachment. Commit verifies the
-uploaded object's declared size and SHA-256 before persisting the Attachment. Clients must use an idempotency key for
+uploaded object's declared size and SHA-256 before persisting the Attachment. For `deduplicated=true`, the server must
+instead confirm that the declared SHA-256 and size match an existing Blob and that the supplied Provider/object key
+identifies its ACTIVE Placement; it must not require a second remote upload or object HEAD. Clients must use an idempotency key for
 both Resource creation and Attachment commit; a failed upload may leave the newly created Resource without an Attachment.
 The upload intent returns `required_headers`; clients must send these signed headers with the Provider upload, excluding
 headers managed by the browser such as `Host` and `Content-Length`.
