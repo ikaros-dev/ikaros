@@ -29,6 +29,17 @@ class DeliveryGrantContractServiceTest {
 
     @Test
     void cdnSignsStorageObjectWithConfiguredCdnEndpoint() {
+        assertCdnSigningEndpoint("https://media.example.com/", Map.of(), URI.create("https://media.example.com/"));
+    }
+
+    @Test
+    void cdnPrefixesBucketToEndpointWithoutScheme() {
+        assertCdnSigningEndpoint("oss-cn-hangzhou.aliyuncs.com", Map.of("bucket", "media"),
+            URI.create("//oss-cn-hangzhou.aliyuncs.com"));
+    }
+
+    private void assertCdnSigningEndpoint(String endpoint, Map<String, Object> storageMetadata,
+                                          URI expectedSigningEndpoint) {
         UUID attachmentId = UUID.randomUUID();
         UUID blobId = UUID.randomUUID();
         UUID storageProviderId = UUID.randomUUID();
@@ -38,11 +49,11 @@ class DeliveryGrantContractServiceTest {
             1, true, DeliveryBindingCacheKeyPolicy.CONTENT_IDENTITY, DeliveryBindingRangePolicy.PASSTHROUGH, true,
             Instant.now(), Instant.now(), 0L);
         DeliveryProviderEntity deliveryProvider = new DeliveryProviderEntity(deliveryProviderId, "cdn",
-            DeliveryProviderType.CDN, "CDN", null, Json.of("{\"endpoint\":\"https://media.example.com/\"}"),
+            DeliveryProviderType.CDN, "CDN", null, Json.of("{\"endpoint\":\"" + endpoint + "\"}"),
             Json.of("{}"), DeliveryGrantRevocationLevel.IMMEDIATE, 1, DeliveryProviderHealthStatus.HEALTHY, true,
             Instant.now(), Instant.now(), 0L, null);
         StorageProvider storageProvider = new StorageProvider(storageProviderId, "oss", "S3", StorageTier.HOT,
-            StorageProviderStatus.ENABLED, "secret://oss", Map.of(), Instant.now(), Instant.now());
+            StorageProviderStatus.ENABLED, "secret://oss", storageMetadata, Instant.now(), Instant.now());
         BlobEntity blob = new BlobEntity(blobId, "sha256", 42L, "video/mp4", BlobAvailability.AVAILABLE,
             Instant.now(), 0L);
         BlobPlacementEntity placement = new BlobPlacementEntity(UUID.randomUUID(), blobId, "oss", StorageTier.HOT,
@@ -69,6 +80,6 @@ class DeliveryGrantContractServiceTest {
             .verifyComplete();
 
         verify(storageObjects).createReadIntent(eq(storageProvider), eq(placement.objectKey()),
-            eq(URI.create("https://media.example.com/")));
+            eq(expectedSigningEndpoint));
     }
 }

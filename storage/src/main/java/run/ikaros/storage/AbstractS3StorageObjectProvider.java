@@ -72,8 +72,9 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
             S3Settings settings = S3Settings.from(provider);
             URI endpoint = signingEndpoint == null ? settings.endpoint() : signingEndpoint;
             S3Presigner.Builder presignerBuilder = S3Presigner.builder().region(Region.of(settings.region()))
-                .endpointOverride(endpoint).credentialsProvider(credentials);
-            if (signingEndpoint != null) {
+                .endpointOverride(signingEndpoint == null ? endpoint : httpsEndpointIfNeeded(endpoint))
+                .credentialsProvider(credentials);
+            if (signingEndpoint != null && signingEndpoint.getScheme() != null) {
                 presignerBuilder.serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build());
             }
             try (S3Presigner presigner = presignerBuilder.build()) {
@@ -82,6 +83,16 @@ abstract class AbstractS3StorageObjectProvider implements StorageObjectProvider 
                 return new StorageReadIntent("GET", presigner.presignGetObject(presign).url().toString(), Instant.now().plus(timeout));
             }
         })).subscribeOn(Schedulers.boundedElastic());
+    }
+
+    private URI httpsEndpointIfNeeded(URI endpoint) {
+        if (endpoint.getScheme() != null) return endpoint;
+        try {
+            return new URI("https", endpoint.getUserInfo(), endpoint.getHost(), endpoint.getPort(),
+                endpoint.getPath(), endpoint.getQuery(), endpoint.getFragment());
+        } catch (java.net.URISyntaxException error) {
+            throw new IllegalArgumentException("CDN signing endpoint 无效", error);
+        }
     }
 
     private String checksumHeader(String sha256) {
