@@ -50,7 +50,7 @@ public class PersistentMediaDeliveryBindingService implements MediaDeliveryBindi
     @Override
     public Flux<MediaDeliveryBindingView> list(UUID providerId) {
         return providers.get(providerId).switchIfEmpty(Mono.error(new NotFoundException("Storage Provider 不存在")))
-            .thenMany(bindings.findAllByStorageProviderIdOrderByPriorityAsc(providerId).take(100).map(this::view));
+            .thenMany(bindings.findAllByStorageProviderIdOrderByPriorityDesc(providerId).take(100).map(this::view));
     }
 
     @Override

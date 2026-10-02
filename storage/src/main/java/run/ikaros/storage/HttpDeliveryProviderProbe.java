@@ -89,7 +89,7 @@ public class HttpDeliveryProviderProbe implements DeliveryProviderProbe {
     }
 
     private Mono<String> directUrl(DeliveryProviderEntity provider) {
-        return bindings.findAllByDeliveryProviderKeyAndEnabledTrueOrderByPriorityAsc(provider.providerKey())
+        return bindings.findAllByDeliveryProviderKeyAndEnabledTrueOrderByPriorityDesc(provider.providerKey())
             .next()
             .flatMap(binding -> storageProviders.get(binding.storageProviderId()))
             .flatMap(storageProvider -> placements.findFirstByProviderAndPlacementState(storageProvider.providerKey(), PlacementState.ACTIVE)

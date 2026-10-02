@@ -160,7 +160,7 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
             .concatMap(indexed -> providerRegistry.getByKey(indexed.getT2().provider())
                 .filter(provider -> provider.status() != StorageProviderStatus.DISABLED
                     && provider.status() != StorageProviderStatus.FAILED)
-                .flatMap(provider -> bindings.findAllByStorageProviderIdOrderByPriorityAsc(provider.id())
+                .flatMap(provider -> bindings.findAllByStorageProviderIdOrderByPriorityDesc(provider.id())
                     .filter(binding -> (requestedBindingId == null || binding.id().equals(requestedBindingId))
                         && binding.enabled()
                         && (indexed.getT1() == 0 || binding.fallbackParticipation()))

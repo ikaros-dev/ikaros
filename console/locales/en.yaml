@@ -332,7 +332,7 @@ storageProviderManagement:
   probeFailed: Failed to probe provider
   delivery: Delivery
   deliveryTitle: Delivery management · {name}
-  deliveryHint: A storage provider can bind multiple delivery providers, tried in ascending priority order.
+  deliveryHint: A storage provider can bind multiple delivery providers; higher priority values are tried first.
   deliveryLoadFailed: Failed to load delivery bindings
   deliveryProvider: Delivery provider
   deliveryProviderCreate: New delivery provider

@@ -332,7 +332,7 @@ storageProviderManagement:
   probeFailed: 存储提供方探测失败
   delivery: 分发
   deliveryTitle: 分发管理 · {name}
-  deliveryHint: 一个存储提供方可以绑定多个分发提供方，按优先级升序尝试。
+  deliveryHint: 一个存储提供方可以绑定多个分发提供方，权重较高的优先尝试。
   deliveryLoadFailed: 获取分发绑定失败
   deliveryProvider: 分发提供方
   deliveryProviderCreate: 新建分发提供方

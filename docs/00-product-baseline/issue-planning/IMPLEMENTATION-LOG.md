@@ -1016,6 +1016,7 @@
 - 失败语义：没有可用绑定返回 `StorageUnavailableException`；不产生 grant/lease 伪成功；不修改 Attachment、Blob、Placement。
 - 验证：`AttachmentPreviewServiceTest` 2/2，Maven targeted test BUILD SUCCESS。
 - Console 对接审计：Binding 表单提供 priority、启用状态和 Range 策略，说明数值越小越优先；预览时由附件详情页选择后端返回的可用分发 Provider。
+- 2026-10-02 语义更正：上述“数值越小越优先”与当前产品要求不符。Delivery Binding 按 `priority` 数值降序选择和展示，较大值优先；Preview 与 Lease 均遵循此规则。
 ## A16-04 生成预览地址
 - 日期：2026-09-09
 - 推荐决策：复用 `GET /api/attachments/{attachmentId}/preview-url`，由资源 owner 校验、Blob/Placement 查询、Binding 优先级选择和 Delivery Grant 合同共同生成短期地址。
