@@ -663,8 +663,11 @@ attachmentManagement:
   sha256: SHA-256
   actions: 操作
   details: 详情
-  basicInfo: 基本信息
-  otherInfo: 其它信息
+  information: 信息
+  preview: 预览
+  previewFailed: 附件预览失败
+  previewUnsupported: 暂不支持预览此媒体类型
+  previewUnavailable: 当前附件暂不可预览，或当前账号无权查看内容
   notFound: 附件不存在或当前账号无权访问
   detailFailed: 获取附件详情失败
   empty: 暂无附件

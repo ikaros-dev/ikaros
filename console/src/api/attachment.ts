@@ -8,7 +8,12 @@ export type Attachment = {
   sha256: string;
   sizeBytes: number;
   mediaType: string;
-  availability: "READY" | "PROCESSING" | "RESTORE_REQUIRED" | "MISSING" | "CORRUPTED";
+  availability:
+    | "READY"
+    | "PROCESSING"
+    | "RESTORE_REQUIRED"
+    | "MISSING"
+    | "CORRUPTED";
 };
 
 export type AttachmentPage = {
@@ -38,11 +43,47 @@ export type ManagedAttachmentPage = {
 
 export type AttachmentPageQuery = { page: number; size: number };
 
+export type AttachmentPreviewProvider = {
+  bindingId: string;
+  deliveryProviderId: string;
+  deliveryProviderKey: string;
+  displayName: string;
+  providerType: "DIRECT" | "CDN" | "SERVER_PROXY";
+  priority: number;
+  selected: boolean;
+};
+
+export type AttachmentPreviewUrl = {
+  method: string;
+  url: string;
+  expiresAt: string;
+  rangeSupported: boolean;
+  contentType: string;
+  selectedProvider: AttachmentPreviewProvider | null;
+  providers: AttachmentPreviewProvider[];
+};
+
 export const listAccessibleAttachments = (params: AttachmentPageQuery) =>
   http.request<AttachmentPage>("get", "/attachments", { params });
 
 export const getAttachment = (attachmentId: string) =>
   http.request<Attachment>("get", `/attachments/${attachmentId}`);
 
-export const listAllManagedAttachments = (params: AttachmentPageQuery & { query?: string }) =>
+export const getAttachmentPreviewUrl = (
+  attachmentId: string,
+  deliveryProvider?: string
+) =>
+  http.request<AttachmentPreviewUrl>(
+    "get",
+    `/attachments/${attachmentId}/preview-url`,
+    {
+      params: deliveryProvider
+        ? { delivery_provider: deliveryProvider }
+        : undefined
+    }
+  );
+
+export const listAllManagedAttachments = (
+  params: AttachmentPageQuery & { query?: string }
+) =>
   http.request<ManagedAttachmentPage>("get", "/admin/attachments", { params });

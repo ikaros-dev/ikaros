@@ -97,7 +97,22 @@ export const useMultiTagsStore = defineStore("pure-multiTags", {
               );
             });
 
-            if (tagHasExits) return;
+            if (tagHasExits) {
+              const existingTag = this.multiTags.find(
+                tag =>
+                  tag.path === tagPath &&
+                  isEqual(tag?.query, tagVal?.query) &&
+                  isEqual(tag?.params, tagVal?.params)
+              );
+              if (existingTag && tagVal.meta?.tabTitle) {
+                existingTag.meta = {
+                  ...existingTag.meta,
+                  tabTitle: tagVal.meta.tabTitle
+                };
+                this.tagsCache(this.multiTags);
+              }
+              return;
+            }
 
             // 动态路由可打开的最大数量
             const dynamicLevel = tagVal?.meta?.dynamicLevel ?? -1;
