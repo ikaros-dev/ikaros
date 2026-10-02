@@ -347,7 +347,7 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
         UploadSessionEntity session = new UploadSessionEntity(null, ownerId, resourceId, view.provider(),
             view.objectKey(), request.sizeBytes(), request.sha256(),
             view.deduplicated() ? UploadSessionState.COMPLETED : UploadSessionState.OPEN,
-            view.expiresAt(), now, now, 0L, idempotencyKey);
+            view.expiresAt(), now, now, null, idempotencyKey);
         return uploadSessionRepository.save(session)
             .map(saved -> new StorageUploadIntentView(view.provider(), view.tier(), view.method(), view.url(),
                 view.objectKey(), view.expiresAt(), view.sha256(), view.deduplicated(), saved.id(),

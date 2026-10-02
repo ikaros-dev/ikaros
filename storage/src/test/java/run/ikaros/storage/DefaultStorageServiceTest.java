@@ -225,7 +225,8 @@ class DefaultStorageServiceTest {
                 assertThat(view.sessionId()).isEqualTo(sessionId);
                 assertThat(view.deduplicated()).isFalse();
             }).verifyComplete();
-        verify(sessions).save(argThat(session -> session.state() == UploadSessionState.OPEN
+        verify(sessions).save(argThat(session -> session.id() == null && session.version() == null
+            && session.state() == UploadSessionState.OPEN
             && session.idempotencyKey().equals("key")));
     }
 
