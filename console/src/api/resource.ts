@@ -30,6 +30,58 @@ export const resourceTypes: ResourceType[] = [
   "OTHER"
 ];
 
+export type CreateResourceRequest = {
+  type: ResourceType;
+  title: string;
+  locale: string;
+};
+
+export type BeginAttachmentUploadRequest = {
+  file_name: string;
+  size_bytes: number;
+  media_type: string;
+  provider: string;
+  object_key: string;
+  sha256: string;
+};
+
+export type AttachmentUploadIntent = {
+  provider: string;
+  tier: string;
+  method: string;
+  url: string;
+  object_key: string;
+  expires_at: string;
+  sha256: string;
+  deduplicated: boolean;
+  session_id: string;
+};
+
+export type CommitAttachmentUploadRequest = {
+  sha256: string;
+  upload_sha256: string;
+  deduplicated: boolean;
+  size_bytes: number;
+  media_type: string;
+  file_name: string;
+  kind: "ORIGINAL";
+  provider: string;
+  tier: string;
+  object_key: string;
+  idempotency_key: string;
+};
+
+export type ResourceAttachment = {
+  id: string;
+  resourceId: string;
+  fileName: string;
+  kind: string;
+  sha256: string;
+  sizeBytes: number;
+  mediaType: string;
+  availability: string;
+};
+
 export type ResourceLifecycle = "ACTIVE" | "ARCHIVED" | "TRASHED" | "PURGED";
 
 export const resourceLifecycles: ResourceLifecycle[] = [
@@ -251,6 +303,33 @@ export type FavoriteState = {
 
 export const listResources = (filters: ResourceLibraryFilters = {}) =>
   http.request<ResourcePage>("get", "/resources", { params: filters });
+
+export const createResource = (data: CreateResourceRequest, idempotencyKey: string) =>
+  http.request<Resource>("post", "/resources", {
+    data,
+    headers: { "Idempotency-Key": idempotencyKey }
+  });
+
+export const beginAttachmentUpload = (
+  resourceId: string,
+  data: BeginAttachmentUploadRequest,
+  idempotencyKey: string
+) =>
+  http.request<AttachmentUploadIntent>(
+    "post",
+    `/resources/${resourceId}/attachments/upload-intents`,
+    { data, headers: { "Idempotency-Key": idempotencyKey } }
+  );
+
+export const commitAttachmentUpload = (
+  resourceId: string,
+  data: CommitAttachmentUploadRequest
+) =>
+  http.request<ResourceAttachment>(
+    "post",
+    `/resources/${resourceId}/attachments/commit`,
+    { data }
+  );
 
 export const getResource = (resourceId: string) =>
   http.request<Resource>("get", `/resources/${resourceId}`);

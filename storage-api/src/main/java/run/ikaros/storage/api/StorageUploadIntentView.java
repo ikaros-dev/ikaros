@@ -2,7 +2,10 @@ package run.ikaros.storage.api;
 
 import java.time.Instant;
 import java.util.UUID;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
 
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record StorageUploadIntentView(String provider, StorageTier tier, String method, String url,
                                       String objectKey, Instant expiresAt, String sha256, boolean deduplicated,
                                       UUID sessionId) {

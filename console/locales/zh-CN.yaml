@@ -643,6 +643,19 @@ addResource:
   verificationTitle: 安全验证
   verificationDescription: 添加导入来源需要完成安全验证。
 resourceLibrary:
+  create: 新建
+  createTitle: 新建资源
+  createSuccess: 资源及附件已创建
+  createFailed: 创建资源失败
+  resourceCreatedWithoutAttachment: 资源已创建，但附件未完成上传。
+  providersLoadFailed: 获取存储提供者失败
+  noWritableProviders: 没有可用的存储提供者
+  unsupportedUploadMethod: 当前存储提供者返回了不支持的上传方式
+  storageProvider: 存储提供者
+  storagePath: 存储路径
+  storagePathHint: 例如 media/books/example.pdf
+  file: 选择文件
+  locale: 标题语言
   query: 标题关键词
   type: 业务类型
   lifecycle: 生命周期

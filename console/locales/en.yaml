@@ -643,6 +643,19 @@ addResource:
   verificationTitle: Security verification
   verificationDescription: Adding an ingestion source requires security verification.
 resourceLibrary:
+  create: New
+  createTitle: Create resource
+  createSuccess: Resource and attachment created
+  createFailed: Failed to create resource
+  resourceCreatedWithoutAttachment: The resource was created, but its attachment upload did not finish.
+  providersLoadFailed: Failed to load storage providers
+  noWritableProviders: No writable storage provider is available
+  unsupportedUploadMethod: This storage provider returned an unsupported upload method
+  storageProvider: Storage provider
+  storagePath: Storage path
+  storagePathHint: For example media/books/example.pdf
+  file: Choose file
+  locale: Title language
   query: Title keyword
   type: Type
   lifecycle: Lifecycle

@@ -5,7 +5,7 @@ export type StorageProvider = {
   provider_key: string;
   provider_type: string;
   display_name: string;
-  tier: "HOT" | "WARM" | "COLD" | "ARCHIVE";
+  tier: "HOT" | "WARM" | "COLD" | "ARCHIVE" | "DEEP_ARCHIVE";
   enabled: boolean;
   drain_status: "NORMAL" | "DRAINING" | "DRAINED";
   capabilities: Record<string, unknown>;

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
+import axios from "axios";
+import { createSHA256 } from "hash-wasm";
 import { ElMessage } from "element-plus";
 import { useI18n } from "vue-i18n";
 import PageCard from "@/views/console/PageCard.vue";
@@ -8,12 +10,16 @@ import {
   listCollections,
   listResources,
   listTagCatalog,
+  beginAttachmentUpload,
+  commitAttachmentUpload,
+  createResource,
   resourceLifecycles,
   resourceTypes,
   type Collection,
   type Resource,
   type ResourceTag
 } from "@/api/resource";
+import { listStorageProviders, type StorageProvider } from "@/api/storageProvider";
 import { getHttpErrorMessage } from "@/utils/http";
 
 const { t } = useI18n();
@@ -23,6 +29,21 @@ const resources = ref<Resource[]>([]);
 const total = ref(0);
 const collections = ref<Collection[]>([]);
 const tags = ref<ResourceTag[]>([]);
+const createPanelVisible = ref(false);
+const creating = ref(false);
+const uploadProgress = ref(0);
+const providers = ref<StorageProvider[]>([]);
+const selectedFile = ref<File | null>(null);
+const createForm = reactive({
+  title: "",
+  type: "OTHER" as (typeof resourceTypes)[number],
+  locale: "zh-CN",
+  provider: "",
+  path: ""
+});
+const writableProviders = computed(() =>
+  providers.value.filter(provider => provider.enabled && provider.drain_status === "NORMAL")
+);
 
 const filters = reactive({
   query: "",
@@ -91,6 +112,94 @@ const openDetail = (resource: Resource) => {
   void router.push(`/resources/library/${resource.id}`);
 };
 
+const openCreatePanel = async () => {
+  createPanelVisible.value = true;
+  if (providers.value.length) return;
+  try {
+    providers.value = await listStorageProviders();
+    createForm.provider = writableProviders.value[0]?.provider_key ?? "";
+  } catch (error) {
+    ElMessage.error(getHttpErrorMessage(error, t("resourceLibrary.providersLoadFailed")));
+  }
+};
+
+const hashFile = async (file: File) => {
+  const hasher = await createSHA256();
+  const chunkSize = 2 * 1024 * 1024;
+  for (let offset = 0; offset < file.size; offset += chunkSize) {
+    hasher.update(new Uint8Array(await file.slice(offset, offset + chunkSize).arrayBuffer()));
+  }
+  return hasher.digest("hex") as string;
+};
+
+const submitCreate = async () => {
+  const file = selectedFile.value;
+  if (!file || !createForm.title.trim() || !createForm.provider || !createForm.path.trim()) return;
+
+  creating.value = true;
+  uploadProgress.value = 0;
+  let createdResource: Resource | null = null;
+  try {
+    const sha256 = await hashFile(file);
+    createdResource = await createResource(
+      { type: createForm.type, title: createForm.title.trim(), locale: createForm.locale.trim() || "und" },
+      crypto.randomUUID()
+    );
+    const intent = await beginAttachmentUpload(
+      createdResource.id,
+      {
+        file_name: file.name,
+        size_bytes: file.size,
+        media_type: file.type || "application/octet-stream",
+        provider: createForm.provider,
+        object_key: createForm.path.trim(),
+        sha256
+      },
+      crypto.randomUUID()
+    );
+    if (!intent.deduplicated) {
+      if (!intent.url || intent.method.toUpperCase() !== "PUT") {
+        throw new Error(t("resourceLibrary.unsupportedUploadMethod"));
+      }
+      await axios.put(intent.url, file, {
+        headers: { "Content-Type": file.type || "application/octet-stream" },
+        onUploadProgress: event => {
+          if (event.total) uploadProgress.value = Math.round((event.loaded / event.total) * 100);
+        }
+      });
+    }
+    await commitAttachmentUpload(createdResource.id, {
+      sha256,
+      upload_sha256: sha256,
+      deduplicated: intent.deduplicated,
+      size_bytes: file.size,
+      media_type: file.type || "application/octet-stream",
+      file_name: file.name,
+      kind: "ORIGINAL",
+      provider: intent.provider,
+      tier: intent.tier,
+      object_key: intent.object_key,
+      idempotency_key: crypto.randomUUID()
+    });
+    createPanelVisible.value = false;
+    ElMessage.success(t("resourceLibrary.createSuccess"));
+    await loadResources();
+    void openDetail(createdResource);
+  } catch (error) {
+    if (createdResource) {
+      await loadResources();
+      ElMessage.error(
+        `${getHttpErrorMessage(error, t("resourceLibrary.createFailed"))} ${t("resourceLibrary.resourceCreatedWithoutAttachment")}`
+      );
+      void openDetail(createdResource);
+    } else {
+      ElMessage.error(getHttpErrorMessage(error, t("resourceLibrary.createFailed")));
+    }
+  } finally {
+    creating.value = false;
+  }
+};
+
 onMounted(async () => {
   await Promise.all([loadOptions(), loadResources()]);
 });
@@ -131,7 +240,8 @@ onMounted(async () => {
       </el-form-item>
     </el-form>
 
-    <div class="mb-4 flex justify-end">
+    <div class="mb-4 flex justify-between">
+      <el-button type="primary" @click="openCreatePanel">{{ t("resourceLibrary.create") }}</el-button>
       <el-button :loading="loading" @click="loadResources">{{ t("resourceLibrary.refresh") }}</el-button>
     </div>
 
@@ -170,5 +280,41 @@ onMounted(async () => {
         @size-change="search"
       />
     </div>
+
+    <el-drawer v-model="createPanelVisible" :title="t('resourceLibrary.createTitle')" size="520px" :before-close="(done: () => void) => !creating && done()">
+      <el-form :model="createForm" label-position="top" @submit.prevent="submitCreate">
+        <el-form-item :label="t('resourceLibrary.title')" required>
+          <el-input v-model="createForm.title" maxlength="512" />
+        </el-form-item>
+        <el-form-item :label="t('resourceLibrary.type')" required>
+          <el-select v-model="createForm.type" class="w-full">
+            <el-option v-for="type in resourceTypes" :key="type" :value="type" :label="type" />
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="t('resourceLibrary.locale')" required>
+          <el-input v-model="createForm.locale" maxlength="32" />
+        </el-form-item>
+        <el-form-item :label="t('resourceLibrary.storageProvider')" required>
+          <el-select v-model="createForm.provider" class="w-full" :disabled="!writableProviders.length">
+            <el-option v-for="provider in writableProviders" :key="provider.id" :value="provider.provider_key" :label="`${provider.display_name} (${provider.tier})`" />
+          </el-select>
+          <el-text v-if="!writableProviders.length" type="warning">{{ t("resourceLibrary.noWritableProviders") }}</el-text>
+        </el-form-item>
+        <el-form-item :label="t('resourceLibrary.storagePath')" required>
+          <el-input v-model="createForm.path" maxlength="1024" :placeholder="t('resourceLibrary.storagePathHint')" />
+        </el-form-item>
+        <el-form-item :label="t('resourceLibrary.file')" required>
+          <input type="file" class="block w-full" :disabled="creating" @change="selectedFile = ($event.target as HTMLInputElement).files?.[0] ?? null" />
+          <span v-if="selectedFile" class="mt-1 text-sm text-[var(--el-text-color-secondary)]">{{ selectedFile.name }} · {{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB</span>
+        </el-form-item>
+        <el-progress v-if="creating" :percentage="uploadProgress" :status="uploadProgress === 100 ? 'success' : undefined" />
+      </el-form>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <el-button :disabled="creating" @click="createPanelVisible = false">{{ t("buttons.pureClose") }}</el-button>
+          <el-button type="primary" :loading="creating" :disabled="!selectedFile || !createForm.title.trim() || !createForm.provider || !createForm.path.trim()" @click="submitCreate">{{ t("buttons.pureConfirm") }}</el-button>
+        </div>
+      </template>
+    </el-drawer>
   </PageCard>
 </template>

@@ -5,8 +5,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
 
 /** Provider 上传完成后提交的内容身份与物理位置确认。 */
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record CommitUploadRequest(
     @NotBlank @Pattern(regexp = "^[A-Fa-f0-9]{64}$") String sha256,
     @NotBlank @Pattern(regexp = "^[A-Fa-f0-9]{64}$") String uploadSha256,
