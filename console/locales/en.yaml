@@ -664,6 +664,12 @@ attachmentManagement:
   actions: Actions
   details: Details
   information: Information
+  blob: Blob
+  blobId: Blob ID
+  hashAlgorithm: Hash algorithm
+  blobAvailability: Blob availability
+  createdAt: Created at
+  blobLoadFailed: Failed to load Blob metadata
   preview: Preview
   previewFailed: Failed to preview attachment
   previewUnsupported: Preview is not supported for this media type

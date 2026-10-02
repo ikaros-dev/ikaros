@@ -41,6 +41,16 @@ export type ManagedAttachmentPage = {
   size: number;
 };
 
+export type AdminAttachmentBlob = {
+  id: string;
+  hash_algorithm: string;
+  sha256: string;
+  size_bytes: number;
+  media_type: string;
+  availability: string;
+  created_at: string;
+};
+
 export type AttachmentPageQuery = { page: number; size: number };
 
 export type AttachmentPreviewProvider = {
@@ -87,3 +97,9 @@ export const listAllManagedAttachments = (
   params: AttachmentPageQuery & { query?: string }
 ) =>
   http.request<ManagedAttachmentPage>("get", "/admin/attachments", { params });
+
+export const getAdminAttachmentBlob = (attachmentId: string) =>
+  http.request<AdminAttachmentBlob>(
+    "get",
+    `/admin/attachments/${attachmentId}/blob`
+  );

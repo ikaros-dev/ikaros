@@ -664,6 +664,12 @@ attachmentManagement:
   actions: 操作
   details: 详情
   information: 信息
+  blob: Blob
+  blobId: Blob ID
+  hashAlgorithm: Hash 算法
+  blobAvailability: Blob 可用状态
+  createdAt: 创建时间
+  blobLoadFailed: 获取 Blob 信息失败
   preview: 预览
   previewFailed: 附件预览失败
   previewUnsupported: 暂不支持预览此媒体类型

@@ -7,7 +7,9 @@ import PageCard from "@/views/console/PageCard.vue";
 import {
   getAttachment,
   getAttachmentPreviewUrl,
+  getAdminAttachmentBlob,
   listAllManagedAttachments,
+  type AdminAttachmentBlob,
   type Attachment,
   type AttachmentPreviewUrl
 } from "@/api/attachment";
@@ -20,6 +22,10 @@ const route = useRoute();
 const attachmentId = computed(() => String(route.params.attachmentId ?? ""));
 const loading = ref(false);
 const attachment = ref<Attachment | null>(null);
+const blob = ref<AdminAttachmentBlob | null>(null);
+const blobLoading = ref(false);
+const blobError = ref("");
+const canManageAll = computed(() => hasPerms("storage.attachment.manage"));
 const previewLoading = ref(false);
 const previewError = ref("");
 const preview = ref<AttachmentPreviewUrl | null>(null);
@@ -36,6 +42,25 @@ const isAudio = computed(
 );
 const isPdf = computed(() => attachment.value?.mediaType === "application/pdf");
 let attachmentRequestId = 0;
+
+const loadBlob = async (id: string, requestId: number) => {
+  blobLoading.value = true;
+  blobError.value = "";
+  blob.value = null;
+  try {
+    const result = await getAdminAttachmentBlob(id);
+    if (requestId === attachmentRequestId) blob.value = result;
+  } catch (error) {
+    if (requestId === attachmentRequestId) {
+      blobError.value = getHttpErrorMessage(
+        error,
+        t("attachmentManagement.blobLoadFailed")
+      );
+    }
+  } finally {
+    if (requestId === attachmentRequestId) blobLoading.value = false;
+  }
+};
 
 const loadPreview = async (providerKey?: string) => {
   const requestId = ++previewRequestId;
@@ -69,11 +94,13 @@ const load = async () => {
   previewLoading.value = false;
   loading.value = true;
   attachment.value = null;
+  blob.value = null;
+  blobError.value = "";
   preview.value = null;
   previewError.value = "";
   const id = attachmentId.value;
   try {
-    if (hasPerms("storage.attachment.manage")) {
+    if (canManageAll.value) {
       const result = await listAllManagedAttachments({
         page: 0,
         size: 100,
@@ -92,6 +119,7 @@ const load = async () => {
         mediaType: managed.media_type,
         availability: managed.availability
       };
+      void loadBlob(id, requestId);
     } else {
       const result = await getAttachment(id);
       if (requestId !== attachmentRequestId) return;
@@ -192,6 +220,66 @@ watch(
               <span class="break-all font-mono">{{ attachment.sha256 }}</span>
             </el-descriptions-item>
           </el-descriptions>
+        </el-card>
+
+        <el-card v-if="canManageAll" shadow="never" class="mb-5">
+          <template #header>
+            <div class="text-lg font-semibold">
+              {{ t("attachmentManagement.blob") }}
+            </div>
+          </template>
+          <el-skeleton v-if="blobLoading" :rows="3" animated />
+          <el-alert
+            v-else-if="blobError"
+            :title="blobError"
+            type="warning"
+            :closable="false"
+            show-icon
+          />
+          <el-table v-else-if="blob" :data="[blob]" row-key="id" border>
+            <el-table-column
+              prop="id"
+              :label="t('attachmentManagement.blobId')"
+              min-width="260"
+            />
+            <el-table-column
+              prop="hash_algorithm"
+              :label="t('attachmentManagement.hashAlgorithm')"
+              min-width="130"
+            />
+            <el-table-column
+              prop="sha256"
+              :label="t('attachmentManagement.sha256')"
+              min-width="320"
+            />
+            <el-table-column
+              :label="t('attachmentManagement.size')"
+              min-width="140"
+            >
+              <template #default="scope">
+                {{
+                  t("attachmentManagement.bytes", {
+                    value: scope.row.size_bytes.toLocaleString()
+                  })
+                }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="media_type"
+              :label="t('attachmentManagement.mediaType')"
+              min-width="180"
+            />
+            <el-table-column
+              prop="availability"
+              :label="t('attachmentManagement.blobAvailability')"
+              min-width="140"
+            />
+            <el-table-column
+              prop="created_at"
+              :label="t('attachmentManagement.createdAt')"
+              min-width="200"
+            />
+          </el-table>
         </el-card>
 
         <el-card shadow="never">
