@@ -236,6 +236,11 @@ Attachment
 
 Storage Credential 永远使用 Secret Reference。
 
+Direct upload sequence is Resource creation → `storage.begin-upload` → Provider object upload → `storage.commit-upload`.
+The supplied `object_key` identifies only a Provider placement, never the Resource or Attachment. Commit verifies the
+uploaded object's declared size and SHA-256 before persisting the Attachment. Clients must use an idempotency key for
+both Resource creation and Attachment commit; a failed upload may leave the newly created Resource without an Attachment.
+
 ### 4.2 GC
 
 `storage.request-blob-gc` 只创建受控 Background Task。
@@ -603,6 +608,7 @@ P0 Operation ID 必须映射到 Catalog：
 | `POST /api/resources/{resource_id}/actions/restore` | `restoreResource` | `resource.restore-resource` |
 | `GET /api/attachments/{attachment_id}` | `getAttachment` | `storage.get-attachment` |
 | `GET /api/attachments/{attachment_id}/content` | `getAttachmentContent` | `storage.get-attachment-content` |
+| `POST /api/resources/{resource_id}/attachments/commit` | `commitAttachmentUpload` | `storage.commit-upload` |
 | `GET /api/background-tasks/{task_id}` | `getBackgroundTask` | `operations.get-background-task` |
 | `POST /api/background-tasks` | `submitBackgroundTask` | `operations.submit-background-task` |
 | `POST /api/background-tasks/{task_id}/actions/retry` | `retryBackgroundTask` | `operations.retry-background-task` |
