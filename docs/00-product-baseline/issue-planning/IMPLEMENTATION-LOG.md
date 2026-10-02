@@ -1691,3 +1691,12 @@
 - 不变量：原始 Attachment 与 `THUMBNAIL` Derived Attachment 分离；缩略图在后台任务中生成，失败或重试不会修改原图；原图仍通过 Attachment 权限和预览授权链访问。
 - 验证：Photo 测试 3/3；`mvn -s .mvn-local-settings.xml -pl photo -am test` BUILD SUCCESS；Console `pnpm typecheck`、`pnpm build` 通过。GitHub issue 评论/关闭仍待 gh 认证恢复后同步。
 - 主要提交：`d093475a`、`d4393f97`、`e14523c3`、`98562972`、`e2e1abe4`、`e05f7ea5`。
+
+## Storage Blob 技术元数据建表验证
+
+- 日期：2026-10-03
+- 契约与实现：ADR-009、Schema §12.1；`799f658c` 冻结键值表契约，`4bd41845` 新增 `V202610030048__DDL_STORAGE_BLOB_METADATA.sql` 及 PostgreSQL 迁移测试。
+- 验证：`mvn -pl storage -am -Dapi.version=1.44 -Dtest=BlobMetadataMigrationTest -Dsurefire.failIfNoSpecifiedTests=false test`，BUILD SUCCESS；真实 PostgreSQL 18 Testcontainers 上 4 个测试通过，0 失败、0 错误、0 跳过。
+- 覆盖：实际 Migration 执行、JSONB 数字/字符串/数组/对象、默认 UUIDv7/timestamptz/version、Blob 内字段唯一及跨 Blob 同字段复用、未知 Blob/空白字段名/SQL NULL/负版本拒绝、Blob 删除级联清理且保留其他 Blob 元数据。
+- 环境：当前 Docker Desktop 连接需显式指定 Docker API `1.44`；参数仅用于本次 Maven 测试命令，未修改全局 Docker 配置。
+- 范围：只验证建表契约；未向业务数据库执行迁移，未开放元数据读写 API，也不代表 Attachment 多 Blob 运行时迁移已完成。
