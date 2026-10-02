@@ -17,7 +17,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 
 class AbstractS3StorageObjectProviderTest {
     @Test
-    void cdnSigningKeepsConfiguredHostWhenItAlreadyContainsBucketPrefix() throws Exception {
+    void cdnSigningKeepsConfiguredHostAndPlacesBucketInPath() throws Exception {
         GenericS3StorageObjectProvider provider = new GenericS3StorageObjectProvider();
         StorageCredentialResolver credentials = mock(StorageCredentialResolver.class);
         when(credentials.resolve("secret://media"))
@@ -31,9 +31,10 @@ class AbstractS3StorageObjectProviderTest {
             Instant.now(), Instant.now());
 
         String url = provider.createReadIntent(storage, "attachments/file.webp",
-                java.net.URI.create("https://media.origin.example"))
+                java.net.URI.create("https://origin.example"))
             .block().url();
 
-        assertThat(java.net.URI.create(url).getHost()).isEqualTo("media.origin.example");
+        assertThat(java.net.URI.create(url).getHost()).isEqualTo("origin.example");
+        assertThat(java.net.URI.create(url).getPath()).isEqualTo("/media/attachments/file.webp");
     }
 }
