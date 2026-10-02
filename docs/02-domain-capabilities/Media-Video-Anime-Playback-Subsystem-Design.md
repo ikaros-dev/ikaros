@@ -311,7 +311,7 @@ Role 不是 Attachment 自身类型；同一个 Attachment 在不同业务对象
 
 Probe 从 Source Attachment 明确选定的 Blob 表示提取技术信息。依照 [ADR-009](../00-product-baseline/adr/ADR-009-attachment-blob-many-to-many.md)，同一附件的不同转码字节属于不同 Blob，不能只以 Attachment ID 标识 Probe 结果。Storage 拥有独立 `blob_metadata` 表，Media 通过公开 Capability 登记和查询提取结果；具体记录格式及更新契约冻结前不得实现跨 Owner 私写。
 
-未明确选择表示时使用原件 Blob，转码表示须明确选择并验证当前附件绑定及授权。原件与转码 Blob 的技术信息分别提取；共享 Blob 可复用同一提取结果。`blob_metadata` 仅保存技术信息，文件内嵌标题、歌手等业务标签不直接写作其中的业务元数据，也不得覆盖用户确认的领域字段。
+下载、预览未传 Blob 选择参数时使用原件，传参时使用明确选定的 Blob 并验证当前附件绑定及授权。原件与转码 Blob 的技术信息分别提取；共享 Blob 可复用同一提取结果。`blob_metadata` 仅保存文件技术信息；标题、歌手、备注等资源业务元数据通过 Resource API 保存到 `resource_metadata`。文件内嵌业务标签作为候选处理，不能直接写入 Blob 技术信息或覆盖用户确认的资源字段。
 
 Probe Result 可以包含：
 
