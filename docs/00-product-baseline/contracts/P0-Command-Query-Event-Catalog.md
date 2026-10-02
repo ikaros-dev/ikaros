@@ -273,6 +273,7 @@ API 返回 `202 Accepted + background_task_id`。
 | `storage.get-attachment` | `resource.read` + source ACL | `GET /attachments/{attachment_id}` |
 | `storage.get-attachment-preview-url` | `resource.read` + source ACL | `GET /attachments/{attachment_id}/preview-url` |
 | `storage.admin-list-attachments` | `storage.attachment.manage` | `GET /admin/attachments` |
+| `storage.admin-get-attachment-blob` | `storage.attachment.manage` | `GET /admin/attachments/{attachment_id}/blob` |
 | `storage.get-attachment-content` | same + download policy | `GET /attachments/{attachment_id}/content` |
 | `storage.get-blob` | admin/system only | internal / admin |
 | `storage.list-blob-placements` | `storage.provider.read` | `GET /admin/blobs/{blob_id}/placements` |
@@ -282,6 +283,8 @@ API 返回 `202 Accepted + background_task_id`。
 Attachment Content Query 必须支持 HTTP Range，并在返回内容前重新执行当前授权判断。
 
 `storage.admin-list-attachments` 返回所有用户未归档、未删除的 Attachment，支持文件名、Attachment ID 和 Resource ID 搜索及分页；应用服务必须再次校验 `storage.attachment.manage`。未持有该权限的 Console 使用普通 Attachment Query，结果继续受当前用户访问边界约束。所有 Attachment 列表均按 `created_at DESC, id DESC` 稳定排序，优先展示最新创建的附件。
+
+`storage.admin-get-attachment-blob` 仅供持有 `storage.attachment.manage` 的管理端读取指定活动 Attachment 关联的 Blob 基本元数据；归档、删除或不存在的 Attachment 返回 Not Found。该查询不返回物理路径、Provider、object key 或 Placement。
 
 ---
 

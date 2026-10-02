@@ -174,6 +174,8 @@ External Identity 建议具有：
 
 ### 4.5 Metadata Provenance
 
+依照 [ADR-009](../00-product-baseline/adr/ADR-009-attachment-blob-many-to-many.md)，资源业务元数据（如标题、歌手、业务备注）保存到 `resource_metadata`，由 Resource Owner 的公开 API 管理值、来源和人工锁定。文件时长、编码、码率、分辨率等字节技术信息由 Storage 的 `blob_metadata` 保存；选择附件的不同 Blob 不切换或覆盖 Resource 业务元数据。业务实体关系及用户状态继续遵循各自领域边界，不通过这两张元数据表重建领域状态。
+
 元数据来源至少区分：
 
 - `USER`

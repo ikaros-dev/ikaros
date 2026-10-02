@@ -176,6 +176,22 @@ P0-ARCH-001 ~ P0-ARCH-013 = PASS
 | `P0-STO-006` | Provider 内 Object Key 唯一 | DB | duplicate placement rejected |
 | `P0-STO-007` | 多 Placement 不改变 Blob identity | MODULE | migration/copy preserves blob ID |
 
+ADR-009 身份调整新增验收门禁（实现尚待契约收敛；上述文件替换规则须单独确认）：
+
+| ID | Invariant | Level | Acceptance |
+|---|---|---|---|
+| `P0-STO-021` | 同一逻辑文件的原件与转码 Blob 绑定同一 Attachment | CONTRACT/DB | one attachment retains multiple distinct byte representations |
+| `P0-STO-022` | 多 Attachment 可共享去重后的 Blob | DB/SECURITY | identical bytes reuse Blob; independent names, permissions and lifecycle preserved |
+| `P0-STO-023` | GC 检查全部有效 attachment_blob 绑定 | CONCURRENCY/INTEGRATION | removing one reference preserves other attachment access; concurrent new binding blocks GC |
+| `P0-STO-024` | Blob 元数据与内容身份分离 | MODULE/DB | metadata update leaves Blob hash/size unchanged; owner API required |
+| `P0-STO-025` | Attachment 表达独立文件间关系 | CONTRACT/DB | video/subtitle and song/lyrics use distinct attachment identities and relation |
+| `P0-STO-026` | 绑定迁移保留已有身份与可读性 | MIGRATION/SECURITY | attachment/blob IDs, hash, authorization and content remain consistent across backfill |
+| `P0-STO-027` | 未明确选择表示时使用唯一有效原件 | DB/CONTRACT | duplicate active original rejected; default download/preview and metadata resolve original |
+| `P0-STO-028` | 原件不可用时不静默回退到转码 | MODULE/INTEGRATION | original requires restore or is missing/corrupted while transcode is ready; original state returned |
+| `P0-STO-029` | 请求参数选择 Blob 并校验附件绑定与授权 | SECURITY/INTEGRATION | absent parameter reads original; explicit selection returns chosen bytes without changing subsequent default; foreign/unbound Blob and unauthorized actor rejected |
+| `P0-STO-030` | blob_metadata 仅保存文件技术信息，资源业务元数据归 resource_metadata | MODULE/CONTRACT | per-Blob probe results differ by representation; Blob selection preserves resource_metadata values/provenance/manual locks; business tags and Secure plaintext excluded from blob_metadata |
+| `P0-STO-031` | blob_metadata Migration 约束与类型正确 | MIGRATION/DB | actual SQL on PostgreSQL 18 accepts JSON scalar/array/object, UUIDv7 and timestamptz; rejects duplicate Blob/key, unknown Blob, blank/untrimmed key, SQL null value and negative version; controlled Blob deletion cleans subordinate metadata |
+
 ## 11. Integrity / GC
 
 | ID | Invariant | Level | Acceptance |

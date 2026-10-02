@@ -65,6 +65,8 @@ public interface AttachmentRepository extends ReactiveCrudRepository<AttachmentE
 
     Mono<AttachmentEntity> findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(UUID id, UUID resourceId);
 
+    Mono<AttachmentEntity> findByIdAndArchivedAtIsNullAndDeletedAtIsNull(UUID id);
+
     Mono<AttachmentEntity> findByResourceIdAndIdempotencyKeyAndArchivedAtIsNullAndDeletedAtIsNull(UUID resourceId,
                                                                                  String idempotencyKey);
 

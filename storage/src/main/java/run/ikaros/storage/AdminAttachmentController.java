@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import java.util.UUID;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+import run.ikaros.storage.api.AdminAttachmentBlob;
 import run.ikaros.storage.api.AdminAttachmentPage;
 
 /** Administrative read-only listing of active attachments across users. */
@@ -32,5 +34,13 @@ public class AdminAttachmentController {
         @RequestParam(required = false) @Size(max = 256) String query
     ) {
         return queryService.listAll(actorId, page, size, query);
+    }
+
+    @GetMapping("/{attachmentId}/blob")
+    public Mono<AdminAttachmentBlob> getBlob(
+        @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
+        @PathVariable UUID attachmentId
+    ) {
+        return queryService.getBlob(actorId, attachmentId);
     }
 }

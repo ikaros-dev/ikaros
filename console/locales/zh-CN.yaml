@@ -664,6 +664,21 @@ attachmentManagement:
   actions: 操作
   details: 详情
   information: 信息
+  blob: Blob
+  blobId: Blob ID
+  hashAlgorithm: Hash 算法
+  blobAvailability: Blob 可用状态
+  createdAt: 创建时间
+  blobLoadFailed: 获取 Blob 信息失败
+  locations: 位置
+  placementsTitle: Blob 存储位置
+  placementsLoadFailed: 获取 Blob 存储位置失败
+  placementsEmpty: 该 Blob 暂无 Placement
+  placementId: Placement ID
+  provider: 存储提供者
+  objectKey: 对象键
+  tier: 存储层级
+  placementState: Placement 状态
   preview: 预览
   previewFailed: 附件预览失败
   previewUnsupported: 暂不支持预览此媒体类型

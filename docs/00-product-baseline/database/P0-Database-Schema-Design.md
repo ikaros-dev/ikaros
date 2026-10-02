@@ -446,6 +446,8 @@ CHECK lifecycle_status in ('ACTIVE','GC_CANDIDATE','PURGED')
 
 ## 12. `storage.attachment`
 
+> 基数变更：以下 `blob_id` 列是旧 P0 Schema 的迁移兼容描述，其单 Blob 语义已被 [ADR-009](../adr/ADR-009-attachment-blob-many-to-many.md) 替代。目标 Schema 使用 Storage 拥有的 `attachment_blob` 多对多绑定与独立的 `blob_metadata` 表。默认读取原件、显式选择转码及仅保存技术元数据的规则已确定；绑定角色、表示选择参数、元数据版本与 API 契约冻结后，必须先补齐本节的完整约束再追加生产 Migration；不得把旧字段作为完整内容集合。
+
 | Column | Type | Null |
 |---|---|---:|
 | `id` | uuid | NO |
@@ -467,7 +469,30 @@ FK(blob_id) -> storage.blob(id) ON DELETE RESTRICT
 CHECK lifecycle_status in ('ACTIVE','ARCHIVED','TRASHED','PURGED')
 ```
 
-P0 物化后的 Attachment 绑定单一不可变 Blob。替换内容创建新 Attachment，而不是修改旧 Blob 字节。
+目标规则：Attachment 是逻辑文件，可绑定原件与多个转码 Blob；多个 Attachment 可通过去重共享 Blob。转码不创建新逻辑附件，且不得修改既有 Blob 字节。文件替换语义另行冻结，不由转码规则推导。
+
+已物化 Attachment 必须有唯一有效原件绑定，未明确选择表示的读取固定使用原件；不得增加可切换默认 Blob，也不得在原件不可用时静默回退到转码。目标绑定表须以约束保证原件唯一，并由物化事务保证原件存在；完整字段与约束仍需在 Migration 前冻结。
+
+`storage.blob_metadata` 仅保存 Blob 字节可提取的文件技术信息（容器、时长、码率、编码、分辨率、音轨等），通过 Blob 引用关联而非按 Attachment 重复保存。标题、歌手、备注等资源业务元数据保存到 Resource Owner 的 `resource_metadata`，跨模块通过公开 API 管理；技术记录及更新不得修改 Blob 内容身份。建表契约见 §12.1；提取版本、字段类型与公开读写契约须在应用实现前冻结。
+
+### 12.1 `storage.blob_metadata`（已冻结建表契约）
+
+Owner 为 Storage。本阶段只新增表与约束，不提供未登记的 Command、Query 或 HTTP 接口，也不改变 Attachment 与 Blob 的现有运行时绑定。
+
+| Column | Type | Null | Default / Meaning |
+|---|---|---:|---|
+| `id` | uuid | NO | `uuid_v7()`，平台 UUIDv7 生成能力 |
+| `blob_id` | uuid | NO | 对应 Blob |
+| `field_key` | varchar(128) | NO | 非空且无首尾空格的技术字段名 |
+| `field_value` | jsonb | NO | JSON 数字、字符串、数组或对象；例如时长、编码、音轨列表 |
+| `updated_at` | timestamptz | NO | `CURRENT_TIMESTAMP`；更新时由未来的 Owner 写入契约同步更新 |
+| `version` | bigint | NO | `0`；非负乐观并发版本，不代表提取工具版本 |
+
+约束：`PRIMARY KEY(id)`、`UNIQUE(blob_id, field_key)`、`CHECK(field_key = btrim(field_key) AND field_key <> '')`、`CHECK(version >= 0)`。唯一索引的前缀支持按 Blob 查询，无需重复建立相同前缀索引。
+
+`blob_id` 外键引用 `blob(id) ON DELETE CASCADE`。元数据没有独立业务保留生命周期，不计为阻止 Blob GC 的业务引用；仅当 Blob 已通过引用、Retention Hold、Placement 与审计检查后被受控删除，才由同 Owner 外键级联清理技术记录。逻辑删除或归档附件不会直接触发此清理。
+
+普通表不得保存 Secure Domain 明文技术信息。未来写入 Capability 需定义字段类型、提取来源/工具版本、授权和 `version` 条件更新，并拒绝业务字段；这些应用契约尚未冻结，不因建表而自动开放。
 
 ---
 

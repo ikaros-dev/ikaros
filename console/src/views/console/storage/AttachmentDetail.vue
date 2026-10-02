@@ -7,12 +7,15 @@ import PageCard from "@/views/console/PageCard.vue";
 import {
   getAttachment,
   getAttachmentPreviewUrl,
+  getAdminAttachmentBlob,
   listAllManagedAttachments,
+  type AdminAttachmentBlob,
   type Attachment,
   type AttachmentPreviewUrl
 } from "@/api/attachment";
 import { hasPerms } from "@/utils/auth";
 import { getHttpErrorMessage } from "@/utils/http";
+import { listBlobPlacements, type BlobPlacement } from "@/api/storageProvider";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 
 const { t } = useI18n();
@@ -20,6 +23,17 @@ const route = useRoute();
 const attachmentId = computed(() => String(route.params.attachmentId ?? ""));
 const loading = ref(false);
 const attachment = ref<Attachment | null>(null);
+const blob = ref<AdminAttachmentBlob | null>(null);
+const blobLoading = ref(false);
+const blobError = ref("");
+const canManageAll = computed(() => hasPerms("storage.attachment.manage"));
+const canReadPlacements = computed(() => hasPerms("storage.provider.read"));
+const placementDrawerVisible = ref(false);
+const placementLoading = ref(false);
+const placementError = ref("");
+const placements = ref<BlobPlacement[]>([]);
+const placementBlobId = ref("");
+let placementRequestId = 0;
 const previewLoading = ref(false);
 const previewError = ref("");
 const preview = ref<AttachmentPreviewUrl | null>(null);
@@ -36,6 +50,47 @@ const isAudio = computed(
 );
 const isPdf = computed(() => attachment.value?.mediaType === "application/pdf");
 let attachmentRequestId = 0;
+
+const loadBlob = async (id: string, requestId: number) => {
+  blobLoading.value = true;
+  blobError.value = "";
+  blob.value = null;
+  try {
+    const result = await getAdminAttachmentBlob(id);
+    if (requestId === attachmentRequestId) blob.value = result;
+  } catch (error) {
+    if (requestId === attachmentRequestId) {
+      blobError.value = getHttpErrorMessage(
+        error,
+        t("attachmentManagement.blobLoadFailed")
+      );
+    }
+  } finally {
+    if (requestId === attachmentRequestId) blobLoading.value = false;
+  }
+};
+
+const showPlacements = async (blobId: string) => {
+  const requestId = ++placementRequestId;
+  placementBlobId.value = blobId;
+  placementDrawerVisible.value = true;
+  placementLoading.value = true;
+  placementError.value = "";
+  placements.value = [];
+  try {
+    const result = await listBlobPlacements(blobId);
+    if (requestId === placementRequestId) placements.value = result;
+  } catch (error) {
+    if (requestId === placementRequestId) {
+      placementError.value = getHttpErrorMessage(
+        error,
+        t("attachmentManagement.placementsLoadFailed")
+      );
+    }
+  } finally {
+    if (requestId === placementRequestId) placementLoading.value = false;
+  }
+};
 
 const loadPreview = async (providerKey?: string) => {
   const requestId = ++previewRequestId;
@@ -69,11 +124,13 @@ const load = async () => {
   previewLoading.value = false;
   loading.value = true;
   attachment.value = null;
+  blob.value = null;
+  blobError.value = "";
   preview.value = null;
   previewError.value = "";
   const id = attachmentId.value;
   try {
-    if (hasPerms("storage.attachment.manage")) {
+    if (canManageAll.value) {
       const result = await listAllManagedAttachments({
         page: 0,
         size: 100,
@@ -92,6 +149,7 @@ const load = async () => {
         mediaType: managed.media_type,
         availability: managed.availability
       };
+      void loadBlob(id, requestId);
     } else {
       const result = await getAttachment(id);
       if (requestId !== attachmentRequestId) return;
@@ -194,6 +252,83 @@ watch(
           </el-descriptions>
         </el-card>
 
+        <el-card v-if="canManageAll" shadow="never" class="mb-5">
+          <template #header>
+            <div class="text-lg font-semibold">
+              {{ t("attachmentManagement.blob") }}
+            </div>
+          </template>
+          <el-skeleton v-if="blobLoading" :rows="3" animated />
+          <el-alert
+            v-else-if="blobError"
+            :title="blobError"
+            type="warning"
+            :closable="false"
+            show-icon
+          />
+          <el-table v-else-if="blob" :data="[blob]" row-key="id" border>
+            <el-table-column
+              prop="id"
+              :label="t('attachmentManagement.blobId')"
+              min-width="260"
+            />
+            <el-table-column
+              prop="hash_algorithm"
+              :label="t('attachmentManagement.hashAlgorithm')"
+              min-width="130"
+            />
+            <el-table-column
+              prop="sha256"
+              :label="t('attachmentManagement.sha256')"
+              min-width="320"
+            />
+            <el-table-column
+              :label="t('attachmentManagement.size')"
+              min-width="140"
+            >
+              <template #default="scope">
+                {{
+                  t("attachmentManagement.bytes", {
+                    value: scope.row.size_bytes.toLocaleString()
+                  })
+                }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="media_type"
+              :label="t('attachmentManagement.mediaType')"
+              min-width="180"
+            />
+            <el-table-column
+              prop="availability"
+              :label="t('attachmentManagement.blobAvailability')"
+              min-width="140"
+            />
+            <el-table-column
+              prop="created_at"
+              :label="t('attachmentManagement.createdAt')"
+              min-width="200"
+            />
+            <el-table-column
+              v-if="canReadPlacements"
+              :label="t('attachmentManagement.actions')"
+              fixed="right"
+              width="110"
+            >
+              <template #default="scope">
+                <el-button
+                  v-if="canReadPlacements"
+                  link
+                  type="primary"
+                  @click="showPlacements(scope.row.id)"
+                >
+                  {{ t("attachmentManagement.locations") }}
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
+
         <el-card shadow="never">
           <template #header>
             <div class="flex flex-wrap items-center justify-between gap-3">
@@ -263,5 +398,58 @@ watch(
         </el-card>
       </template>
     </div>
+    <el-drawer
+      v-model="placementDrawerVisible"
+      direction="rtl"
+      size="70%"
+      :title="t('attachmentManagement.placementsTitle')"
+    >
+      <div class="mb-3 break-all text-sm text-[var(--el-text-color-secondary)]">
+        {{ t("attachmentManagement.blobId") }}: {{ placementBlobId }}
+      </div>
+      <el-alert
+        v-if="placementError"
+        :title="placementError"
+        type="warning"
+        :closable="false"
+        show-icon
+        class="mb-3"
+      />
+      <el-table
+        v-loading="placementLoading"
+        :data="placements"
+        row-key="id"
+        border
+      >
+        <el-table-column
+          prop="id"
+          :label="t('attachmentManagement.placementId')"
+          min-width="250"
+        />
+        <el-table-column
+          prop="provider"
+          :label="t('attachmentManagement.provider')"
+          min-width="160"
+        />
+        <el-table-column
+          prop="objectKey"
+          :label="t('attachmentManagement.objectKey')"
+          min-width="220"
+        />
+        <el-table-column
+          prop="tier"
+          :label="t('attachmentManagement.tier')"
+          min-width="120"
+        />
+        <el-table-column
+          prop="state"
+          :label="t('attachmentManagement.placementState')"
+          min-width="160"
+        />
+        <template #empty>
+          <el-empty :description="t('attachmentManagement.placementsEmpty')" />
+        </template>
+      </el-table>
+    </el-drawer>
   </PageCard>
 </template>
