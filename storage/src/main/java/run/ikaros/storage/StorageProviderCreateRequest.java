@@ -6,15 +6,19 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.Map;
+import run.ikaros.storage.api.StorageProviderType;
 import run.ikaros.storage.api.StorageTier;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record StorageProviderCreateRequest(
     @NotBlank @Size(max = 256) String providerKey,
-    @NotBlank @Size(max = 128) String providerType,
+    @NotNull StorageProviderType providerType,
     @NotBlank @Size(max = 256) String displayName,
     @NotNull StorageTier tier,
     @NotNull Map<String, Object> capabilities,
     @Size(max = 512) String credentialRef,
-    Map<String, Object> configuration
+    Map<String, Object> configuration,
+    @Size(max = 256) String accessKeyId,
+    @Size(max = 512) String secretAccessKey,
+    @Size(max = 2048) String sessionToken
 ) { }

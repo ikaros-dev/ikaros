@@ -2,6 +2,7 @@ package run.ikaros.storage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
@@ -45,6 +46,23 @@ class StorageProviderProbeServiceTest {
         StepVerifier.create(new StorageProviderProbeService(providers, objects).probe(id))
             .assertNext(result -> assertThat(result.status()).isEqualTo(StorageProviderProbeStatus.UNSUPPORTED))
             .verifyComplete();
+    }
+
+    @Test
+    void rejectsProbeForDisabledProvider() {
+        UUID id = UUID.randomUUID();
+        StorageProvider provider = new StorageProvider(id, "media", "S3", StorageTier.HOT,
+            StorageProviderStatus.DISABLED, "secret://media", Map.of(), Instant.now(), Instant.now());
+        StorageProviderRegistry providers = mock(StorageProviderRegistry.class);
+        StorageObjectProviderRegistry objects = mock(StorageObjectProviderRegistry.class);
+        when(providers.get(id)).thenReturn(Mono.just(provider));
+
+        StepVerifier.create(new StorageProviderProbeService(providers, objects).probe(id))
+            .expectErrorSatisfies(error -> assertThat(error)
+                .isInstanceOf(run.ikaros.common.ConflictException.class)
+                .hasMessageContaining("请先启用"))
+            .verify();
+        verify(objects, never()).probe(provider);
     }
 
     @Test

@@ -3,6 +3,9 @@ package run.ikaros.authentication.verification;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.authentication.PlatformUserRepository;
@@ -14,11 +17,9 @@ import run.ikaros.operations.api.AuditService;
 
 /** SMS OTP Provider；当前通过 Noop 投递器输出开发验证码，并签发 SVL-2。 */
 @Service
+@EnableConfigurationProperties(OtpVerificationProperties.class)
 public class SmsOtpVerificationProvider implements VerificationProvider {
-    private static final Duration OTP_TTL = Duration.ofMinutes(5);
-    private static final Duration ISSUE_WINDOW = Duration.ofMinutes(10);
-    private static final long MAX_ISSUES_PER_WINDOW = 3;
-    private static final int MAX_ATTEMPTS = 5;
+    /** 未配置 `ikaros.security.verification.grant-ttl` 时，Step-up Grant 的内置有效期。 */
     private static final Duration VERIFICATION_TTL = Duration.ofMinutes(5);
 
     private final PlatformUserRepository userRepository;
@@ -27,17 +28,38 @@ public class SmsOtpVerificationProvider implements VerificationProvider {
     private final OtpHasher otpHasher;
     private final SmsOtpDelivery delivery;
     private final AuditService auditService;
+    private final Duration grantTtl;
+    private final OtpVerificationProperties otp;
 
     public SmsOtpVerificationProvider(PlatformUserRepository userRepository,
                                       VerificationChallengeRepository challengeRepository,
                                       OtpCodeGenerator codeGenerator, OtpHasher otpHasher,
                                       SmsOtpDelivery delivery, AuditService auditService) {
+        this(userRepository, challengeRepository, codeGenerator, otpHasher, delivery, auditService,
+            VERIFICATION_TTL, OtpVerificationProperties.defaults());
+    }
+
+    /**
+     * 创建 SMS OTP Provider，并允许通过配置覆盖 Step-up Grant 有效期。
+     *
+     * @param grantTtl Verification Grant 有效期；默认 PT5M
+     * @param otp OTP 挑战策略（有效期、发起频率窗口与上限、最大验证次数）
+     */
+    @Autowired
+    public SmsOtpVerificationProvider(PlatformUserRepository userRepository,
+                                      VerificationChallengeRepository challengeRepository,
+                                      OtpCodeGenerator codeGenerator, OtpHasher otpHasher,
+                                      SmsOtpDelivery delivery, AuditService auditService,
+                                      @Value("${ikaros.security.verification.grant-ttl:PT5M}") Duration grantTtl,
+                                      OtpVerificationProperties otp) {
         this.userRepository = userRepository;
         this.challengeRepository = challengeRepository;
         this.codeGenerator = codeGenerator;
         this.otpHasher = otpHasher;
         this.delivery = delivery;
         this.auditService = auditService;
+        this.grantTtl = grantTtl == null ? VERIFICATION_TTL : grantTtl;
+        this.otp = otp == null ? OtpVerificationProperties.defaults() : otp;
     }
 
     @Override
@@ -49,8 +71,8 @@ public class SmsOtpVerificationProvider implements VerificationProvider {
     public Mono<VerificationChallengeView> issue(UUID userId, IssueVerificationRequest request) {
         Instant now = Instant.now();
         return activeUser(userId)
-            .then(challengeRepository.countByUserIdAndIssuedAtAfter(userId, now.minus(ISSUE_WINDOW)))
-            .flatMap(count -> count >= MAX_ISSUES_PER_WINDOW
+            .then(challengeRepository.countByUserIdAndIssuedAtAfter(userId, now.minus(otp.issueWindow())))
+            .flatMap(count -> count >= otp.maxIssuesPerWindow()
                 ? Mono.error(new ConflictException("验证码发送过于频繁，请稍后重试"))
                 : Mono.defer(() -> issueChallenge(userId, request, now)));
     }
@@ -72,7 +94,7 @@ public class SmsOtpVerificationProvider implements VerificationProvider {
                     .then(auditService.record(userId, "security.verification.succeed", "VERIFICATION_CHALLENGE",
                         challengeId, "{}"))
                     .thenReturn(new VerificationResult(challengeId, method(), SecurityVerificationLevel.SVL_2,
-                        userId, now, now.plus(VERIFICATION_TTL)));
+                        userId, now, now.plus(grantTtl)));
             }
             return failedAttempt(challenge, userId);
         });
@@ -94,7 +116,7 @@ public class SmsOtpVerificationProvider implements VerificationProvider {
     private Mono<VerificationChallengeView> issueChallenge(UUID userId, IssueVerificationRequest request, Instant now) {
         String code = codeGenerator.generate();
         VerificationChallengeEntity challenge = new VerificationChallengeEntity(null, userId, method(), request.purpose(),
-            request.targetReference(), otpHasher.hash(code), now, now.plus(OTP_TTL), 0, MAX_ATTEMPTS, null,
+            request.targetReference(), otpHasher.hash(code), now, now.plus(otp.ttl()), 0, otp.maxAttempts(), null,
             VerificationChallengeStatus.ISSUED, null);
         return challengeRepository.save(challenge)
             .flatMap(saved -> delivery.deliver(userId, code, request.purpose())

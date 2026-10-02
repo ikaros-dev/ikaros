@@ -185,8 +185,39 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
         }
         return owned(ownerId, resourceId)
             .then(Mono.defer(() -> providerRegistry.requireWritableByKey(request.provider())))
-            .flatMap(provider -> verifyUploadedObject(provider, request)
-                .then(attachInternal(ownerId, resourceId, request.asAttachment(), request.idempotencyKey())));
+            .flatMap(provider -> (request.deduplicated()
+                ? verifyDeduplicatedPlacement(provider, request)
+                : verifyUploadedObject(provider, request))
+                .then(transactionalOperator.transactional(
+                    completeUploadSession(ownerId, resourceId, request)
+                        .then(attachInternal(ownerId, resourceId, request.asAttachment(), request.idempotencyKey()))
+                )));
+    }
+
+    private Mono<Void> completeUploadSession(UUID ownerId, UUID resourceId, CommitUploadRequest request) {
+        if (uploadSessionRepository == null) {
+            return Mono.error(new ConflictException("上传会话能力未配置"));
+        }
+        return uploadSessionRepository.findByIdAndOwnerId(request.sessionId(), ownerId)
+            .switchIfEmpty(Mono.error(new NotFoundException("上传会话不存在或不属于当前用户")))
+            .flatMap(session -> {
+                boolean matches = session.resourceId().equals(resourceId)
+                    && session.provider().equals(request.provider())
+                    && session.objectKey().equals(request.objectKey())
+                    && session.expectedSize() == request.sizeBytes()
+                    && session.declaredSha256().equalsIgnoreCase(request.sha256());
+                if (!matches) return Mono.error(new ConflictException("上传会话与提交内容不匹配"));
+                if (session.state() == UploadSessionState.COMPLETED) return Mono.empty();
+                if (session.state() == UploadSessionState.ABORTED
+                    || session.state() == UploadSessionState.EXPIRED
+                    || !session.expiresAt().isAfter(Instant.now())) {
+                    return Mono.error(new ConflictException("上传会话已终止或过期"));
+                }
+                return uploadSessionRepository.save(new UploadSessionEntity(session.id(), session.ownerId(),
+                    session.resourceId(), session.provider(), session.objectKey(), session.expectedSize(),
+                    session.declaredSha256(), UploadSessionState.COMPLETED, session.expiresAt(), session.createdAt(),
+                    Instant.now(), session.version(), session.idempotencyKey())).then();
+            });
     }
 
     @Override
@@ -291,14 +322,18 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
                     if (blob.sizeBytes() != request.sizeBytes()) {
                         return Mono.error(new ConflictException("相同 SHA-256 的 Blob 大小不一致"));
                     }
-                    return placementRepository.findFirstByBlobIdAndProvider(blob.id(), provider.providerKey())
+                    return placementRepository.findAllByBlobIdOrderByCreatedAtAsc(blob.id())
+                        .filter(placement -> placement.provider().equals(provider.providerKey())
+                            && placement.placementState() == PlacementState.ACTIVE)
+                        .next()
                         .map(placement -> new StorageUploadIntentView(provider.providerKey(), provider.tier(), "SKIP", "",
-                            placement.objectKey(), Instant.now(), request.sha256(), true));
+                            placement.objectKey(), Instant.now(), request.sha256(), true, null, java.util.Map.of()));
                 })
                 .switchIfEmpty(Mono.defer(() -> objectProviderRegistry.createUploadIntent(provider,
                     new StorageUploadRequest(objectKey, request.sizeBytes(), request.mediaType(), request.sha256()))
                     .map(intent -> new StorageUploadIntentView(provider.providerKey(), provider.tier(), intent.method(),
-                        intent.url(), intent.objectKey(), intent.expiresAt(), request.sha256(), false)))))
+                        intent.url(), intent.objectKey(), intent.expiresAt(), request.sha256(), false, null,
+                        intent.requiredHeaders())))))
             .flatMap(view -> persistUploadSession(ownerId, resourceId, request, idempotencyKey, view));
     }
 
@@ -312,10 +347,11 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
         UploadSessionEntity session = new UploadSessionEntity(null, ownerId, resourceId, view.provider(),
             view.objectKey(), request.sizeBytes(), request.sha256(),
             view.deduplicated() ? UploadSessionState.COMPLETED : UploadSessionState.OPEN,
-            view.expiresAt(), now, now, 0L, idempotencyKey);
+            view.expiresAt(), now, now, null, idempotencyKey);
         return uploadSessionRepository.save(session)
             .map(saved -> new StorageUploadIntentView(view.provider(), view.tier(), view.method(), view.url(),
-                view.objectKey(), view.expiresAt(), view.sha256(), view.deduplicated(), saved.id()));
+                view.objectKey(), view.expiresAt(), view.sha256(), view.deduplicated(), saved.id(),
+                view.requiredHeaders()));
     }
 
     private Mono<Void> verifyUploadedObject(StorageProvider provider, CommitUploadRequest request) {
@@ -332,6 +368,25 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
             : new ConflictException("无法确认已上传对象，请检查上传是否完成"));
     }
 
+    private Mono<Void> verifyDeduplicatedPlacement(StorageProvider provider, CommitUploadRequest request) {
+        if (provider.tier() != request.tier()) {
+            return Mono.error(new ConflictException("Placement tier 与 Storage Provider 配置不一致"));
+        }
+        if (!request.sha256().equalsIgnoreCase(request.uploadSha256())) {
+            return Mono.error(new ConflictException("上传意图 SHA-256 与提交声明不一致"));
+        }
+        return blobRepository.findBySha256(request.sha256().toLowerCase())
+            .filter(blob -> "SHA-256".equalsIgnoreCase(blob.hashAlgorithm())
+                && blob.sizeBytes() == request.sizeBytes())
+            .switchIfEmpty(Mono.error(new ConflictException("去重引用的 Blob 不存在或内容信息不匹配")))
+            .flatMap(blob -> placementRepository.findByProviderAndObjectKey(provider.providerKey(), request.objectKey())
+                .filter(placement -> placement.blobId().equals(blob.id())
+                    && placement.storageTier() == provider.tier()
+                    && placement.placementState() == PlacementState.ACTIVE)
+                .switchIfEmpty(Mono.error(new ConflictException("去重引用的有效 Storage Placement 不存在")))
+                .then());
+    }
+
     private String safeFileName(String fileName) {
         String value = fileName.replace('\\', '/');
         value = value.substring(value.lastIndexOf('/') + 1).replaceAll("[^a-zA-Z0-9._-]", "_");
@@ -341,7 +396,7 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
     @Override
     public Mono<List<AttachmentView>> list(UUID ownerId, UUID resourceId) {
         return owned(ownerId, resourceId)
-            .thenMany(attachmentRepository.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(resourceId)
+            .thenMany(attachmentRepository.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtDesc(resourceId)
                 .take(MAX_UNPAGED_RESULTS))
             .flatMap(attachment -> blobRepository.findById(attachment.blobId())
                 .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))

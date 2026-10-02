@@ -27,7 +27,7 @@ public interface AttachmentRepository extends ReactiveCrudRepository<AttachmentE
           and a.archived_at is null
           and a.deleted_at is null
           and (:resourceId is null or a.resource_id = :resourceId)
-        order by a.created_at asc, a.id asc
+        order by a.created_at desc, a.id desc
         offset :offset limit :limit
         """)
     Flux<AttachmentEntity> search(UUID ownerId, UUID resourceId, long offset, int limit);
@@ -43,13 +43,25 @@ public interface AttachmentRepository extends ReactiveCrudRepository<AttachmentE
         """)
     Mono<Long> countSearch(UUID ownerId, UUID resourceId);
 
+    @Query("select a.* from attachment a where a.archived_at is null and a.deleted_at is null order by a.created_at desc, a.id desc offset :offset limit :limit")
+    Flux<AttachmentEntity> searchAllActive(long offset, int limit);
+
+    @Query("select a.* from attachment a where a.archived_at is null and a.deleted_at is null and (a.file_name ilike '%' || :query || '%' or cast(a.id as text) = :query or cast(a.resource_id as text) = :query) order by a.created_at desc, a.id desc offset :offset limit :limit")
+    Flux<AttachmentEntity> searchAllActiveByQuery(String query, long offset, int limit);
+
+    @Query("select count(*) from attachment a where a.archived_at is null and a.deleted_at is null")
+    Mono<Long> countAllActive();
+
+    @Query("select count(*) from attachment a where a.archived_at is null and a.deleted_at is null and (a.file_name ilike '%' || :query || '%' or cast(a.id as text) = :query or cast(a.resource_id as text) = :query)")
+    Mono<Long> countAllActiveByQuery(String query);
+
     /**
      * 查询 Resource 的未删除附件。
      *
      * @param resourceId Resource 标识
      * @return 附件列表
      */
-    Flux<AttachmentEntity> findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(UUID resourceId);
+    Flux<AttachmentEntity> findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtDesc(UUID resourceId);
 
     Mono<AttachmentEntity> findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(UUID id, UUID resourceId);
 

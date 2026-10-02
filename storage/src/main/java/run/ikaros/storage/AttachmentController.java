@@ -42,7 +42,7 @@ public class AttachmentController {
         this.previewService = previewService;
     }
 
-    @Operation(summary = "分页查询附件", description = "按当前用户查询未归档、未删除附件；可选 Resource ID 为空时返回当前用户的全部附件。")
+    @Operation(summary = "分页查询附件", description = "按创建时间倒序（同一时间按 ID 倒序）返回当前用户未归档、未删除的附件；可选 Resource ID 为空时返回当前用户的全部附件。")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "附件列表查询成功"),
         @ApiResponse(responseCode = "400", description = "Resource ID 或分页参数不合法", content = @io.swagger.v3.oas.annotations.media.Content)

@@ -9,7 +9,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.core.ResponseInputStream;
@@ -35,8 +34,7 @@ public class S3StorageContentReader implements StorageContentReader {
 
     private ReadHandle open(StorageProvider provider, BlobPlacementEntity placement, AwsCredentialsProvider creds, String range) {
         AbstractS3StorageObjectProvider.S3Settings settings = AbstractS3StorageObjectProvider.S3Settings.from(provider);
-        S3Client client = S3Client.builder().region(Region.of(settings.region())).endpointOverride(settings.endpoint())
-            .credentialsProvider(creds).build();
+        S3Client client = AbstractS3StorageObjectProvider.buildClient(settings, creds);
         try {
             GetObjectRequest.Builder request = GetObjectRequest.builder().bucket(settings.bucket()).key(placement.objectKey());
             if (range != null && !range.isBlank()) request.range(range);

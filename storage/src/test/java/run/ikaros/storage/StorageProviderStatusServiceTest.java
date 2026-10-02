@@ -23,8 +23,8 @@ class StorageProviderStatusServiceTest {
         StorageProviderRegistry registry = mock(StorageProviderRegistry.class);
         StorageProviderProbeService probe = mock(StorageProviderProbeService.class);
         when(registry.get(id)).thenReturn(Mono.just(provider));
-        when(probe.probe(id)).thenReturn(Mono.just(new StorageProviderProbeResult(id, StorageProviderProbeStatus.HEALTHY,
-            true, true, true, Instant.now(), null)));
+        when(probe.probeProvider(provider)).thenReturn(Mono.just(new StorageProviderProbeResult(id,
+            StorageProviderProbeStatus.HEALTHY, true, true, true, Instant.now(), null)));
 
         StepVerifier.create(new StorageProviderStatusService(registry, probe).get(id))
             .assertNext(view -> {

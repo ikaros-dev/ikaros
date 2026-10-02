@@ -491,15 +491,39 @@ paths:
       x-ikaros-contract-id: resource.list-resources
       summary: List visible resources
       parameters:
-        - $ref: '#/components/parameters/Cursor'
-        - $ref: '#/components/parameters/Limit'
         - name: type
           in: query
+          description: Resource 业务类型过滤。
+          schema: { type: string }
+        - name: query
+          in: query
+          description: 主标题关键词过滤。
           schema: { type: string }
         - name: lifecycle_status
           in: query
+          description: 可选的生命周期过滤；省略时返回当前用户所有生命周期的资源。
           schema:
             $ref: '#/components/schemas/ResourceLifecycleStatus'
+        - name: collection_id
+          in: query
+          description: 仅返回该 Collection 的成员资源。
+          schema: { type: string, format: uuid }
+        - name: tag
+          in: query
+          description: 按标签名精确过滤。
+          schema: { type: string }
+        - name: source_provider
+          in: query
+          description: 按外部身份 provider 过滤，同时匹配其 namespace 前缀。
+          schema: { type: string }
+        - name: page
+          in: query
+          description: 从零开始的页码。
+          schema: { type: integer, minimum: 0, default: 0 }
+        - name: size
+          in: query
+          description: 每页记录数。
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
       responses:
         '200':
           description: Resource page
@@ -656,6 +680,68 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /attachments/{attachment_id}/preview-url:
+    parameters:
+      - $ref: '#/components/parameters/AttachmentId'
+    get:
+      tags: [Attachments]
+      operationId: getAttachmentPreviewUrl
+      x-ikaros-contract-id: storage.get-attachment-preview-url
+      summary: Issue an authorized short-lived attachment preview URL
+      description: Requires attachment read permission and source Resource access. The returned URL is short-lived and must not be persisted or logged.
+      parameters:
+        - in: query
+          name: delivery_provider
+          required: false
+          schema: { type: string, maxLength: 128 }
+      responses:
+        '200':
+          description: Authorized preview URL and available delivery provider options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentPreviewUrl'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+  /admin/attachments:
+    get:
+      tags: [Admin Storage]
+      operationId: listAdminAttachments
+      x-ikaros-contract-id: storage.admin-list-attachments
+      summary: List active attachments across all users
+      description: Requires storage.attachment.manage. Returns only attachments that are neither archived nor deleted, ordered by created_at descending and id descending.
+      parameters:
+        - in: query
+          name: page
+          required: false
+          schema: { type: integer, minimum: 0, default: 0 }
+        - in: query
+          name: size
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - in: query
+          name: query
+          required: false
+          schema: { type: string, maxLength: 256 }
+      responses:
+        '200':
+          description: Active attachments from all users
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, total, page, size]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/AttachmentManagementItem' }
+                  total: { type: integer, format: int64, minimum: 0 }
+                  page: { type: integer, minimum: 0 }
+                  size: { type: integer, minimum: 1 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
   /attachments/{attachment_id}/content:
     parameters:
       - $ref: '#/components/parameters/AttachmentId'
@@ -822,6 +908,7 @@ paths:
       operationId: probeStorageProvider
       x-ikaros-contract-id: storage.probe-provider
       summary: Probe storage provider connection and read/write capability
+      description: 停用的 Storage Provider 必须先启用才能探测，否则返回 409。
       parameters:
         - name: provider_id
           in: path
@@ -836,6 +923,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /admin/storage-providers/{provider_id}/credentials:
     post:
       tags: [Admin Storage]
@@ -1964,6 +2052,11 @@ components:
       content:
         application/problem+json:
           schema: { $ref: '#/components/schemas/Problem' }
+    ServiceUnavailable:
+      description: The attachment cannot currently be previewed
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
     PreconditionFailed:
       description: ETag/version precondition failed
       content:
@@ -2040,12 +2133,14 @@ components:
       additionalProperties: false
     ResourcePage:
       type: object
-      required: [items]
+      required: [items, total, page, size]
       properties:
         items:
           type: array
           items: { $ref: '#/components/schemas/Resource' }
-        next_cursor: { type: [string, 'null'] }
+        total: { type: integer, format: int64, minimum: 0 }
+        page: { type: integer, minimum: 0 }
+        size: { type: integer, minimum: 1 }
     SearchPage:
       type: object
       required: [items]
@@ -2076,6 +2171,45 @@ components:
         version: { type: integer, format: int64, minimum: 0 }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+    AttachmentManagementItem:
+      type: object
+      required: [id, resource_id, file_name, kind, sha256, size_bytes, media_type, availability]
+      properties:
+        id: { type: string, format: uuid }
+        resource_id: { type: string, format: uuid }
+        file_name: { type: string }
+        kind: { type: string }
+        sha256: { type: string, pattern: '^[a-fA-F0-9]{64}$' }
+        size_bytes: { type: integer, format: int64, minimum: 0 }
+        media_type: { type: string }
+        availability: { type: string, enum: [READY, PROCESSING, RESTORE_REQUIRED, MISSING, CORRUPTED] }
+    AttachmentPreviewUrl:
+      type: object
+      required: [method, url, expires_at, range_supported, content_type, providers]
+      properties:
+        method: { type: string }
+        url: { type: string, format: uri }
+        expires_at: { type: string, format: date-time }
+        range_supported: { type: boolean }
+        content_type: { type: string }
+        selected_provider:
+          oneOf:
+            - { $ref: '#/components/schemas/AttachmentDeliveryProviderOption' }
+            - { type: 'null' }
+        providers:
+          type: array
+          items: { $ref: '#/components/schemas/AttachmentDeliveryProviderOption' }
+    AttachmentDeliveryProviderOption:
+      type: object
+      required: [binding_id, delivery_provider_id, delivery_provider_key, display_name, provider_type, priority, selected]
+      properties:
+        binding_id: { type: string, format: uuid }
+        delivery_provider_id: { type: string, format: uuid }
+        delivery_provider_key: { type: string }
+        display_name: { type: string }
+        provider_type: { type: string, enum: [DIRECT, CDN, SERVER_PROXY] }
+        priority: { type: integer }
+        selected: { type: boolean }
     MediaSubject:
       type: object
       required: [id, resource_id, kind, created_at]
@@ -2684,11 +2818,16 @@ components:
       required: [provider_key, provider_type, display_name, tier, capabilities]
       properties:
         provider_key: { type: string, minLength: 1 }
-        provider_type: { type: string, minLength: 1 }
+        provider_type:
+          type: string
+          enum: [S3, AWS_S3, S3_COMPATIBLE, ALIYUN_OSS_S3, TENCENT_COS_S3, LOCAL_FILESYSTEM]
+          description: Registered physical adapter type; unregistered values are rejected instead of
+            creating a provider that no adapter can serve.
         display_name: { type: string, minLength: 1 }
         credential_ref:
           type: [string, 'null']
-          description: Secret reference only; plaintext credentials are forbidden.
+          description: Secret reference only; plaintext credentials are forbidden. Leave empty when
+            access_key_id/secret_access_key are supplied for object storage.
         tier:
           type: string
           enum: [HOT, WARM, COLD, ARCHIVE, DEEP_ARCHIVE]
@@ -2699,6 +2838,24 @@ components:
           type: object
           description: Non-secret provider configuration such as endpoint, bucket, and region.
           additionalProperties: true
+        access_key_id:
+          type: [string, 'null']
+          maxLength: 256
+          writeOnly: true
+          description: Object storage access key id. Stored as server-side envelope ciphertext and
+            never returned; must be supplied together with secret_access_key.
+        secret_access_key:
+          type: [string, 'null']
+          maxLength: 512
+          writeOnly: true
+          description: Object storage secret access key. Stored as server-side envelope ciphertext and
+            never returned; must be supplied together with access_key_id.
+        session_token:
+          type: [string, 'null']
+          maxLength: 2048
+          writeOnly: true
+          description: Optional temporary session token for object storage. Stored as server-side
+            envelope ciphertext and never returned.
     User:
       type: object
       required: [id, username, status, security_version, version, created_at]

@@ -103,7 +103,7 @@ public class StorageController {
      * @param resourceId Resource 标识
      * @return Attachment 列表
      */
-    @Operation(summary = "查询资源附件", description = "返回 Resource 的 Attachment、内容摘要和 Placement。"
+    @Operation(summary = "查询资源附件", description = "按创建时间倒序（同一时间按 ID 倒序）返回 Resource 的 Attachment、内容摘要和 Placement。"
         + "Hot、Warm、Cold、Archive 是持久化层级，不能与客户端缓存或用户下载混为一谈。")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "附件列表查询成功"),

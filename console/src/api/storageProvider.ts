@@ -5,7 +5,7 @@ export type StorageProvider = {
   provider_key: string;
   provider_type: string;
   display_name: string;
-  tier: "HOT" | "WARM" | "COLD" | "ARCHIVE";
+  tier: "HOT" | "WARM" | "COLD" | "ARCHIVE" | "DEEP_ARCHIVE";
   enabled: boolean;
   drain_status: "NORMAL" | "DRAINING" | "DRAINED";
   capabilities: Record<string, unknown>;
@@ -38,8 +38,11 @@ export type CreateStorageProviderRequest = {
   display_name: string;
   tier: StorageProvider["tier"];
   capabilities: Record<string, unknown>;
-  credential_ref: string;
+  credential_ref?: string;
   configuration: Record<string, unknown>;
+  access_key_id?: string;
+  secret_access_key?: string;
+  session_token?: string;
 };
 
 export const listStorageProviders = () =>
@@ -59,6 +62,39 @@ export const createStorageProvider = (data: CreateStorageProviderRequest, idempo
     data,
     headers: { "Idempotency-Key": idempotencyKey }
   });
+
+export type UpdateStorageProviderRequest = {
+  provider_type: string;
+  display_name: string;
+  tier: StorageProvider["tier"];
+  configuration: Record<string, unknown>;
+};
+
+export const updateStorageProvider = (
+  providerId: string,
+  data: UpdateStorageProviderRequest,
+  version: number
+) =>
+  http.request<StorageProvider>("put", `/admin/storage-providers/${providerId}`, {
+    data,
+    headers: { "If-Match": `"${version}"` }
+  });
+
+export type ReplaceStorageProviderCredentialsRequest = {
+  access_key_id: string;
+  secret_access_key: string;
+  session_token?: string;
+};
+
+export const replaceStorageProviderCredentials = (
+  providerId: string,
+  data: ReplaceStorageProviderCredentialsRequest
+) =>
+  http.request<StorageProviderProbe>(
+    "post",
+    `/admin/storage-providers/${providerId}/credentials`,
+    { data }
+  );
 
 export const enableStorageProvider = (providerId: string) =>
   http.request<StorageProvider>("post", `/admin/storage-providers/${providerId}/enable`);

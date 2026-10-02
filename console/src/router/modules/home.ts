@@ -10,6 +10,7 @@ type WorkspaceOptions = {
 type PageOptions = {
   icon?: string;
   showLink?: boolean;
+  showTab?: boolean;
   showParent?: boolean;
   activePath?: string;
 };
@@ -70,7 +71,7 @@ function page(
   title: string,
   description: string,
   component: any,
-  capability?: string,
+  capability?: string | string[],
   options: PageOptions = {}
 ) {
   return {
@@ -83,6 +84,7 @@ function page(
       icon: options.icon ?? "ep:document",
       ...(capability ? { capability } : {}),
       ...(options.showLink === false ? { showLink: false } : {}),
+      ...(options.showTab ? { showTab: true } : {}),
       ...(options.showParent ? { showParent: true } : {}),
       ...(options.activePath ? { activePath: options.activePath } : {})
     }
@@ -143,7 +145,7 @@ export default {
           "menuDescriptions.resourceDetail",
           () => import("@/views/console/resources/ResourceDetail.vue"),
           "resource.read",
-          hidden("/resources/library")
+          { ...hidden("/resources/library"), showTab: true }
         ),
         page(
           "library/collections",
@@ -207,6 +209,24 @@ export default {
           () => import("@/views/console/storage/Overview.vue"),
           "storage.read",
           { icon: "ep:data-analysis" }
+        ),
+        page(
+          "attachments",
+          "StorageAttachments",
+          "menus.attachmentManagement",
+          "menuDescriptions.attachmentManagement",
+          () => import("@/views/console/storage/Attachments.vue"),
+          ["resource.read", "storage.attachment.manage"],
+          { icon: "ep:document" }
+        ),
+        page(
+          "attachments/:attachmentId",
+          "StorageAttachmentDetail",
+          "menus.attachmentDetails",
+          "menuDescriptions.attachmentDetails",
+          () => import("@/views/console/storage/AttachmentDetail.vue"),
+          ["resource.read", "storage.attachment.manage"],
+          { ...hidden("/storage/attachments"), showTab: true }
         ),
         page(
           "providers",

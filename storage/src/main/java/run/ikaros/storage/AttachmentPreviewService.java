@@ -58,9 +58,9 @@ public class AttachmentPreviewService {
                         && candidate.provider().providerKey().equals(requestedProviderKey.trim()))
                     .findFirst()
                     .orElseGet(() -> candidates.stream()
-                        .min(Comparator.comparingInt(candidate -> candidate.binding().priority())).orElseThrow());
+                        .max(Comparator.comparingInt(candidate -> candidate.binding().priority())).orElseThrow());
                 List<AttachmentDeliveryProviderOptionView> options = candidates.stream()
-                    .sorted(Comparator.comparingInt(candidate -> candidate.binding().priority()))
+                    .sorted(Comparator.comparingInt((DeliveryCandidate candidate) -> candidate.binding().priority()).reversed())
                     .map(candidate -> option(candidate, candidate == selected)).toList();
                 return issueBindingUrl(actorId, attachmentId, selected.binding())
                     .map(url -> new AttachmentPreviewUrlView(url.method(), url.url(), url.expiresAt(), url.rangeSupported(),
@@ -74,7 +74,7 @@ public class AttachmentPreviewService {
             .concatMap(placement -> providers.getByKey(placement.provider())
                 .filter(provider -> provider.status() != StorageProviderStatus.DISABLED
                     && provider.status() != StorageProviderStatus.FAILED)
-                .flatMapMany(provider -> bindings.findAllByStorageProviderIdOrderByPriorityAsc(provider.id())
+                .flatMapMany(provider -> bindings.findAllByStorageProviderIdOrderByPriorityDesc(provider.id())
                     .filter(MediaDeliveryBindingEntity::enabled)
                     .concatMap(binding -> deliveryProviders.findByProviderKey(binding.deliveryProviderKey())
                         .filter(deliveryProvider -> deliveryProvider.enabled()

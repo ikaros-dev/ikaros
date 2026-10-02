@@ -18,6 +18,7 @@ import run.ikaros.authorization.SecurityPolicy;
 import run.ikaros.authentication.api.AuthenticatedPrincipal;
 import run.ikaros.authentication.api.SecurityVerificationLevel;
 import run.ikaros.authorization.api.PlatformPermission;
+import run.ikaros.common.ForbiddenException;
 import run.ikaros.operations.api.AuditActorType;
 import run.ikaros.operations.api.AuditEventCommand;
 import run.ikaros.operations.api.AuditResult;
@@ -80,9 +81,11 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
         Mono<Void> currentAuthorization = accessControl.require(jwtPrincipal.actorId(),
             jwtPrincipal.verificationLevel(), jwtPrincipal.verificationExpiresAt(), securityPolicy);
         if (currentAuthorization != null) {
+            // 只把授权判定失败收敛为 403；下游 Handler 的异常必须保持原样（通常为 5xx），
+            // 否则任何业务/映射错误都会被伪装成 Forbidden，掩盖真实故障。
             return currentAuthorization.then(Mono.defer(() -> chain.filter(exchange)))
-                .onErrorResume(error -> rejectDenied(exchange, jwtPrincipal, permission,
-                    securityPolicy.requireFreshVerification() ? AuditRiskLevel.HIGH : AuditRiskLevel.SENSITIVE));
+                .onErrorResume(ForbiddenException.class, error -> rejectDenied(exchange, jwtPrincipal,
+                    permission, securityPolicy.requireFreshVerification() ? AuditRiskLevel.HIGH : AuditRiskLevel.SENSITIVE));
         }
         return chain.filter(exchange);
     }
@@ -124,11 +127,15 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
             return "GET".equals(method) ? PlatformPermission.SYSTEM_USER_READ
                 : PlatformPermission.SYSTEM_USER_MANAGE;
         }
+        if (path.startsWith("/api/admin/attachments")) return PlatformPermission.STORAGE_ATTACHMENT_MANAGE;
         if (path.contains("/admin/delivery-providers")) {
             return "GET".equals(method) ? PlatformPermission.STORAGE_DELIVERY_READ
                 : PlatformPermission.STORAGE_DELIVERY_MANAGE;
         }
-        if (path.contains("/delivery-bindings")) return PlatformPermission.STORAGE_DELIVERY_MANAGE;
+        if (path.contains("/delivery-bindings")) {
+            return "GET".equals(method) ? PlatformPermission.STORAGE_DELIVERY_READ
+                : PlatformPermission.STORAGE_DELIVERY_MANAGE;
+        }
         if (path.contains("restore-budget")) return PlatformPermission.STORAGE_TIERING_MANAGE;
         if (path.startsWith("/api/admin/backup")) return PlatformPermission.STORAGE_RESTORE_MANAGE;
         if (path.contains("/storage/placements")) return PlatformPermission.STORAGE_TIERING_MANAGE;
@@ -146,7 +153,10 @@ public class ResourceAuthorizationWebFilter implements WebFilter {
                 : PlatformPermission.STORAGE_PROVIDER_MANAGE;
         }
         if (path.contains("/admin/blobs")) return PlatformPermission.STORAGE_PROVIDER_READ;
-        if (path.contains("/ingestion/sources")) return PlatformPermission.INGESTION_SOURCE_MANAGE;
+        if (path.contains("/ingestion/sources")) {
+            return "GET".equals(method) ? PlatformPermission.INGESTION_READ
+                : PlatformPermission.INGESTION_SOURCE_MANAGE;
+        }
         if ("GET".equals(method)) return PlatformPermission.RESOURCE_READ;
         if ("DELETE".equals(method)) return PlatformPermission.RESOURCE_DELETE;
         return PlatformPermission.RESOURCE_WRITE;

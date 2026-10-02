@@ -40,7 +40,7 @@ final class DefaultAttachmentReferenceQuery implements AttachmentReferenceQuery 
     @Override
     public Flux<AttachmentReference> listActiveForResource(UUID actorId, UUID resourceId) {
         return resources.requireOwned(actorId, resourceId)
-            .thenMany(attachments.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(resourceId)
+            .thenMany(attachments.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtDesc(resourceId)
                 .map(attachment -> new AttachmentReference(attachment.id(), attachment.resourceId())));
     }
 }

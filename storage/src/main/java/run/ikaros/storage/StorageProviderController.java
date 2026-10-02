@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,10 +47,14 @@ public class StorageProviderController {
         if (idempotencyKey == null || idempotencyKey.isBlank()) {
             return Mono.error(new IllegalArgumentException("缺少 Idempotency-Key"));
         }
+        if (hasText(request.accessKeyId()) != hasText(request.secretAccessKey())) {
+            return Mono.error(new IllegalArgumentException("access_key_id 与 secret_access_key 必须同时提供"));
+        }
         String fingerprint = fingerprint(request);
-        return registry.registerConfigured(request.providerKey(), request.providerType(), request.displayName(),
+        return registry.registerConfigured(request.providerKey(), request.providerType().name(), request.displayName(),
                 request.tier(), request.credentialRef(), request.capabilities(), request.configuration(),
-                idempotencyKey, fingerprint)
+                idempotencyKey, fingerprint,
+                request.accessKeyId(), request.secretAccessKey(), request.sessionToken())
             .map(provider -> ResponseEntity.created(URI.create("/api/admin/storage-providers/" + provider.id()))
                 .body(StorageProviderView.from(provider)));
     }
@@ -62,6 +67,15 @@ public class StorageProviderController {
     @GetMapping("/{providerId}")
     public Mono<StorageProviderView> get(@PathVariable UUID providerId) {
         return registry.get(providerId).map(StorageProviderView::from);
+    }
+
+    @PutMapping("/{providerId}")
+    public Mono<ResponseEntity<StorageProviderView>> update(@PathVariable UUID providerId,
+        @RequestHeader(value = "If-Match", required = false) String ifMatch,
+        @Valid @RequestBody UpdateStorageProviderRequest request) {
+        return registry.update(providerId, request, IfMatchVersion.parse(ifMatch))
+            .map(provider -> ResponseEntity.ok().eTag(IfMatchVersion.etag(provider.version()))
+                .body(StorageProviderView.from(provider)));
     }
 
     @PostMapping("/{providerId}/enable")
@@ -96,14 +110,21 @@ public class StorageProviderController {
     public Mono<StorageProviderProbeView> replaceCredentials(@PathVariable UUID providerId,
                                                           @Valid @RequestBody ReplaceStorageProviderCredentialsRequest request) {
         return credentialService.replace(providerId, request)
-            .then(probeService.probe(providerId)).map(StorageProviderProbeView::from);
+            .then(probeService.probeProvider(providerId)).map(StorageProviderProbeView::from);
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
     private String fingerprint(StorageProviderCreateRequest request) {
-        String body = String.join("\n", request.providerKey(), request.providerType(), request.displayName(),
+        String body = String.join("\n", request.providerKey(), request.providerType().name(), request.displayName(),
             request.tier().name(), request.credentialRef() == null ? "secret://default" : request.credentialRef(),
             new java.util.TreeMap<>(request.capabilities()).toString(),
-            new java.util.TreeMap<>(request.configuration() == null ? java.util.Map.of() : request.configuration()).toString());
+            new java.util.TreeMap<>(request.configuration() == null ? java.util.Map.of() : request.configuration()).toString(),
+            request.accessKeyId() == null ? "" : request.accessKeyId(),
+            request.secretAccessKey() == null ? "" : request.secretAccessKey(),
+            request.sessionToken() == null ? "" : request.sessionToken());
         try {
             return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
                 .digest(body.getBytes(java.nio.charset.StandardCharsets.UTF_8)));

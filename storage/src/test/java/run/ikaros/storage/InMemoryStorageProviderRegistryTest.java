@@ -52,13 +52,26 @@ class InMemoryStorageProviderRegistryTest {
             "secret://storage/local", Map.of()).block();
 
         StorageProvider updated = registry.update(provider.id(), new UpdateStorageProviderRequest(
-            "s3", StorageTier.COLD, null, Map.of("bucket", "archive"))).block();
+            StorageProviderType.S3, "OSS Archive", StorageTier.COLD, null, Map.of("bucket", "archive")),
+            provider.version()).block();
 
-        assertEquals("s3", updated.providerType());
+        assertEquals("S3", updated.providerType());
+        assertEquals("OSS Archive", updated.displayName());
         assertEquals(StorageTier.COLD, updated.tier());
         assertEquals("archive", updated.metadata().get("bucket"));
         verify(events).append(argThat(request -> request.eventType().equals("storage.provider.updated")
             && request.producerSubsystem().equals("storage") && request.subjectType().equals("storage_provider")
             && request.subjectId().equals(provider.id())));
+    }
+
+    @Test
+    void rejectsUpdateWithStaleVersion() {
+        InMemoryStorageProviderRegistry registry = new InMemoryStorageProviderRegistry();
+        StorageProvider provider = registry.register("local", "filesystem", StorageTier.HOT,
+            "secret://storage/local", Map.of()).block();
+
+        assertThrows(run.ikaros.common.PreconditionFailedException.class, () -> registry.update(provider.id(),
+            new UpdateStorageProviderRequest(StorageProviderType.S3, null, null, null, Map.of()),
+            provider.version() + 1).block());
     }
 }

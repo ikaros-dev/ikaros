@@ -3,6 +3,7 @@ package run.ikaros.ingestion;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.NotFoundException;
@@ -27,9 +28,12 @@ public class DefaultDiscoveredItemService implements DiscoveredItemService {
     public Mono<DiscoveredItemView> record(UUID ownerId, UUID scanRunId, DiscoveredItemRequest request) {
         return scanRuns.findByIdAndOwnerId(scanRunId, ownerId)
             .switchIfEmpty(Mono.error(new NotFoundException("扫描运行不存在或无权访问")))
-            .flatMap(run -> items.save(new DiscoveredItemEntity(null, run.sourceId(), scanRunId,
-                request.relativeKey(), request.sizeBytes(), request.modifiedAt(), request.etag(), request.mediaType(),
-                request.availability(), request.scanGeneration(), Instant.now(), null)))
+            .flatMap(run -> items.findByScanRunIdAndRelativeKey(scanRunId, request.relativeKey())
+                .switchIfEmpty(items.save(new DiscoveredItemEntity(null, run.sourceId(), scanRunId,
+                    request.relativeKey(), request.sizeBytes(), request.modifiedAt(), request.etag(), request.mediaType(),
+                    request.availability(), request.scanGeneration(), Instant.now(), null)))
+                .onErrorResume(DuplicateKeyException.class, error -> items.findByScanRunIdAndRelativeKey(
+                    scanRunId, request.relativeKey()).switchIfEmpty(Mono.error(error))))
             .map(this::view);
     }
 

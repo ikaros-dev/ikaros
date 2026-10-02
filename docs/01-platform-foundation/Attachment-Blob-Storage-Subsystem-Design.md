@@ -553,6 +553,20 @@ StorageProvider
 └── version: bigint
 ```
 
+`provider_type` 必须是已注册的物理 adapter 代码，创建时即校验并拒绝未注册值，避免出现"创建成功但无 adapter 可服务"的 Provider：
+
+```text
+S3 / AWS_S3 / S3_COMPATIBLE      // 通用 S3 与 S3 兼容
+ALIYUN_OSS_S3                    // 阿里云 OSS（S3 协议）
+TENCENT_COS_S3                   // 腾讯云 COS（S3 协议）
+LOCAL_FILESYSTEM                 // 本地文件系统
+```
+
+Provider 的 `provider_type`、`display_name`、`tier` 与非敏感 `configuration` 通过
+`PUT /api/admin/storage-providers/{provider_id}` 按 `If-Match` 版本更新，版本不匹配返回 412；
+`provider_key` 与启停状态不经过该命令。凭据替换仍走
+`POST /api/admin/storage-providers/{provider_id}/credentials`，请求与响应均不回显明文。
+
 ### 9.3 管理模式与健康状态分离
 
 Provider 管理模式：
@@ -580,15 +594,22 @@ mode = DISABLED, health = UP
 
 ### 9.4 Provider Credential
 
-Access Key、Secret Key、Token、Password 等不得存在普通 Provider JSON 配置中。
+Access Key、Secret Key、Token、Password 等明文不得出现在普通 Provider JSON 配置、日志、事件、审计或 API 响应中。
 
-Provider 只保存：
+Provider 凭据支持两种形式：
 
 ```text
-credential_ref
+credential_ref                                  // secret:// 引用，指向 Secret / Password Manager
+access_key_id_ciphertext                        // 服务端信封加密的凭据密文
+secret_access_key_ciphertext
+session_token_ciphertext
 ```
 
-实际 Secret 由 Secret / Password Manager 能力提供，并优先使用“Use Secret Without Reveal”模式。
+创建或轮换对象存储 Provider 时，管理接口接受 `access_key_id`、`secret_access_key` 与可选 `session_token`；
+Storage Owner 使用 `StorageCredentialCipher` 做信封加密后写入 `*_ciphertext` 列，并把 `secret_reference`
+固定为 `secret://provider/{provider_key}`。这些字段声明为 `writeOnly`，任何查询、事件与审计都不得回显明文或密文。
+
+需要外部密钥管理时，仍可使用 `credential_ref` 指向 Secret / Password Manager，并优先使用“Use Secret Without Reveal”模式。
 
 ### 9.5 Provider Capability Discovery
 

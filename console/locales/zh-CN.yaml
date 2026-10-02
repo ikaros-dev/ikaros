@@ -298,7 +298,10 @@ storageProviderManagement:
   deleteSuccess: 存储提供方已删除
   deleteTitle: 删除存储提供方
   deleteConfirm: 确认删除“{name}”？仅已停用且没有数据位置或 Delivery Binding 的提供方可以删除。
-  credentialRef: 凭据引用
+  accessKeyId: Access Key
+  secretAccessKey: Access Secret
+  sessionToken: 会话令牌（可选）
+  credentialsPaired: Access Key 与 Access Secret 必须同时填写
   endpoint: Endpoint
   bucket: Bucket
   region: Region
@@ -311,6 +314,10 @@ storageProviderManagement:
   actions: 操作
   details: 详情
   probe: 探测
+  edit: 编辑
+  editTitle: 编辑存储提供方
+  updateSuccess: 存储提供方已更新
+  credentialsUnchanged: 留空表示不修改
   empty: 暂无存储提供方
   version: 版本
   capabilities: 能力
@@ -323,6 +330,44 @@ storageProviderManagement:
   loadFailed: 获取存储提供方失败
   detailFailed: 获取存储提供方详情失败
   probeFailed: 存储提供方探测失败
+  delivery: 分发
+  deliveryTitle: 分发管理 · {name}
+  deliveryHint: 一个存储提供方可以绑定多个分发提供方，权重较高的优先尝试。
+  deliveryLoadFailed: 获取分发绑定失败
+  deliveryProvider: 分发提供方
+  deliveryProviderCreate: 新建分发提供方
+  deliveryProviderCreateTitle: 新建分发提供方
+  deliveryProviderEditTitle: 编辑分发提供方
+  deliveryProviderCreateSuccess: 分发提供方已创建
+  deliveryProviderUpdateSuccess: 分发提供方已更新
+  deliveryProviderEnableSuccess: 分发提供方已启用
+  deliveryProviderDisableSuccess: 分发提供方已停用
+  deliveryProviderDeleteTitle: 删除分发提供方
+  deliveryProviderDeleteConfirm: 确认删除“{name}”？仍被分发绑定引用的提供方无法删除。
+  deliveryProviderDeleteSuccess: 分发提供方已删除
+  deliveryProviderLoadFailed: 获取分发提供方失败
+  deliveryProviderSection: 分发提供方
+  deliveryProviderEmpty: 暂无分发提供方
+  bindingSection: 分发绑定
+  credentialRef: 凭据引用（可选）
+  noDeliveryProviders: 当前实例还没有分发提供方，请先新建分发提供方，再新增绑定。
+  bindingCreate: 新增分发
+  bindingCreateTitle: 新增分发绑定
+  bindingEditTitle: 编辑分发绑定
+  bindingEmpty: 暂无分发绑定
+  bindingSaveSuccess: 分发绑定已保存
+  bindingEnableSuccess: 分发绑定已启用
+  bindingDisableSuccess: 分发绑定已停用
+  bindingUnbind: 解绑
+  bindingDeleteTitle: 解绑分发
+  bindingDeleteConfirm: 确认解绑“{key}”？
+  bindingDeleteSuccess: 分发绑定已解绑
+  priority: 优先级
+  cacheKeyPolicy: 缓存键策略
+  rangePolicy: Range 策略
+  fallbackParticipation: 参与 Fallback
+  yes: 是
+  no: 否
   probeResult:
     HEALTHY: 提供方连接正常
     DEGRADED: 提供方状态异常
@@ -340,6 +385,8 @@ menus:
   activityDetail: 活动详情
   storage: 存储
   storageOverview: 存储概览
+  attachmentManagement: 附件管理
+  attachmentDetails: 附件详情
   storageProviders: 存储提供方
   storageProviderDetail: 存储提供方详情
   storagePolicy: 存储策略
@@ -506,6 +553,8 @@ menuDescriptions:
   activityCenter: 统一查看导入、存储、元数据、备份、下载、AI 与自动化等后台工作。
   activityDetail: 查看单个后台工作的状态、进度、结果、错误与执行信息。
   storageOverview: 查看存储容量、层级分布、Provider 状态、恢复状态与需要关注的问题。
+  attachmentManagement: 浏览当前可访问的附件；拥有附件管理权限时可查看所有用户的活动附件。
+  attachmentDetails: 查看附件基本信息及关联标识。
   storageProviders: 配置和管理存储提供方、凭据、容量、层级与健康状态。
   storageProviderDetail: 查看和维护单个存储提供方的配置、容量和运行状态。
   storagePolicy: 配置资源在不同存储层级之间的生命周期、保留、副本与迁移策略。
@@ -546,3 +595,179 @@ menuDescriptions:
   accountSecurity: 管理当前账号的密码、恢复方式和安全状态。
   sessions: 查看当前账号的登录会话，并管理需要退出或撤销的会话。
   apiTokens: 管理当前账号创建的 API 令牌及其访问范围和生命周期。
+addResource:
+  actionFailed: 操作失败，请重试
+  steps:
+    source: 选择来源
+    scan: 扫描与识别
+    review: 预览与确认
+    import: 导入
+  sourceTitle: 选择资源来源
+  sourceDescription: 选择已配置的来源，或登记一个可扫描的来源。
+  addSource: 添加来源
+  sourceType: 来源类型
+  sourceName: 来源名称
+  sourceLocation: 来源位置
+  sourceLocationHint: 输入挂载路径、存储桶或来源地址
+  saveSource: 保存来源
+  noSources: 暂无可用来源，请先添加来源
+  types:
+    LOCAL_FILESYSTEM: 本地文件系统
+    NAS_MOUNT: NAS 挂载
+    OBJECT_STORAGE: 对象存储
+    REMOTE_URL: 远程地址
+    PROVIDER_COLLECTION: Provider 集合
+    PLUGIN_SOURCE: 插件来源
+  startScan: 开始扫描
+  scanTitle: 正在准备扫描
+  scanDescription: "已为“{source}”创建扫描任务。任务完成后刷新状态查看识别结果。"
+  scanFailed: 扫描失败
+  discoveredCount: 已发现 {count} 项
+  refreshScan: 刷新状态
+  previewResults: 查看预览
+  reviewTitle: 预览识别结果
+  reviewDescription: 逐项确认要创建的资源，或跳过不需要导入的项目。
+  candidateCount: 共 {count} 项
+  candidateTitle: 识别标题
+  candidateType: 类型建议
+  confidence: 识别置信度
+  decision: 导入处理
+  chooseDecision: 请选择处理方式
+  createResource: 创建资源
+  skipItem: 跳过
+  untitled: 未识别标题
+  noCandidates: 本次扫描未发现可预览的项目
+  confirmImport: 确认并开始导入
+  importStarted: 导入任务已提交
+  importStartedDescription: 你可以在活动中心查看进度和处理结果。
+  openActivity: 前往活动中心
+  openLibrary: 打开资源库
+  runReference: "任务参考：{id}"
+  back: 上一步
+  verificationTitle: 安全验证
+  verificationDescription: 添加导入来源需要完成安全验证。
+attachmentManagement:
+  allUsersHint: 当前列表涵盖所有用户的活动附件。
+  accessibleHint: 当前账号仅能看到有权访问的附件。
+  searchPlaceholder: 按文件名或附件、资源 ID 搜索
+  searchCurrentPagePlaceholder: 搜索当前页的文件名或 ID
+  search: 搜索
+  fileName: 文件名
+  kind: 附件类型
+  size: 大小
+  bytes: "{value} 字节"
+  mediaType: 媒体类型
+  availability: 可用状态
+  attachmentId: 附件 ID
+  resourceId: 资源 ID
+  sha256: SHA-256
+  actions: 操作
+  details: 详情
+  information: 信息
+  preview: 预览
+  previewFailed: 附件预览失败
+  previewUnsupported: 暂不支持预览此媒体类型
+  previewUnavailable: 当前附件暂不可预览，或当前账号无权查看内容
+  notFound: 附件不存在或当前账号无权访问
+  detailFailed: 获取附件详情失败
+  empty: 暂无附件
+  loadFailed: 获取附件列表失败
+resourceLibrary:
+  create: 新建
+  createTitle: 新建资源
+  createSuccess: 资源及附件已创建
+  createFailed: 创建资源失败
+  resourceCreatedWithoutAttachment: 资源已创建，但附件未完成上传。
+  providersLoadFailed: 获取存储提供者失败
+  noWritableProviders: 没有可用的存储提供者
+  unsupportedUploadMethod: 当前存储提供者返回了不支持的上传方式
+  storageProvider: 存储提供者
+  storagePath: 存储路径
+  storagePathHint: 例如 media/books/example.pdf
+  file: 选择文件
+  locale: 标题语言
+  query: 标题关键词
+  type: 业务类型
+  lifecycle: 生命周期
+  collection: 集合
+  tag: 标签
+  source: 来源 Provider
+  search: 搜索
+  reset: 重置
+  refresh: 刷新
+  title: 标题
+  classification: 分类
+  updatedAt: 更新时间
+  actions: 操作
+  details: 详情
+  empty: 暂无资源
+  loadFailed: 获取资源库失败
+resourceDetail:
+  back: 返回资源库
+  refresh: 刷新
+  edit: 编辑
+  favorite: 收藏
+  unfavorite: 取消收藏
+  id: 资源标识
+  type: 业务类型
+  primaryTitle: 主标题
+  classification: 分类
+  lifecycle: 生命周期
+  version: 版本
+  createdAt: 创建时间
+  updatedAt: 更新时间
+  summary: 摘要
+  archive: 归档
+  restore: 从回收站恢复
+  trash: 移入回收站
+  purge: 永久删除
+  archiveSuccess: 资源已归档
+  restoreSuccess: 资源已恢复
+  trashTitle: 移入回收站
+  trashConfirm: 确认将“{name}”移入回收站？
+  trashSuccess: 资源已移入回收站
+  purgeTitle: 永久删除资源
+  purgeConfirm: 永久删除“{name}”不可撤销，确认继续？
+  purgeSuccess: 资源已永久删除
+  attachments: 附件
+  fileName: 文件名
+  mediaType: 媒体类型
+  fileSize: 大小（字节）
+  availability: 可用状态
+  attachmentsEmpty: 暂无附件
+  tags: 标签
+  tagPlaceholder: 输入标签名后回车
+  tagAdd: 添加标签
+  tagAdded: 标签已添加
+  tagRemoved: 标签已移除
+  titles: 标题
+  locale: 语言
+  value: 值
+  primary: 主标题
+  kind: 类型
+  titlesEmpty: 暂无标题
+  identities: 外部身份
+  externalType: 外部类型
+  externalValue: 外部标识
+  identitiesEmpty: 暂无外部身份
+  metadata: 元数据
+  metadataSet: 手动设置元数据
+  metadataSetTitle: 手动设置元数据
+  fieldKey: 字段
+  source: 来源
+  manuallyLocked: 人工锁定
+  metadataRestore: 恢复自动
+  metadataEmpty: 暂无元数据
+  metadataSaved: 元数据已保存
+  metadataRestored: 元数据已恢复为自动
+  relations: 关系
+  target: 目标资源
+  relationType: 关系类型
+  position: 顺序
+  relationsEmpty: 暂无关系
+  editTitle: 编辑资源
+  updateSuccess: 资源已更新
+  yes: 是
+  no: 否
+  loadFailed: 获取资源详情失败
+  actionFailed: 操作失败

@@ -17,7 +17,7 @@ public class StorageProviderStatusService {
     }
 
     public Mono<StorageProviderStatusView> get(UUID providerId) {
-        return providers.get(providerId).flatMap(provider -> probe.probe(providerId)
+        return providers.get(providerId).flatMap(provider -> probe.probeProvider(provider)
             .map(result -> new StorageProviderStatusView(provider.id(), provider.status().name(), result,
                 number(provider.metadata().get("capacity_bytes")), number(provider.metadata().get("used_bytes")),
                 Instant.now())));

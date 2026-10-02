@@ -627,7 +627,14 @@ SVL-1 Step-up Grant TTL short-lived
 SVL-4 Step-up Grant TTL very short-lived
 ```
 
-具体时长属于详细设计和安全策略。
+具体时长属于详细设计和安全策略。当前实现由 `ikaros.security.verification.grant-ttl`（默认 `PT5M`）统一控制
+Email/SMS OTP 签发的 Verification Grant 有效期；客户端可在该窗口内复用自己持有的有效 Grant，
+服务端不做账号级历史自动换发（见 ADR-008），窗口结束或安全等级不满足时必须重新发起 Step-up。
+
+OTP 挑战自身的策略由 `ikaros.security.verification.otp` 控制：`ttl`（挑战有效期，默认 `PT5M`）、
+`issue-window`（单用户发起频率窗口，默认 `PT10M`）、`max-issues-per-window`（窗口内最大发起次数，默认 `3`）、
+`max-attempts`（单次挑战最大验证次数，默认 `5`）。非法或非正值回落内置默认，避免配置错误演变为无限发送；
+调整这些值只改变挑战策略，不改变 Grant 的签发、复用与安全等级语义。
 
 高风险操作可以要求：
 

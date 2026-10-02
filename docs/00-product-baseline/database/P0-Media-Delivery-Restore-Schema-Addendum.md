@@ -123,7 +123,7 @@ Provider 自己拥有：
 | `id` | uuid | NO | `uuid_v7()` 默认 |
 | `storage_provider_id` | uuid | NO | 绑定的 Storage Provider |
 | `delivery_provider_key` | varchar(128) | NO | 通过稳定 Key 关联 Delivery Provider |
-| `priority` | integer | NO | 越小越优先，默认 100 |
+| `priority` | integer | NO | 数值越大越优先，默认 100 |
 | `enabled` | boolean | NO | Binding 是否参与候选 |
 | `cache_key_policy` | varchar(32) | NO | `CONTENT_IDENTITY / FULL_REQUEST / NO_CACHE` |
 | `range_policy` | varchar(32) | NO | `PASSTHROUGH / FIXED_CHUNK / UNSUPPORTED` |
@@ -209,7 +209,7 @@ active Blob Placement
 选择规则：
 
 - 请求 `delivery_provider={providerKey}` 且候选中存在时，选择该 Provider；
-- 未请求、空值或 Key 不在候选中时，选择 `priority` 最小的 Binding；
+- 未请求、空值或 Key 不在候选中时，选择 `priority` 最大的 Binding；
 - 响应可返回候选 Provider 列表，但只为 selected Provider 生成 URL。
 
 ### 4.2 Lease 选择

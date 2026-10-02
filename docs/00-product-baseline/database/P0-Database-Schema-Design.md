@@ -480,6 +480,9 @@ P0 物化后的 Attachment 绑定单一不可变 Blob。替换内容创建新 At
 | `provider_type` | text | NO |
 | `display_name` | text | NO |
 | `credential_ref` | text | YES |
+| `access_key_id_ciphertext` | text | YES |
+| `secret_access_key_ciphertext` | text | YES |
+| `session_token_ciphertext` | text | YES |
 | `capabilities` | jsonb | NO |
 | `configuration` | jsonb | NO |
 | `tier` | text | NO |
@@ -497,7 +500,7 @@ CHECK tier in ('HOT','WARM','COLD','ARCHIVE','DEEP_ARCHIVE')
 CHECK drain_status in ('NORMAL','DRAINING','DRAINED')
 ```
 
-Credential 只能保存 `secret://` 或等价 Secret Reference，禁止明文凭据进入该表。
+Credential 只能保存 `secret://` 引用，或由 Storage Owner 使用信封加密（`StorageCredentialCipher`）产出的密文；禁止明文凭据进入该表、普通 JSON 配置或 `provider_metadata`。
 
 ---
 

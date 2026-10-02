@@ -178,7 +178,11 @@ Unknown、未探测、请求失败或数据缺失不得显示为 Healthy。每�
 
 资源库 canonical route 为 `/resources/library`。Resource Detail 为 `/resources/library/:resourceId`。
 
-资源库是 Resource 浏览和管理的唯一主入口，支持业务类型、Collection、Tag、Lifecycle、Availability、Source 等筛选。
+资源库是 Resource 浏览和管理的唯一主入口，支持业务类型、Collection、Tag、Lifecycle、Source 筛选。
+筛选语义由 `GET /api/resources` 的 `type`、`query`、`lifecycle_status`、`collection_id`、`tag`、`source_provider` 承载。
+
+Availability 过滤依赖 storage 侧 Blob Placement 的可服务性数据，属于跨模块能力（`resource` 当前不依赖 `storage`），
+尚未纳入资源库查询；引入前必须先补 capability 契约与 ADR，未落地前资源库不得展示该筛选。
 
 Resource Detail 是资源调查和资源级操作的 canonical 起点。Resource ID、Attachment ID、Blob ID、Placement、Replica、Task Attempt、Worker、Lease、Provider Key、Idempotency Key 等实现信息只在 Advanced / Diagnostics 中出现。
 

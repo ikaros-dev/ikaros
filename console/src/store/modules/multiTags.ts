@@ -81,8 +81,12 @@ export const useMultiTagsStore = defineStore("pure-multiTags", {
             if (isUrl(tagVal?.name)) return;
             // 如果title为空拒绝添加空信息到标签页
             if (tagVal?.meta?.title.length === 0) return;
-            // showLink:false 不添加到标签页
-            if (isBoolean(tagVal?.meta?.showLink) && !tagVal?.meta?.showLink)
+            // 默认跟随菜单可见性；详情路由可通过 showTab 单独加入标签页
+            if (
+              isBoolean(tagVal?.meta?.showLink) &&
+              !tagVal?.meta?.showLink &&
+              !tagVal?.meta?.showTab
+            )
               return;
             const tagPath = tagVal.path;
             const tagHasExits = this.multiTags.some(tag => {
@@ -93,7 +97,22 @@ export const useMultiTagsStore = defineStore("pure-multiTags", {
               );
             });
 
-            if (tagHasExits) return;
+            if (tagHasExits) {
+              const existingTag = this.multiTags.find(
+                tag =>
+                  tag.path === tagPath &&
+                  isEqual(tag?.query, tagVal?.query) &&
+                  isEqual(tag?.params, tagVal?.params)
+              );
+              if (existingTag && tagVal.meta?.tabTitle) {
+                existingTag.meta = {
+                  ...existingTag.meta,
+                  tabTitle: tagVal.meta.tabTitle
+                };
+                this.tagsCache(this.multiTags);
+              }
+              return;
+            }
 
             // 动态路由可打开的最大数量
             const dynamicLevel = tagVal?.meta?.dynamicLevel ?? -1;

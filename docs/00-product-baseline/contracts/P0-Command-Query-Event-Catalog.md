@@ -236,6 +236,18 @@ Attachment
 
 Storage Credential 永远使用 Secret Reference。
 
+Direct upload sequence is Resource creation → `storage.begin-upload` → Provider object upload → `storage.commit-upload`.
+The supplied `object_key` identifies only a Provider placement, never the Resource or Attachment. Commit verifies the
+uploaded object's declared size and SHA-256 before persisting the Attachment. For `deduplicated=true`, the server must
+instead confirm that the declared SHA-256 and size match an existing Blob and that the supplied Provider/object key
+identifies its ACTIVE Placement; it must not require a second remote upload or object HEAD. Clients must use an idempotency key for
+both Resource creation and Attachment commit; a failed upload may leave the newly created Resource without an Attachment.
+Commit must include the `session_id` returned by `storage.begin-upload`; the session must match the caller, Resource, Provider,
+object key, size, and declared SHA-256. Completing the upload session and creating the Attachment happen in the same Storage
+transaction, so expiry cleanup cannot delete an object after it becomes a durable Placement.
+The upload intent returns `required_headers`; clients must send these signed headers with the Provider upload, excluding
+headers managed by the browser such as `Host` and `Content-Length`.
+
 ### 4.2 GC
 
 `storage.request-blob-gc` 只创建受控 Background Task。
@@ -258,7 +270,9 @@ API 返回 `202 Accepted + background_task_id`。
 
 | Query ID | Permission | HTTP |
 |---|---|---|
-| `storage.get-attachment` | `storage.attachment.read` + source ACL | `GET /attachments/{attachment_id}` |
+| `storage.get-attachment` | `resource.read` + source ACL | `GET /attachments/{attachment_id}` |
+| `storage.get-attachment-preview-url` | `resource.read` + source ACL | `GET /attachments/{attachment_id}/preview-url` |
+| `storage.admin-list-attachments` | `storage.attachment.manage` | `GET /admin/attachments` |
 | `storage.get-attachment-content` | same + download policy | `GET /attachments/{attachment_id}/content` |
 | `storage.get-blob` | admin/system only | internal / admin |
 | `storage.list-blob-placements` | `storage.provider.read` | `GET /admin/blobs/{blob_id}/placements` |
@@ -266,6 +280,8 @@ API 返回 `202 Accepted + background_task_id`。
 | `storage.get-provider` | `storage.provider.read` | `GET /admin/storage-providers/{provider_id}` |
 
 Attachment Content Query 必须支持 HTTP Range，并在返回内容前重新执行当前授权判断。
+
+`storage.admin-list-attachments` 返回所有用户未归档、未删除的 Attachment，支持文件名、Attachment ID 和 Resource ID 搜索及分页；应用服务必须再次校验 `storage.attachment.manage`。未持有该权限的 Console 使用普通 Attachment Query，结果继续受当前用户访问边界约束。所有 Attachment 列表均按 `created_at DESC, id DESC` 稳定排序，优先展示最新创建的附件。
 
 ---
 
@@ -602,7 +618,10 @@ P0 Operation ID 必须映射到 Catalog：
 | `POST /api/resources/{resource_id}/actions/archive` | `archiveResource` | `resource.archive-resource` |
 | `POST /api/resources/{resource_id}/actions/restore` | `restoreResource` | `resource.restore-resource` |
 | `GET /api/attachments/{attachment_id}` | `getAttachment` | `storage.get-attachment` |
+| `GET /api/attachments/{attachment_id}/preview-url` | `getAttachmentPreviewUrl` | `storage.get-attachment-preview-url` |
+| `GET /api/admin/attachments` | `listAdminAttachments` | `storage.admin-list-attachments` |
 | `GET /api/attachments/{attachment_id}/content` | `getAttachmentContent` | `storage.get-attachment-content` |
+| `POST /api/resources/{resource_id}/attachments/commit` | `commitAttachmentUpload` | `storage.commit-upload` |
 | `GET /api/background-tasks/{task_id}` | `getBackgroundTask` | `operations.get-background-task` |
 | `POST /api/background-tasks` | `submitBackgroundTask` | `operations.submit-background-task` |
 | `POST /api/background-tasks/{task_id}/actions/retry` | `retryBackgroundTask` | `operations.retry-background-task` |

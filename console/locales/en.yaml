@@ -298,7 +298,10 @@ storageProviderManagement:
   deleteSuccess: Storage provider deleted
   deleteTitle: Delete storage provider
   deleteConfirm: Delete “{name}”? Only disabled providers without placements or delivery bindings can be deleted.
-  credentialRef: Credential reference
+  accessKeyId: Access Key
+  secretAccessKey: Access Secret
+  sessionToken: Session token (optional)
+  credentialsPaired: Access Key and Access Secret must be provided together
   endpoint: Endpoint
   bucket: Bucket
   region: Region
@@ -311,6 +314,10 @@ storageProviderManagement:
   actions: Actions
   details: Details
   probe: Probe
+  edit: Edit
+  editTitle: Edit storage provider
+  updateSuccess: Storage provider updated
+  credentialsUnchanged: Leave blank to keep unchanged
   empty: No storage providers
   version: Version
   capabilities: Capabilities
@@ -323,6 +330,44 @@ storageProviderManagement:
   loadFailed: Failed to load storage providers
   detailFailed: Failed to load provider details
   probeFailed: Failed to probe provider
+  delivery: Delivery
+  deliveryTitle: Delivery management · {name}
+  deliveryHint: A storage provider can bind multiple delivery providers; higher priority values are tried first.
+  deliveryLoadFailed: Failed to load delivery bindings
+  deliveryProvider: Delivery provider
+  deliveryProviderCreate: New delivery provider
+  deliveryProviderCreateTitle: New delivery provider
+  deliveryProviderEditTitle: Edit delivery provider
+  deliveryProviderCreateSuccess: Delivery provider created
+  deliveryProviderUpdateSuccess: Delivery provider updated
+  deliveryProviderEnableSuccess: Delivery provider enabled
+  deliveryProviderDisableSuccess: Delivery provider disabled
+  deliveryProviderDeleteTitle: Delete delivery provider
+  deliveryProviderDeleteConfirm: Delete “{name}”? A provider still referenced by a binding cannot be deleted.
+  deliveryProviderDeleteSuccess: Delivery provider deleted
+  deliveryProviderLoadFailed: Failed to load delivery providers
+  deliveryProviderSection: Delivery providers
+  deliveryProviderEmpty: No delivery providers
+  bindingSection: Delivery bindings
+  credentialRef: Credential reference (optional)
+  noDeliveryProviders: This instance has no delivery providers yet. Create one first, then add a binding.
+  bindingCreate: Add binding
+  bindingCreateTitle: Add delivery binding
+  bindingEditTitle: Edit delivery binding
+  bindingEmpty: No delivery bindings
+  bindingSaveSuccess: Delivery binding saved
+  bindingEnableSuccess: Delivery binding enabled
+  bindingDisableSuccess: Delivery binding disabled
+  bindingUnbind: Unbind
+  bindingDeleteTitle: Unbind delivery
+  bindingDeleteConfirm: Unbind “{key}”?
+  bindingDeleteSuccess: Delivery binding removed
+  priority: Priority
+  cacheKeyPolicy: Cache key policy
+  rangePolicy: Range policy
+  fallbackParticipation: Fallback participation
+  yes: "Yes"
+  no: "No"
   probeResult:
     HEALTHY: Provider connection is healthy
     DEGRADED: Provider is degraded
@@ -340,6 +385,8 @@ menus:
   activityDetail: Activity Detail
   storage: Storage
   storageOverview: Storage Overview
+  attachmentManagement: Attachment Management
+  attachmentDetails: Attachment Details
   storageProviders: Storage Providers
   storageProviderDetail: Storage Provider Detail
   storagePolicy: Storage Policy
@@ -506,6 +553,8 @@ menuDescriptions:
   activityCenter: View background work for imports, storage, metadata, backups, downloads, AI, and automation.
   activityDetail: View the status, progress, result, errors, and execution details of a background job.
   storageOverview: View storage capacity, tier distribution, Provider status, recovery status, and attention items.
+  attachmentManagement: Browse accessible attachments, or all users’ active attachments with the attachment management permission.
+  attachmentDetails: View attachment details and related identifiers.
   storageProviders: Configure and manage storage providers, credentials, capacity, tiers, and health.
   storageProviderDetail: View and maintain an individual storage provider's configuration, capacity, and runtime status.
   storagePolicy: Configure lifecycle, retention, replicas, and migration policies across storage tiers.
@@ -546,3 +595,179 @@ menuDescriptions:
   accountSecurity: Manage the current account's password, recovery methods, and security status.
   sessions: View the current account's login sessions and revoke sessions when needed.
   apiTokens: Manage API tokens created by the current account, including scope and lifecycle.
+addResource:
+  actionFailed: The action failed. Please try again.
+  steps:
+    source: Source
+    scan: Scan and identify
+    review: Preview and confirm
+    import: Import
+  sourceTitle: Choose a source
+  sourceDescription: Select a configured source or register one that can be scanned.
+  addSource: Add source
+  sourceType: Source type
+  sourceName: Source name
+  sourceLocation: Source location
+  sourceLocationHint: Enter a mount path, bucket, or source address
+  saveSource: Save source
+  noSources: No available sources. Add a source to continue.
+  types:
+    LOCAL_FILESYSTEM: Local filesystem
+    NAS_MOUNT: NAS mount
+    OBJECT_STORAGE: Object storage
+    REMOTE_URL: Remote URL
+    PROVIDER_COLLECTION: Provider collection
+    PLUGIN_SOURCE: Plugin source
+  startScan: Start scan
+  scanTitle: Scan in progress
+  scanDescription: "A scan was created for “{source}”. Refresh the status to see recognized items when it finishes."
+  scanFailed: Scan failed
+  discoveredCount: "{count} items discovered"
+  refreshScan: Refresh status
+  previewResults: Review results
+  reviewTitle: Review recognized items
+  reviewDescription: Confirm each resource to create or skip items you do not want to import.
+  candidateCount: "{count} items"
+  candidateTitle: Recognized title
+  candidateType: Suggested type
+  confidence: Confidence
+  decision: Import action
+  chooseDecision: Choose an action
+  createResource: Create resource
+  skipItem: Skip
+  untitled: Title not recognized
+  noCandidates: This scan found no items to review.
+  confirmImport: Confirm and start import
+  importStarted: Import submitted
+  importStartedDescription: Track progress and results in Activity Center.
+  openActivity: Open Activity Center
+  openLibrary: Open Resource Library
+  runReference: "Run reference: {id}"
+  back: Back
+  verificationTitle: Security verification
+  verificationDescription: Adding an ingestion source requires security verification.
+attachmentManagement:
+  allUsersHint: This list includes active attachments from all users.
+  accessibleHint: This account can only see attachments it is authorized to access.
+  searchPlaceholder: Search by file name, attachment ID, or resource ID
+  searchCurrentPagePlaceholder: Search file names or IDs on this page
+  search: Search
+  fileName: File name
+  kind: Attachment type
+  size: Size
+  bytes: "{value} bytes"
+  mediaType: Media type
+  availability: Availability
+  attachmentId: Attachment ID
+  resourceId: Resource ID
+  sha256: SHA-256
+  actions: Actions
+  details: Details
+  information: Information
+  preview: Preview
+  previewFailed: Failed to preview attachment
+  previewUnsupported: Preview is not supported for this media type
+  previewUnavailable: The attachment cannot be previewed now, or this account cannot access its content.
+  notFound: The attachment does not exist or is not accessible to this account.
+  detailFailed: Failed to load attachment details
+  empty: No attachments
+  loadFailed: Failed to load attachments
+resourceLibrary:
+  create: New
+  createTitle: Create resource
+  createSuccess: Resource and attachment created
+  createFailed: Failed to create resource
+  resourceCreatedWithoutAttachment: The resource was created, but its attachment upload did not finish.
+  providersLoadFailed: Failed to load storage providers
+  noWritableProviders: No writable storage provider is available
+  unsupportedUploadMethod: This storage provider returned an unsupported upload method
+  storageProvider: Storage provider
+  storagePath: Storage path
+  storagePathHint: For example media/books/example.pdf
+  file: Choose file
+  locale: Title language
+  query: Title keyword
+  type: Type
+  lifecycle: Lifecycle
+  collection: Collection
+  tag: Tag
+  source: Source provider
+  search: Search
+  reset: Reset
+  refresh: Refresh
+  title: Title
+  classification: Classification
+  updatedAt: Updated
+  actions: Actions
+  details: Details
+  empty: No resources
+  loadFailed: Failed to load the resource library
+resourceDetail:
+  back: Back to library
+  refresh: Refresh
+  edit: Edit
+  favorite: Favorite
+  unfavorite: Unfavorite
+  id: Resource ID
+  type: Type
+  primaryTitle: Primary title
+  classification: Classification
+  lifecycle: Lifecycle
+  version: Version
+  createdAt: Created
+  updatedAt: Updated
+  summary: Summary
+  archive: Archive
+  restore: Restore from trash
+  trash: Move to trash
+  purge: Delete permanently
+  archiveSuccess: Resource archived
+  restoreSuccess: Resource restored
+  trashTitle: Move to trash
+  trashConfirm: Move “{name}” to trash?
+  trashSuccess: Resource moved to trash
+  purgeTitle: Delete resource permanently
+  purgeConfirm: Deleting “{name}” permanently cannot be undone. Continue?
+  purgeSuccess: Resource permanently deleted
+  attachments: Attachments
+  fileName: File name
+  mediaType: Media type
+  fileSize: Size (bytes)
+  availability: Availability
+  attachmentsEmpty: No attachments
+  tags: Tags
+  tagPlaceholder: Type a tag name and press Enter
+  tagAdd: Add tag
+  tagAdded: Tag added
+  tagRemoved: Tag removed
+  titles: Titles
+  locale: Locale
+  value: Value
+  primary: Primary
+  kind: Kind
+  titlesEmpty: No titles
+  identities: External identities
+  externalType: External type
+  externalValue: External ID
+  identitiesEmpty: No external identities
+  metadata: Metadata
+  metadataSet: Set metadata manually
+  metadataSetTitle: Set metadata manually
+  fieldKey: Field
+  source: Source
+  manuallyLocked: Manually locked
+  metadataRestore: Restore automatic
+  metadataEmpty: No metadata
+  metadataSaved: Metadata saved
+  metadataRestored: Metadata restored to automatic
+  relations: Relations
+  target: Target resource
+  relationType: Relation type
+  position: Position
+  relationsEmpty: No relations
+  editTitle: Edit resource
+  updateSuccess: Resource updated
+  yes: "Yes"
+  no: "No"
+  loadFailed: Failed to load resource details
+  actionFailed: Operation failed

@@ -1,5 +1,6 @@
 package run.ikaros.resource;
 
+import run.ikaros.resource.api.ResourceLibraryQuery;
 import run.ikaros.resource.api.ResourceLifecycle;
 import run.ikaros.resource.api.ResourceService;
 import run.ikaros.resource.api.ResourceType;
@@ -37,26 +38,29 @@ class ResourceControllerTest {
             run.ikaros.resource.api.ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE, List.of(), List.of(),
             Instant.now(), Instant.now(), 0L);
         PageResponse<ResourceView> page = new PageResponse<>(List.of(resource), 1, 1, 20);
-        when(service.list(ownerId, ResourceType.BOOK, "书", ResourceLifecycle.ACTIVE, 1, 20))
-            .thenReturn(Mono.just(page));
+        when(service.list(ownerId, new ResourceLibraryQuery(ResourceType.BOOK, "书", ResourceLifecycle.ACTIVE,
+            null, null, null, 1, 20))).thenReturn(Mono.just(page));
 
-        StepVerifier.create(controller.list(ownerId, ResourceType.BOOK, "书", ResourceLifecycle.ACTIVE, 1, 20))
+        StepVerifier.create(controller.list(ownerId, ResourceType.BOOK, "书", ResourceLifecycle.ACTIVE,
+                null, null, null, 1, 20))
             .assertNext(result -> assertThat(result).isEqualTo(page))
             .verifyComplete();
 
-        verify(service).list(ownerId, ResourceType.BOOK, "书", ResourceLifecycle.ACTIVE, 1, 20);
+        verify(service).list(ownerId, new ResourceLibraryQuery(ResourceType.BOOK, "书", ResourceLifecycle.ACTIVE,
+            null, null, null, 1, 20));
     }
 
     @Test
     void returnsEmptyPageWithoutLeakingOtherOwners() {
         UUID ownerId = UUID.randomUUID();
         PageResponse<ResourceView> empty = new PageResponse<>(List.of(), 0, 0, 20);
-        when(service.list(ownerId, null, null, ResourceLifecycle.ACTIVE, 0, 20)).thenReturn(Mono.just(empty));
+        when(service.list(ownerId, ResourceLibraryQuery.of(null, null, ResourceLifecycle.ACTIVE, 0, 20)))
+            .thenReturn(Mono.just(empty));
 
-        StepVerifier.create(controller.list(ownerId, null, null, ResourceLifecycle.ACTIVE, 0, 20))
+        StepVerifier.create(controller.list(ownerId, null, null, ResourceLifecycle.ACTIVE, null, null, null, 0, 20))
             .assertNext(result -> assertThat(result.items()).isEmpty())
             .verifyComplete();
 
-        verify(service).list(ownerId, null, null, ResourceLifecycle.ACTIVE, 0, 20);
+        verify(service).list(ownerId, ResourceLibraryQuery.of(null, null, ResourceLifecycle.ACTIVE, 0, 20));
     }
 }

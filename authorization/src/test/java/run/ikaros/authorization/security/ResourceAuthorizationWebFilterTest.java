@@ -1,6 +1,7 @@
 package run.ikaros.authorization.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -25,6 +26,27 @@ import run.ikaros.operations.api.AuditService;
 import reactor.core.publisher.Mono;
 
 class ResourceAuthorizationWebFilterTest {
+    @Test
+    void allowsIngestionReadPermissionToListSources() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(
+            MockServerHttpRequest.get("/api/ingestion/sources").build());
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 0L,
+                java.util.List.of(PlatformPermission.INGESTION_READ.key())));
+        WebFilterChain chain = mock(WebFilterChain.class);
+        AccessControlService accessControl = mock(AccessControlService.class);
+        when(accessControl.require(eq(actor), eq(SecurityVerificationLevel.SVL_0), eq(null), any()))
+            .thenReturn(Mono.empty());
+        when(chain.filter(exchange)).thenReturn(Mono.empty());
+
+        new ResourceAuthorizationWebFilter(accessControl).filter(exchange, chain).block();
+
+        verify(accessControl).require(eq(actor), eq(SecurityVerificationLevel.SVL_0), eq(null),
+            argThat(policy -> policy.permission() == PlatformPermission.INGESTION_READ));
+        verify(chain).filter(exchange);
+    }
+
     @Test
     void exposesExactlyOneRequiredSpringConstructor() {
         long autowiredConstructors = Arrays.stream(ResourceAuthorizationWebFilter.class.getConstructors())
@@ -96,6 +118,23 @@ class ResourceAuthorizationWebFilterTest {
     }
 
     @Test
+    void propagatesDownstreamFailureInsteadOfMaskingItAsForbidden() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(
+            "/api/admin/storage-providers").build());
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 1L,
+                java.util.List.of(PlatformPermission.STORAGE_PROVIDER_MANAGE.key()),
+                SecurityVerificationLevel.SVL_2, java.time.Instant.now().plusSeconds(60), null, null));
+        AccessControlService accessControl = mock(AccessControlService.class);
+        when(accessControl.require(any(), any(), any(), any())).thenReturn(Mono.empty());
+
+        assertThrows(IllegalStateException.class, () -> new ResourceAuthorizationWebFilter(accessControl, false)
+            .filter(exchange, current -> Mono.error(new IllegalStateException("downstream boom"))).block());
+        assertEquals(null, exchange.getResponse().getStatusCode());
+    }
+
+    @Test
     void rejectsResourceRequestWithoutToken() {
         UUID actor = UUID.randomUUID();
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/resources")
@@ -116,6 +155,49 @@ class ResourceAuthorizationWebFilterTest {
         new ResourceAuthorizationWebFilter(mock(AccessControlService.class)).filter(exchange, chain).block();
 
         assertEquals(401, exchange.getResponse().getStatusCode().value());
+    }
+
+    @Test
+    void readsDeliveryBindingsWithDeliveryReadPermission() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
+            "/api/storage/providers/" + UUID.randomUUID() + "/delivery-bindings").build());
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 1L,
+                java.util.List.of(PlatformPermission.STORAGE_DELIVERY_READ.key()),
+                SecurityVerificationLevel.SVL_0, null, null, null));
+        WebFilterChain chain = mock(WebFilterChain.class);
+        when(chain.filter(exchange)).thenReturn(Mono.empty());
+        AccessControlService accessControl = mock(AccessControlService.class);
+        when(accessControl.require(eq(actor), any(), any(), any())).thenReturn(Mono.empty());
+
+        new ResourceAuthorizationWebFilter(accessControl).filter(exchange, chain).block();
+
+        verify(accessControl).require(eq(actor), any(), any(),
+            argThat(policy -> policy.permission() == PlatformPermission.STORAGE_DELIVERY_READ));
+        verify(chain).filter(exchange);
+    }
+
+    @Test
+    void writesDeliveryBindingsOnlyWithDeliveryManagePermission() {
+        UUID actor = UUID.randomUUID();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.post(
+            "/api/storage/providers/" + UUID.randomUUID() + "/delivery-bindings").build());
+        exchange.getAttributes().put(AuthenticatedPrincipal.EXCHANGE_ATTRIBUTE,
+            new AuthenticatedPrincipal(actor, UUID.randomUUID(), 1L,
+                java.util.List.of(PlatformPermission.STORAGE_DELIVERY_MANAGE.key()),
+                SecurityVerificationLevel.SVL_2, null, null, null));
+        WebFilterChain chain = mock(WebFilterChain.class);
+        when(chain.filter(exchange)).thenReturn(Mono.empty());
+        AccessControlService accessControl = mock(AccessControlService.class);
+        when(accessControl.require(eq(actor), eq(SecurityVerificationLevel.SVL_2), eq(null), any()))
+            .thenReturn(Mono.empty());
+
+        new ResourceAuthorizationWebFilter(accessControl).filter(exchange, chain).block();
+
+        verify(accessControl).require(eq(actor), eq(SecurityVerificationLevel.SVL_2), eq(null),
+            argThat(policy -> policy.permission() == PlatformPermission.STORAGE_DELIVERY_MANAGE));
+        verify(chain).filter(exchange);
     }
 
     @Test

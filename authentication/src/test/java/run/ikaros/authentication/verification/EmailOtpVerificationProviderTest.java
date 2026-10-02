@@ -95,6 +95,29 @@ class EmailOtpVerificationProviderTest {
     }
 
     @Test
+    void appliesConfiguredIssueFrequencyPolicy() {
+        EmailOtpVerificationProvider strict = new EmailOtpVerificationProvider(userRepository, challengeRepository,
+            codeGenerator, otpHasher, delivery, auditService, java.time.Duration.ofMinutes(5),
+            new OtpVerificationProperties(java.time.Duration.ofMinutes(5), java.time.Duration.ofMinutes(1), 1, 5));
+        UUID userId = UUID.randomUUID();
+        Instant now = Instant.now();
+        PlatformUserEntity user = new PlatformUserEntity(userId, "alice", "Alice", "alice@example.com",
+            UserStatus.ACTIVE, now, now, null, 0L);
+        when(userRepository.findById(userId)).thenReturn(Mono.just(user));
+        when(challengeRepository.countByUserIdAndIssuedAtAfter(eq(userId), any())).thenReturn(Mono.just(1L));
+
+        StepVerifier.create(strict.issue(userId, new IssueVerificationRequest(VerificationPurpose.LOGIN_STEP_UP,
+                "session-1")))
+            .expectError(ConflictException.class)
+            .verify();
+
+        org.mockito.ArgumentCaptor<Instant> since = org.mockito.ArgumentCaptor.forClass(Instant.class);
+        verify(challengeRepository).countByUserIdAndIssuedAtAfter(eq(userId), since.capture());
+        assertThat(since.getValue()).isAfter(Instant.now().minus(java.time.Duration.ofMinutes(5)));
+        verify(challengeRepository, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
     void issuesBoundChallengeWithoutPersistingPlaintextOtp() {
         UUID userId = UUID.randomUUID();
         UUID challengeId = UUID.randomUUID();

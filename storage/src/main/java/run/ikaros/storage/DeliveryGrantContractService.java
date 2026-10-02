@@ -88,8 +88,11 @@ public class DeliveryGrantContractService {
             if (configuredEndpoint == null || configuredEndpoint.toString().isBlank()) {
                 throw new IllegalStateException("CDN Provider 未配置 endpoint");
             }
-            URI endpoint = URI.create(configuredEndpoint.toString().trim());
-            if (endpoint.getScheme() == null || endpoint.getHost() == null) {
+            String value = configuredEndpoint.toString().trim();
+            boolean hasHttpScheme = value.regionMatches(true, 0, "http://", 0, 7)
+                || value.regionMatches(true, 0, "https://", 0, 8);
+            URI endpoint = URI.create(hasHttpScheme ? value : "//" + value);
+            if ((hasHttpScheme && endpoint.getScheme() == null) || endpoint.getHost() == null) {
                 throw new IllegalStateException("CDN Provider endpoint 无效");
             }
             return endpoint;
