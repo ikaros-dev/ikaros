@@ -48,7 +48,7 @@ const writableProviders = computed(() =>
 const filters = reactive({
   query: "",
   type: "",
-  lifecycle_status: "ACTIVE",
+  lifecycle_status: "",
   collection_id: "",
   tag: "",
   source_provider: ""
@@ -100,7 +100,7 @@ const reset = () => {
   Object.assign(filters, {
     query: "",
     type: "",
-    lifecycle_status: "ACTIVE",
+    lifecycle_status: "",
     collection_id: "",
     tag: "",
     source_provider: ""
@@ -217,7 +217,7 @@ onMounted(async () => {
         </el-select>
       </el-form-item>
       <el-form-item :label="t('resourceLibrary.lifecycle')">
-        <el-select v-model="filters.lifecycle_status" style="width: 160px">
+        <el-select v-model="filters.lifecycle_status" clearable style="width: 160px">
           <el-option v-for="item in resourceLifecycles" :key="item" :label="item" :value="item" />
         </el-select>
       </el-form-item>
