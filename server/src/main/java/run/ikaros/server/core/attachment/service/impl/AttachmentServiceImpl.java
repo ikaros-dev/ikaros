@@ -732,7 +732,7 @@ public class AttachmentServiceImpl implements AttachmentService {
                 return false;
             }
         });
-        int targetFileWriteOffset = 0;
+        long targetFileWriteOffset = 0;
         for (File chunkFile : chunkFileList) {
             try (RandomAccessFile randomAccessFile = new RandomAccessFile(targetFile, "rw");
                  FileInputStream fileInputStream = new FileInputStream(chunkFile);) {
