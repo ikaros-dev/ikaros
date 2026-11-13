@@ -3,7 +3,7 @@
 - JDK: 21
 - Gradle: 8.14.5
 - SpringBoot: 4.0.1
-- CheckStyle: 9.3
+- CheckStyle: 14.4.0
 - Vue: 3
 - IDE: IntelliJ IDEA
 - Database: PostgreSQL 18+
@@ -48,7 +48,7 @@ Mac或者Linux
 
 IDEA的checkstyle插件配置，安装好插件`CheckStyle-IDEA`，进行配置
 
-配置插件过程中版本选择如下：，`9.3`，
+配置插件过程中版本选择如下：
 - 选择项目级别，就是 `Checkstyle Project`
 - 版本选择 `14.4.0`
 - 扫描范围选择 仅Java源码(包含测试)

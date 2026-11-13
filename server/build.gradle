@@ -13,7 +13,7 @@ plugins {
 group = "run.ikaros.server"
 
 checkstyle {
-    toolVersion = "9.3"
+    toolVersion = "14.4.0"
     showViolations = false
     ignoreFailures = false
     configFile = rootProject.file("config/checkstyle/checkstyle.xml")
