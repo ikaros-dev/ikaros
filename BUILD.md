@@ -48,14 +48,17 @@ Mac或者Linux
 
 IDEA的checkstyle插件配置，安装好插件`CheckStyle-IDEA`，进行配置
 
-配置插件过程中版本选择`9.3`，
-扫描范围包括测试代码，描述可以填比如`Ikaros Checks`，
-还会让填变量值，填入如下值
-
+配置插件过程中版本选择如下：，`9.3`，
+- 选择项目级别，就是 `Checkstyle Project`
+- 版本选择 `14.4.0`
+- 扫描范围选择 仅Java源码(包含测试)
+- 在规则文件那点添加按钮，描述可以填比如`Ikaros Checks`，下一步
 ```text
 checkstyle-suppressions.xml
 checkstyle-xpath-suppressions.xml
 ```
+如果变量值没有自动填，则手动填下上述两个值，
+
 下一步直到完成后，勾选这个配置，确定保存。
 
 commit之前，用checkstyle检查下代码，确认没有问题后再commit。
