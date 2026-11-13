@@ -40,7 +40,7 @@ Mac或者Linux
 ./gradlew clean build -x test
 ```
 
-本地运行，复制并更名`config/server/resource/application-local.yaml.example`到`src/main/resource/application-local.yaml`
+本地运行，复制并更名`config/server/resource/application-local.yaml.example`到`server/src/main/resource/application-local.yaml`
 , 可以根据需要酌情修改，
 
 我建议是本地跑个 [docker for windows](https://docs.docker.com/desktop/install/windows-install/)
