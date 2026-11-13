@@ -62,6 +62,7 @@ import run.ikaros.api.core.attachment.AttachmentDriverFetcher;
 import run.ikaros.api.core.attachment.AttachmentSearchCondition;
 import run.ikaros.api.core.attachment.AttachmentStreamVo;
 import run.ikaros.api.core.attachment.AttachmentUploadCondition;
+import run.ikaros.api.core.attachment.exception.AttachmentExistsException;
 import run.ikaros.api.core.attachment.exception.AttachmentParentNotFoundException;
 import run.ikaros.api.core.attachment.exception.AttachmentRemoveException;
 import run.ikaros.api.core.attachment.exception.AttachmentUploadException;
@@ -131,10 +132,14 @@ public class AttachmentServiceImpl implements AttachmentService {
             .switchIfEmpty(Mono.just(attachmentEntity))
             .map(entity -> entity.setUpdateTime(LocalDateTime.now()))
             .flatMap(entity -> {
-                if (entity.getId() == null) {
-                    entity.setId(UuidV7Utils.generateUuid());
+                if (entity.getId() != null) {
+                    // 已存在的记录必须按主键更新：移动目录或改名后
+                    // (type, parent_id, name) 这个冲突目标已匹配不到原记录，
+                    // 若仍走 INSERT 会撞上 attachment_pkey 主键。
+                    return attachmentRepository.update(entity);
                 }
-                // 使用 upsert（ON CONFLICT DO UPDATE）原子处理并发：
+                entity.setId(UuidV7Utils.generateUuid());
+                // 新增记录使用 upsert（ON CONFLICT DO UPDATE）原子处理并发：
                 // 同名记录存在则更新、不存在则插入，避免并发刷新目录导致重复插入与唯一键冲突。
                 return attachmentRepository.upsert(entity)
                     .thenReturn(entity);
@@ -162,8 +167,35 @@ public class AttachmentServiceImpl implements AttachmentService {
         return validateFsPath(attachment.getDriverId(), attachment.getFsPath())
             .then(attachmentEntityMono)
             .flatMap(attachmentEntity -> updatePathWhenNewParentId(attachmentEntity, newParentId))
+            .flatMap(this::checkNameConflictInParent)
             .flatMap(this::saveEntity)
             .flatMap(attachmentEntity -> copyProperties(attachmentEntity, attachment));
+    }
+
+    /**
+     * 校验目标父目录下不存在同类型同名的其它附件.
+     *
+     * <p>移动或改名时若目标目录已存在同名附件，直接拒绝，避免已有附件的
+     * 文件路径、大小、驱动的信息被覆盖；新增附件不做校验，同名合并仍由
+     * {@link AttachmentRepository#upsert} 的 ON CONFLICT 处理。</p>
+     *
+     * @param attachmentEntity 待保存的附件记录
+     * @return 校验通过时返回原附件记录
+     */
+    private Mono<AttachmentEntity> checkNameConflictInParent(
+        AttachmentEntity attachmentEntity) {
+        if (attachmentEntity.getId() == null) {
+            return Mono.just(attachmentEntity);
+        }
+        return repository
+            .findAllByTypeAndParentIdAndNameForUpdate(attachmentEntity.getType(),
+                attachmentEntity.getParentId(), attachmentEntity.getName())
+            .filter(existing -> !Objects.equals(existing.getId(), attachmentEntity.getId()))
+            .next()
+            .flatMap(existing -> Mono.<AttachmentEntity>error(new AttachmentExistsException(
+                "Attachment already exists in the parent directory, name="
+                    + attachmentEntity.getName())))
+            .switchIfEmpty(Mono.just(attachmentEntity));
     }
 
     private Mono<AttachmentEntity> updatePathWhenNewParentId(AttachmentEntity attachmentEntity,
