@@ -25,6 +25,8 @@ bin/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+/.junie/
+/.codex/
 
 ### NetBeans ###
 /nbproject/private/
