@@ -13,6 +13,7 @@
 - 修复 Subjects 查询条件类型缺少 VIDEO 枚举导致的构建报错
 - 修复 Lucene 搜索索引 airTime 为空时导致的异常
 - 修复专辑添加歌曲未正确关联专辑（subject_id 按后端字段名以 snake_case 发送）
+- 修复分片上传超过 2 GiB 的附件在合并分片时报 Negative seek offset：合并写入偏移量由 int 改为 long
 - 修复后台附件跨目录批量移动时报 attachment_pkey 主键冲突：已存在的附件改为按主键更新并保留原 ID，目标目录存在同名附件时拒绝覆盖
 
 # 1.2.5
