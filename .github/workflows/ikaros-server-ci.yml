@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - main
+      - 1.x
     paths:
       - "**"
       - '!console/**'
@@ -15,6 +16,7 @@ on:
     branches:
       - main
       - release-*
+      - 1.x
     paths:
       - "**"
       - '!console/**'
