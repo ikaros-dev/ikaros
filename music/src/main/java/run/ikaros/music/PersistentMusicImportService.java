@@ -29,11 +29,11 @@ public class PersistentMusicImportService implements MusicImportService {
     @Override
     public Mono<MusicImportView> create(UUID ownerId, CreateMusicImportRequest request, String key) {
         if (key == null || key.isBlank() || key.length() > 256) return Mono.error(new IllegalArgumentException("Idempotency-Key 不合法"));
-        Mono<MusicImportView> operation = storage.get(ownerId, request.attachmentId()).flatMap(attachment -> validate(attachment.fileName(), attachment.mediaType())
+        Mono<MusicImportView> operation = storage.get(ownerId, request.attachmentId()).flatMap(attachment -> validate(attachment.name(), attachment.mediaType())
             .then(tracks.findByOwnerIdAndResourceId(ownerId, attachment.resourceId())
                 .flatMap(existing -> Mono.<MusicImportEntity>error(new ConflictException("该 Attachment 已导入为音乐 Track")))
                 .switchIfEmpty(Mono.defer(() -> {
-                    String title = request.title() == null || request.title().isBlank() ? baseName(attachment.fileName()) : request.title().trim();
+                    String title = request.title() == null || request.title().isBlank() ? baseName(attachment.name()) : request.title().trim();
                     return tracks.save(new MusicTrackEntity(null, ownerId, attachment.resourceId(), title, request.durationMillis(), null, false, null))
                         .flatMap(track -> sources.add(ownerId, track.id(), new AddMusicAudioSourceRequest(request.attachmentId(), request.codec(), request.container(), request.durationMillis(), request.sampleRate(), request.bitDepth(), request.channels(), request.bitrate(), request.lossless(), 0))
                             .then(imports.save(new MusicImportEntity(null, ownerId, request.attachmentId(), track.id(), "SUCCEEDED", null, null, key, Instant.now(), Instant.now(), null))));

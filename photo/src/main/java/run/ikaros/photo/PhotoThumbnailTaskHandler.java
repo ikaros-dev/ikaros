@@ -61,7 +61,7 @@ public final class PhotoThumbnailTaskHandler {
             path -> DataBufferUtils.write(content.read(owner, sourceId), path)
                 .then(Mono.fromCallable(() -> render(path)).subscribeOn(Schedulers.boundedElastic()))
                 .flatMap(bytes -> storage.writeDerived(owner, source.resourceId(), sourceId,
-                    "thumbnail-" + source.fileName(), "image/jpeg", bytes))
+                    "thumbnail-" + source.name(), "image/jpeg", bytes))
                 .flatMap(derived -> assets.save(new PhotoAssetEntity(null, owner, photoId, derived.id(),
                     PhotoAssetRole.THUMBNAIL, false, "AVAILABLE", null)))
                 .map(asset -> Map.of("photo_id", photoId.toString(), "source_attachment_id", sourceId.toString(),

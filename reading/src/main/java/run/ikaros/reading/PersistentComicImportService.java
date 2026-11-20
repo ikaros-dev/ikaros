@@ -30,12 +30,12 @@ public class PersistentComicImportService implements ComicImportService {
         Mono<ComicImportView> create = storage.get(ownerId, request.attachmentId()).flatMap(this::validatePackage)
             .flatMap(attachment -> {
                 String title = request.title() == null || request.title().isBlank()
-                    ? baseName(attachment.fileName()) : request.title().trim();
+                    ? baseName(attachment.name()) : request.title().trim();
                 return catalog.createWork(ownerId, new CreateReadingWorkRequest(title, ReadingWorkKind.COMIC,
                         request.language(), request.language()))
                     .flatMap(work -> catalog.createEdition(ownerId, work.id(),
                         new CreateReadingEditionRequest("导入包", request.language(), null,
-                            attachment.fileName(), 0)).map(edition -> new ComicImportEntity(null, ownerId,
+                            attachment.name(), 0)).map(edition -> new ComicImportEntity(null, ownerId,
                             attachment.id(), work.id(), edition.id(), ComicImportStatus.ACCEPTED.name(), null,
                             null, idempotencyKey, Instant.now(), Instant.now(), null)));
             }).flatMap(imports::save).map(this::view);
@@ -55,7 +55,7 @@ public class PersistentComicImportService implements ComicImportService {
     }
 
     private Mono<AttachmentView> validatePackage(AttachmentView attachment) {
-        String name = attachment.fileName() == null ? "" : attachment.fileName().toLowerCase(Locale.ROOT);
+        String name = attachment.name() == null ? "" : attachment.name().toLowerCase(Locale.ROOT);
         if (!(name.endsWith(".cbz") || name.endsWith(".cbr") || name.endsWith(".zip")))
             return Mono.error(new ConflictException("仅支持 CBZ、CBR 或 ZIP 漫画包"));
         return Mono.just(attachment);
