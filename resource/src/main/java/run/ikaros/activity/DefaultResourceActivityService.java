@@ -66,7 +66,7 @@ public class DefaultResourceActivityService implements ResourceActivityService {
     }
 
     private Mono<ResourceEntity> owned(UUID ownerId, UUID resourceId) {
-        return resourceRepository.findByIdAndOwnerId(resourceId, ownerId)
+        return resourceRepository.findByIdAndUserId(resourceId, ownerId)
             .switchIfEmpty(Mono.error(new NotFoundException("资源不存在或无权访问")));
     }
 

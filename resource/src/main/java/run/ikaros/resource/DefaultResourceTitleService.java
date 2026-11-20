@@ -121,7 +121,7 @@ public class DefaultResourceTitleService implements ResourceTitleService {
     }
 
     private Mono<ResourceEntity> owned(UUID ownerId, UUID resourceId) {
-        return resourceRepository.findByIdAndOwnerId(resourceId, ownerId)
+        return resourceRepository.findByIdAndWriterUserId(resourceId, ownerId)
             .switchIfEmpty(Mono.error(new NotFoundException("资源不存在或无权访问")));
     }
 }

@@ -7,5 +7,15 @@ public enum ResourceLifecycle {
     ACTIVE,
     ARCHIVED,
     TRASHED,
-    PURGED
+    PURGED;
+
+    /** Legacy source compatibility for callers migrating to numeric ResourceStatus. */
+    public int statusCode() {
+        return switch (this) {
+            case PURGED -> ResourceStatus.DELETED.code();
+            case ACTIVE -> ResourceStatus.ACTIVE.code();
+            case TRASHED -> ResourceStatus.TRASHED.code();
+            case ARCHIVED -> ResourceStatus.ARCHIVED.code();
+        };
+    }
 }

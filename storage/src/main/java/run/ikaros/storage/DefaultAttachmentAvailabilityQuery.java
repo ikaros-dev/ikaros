@@ -35,7 +35,7 @@ final class DefaultAttachmentAvailabilityQuery implements AttachmentAvailability
     @Override
     public Mono<AttachmentAvailability> get(UUID actorId, UUID attachmentId) {
         return references.requireReadable(actorId, attachmentId)
-            .then(attachments.findById(attachmentId))
+            .then(attachments.findReadableReferenceById(attachmentId))
             .flatMap(attachment -> blobs.findById(attachment.blobId()))
             .flatMap(blob -> switch (blob.availability()) {
                 case PROCESSING -> Mono.just(result(attachmentId, AttachmentAvailabilityStatus.PROCESSING));

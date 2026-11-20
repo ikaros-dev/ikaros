@@ -21,10 +21,16 @@ public record BlobEntity(
     @Column("media_type") String mediaType,
     BlobAvailability availability,
     @Column("created_at") Instant createdAt,
+    @Column("updated_at") Instant updatedAt,
     @Version Long version
 ) {
     public BlobEntity(UUID id, String sha256, long sizeBytes, String mediaType,
                       BlobAvailability availability, Instant createdAt, Long version) {
-        this(id, "SHA-256", sha256, sizeBytes, mediaType, availability, createdAt, version);
+        this(id, "SHA-256", sha256, sizeBytes, mediaType, availability, createdAt, createdAt, version);
+    }
+
+    public BlobEntity(UUID id, String hashAlgorithm, String sha256, long sizeBytes, String mediaType,
+                      BlobAvailability availability, Instant createdAt, Long version) {
+        this(id, hashAlgorithm, sha256, sizeBytes, mediaType, availability, createdAt, createdAt, version);
     }
 }

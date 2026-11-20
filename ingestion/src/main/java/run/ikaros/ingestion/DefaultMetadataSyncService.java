@@ -33,7 +33,7 @@ public class DefaultMetadataSyncService implements MetadataSyncService {
         return sources.findByIdAndOwnerId(syncSourceId, ownerId)
             .filter(source -> MetadataSyncSourceStatus.ENABLED.name().equals(source.status()))
             .switchIfEmpty(Mono.error(new NotFoundException("启用的元数据同步来源不存在或无权访问")))
-            .flatMap(source -> resources.requireOwned(ownerId, request.resourceId())
+            .flatMap(source -> resources.requireWritable(ownerId, request.resourceId())
                 .then(metadata.list(ownerId, request.resourceId()).filter(item -> item.fieldKey()
                     .equals(request.fieldKey().trim())).next())
                 .flatMap(current -> sameValue(current, request.value().trim())

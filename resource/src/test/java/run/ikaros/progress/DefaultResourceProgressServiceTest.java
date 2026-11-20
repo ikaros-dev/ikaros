@@ -43,7 +43,7 @@ class DefaultResourceProgressServiceTest {
             ProgressType.VIDEO_SECONDS, 10L, 100L, false, now, 0L);
         ResourceProgressEntity saved = new ResourceProgressEntity(existing.id(), ownerId, resourceId,
             ProgressType.VIDEO_SECONDS, 50L, 100L, false, now, 1L);
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource(ownerId, resourceId, now)));
+        when(resourceRepository.findByIdAndUserId(resourceId, ownerId)).thenReturn(Mono.just(resource(ownerId, resourceId, now)));
         when(progressRepository.findByOwnerIdAndResourceIdAndProgressType(ownerId, resourceId, ProgressType.VIDEO_SECONDS))
             .thenReturn(Mono.just(existing));
         when(progressRepository.save(any(ResourceProgressEntity.class))).thenReturn(Mono.just(saved));
@@ -63,6 +63,6 @@ class DefaultResourceProgressServiceTest {
     }
 
     private ResourceEntity resource(UUID ownerId, UUID resourceId, Instant now) {
-        return new ResourceEntity(resourceId, ownerId, ResourceType.BOOK, ResourceLifecycle.ACTIVE, now, now, null, 0L);
+        return new ResourceEntity(resourceId, ResourceType.BOOK, null, null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), now, now, 0L);
     }
 }

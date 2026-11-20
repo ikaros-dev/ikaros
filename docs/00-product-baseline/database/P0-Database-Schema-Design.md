@@ -149,22 +149,20 @@ P0 高频过滤字段和不变量不得隐藏在 JSONB 中。
 | `type` | text | NO | 稳定 Resource Type；插件类型必须 namespaced |
 | `primary_title` | text | YES | 展示缓存，不替代 title 表 |
 | `summary` | text | YES | 通用摘要 |
-| `lifecycle_status` | text | NO | `ACTIVE / ARCHIVED / TRASHED / PURGED` |
+| `status` | integer | NO | `0 DELETED / 1 ACTIVE / 2 TRASHED / 3 ARCHIVED / 4 FROZEN / 5 UNFREEZING` |
 | `data_classification` | text | NO | `PUBLIC / SHARED / PRIVATE / SENSITIVE / SECURE` |
 | `version` | bigint | NO | optimistic concurrency |
 | `created_at` | timestamptz | NO | 创建时间 |
 | `updated_at` | timestamptz | NO | 最近修改 |
-| `deleted_at` | timestamptz | YES | 进入删除流程的时间 |
 
 ### 3.3 Constraints
 
 ```text
 PK resource_pk(id)
 CHECK resource_type_not_blank
-CHECK resource_lifecycle_ck
+CHECK resource_status_ck
 CHECK resource_classification_ck
 CHECK version >= 0
-CHECK lifecycle_status != 'PURGED' OR deleted_at IS NOT NULL
 ```
 
 `type` 一旦产生具有专业领域数据的下游引用，不允许普通 UPDATE 任意改写；类型转换必须走显式 Command。
@@ -172,11 +170,37 @@ CHECK lifecycle_status != 'PURGED' OR deleted_at IS NOT NULL
 ### 3.4 Indexes
 
 ```text
-resource_type_lifecycle_idx(type, lifecycle_status, updated_at desc, id)
-resource_lifecycle_updated_idx(lifecycle_status, updated_at desc, id)
+resource_type_status_idx(type, status, updated_at desc, id)
+resource_status_updated_idx(status, updated_at desc, id)
 ```
 
 Cursor 分页必须使用稳定 `(sort_value, id)` 组合。
+
+## 3.5 `resource.user_resource`
+
+Resource 与用户的所有权/访问关系。每个 Resource 必须有且仅有一个 Owner；Editor 和 Viewer 可有多个。创建 Resource 与创建其 Owner 关系必须在同一事务完成。
+
+| Column | Type | Null | Contract |
+|---|---|---:|---|
+| `id` | uuid | NO | UUIDv7 |
+| `user_id` | uuid | NO | 用户 |
+| `resource_id` | uuid | NO | Resource |
+| `role` | text | NO | `OWNER / EDITOR / VIEWER` |
+| `created_at` | timestamptz | NO | 建立关系时间 |
+| `updated_at` | timestamptz | NO | 最近变更 |
+| `version` | bigint | NO | 乐观并发版本 |
+
+```text
+PRIMARY KEY(id)
+UNIQUE(user_id, resource_id)
+FK user_id -> platform_user(id) ON DELETE RESTRICT
+FK resource_id -> resource.resource(id) ON DELETE CASCADE
+CHECK role IN ('OWNER','EDITOR','VIEWER')
+UNIQUE(resource_id) WHERE role = 'OWNER'
+CHECK version >= 0
+```
+
+部分唯一约束限制最多一个 Owner；至少一个 Owner 由资源创建、Owner 转移与移除成员的 Application Transaction 保证。Owner 可以读写并管理成员，Editor 可以读写，Viewer 只读。Platform RBAC 不替代该对象级关系。
 
 ---
 
@@ -429,6 +453,7 @@ Blob 是不可变字节身份。
 | `integrity_status` | text | NO |
 | `lifecycle_status` | text | NO |
 | `created_at` | timestamptz | NO |
+| `updated_at` | timestamptz | NO |
 | `last_verified_at` | timestamptz | YES |
 
 核心约束：
@@ -446,38 +471,77 @@ CHECK lifecycle_status in ('ACTIVE','GC_CANDIDATE','PURGED')
 
 ## 12. `storage.attachment`
 
-> 基数变更：以下 `blob_id` 列是旧 P0 Schema 的迁移兼容描述，其单 Blob 语义已被 [ADR-009](../adr/ADR-009-attachment-blob-many-to-many.md) 替代。目标 Schema 使用 Storage 拥有的 `attachment_blob` 多对多绑定与独立的 `blob_metadata` 表。默认读取原件、显式选择转码及仅保存技术元数据的规则已确定；绑定角色、表示选择参数、元数据版本与 API 契约冻结后，必须先补齐本节的完整约束再追加生产 Migration；不得把旧字段作为完整内容集合。
+Attachment 是独立的逻辑文件，可以没有 Resource 关联，也可以关联多个 Resource。名称和状态属于 Attachment；字节引用通过独立绑定表表达。
 
 | Column | Type | Null |
 |---|---|---:|
 | `id` | uuid | NO |
-| `blob_id` | uuid | NO |
-| `filename` | text | YES |
-| `media_type` | text | YES |
-| `usage_kind` | text | YES |
-| `source_kind` | text | NO |
-| `source_reference` | jsonb | YES |
-| `data_classification` | text | NO |
-| `lifecycle_status` | text | NO |
+| `name` | varchar(512) | NO | 用户可见附件名 |
+| `attachment_kind` | text | NO | Attachment 业务用途类型 |
+| `status` | integer | NO | `0 DELETED / 1 ACTIVE / 2 TRASHED / 3 ARCHIVED / 4 FROZEN / 5 UNFREEZING` |
+| `created_by` | uuid | NO | 创建请求主体 |
+| `idempotency_key` | varchar(128) | YES | 创建请求幂等键 |
+| `request_fingerprint` | char(64) | YES | 幂等键对应的规范请求 SHA-256 |
 | `version` | bigint | NO |
 | `created_at` | timestamptz | NO |
 | `updated_at` | timestamptz | NO |
-| `deleted_at` | timestamptz | YES |
 
 ```text
-FK(blob_id) -> storage.blob(id) ON DELETE RESTRICT
-CHECK lifecycle_status in ('ACTIVE','ARCHIVED','TRASHED','PURGED')
+CHECK status BETWEEN 0 AND 5
+UNIQUE(created_by, idempotency_key) WHERE idempotency_key IS NOT NULL
+CHECK version >= 0
 ```
 
-目标规则：Attachment 是逻辑文件，可绑定原件与多个转码 Blob；多个 Attachment 可通过去重共享 Blob。转码不创建新逻辑附件，且不得修改既有 Blob 字节。文件替换语义另行冻结，不由转码规则推导。
+同一用户用新幂等键创建相同内容时允许产生独立 Attachment。相同创建请求重试必须复用原 Attachment；相同键对应不同规范请求必须返回幂等冲突。`created_by` 与幂等键使该约束不依赖 Attachment 当前关联哪个 Resource。
 
-已物化 Attachment 必须有唯一有效原件绑定，未明确选择表示的读取固定使用原件；不得增加可切换默认 Blob，也不得在原件不可用时静默回退到转码。目标绑定表须以约束保证原件唯一，并由物化事务保证原件存在；完整字段与约束仍需在 Migration 前冻结。
+Attachment 状态码：`0` 已删除终态、`1` 正常、`2` 回收站、`3` 已归档、`4` 已冻结、`5` 解冻中。状态转换更新时间写入 `updated_at`；不保存独立的 `deleted_at` 或 `archived_at`。
 
-`storage.blob_metadata` 仅保存 Blob 字节可提取的文件技术信息（容器、时长、码率、编码、分辨率、音轨等），通过 Blob 引用关联而非按 Attachment 重复保存。标题、歌手、备注等资源业务元数据保存到 Resource Owner 的 `resource_metadata`，跨模块通过公开 API 管理；技术记录及更新不得修改 Blob 内容身份。建表契约见 §12.1；提取版本、字段类型与公开读写契约须在应用实现前冻结。
+### 12.1 `storage.resource_attachment`
 
-### 12.1 `storage.blob_metadata`（已冻结建表契约）
+| Column | Type | Null |
+|---|---|---:|
+| `resource_id` | uuid | NO |
+| `attachment_id` | uuid | NO |
+| `created_at` | timestamptz | NO |
+| `version` | bigint | NO |
 
-Owner 为 Storage。本阶段只新增表与约束，不提供未登记的 Command、Query 或 HTTP 接口，也不改变 Attachment 与 Blob 的现有运行时绑定。
+```text
+PRIMARY KEY(resource_id, attachment_id)
+FK resource_id -> resource.resource(id) ON DELETE RESTRICT
+FK attachment_id -> storage.attachment(id) ON DELETE CASCADE
+CHECK version >= 0
+```
+
+索引 `(attachment_id, resource_id)` 支持反向查询。删除某个 Resource 关联只删除关系行，不自动删除 Attachment；Attachment 独立状态进入 `DELETED` 后才释放其 Blob 绑定供 GC 检查。
+
+### 12.2 `storage.attachment_blob`
+
+| Column | Type | Null |
+|---|---|---:|
+| `id` | uuid | NO |
+| `attachment_id` | uuid | NO |
+| `blob_id` | uuid | NO |
+| `role` | text | NO | `ORIGINAL / DERIVED` |
+| `created_at` | timestamptz | NO |
+| `version` | bigint | NO |
+
+```text
+PK(id)
+UNIQUE(attachment_id, blob_id)
+UNIQUE(attachment_id) WHERE role = 'ORIGINAL'
+FK attachment_id -> storage.attachment(id) ON DELETE CASCADE
+FK blob_id -> storage.blob(id) ON DELETE RESTRICT
+CHECK role IN ('ORIGINAL','DERIVED')
+CHECK version >= 0
+```
+
+每个已物化 Attachment 必须恰有一个 `ORIGINAL` 绑定，由 Attachment 与原件绑定的创建事务保证至少一个；部分唯一约束保证至多一个。一个 Attachment 可有多个 `DERIVED` 绑定，多个 Attachment 可因 Blob 字节去重引用同一个 Blob。默认读取原件；选择派生表示只影响单次请求，不改变默认值；原件不可用时不得静默回退。
+
+`storage.blob_metadata` 仅保存 Blob 字节可提取的文件技术信息（容器、时长、码率、编码、分辨率、音轨等），通过 Blob 引用关联而非按 Attachment 重复保存。标题、歌手、备注等资源业务元数据保存到 Resource Owner 的 `resource_metadata`，跨模块通过公开 API 管理；技术记录及更新不得修改 Blob 内容身份。建表契约见 §12.3；提取版本、字段类型与公开读写契约须在应用实现前冻结。
+
+### 12.3 `storage.blob_metadata`（已冻结建表契约）
+
+Owner 为 Storage。本表只保存 Blob 字节可提取的技术字段，不作为通用业务 JSON 写入入口。Attachment 与 Blob 绑定由 §12.1 和 §12.2 定义。
 
 | Column | Type | Null | Default / Meaning |
 |---|---|---:|---|

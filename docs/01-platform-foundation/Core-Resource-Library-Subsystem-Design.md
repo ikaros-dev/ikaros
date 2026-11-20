@@ -42,6 +42,7 @@
 ### 2.1 本子系统负责
 
 - Resource 的统一内部身份与基本生命周期；
+- Resource 与用户之间的所有权及对象级访问关系；
 - Resource Type 与类型扩展标识；
 - 多标题、别名与语言信息；
 - 通用元数据及其来源追踪；
@@ -97,7 +98,7 @@ Resource 是一个逻辑内容的统一身份。
 - `type`：稳定的 Resource Type；
 - `primary_title`：默认展示标题的解析结果或引用；
 - `summary`：通用摘要；
-- `lifecycle_status`：生命周期状态；
+- `status`：数值生命周期状态；
 - `created_at` / `updated_at`；
 - 必要的版本或并发控制字段。
 
@@ -385,34 +386,24 @@ History 表达用户对 Resource 的消费事实；Activity 是更广泛的平�
 
 ---
 
-## 9. Resource Lifecycle
+## 9. Resource Ownership, Access and Lifecycle
 
-统一状态至少包含：
+Resource 可关联多个用户。每个 Resource 恰有一个 `OWNER`，并可有任意数量的 `EDITOR` 和 `VIEWER`。Owner 可以读写并管理成员；Editor 可以读写；Viewer 只读。创建 Resource 与 Owner 关联必须在同一事务中完成；Owner 转移必须原子地撤销旧 Owner 角色并授予新 Owner 角色，不能出现零个或多个 Owner 的可提交状态。
 
-- `ACTIVE`
-- `ARCHIVED`
-- `TRASHED`
-- `DELETED`（逻辑上完成永久删除后的终态语义；实现可采用审计 tombstone）
+Resource 状态使用固定整数：
 
-典型转换：
+| Code | Status | Meaning |
+|---:|---|---|
+| 0 | `DELETED` | 永久删除后的保留墓碑 |
+| 1 | `ACTIVE` | 正常可用 |
+| 2 | `TRASHED` | 回收站 |
+| 3 | `ARCHIVED` | 已归档 |
+| 4 | `FROZEN` | 已冻结 |
+| 5 | `UNFREEZING` | 正在解冻 |
 
-```text
-ACTIVE <-> ARCHIVED
-  |
-  v
-TRASHED -> ACTIVE
-  |
-  v
-permanent delete
-```
+典型转换：`ACTIVE <-> ARCHIVED`、`ACTIVE -> TRASHED -> ACTIVE`、`ACTIVE/ARCHIVED -> FROZEN -> UNFREEZING -> ACTIVE/ARCHIVED`、`TRASHED -> DELETED`。冻结/解冻转换遵循 Archive Base Restore Policy；其过程和失败由异步任务表达。
 
-规则：
-
-1. 进入回收站不删除 Attachment / Blob。
-2. 永久删除 Resource 时，先撤销其业务引用，再由 Attachment / Blob 子系统依据引用计数、保留策略、备份和 Revision 状态决定是否可 GC。
-3. 归档 Resource 默认仍可被管理员和有权限用户检索，但客户端可在普通列表中隐藏。
-4. Share、Automation、Room 等引用已进入回收站的 Resource 时应获得明确的不可用状态，而不是返回模糊 404。
-5. 永久删除应记录必要 Audit 信息，但 Audit 不应保存已删除的敏感内容明文。
+进入回收站或归档不删除 Attachment / Blob。永久删除 Resource 时先撤销对应的 `resource_attachment` 关系，再由 Storage 根据剩余绑定、保留策略、备份和 Revision 状态判断是否可 GC。已删除 Resource 的 `status` 保留为 `0`；不再使用 `deleted_at` 表达状态时间，状态更新时间记录在 `updated_at`。Share、Automation、Room 等引用非 ACTIVE Resource 时必须返回明确不可用状态。永久删除应记录必要 Audit 信息，Audit 不得保存敏感内容明文。
 
 ---
 

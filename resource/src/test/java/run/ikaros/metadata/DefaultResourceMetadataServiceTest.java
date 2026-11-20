@@ -29,9 +29,9 @@ class DefaultResourceMetadataServiceTest {
     @BeforeEach void setUp(){resourceRepository=mock(ResourceRepository.class);metadataRepository=mock(ResourceMetadataRepository.class);auditService=mock(AuditService.class);TransactionalOperator tx=mock(TransactionalOperator.class);when(tx.transactional(any(Mono.class))).thenAnswer(i->i.getArgument(0));service=new DefaultResourceMetadataService(resourceRepository,metadataRepository,auditService,tx);}
     @Test void preservesManualLockAndAllowsExplicitRestore() {
         UUID owner=UUID.randomUUID(), resource=UUID.randomUUID(); Instant now=Instant.now();
-        ResourceEntity entity=new ResourceEntity(resource,owner,ResourceType.DOCUMENT,ResourceLifecycle.ACTIVE,now,now,null,0L);
+        ResourceEntity entity=new ResourceEntity(resource, ResourceType.DOCUMENT, null, null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), now, now, 0L);
         ResourceMetadataEntity manual=new ResourceMetadataEntity(UUID.randomUUID(),resource,"title","人工标题",MetadataSource.USER,null,true,now,0L);
-        when(resourceRepository.findByIdAndOwnerId(resource,owner)).thenReturn(Mono.just(entity));
+        when(resourceRepository.findByIdAndWriterUserId(resource,owner)).thenReturn(Mono.just(entity));
         when(metadataRepository.findByResourceIdAndFieldKey(resource,"title")).thenReturn(Mono.just(manual));
         when(metadataRepository.save(any())).thenAnswer(i->Mono.just(i.getArgument(0)));
         when(auditService.record(eq(owner),any(),eq("RESOURCE"),eq(resource),eq("{}"))).thenReturn(Mono.empty());
@@ -43,8 +43,8 @@ class DefaultResourceMetadataServiceTest {
 
     @Test void persistsManualValueAsUserLockedMetadata() {
         UUID owner=UUID.randomUUID(), resource=UUID.randomUUID(); Instant now=Instant.now();
-        ResourceEntity entity=new ResourceEntity(resource,owner,ResourceType.DOCUMENT,ResourceLifecycle.ACTIVE,now,now,null,0L);
-        when(resourceRepository.findByIdAndOwnerId(resource,owner)).thenReturn(Mono.just(entity));
+        ResourceEntity entity=new ResourceEntity(resource, ResourceType.DOCUMENT, null, null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), now, now, 0L);
+        when(resourceRepository.findByIdAndWriterUserId(resource,owner)).thenReturn(Mono.just(entity));
         when(metadataRepository.findByResourceIdAndFieldKey(resource,"title")).thenReturn(Mono.empty());
         when(metadataRepository.save(any())).thenAnswer(i->Mono.just(i.getArgument(0)));
         when(auditService.record(eq(owner),eq("resource.metadata.manual.set"),eq("RESOURCE"),eq(resource),eq("{}")))
@@ -56,7 +56,7 @@ class DefaultResourceMetadataServiceTest {
     }
     @Test void listsOwnedMetadataFields() {
         UUID owner=UUID.randomUUID(), resource=UUID.randomUUID(); Instant now=Instant.now();
-        when(resourceRepository.findByIdAndOwnerId(resource,owner)).thenReturn(Mono.just(new ResourceEntity(resource,owner,ResourceType.DOCUMENT,ResourceLifecycle.ACTIVE,now,now,null,0L)));
+        when(resourceRepository.findByIdAndWriterUserId(resource,owner)).thenReturn(Mono.just(new ResourceEntity(resource, ResourceType.DOCUMENT, null, null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), now, now, 0L)));
         when(metadataRepository.findAllByResourceIdOrderByFieldKeyAsc(resource)).thenReturn(Flux.just(new ResourceMetadataEntity(UUID.randomUUID(),resource,"title","标题",MetadataSource.PROVIDER,"tmdb",false,now,0L)));
         StepVerifier.create(service.list(owner,resource)).assertNext(view->assertThat(view.source()).isEqualTo(MetadataSource.PROVIDER)).verifyComplete();
     }

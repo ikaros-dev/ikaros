@@ -42,8 +42,8 @@ class DefaultFavoriteServiceTest {
         UUID ownerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();
         Instant now = Instant.now();
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(
-            new ResourceEntity(resourceId, ownerId, ResourceType.BOOK, ResourceLifecycle.ACTIVE, now, now, null, 0L)));
+        when(resourceRepository.findByIdAndUserId(resourceId, ownerId)).thenReturn(Mono.just(
+            new ResourceEntity(resourceId, ResourceType.BOOK, null, null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), now, now, 0L)));
         when(favoriteRepository.findByOwnerIdAndResourceId(ownerId, resourceId)).thenReturn(Mono.empty());
         when(favoriteRepository.save(org.mockito.ArgumentMatchers.any(FavoriteEntity.class))).thenReturn(Mono.just(
             new FavoriteEntity(UUID.randomUUID(), ownerId, resourceId, now, 0L)));
@@ -62,8 +62,8 @@ class DefaultFavoriteServiceTest {
         UUID ownerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();
         Instant now = Instant.now();
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(
-            new ResourceEntity(resourceId, ownerId, ResourceType.BOOK, ResourceLifecycle.ACTIVE, now, now, null, 0L)));
+        when(resourceRepository.findByIdAndUserId(resourceId, ownerId)).thenReturn(Mono.just(
+            new ResourceEntity(resourceId, ResourceType.BOOK, null, null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), now, now, 0L)));
         when(favoriteRepository.findByOwnerIdAndResourceId(ownerId, resourceId)).thenReturn(Mono.just(
             new FavoriteEntity(UUID.randomUUID(), ownerId, resourceId, now, 0L)));
 
@@ -77,8 +77,8 @@ class DefaultFavoriteServiceTest {
         UUID ownerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();
         Instant now = Instant.now();
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(
-            new ResourceEntity(resourceId, ownerId, ResourceType.BOOK, ResourceLifecycle.ACTIVE, now, now, null, 0L)));
+        when(resourceRepository.findByIdAndUserId(resourceId, ownerId)).thenReturn(Mono.just(
+            new ResourceEntity(resourceId, ResourceType.BOOK, null, null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), now, now, 0L)));
         when(favoriteRepository.findByOwnerIdAndResourceId(ownerId, resourceId)).thenReturn(Mono.empty());
 
         StepVerifier.create(service.get(ownerId, resourceId))
@@ -89,7 +89,7 @@ class DefaultFavoriteServiceTest {
     @Test
     void rejectsUnknownResourceBeforeReadingFavoriteState() {
         UUID ownerId = UUID.randomUUID(); UUID resourceId = UUID.randomUUID();
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.empty());
+        when(resourceRepository.findByIdAndUserId(resourceId, ownerId)).thenReturn(Mono.empty());
 
         StepVerifier.create(service.get(ownerId, resourceId))
             .expectErrorMessage("资源不存在或无权访问").verify();

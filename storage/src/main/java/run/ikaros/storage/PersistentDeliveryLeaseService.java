@@ -124,9 +124,11 @@ public class PersistentDeliveryLeaseService implements DeliveryLeaseService {
         return leases.existsByBlobIdAndReleasedAtIsNullAndLeaseExpiresAtAfter(blobId, Instant.now());
     }
 
-    private Mono<AttachmentEntity> ownedAttachment(UUID actorId, UUID id) {
-        return attachments.findById(id).filter(a -> a.deletedAt() == null)
-            .flatMap(a -> resources.requireOwned(actorId, a.resourceId()).thenReturn(a))
+    private Mono<AttachmentReference> ownedAttachment(UUID actorId, UUID id) {
+        return attachments.findReadableReferenceById(id).filter(a -> a.status() == 1)
+            .flatMap(a -> a.resourceId() == null
+                ? a.createdBy().equals(actorId) ? Mono.just(a) : Mono.empty()
+                : resources.requireReadable(actorId, a.resourceId()).thenReturn(a))
             .switchIfEmpty(Mono.error(new NotFoundException("Attachment 不存在或无权访问")));
     }
 

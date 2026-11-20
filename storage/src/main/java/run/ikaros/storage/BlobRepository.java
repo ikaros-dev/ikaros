@@ -27,7 +27,9 @@ public interface BlobRepository extends ReactiveCrudRepository<BlobEntity, UUID>
     @Query("""
         select b.* from blob b
         where not exists (
-            select 1 from attachment a where a.blob_id = b.id and a.deleted_at is null
+            select 1 from attachment_blob ab
+            join attachment a on a.id = ab.attachment_id
+            where ab.blob_id = b.id and a.status <> 0
         )
         order by b.created_at asc
         """)

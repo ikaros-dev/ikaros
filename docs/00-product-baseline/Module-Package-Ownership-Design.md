@@ -148,7 +148,7 @@ run.ikaros.search                              -> search
 run.ikaros.sharing                             -> sharing
 ```
 
-`storage-api` 只暴露 Storage 的稳定业务契约：Attachment/Blob 的登记与查询、上传提交、归档/删除、Placement 管理、Delivery 能力、`AttachmentReferenceQuery` 和 `AttachmentAvailabilityQuery`。普通 `AttachmentView` 只返回 Resource 归属、文件元数据和业务可用状态，不返回 `blob_id`、Provider、`object_key` 或 Placement 明细；大对象流读取保留在实现侧的 HTTP 能力中。后台任务提交返回 `operations-api` 的 `TaskReference`，不暴露 Background Task 实体、Payload、Lease 或 Attempt。
+`storage-api` 只暴露 Storage 的稳定业务契约：Attachment/Blob 的登记与查询、上传提交、归档/删除、Placement 管理、Delivery 能力、`AttachmentReferenceQuery` 和 `AttachmentAvailabilityQuery`。普通 `AttachmentView` 只返回可选 Resource 关联、Attachment 名称、文件元数据和业务可用状态，不返回 `blob_id`、Provider、`object_key` 或 Placement 明细；大对象流读取保留在实现侧的 HTTP 能力中。后台任务提交返回 `operations-api` 的 `TaskReference`，不暴露 Background Task 实体、Payload、Lease 或 Attempt。
 
 `AttachmentReferenceQuery` 是带 `actorId` 的对象级授权能力，负责校验附件可读性及其与 Resource 的活动归属；`AttachmentAvailabilityQuery` 只返回稳定的五态业务结果。Blob、Placement、Provider、Restore Repository 和内部实体均属于 Storage 实现边界。
 

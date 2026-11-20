@@ -4,6 +4,7 @@ import run.ikaros.storage.api.*;
 
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import run.ikaros.common.ConflictException;
@@ -14,6 +15,7 @@ import run.ikaros.common.NotFoundException;
 public class BlobGarbageCollector {
     private final BlobRepository blobs;
     private final AttachmentRepository attachments;
+    private final AttachmentBlobRepository attachmentBlobs;
     private final BlobPlacementRepository placements;
     private final TransactionalOperator transaction;
     private final BlobRetentionHoldRepository holds;
@@ -24,14 +26,23 @@ public class BlobGarbageCollector {
     public BlobGarbageCollector(BlobRepository blobs, AttachmentRepository attachments,
                                 BlobPlacementRepository placements, TransactionalOperator transaction, BlobRetentionHoldRepository holds,
                                 DeliveryLeaseService leases, StorageProviderRegistry providers, StorageContentDeleter deleter) {
+        this(blobs, attachments, null, placements, transaction, holds, leases, providers, deleter);
+    }
+
+    @Autowired
+    public BlobGarbageCollector(BlobRepository blobs, AttachmentRepository attachments,
+                                AttachmentBlobRepository attachmentBlobs, BlobPlacementRepository placements,
+                                TransactionalOperator transaction, BlobRetentionHoldRepository holds,
+                                DeliveryLeaseService leases, StorageProviderRegistry providers, StorageContentDeleter deleter) {
         this.blobs = blobs; this.attachments = attachments; this.placements = placements; this.transaction = transaction; this.holds = holds;
+        this.attachmentBlobs = attachmentBlobs;
         this.leases = leases; this.providers = providers; this.deleter = deleter;
     }
 
     public Mono<Integer> purge(UUID blobId) {
         Mono<Integer> purge = blobs.findById(blobId)
             .switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在")))
-            .flatMap(blob -> attachments.countByBlobIdAndArchivedAtIsNullAndDeletedAtIsNull(blob.id())
+            .flatMap(blob -> attachments.countLiveReferencesByBlobId(blob.id())
                 .filter(count -> count == 0)
                 .switchIfEmpty(Mono.error(new ConflictException("Blob 仍存在有效 Attachment 引用")))
                 .then(holds.existsActiveByBlobId(blob.id(), java.time.Instant.now()))
@@ -54,7 +65,17 @@ public class BlobGarbageCollector {
                     ? deleter.delete(provider, placement, blob)
                     : Mono.error(new StorageUnavailableException("Provider 不支持物理删除"))))
             .then(placements.deleteByBlobId(blob.id()))
+            .then(releaseDeletedBindings(blob.id()))
             .then(blobs.deleteById(blob.id()))
             .thenReturn(all.size());
+    }
+
+    private Mono<Void> releaseDeletedBindings(UUID blobId) {
+        if (attachmentBlobs == null) return Mono.empty();
+        return attachmentBlobs.findAllByBlobId(blobId)
+            .concatMap(binding -> attachments.findById(binding.attachmentId())
+                .filter(attachment -> attachment.status() == 0)
+                .flatMap(ignored -> attachmentBlobs.deleteByAttachmentIdAndBlobId(binding.attachmentId(), blobId)))
+            .then();
     }
 }

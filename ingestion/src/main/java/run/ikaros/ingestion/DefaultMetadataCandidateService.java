@@ -24,6 +24,6 @@ import run.ikaros.resource.api.AutomaticMetadataRequest; import run.ikaros.resou
  private Mono<MetadataCandidateView> saveResolution(MetadataCandidateEntity candidate, MetadataCandidateStatus status) {
   return candidates.save(new MetadataCandidateEntity(candidate.id(), candidate.resourceId(), candidate.fieldKey(), candidate.fieldValue(), candidate.source(), candidate.sourceReference(), candidate.confidence(), status.name(), candidate.createdAt(), Instant.now(), candidate.version())).map(this::view);
  }
- private Mono<Void> owned(UUID owner,UUID resource){return resources.requireOwned(owner,resource);}
+ private Mono<Void> owned(UUID owner,UUID resource){return resources.requireWritable(owner,resource);}
  private MetadataCandidateView view(MetadataCandidateEntity c){return new MetadataCandidateView(c.id(),c.resourceId(),c.fieldKey(),c.fieldValue(),MetadataSource.valueOf(c.source()),c.sourceReference(),c.confidence(),MetadataCandidateStatus.valueOf(c.status()),c.createdAt(),c.resolvedAt());}
 }

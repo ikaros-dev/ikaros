@@ -78,15 +78,15 @@ class BlobVerificationServiceTest {
         byte[] bytes = expectedContent.getBytes(java.nio.charset.StandardCharsets.UTF_8);
         BlobEntity blob = new BlobEntity(blobId, sha256(bytes), bytes.length,
             "text/plain", BlobAvailability.REMOTE, now, 0L);
-        AttachmentEntity attachment = new AttachmentEntity(UUID.randomUUID(), resourceId, blobId, "data.txt",
-            AttachmentKind.ORIGINAL, now, null, 0L);
+        AttachmentReference attachment = new AttachmentReference(UUID.randomUUID(), resourceId, blobId, "data.txt",
+            AttachmentKind.ORIGINAL, 1, actorId, null, null, now, now, 0L);
         BlobPlacementEntity placement = new BlobPlacementEntity(placementId, blobId, "archive", StorageTier.ARCHIVE,
             "objects/data.txt", PlacementState.ACTIVE, now, now, 0L);
         StorageProvider provider = new StorageProvider(UUID.randomUUID(), "archive", "LOCAL_FILESYSTEM", StorageTier.ARCHIVE,
             StorageProviderStatus.ENABLED, null, java.util.Map.of(), now, now);
         when(blobs.findById(blobId)).thenReturn(Mono.just(blob));
-        when(attachments.findFirstByBlobIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(blobId)).thenReturn(Mono.just(attachment));
-        when(resources.requireOwned(actorId, resourceId)).thenReturn(Mono.empty());
+        when(attachments.findFirstLiveReferenceByBlobId(blobId)).thenReturn(Mono.just(attachment));
+        when(resources.requireReadable(actorId, resourceId)).thenReturn(Mono.empty());
         when(placements.findAllByBlobIdOrderByCreatedAtAsc(blobId)).thenReturn(Flux.just(placement));
         when(providers.getByKey("archive")).thenReturn(Mono.just(provider));
         return new Fixture(actorId, blob, placement, provider);

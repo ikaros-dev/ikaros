@@ -45,7 +45,7 @@ public class PersistentComicImportParseService implements ComicImportParseServic
                 return imports.save(parsing)
                     .thenMany(storage.get(ownerId, importRecord.sourceAttachmentId()).flux())
                     .flatMap(attachment -> {
-                        String name = attachment.fileName() == null ? "" : attachment.fileName().toLowerCase(Locale.ROOT);
+                        String name = attachment.name() == null ? "" : attachment.name().toLowerCase(Locale.ROOT);
                         if (name.endsWith(".cbr")) return Mono.error(new ConflictException("CBR 解析器尚未配置，请使用 CBZ 或 ZIP"));
                         if (!(name.endsWith(".cbz") || name.endsWith(".zip")))
                             return Mono.error(new ConflictException("源附件不是支持的漫画包"));

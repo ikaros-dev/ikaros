@@ -54,8 +54,8 @@ public class StorageRestoreTaskHandler {
                 ? Mono.just(Map.<String, Object>of("restore_request_id", requestId.toString(), "cancelled", true))
                 : updateStatus(request, StorageRestoreRequestStatus.IN_PROGRESS).then(
                     request.scope() == StorageRestoreScope.ATTACHMENT
-                        ? attachments.findById(uuid(task.payload(), "attachment_id"))
-                            .filter(attachment -> attachment.deletedAt() == null)
+                        ? attachments.findReadableReferenceById(uuid(task.payload(), "attachment_id"))
+                            .filter(attachment -> attachment.status() == 1)
                             .switchIfEmpty(Mono.error(new NotFoundException("附件不存在")))
                             .flatMap(attachment -> restoreAttachment(request, attachment, requestId, task.id(), restoreClass, true,
                                 retryFailedOnly))
@@ -80,8 +80,8 @@ public class StorageRestoreTaskHandler {
             return failInvalidSelection(request, "Restore Request 的 Attachment ID 集合超过限制");
         }
         return reactor.core.publisher.Flux.fromIterable(attachmentIds)
-            .concatMap(id -> attachments.findById(id)
-                .filter(attachment -> attachment.deletedAt() == null)
+            .concatMap(id -> attachments.findReadableReferenceById(id)
+                .filter(attachment -> attachment.status() == 1)
                 .switchIfEmpty(Mono.error(new NotFoundException("已选择的 Attachment 不存在")))
                 .flatMap(attachment -> restoreAttachment(request, attachment, requestId, taskId, restoreClass, false,
                     retryFailedOnly)))
@@ -103,17 +103,17 @@ public class StorageRestoreTaskHandler {
     }
 
     private Mono<Map<String, Object>> restoreAttachment(StorageRestoreRequestEntity request,
-        AttachmentEntity attachment, UUID requestId, UUID taskId, String restoreClass) {
+        AttachmentReference attachment, UUID requestId, UUID taskId, String restoreClass) {
         return restoreAttachment(request, attachment, requestId, taskId, restoreClass, true, false);
     }
 
     private Mono<Map<String, Object>> restoreAttachment(StorageRestoreRequestEntity request,
-        AttachmentEntity attachment, UUID requestId, UUID taskId, String restoreClass, boolean completeRequest) {
+        AttachmentReference attachment, UUID requestId, UUID taskId, String restoreClass, boolean completeRequest) {
         return restoreAttachment(request, attachment, requestId, taskId, restoreClass, completeRequest, false);
     }
 
     private Mono<Map<String, Object>> restoreAttachment(StorageRestoreRequestEntity request,
-        AttachmentEntity attachment, UUID requestId, UUID taskId, String restoreClass, boolean completeRequest,
+        AttachmentReference attachment, UUID requestId, UUID taskId, String restoreClass, boolean completeRequest,
         boolean retryFailedOnly) {
         return blobs.findById(attachment.blobId())
             .switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在")))
@@ -185,7 +185,7 @@ public class StorageRestoreTaskHandler {
             placement.gcProtected(), placement.retentionUntil(), placement.minimumRetentionUntil(), now,
             placement.sourcePlacementId(), now, placement.createdAt(), placement.version());
         BlobEntity availableBlob = new BlobEntity(blob.id(), blob.hashAlgorithm(), blob.sha256(), blob.sizeBytes(),
-            blob.mediaType(), BlobAvailability.AVAILABLE, blob.createdAt(), blob.version());
+            blob.mediaType(), BlobAvailability.AVAILABLE, blob.createdAt(), now, blob.version());
         return placements.save(updatedPlacement).then(blobs.save(availableBlob)).then();
     }
 

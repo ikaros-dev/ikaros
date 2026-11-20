@@ -22,25 +22,26 @@ final class DefaultAttachmentReferenceQuery implements AttachmentReferenceQuery 
 
     @Override
     public Mono<AttachmentReference> requireReadable(UUID actorId, UUID attachmentId) {
-        return attachments.findById(attachmentId)
-            .filter(attachment -> attachment.archivedAt() == null && attachment.deletedAt() == null)
+        return attachments.findReadableReferenceById(attachmentId)
             .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或不可用")))
-            .flatMap(attachment -> resources.requireOwned(actorId, attachment.resourceId())
-                .thenReturn(new AttachmentReference(attachment.id(), attachment.resourceId())));
+            .flatMap(attachment -> attachment.resourceId() == null
+                ? Mono.just(new AttachmentReference(attachment.id(), null))
+                : resources.requireReadable(actorId, attachment.resourceId())
+                    .thenReturn(new AttachmentReference(attachment.id(), attachment.resourceId())));
     }
 
     @Override
     public Mono<AttachmentReference> requireActiveForResource(UUID actorId, UUID resourceId, UUID attachmentId) {
-        return resources.requireOwned(actorId, resourceId)
-            .then(attachments.findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(attachmentId, resourceId))
+        return resources.requireReadable(actorId, resourceId)
+            .then(attachments.findActiveReferenceByIdAndResourceId(attachmentId, resourceId))
             .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或不属于指定 Resource")))
             .map(attachment -> new AttachmentReference(attachment.id(), attachment.resourceId()));
     }
 
     @Override
     public Flux<AttachmentReference> listActiveForResource(UUID actorId, UUID resourceId) {
-        return resources.requireOwned(actorId, resourceId)
-            .thenMany(attachments.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtDesc(resourceId)
+        return resources.requireReadable(actorId, resourceId)
+            .thenMany(attachments.findActiveReferencesByResourceId(resourceId)
                 .map(attachment -> new AttachmentReference(attachment.id(), attachment.resourceId())));
     }
 }

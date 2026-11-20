@@ -47,7 +47,7 @@ public final class AdminAttachmentQueryService {
                     .flatMap(attachment -> blobs.findById(attachment.blobId())
                         .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
                         .map(blob -> new AdminAttachmentItem(attachment.id(), attachment.resourceId(),
-                            attachment.fileName(), attachment.attachmentKind(), blob.sha256(), blob.sizeBytes(),
+                            attachment.name(), attachment.attachmentKind(), blob.sha256(), blob.sizeBytes(),
                             blob.mediaType(), switch (blob.availability()) {
                                 case AVAILABLE -> AttachmentAvailabilityStatus.READY;
                                 case PROCESSING -> AttachmentAvailabilityStatus.PROCESSING;
@@ -67,7 +67,7 @@ public final class AdminAttachmentQueryService {
         return permissionSnapshotQuery.permissionsFor(actorId)
             .filter(snapshot -> snapshot.permissionKeys().contains(REQUIRED_PERMISSION))
             .switchIfEmpty(Mono.error(new ForbiddenException("缺少附件管理权限")))
-            .then(attachments.findByIdAndArchivedAtIsNullAndDeletedAtIsNull(attachmentId)
+            .then(attachments.findReadableReferenceById(attachmentId)
                 .switchIfEmpty(Mono.error(new NotFoundException("附件不存在")))
                 .flatMap(attachment -> blobs.findById(attachment.blobId())
                     .switchIfEmpty(Mono.error(new NotFoundException("附件不存在")))

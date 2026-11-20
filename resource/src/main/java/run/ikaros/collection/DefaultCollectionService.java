@@ -113,7 +113,7 @@ public class DefaultCollectionService implements CollectionService {
     @Override
     public Mono<Void> addResource(UUID ownerId, UUID collectionId, UUID resourceId, int position) {
         return transactionalOperator.transactional(ownedCollection(ownerId, collectionId)
-            .then(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)
+            .then(resourceRepository.findByIdAndUserId(resourceId, ownerId)
                 .switchIfEmpty(Mono.error(new NotFoundException("资源不存在或无权访问"))))
             .then(collectionResourceRepository.save(new CollectionResourceEntity(
                 null, collectionId, resourceId, position, Instant.now(), null
@@ -138,7 +138,7 @@ public class DefaultCollectionService implements CollectionService {
     @Override
     public Mono<Void> removeResource(UUID ownerId, UUID collectionId, UUID resourceId) {
         return transactionalOperator.transactional(ownedCollection(ownerId, collectionId)
-            .then(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)
+            .then(resourceRepository.findByIdAndUserId(resourceId, ownerId)
                 .switchIfEmpty(Mono.error(new NotFoundException("资源不存在或无权访问"))))
             .then(collectionResourceRepository.deleteByCollectionIdAndResourceId(collectionId, resourceId))
             .then(emitMembership("resource.collection.member-removed", collectionId, resourceId))

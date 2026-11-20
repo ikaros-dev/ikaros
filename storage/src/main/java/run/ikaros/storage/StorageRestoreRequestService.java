@@ -191,7 +191,7 @@ public class StorageRestoreRequestService implements StorageRestoreCapability {
             .map(this::view);
     }
 
-    private Mono<StorageRestoreRequestEntity> createAttachmentRequest(UUID actorId, AttachmentEntity attachment,
+    private Mono<StorageRestoreRequestEntity> createAttachmentRequest(UUID actorId, AttachmentReference attachment,
         RequestAttachmentRestore request, String idempotencyKey) {
         return blobs.findById(attachment.blobId())
             .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
@@ -338,10 +338,12 @@ public class StorageRestoreRequestService implements StorageRestoreCapability {
             }).map(this::view);
     }
 
-    private Mono<AttachmentEntity> authorizedAttachment(UUID actorId, UUID id) {
-        return attachments.findById(id).filter(a -> a.deletedAt() == null)
+    private Mono<AttachmentReference> authorizedAttachment(UUID actorId, UUID id) {
+        return attachments.findReadableReferenceById(id).filter(a -> a.status() == 1)
             .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或已删除")))
-            .flatMap(a -> resources.requireOwned(actorId, a.resourceId()).thenReturn(a));
+            .flatMap(a -> a.resourceId() == null
+                ? a.createdBy().equals(actorId) ? Mono.just(a) : Mono.error(new NotFoundException("附件不存在或已删除"))
+                : resources.requireReadable(actorId, a.resourceId()).thenReturn(a));
     }
 
     private StorageRestoreRequestView view(StorageRestoreRequestEntity r) {

@@ -68,7 +68,7 @@ public class StorageRestoreReconciliationService {
         BlobPlacementEntity active = new BlobPlacementEntity(c.placement.id(), c.placement.blobId(), c.placement.provider(),
             c.placement.storageTier(), c.placement.objectKey(), PlacementState.ACTIVE, now, c.placement.createdAt(), c.placement.version());
         BlobEntity blob = new BlobEntity(c.blob.id(), c.blob.hashAlgorithm(), c.blob.sha256(), c.blob.sizeBytes(),
-            c.blob.mediaType(), BlobAvailability.AVAILABLE, c.blob.createdAt(), c.blob.version());
+            c.blob.mediaType(), BlobAvailability.AVAILABLE, c.blob.createdAt(), now, c.blob.version());
         StorageRestoreOperationEntity operation = updated(c.operation, StorageRestoreOperationStatus.SUCCEEDED, null);
         return placements.save(active).then(blobs.save(blob)).then(operations.save(operation))
             .flatMap(saved -> events.append(new EventAppendRequest("storage.restore-operation.ready", 1, "storage", "restore_operation", saved.id(),
@@ -92,8 +92,10 @@ public class StorageRestoreReconciliationService {
     }
 
     private Mono<Void> ownerCanAccess(UUID actorId, UUID blobId) {
-        return attachments.findAllByBlobIdAndArchivedAtIsNullAndDeletedAtIsNull(blobId)
-            .flatMap(a -> resources.requireOwned(actorId, a.resourceId()).thenReturn(a))
+        return attachments.findLiveReferencesByBlobId(blobId)
+            .flatMap(a -> a.resourceId() == null
+                ? a.createdBy().equals(actorId) ? Mono.just(a) : Mono.empty()
+                : resources.requireReadable(actorId, a.resourceId()).thenReturn(a))
             .next()
             .switchIfEmpty(Mono.error(new ConflictException("Restore Operation 无权访问"))).then();
     }

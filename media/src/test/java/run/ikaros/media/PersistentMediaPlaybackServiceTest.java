@@ -112,7 +112,7 @@ class PersistentMediaPlaybackServiceTest {
 
     private static ResourceView resource(UUID id) {
         return new ResourceView(id, ResourceType.VIDEO, "视频", null, ResourceClassification.PRIVATE,
-            ResourceLifecycle.ACTIVE, List.of(), List.of(), Instant.now(), Instant.now(), 0L);
+            ResourceLifecycle.ACTIVE.statusCode(), List.of(), List.of(), Instant.now(), Instant.now(), 0L);
     }
 
     private static MediaReleaseEntity release(UUID owner, UUID resourceId, UUID id, MediaReleaseState state) {

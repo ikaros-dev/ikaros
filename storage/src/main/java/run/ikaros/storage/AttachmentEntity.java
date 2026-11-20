@@ -1,6 +1,6 @@
 package run.ikaros.storage;
 
-import run.ikaros.storage.api.*;
+import run.ikaros.storage.api.AttachmentKind;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -9,31 +9,54 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-/**
- * Resource 对 Blob 的业务引用，负责表达文件名和附件角色，不保存物理路径。
- */
+/** Logical Attachment identity. Resource and Blob references live in link entities. */
 @Table("attachment")
 public record AttachmentEntity(
     @Id UUID id,
-    @Column("resource_id") UUID resourceId,
-    @Column("blob_id") UUID blobId,
-    @Column("file_name") String fileName,
+    String name,
     @Column("attachment_kind") AttachmentKind attachmentKind,
-    @Column("created_at") Instant createdAt,
-    @Column("deleted_at") Instant deletedAt,
-    @Version Long version,
+    int status,
+    @Column("created_by") UUID createdBy,
     @Column("idempotency_key") String idempotencyKey,
-    @Column("archived_at") Instant archivedAt
+    @Column("request_fingerprint") String requestFingerprint,
+    @Column("created_at") Instant createdAt,
+    @Column("updated_at") Instant updatedAt,
+    @Version Long version
 ) {
-    public AttachmentEntity(UUID id, UUID resourceId, UUID blobId, String fileName,
-                            AttachmentKind attachmentKind, Instant createdAt, Instant deletedAt, Long version) {
-        this(id, resourceId, blobId, fileName, attachmentKind, createdAt, deletedAt, version, null, null);
+    /** Legacy constructor retained for source compatibility while callers migrate to link repositories. */
+    @Deprecated
+    public AttachmentEntity(UUID id, UUID resourceId, UUID blobId, String fileName, AttachmentKind attachmentKind,
+                            Instant createdAt, Instant deletedAt, Long version) {
+        this(id, fileName, attachmentKind, deletedAt == null ? 1 : 2, null, null, null,
+            createdAt, latest(createdAt, deletedAt), version);
     }
 
-    public AttachmentEntity(UUID id, UUID resourceId, UUID blobId, String fileName,
-                            AttachmentKind attachmentKind, Instant createdAt, Instant deletedAt, Long version,
-                            String idempotencyKey) {
-        this(id, resourceId, blobId, fileName, attachmentKind, createdAt, deletedAt, version,
-            idempotencyKey, null);
+    /** Legacy constructor retained for source compatibility while callers migrate to link repositories. */
+    @Deprecated
+    public AttachmentEntity(UUID id, UUID resourceId, UUID blobId, String fileName, AttachmentKind attachmentKind,
+                            Instant createdAt, Instant deletedAt, Long version, String idempotencyKey) {
+        this(id, fileName, attachmentKind, deletedAt == null ? 1 : 2, null, idempotencyKey, null,
+            createdAt, latest(createdAt, deletedAt), version);
+    }
+
+    /** Legacy constructor retained for source compatibility while callers migrate to link repositories. */
+    @Deprecated
+    public AttachmentEntity(UUID id, UUID resourceId, UUID blobId, String fileName, AttachmentKind attachmentKind,
+                            Instant createdAt, Instant deletedAt, Long version, String idempotencyKey,
+                            Instant archivedAt) {
+        this(id, fileName, attachmentKind, status(deletedAt, archivedAt), null, idempotencyKey, null,
+            createdAt, latest(createdAt, latest(deletedAt, archivedAt)), version);
+    }
+
+    private static int status(Instant deletedAt, Instant archivedAt) {
+        if (deletedAt != null) return 2;
+        if (archivedAt != null) return 3;
+        return 1;
+    }
+
+    private static Instant latest(Instant first, Instant second) {
+        if (first == null) return second;
+        if (second == null) return first;
+        return first.isAfter(second) ? first : second;
     }
 }

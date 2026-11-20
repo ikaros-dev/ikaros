@@ -43,8 +43,8 @@ class DefaultResourceRelationServiceTest {
     void createsRelationOnlyBetweenOwnedResources() {
         UUID ownerId = UUID.randomUUID(); UUID sourceId = UUID.randomUUID(); UUID targetId = UUID.randomUUID();
         Instant now = Instant.now();
-        when(resourceRepository.findByIdAndOwnerId(sourceId, ownerId)).thenReturn(Mono.just(resource(sourceId, ownerId, now)));
-        when(resourceRepository.findByIdAndOwnerId(targetId, ownerId)).thenReturn(Mono.just(resource(targetId, ownerId, now)));
+        when(resourceRepository.findByIdAndWriterUserId(sourceId, ownerId)).thenReturn(Mono.just(resource(sourceId, ownerId, now)));
+        when(resourceRepository.findByIdAndWriterUserId(targetId, ownerId)).thenReturn(Mono.just(resource(targetId, ownerId, now)));
         ResourceRelationEntity saved = new ResourceRelationEntity(UUID.randomUUID(), sourceId, targetId,
             ResourceRelationType.CONTAINS, 2, now, 0L);
         when(relationRepository.save(any())).thenReturn(Mono.just(saved));
@@ -71,7 +71,7 @@ class DefaultResourceRelationServiceTest {
         ResourceEntity source = resource(sourceId, ownerId, now);
         ResourceRelationEntity relation = new ResourceRelationEntity(relationId, sourceId, targetId,
             ResourceRelationType.RELATED_TO, 0, now, 0L);
-        when(resourceRepository.findByIdAndOwnerId(sourceId, ownerId)).thenReturn(Mono.just(source));
+        when(resourceRepository.findByIdAndWriterUserId(sourceId, ownerId)).thenReturn(Mono.just(source));
         when(relationRepository.findAllBySourceResourceIdOrderByRelationTypeAscPositionAsc(sourceId))
             .thenReturn(Flux.just(relation));
         when(relationRepository.findById(relationId)).thenReturn(Mono.just(relation));
@@ -87,13 +87,13 @@ class DefaultResourceRelationServiceTest {
     @Test
     void returnsEmptyRelationsAndRejectsUnknownSource() {
         UUID ownerId = UUID.randomUUID(); UUID sourceId = UUID.randomUUID(); Instant now = Instant.now();
-        when(resourceRepository.findByIdAndOwnerId(sourceId, ownerId)).thenReturn(Mono.just(resource(sourceId, ownerId, now)));
+        when(resourceRepository.findByIdAndWriterUserId(sourceId, ownerId)).thenReturn(Mono.just(resource(sourceId, ownerId, now)));
         when(relationRepository.findAllBySourceResourceIdOrderByRelationTypeAscPositionAsc(sourceId))
             .thenReturn(Flux.empty());
         StepVerifier.create(service.list(ownerId, sourceId)).verifyComplete();
 
         UUID unknown = UUID.randomUUID();
-        when(resourceRepository.findByIdAndOwnerId(unknown, ownerId)).thenReturn(Mono.empty());
+        when(resourceRepository.findByIdAndWriterUserId(unknown, ownerId)).thenReturn(Mono.empty());
         StepVerifier.create(service.list(ownerId, unknown)).expectErrorMessage("资源不存在或无权访问").verify();
         verify(relationRepository, never()).findAllBySourceResourceIdOrderByRelationTypeAscPositionAsc(unknown);
     }
@@ -102,7 +102,7 @@ class DefaultResourceRelationServiceTest {
     void rejectsUnknownRelationWithoutDeletingOrAuditing() {
         UUID ownerId = UUID.randomUUID(), sourceId = UUID.randomUUID(), relationId = UUID.randomUUID();
         Instant now = Instant.now();
-        when(resourceRepository.findByIdAndOwnerId(sourceId, ownerId)).thenReturn(Mono.just(resource(sourceId, ownerId, now)));
+        when(resourceRepository.findByIdAndWriterUserId(sourceId, ownerId)).thenReturn(Mono.just(resource(sourceId, ownerId, now)));
         when(relationRepository.findById(relationId)).thenReturn(Mono.empty());
 
         StepVerifier.create(service.remove(ownerId, sourceId, relationId))
@@ -121,6 +121,6 @@ class DefaultResourceRelationServiceTest {
     }
 
     private ResourceEntity resource(UUID id, UUID ownerId, Instant now) {
-        return new ResourceEntity(id, ownerId, ResourceType.DOCUMENT, ResourceLifecycle.ACTIVE, now, now, null, 0L);
+        return new ResourceEntity(id, ResourceType.DOCUMENT, null, null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), now, now, 0L);
     }
 }

@@ -34,6 +34,7 @@ public class DefaultResourceService implements ResourceService {
     private final TransactionalOperator transactionalOperator;
     private final DurableEventPublisher eventService;
     private final ResourceCreationIdempotencyRepository creationIdempotencyRepository;
+    private final UserResourceRepository userResourceRepository;
 
     /**
      * 创建 Resource 服务。
@@ -59,7 +60,8 @@ public class DefaultResourceService implements ResourceService {
                                   AuditService auditService,
                                   TransactionalOperator transactionalOperator,
                                   DurableEventPublisher eventService,
-                                  ResourceCreationIdempotencyRepository creationIdempotencyRepository) {
+                                  ResourceCreationIdempotencyRepository creationIdempotencyRepository,
+                                  UserResourceRepository userResourceRepository) {
         this.resourceRepository = resourceRepository;
         this.titleRepository = titleRepository;
         this.identityRepository = identityRepository;
@@ -67,6 +69,7 @@ public class DefaultResourceService implements ResourceService {
         this.transactionalOperator = transactionalOperator;
         this.eventService = eventService;
         this.creationIdempotencyRepository = creationIdempotencyRepository;
+        this.userResourceRepository = userResourceRepository;
     }
 
     public DefaultResourceService(ResourceRepository resourceRepository,
@@ -76,7 +79,18 @@ public class DefaultResourceService implements ResourceService {
                                   TransactionalOperator transactionalOperator,
                                   DurableEventPublisher eventService) {
         this(resourceRepository, titleRepository, identityRepository, auditService, transactionalOperator,
-            eventService, null);
+            eventService, null, null);
+    }
+
+    public DefaultResourceService(ResourceRepository resourceRepository,
+                                  ResourceTitleRepository titleRepository,
+                                  ExternalIdentityRepository identityRepository,
+                                  AuditService auditService,
+                                  TransactionalOperator transactionalOperator,
+                                  DurableEventPublisher eventService,
+                                  ResourceCreationIdempotencyRepository creationIdempotencyRepository) {
+        this(resourceRepository, titleRepository, identityRepository, auditService, transactionalOperator,
+            eventService, creationIdempotencyRepository, null);
     }
 
     @Override
@@ -111,18 +125,25 @@ public class DefaultResourceService implements ResourceService {
         }
         Instant now = Instant.now();
         ResourceEntity resource = new ResourceEntity(
-            null, ownerId, request.type(), request.title(), null, ResourceClassification.PRIVATE,
-            ResourceLifecycle.ACTIVE, now, now, null, null
+            null, request.type(), request.title(), null, ResourceClassification.PRIVATE,
+            ResourceStatus.ACTIVE.code(), now, now, null
         );
         return transactionalOperator.transactional(resourceRepository.save(resource)
-            .flatMap(saved -> titleRepository.save(new ResourceTitleEntity(
-                null, saved.id(), request.locale(), request.title(), true, now, now, null
-            )).then(emit("resource.resource.created", saved))
+            .flatMap(saved -> createOwnerRelation(ownerId, saved.id(), now)
+                .then(titleRepository.save(new ResourceTitleEntity(
+                    null, saved.id(), request.locale(), request.title(), true, now, now, null
+                ))).then(emit("resource.resource.created", saved))
                 .then(auditService.record(ownerId, "resource.create", "RESOURCE", saved.id(), "{}"))
                 .then(idempotency == null ? Mono.empty() : creationIdempotencyRepository.save(
                     new ResourceCreationIdempotencyEntity(null, ownerId, idempotency.key(),
                         idempotency.fingerprint(), saved.id(), now)).then())
                 .then(toView(saved))));
+    }
+
+    private Mono<Void> createOwnerRelation(UUID ownerId, UUID resourceId, Instant now) {
+        if (userResourceRepository == null) return Mono.empty();
+        return userResourceRepository.save(new UserResourceEntity(null, ownerId, resourceId, "OWNER", now, now, null))
+            .then();
     }
 
     private Mono<ResourceView> replayOrConflict(UUID ownerId,
@@ -152,7 +173,7 @@ public class DefaultResourceService implements ResourceService {
 
     @Override
     public Mono<ResourceView> get(UUID ownerId, UUID resourceId) {
-        return owned(ownerId, resourceId).flatMap(this::toView);
+        return member(ownerId, resourceId).flatMap(this::toView);
     }
 
     @Override
@@ -166,17 +187,17 @@ public class DefaultResourceService implements ResourceService {
         if (primaryTitlePresent && request.primaryTitle() == null) {
             return Mono.error(new IllegalArgumentException("primaryTitle 不能为 null"));
         }
-        return transactionalOperator.transactional(owned(ownerId, resourceId).flatMap(resource -> {
+        return transactionalOperator.transactional(writable(ownerId, resourceId).flatMap(resource -> {
             if (resource.version() == null || resource.version() != request.expectedVersion()) {
                 return Mono.error(new ConflictException("resource.version-conflict", "Resource 版本已过期"));
             }
-            ResourceEntity updated = new ResourceEntity(resource.id(), resource.ownerId(), resource.resourceType(),
+            ResourceEntity updated = new ResourceEntity(resource.id(), resource.resourceType(),
                 primaryTitlePresent ? request.primaryTitle() : resource.primaryTitle(),
                 summaryPresent ? request.summary() : resource.summary(), resource.dataClassification(),
-                resource.lifecycle(), resource.createdAt(), Instant.now(), resource.deletedAt(), resource.version());
+                resource.status(), resource.createdAt(), Instant.now(), resource.version());
             return resourceRepository.save(updated)
                 .flatMap(saved -> syncPrimaryTitle(resource, saved, request, primaryTitlePresent)
-                    .then(emit("resource.resource.updated", saved))
+                    .then(emitUpdated(saved, primaryTitlePresent, summaryPresent))
                     .then(auditService.record(ownerId, "resource.update", "RESOURCE", resourceId, "{}"))
                     .then(toView(saved)));
         }));
@@ -206,18 +227,18 @@ public class DefaultResourceService implements ResourceService {
         }
         String typeValue = query.type() == null ? "" : query.type().name();
         String keywordValue = query.keyword() == null ? "" : query.keyword().trim();
-        String lifecycleValue = query.lifecycle() == null ? "" : query.lifecycle().name();
+        int status = query.status() == null ? -1 : query.status();
         String collectionValue = query.collectionId() == null ? "" : query.collectionId().toString();
         String tagValue = query.tag() == null ? "" : query.tag().trim();
         String sourceValue = query.sourceProvider() == null ? "" : query.sourceProvider().trim();
         long offset = (long) query.page() * query.size();
         Mono<List<ResourceView>> items = resourceRepository
-            .search(ownerId, typeValue, keywordValue, lifecycleValue, collectionValue, tagValue,
+            .search(ownerId, typeValue, keywordValue, status, collectionValue, tagValue,
                 sourceValue, offset, query.size())
             .flatMap(this::toView)
             .collectList();
         return Mono.zip(items, resourceRepository.countSearch(ownerId, typeValue, keywordValue,
-                lifecycleValue, collectionValue, tagValue, sourceValue))
+                status, collectionValue, tagValue, sourceValue))
             .map(result -> new PageResponse<>(result.getT1(), result.getT2(), query.page(), query.size()));
     }
 
@@ -226,7 +247,7 @@ public class DefaultResourceService implements ResourceService {
                                                       String externalId) {
         return identityRepository.findByProviderAndExternalTypeAndExternalId(provider, externalType, externalId)
             .switchIfEmpty(Mono.error(new NotFoundException("外部身份对应的资源不存在")))
-            .flatMap(identity -> owned(ownerId, identity.resourceId()))
+            .flatMap(identity -> member(ownerId, identity.resourceId()))
             .flatMap(this::toView);
     }
 
@@ -244,16 +265,14 @@ public class DefaultResourceService implements ResourceService {
         return owned(ownerId, resourceId)
             .flatMap(resource -> {
                 checkVersion(resource.version(), expectedVersion);
-                if (resource.lifecycle() == ResourceLifecycle.TRASHED) {
+                if (resource.status() == ResourceStatus.TRASHED.code()) {
                     return Mono.empty();
                 }
-                ResourceEntity trashed = new ResourceEntity(
-                    resource.id(), resource.ownerId(), resource.resourceType(), resource.primaryTitle(), resource.summary(),
-                    resource.dataClassification(), ResourceLifecycle.TRASHED,
-                    resource.createdAt(), Instant.now(), Instant.now(), resource.version()
-                );
+                ResourceEntity trashed = new ResourceEntity(resource.id(), resource.resourceType(), resource.primaryTitle(),
+                    resource.summary(), resource.dataClassification(), ResourceStatus.TRASHED.code(),
+                    resource.createdAt(), Instant.now(), resource.version());
                 return resourceRepository.save(trashed)
-                    .then(emit("resource.resource.trashed", trashed))
+                    .then(emitStatusChange("resource.resource.trashed", resource.status(), trashed))
                     .then(auditService.record(ownerId, "resource.trash", "RESOURCE", resourceId, "{}"));
             })
             .as(transactionalOperator::transactional);
@@ -273,19 +292,17 @@ public class DefaultResourceService implements ResourceService {
         return owned(ownerId, resourceId)
             .flatMap(resource -> {
                 checkVersion(resource.version(), expectedVersion);
-                if (resource.lifecycle() == ResourceLifecycle.ARCHIVED) {
+                if (resource.status() == ResourceStatus.ARCHIVED.code()) {
                     return toView(resource);
                 }
-                if (resource.lifecycle() != ResourceLifecycle.ACTIVE) {
+                if (resource.status() != ResourceStatus.ACTIVE.code()) {
                     return Mono.error(new ConflictException("只有活动 Resource 才能归档"));
                 }
-                ResourceEntity archived = new ResourceEntity(
-                    resource.id(), resource.ownerId(), resource.resourceType(), resource.primaryTitle(), resource.summary(),
-                    resource.dataClassification(), ResourceLifecycle.ARCHIVED,
-                    resource.createdAt(), Instant.now(), resource.deletedAt(), resource.version()
-                );
+                ResourceEntity archived = new ResourceEntity(resource.id(), resource.resourceType(), resource.primaryTitle(),
+                    resource.summary(), resource.dataClassification(), ResourceStatus.ARCHIVED.code(),
+                    resource.createdAt(), Instant.now(), resource.version());
                 return resourceRepository.save(archived)
-                    .flatMap(saved -> emit("resource.resource.archived", saved)
+                    .flatMap(saved -> emitStatusChange("resource.resource.archived", resource.status(), saved)
                         .then(auditService.record(ownerId, "resource.archive", "RESOURCE", resourceId, "{}"))
                         .then(toView(saved)));
             })
@@ -306,17 +323,15 @@ public class DefaultResourceService implements ResourceService {
         return owned(ownerId, resourceId)
             .flatMap(resource -> {
                 checkVersion(resource.version(), expectedVersion);
-                if (resource.lifecycle() != ResourceLifecycle.TRASHED
-                    && resource.lifecycle() != ResourceLifecycle.ARCHIVED) {
+                if (resource.status() != ResourceStatus.TRASHED.code()
+                    && resource.status() != ResourceStatus.ARCHIVED.code()) {
                     return Mono.error(new ConflictException("只有已归档或已移入回收站的 Resource 才能恢复"));
                 }
-                ResourceEntity restored = new ResourceEntity(
-                    resource.id(), resource.ownerId(), resource.resourceType(), resource.primaryTitle(), resource.summary(),
-                    resource.dataClassification(), ResourceLifecycle.ACTIVE,
-                    resource.createdAt(), Instant.now(), null, resource.version()
-                );
+                ResourceEntity restored = new ResourceEntity(resource.id(), resource.resourceType(), resource.primaryTitle(),
+                    resource.summary(), resource.dataClassification(), ResourceStatus.ACTIVE.code(),
+                    resource.createdAt(), Instant.now(), resource.version());
                 return resourceRepository.save(restored)
-                    .flatMap(saved -> emit("resource.resource.restored", saved)
+                    .flatMap(saved -> emitStatusChange("resource.resource.restored", resource.status(), saved)
                         .then(auditService.record(ownerId, "resource.restore", "RESOURCE", resourceId, "{}"))
                         .then(toView(saved)));
             })
@@ -328,15 +343,14 @@ public class DefaultResourceService implements ResourceService {
         return transactionalOperator.transactional(owned(ownerId, resourceId)
             .flatMap(resource -> {
                 checkVersion(resource.version(), expectedVersion);
-                if (resource.lifecycle() != ResourceLifecycle.TRASHED || resource.deletedAt() == null) {
-                    return Mono.error(new ConflictException("只有已满足保留条件的回收站 Resource 才能永久删除"));
+                if (resource.status() != ResourceStatus.TRASHED.code()) {
+                    return Mono.error(new ConflictException("只有回收站 Resource 才能永久删除"));
                 }
-                ResourceEntity purged = new ResourceEntity(
-                    resource.id(), resource.ownerId(), resource.resourceType(), resource.primaryTitle(), resource.summary(),
-                    resource.dataClassification(), ResourceLifecycle.PURGED,
-                    resource.createdAt(), Instant.now(), resource.deletedAt(), resource.version());
+                ResourceEntity purged = new ResourceEntity(resource.id(), resource.resourceType(), resource.primaryTitle(),
+                    resource.summary(), resource.dataClassification(), ResourceStatus.DELETED.code(),
+                    resource.createdAt(), Instant.now(), resource.version());
                 return resourceRepository.save(purged)
-                    .then(emit("resource.resource.purged", purged))
+                    .then(emitStatusChange("resource.resource.purged", resource.status(), purged))
                     .then(auditService.record(ownerId, "resource.purge", "RESOURCE", resourceId, "{}"));
             }));
     }
@@ -380,13 +394,45 @@ public class DefaultResourceService implements ResourceService {
             .switchIfEmpty(Mono.error(new NotFoundException("资源不存在或无权访问")));
     }
 
+    private Mono<ResourceEntity> member(UUID userId, UUID resourceId) {
+        return resourceRepository.findByIdAndUserId(resourceId, userId)
+            .switchIfEmpty(Mono.error(new NotFoundException("资源不存在或无权访问")));
+    }
+
+    private Mono<ResourceEntity> writable(UUID userId, UUID resourceId) {
+        if (userResourceRepository == null) return owned(userId, resourceId);
+        return userResourceRepository.findByResourceIdAndUserIdAndRoleIn(resourceId, userId, List.of("OWNER", "EDITOR"))
+            .flatMap(ignored -> resourceRepository.findById(resourceId))
+            .switchIfEmpty(Mono.error(new NotFoundException("资源不存在或无权访问")));
+    }
+
     private Mono<Void> emit(String eventType, ResourceEntity resource) {
         if (eventService == null) {
             return Mono.empty();
         }
-        String payload = "{\"resource_id\":\"" + resource.id() + "\",\"lifecycle\":\""
-            + resource.lifecycle() + "\",\"version\":" + resource.version() + "}";
-        return eventService.append(new EventAppendRequest(eventType, 1, "resource", "resource", resource.id(), payload)).then();
+        String payload = "{\"resource_id\":\"" + resource.id() + "\",\"resource_type\":\""
+            + resource.resourceType().name() + "\",\"status\":" + resource.status()
+            + ",\"version\":" + resource.version() + "}";
+        return eventService.append(new EventAppendRequest(eventType, 2, "resource", "resource", resource.id(), payload)).then();
+    }
+
+    private Mono<Void> emitStatusChange(String eventType, int previousStatus, ResourceEntity resource) {
+        if (eventService == null) return Mono.empty();
+        String payload = "{\"resource_id\":\"" + resource.id() + "\",\"previous_status\":" + previousStatus
+            + ",\"status\":" + resource.status() + ",\"version\":" + resource.version() + "}";
+        return eventService.append(new EventAppendRequest(eventType, 2, "resource", "resource", resource.id(), payload))
+            .then();
+    }
+
+    private Mono<Void> emitUpdated(ResourceEntity resource, boolean primaryTitlePresent, boolean summaryPresent) {
+        if (eventService == null) return Mono.empty();
+        String changedFields = primaryTitlePresent
+            ? (summaryPresent ? "[\"primary_title\",\"summary\"]" : "[\"primary_title\"]")
+            : (summaryPresent ? "[\"summary\"]" : "[]");
+        String payload = "{\"resource_id\":\"" + resource.id() + "\",\"changed_fields\":" + changedFields
+            + ",\"version\":" + resource.version() + "}";
+        return eventService.append(new EventAppendRequest("resource.resource.updated", 1, "resource", "resource",
+            resource.id(), payload)).then();
     }
 
     private Mono<Void> emitExternalIdentity(String eventType, ExternalIdentityEntity identity) {
@@ -423,7 +469,7 @@ public class DefaultResourceService implements ResourceService {
             .collectList();
         return Mono.zip(titles, identities)
             .map(parts -> new ResourceView(resource.id(), resource.resourceType(), resource.primaryTitle(),
-                resource.summary(), resource.dataClassification(), resource.lifecycle(), parts.getT1(), parts.getT2(),
+                resource.summary(), resource.dataClassification(), resource.status(), parts.getT1(), parts.getT2(),
                 resource.createdAt(), resource.updatedAt(), resource.version()));
     }
 

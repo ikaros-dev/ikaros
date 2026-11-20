@@ -499,11 +499,11 @@ paths:
           in: query
           description: 主标题关键词过滤。
           schema: { type: string }
-        - name: lifecycle_status
+        - name: status
           in: query
           description: 可选的生命周期过滤；省略时返回当前用户所有生命周期的资源。
           schema:
-            $ref: '#/components/schemas/ResourceLifecycleStatus'
+            $ref: '#/components/schemas/ResourceStatus'
         - name: collection_id
           in: query
           description: 仅返回该 Collection 的成员资源。
@@ -2102,21 +2102,22 @@ components:
           items:
             type: object
             additionalProperties: true
-    ResourceLifecycleStatus:
-      type: string
-      enum: [ACTIVE, ARCHIVED, TRASHED, PURGED]
+    ResourceStatus:
+      type: integer
+      description: 0 已删除，1 正常，2 回收站，3 已归档，4 已冻结，5 解冻中。
+      enum: [0, 1, 2, 3, 4, 5]
     DataClassification:
       type: string
       enum: [PUBLIC, SHARED, PRIVATE, SENSITIVE, SECURE]
     Resource:
       type: object
-      required: [id, type, lifecycle_status, data_classification, version, created_at, updated_at]
+      required: [id, type, status, data_classification, version, created_at, updated_at]
       properties:
         id: { type: string, format: uuid }
         type: { type: string }
         primary_title: { type: [string, 'null'] }
         summary: { type: [string, 'null'] }
-        lifecycle_status: { $ref: '#/components/schemas/ResourceLifecycleStatus' }
+        status: { $ref: '#/components/schemas/ResourceStatus' }
         data_classification: { $ref: '#/components/schemas/DataClassification' }
         version: { type: integer, format: int64, minimum: 0 }
         created_at: { type: string, format: date-time }
@@ -2175,27 +2176,32 @@ components:
         next_cursor: { type: [string, 'null'] }
     Attachment:
       type: object
-      required: [id, blob_id, data_classification, lifecycle_status, version, created_at]
+      required: [id, name, status, version, created_at, updated_at]
       properties:
         id: { type: string, format: uuid }
-        blob_id: { type: string, format: uuid }
-        filename: { type: [string, 'null'] }
-        media_type: { type: [string, 'null'] }
-        usage_kind: { type: [string, 'null'] }
-        data_classification: { $ref: '#/components/schemas/DataClassification' }
-        lifecycle_status:
-          type: string
-          enum: [ACTIVE, ARCHIVED, TRASHED, PURGED]
+        name: { type: string, maxLength: 512 }
+        status: { type: integer, enum: [0, 1, 2, 3, 4, 5] }
+        resource_ids:
+          type: array
+          items: { type: string, format: uuid }
+        blob_bindings:
+          type: array
+          items:
+            type: object
+            required: [blob_id, role]
+            properties:
+              blob_id: { type: string, format: uuid }
+              role: { type: string, enum: [ORIGINAL, DERIVED] }
         version: { type: integer, format: int64, minimum: 0 }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
     AttachmentManagementItem:
       type: object
-      required: [id, resource_id, file_name, kind, sha256, size_bytes, media_type, availability]
+      required: [id, resource_id, name, kind, sha256, size_bytes, media_type, availability]
       properties:
         id: { type: string, format: uuid }
         resource_id: { type: string, format: uuid }
-        file_name: { type: string }
+        name: { type: string }
         kind: { type: string }
         sha256: { type: string, pattern: '^[a-fA-F0-9]{64}$' }
         size_bytes: { type: integer, format: int64, minimum: 0 }

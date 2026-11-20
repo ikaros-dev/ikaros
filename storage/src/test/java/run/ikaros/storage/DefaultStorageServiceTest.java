@@ -38,21 +38,35 @@ class DefaultStorageServiceTest {
     private BlobRepository blobRepository;
     private BlobPlacementRepository placementRepository;
     private DerivedAttachmentRepository derivedAttachmentRepository;
+    private ResourceAttachmentRepository resourceAttachmentRepository;
+    private AttachmentBlobRepository attachmentBlobRepository;
     private AuditService auditService;
     private DefaultStorageService service;
 
     @BeforeEach
     void setUp() {
         resourceOwnership = mock(ResourceOwnershipQuery.class);
+        when(resourceOwnership.requireWritable(any(UUID.class), any(UUID.class))).thenReturn(Mono.empty());
         attachmentRepository = mock(AttachmentRepository.class);
         blobRepository = mock(BlobRepository.class);
         placementRepository = mock(BlobPlacementRepository.class);
         derivedAttachmentRepository = mock(DerivedAttachmentRepository.class);
+        resourceAttachmentRepository = mock(ResourceAttachmentRepository.class);
+        attachmentBlobRepository = mock(AttachmentBlobRepository.class);
         auditService = mock(AuditService.class);
         TransactionalOperator transaction = mock(TransactionalOperator.class);
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(resourceAttachmentRepository.save(any(UUID.class), any(UUID.class), any(Instant.class)))
+            .thenReturn(Mono.empty());
+        when(attachmentBlobRepository.save(any(AttachmentBlobEntity.class)))
+            .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(attachmentBlobRepository.findByAttachmentIdAndBlobId(any(UUID.class), any(UUID.class)))
+            .thenReturn(Mono.empty());
+        when(blobRepository.save(any(BlobEntity.class)))
+            .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
         service = new DefaultStorageService(resourceOwnership, attachmentRepository, blobRepository,
             placementRepository, derivedAttachmentRepository, auditService, transaction);
+        service.setAttachmentLinkRepositories(resourceAttachmentRepository, attachmentBlobRepository);
     }
 
     @Test
@@ -71,7 +85,7 @@ class DefaultStorageServiceTest {
         AttachBlobRequest request = new AttachBlobRequest("A".repeat(64), 2048L, "video/mp4", "episode.mp4",
             AttachmentKind.ORIGINAL, "nas", StorageTier.WARM, "media/episode.mp4");
 
-        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.empty());
+        when(resourceOwnership.requireWritable(ownerId, resourceId)).thenReturn(Mono.empty());
         when(blobRepository.findBySha256("a".repeat(64))).thenReturn(Mono.just(blob));
         when(placementRepository.findByProviderAndObjectKey("nas", "media/episode.mp4")).thenReturn(Mono.just(placement));
         when(attachmentRepository.save(any(AttachmentEntity.class))).thenReturn(Mono.just(attachment));
@@ -89,8 +103,14 @@ class DefaultStorageServiceTest {
 
         ArgumentCaptor<AttachmentEntity> attachmentCaptor = ArgumentCaptor.forClass(AttachmentEntity.class);
         verify(attachmentRepository).save(attachmentCaptor.capture());
-        assertThat(attachmentCaptor.getValue().resourceId()).isEqualTo(resourceId);
-        assertThat(attachmentCaptor.getValue().blobId()).isEqualTo(blobId);
+        assertThat(attachmentCaptor.getValue().name()).isEqualTo("episode.mp4");
+        assertThat(attachmentCaptor.getValue().attachmentKind()).isEqualTo(AttachmentKind.ORIGINAL);
+        verify(resourceAttachmentRepository).save(eq(resourceId), eq(attachmentId), any(Instant.class));
+        ArgumentCaptor<AttachmentBlobEntity> bindingCaptor = ArgumentCaptor.forClass(AttachmentBlobEntity.class);
+        verify(attachmentBlobRepository).save(bindingCaptor.capture());
+        assertThat(bindingCaptor.getValue().attachmentId()).isEqualTo(attachmentId);
+        assertThat(bindingCaptor.getValue().blobId()).isEqualTo(blobId);
+        assertThat(bindingCaptor.getValue().role()).isEqualTo(AttachmentBlobEntity.ORIGINAL);
         verify(blobRepository).findBySha256("a".repeat(64));
     }
 
@@ -101,7 +121,7 @@ class DefaultStorageServiceTest {
         Instant now = Instant.now();
         BlobEntity existing = new BlobEntity(UUID.randomUUID(), "a".repeat(64), 2048L, "video/mp4",
             BlobAvailability.AVAILABLE, now, 0L);
-        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.empty());
+        when(resourceOwnership.requireWritable(ownerId, resourceId)).thenReturn(Mono.empty());
         when(blobRepository.findBySha256("a".repeat(64))).thenReturn(Mono.just(existing));
 
         StepVerifier.create(service.attach(ownerId, resourceId, new AttachBlobRequest("A".repeat(64), 1024L,
@@ -129,8 +149,10 @@ class DefaultStorageServiceTest {
         uploadService.setObjectProviderRegistry(objects);
         StorageProvider provider = new StorageProvider(UUID.randomUUID(), "local", "local", StorageTier.WARM,
             StorageProviderStatus.ENABLED, null, java.util.Map.of(), now, now);
-        AttachmentEntity existing = new AttachmentEntity(attachmentId, resourceId, blobId, "a.bin",
-            AttachmentKind.ORIGINAL, now, null, 0L, "retry-key");
+        AttachBlobRequest attachmentRequest = new AttachBlobRequest("a".repeat(64), 10L,
+            "application/octet-stream", "a.bin", AttachmentKind.ORIGINAL, "local", StorageTier.WARM, "a.bin");
+        AttachmentReference existing = reference(attachmentId, resourceId, blobId, "a.bin",
+            AttachmentKind.ORIGINAL, ownerId, "retry-key", fingerprint(resourceId, attachmentRequest), now);
         BlobEntity blob = new BlobEntity(blobId, "a".repeat(64), 10L, "application/octet-stream",
             BlobAvailability.AVAILABLE, now, 0L);
         UUID sessionId = UUID.randomUUID();
@@ -138,12 +160,13 @@ class DefaultStorageServiceTest {
             10L, "a".repeat(64), UploadSessionState.OPEN, now.plusSeconds(600), now, now, 0L, "begin-key");
         UploadSessionEntity completedSession = new UploadSessionEntity(sessionId, ownerId, resourceId, "local", "a.bin",
             10L, "a".repeat(64), UploadSessionState.COMPLETED, session.expiresAt(), now, now, 1L, "begin-key");
-        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.empty());
+        when(resourceOwnership.requireWritable(ownerId, resourceId)).thenReturn(Mono.empty());
         when(providers.requireWritableByKey("local")).thenReturn(Mono.just(provider));
         when(objects.verify(provider, "a.bin")).thenReturn(Mono.just(new StorageObjectMetadata(
             "a.bin", 10L, "application/octet-stream", "etag")));
-        when(attachmentRepository.findByResourceIdAndIdempotencyKeyAndArchivedAtIsNullAndDeletedAtIsNull(
-            resourceId, "retry-key")).thenReturn(Mono.just(existing));
+        when(attachmentRepository.findReferenceByCreatedByAndIdempotencyKey(ownerId, "retry-key"))
+            .thenReturn(Mono.just(existing));
+        when(blobRepository.findBySha256("a".repeat(64))).thenReturn(Mono.empty());
         when(blobRepository.findById(blobId)).thenReturn(Mono.just(blob));
         when(sessions.findByIdAndOwnerId(sessionId, ownerId)).thenReturn(Mono.just(session));
         when(sessions.save(any(UploadSessionEntity.class))).thenReturn(Mono.just(completedSession));
@@ -209,7 +232,7 @@ class DefaultStorageServiceTest {
         StorageProvider provider = new StorageProvider(UUID.randomUUID(), "local", "local", StorageTier.WARM,
             StorageProviderStatus.ENABLED, null, java.util.Map.of(), now, now);
         UUID sessionId = UUID.randomUUID();
-        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.empty());
+        when(resourceOwnership.requireWritable(ownerId, resourceId)).thenReturn(Mono.empty());
         when(providers.requireWritableByKey("local")).thenReturn(Mono.just(provider));
         when(blobRepository.findBySha256("a".repeat(64))).thenReturn(Mono.empty());
         when(objects.createUploadIntent(eq(provider), any(StorageUploadRequest.class))).thenReturn(Mono.just(
@@ -249,35 +272,40 @@ class DefaultStorageServiceTest {
     }
 
     @Test
-    void recordsDerivedAttachmentSourceWithoutChangingOriginalKind() {
+    void bindsDerivedBlobWithoutChangingOriginalAttachmentKind() {
         UUID ownerId = UUID.randomUUID(); UUID resourceId = UUID.randomUUID();
-        UUID sourceId = UUID.randomUUID(); UUID derivedId = UUID.randomUUID(); UUID blobId = UUID.randomUUID();
+        UUID sourceId = UUID.randomUUID(); UUID sourceBlobId = UUID.randomUUID(); UUID derivedBlobId = UUID.randomUUID();
         Instant now = Instant.now();
-        AttachmentEntity source = new AttachmentEntity(sourceId, resourceId, UUID.randomUUID(), "source.mp4",
-            AttachmentKind.ORIGINAL, now, null, 0L);
-        BlobEntity blob = new BlobEntity(blobId, "b".repeat(64), 100L, "image/jpeg", BlobAvailability.AVAILABLE, now, 0L);
-        AttachmentEntity derived = new AttachmentEntity(derivedId, resourceId, blobId, "cover.jpg",
-            AttachmentKind.DERIVED, now, null, 0L);
-        BlobPlacementEntity placement = new BlobPlacementEntity(UUID.randomUUID(), blobId, "nas", StorageTier.HOT,
+        AttachmentReference source = reference(sourceId, resourceId, sourceBlobId, "source.mp4",
+            AttachmentKind.ORIGINAL, ownerId, null, null, now);
+        BlobEntity sourceBlob = new BlobEntity(sourceBlobId, "c".repeat(64), 100L, "video/mp4",
+            BlobAvailability.AVAILABLE, now, 0L);
+        BlobEntity derivedBlob = new BlobEntity(derivedBlobId, "b".repeat(64), 100L, "image/jpeg",
+            BlobAvailability.AVAILABLE, now, 0L);
+        BlobPlacementEntity placement = new BlobPlacementEntity(UUID.randomUUID(), derivedBlobId, "nas", StorageTier.HOT,
             "derived/cover.jpg", PlacementState.ACTIVE, now, now, 0L);
         AttachBlobRequest content = new AttachBlobRequest("B".repeat(64), 100L, "image/jpeg", "cover.jpg",
-            AttachmentKind.ORIGINAL, "nas", StorageTier.HOT, "derived/cover.jpg");
-        when(attachmentRepository.findById(sourceId)).thenReturn(Mono.just(source));
-        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.empty());
-        when(blobRepository.findBySha256("b".repeat(64))).thenReturn(Mono.just(blob));
+            AttachmentKind.DERIVED, "nas", StorageTier.HOT, "derived/cover.jpg");
+        when(attachmentRepository.findActiveReferenceByIdAndResourceId(sourceId, resourceId))
+            .thenReturn(Mono.just(source));
+        when(resourceOwnership.requireWritable(ownerId, resourceId)).thenReturn(Mono.empty());
+        when(blobRepository.findBySha256("b".repeat(64))).thenReturn(Mono.just(derivedBlob));
+        when(blobRepository.findById(sourceBlobId)).thenReturn(Mono.just(sourceBlob));
         when(placementRepository.findByProviderAndObjectKey("nas", "derived/cover.jpg")).thenReturn(Mono.just(placement));
-        when(attachmentRepository.save(any(AttachmentEntity.class))).thenReturn(Mono.just(derived));
-        when(placementRepository.findAllByBlobIdOrderByCreatedAtAsc(blobId)).thenReturn(Flux.just(placement));
-        when(derivedAttachmentRepository.save(any())).thenReturn(Mono.just(new DerivedAttachmentEntity(UUID.randomUUID(),
-            sourceId, derivedId, now, 0L)));
-        when(auditService.record(eq(ownerId), eq("attachment.create"), eq("ATTACHMENT"), eq(derivedId), eq("{}")))
-            .thenReturn(Mono.empty());
 
         StepVerifier.create(service.attachDerived(ownerId, resourceId,
                 new CreateDerivedAttachmentRequest(sourceId, content)))
-            .assertNext(view -> assertThat(view.kind()).isEqualTo(AttachmentKind.DERIVED))
+            .assertNext(view -> {
+                assertThat(view.id()).isEqualTo(sourceId);
+                assertThat(view.kind()).isEqualTo(AttachmentKind.ORIGINAL);
+            })
             .verifyComplete();
-        verify(derivedAttachmentRepository).save(any(DerivedAttachmentEntity.class));
+        ArgumentCaptor<AttachmentBlobEntity> binding = ArgumentCaptor.forClass(AttachmentBlobEntity.class);
+        verify(attachmentBlobRepository).save(binding.capture());
+        assertThat(binding.getValue().attachmentId()).isEqualTo(sourceId);
+        assertThat(binding.getValue().blobId()).isEqualTo(derivedBlobId);
+        assertThat(binding.getValue().role()).isEqualTo(AttachmentBlobEntity.DERIVED);
+        verify(derivedAttachmentRepository, never()).save(any(DerivedAttachmentEntity.class));
     }
 
     @Test
@@ -287,14 +315,17 @@ class DefaultStorageServiceTest {
         UUID attachmentId = UUID.randomUUID();
         UUID blobId = UUID.randomUUID();
         Instant now = Instant.now();
-        AttachmentEntity attachment = new AttachmentEntity(attachmentId, resourceId, blobId, "book.pdf",
-            AttachmentKind.ORIGINAL, now, null, 0L);
-        AttachmentEntity archived = new AttachmentEntity(attachmentId, resourceId, blobId, "book.pdf",
-            AttachmentKind.ORIGINAL, now, null, 1L, null, now);
+        AttachmentEntity attachment = new AttachmentEntity(attachmentId, "book.pdf", AttachmentKind.ORIGINAL,
+            1, ownerId, null, null, now, now, 0L);
+        AttachmentEntity archived = new AttachmentEntity(attachmentId, "book.pdf", AttachmentKind.ORIGINAL,
+            3, ownerId, null, null, now, now.plusSeconds(1), 1L);
+        AttachmentReference reference = reference(attachmentId, resourceId, blobId, "book.pdf",
+            AttachmentKind.ORIGINAL, ownerId, null, null, now);
         DurableEventPublisher events = mock(DurableEventPublisher.class);
-        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.empty());
-        when(attachmentRepository.findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(
-            attachmentId, resourceId)).thenReturn(Mono.just(attachment));
+        when(resourceOwnership.requireWritable(ownerId, resourceId)).thenReturn(Mono.empty());
+        when(attachmentRepository.findActiveReferenceByIdAndResourceId(attachmentId, resourceId))
+            .thenReturn(Mono.just(reference));
+        when(attachmentRepository.findById(attachmentId)).thenReturn(Mono.just(attachment));
         when(attachmentRepository.save(any(AttachmentEntity.class))).thenReturn(Mono.just(archived));
         when(auditService.record(eq(ownerId), eq("attachment.archive"), eq("ATTACHMENT"), eq(attachmentId), eq("{}")))
             .thenReturn(Mono.empty());
@@ -308,8 +339,8 @@ class DefaultStorageServiceTest {
         StepVerifier.create(eventService.archive(ownerId, resourceId, attachmentId)).verifyComplete();
         ArgumentCaptor<AttachmentEntity> capture = ArgumentCaptor.forClass(AttachmentEntity.class);
         verify(attachmentRepository).save(capture.capture());
-        assertThat(capture.getValue().archivedAt()).isNotNull().isAfterOrEqualTo(now);
-        assertThat(capture.getValue().deletedAt()).isNull();
+        assertThat(capture.getValue().status()).isEqualTo(3);
+        assertThat(capture.getValue().updatedAt()).isAfterOrEqualTo(now);
         verify(events).append(argThat(request -> request.eventType().equals("storage.attachment.archived")
             && request.producerSubsystem().equals("storage") && request.subjectType().equals("attachment")
             && request.subjectId().equals(attachmentId)));
@@ -321,10 +352,12 @@ class DefaultStorageServiceTest {
         UUID firstResourceId = UUID.randomUUID();
         UUID secondResourceId = UUID.randomUUID();
         Instant now = Instant.now();
-        AttachmentEntity first = new AttachmentEntity(UUID.randomUUID(), firstResourceId, UUID.randomUUID(),
-            "first.txt", AttachmentKind.ORIGINAL, now.plusSeconds(1), null, 0L);
-        AttachmentEntity second = new AttachmentEntity(UUID.randomUUID(), secondResourceId, UUID.randomUUID(),
-            "second.txt", AttachmentKind.SUBTITLE, now, null, 0L);
+        UUID firstBlobId = UUID.randomUUID();
+        UUID secondBlobId = UUID.randomUUID();
+        AttachmentReference first = reference(UUID.randomUUID(), firstResourceId, firstBlobId,
+            "first.txt", AttachmentKind.ORIGINAL, ownerId, null, null, now.plusSeconds(1));
+        AttachmentReference second = reference(UUID.randomUUID(), secondResourceId, secondBlobId,
+            "second.txt", AttachmentKind.SUBTITLE, ownerId, null, null, now);
         BlobEntity firstBlob = new BlobEntity(first.blobId(), "f".repeat(64), 10L, "text/plain",
             BlobAvailability.AVAILABLE, now, 0L);
         BlobEntity secondBlob = new BlobEntity(second.blobId(), "s".repeat(64), 20L, "text/plain",
@@ -339,9 +372,9 @@ class DefaultStorageServiceTest {
         StepVerifier.create(service.listPage(ownerId, null, 0, 20))
             .assertNext(page -> {
                 assertThat(page).isEqualTo(new PageResponse<>(
-                    List.of(new AttachmentView(first.id(), first.resourceId(), first.fileName(), first.attachmentKind(),
+                    List.of(new AttachmentView(first.id(), first.resourceId(), first.name(), first.attachmentKind(),
                             firstBlob.sha256(), firstBlob.sizeBytes(), firstBlob.mediaType(), AttachmentAvailabilityStatus.READY),
-                        new AttachmentView(second.id(), second.resourceId(), second.fileName(), second.attachmentKind(),
+                        new AttachmentView(second.id(), second.resourceId(), second.name(), second.attachmentKind(),
                             secondBlob.sha256(), secondBlob.sizeBytes(), secondBlob.mediaType(), AttachmentAvailabilityStatus.READY)),
                     2, 0, 20));
             })
@@ -386,7 +419,7 @@ class DefaultStorageServiceTest {
             blobRepository, placementRepository, derivedAttachmentRepository, auditService, transaction,
             providers, null, null);
         uploadService.setObjectProviderRegistry(objects);
-        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.error(
+        when(resourceOwnership.requireWritable(ownerId, resourceId)).thenReturn(Mono.error(
             new run.ikaros.common.NotFoundException("资源不存在或无权访问")));
 
         StepVerifier.create(uploadService.beginUpload(ownerId, resourceId,
@@ -421,7 +454,7 @@ class DefaultStorageServiceTest {
             blobRepository, placementRepository, derivedAttachmentRepository, auditService,
             mock(TransactionalOperator.class), providers, null, null);
         uploadService.setObjectProviderRegistry(objects);
-        when(resourceOwnership.requireOwned(ownerId, resourceId)).thenReturn(Mono.error(
+        when(resourceOwnership.requireWritable(ownerId, resourceId)).thenReturn(Mono.error(
             new run.ikaros.common.NotFoundException("资源不存在或无权访问")));
 
         StepVerifier.create(uploadService.commitUpload(ownerId, resourceId,
@@ -444,5 +477,37 @@ class DefaultStorageServiceTest {
             .verifyComplete();
 
         verify(auditService).record(actorId, "blob.gc.approve", "BLOB", blob.id(), "{}");
+    }
+
+    private AttachmentReference reference(UUID id, UUID resourceId, UUID blobId, String name,
+                                          AttachmentKind kind, UUID createdBy, String idempotencyKey,
+                                          String requestFingerprint, Instant createdAt) {
+        return new AttachmentReference(id, resourceId, blobId, name, kind, 1, createdBy, idempotencyKey,
+            requestFingerprint, createdAt, createdAt, 0L);
+    }
+
+    private String fingerprint(UUID resourceId, AttachBlobRequest request) {
+        StringBuilder input = new StringBuilder();
+        appendFingerprintField(input, resourceId.toString());
+        appendFingerprintField(input, request.sha256().toLowerCase());
+        appendFingerprintField(input, Long.toString(request.sizeBytes()));
+        appendFingerprintField(input, request.mediaType());
+        appendFingerprintField(input, request.fileName());
+        appendFingerprintField(input, request.kind().name());
+        appendFingerprintField(input, request.provider());
+        appendFingerprintField(input, request.tier().name());
+        appendFingerprintField(input, request.objectKey());
+        try {
+            return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
+                .digest(input.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        } catch (java.security.NoSuchAlgorithmException error) {
+            throw new AssertionError(error);
+        }
+    }
+
+    private void appendFingerprintField(StringBuilder input, String value) {
+        input.append(value == null ? -1 : value.length()).append(':');
+        if (value != null) input.append(value);
+        input.append(';');
     }
 }

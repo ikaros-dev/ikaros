@@ -86,7 +86,7 @@ public class ResourceController {
      * @return 分页 Resource 视图
      */
     @Operation(summary = "浏览统一资源库", description = "按当前用户及可选筛选条件查询 Resource。"
-        + "省略 lifecycle_status 时返回所有生命周期的资源。")
+        + "省略 status 时返回当前用户所有状态的资源。")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "资源列表查询成功"),
         @ApiResponse(responseCode = "400", description = "分页参数或用户标识不合法", content = @Content)
@@ -97,14 +97,14 @@ public class ResourceController {
         @RequestHeader("X-Ikaros-Actor-Id") UUID actorId,
         @RequestParam(required = false) ResourceType type,
         @RequestParam(required = false) String query,
-        @RequestParam(name = "lifecycle_status", required = false) ResourceLifecycle lifecycle,
+        @RequestParam(name = "status", required = false) Integer status,
         @RequestParam(name = "collection_id", required = false) UUID collectionId,
         @RequestParam(required = false) String tag,
         @RequestParam(name = "source_provider", required = false) String sourceProvider,
         @RequestParam(defaultValue = "0") @Min(0) int page,
         @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
     ) {
-        return resourceService.list(actorId, new ResourceLibraryQuery(type, query, lifecycle, collectionId,
+        return resourceService.list(actorId, new ResourceLibraryQuery(type, query, status, collectionId,
             tag, sourceProvider, page, size));
     }
 

@@ -1,7 +1,7 @@
 package run.ikaros.resource;
 
 import run.ikaros.resource.api.ResourceLibraryQuery;
-import run.ikaros.resource.api.ResourceLifecycle;
+import run.ikaros.resource.api.ResourceStatus;
 import run.ikaros.resource.api.ResourceService;
 import run.ikaros.resource.api.ResourceType;
 import run.ikaros.resource.api.ResourceView;
@@ -35,18 +35,18 @@ class ResourceControllerTest {
     void listsOwnerResourcesWithFiltersAndPaging() {
         UUID ownerId = UUID.randomUUID();
         ResourceView resource = new ResourceView(UUID.randomUUID(), ResourceType.BOOK, "移动端书籍", null,
-            run.ikaros.resource.api.ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE, List.of(), List.of(),
+            run.ikaros.resource.api.ResourceClassification.PRIVATE, ResourceStatus.ACTIVE.code(), List.of(), List.of(),
             Instant.now(), Instant.now(), 0L);
         PageResponse<ResourceView> page = new PageResponse<>(List.of(resource), 1, 1, 20);
-        when(service.list(ownerId, new ResourceLibraryQuery(ResourceType.BOOK, "书", ResourceLifecycle.ACTIVE,
+        when(service.list(ownerId, new ResourceLibraryQuery(ResourceType.BOOK, "书", ResourceStatus.ACTIVE.code(),
             null, null, null, 1, 20))).thenReturn(Mono.just(page));
 
-        StepVerifier.create(controller.list(ownerId, ResourceType.BOOK, "书", ResourceLifecycle.ACTIVE,
+        StepVerifier.create(controller.list(ownerId, ResourceType.BOOK, "书", ResourceStatus.ACTIVE.code(),
                 null, null, null, 1, 20))
             .assertNext(result -> assertThat(result).isEqualTo(page))
             .verifyComplete();
 
-        verify(service).list(ownerId, new ResourceLibraryQuery(ResourceType.BOOK, "书", ResourceLifecycle.ACTIVE,
+        verify(service).list(ownerId, new ResourceLibraryQuery(ResourceType.BOOK, "书", ResourceStatus.ACTIVE.code(),
             null, null, null, 1, 20));
     }
 
@@ -54,13 +54,13 @@ class ResourceControllerTest {
     void returnsEmptyPageWithoutLeakingOtherOwners() {
         UUID ownerId = UUID.randomUUID();
         PageResponse<ResourceView> empty = new PageResponse<>(List.of(), 0, 0, 20);
-        when(service.list(ownerId, ResourceLibraryQuery.of(null, null, ResourceLifecycle.ACTIVE, 0, 20)))
+        when(service.list(ownerId, ResourceLibraryQuery.of(null, null, ResourceStatus.ACTIVE.code(), 0, 20)))
             .thenReturn(Mono.just(empty));
 
-        StepVerifier.create(controller.list(ownerId, null, null, ResourceLifecycle.ACTIVE, null, null, null, 0, 20))
+        StepVerifier.create(controller.list(ownerId, null, null, ResourceStatus.ACTIVE.code(), null, null, null, 0, 20))
             .assertNext(result -> assertThat(result.items()).isEmpty())
             .verifyComplete();
 
-        verify(service).list(ownerId, ResourceLibraryQuery.of(null, null, ResourceLifecycle.ACTIVE, 0, 20));
+        verify(service).list(ownerId, ResourceLibraryQuery.of(null, null, ResourceStatus.ACTIVE.code(), 0, 20));
     }
 }

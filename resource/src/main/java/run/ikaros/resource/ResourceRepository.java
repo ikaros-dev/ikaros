@@ -20,7 +20,26 @@ public interface ResourceRepository extends ReactiveCrudRepository<ResourceEntit
      * @param ownerId 当前拥有者标识
      * @return 可访问资源，未找到时为空
      */
+    @Query("""
+        select r.* from resource r
+        join user_resource ur on ur.resource_id = r.id
+        where r.id = :id and ur.user_id = :ownerId and ur.role = 'OWNER'
+        """)
     Mono<ResourceEntity> findByIdAndOwnerId(UUID id, UUID ownerId);
+
+    @Query("""
+        select r.* from resource r
+        join user_resource ur on ur.resource_id = r.id
+        where r.id = :id and ur.user_id = :userId
+        """)
+    Mono<ResourceEntity> findByIdAndUserId(UUID id, UUID userId);
+
+    @Query("""
+        select r.* from resource r
+        join user_resource ur on ur.resource_id = r.id
+        where r.id = :id and ur.user_id = :userId and ur.role in ('OWNER', 'EDITOR')
+        """)
+    Mono<ResourceEntity> findByIdAndWriterUserId(UUID id, UUID userId);
 
     /**
      * 按资源库筛选条件分页查询资源。
@@ -31,7 +50,7 @@ public interface ResourceRepository extends ReactiveCrudRepository<ResourceEntit
      * @param ownerId 资源拥有者
      * @param resourceType 类型过滤，空字符串表示不过滤
      * @param query 标题关键词，空字符串表示不过滤
-     * @param lifecycle 生命周期过滤，空字符串表示不过滤
+     * @param status 状态码过滤，负数表示不过滤
      * @param collectionId Collection 过滤，空字符串表示不过滤
      * @param tag 标签名精确过滤，空字符串表示不过滤
      * @param sourceProvider 外部身份 provider 过滤，空字符串表示不过滤
@@ -41,9 +60,10 @@ public interface ResourceRepository extends ReactiveCrudRepository<ResourceEntit
      */
     @Query("""
         select distinct r.* from resource r
+        join user_resource ur on ur.resource_id = r.id
         join resource_title t on t.resource_id = r.id
-        where r.owner_id = :ownerId
-          and (:lifecycle = '' or r.lifecycle = :lifecycle)
+        where ur.user_id = :ownerId
+          and (:status < 0 or r.status = :status)
           and (:resourceType = '' or r.resource_type = :resourceType)
           and (:query = '' or t.title ilike '%' || :query || '%')
           and (:collectionId = '' or exists (
@@ -59,7 +79,7 @@ public interface ResourceRepository extends ReactiveCrudRepository<ResourceEntit
         order by r.updated_at desc
         offset :offset limit :limit
         """)
-    Flux<ResourceEntity> search(UUID ownerId, String resourceType, String query, String lifecycle,
+    Flux<ResourceEntity> search(UUID ownerId, String resourceType, String query, int status,
                                 String collectionId, String tag, String sourceProvider, long offset, int limit);
 
     /**
@@ -68,7 +88,7 @@ public interface ResourceRepository extends ReactiveCrudRepository<ResourceEntit
      * @param ownerId 资源拥有者
      * @param resourceType 类型过滤，空字符串表示不过滤
      * @param query 标题关键词，空字符串表示不过滤
-     * @param lifecycle 生命周期过滤，空字符串表示不过滤
+     * @param status 状态码过滤，负数表示不过滤
      * @param collectionId Collection 过滤，空字符串表示不过滤
      * @param tag 标签名精确过滤，空字符串表示不过滤
      * @param sourceProvider 外部身份 provider 过滤，空字符串表示不过滤
@@ -76,9 +96,10 @@ public interface ResourceRepository extends ReactiveCrudRepository<ResourceEntit
      */
     @Query("""
         select count(distinct r.id) from resource r
+        join user_resource ur on ur.resource_id = r.id
         join resource_title t on t.resource_id = r.id
-        where r.owner_id = :ownerId
-          and (:lifecycle = '' or r.lifecycle = :lifecycle)
+        where ur.user_id = :ownerId
+          and (:status < 0 or r.status = :status)
           and (:resourceType = '' or r.resource_type = :resourceType)
           and (:query = '' or t.title ilike '%' || :query || '%')
           and (:collectionId = '' or exists (
@@ -92,6 +113,6 @@ public interface ResourceRepository extends ReactiveCrudRepository<ResourceEntit
                  where ei.resource_id = r.id
                    and (ei.provider = :sourceProvider or ei.provider like :sourceProvider || ':%')))
         """)
-    Mono<Long> countSearch(UUID ownerId, String resourceType, String query, String lifecycle,
+    Mono<Long> countSearch(UUID ownerId, String resourceType, String query, int status,
                            String collectionId, String tag, String sourceProvider);
 }

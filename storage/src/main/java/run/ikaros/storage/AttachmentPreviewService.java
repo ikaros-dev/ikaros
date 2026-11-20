@@ -39,8 +39,10 @@ public class AttachmentPreviewService {
     }
 
     public Mono<AttachmentPreviewUrlView> issue(UUID actorId, UUID attachmentId, String requestedProviderKey) {
-        return attachments.findById(attachmentId).filter(a -> a.deletedAt() == null)
-            .flatMap(attachment -> resources.requireOwned(actorId, attachment.resourceId()).thenReturn(attachment))
+        return attachments.findReadableReferenceById(attachmentId).filter(a -> a.status() == 1)
+            .flatMap(attachment -> attachment.resourceId() == null
+                ? attachment.createdBy().equals(actorId) ? Mono.just(attachment) : Mono.empty()
+                : resources.requireReadable(actorId, attachment.resourceId()).thenReturn(attachment))
             .switchIfEmpty(Mono.error(new NotFoundException("Attachment 不存在或无权访问")))
             .flatMap(attachment -> blobs.findById(attachment.blobId())
                 .switchIfEmpty(Mono.error(new NotFoundException("Attachment 对应的 Blob 不存在")))

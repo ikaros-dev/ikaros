@@ -43,6 +43,8 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
     private final BackgroundTaskService taskService;
     private final DurableEventPublisher eventService;
     private final UploadSessionRepository uploadSessionRepository;
+    private ResourceAttachmentRepository resourceAttachmentRepository;
+    private AttachmentBlobRepository attachmentBlobRepository;
     private List<StorageContentReader> contentReaders = List.of();
     private StorageObjectProviderRegistry objectProviderRegistry;
 
@@ -141,16 +143,18 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
         this.objectProviderRegistry = objectProviderRegistry;
     }
 
+    @Autowired(required = false)
+    public void setAttachmentLinkRepositories(ResourceAttachmentRepository resourceAttachments,
+                                               AttachmentBlobRepository attachmentBlobs) {
+        this.resourceAttachmentRepository = resourceAttachments;
+        this.attachmentBlobRepository = attachmentBlobs;
+    }
+
     @Override
     public Mono<AttachmentView> attachDerived(UUID ownerId, UUID resourceId, CreateDerivedAttachmentRequest request) {
-        return attachmentRepository.findById(request.sourceAttachmentId())
-            .filter(source -> source.resourceId().equals(resourceId) && source.deletedAt() == null)
+        return attachmentRepository.findActiveReferenceByIdAndResourceId(request.sourceAttachmentId(), resourceId)
             .switchIfEmpty(Mono.error(new NotFoundException("来源附件不存在或无权访问")))
-            .then(attach(ownerId, resourceId, new AttachBlobRequest(request.content().sha256(), request.content().sizeBytes(),
-                request.content().mediaType(), request.content().fileName(), AttachmentKind.DERIVED,
-                request.content().provider(), request.content().tier(), request.content().objectKey())))
-            .flatMap(view -> derivedAttachmentRepository.save(new DerivedAttachmentEntity(null, request.sourceAttachmentId(),
-                view.id(), Instant.now(), null)).thenReturn(view));
+            .flatMap(source -> owned(ownerId, resourceId).then(saveDerivedBlob(source, request.content())));
     }
 
     @Override
@@ -160,22 +164,27 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
 
     private Mono<AttachmentView> attachInternal(UUID ownerId, UUID resourceId, AttachBlobRequest request,
                                                 String idempotencyKey) {
-        return owned(ownerId, resourceId).then(transactionalOperator.transactional(
-            existingAttachment(resourceId, idempotencyKey)
-                .flatMap(existing -> blobRepository.findById(existing.blobId())
-                    .switchIfEmpty(Mono.error(new ConflictException("幂等提交引用了不存在的 Blob")))
-                    .flatMap(blob -> toView(existing, blob)))
-                .switchIfEmpty(Mono.defer(() -> findOrCreateBlob(request)
-                    .flatMap(blob -> ensurePlacement(blob, request)
-                        .then(markAvailable(blob))
-                        .then(attachmentRepository.save(new AttachmentEntity(
-                            null, resourceId, blob.id(), request.fileName(), request.kind(), Instant.now(), null, null,
-                            idempotencyKey
-                        )))
-                        .flatMap(attachment -> auditService.record(ownerId, "attachment.create", "ATTACHMENT",
-                            attachment.id(), "{}").then(emit("storage.attachment.created", attachment))
-                            .then(toView(attachment, blob))))))
-        ));
+        Mono<AttachmentView> idempotent = existingAttachment(ownerId, resourceId, idempotencyKey, request)
+            .flatMap(existing -> blobRepository.findById(existing.blobId())
+                .switchIfEmpty(Mono.error(new ConflictException("幂等提交引用了不存在的 Blob")))
+                .flatMap(blob -> toView(existing, blob)));
+        Mono<AttachmentView> create = findOrCreateBlob(request).flatMap(blob -> ensurePlacement(blob, request)
+            .then(markAvailable(blob))
+            .then(Mono.defer(() -> {
+                Instant now = Instant.now();
+                String fingerprint = requestFingerprint(resourceId, request);
+                return attachmentRepository.save(new AttachmentEntity(null, request.fileName(), request.kind(), 1,
+                    ownerId, idempotencyKey, fingerprint, now, now, null))
+                    .flatMap(attachment -> saveLinks(attachment.id(), resourceId, blob.id())
+                        .then(auditService.record(ownerId, "attachment.create", "ATTACHMENT", attachment.id(), "{}")
+                            .then(emit("storage.attachment.created", attachment, resourceId, blob.id()))
+                            .then(toView(new AttachmentReference(attachment.id(), resourceId, blob.id(), attachment.name(),
+                                attachment.attachmentKind(), attachment.status(), attachment.createdBy(),
+                                attachment.idempotencyKey(), attachment.requestFingerprint(), attachment.createdAt(),
+                                attachment.updatedAt(), attachment.version()), blob))));
+            })));
+        return owned(ownerId, resourceId)
+            .then(transactionalOperator.transactional(idempotent.switchIfEmpty(Mono.defer(() -> create))));
     }
 
     @Override
@@ -229,8 +238,7 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
         if (providerRegistry == null || objectProviderRegistry == null) {
             return Mono.error(new ConflictException("Storage Provider 服务端写入能力未配置"));
         }
-        return attachmentRepository.findById(sourceAttachmentId)
-            .filter(source -> source.resourceId().equals(resourceId) && source.deletedAt() == null)
+        return owned(ownerId, resourceId).then(attachmentRepository.findActiveReferenceByIdAndResourceId(sourceAttachmentId, resourceId))
             .switchIfEmpty(Mono.error(new NotFoundException("来源附件不存在或无权访问")))
             .flatMap(source -> blobRepository.findById(source.blobId())
                 .switchIfEmpty(Mono.error(new ConflictException("来源附件引用的 Blob 不存在")))
@@ -245,10 +253,26 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
                             String objectKey = "derived/" + sourceAttachmentId + "/" + UUID.randomUUID() + "-" + safeName;
                             String sha256 = sha256(content);
                             return objectProviderRegistry.write(provider, objectKey, mediaType, content)
-                                .then(attach(ownerId, resourceId, new AttachBlobRequest(sha256, content.length,
+                                .then(saveDerivedBlob(source, new AttachBlobRequest(sha256, content.length,
                                     mediaType, fileName, AttachmentKind.DERIVED, provider.providerKey(),
                                     placement.storageTier(), objectKey)));
                         }))));
+    }
+
+    private Mono<AttachmentView> saveDerivedBlob(AttachmentReference source, AttachBlobRequest request) {
+        if (attachmentBlobRepository == null) {
+            return Mono.error(new IllegalStateException("Attachment-Blob 关系仓储未配置"));
+        }
+        return transactionalOperator.transactional(findOrCreateBlob(request)
+            .flatMap(blob -> ensurePlacement(blob, request)
+                .then(markAvailable(blob))
+                .then(attachmentBlobRepository.findByAttachmentIdAndBlobId(source.id(), blob.id())
+                    .switchIfEmpty(Mono.defer(() -> attachmentBlobRepository.save(new AttachmentBlobEntity(
+                        null, source.id(), blob.id(), AttachmentBlobEntity.DERIVED, Instant.now(), null))))
+                    .then())
+                .then(blobRepository.findById(source.blobId())
+                    .switchIfEmpty(Mono.error(new ConflictException("Attachment 原件绑定的 Blob 不存在")))
+                    .flatMap(original -> toView(source, original)))));
     }
 
     private String sha256(byte[] content) {
@@ -395,8 +419,8 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
 
     @Override
     public Mono<List<AttachmentView>> list(UUID ownerId, UUID resourceId) {
-        return owned(ownerId, resourceId)
-            .thenMany(attachmentRepository.findAllByResourceIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtDesc(resourceId)
+        return resourceOwnership.requireReadable(ownerId, resourceId)
+            .thenMany(attachmentRepository.findActiveReferencesByResourceId(resourceId)
                 .take(MAX_UNPAGED_RESULTS))
             .flatMap(attachment -> blobRepository.findById(attachment.blobId())
                 .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
@@ -417,7 +441,8 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
             .map(result -> new PageResponse<>(result.getT1(), result.getT2(), page, size));
     }
 
-    private Mono<AttachmentView> view(AttachmentEntity attachment) {
+    private Mono<AttachmentView> view(AttachmentReference attachment) {
+        if (attachment.blobId() == null) return Mono.error(new ConflictException("附件缺少原始 Blob 绑定"));
         return blobRepository.findById(attachment.blobId())
             .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
             .flatMap(blob -> toView(attachment, blob));
@@ -425,10 +450,12 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
 
     @Override
     public Mono<AttachmentView> get(UUID ownerId, UUID attachmentId) {
-        return attachmentRepository.findById(attachmentId)
-            .filter(attachment -> attachment.deletedAt() == null)
+        return attachmentRepository.findReadableReferenceById(attachmentId)
+            .filter(attachment -> attachment.status() == 1)
             .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或已删除")))
-            .flatMap(attachment -> owned(ownerId, attachment.resourceId())
+            .flatMap(attachment -> (attachment.resourceId() == null
+                ? attachment.createdBy().equals(ownerId) ? Mono.<Void>empty() : Mono.error(new NotFoundException("附件不存在或已删除"))
+                : resourceOwnership.requireReadable(ownerId, attachment.resourceId()))
                 .then(blobRepository.findById(attachment.blobId())
                     .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
                     .flatMap(blob -> toView(attachment, blob))));
@@ -439,10 +466,12 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
         if (contentReaders.isEmpty() || providerRegistry == null) {
             return Mono.error(new ConflictException("Storage Provider 内容读取能力未配置"));
         }
-        return attachmentRepository.findById(attachmentId)
-            .filter(attachment -> attachment.deletedAt() == null)
+        return attachmentRepository.findReadableReferenceById(attachmentId)
+            .filter(attachment -> attachment.status() == 1)
             .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或已删除")))
-            .flatMap(attachment -> owned(ownerId, attachment.resourceId())
+            .flatMap(attachment -> (attachment.resourceId() == null
+                ? attachment.createdBy().equals(ownerId) ? Mono.<Void>empty() : Mono.error(new NotFoundException("附件不存在或已删除"))
+                : resourceOwnership.requireReadable(ownerId, attachment.resourceId()))
                 .then(blobRepository.findById(attachment.blobId())
                     .switchIfEmpty(Mono.error(new ConflictException("附件引用了不存在的 Blob")))
                     .flatMap(blob -> readFromAvailablePlacements(blob, range))));
@@ -464,15 +493,12 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
     @Override
     public Mono<Void> remove(UUID ownerId, UUID resourceId, UUID attachmentId) {
         return owned(ownerId, resourceId)
-            .then(attachmentRepository.findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(attachmentId, resourceId)
+            .then(attachmentRepository.findActiveReferenceByIdAndResourceId(attachmentId, resourceId)
                 .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或已删除")))
                 .flatMap(attachment -> {
-                    AttachmentEntity trashed = new AttachmentEntity(attachment.id(), attachment.resourceId(),
-                        attachment.blobId(), attachment.fileName(), attachment.attachmentKind(), attachment.createdAt(),
-                        Instant.now(), attachment.version());
-                    return attachmentRepository.save(trashed)
+                    return attachmentRepository.findById(attachment.id()).flatMap(current -> updateStatus(current, 2)
                         .flatMap(saved -> auditService.record(ownerId, "attachment.delete", "ATTACHMENT", attachment.id(), "{}")
-                            .then(emit("storage.attachment.trashed", saved)));
+                            .then(emit("storage.attachment.trashed", saved, resourceId, attachment.blobId()))));
                 }))
             .then();
     }
@@ -480,16 +506,12 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
     @Override
     public Mono<Void> archive(UUID ownerId, UUID resourceId, UUID attachmentId) {
         return owned(ownerId, resourceId)
-            .then(attachmentRepository.findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(attachmentId, resourceId)
+            .then(attachmentRepository.findActiveReferenceByIdAndResourceId(attachmentId, resourceId)
                 .switchIfEmpty(Mono.error(new NotFoundException("附件不存在或已归档/删除")))
-                .flatMap(attachment -> {
-                    AttachmentEntity archived = new AttachmentEntity(attachment.id(), attachment.resourceId(),
-                        attachment.blobId(), attachment.fileName(), attachment.attachmentKind(), attachment.createdAt(),
-                        attachment.deletedAt(), attachment.version(), attachment.idempotencyKey(), Instant.now());
-                    return attachmentRepository.save(archived)
-                        .flatMap(saved -> auditService.record(ownerId, "attachment.archive", "ATTACHMENT",
-                            attachment.id(), "{}").then(emit("storage.attachment.archived", saved)));
-                }))
+                .flatMap(reference -> attachmentRepository.findById(reference.id()).flatMap(attachment -> updateStatus(attachment, 3)
+                    .flatMap(saved -> auditService.record(ownerId, "attachment.archive", "ATTACHMENT",
+                        attachment.id(), "{}").then(emit("storage.attachment.archived", saved, resourceId, reference.blobId())))))
+            )
             .then();
     }
 
@@ -540,13 +562,20 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
             })
             .switchIfEmpty(Mono.defer(() -> blobRepository.save(new BlobEntity(
                 null, "SHA-256", request.sha256().toLowerCase(), request.sizeBytes(), request.mediaType(),
-                BlobAvailability.PROCESSING, Instant.now(), null
+                BlobAvailability.PROCESSING, Instant.now(), Instant.now(), null
             ))));
     }
 
-    private Mono<AttachmentEntity> existingAttachment(UUID resourceId, String idempotencyKey) {
+    private Mono<AttachmentReference> existingAttachment(UUID ownerId, UUID resourceId, String idempotencyKey,
+                                                          AttachBlobRequest request) {
         return idempotencyKey == null ? Mono.empty()
-            : attachmentRepository.findByResourceIdAndIdempotencyKeyAndArchivedAtIsNullAndDeletedAtIsNull(resourceId, idempotencyKey);
+            : attachmentRepository.findReferenceByCreatedByAndIdempotencyKey(ownerId, idempotencyKey)
+                .flatMap(existing -> {
+                    if (!requestFingerprint(resourceId, request).equals(existing.requestFingerprint())) {
+                        return Mono.error(new ConflictException("同一 Idempotency-Key 不能用于不同附件请求"));
+                    }
+                    return Mono.just(existing);
+                });
     }
 
     private Mono<Void> ensurePlacement(BlobEntity blob, AttachBlobRequest request) {
@@ -573,15 +602,57 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
             return Mono.empty();
         }
         return blobRepository.save(new BlobEntity(blob.id(), blob.hashAlgorithm(), blob.sha256(), blob.sizeBytes(),
-            blob.mediaType(), BlobAvailability.AVAILABLE, blob.createdAt(), blob.version())).then();
+            blob.mediaType(), BlobAvailability.AVAILABLE, blob.createdAt(), Instant.now(), blob.version())).then();
     }
 
-    private Mono<Void> emit(String eventType, AttachmentEntity attachment) {
+    private Mono<Void> saveLinks(UUID attachmentId, UUID resourceId, UUID blobId) {
+        if (resourceAttachmentRepository == null || attachmentBlobRepository == null) {
+            return Mono.error(new IllegalStateException("Attachment 关系仓储未配置"));
+        }
+        Instant now = Instant.now();
+        return resourceAttachmentRepository.save(resourceId, attachmentId, now)
+            .then(attachmentBlobRepository.save(new AttachmentBlobEntity(null, attachmentId, blobId,
+                AttachmentBlobEntity.ORIGINAL, now, null)))
+            .then();
+    }
+
+    private Mono<AttachmentEntity> updateStatus(AttachmentEntity attachment, int status) {
+        return attachmentRepository.save(new AttachmentEntity(attachment.id(), attachment.name(),
+            attachment.attachmentKind(), status, attachment.createdBy(), attachment.idempotencyKey(),
+            attachment.requestFingerprint(), attachment.createdAt(), Instant.now(), attachment.version()));
+    }
+
+    private String requestFingerprint(UUID resourceId, AttachBlobRequest request) {
+        StringBuilder input = new StringBuilder();
+        appendFingerprintField(input, resourceId.toString());
+        appendFingerprintField(input, request.sha256().toLowerCase());
+        appendFingerprintField(input, Long.toString(request.sizeBytes()));
+        appendFingerprintField(input, request.mediaType());
+        appendFingerprintField(input, request.fileName());
+        appendFingerprintField(input, request.kind().name());
+        appendFingerprintField(input, request.provider());
+        appendFingerprintField(input, request.tier().name());
+        appendFingerprintField(input, request.objectKey());
+        try {
+            return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
+                .digest(input.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        } catch (java.security.NoSuchAlgorithmException error) {
+            throw new IllegalStateException("SHA-256 不可用", error);
+        }
+    }
+
+    private void appendFingerprintField(StringBuilder canonical, String value) {
+        canonical.append(value == null ? -1 : value.length()).append(':');
+        if (value != null) canonical.append(value);
+        canonical.append(';');
+    }
+
+    private Mono<Void> emit(String eventType, AttachmentEntity attachment, UUID resourceId, UUID blobId) {
         if (eventService == null) {
             return Mono.empty();
         }
         String payload = "{\"attachment_id\":\"" + attachment.id() + "\",\"resource_id\":\""
-            + attachment.resourceId() + "\",\"blob_id\":\"" + attachment.blobId() + "\"}";
+            + resourceId + "\",\"blob_id\":\"" + blobId + "\"}";
         return eventService.append(new EventAppendRequest(eventType, 1, "storage", "attachment", attachment.id(), payload)).then();
     }
 
@@ -602,8 +673,8 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
             session.expiresAt(), session.createdAt(), session.updatedAt(), session.version());
     }
 
-    private Mono<AttachmentView> toView(AttachmentEntity attachment, BlobEntity blob) {
-        return Mono.just(new AttachmentView(attachment.id(), attachment.resourceId(), attachment.fileName(),
+    private Mono<AttachmentView> toView(AttachmentReference attachment, BlobEntity blob) {
+        return Mono.just(new AttachmentView(attachment.id(), attachment.resourceId(), attachment.name(),
             attachment.attachmentKind(), blob.sha256(), blob.sizeBytes(), blob.mediaType(),
             toAvailability(blob.availability())));
     }
@@ -619,6 +690,6 @@ public class DefaultStorageService implements StorageService, AttachmentContentR
     }
 
     private Mono<Void> owned(UUID ownerId, UUID resourceId) {
-        return resourceOwnership.requireOwned(ownerId, resourceId);
+        return resourceOwnership.requireWritable(ownerId, resourceId);
     }
 }

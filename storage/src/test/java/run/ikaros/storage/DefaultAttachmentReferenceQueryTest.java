@@ -30,10 +30,11 @@ class DefaultAttachmentReferenceQueryTest {
         UUID actorId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();
         UUID attachmentId = UUID.randomUUID();
-        AttachmentEntity attachment = new AttachmentEntity(attachmentId, resourceId, UUID.randomUUID(),
-            "cover.jpg", AttachmentKind.ORIGINAL, Instant.now(), null, 0L);
-        when(attachments.findById(attachmentId)).thenReturn(Mono.just(attachment));
-        when(resources.requireOwned(actorId, resourceId)).thenReturn(Mono.empty());
+        Instant now = Instant.now();
+        AttachmentReference attachment = new AttachmentReference(attachmentId, resourceId, UUID.randomUUID(),
+            "cover.jpg", AttachmentKind.ORIGINAL, 1, actorId, null, null, now, now, 0L);
+        when(attachments.findReadableReferenceById(attachmentId)).thenReturn(Mono.just(attachment));
+        when(resources.requireReadable(actorId, resourceId)).thenReturn(Mono.empty());
 
         StepVerifier.create(query.requireReadable(actorId, attachmentId))
             .assertNext(reference -> {
@@ -48,8 +49,8 @@ class DefaultAttachmentReferenceQueryTest {
         UUID actorId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();
         UUID attachmentId = UUID.randomUUID();
-        when(resources.requireOwned(actorId, resourceId)).thenReturn(Mono.empty());
-        when(attachments.findByIdAndResourceIdAndArchivedAtIsNullAndDeletedAtIsNull(attachmentId, resourceId))
+        when(resources.requireReadable(actorId, resourceId)).thenReturn(Mono.empty());
+        when(attachments.findActiveReferenceByIdAndResourceId(attachmentId, resourceId))
             .thenReturn(Mono.empty());
 
         StepVerifier.create(query.requireActiveForResource(actorId, resourceId, attachmentId))

@@ -115,7 +115,7 @@ Rules：
 
 1. API POST 必须支持 `Idempotency-Key`。
 2. 如果 caller 提供 `id`，重复创建相同 ID 且语义一致时可以返回现有结果；冲突内容返回 `409`。
-3. Resource + initial titles + Outbox Event 在同一事务提交。
+3. Resource + initial titles + Owner `user_resource` row + Outbox Event 在同一事务提交。
 4. Plugin-defined Resource Type 必须是 namespaced type。
 
 ### 2.2 `resource.update-resource`
@@ -130,7 +130,7 @@ patch
 
 `patch` 只允许普通可编辑字段，不允许通过它直接修改：
 
-- lifecycle status；
+- `status`；
 - Resource Type 的领域转换；
 - External Identity；
 - ACL；
@@ -141,7 +141,7 @@ Lost Update 返回 `409 resource.version-conflict`。
 
 ### 2.3 Archive / Restore / Trash
 
-均为显式 Command，不通过通用 PATCH 设置 `lifecycle_status`。
+均为显式 Command，不通过通用 PATCH 设置 `status`。
 
 Command 必须：
 
@@ -474,11 +474,11 @@ append(EventAppendRequest) -> EventReference
 
 | Event Type | v | Subject | Minimum Payload |
 |---|---:|---|---|
-| `resource.resource.created` | 1 | resource | `resource_id, resource_type, lifecycle_status, version` |
+| `resource.resource.created` | 2 | resource | `resource_id, resource_type, status, version` |
 | `resource.resource.updated` | 1 | resource | `resource_id, changed_fields[], version` |
-| `resource.resource.archived` | 1 | resource | `resource_id, previous_status, version` |
-| `resource.resource.restored` | 1 | resource | `resource_id, previous_status, version` |
-| `resource.resource.trashed` | 1 | resource | `resource_id, version` |
+| `resource.resource.archived` | 2 | resource | `resource_id, previous_status, status, version` |
+| `resource.resource.restored` | 2 | resource | `resource_id, previous_status, status, version` |
+| `resource.resource.trashed` | 2 | resource | `resource_id, previous_status, status, version` |
 | `resource.external-identity.attached` | 1 | resource | `resource_id, provider, namespace, object_type, external_id` |
 | `resource.external-identity.detached` | 1 | resource | same identity key |
 | `resource.tag.created` | 1 | tag | `tag_id, scope_key` |

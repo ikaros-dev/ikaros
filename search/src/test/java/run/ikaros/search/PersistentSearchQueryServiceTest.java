@@ -35,8 +35,8 @@ class PersistentSearchQueryServiceTest {
         when(documents.search("%book%", "BOOK", "favorite", Instant.MAX,
             new UUID(Long.MAX_VALUE, Long.MAX_VALUE), 4))
             .thenReturn(Flux.just(entity(hidden, hiddenAt), entity(visible, visibleAt)));
-        when(ownership.requireOwned(actor, hidden)).thenReturn(Mono.error(new IllegalStateException("denied")));
-        when(ownership.requireOwned(actor, visible)).thenReturn(Mono.empty());
+        when(ownership.requireReadable(actor, hidden)).thenReturn(Mono.error(new IllegalStateException("denied")));
+        when(ownership.requireReadable(actor, visible)).thenReturn(Mono.empty());
         when(projections.get(visible)).thenReturn(Mono.just(new SearchDocument(visible, visible, 3,
             "p0", 1, Map.of("title", "Book"), visibleAt)));
 

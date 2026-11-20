@@ -84,7 +84,7 @@ public class DefaultUserResourceStateService implements UserResourceStateService
     }
 
     private Mono<Void> owned(UUID userId, UUID resourceId) {
-        return resources.findByIdAndOwnerId(resourceId, userId)
+        return resources.findByIdAndUserId(resourceId, userId)
             .switchIfEmpty(Mono.error(new NotFoundException("资源不存在或无权访问"))).then();
     }
 

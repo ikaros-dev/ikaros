@@ -13,7 +13,7 @@ public record ResourceView(
     String primaryTitle,
     String summary,
     ResourceClassification dataClassification,
-    ResourceLifecycle lifecycle,
+    int status,
     List<ResourceTitleView> titles,
     List<ExternalIdentityView> externalIdentities,
     Instant createdAt,
@@ -23,7 +23,7 @@ public record ResourceView(
     public ResourceView(UUID id, ResourceType type, ResourceLifecycle lifecycle,
                         List<ResourceTitleView> titles, List<ExternalIdentityView> externalIdentities,
                         Instant createdAt, Instant updatedAt) {
-        this(id, type, null, null, ResourceClassification.PRIVATE, lifecycle, titles, externalIdentities,
+        this(id, type, null, null, ResourceClassification.PRIVATE, lifecycle.statusCode(), titles, externalIdentities,
             createdAt, updatedAt, null);
     }
 }

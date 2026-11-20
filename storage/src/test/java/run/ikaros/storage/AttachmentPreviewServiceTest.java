@@ -32,7 +32,7 @@ class AttachmentPreviewServiceTest {
     private UUID blobId;
     private UUID resourceId;
     private UUID storageProviderId;
-    private AttachmentEntity attachment;
+    private AttachmentReference attachment;
     private BlobEntity blob;
     private BlobPlacementEntity placement;
     private StorageProvider provider;
@@ -44,14 +44,15 @@ class AttachmentPreviewServiceTest {
         actorId = UUID.randomUUID(); attachmentId = UUID.randomUUID(); blobId = UUID.randomUUID();
         resourceId = UUID.randomUUID(); storageProviderId = UUID.randomUUID();
         Instant now = Instant.now();
-        attachment = new AttachmentEntity(attachmentId, resourceId, blobId, "video.mp4", AttachmentKind.ORIGINAL, now, null, 0L);
+        attachment = new AttachmentReference(attachmentId, resourceId, blobId, "video.mp4", AttachmentKind.ORIGINAL,
+            1, actorId, null, null, now, now, 0L);
         blob = new BlobEntity(blobId, "sha", 100L, "video/mp4", BlobAvailability.AVAILABLE, now, 0L);
         placement = new BlobPlacementEntity(UUID.randomUUID(), blobId, "oss", StorageTier.HOT, "video.mp4",
             PlacementState.ACTIVE, now, now, 0L);
         provider = new StorageProvider(storageProviderId, "oss", "S3", StorageTier.HOT, StorageProviderStatus.ENABLED,
             "secret://oss", Map.of(), now, now);
-        when(attachments.findById(attachmentId)).thenReturn(Mono.just(attachment));
-        when(resources.requireOwned(actorId, resourceId)).thenReturn(Mono.empty());
+        when(attachments.findReadableReferenceById(attachmentId)).thenReturn(Mono.just(attachment));
+        when(resources.requireReadable(actorId, resourceId)).thenReturn(Mono.empty());
         when(blobs.findById(blobId)).thenReturn(Mono.just(blob));
         when(placements.findAllByBlobIdOrderByCreatedAtAsc(blobId)).thenReturn(Flux.just(placement));
         when(providers.getByKey("oss")).thenReturn(Mono.just(provider));

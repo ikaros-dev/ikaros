@@ -80,6 +80,19 @@ EventEnvelopeV1
 }
 ```
 
+### Resource status events @2
+
+The following v2 payloads use integer status codes. Version 1 payloads above remain historical contracts and are not rewritten.
+
+| Event | Payload |
+|---|---|
+| `resource.resource.created@2` | `resource_id, resource_type, status, version`; initial status is `1` (`ACTIVE`). |
+| `resource.resource.archived@2` | `resource_id, previous_status, status, version`; `status` is `3` (`ARCHIVED`). |
+| `resource.resource.restored@2` | `resource_id, previous_status, status, version`; `status` is `1` (`ACTIVE`) or `3` (`ARCHIVED`) per prior state. |
+| `resource.resource.trashed@2` | `resource_id, previous_status, status, version`; `status` is `2` (`TRASHED`). |
+
+Status codes: `0 DELETED`, `1 ACTIVE`, `2 TRASHED`, `3 ARCHIVED`, `4 FROZEN`, `5 UNFREEZING`.
+
 ### `resource.external-identity.attached@1`
 
 ```json

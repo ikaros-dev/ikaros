@@ -31,7 +31,8 @@ class PersistentEbookBookInfoServiceTest {
         when(works.findById(workId)).thenReturn(Mono.just(new ReadingWorkEntity(workId, owner, resourceId,
             ReadingWorkKind.EBOOK.name(), "zh-CN", "ONGOING", 0L)));
         when(resources.get(owner, resourceId)).thenReturn(Mono.just(new ResourceView(resourceId, ResourceType.BOOK,
-            "测试电子书", "简介", ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE, List.of(), List.of(), now, now, 0L)));
+            "测试电子书", "简介", ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(),
+            List.of(), List.of(), now, now, 0L)));
         when(editions.findById(editionId)).thenReturn(Mono.just(new ReadingEditionEntity(editionId, owner, workId,
             "EPUB", "zh-CN", "出版社", "book.epub", 0, "AVAILABLE", 0L)));
         when(chapters.findAllByOwnerIdAndEditionIdOrderBySortOrderAsc(owner, editionId)).thenReturn(Flux.just(

@@ -2,7 +2,7 @@
 
 | 项目 | 内容 |
 |---|---|
-| 状态 | Accepted（身份与关系决策；执行契约尚待收敛） |
+| 状态 | Accepted（身份、绑定角色和关系约束已冻结；选择派生表示的 HTTP 参数待后续登记） |
 | 日期 | 2026-10-03 |
 | Owner | Storage；Media 负责转码与媒体解释，Relation Core 负责附件间关系 |
 
@@ -26,23 +26,33 @@
 
 本决策替代 Attachment / Blob / Storage 设计 §5.2 的单 Blob 基数，以及 §15 中“转码必定创建新 Attachment”的要求。它不把不同压制组的独立文件、视频与字幕或歌曲与歌词合并成一个 Attachment。
 
+## 已冻结的绑定 Schema 契约
+
+`storage.attachment_blob` 字段为 UUIDv7 `id`、`attachment_id`、`blob_id`、`role`、`created_at` 和乐观锁 `version`。`role` 仅允许 `ORIGINAL` 与 `DERIVED`；同一附件和 Blob 唯一，每个 Attachment 最多一个 `ORIGINAL` 绑定。每个已物化 Attachment 必须至少有一个原件绑定，由物化事务保证；外键分别引用 Attachment 与 Blob，删除 Attachment 时级联删除绑定，删除 Blob 时必须由受控 GC 完成且受绑定外键保护。
+
+`storage.resource_attachment` 以 `(resource_id, attachment_id)` 为复合主键，保存两个外键、`created_at` 和 `version`。Attachment 可没有 Resource 关联；删除关系不删除 Attachment。
+
+Attachment 状态存为整数：`0 DELETED`、`1 ACTIVE`、`2 TRASHED`、`3 ARCHIVED`、`4 FROZEN`、`5 UNFREEZING`。状态变更更新时间使用 `updated_at`，不再使用 `deleted_at` 或 `archived_at`。用户可见名称仅保存在 Attachment；Blob 不保存名称。
+
+Attachment 创建请求幂等范围为 `(created_by, idempotency_key)`。规范请求指纹用于识别同一键被不同请求复用；同主体使用新键创建相同内容仍创建独立 Attachment。Blob 摘要去重与 Attachment 创建幂等是不同机制。
+
 ## 执行契约待确认事项
 
-- 明确选择表示的 HTTP/Application 参数、错误码及缓存/Delivery Grant/Lease 的所选 Blob 绑定契约；默认原件规则已确定。
 - `blob_metadata` 的技术信息类型、提取工具/版本、结果版本、并发更新与 Secure Domain 边界；技术信息范围已确定。
-- 绑定角色、表示标识、来源、版本、解除绑定、幂等键和事件 Payload 的精确契约。
+- 派生表示选择参数、缓存/Delivery Grant/Lease 的所选 Blob 绑定契约；本阶段默认读取原件，不新增表示选择 API。
+- 绑定解除的业务语义与事件 Payload；不得绕开有效引用、Retention Hold、Archive Base、Placement 和审计保护。
 - “替换文件”的业务语义；不能把用户确认的转码规则自动扩展为任意替换规则。
 - 附件关系类型、方向、授权与关联查询契约。
 
-上述执行契约未冻结前不得实现未登记的表示选择接口或依赖未冻结绑定语义的生产 Migration，也不得自行猜测新 HTTP 路由。独立 `blob_metadata` 建表契约已按用户确认冻结为 `id / blob_id / field_key / field_value(jsonb) / updated_at / version`，详见 [Schema §12.1](../database/P0-Database-Schema-Design.md#121-storageblob_metadata已冻结建表契约)；可先追加建表 Migration，提取器与读写 Capability 待后续契约收敛。
+上述未决契约未冻结前不得实现未登记的表示选择接口，也不得自行猜测新 HTTP 路由。独立 `blob_metadata` 建表契约已按用户确认冻结为 `id / blob_id / field_key / field_value(jsonb) / updated_at / version`，详见 [Schema §12.3](../database/P0-Database-Schema-Design.md#123-storageblob_metadata已冻结建表契约)；提取器与读写 Capability 待后续契约收敛。
 
 ## 收敛与迁移
 
-当前 `AttachmentEntity.blobId`、单 Blob 查询和公开 API 是旧实现，不代表新基数已经落地。先收敛 Subsystem、Schema、Command/Query/Event、OpenAPI 与验收契约，再按 Expand → Migrate → Contract 实施。
+Resource/Attachment 状态列与关系表已按 Expand → Migrate → Contract 实施；运行时读写使用状态码、`resource_attachment` 和 `attachment_blob`。读取派生表示的请求参数仍未冻结，默认查询继续使用原件。
 
-- Expand：追加 Owner Migration 引入绑定表及元数据表，保留旧读取路径供迁移期间兼容。
-- Migrate：为每个已有附件建立指向原 `blob_id` 的绑定，保持附件与 Blob ID；校验引用数量、内容摘要、授权和可读性。大规模回填由有界可恢复任务完成。
-- Contract：全部读取、上传提交、预览、Range、恢复、Retention、GC、Backup/Export 与管理端列表改用绑定后，再追加 Migration 收缩旧字段；已发布 Migration 不原地修改。
+- Expand：Owner Migration 引入绑定表、新状态列、用户关系和更新时间列。
+- Migrate：为已有附件建立指向原 `blob_id` 的 `ORIGINAL` 绑定，建立 `resource_attachment` 关联和 Resource Owner 关系，保持附件与 Blob ID。
+- Contract：运行时代码切换到状态列和关联表后，Owner Migration 删除 Resource/Attachment 旧所有权与单关联字段，并将 Resource-附件关联表收敛为复合主键。
 - 管理员附件 Blob 查询需要从单对象响应收敛为有界列表；旧接口的兼容方式和新 Operation 必须先登记。
 
 ## 验收要求

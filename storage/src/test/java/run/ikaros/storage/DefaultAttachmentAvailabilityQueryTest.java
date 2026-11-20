@@ -53,8 +53,9 @@ class DefaultAttachmentAvailabilityQueryTest {
         UUID blobId = UUID.randomUUID();
         Instant now = Instant.now();
         when(references.requireReadable(actorId, attachmentId)).thenReturn(Mono.just(new AttachmentReference(attachmentId, resourceId)));
-        when(attachments.findById(attachmentId)).thenReturn(Mono.just(new AttachmentEntity(attachmentId, resourceId, blobId,
-            "data.bin", run.ikaros.storage.api.AttachmentKind.ORIGINAL, now, null, 0L)));
+        when(attachments.findReadableReferenceById(attachmentId)).thenReturn(Mono.just(new run.ikaros.storage.AttachmentReference(
+            attachmentId, resourceId, blobId, "data.bin", run.ikaros.storage.api.AttachmentKind.ORIGINAL, 1,
+            actorId, null, null, now, now, 0L)));
         when(blobs.findById(blobId)).thenReturn(Mono.just(new BlobEntity(blobId, "a", 1, "application/octet-stream",
             availability, now, 0L)));
         when(placements.findAllByBlobIdOrderByCreatedAtAsc(blobId)).thenReturn(Flux.just(new BlobPlacementEntity(

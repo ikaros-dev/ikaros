@@ -10,20 +10,32 @@ import java.util.UUID;
  *
  * @param type Resource 类型过滤，{@code null} 表示不过滤
  * @param keyword 标题关键词，空白表示不过滤
- * @param lifecycle 生命周期过滤，{@code null} 表示不过滤
+ * @param status 数值状态过滤，{@code null} 表示不过滤
  * @param collectionId Collection 过滤，{@code null} 表示不过滤
  * @param tag 标签名精确过滤，空白表示不过滤
  * @param sourceProvider 外部身份 provider 过滤，空白表示不过滤
  * @param page 从零开始的页码
  * @param size 每页记录数
  */
-public record ResourceLibraryQuery(ResourceType type, String keyword, ResourceLifecycle lifecycle,
+public record ResourceLibraryQuery(ResourceType type, String keyword, Integer status,
                                    UUID collectionId, String tag, String sourceProvider,
                                    int page, int size) {
 
-    /** 只按类型、关键词和生命周期浏览。 */
+    public ResourceLibraryQuery(ResourceType type, String keyword, ResourceLifecycle lifecycle,
+                                UUID collectionId, String tag, String sourceProvider, int page, int size) {
+        this(type, keyword, lifecycle == null ? null : lifecycle.statusCode(), collectionId, tag, sourceProvider,
+            page, size);
+    }
+
+    /** 只按类型、关键词和状态浏览。 */
+    public static ResourceLibraryQuery of(ResourceType type, String keyword, Integer status,
+                                          int page, int size) {
+        return new ResourceLibraryQuery(type, keyword, status, null, null, null, page, size);
+    }
+
+    /** Legacy helper for internal callers migrating to numeric status filters. */
     public static ResourceLibraryQuery of(ResourceType type, String keyword, ResourceLifecycle lifecycle,
                                           int page, int size) {
-        return new ResourceLibraryQuery(type, keyword, lifecycle, null, null, null, page, size);
+        return of(type, keyword, lifecycle == null ? null : lifecycle.statusCode(), page, size);
     }
 }

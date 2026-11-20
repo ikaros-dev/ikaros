@@ -9,4 +9,12 @@ import reactor.core.publisher.Mono;
  */
 public interface ResourceOwnershipQuery {
     Mono<Void> requireOwned(UUID ownerId, UUID resourceId);
+
+    default Mono<Void> requireReadable(UUID userId, UUID resourceId) {
+        return requireOwned(userId, resourceId);
+    }
+
+    default Mono<Void> requireWritable(UUID userId, UUID resourceId) {
+        return requireOwned(userId, resourceId);
+    }
 }

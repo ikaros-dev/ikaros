@@ -209,13 +209,13 @@ Attachment 不保存“永久物理路径”。
 
 ### 5.2 Attachment 与 Blob 多对多绑定
 
-依照 [ADR-009](../00-product-baseline/adr/ADR-009-attachment-blob-many-to-many.md)，Attachment 表示逻辑文件，Blob 表示它的具体不可变字节表示。一个附件可通过 `attachment_blob` 绑定原件与多个转码 Blob；多个附件也可以因去重共享同一 Blob，因此持久化关系为多对多。
+依照 [ADR-009](../00-product-baseline/adr/ADR-009-attachment-blob-many-to-many.md)，Attachment 表示逻辑文件，Blob 表示它的具体不可变字节表示。一个附件可通过 `attachment_blob` 绑定一个原件和多个派生 Blob；多个附件也可以因内容去重共享同一 Blob，因此持久化关系为多对多。Resource 与 Attachment 另通过 `resource_attachment` 多对多关联；Attachment 可独立存在。
 
 转码产生不同字节时创建或复用相应 Blob，并绑定到原 Attachment；不因码率、编码等表示变化创建新业务附件。不同压制组的独立文件、视频与字幕、歌曲与歌词仍是不同 Attachment，其文件间关系由 Relation Core 表达。
 
 每个 Blob 的内容身份仍不可变，绑定与解除绑定必须可审计。GC 检查所有有效绑定，不能只检查附件上的一个 `blob_id`。原件与派生表示的来源追踪、版本及替换语义须按 ADR-009 冻结契约后实施；当前单 Blob 实现属于待迁移状态。
 
-每个已物化附件有唯一有效原件绑定。未明确选择表示时，下载、预览及列表中的大小、媒体类型、摘要、可用状态使用原件 Blob；转码 Blob 通过明确选择使用，不提供可切换默认 Blob。原件不可用时返回原件状态，不静默使用转码内容。同一原件 Blob 内部的 Placement 选择继续遵循既有可读副本策略。
+每个已物化附件恰有一个 `ORIGINAL` Blob 绑定；零个或多个 `DERIVED` 绑定表示派生内容。未明确选择表示时，下载、预览及列表中的大小、媒体类型、摘要、可用状态使用原件 Blob；派生 Blob 通过明确选择使用，不提供可切换默认 Blob。原件不可用时返回原件状态，不静默使用派生内容。同一原件 Blob 内部的 Placement 选择继续遵循既有可读副本策略。
 
 下载、预览以可选请求参数选择 Blob；未传参数读取原件，传入参数只影响该次请求。明确选择表示必须验证其与当前附件的有效绑定及附件授权；不能因 Blob 被多个附件共享而继承其他附件的访问权。所选 Blob 决定该次读取的字节、技术信息、可用性和交付身份，参数名、类型与路由按冻结 API 契约实现。
 
@@ -227,46 +227,45 @@ Attachment 不保存“永久物理路径”。
 Attachment
 ├── id: uuid / UUIDv7
 ├── blob_bindings: AttachmentBlob[]  # 通过独立 attachment_blob 表持久化
-├── filename: text?
+├── name: text                      # 用户可见附件名
 ├── media_type: text?
 ├── usage_kind: stable string code?
-├── source_kind: stable string code
-├── source_reference: protected text/json?
-├── data_classification: stable string code
-├── lifecycle: ACTIVE | ARCHIVED | TRASHED | PURGED
+├── status: integer                 # 0..5 生命周期状态
+├── created_by: UUIDv7
+├── idempotency_key: text?
+├── request_fingerprint: SHA-256?
 ├── created_at: timestamptz
 ├── updated_at: timestamptz
-├── deleted_at: timestamptz?
 └── version: bigint
 ```
 
 说明：
 
-- `filename` 是业务显示元数据，不是物理对象名称；不同 Attachment 可以共享 Blob 但拥有不同文件名。
+- `name` 是业务显示元数据，不是物理对象名称；不同 Attachment 可以共享 Blob 但拥有不同名称。Blob 不保存名称。
 - `media_type` 是 Attachment 的内容声明/识别结果，不负责保存视频 Codec、音轨、EXIF 等专业领域数据。
 - `usage_kind` 只用于通用用途提示；“字幕属于哪个视频”“漫画页序号”等关系仍由专业领域 / Relation Core 管理。
-- `source_reference` 可能包含 URL、外部对象标识等敏感来源信息，不能无条件进入日志或公开 API。
-- `data_classification` 是传播约束的输入之一，最终访问权限仍需 ACL / Permission。
+- 创建同一内容的多条 Attachment 是允许的。幂等键只合并同一主体的请求重试；同一键重放不同请求必须冲突。
 
-### 5.4 Attachment Lifecycle
+### 5.4 Attachment Status
 
-Attachment 生命周期建议统一为：
+Attachment 使用与 Resource 一致的整数状态码：
 
-```text
-ACTIVE
-  ├──> ARCHIVED
-  │      └──> ACTIVE
-  └──> TRASHED
-           ├──> ACTIVE
-           └──> PURGED
-```
+| Code | Status | Meaning |
+|---:|---|---|
+| 0 | `DELETED` | 已删除终态 |
+| 1 | `ACTIVE` | 正常 |
+| 2 | `TRASHED` | 回收站 |
+| 3 | `ARCHIVED` | 已归档 |
+| 4 | `FROZEN` | 已冻结 |
+| 5 | `UNFREEZING` | 解冻中 |
 
 其中：
 
 - `ARCHIVED` 表示业务逻辑归档，不等于 Blob 放入 Storage `ARCHIVE` Tier。
 - `TRASHED` 仍保留 Blob 引用，不能触发立即 GC。
-- `PURGED` 表示 Attachment 业务身份已永久清理，其 Blob 引用才可释放。
+- `DELETED` 表示 Attachment 业务身份已永久清理，其 Blob 绑定才可供 GC 检查。
 - 是否允许 `ARCHIVED -> TRASHED`、Trash 保留多久由上层业务策略决定。
+- 状态变化统一更新 `updated_at`；不使用 `deleted_at` 或 `archived_at`。
 
 ### 5.5 Attachment 不直接承担 ACL 真相
 
@@ -1270,7 +1269,7 @@ DISABLED
 需要区分：
 
 ```text
-Attachment.lifecycle = ARCHIVED
+Attachment.status = 3 (ARCHIVED)
 ```
 
 与：
@@ -1940,16 +1939,17 @@ Background Task、Outbox、Audit 复用平台公共能力，不在 Storage Schem
 
 - `id`：UUIDv7 Primary Key。
 - Blob 引用：通过 `attachment_blob` 多对多绑定，不能以附件上的单个 `blob_id` 作为完整引用集合；旧字段仅用于迁移兼容。
-- `lifecycle`：稳定字符串 Code / DB Check Constraint。
+- `status`：固定整数 `0..5`，以 DB Check Constraint 限制。
 - `version`：乐观锁。
-- `created_at / updated_at / deleted_at`：`timestamptz`。
-- 普通查询索引：`lifecycle`、`created_at`；绑定表必须支持按 Attachment 和 Blob 两个方向查询。
+- `created_at / updated_at`：`timestamptz`；状态进入时间由 `updated_at` 表达，不保留 `deleted_at` / `archived_at`。
+- `created_by + idempotency_key` 唯一；请求指纹用于拒绝同键异请求。
+- 普通查询索引：`status`、`created_at`；绑定表必须支持按 Attachment 和 Blob 两个方向查询。
 
-`attachment_blob` 的附件与 Blob 外键必须有数据库约束，独立绑定身份使用 UUIDv7。唯一有效原件绑定必须由数据库约束与物化流程共同保证。解绑、版本及表示选择参数的精确约束按 ADR-009 收敛后进入 Schema；未冻结前不得自行生成 DDL。
+`resource_attachment` 使用 `(resource_id, attachment_id)` 主键，两个外键均受数据库约束；删除关系行不删除 Attachment。`attachment_blob` 的独立绑定身份使用 UUIDv7，角色固定为 `ORIGINAL / DERIVED`，同一附件最多一个原件由部分唯一索引保证，物化事务保证原件存在；同一附件和 Blob 只能有一条绑定。明确选择派生表示的读取必须验证绑定与 Attachment 权限。
 
 `blob_metadata` 由 Storage 拥有并引用 Blob，仅保存从对应字节提取的文件技术信息，如容器、时长、码率、编码、分辨率、帧率、音轨与声道。不同 Blob 的技术信息分别保存，共享同一 Blob 的附件可复用这些信息；技术信息更新不改变 Blob 摘要与大小。标题、歌手、备注等资源业务元数据保存到 `resource_metadata`，通过 Resource Owner 的公开 API 写入，沿用来源、人工锁定与授权规则。建表记录结构见下文，提取版本及应用更新语义待冻结；Secure Domain 明文技术信息不能进入普通 Storage 元数据表，不得把该表当作任意业务 JSON 的跨模块写入入口。
 
-`blob_metadata` 建表结构已冻结为逐字段键值记录：UUIDv7 `id`、Blob 外键 `blob_id`、`field_key`、JSONB `field_value`、`updated_at` 与非负乐观锁 `version`，同一 Blob 的 `field_key` 唯一。技术记录从属于 Blob，经受控 Blob 删除后由同 Owner 外键级联清理；记录不作为阻止 GC 的业务引用。具体约束以 [Schema §12.1](../00-product-baseline/database/P0-Database-Schema-Design.md#121-storageblob_metadata已冻结建表契约) 为准，提取版本与公开写入/查询契约仍待冻结。
+`blob_metadata` 建表结构已冻结为逐字段键值记录：UUIDv7 `id`、Blob 外键 `blob_id`、`field_key`、JSONB `field_value`、`updated_at` 与非负乐观锁 `version`，同一 Blob 的 `field_key` 唯一。技术记录从属于 Blob，经受控 Blob 删除后由同 Owner 外键级联清理；记录不作为阻止 GC 的业务引用。具体约束以 [Schema §12.3](../00-product-baseline/database/P0-Database-Schema-Design.md#123-storageblob_metadata已冻结建表契约) 为准，提取版本与公开写入/查询契约仍待冻结。
 
 ### 30.3 Blob 约束
 

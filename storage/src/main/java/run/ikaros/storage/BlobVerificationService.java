@@ -54,7 +54,7 @@ public class BlobVerificationService {
                 ? placement.placementState() : PlacementState.UNAVAILABLE,
             result.status() == BlobIntegrityStatus.VERIFIED ? now : placement.verifiedAt(), placement.createdAt(), placement.version());
         BlobEntity updatedBlob = new BlobEntity(blob.id(), blob.hashAlgorithm(), blob.sha256(), blob.sizeBytes(), blob.mediaType(),
-            availability, blob.createdAt(), blob.version());
+            availability, blob.createdAt(), now, blob.version());
         String eventType = result.status() == BlobIntegrityStatus.VERIFIED
             ? "storage.blob.verified" : "storage.blob.integrity-failed";
         String payload = "{\"blob_id\":\"" + blob.id() + "\",\"placement_id\":\"" + placement.id()
@@ -67,8 +67,10 @@ public class BlobVerificationService {
 
     private Mono<BlobEntity> ownedBlob(UUID actorId, UUID blobId) {
         return blobs.findById(blobId).switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在")))
-            .flatMap(blob -> attachments.findFirstByBlobIdAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtAsc(blob.id())
-                .flatMap(attachment -> resources.requireOwned(actorId, attachment.resourceId()).thenReturn(blob)))
+            .flatMap(blob -> attachments.findFirstLiveReferenceByBlobId(blob.id())
+                .flatMap(attachment -> attachment.resourceId() == null
+                    ? attachment.createdBy().equals(actorId) ? Mono.just(blob) : Mono.empty()
+                    : resources.requireReadable(actorId, attachment.resourceId()).thenReturn(blob)))
             .switchIfEmpty(Mono.error(new NotFoundException("Blob 不存在或无权访问")));
     }
 }

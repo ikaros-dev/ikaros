@@ -32,7 +32,7 @@ public class PersistentSearchQueryService implements SearchQueryService {
         Cursor cursor = Cursor.decode(request.cursor());
         return documents.search("%" + escapeLike(request.query().trim()) + "%", normalized(request.type()),
                 normalized(request.tag()), cursor.at(), cursor.id(), limit * 4)
-            .flatMap(entity -> ownership.requireOwned(actorId, entity.sourceId())
+            .flatMap(entity -> ownership.requireReadable(actorId, entity.sourceId())
                 .then(Mono.defer(() -> projections.get(entity.sourceId())))
                 .map(document -> new Hit(entity.projectedAt(), entity.documentId(),
                     new SearchPage.SearchResult(document.sourceId(), document.sourceVersion(), document.fields())))
