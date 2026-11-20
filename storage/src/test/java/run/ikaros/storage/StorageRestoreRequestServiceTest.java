@@ -79,7 +79,7 @@ class StorageRestoreRequestServiceTest {
         UUID attachmentId = UUID.randomUUID();
         when(requests.findByActorIdAndScopeAndScopeIdAndIdempotencyKey(actorId, StorageRestoreScope.ATTACHMENT,
             attachmentId, "restore-key")).thenReturn(Mono.empty());
-        when(attachments.findById(attachmentId)).thenReturn(Mono.empty());
+        when(attachments.findReadableReferenceById(attachmentId)).thenReturn(Mono.empty());
 
         StepVerifier.create(service.requestAttachment(actorId, new RequestAttachmentRestore(attachmentId, "STANDARD"),
             "restore-key"))

@@ -34,7 +34,7 @@ class DefaultMetadataCandidateServiceTest {
         ownerId = UUID.randomUUID();
         resourceId = UUID.randomUUID();
         candidateId = UUID.randomUUID();
-        when(resources.requireOwned(ownerId, resourceId)).thenReturn(Mono.empty());
+        when(resources.requireWritable(ownerId, resourceId)).thenReturn(Mono.empty());
     }
 
     @Test

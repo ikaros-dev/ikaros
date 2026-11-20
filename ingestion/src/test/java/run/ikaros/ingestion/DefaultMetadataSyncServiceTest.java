@@ -34,7 +34,7 @@ class DefaultMetadataSyncServiceTest {
         MetadataCandidateView candidate = new MetadataCandidateView(UUID.randomUUID(), resourceId, "title", "new",
             MetadataSource.PROVIDER, "tmdb", 90, MetadataCandidateStatus.PENDING, Instant.now(), null);
         when(sources.findByIdAndOwnerId(sourceId, owner)).thenReturn(Mono.just(source));
-        when(resources.requireOwned(owner, resourceId)).thenReturn(Mono.empty());
+        when(resources.requireWritable(owner, resourceId)).thenReturn(Mono.empty());
         when(metadata.list(owner, resourceId)).thenReturn(Flux.just(new ResourceMetadataView(UUID.randomUUID(),
             "title", "old", MetadataSource.USER, "user", true, true)));
         when(candidates.submit(any(UUID.class), any(UUID.class), any(SubmitMetadataCandidateRequest.class)))
@@ -56,7 +56,7 @@ class DefaultMetadataSyncServiceTest {
         UUID sourceId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();
         when(sources.findByIdAndOwnerId(sourceId, owner)).thenReturn(Mono.just(source(sourceId, owner)));
-        when(resources.requireOwned(owner, resourceId)).thenReturn(Mono.empty());
+        when(resources.requireWritable(owner, resourceId)).thenReturn(Mono.empty());
         when(metadata.list(owner, resourceId)).thenReturn(Flux.just(new ResourceMetadataView(UUID.randomUUID(),
             "title", "same", MetadataSource.PROVIDER, "tmdb", false, true)));
         when(statuses.save(any(MetadataSyncStatusEntity.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));

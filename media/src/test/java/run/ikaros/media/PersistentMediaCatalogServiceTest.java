@@ -29,7 +29,8 @@ class PersistentMediaCatalogServiceTest {
         MediaSeasonRepository seasons = org.mockito.Mockito.mock(MediaSeasonRepository.class);
         MediaEpisodeRepository episodes = org.mockito.Mockito.mock(MediaEpisodeRepository.class);
         ResourceView resource = new ResourceView(resourceId, ResourceType.VIDEO, "示例视频", null,
-            ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE, List.of(), List.of(), Instant.now(), Instant.now(), 0L);
+            ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), List.of(), List.of(),
+            Instant.now(), Instant.now(), 0L);
         MediaSubjectEntity saved = new MediaSubjectEntity(subjectId, owner, resourceId, MediaSubjectKind.SERIES,
             Instant.now(), Instant.now(), 0L);
         when(resources.create(any(), any())).thenReturn(Mono.just(resource));

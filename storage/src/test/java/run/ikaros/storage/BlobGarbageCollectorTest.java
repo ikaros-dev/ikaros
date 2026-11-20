@@ -35,7 +35,7 @@ class BlobGarbageCollectorTest {
     void activeAttachmentReferenceBlocksPurge() {
         UUID blobId = UUID.randomUUID();
         stubBlob(blobId);
-        when(attachments.countByBlobIdAndArchivedAtIsNullAndDeletedAtIsNull(blobId)).thenReturn(Mono.just(1L));
+        when(attachments.countLiveReferencesByBlobId(blobId)).thenReturn(Mono.just(1L));
 
         StepVerifier.create(collector.purge(blobId))
             .expectErrorSatisfies(error -> assertInstanceOf(ConflictException.class, error))
@@ -49,7 +49,7 @@ class BlobGarbageCollectorTest {
     void activeRetentionHoldBlocksPurgeAfterReferenceCheck() {
         UUID blobId = UUID.randomUUID();
         stubBlob(blobId);
-        when(attachments.countByBlobIdAndArchivedAtIsNullAndDeletedAtIsNull(blobId)).thenReturn(Mono.just(0L));
+        when(attachments.countLiveReferencesByBlobId(blobId)).thenReturn(Mono.just(0L));
         when(holds.existsActiveByBlobId(any(), any())).thenReturn(Mono.just(true));
 
         StepVerifier.create(collector.purge(blobId))
@@ -64,7 +64,7 @@ class BlobGarbageCollectorTest {
     void archiveBaseBlocksPurgeAfterAllGuardsPass() {
         UUID blobId = UUID.randomUUID();
         stubBlob(blobId);
-        when(attachments.countByBlobIdAndArchivedAtIsNullAndDeletedAtIsNull(blobId)).thenReturn(Mono.just(0L));
+        when(attachments.countLiveReferencesByBlobId(blobId)).thenReturn(Mono.just(0L));
         when(holds.existsActiveByBlobId(any(), any())).thenReturn(Mono.just(false));
         when(leases.protectsBlob(blobId)).thenReturn(Mono.just(false));
         BlobPlacementEntity archiveBase = new BlobPlacementEntity(UUID.randomUUID(), blobId, "archive", StorageTier.ARCHIVE,

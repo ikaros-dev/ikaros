@@ -29,7 +29,8 @@ class PersistentMediaReleaseServiceTest {
         AttachmentReferenceQuery attachments = org.mockito.Mockito.mock(AttachmentReferenceQuery.class);
         MediaReleaseRepository releases = org.mockito.Mockito.mock(MediaReleaseRepository.class);
         when(resources.get(owner, resourceId)).thenReturn(Mono.just(new ResourceView(resourceId, ResourceType.VIDEO, "视频", null,
-            ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE, List.of(), List.of(), Instant.now(), Instant.now(), 0L)));
+            ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), List.of(), List.of(),
+            Instant.now(), Instant.now(), 0L)));
         when(attachments.requireActiveForResource(owner, resourceId, attachmentId)).thenReturn(Mono.just(new AttachmentReference(attachmentId, resourceId)));
         when(releases.save(any(MediaReleaseEntity.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
@@ -51,7 +52,8 @@ class PersistentMediaReleaseServiceTest {
         AttachmentReferenceQuery attachments = org.mockito.Mockito.mock(AttachmentReferenceQuery.class);
         MediaReleaseRepository releases = org.mockito.Mockito.mock(MediaReleaseRepository.class);
         when(resources.get(owner, resourceId)).thenReturn(Mono.just(new ResourceView(resourceId, ResourceType.VIDEO, "视频", null,
-            ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE, List.of(), List.of(), Instant.now(), Instant.now(), 0L)));
+            ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), List.of(), List.of(),
+            Instant.now(), Instant.now(), 0L)));
         when(attachments.requireActiveForResource(owner, resourceId, attachmentId)).thenReturn(Mono.error(new IllegalStateException("attachment unavailable")));
 
         StepVerifier.create(new PersistentMediaReleaseService(resources, attachments, releases).add(owner, resourceId,
