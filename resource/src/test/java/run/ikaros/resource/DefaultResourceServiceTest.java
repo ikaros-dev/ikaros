@@ -78,8 +78,7 @@ class DefaultResourceServiceTest {
         ArgumentCaptor<ResourceEntity> resourceCaptor = ArgumentCaptor.forClass(ResourceEntity.class);
         verify(resourceRepository).save(resourceCaptor.capture());
         assertThat(resourceCaptor.getValue().id()).isNull();
-        assertThat(resourceCaptor.getValue().ownerId()).isEqualTo(ownerId);
-        assertThat(resourceCaptor.getValue().lifecycle()).isEqualTo(ResourceLifecycle.ACTIVE);
+        assertThat(resourceCaptor.getValue().status()).isEqualTo(ResourceStatus.ACTIVE.code());
         verify(auditService).record(ownerId, "resource.create", "RESOURCE", resourceId, "{}");
     }
 
@@ -112,8 +111,8 @@ class DefaultResourceServiceTest {
         ResourceEntity resource = new ResourceEntity(resourceId, ResourceType.BOOK, null, null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), now, now, 0L);
         ResourceTitleEntity title = new ResourceTitleEntity(UUID.randomUUID(), resourceId, "zh-CN", "测试书籍",
             true, now, now, 0L);
-        when(resourceRepository.search(ownerId, "", "书", "ACTIVE", "", "", "", 20, 20)).thenReturn(Flux.just(resource));
-        when(resourceRepository.countSearch(ownerId, "", "书", "ACTIVE", "", "", "")).thenReturn(Mono.just(1L));
+        when(resourceRepository.search(ownerId, "", "书", ResourceStatus.ACTIVE.code(), "", "", "", 20, 20)).thenReturn(Flux.just(resource));
+        when(resourceRepository.countSearch(ownerId, "", "书", ResourceStatus.ACTIVE.code(), "", "", "")).thenReturn(Mono.just(1L));
         when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.just(title));
         when(identityRepository.findAllByResourceIdOrderByProviderAsc(resourceId)).thenReturn(Flux.empty());
 
@@ -129,8 +128,8 @@ class DefaultResourceServiceTest {
     @Test
     void returnsEmptyPageWhenOwnerHasNoActiveResources() {
         UUID ownerId = UUID.randomUUID();
-        when(resourceRepository.search(ownerId, "", "", "ACTIVE", "", "", "", 0, 20)).thenReturn(Flux.empty());
-        when(resourceRepository.countSearch(ownerId, "", "", "ACTIVE", "", "", "")).thenReturn(Mono.just(0L));
+        when(resourceRepository.search(ownerId, "", "", ResourceStatus.ACTIVE.code(), "", "", "", 0, 20)).thenReturn(Flux.empty());
+        when(resourceRepository.countSearch(ownerId, "", "", ResourceStatus.ACTIVE.code(), "", "", "")).thenReturn(Mono.just(0L));
 
         StepVerifier.create(service.list(ownerId, null, null, 0, 20))
             .assertNext(page -> assertThat(page.items()).isEmpty())
@@ -145,14 +144,14 @@ class DefaultResourceServiceTest {
         ResourceEntity archived = new ResourceEntity(resourceId, ResourceType.BOOK, null, null, ResourceClassification.PRIVATE, ResourceLifecycle.ARCHIVED.statusCode(), now, now, 2L);
         ResourceTitleEntity title = new ResourceTitleEntity(UUID.randomUUID(), resourceId, "zh-CN", "归档书籍",
             true, now, now, 0L);
-        when(resourceRepository.search(ownerId, "", "", "ARCHIVED", "", "", "", 0, 20)).thenReturn(Flux.just(archived));
-        when(resourceRepository.countSearch(ownerId, "", "", "ARCHIVED", "", "", "")).thenReturn(Mono.just(1L));
+        when(resourceRepository.search(ownerId, "", "", ResourceStatus.ARCHIVED.code(), "", "", "", 0, 20)).thenReturn(Flux.just(archived));
+        when(resourceRepository.countSearch(ownerId, "", "", ResourceStatus.ARCHIVED.code(), "", "", "")).thenReturn(Mono.just(1L));
         when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.just(title));
         when(identityRepository.findAllByResourceIdOrderByProviderAsc(resourceId)).thenReturn(Flux.empty());
 
         StepVerifier.create(service.list(ownerId, null, null, ResourceLifecycle.ARCHIVED, 0, 20))
             .assertNext(page -> assertThat(page.items()).singleElement()
-                .satisfies(item -> assertThat(item.lifecycle()).isEqualTo(ResourceLifecycle.ARCHIVED)))
+                .satisfies(item -> assertThat(item.status()).isEqualTo(ResourceStatus.ARCHIVED.code())))
             .verifyComplete();
     }
 
@@ -160,9 +159,9 @@ class DefaultResourceServiceTest {
     void forwardsCollectionTagAndSourceFiltersToRepository() {
         UUID ownerId = UUID.randomUUID();
         UUID collectionId = UUID.randomUUID();
-        when(resourceRepository.search(ownerId, "BOOK", "书", "ACTIVE", collectionId.toString(), "历史",
+        when(resourceRepository.search(ownerId, "BOOK", "书", ResourceStatus.ACTIVE.code(), collectionId.toString(), "历史",
             "anilist", 0, 20)).thenReturn(Flux.empty());
-        when(resourceRepository.countSearch(ownerId, "BOOK", "书", "ACTIVE", collectionId.toString(), "历史",
+        when(resourceRepository.countSearch(ownerId, "BOOK", "书", ResourceStatus.ACTIVE.code(), collectionId.toString(), "历史",
             "anilist")).thenReturn(Mono.just(0L));
 
         StepVerifier.create(service.list(ownerId, new ResourceLibraryQuery(ResourceType.BOOK, "书",
@@ -178,9 +177,9 @@ class DefaultResourceServiceTest {
         java.util.List<ResourceEntity> resources = java.util.Arrays.stream(ResourceLifecycle.values())
             .map(lifecycle -> new ResourceEntity(UUID.randomUUID(), ResourceType.BOOK, null, null, ResourceClassification.PRIVATE, lifecycle.statusCode(), now, now, 0L))
             .toList();
-        when(resourceRepository.search(ownerId, "", "", "", "", "", "", 20, 20))
+        when(resourceRepository.search(ownerId, "", "", -1, "", "", "", 20, 20))
             .thenReturn(Flux.fromIterable(resources));
-        when(resourceRepository.countSearch(ownerId, "", "", "", "", "", ""))
+        when(resourceRepository.countSearch(ownerId, "", "", -1, "", "", ""))
             .thenReturn(Mono.just((long) resources.size()));
         for (ResourceEntity resource : resources) {
             when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resource.id()))
@@ -189,17 +188,18 @@ class DefaultResourceServiceTest {
                 .thenReturn(Flux.empty());
         }
 
-        StepVerifier.create(service.list(ownerId, new ResourceLibraryQuery(null, null, null,
+        StepVerifier.create(service.list(ownerId, new ResourceLibraryQuery(null, null, (Integer) null,
                 null, null, null, 1, 20)))
             .assertNext(page -> {
-                assertThat(page.items()).extracting(ResourceView::lifecycle)
-                    .containsExactlyInAnyOrder(ResourceLifecycle.values());
+                assertThat(page.items()).extracting(ResourceView::status)
+                    .containsExactlyInAnyOrderElementsOf(java.util.Arrays.stream(ResourceLifecycle.values())
+                        .map(ResourceLifecycle::statusCode).toList());
                 assertThat(page.total()).isEqualTo(resources.size());
                 assertThat(page.page()).isEqualTo(1);
                 assertThat(page.size()).isEqualTo(20);
             }).verifyComplete();
-        verify(resourceRepository).search(ownerId, "", "", "", "", "", "", 20, 20);
-        verify(resourceRepository).countSearch(ownerId, "", "", "", "", "", "");
+        verify(resourceRepository).search(ownerId, "", "", -1, "", "", "", 20, 20);
+        verify(resourceRepository).countSearch(ownerId, "", "", -1, "", "", "");
     }
 
     @Test
@@ -226,8 +226,7 @@ class DefaultResourceServiceTest {
 
         ArgumentCaptor<ResourceEntity> resourceCaptor = ArgumentCaptor.forClass(ResourceEntity.class);
         verify(resourceRepository).save(resourceCaptor.capture());
-        assertThat(resourceCaptor.getValue().lifecycle()).isEqualTo(ResourceLifecycle.TRASHED);
-        assertThat(resourceCaptor.getValue().deletedAt()).isNotNull();
+        assertThat(resourceCaptor.getValue().status()).isEqualTo(ResourceStatus.TRASHED.code());
         assertThat(resourceCaptor.getValue().version()).isEqualTo(2L);
     }
 
@@ -267,9 +266,9 @@ class DefaultResourceServiceTest {
         when(identityRepository.findAllByResourceIdOrderByProviderAsc(resourceId)).thenReturn(Flux.empty());
 
         StepVerifier.create(service.archive(ownerId, resourceId, 2L))
-            .assertNext(view -> assertThat(view.lifecycle()).isEqualTo(ResourceLifecycle.ARCHIVED))
+            .assertNext(view -> assertThat(view.status()).isEqualTo(ResourceStatus.ARCHIVED.code()))
             .verifyComplete();
-        verify(resourceRepository).save(argThat(saved -> saved.lifecycle() == ResourceLifecycle.ARCHIVED
+        verify(resourceRepository).save(argThat(saved -> saved.status() == ResourceStatus.ARCHIVED.code()
             && saved.id().equals(resourceId)));
     }
 
@@ -317,10 +316,10 @@ class DefaultResourceServiceTest {
         StepVerifier.create(service.restore(ownerId, resourceId, 2L))
             .assertNext(view -> {
                 assertThat(view.id()).isEqualTo(resourceId);
-                assertThat(view.lifecycle()).isEqualTo(ResourceLifecycle.ACTIVE);
+                assertThat(view.status()).isEqualTo(ResourceStatus.ACTIVE.code());
             }).verifyComplete();
         verify(resourceRepository).save(argThat(saved -> saved.id().equals(resourceId)
-            && saved.lifecycle() == ResourceLifecycle.ACTIVE && saved.deletedAt() == null));
+            && saved.status() == ResourceStatus.ACTIVE.code()));
     }
 
     @Test
@@ -353,7 +352,7 @@ class DefaultResourceServiceTest {
         StepVerifier.create(service.purge(ownerId, resourceId, 2L)).verifyComplete();
 
         verify(resourceRepository).save(argThat(saved -> saved.id().equals(resourceId)
-            && saved.lifecycle() == ResourceLifecycle.PURGED && saved.deletedAt().equals(now)));
+            && saved.status() == ResourceStatus.DELETED.code()));
         verify(auditService).record(ownerId, "resource.purge", "RESOURCE", resourceId, "{}");
         verifyNoInteractions(titleRepository, identityRepository);
     }
