@@ -44,7 +44,7 @@ class DefaultCollectionServiceTest {
         when(collections.save(any(CollectionEntity.class))).thenReturn(Mono.just(collection));
         when(collections.findByIdAndOwnerId(collectionId, ownerId)).thenReturn(Mono.just(collection));
         ResourceEntity resource = new ResourceEntity(resourceId, ResourceType.BOOK, null, null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), now, now, 0L);
-        when(resources.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource));
+        when(resources.findByIdAndUserId(resourceId, ownerId)).thenReturn(Mono.just(resource));
         when(members.save(any(CollectionResourceEntity.class))).thenReturn(Mono.just(
             new CollectionResourceEntity(UUID.randomUUID(), collectionId, resourceId, 0, now, 0L)));
         when(members.deleteByCollectionIdAndResourceId(collectionId, resourceId)).thenReturn(Mono.empty());

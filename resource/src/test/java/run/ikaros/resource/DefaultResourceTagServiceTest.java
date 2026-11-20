@@ -43,7 +43,7 @@ class DefaultResourceTagServiceTest {
         UUID ownerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();
         Instant now = Instant.now();
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource(ownerId, resourceId, now)));
+        when(resourceRepository.findByIdAndUserId(resourceId, ownerId)).thenReturn(Mono.just(resource(ownerId, resourceId, now)));
         when(tagRepository.findByOwnerIdAndResourceIdAndName(ownerId, resourceId, "favorite"))
             .thenReturn(Mono.empty());
         ResourceTagEntity tag = new ResourceTagEntity(UUID.randomUUID(), ownerId, resourceId, "favorite", "#fff", now, now, 0L);
@@ -61,7 +61,7 @@ class DefaultResourceTagServiceTest {
         UUID ownerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();
         Instant now = Instant.now();
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource(ownerId, resourceId, now)));
+        when(resourceRepository.findByIdAndUserId(resourceId, ownerId)).thenReturn(Mono.just(resource(ownerId, resourceId, now)));
         ResourceTagEntity tag = new ResourceTagEntity(UUID.randomUUID(), ownerId, resourceId, "action", null, now, now, 0L);
         when(tagRepository.findAllByOwnerIdAndResourceIdOrderByNameAsc(ownerId, resourceId)).thenReturn(Flux.just(tag));
 
@@ -76,7 +76,7 @@ class DefaultResourceTagServiceTest {
         UUID resourceId = UUID.randomUUID();
         UUID tagId = UUID.randomUUID();
         Instant now = Instant.now();
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource(ownerId, resourceId, now)));
+        when(resourceRepository.findByIdAndUserId(resourceId, ownerId)).thenReturn(Mono.just(resource(ownerId, resourceId, now)));
         when(tagRepository.findByIdAndOwnerIdAndResourceId(tagId, ownerId, resourceId)).thenReturn(Mono.just(
             new ResourceTagEntity(tagId, ownerId, resourceId, "action", null, now, now, 0L)));
         when(tagRepository.deleteById(tagId)).thenReturn(Mono.empty());
@@ -89,7 +89,7 @@ class DefaultResourceTagServiceTest {
     @Test
     void rejectsUnknownResourceBeforeReadingTags() {
         UUID ownerId = UUID.randomUUID(), resourceId = UUID.randomUUID();
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.empty());
+        when(resourceRepository.findByIdAndUserId(resourceId, ownerId)).thenReturn(Mono.empty());
 
         StepVerifier.create(service.list(ownerId, resourceId))
             .expectErrorMessage("资源不存在或无权访问").verify();

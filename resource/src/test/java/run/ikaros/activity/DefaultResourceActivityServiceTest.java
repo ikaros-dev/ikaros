@@ -45,7 +45,7 @@ class DefaultResourceActivityServiceTest {
         UUID ownerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();
         Instant now = Instant.now();
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource(ownerId, resourceId, now)));
+        when(resourceRepository.findByIdAndUserId(resourceId, ownerId)).thenReturn(Mono.just(resource(ownerId, resourceId, now)));
         ResourceActivityEntity activity = new ResourceActivityEntity(UUID.randomUUID(), ownerId, resourceId,
             ActivityType.VIEW, "{}", now, 0L);
         when(activityRepository.save(any(ResourceActivityEntity.class))).thenReturn(Mono.just(activity));
@@ -83,7 +83,7 @@ class DefaultResourceActivityServiceTest {
     void rejectsUnknownResourceBeforeSavingActivity() {
         UUID ownerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.empty());
+        when(resourceRepository.findByIdAndUserId(resourceId, ownerId)).thenReturn(Mono.empty());
 
         StepVerifier.create(service.record(ownerId, resourceId, new RecordActivityRequest(ActivityType.VIEW, null)))
             .expectErrorMessage("资源不存在或无权访问").verify();

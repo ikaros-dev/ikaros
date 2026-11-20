@@ -50,7 +50,7 @@ class DefaultResourceTitleServiceTest {
             now, now, 1L);
         ResourceTitleEntity savedNew = new ResourceTitleEntity(UUID.randomUUID(), resourceId, "en", "New title", true,
             now, now, 0L);
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource));
+        when(resourceRepository.findByIdAndWriterUserId(resourceId, ownerId)).thenReturn(Mono.just(resource));
         when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.just(oldTitle));
         when(titleRepository.saveAll(any(Iterable.class))).thenReturn(Flux.just(savedOld, savedNew));
         when(auditService.record(ownerId, "resource.title.set", "RESOURCE", resourceId, "{}"))
@@ -72,7 +72,7 @@ class DefaultResourceTitleServiceTest {
         UUID resourceId = UUID.randomUUID();
         UUID titleId = UUID.randomUUID();
         Instant now = Instant.now();
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(
+        when(resourceRepository.findByIdAndWriterUserId(resourceId, ownerId)).thenReturn(Mono.just(
             new ResourceEntity(resourceId, ResourceType.BOOK, null, null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), now, now, 0L)));
         when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.just(
             new ResourceTitleEntity(titleId, resourceId, "zh-CN", "唯一标题", true, now, now, 0L)));
@@ -92,7 +92,7 @@ class DefaultResourceTitleServiceTest {
             now, now, 0L, ResourceTitleKind.TITLE);
         ResourceTitleEntity alias = new ResourceTitleEntity(UUID.randomUUID(), resourceId, "zh-CN", "别名", false,
             now, now, 0L, ResourceTitleKind.ALIAS);
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(resource));
+        when(resourceRepository.findByIdAndWriterUserId(resourceId, ownerId)).thenReturn(Mono.just(resource));
         when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.just(title));
         when(titleRepository.saveAll(any(Iterable.class))).thenReturn(Flux.just(title, alias));
         when(auditService.record(ownerId, "resource.title.set", "RESOURCE", resourceId, "{}"))
@@ -115,7 +115,7 @@ class DefaultResourceTitleServiceTest {
             now, now, 0L);
         ResourceTitleEntity secondary = new ResourceTitleEntity(UUID.randomUUID(), resourceId, "en", "English", false,
             now, now, 0L);
-        when(resourceRepository.findByIdAndOwnerId(resourceId, ownerId)).thenReturn(Mono.just(
+        when(resourceRepository.findByIdAndWriterUserId(resourceId, ownerId)).thenReturn(Mono.just(
             new ResourceEntity(resourceId, ResourceType.BOOK, null, null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), now, now, 0L)));
         when(titleRepository.findAllByResourceIdOrderByPrimaryDescLocaleAsc(resourceId)).thenReturn(Flux.just(primary,
             secondary));

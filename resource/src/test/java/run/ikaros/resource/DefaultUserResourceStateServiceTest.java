@@ -31,7 +31,7 @@ class DefaultUserResourceStateServiceTest {
         TransactionalOperator transaction = mock(TransactionalOperator.class);
         DurableEventPublisher events = mock(DurableEventPublisher.class);
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(resources.findByIdAndOwnerId(resourceId, userId)).thenReturn(Mono.just(new ResourceEntity(resourceId, ResourceType.BOOK, null, null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), now, now, 0L)));
+        when(resources.findByIdAndUserId(resourceId, userId)).thenReturn(Mono.just(new ResourceEntity(resourceId, ResourceType.BOOK, null, null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), now, now, 0L)));
         when(states.findByUserIdAndResourceId(userId, resourceId)).thenReturn(Mono.empty());
         UserResourceStateEntity saved = new UserResourceStateEntity(userId, resourceId, true,
             new BigDecimal("8"), "reading", new BigDecimal("3"), "pages", now, 1L, now);
@@ -57,7 +57,7 @@ class DefaultUserResourceStateServiceTest {
         UserResourceStateRepository states = mock(UserResourceStateRepository.class);
         TransactionalOperator transaction = mock(TransactionalOperator.class);
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(resources.findByIdAndOwnerId(resourceId, userId)).thenReturn(Mono.empty());
+        when(resources.findByIdAndUserId(resourceId, userId)).thenReturn(Mono.empty());
 
         DefaultUserResourceStateService service = new DefaultUserResourceStateService(resources, states, transaction);
 
@@ -86,7 +86,7 @@ class DefaultUserResourceStateServiceTest {
         UserResourceStateRepository states = mock(UserResourceStateRepository.class);
         TransactionalOperator transaction = mock(TransactionalOperator.class);
         when(transaction.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(resources.findByIdAndOwnerId(resourceId, userId)).thenReturn(Mono.just(new ResourceEntity(resourceId, ResourceType.BOOK, null, null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), now, now, 0L)));
+        when(resources.findByIdAndUserId(resourceId, userId)).thenReturn(Mono.just(new ResourceEntity(resourceId, ResourceType.BOOK, null, null, ResourceClassification.PRIVATE, ResourceLifecycle.ACTIVE.statusCode(), now, now, 0L)));
         when(states.findByUserIdAndResourceId(userId, resourceId)).thenReturn(Mono.empty());
         UserResourceStateEntity saved = new UserResourceStateEntity(userId, resourceId, false, null,
             "reading", new BigDecimal("42"), "pages", now, 1L, now);

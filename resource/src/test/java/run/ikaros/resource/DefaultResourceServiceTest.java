@@ -94,12 +94,12 @@ class DefaultResourceServiceTest {
     void hidesResourceFromDifferentOwner() {
         UUID otherOwnerId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();
-        when(resourceRepository.findByIdAndOwnerId(resourceId, otherOwnerId)).thenReturn(Mono.empty());
+        when(resourceRepository.findByIdAndUserId(resourceId, otherOwnerId)).thenReturn(Mono.empty());
 
         StepVerifier.create(service.get(otherOwnerId, resourceId))
             .expectError(run.ikaros.common.NotFoundException.class)
             .verify();
-        org.mockito.Mockito.verify(resourceRepository).findByIdAndOwnerId(resourceId, otherOwnerId);
+        org.mockito.Mockito.verify(resourceRepository).findByIdAndUserId(resourceId, otherOwnerId);
         org.mockito.Mockito.verifyNoMoreInteractions(resourceRepository);
     }
 
@@ -367,7 +367,7 @@ class DefaultResourceServiceTest {
 
         StepVerifier.create(service.purge(ownerId, resourceId, 2L))
             .expectErrorSatisfies(error -> assertThat(error).isInstanceOf(ConflictException.class)
-                .hasMessage("只有已满足保留条件的回收站 Resource 才能永久删除"))
+                .hasMessage("只有回收站 Resource 才能永久删除"))
             .verify();
         verify(resourceRepository, org.mockito.Mockito.never()).save(any());
         verifyNoInteractions(auditService);
